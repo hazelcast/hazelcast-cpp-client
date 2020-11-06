@@ -26,7 +26,7 @@ namespace hazelcast {
              */
             class HAZELCAST_API PartitionSpecificClientProxy : public proxy::ProxyImpl {
             protected:
-                PartitionSpecificClientProxy(const std::string &serviceName, const std::string &objectName,
+                PartitionSpecificClientProxy(const std::string &service_name, const std::string &object_name,
                                              spi::ClientContext *context);
 
                 void on_initialize() override;

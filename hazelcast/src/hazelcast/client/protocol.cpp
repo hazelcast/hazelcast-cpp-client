@@ -82,8 +82,8 @@ namespace hazelcast {
                 boost::endian::store_little_s64(&data_buffer_[0][CORRELATION_ID_FIELD_OFFSET], id);
             }
 
-            void ClientMessage::set_partition_id(int32_t partitionId) {
-                boost::endian::store_little_s32(&data_buffer_[0][PARTITION_ID_FIELD_OFFSET], partitionId);
+            void ClientMessage::set_partition_id(int32_t partition_id) {
+                boost::endian::store_little_s32(&data_buffer_[0][PARTITION_ID_FIELD_OFFSET], partition_id);
             }
 
             template<>
@@ -150,14 +150,14 @@ namespace hazelcast {
 
             //----- Setter methods end ---------------------
 
-            void ClientMessage::fill_message_from(util::ByteBuffer &byteBuff, bool &is_final, size_t &remaining_bytes_in_frame) {
+            void ClientMessage::fill_message_from(util::ByteBuffer &byte_buff, bool &is_final, size_t &remaining_bytes_in_frame) {
                 // Calculate the number of messages to read from the buffer first and then do read_bytes
                 // we add the frame sizes including the final frame to find the total.
                 // If there were bytes of a frame (remaining_bytes_in_frame) to read from the previous call, it is read.
-                auto remaining = byteBuff.remaining();
+                auto remaining = byte_buff.remaining();
                 if (remaining_bytes_in_frame) {
                     size_t bytes_to_read = std::min(remaining_bytes_in_frame, remaining);
-                    byteBuff.read_bytes(wr_ptr(bytes_to_read), bytes_to_read);
+                    byte_buff.read_bytes(wr_ptr(bytes_to_read), bytes_to_read);
                     remaining_bytes_in_frame -= bytes_to_read;
                     if (remaining_bytes_in_frame > 0 || is_final) {
                         return;
@@ -166,14 +166,14 @@ namespace hazelcast {
 
                 remaining_bytes_in_frame = 0;
                 // more bytes to read
-                while (remaining_bytes_in_frame == 0 && !is_final && (remaining = byteBuff.remaining()) >= ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS) {
+                while (remaining_bytes_in_frame == 0 && !is_final && (remaining = byte_buff.remaining()) >= ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS) {
                     // start of the frame here
-                    auto read_ptr = static_cast<byte *>(byteBuff.ix());
+                    auto read_ptr = static_cast<byte *>(byte_buff.ix());
                     auto *f = reinterpret_cast<frame_header_t *>(read_ptr);
                     auto frame_len = static_cast<size_t>(static_cast<int32_t>(f->frame_len));
                     is_final = ClientMessage::is_flag_set(f->flags, ClientMessage::IS_FINAL_FLAG);
                     auto actual_bytes_to_read = std::min(frame_len, remaining);
-                    byteBuff.read_bytes(wr_ptr(frame_len, actual_bytes_to_read), actual_bytes_to_read);
+                    byte_buff.read_bytes(wr_ptr(frame_len, actual_bytes_to_read), actual_bytes_to_read);
                     remaining_bytes_in_frame = frame_len - actual_bytes_to_read;
                 }
             }
@@ -220,8 +220,8 @@ namespace hazelcast {
                 return retryable_;
             }
 
-            void ClientMessage::set_retryable(bool shouldRetry) {
-                retryable_ = shouldRetry;
+            void ClientMessage::set_retryable(bool should_retry) {
+                retryable_ = should_retry;
             }
 
             std::string ClientMessage::get_operation_name() const {
@@ -481,16 +481,16 @@ namespace hazelcast {
                 }
             }
 
-            void ClientExceptionFactory::register_exception(int32_t errorCode, ExceptionFactory *factory) {
-                auto it = errorCodeToFactory_.find(errorCode);
+            void ClientExceptionFactory::register_exception(int32_t error_code, ExceptionFactory *factory) {
+                auto it = errorCodeToFactory_.find(error_code);
                 if (errorCodeToFactory_.end() != it) {
                     char msg[100];
-                    util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
+                    util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", error_code);
                     BOOST_THROW_EXCEPTION(
                             exception::IllegalStateException("ClientExceptionFactory::registerException", msg));
                 }
 
-                errorCodeToFactory_[errorCode] = factory;
+                errorCodeToFactory_[error_code] = factory;
             }
 
             std::exception_ptr ClientExceptionFactory::create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,

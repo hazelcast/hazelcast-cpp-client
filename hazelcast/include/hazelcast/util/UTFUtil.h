@@ -46,25 +46,25 @@ namespace hazelcast {
             static int32_t is_valid_ut_f8(const std::string &str);
 
             template<typename Readable>
-            static void read_ut_f8_char(Readable &in, byte firstByte, std::string &utfBuffer) {
+            static void read_ut_f8_char(Readable &in, byte first_byte, std::string &utf_buffer) {
                 size_t n = 0;
                 // ascii
-                if (firstByte <= 0x7f) {
+                if (first_byte <= 0x7f) {
                     n = 0; // 0bbbbbbb
-                } else if ((firstByte & 0xE0) == 0xC0) {
+                } else if ((first_byte & 0xE0) == 0xC0) {
                     n = 1; // 110bbbbb
-                } else if ((firstByte & 0xF0) == 0xE0) {
+                } else if ((first_byte & 0xF0) == 0xE0) {
                     n = 2; // 1110bbbb
-                } else if ((firstByte & 0xF8) == 0xF0) {
+                } else if ((first_byte & 0xF8) == 0xF0) {
                     n = 3; // 11110bbb
                 } else {
                     throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
                 }
 
-                utfBuffer.push_back((char) firstByte);
+                utf_buffer.push_back((char) first_byte);
                 for (size_t j = 0; j < n; j++) {
                     byte b = in.template read<byte>();
-                    if (firstByte == 0xed && (b & 0xa0) == 0xa0) {
+                    if (first_byte == 0xed && (b & 0xa0) == 0xa0) {
                         throw client::exception::UTFDataFormatException("Bits::readUTF8Char",
                                                                         "Malformed byte sequence U+d800 to U+dfff"); //U+d800 to U+dfff
                     }
@@ -72,7 +72,7 @@ namespace hazelcast {
                     if ((b & 0xC0) != 0x80) { // n bytes matching 10bbbbbb follow ?
                         throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
                     }
-                    utfBuffer.push_back((char) b);
+                    utf_buffer.push_back((char) b);
                 }
             }
 

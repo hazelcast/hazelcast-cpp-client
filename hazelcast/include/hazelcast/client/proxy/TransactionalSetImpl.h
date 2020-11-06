@@ -29,7 +29,7 @@ namespace hazelcast {
                 boost::future<int> size();
 
             public:
-                TransactionalSetImpl(const std::string& name, txn::TransactionProxy &transactionProxy);
+                TransactionalSetImpl(const std::string& name, txn::TransactionProxy &transaction_proxy);
 
                 boost::future<bool> add_data(const serialization::pimpl::Data& e);
 

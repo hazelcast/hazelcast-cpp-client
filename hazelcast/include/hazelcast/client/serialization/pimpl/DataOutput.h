@@ -39,7 +39,7 @@ namespace hazelcast {
                 public:
                     static constexpr const size_t DEFAULT_SIZE = 4 * 1024;
 
-                    DataOutput(bool dontWrite = false);
+                    DataOutput(bool dont_write = false);
 
                     /**
                      *
@@ -57,18 +57,18 @@ namespace hazelcast {
                         outputStream_.insert(outputStream_.end(), bytes.begin(), bytes.end());
                     }
 
-                    inline void write_zero_bytes(size_t numberOfBytes) {
-                        outputStream_.insert(outputStream_.end(), numberOfBytes, 0);
+                    inline void write_zero_bytes(size_t number_of_bytes) {
+                        outputStream_.insert(outputStream_.end(), number_of_bytes, 0);
                     }
 
                     inline size_t position() {
                         return outputStream_.size();
                     }
 
-                    inline void position(size_t newPos) {
+                    inline void position(size_t new_pos) {
                         if (isNoWrite_) { return; }
-                        if (outputStream_.size() < newPos) {
-                            outputStream_.resize(newPos, 0);
+                        if (outputStream_.size() < new_pos) {
+                            outputStream_.resize(new_pos, 0);
                         }
                     }
 
@@ -132,7 +132,7 @@ namespace hazelcast {
                     bool isNoWrite_;
                     std::vector<byte> outputStream_;
 
-                    void inline check_available(int index, int requestedLength) {
+                    void inline check_available(int index, int requested_length) {
                         if (index < 0) {
                             BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
                                                                                       (boost::format("Negative pos! -> %1%") % index).str()));
@@ -140,9 +140,9 @@ namespace hazelcast {
 
                         size_t available = outputStream_.size() - index;
 
-                        if (requestedLength > (int) available) {
+                        if (requested_length > (int) available) {
                             BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
-                                                                                      (boost::format("Cannot write %1% bytes!") % requestedLength).str()));
+                                                                                      (boost::format("Cannot write %1% bytes!") % requested_length).str()));
                         }
                     }
 

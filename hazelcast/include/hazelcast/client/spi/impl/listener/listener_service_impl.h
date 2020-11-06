@@ -53,7 +53,7 @@ namespace hazelcast {
                             : public connection::ConnectionListener,
                               public std::enable_shared_from_this<listener_service_impl> {
                     public:
-                        listener_service_impl(ClientContext &clientContext, int32_t eventThreadCount);
+                        listener_service_impl(ClientContext &client_context, int32_t event_thread_count);
 
                         virtual ~listener_service_impl();
 
@@ -62,10 +62,10 @@ namespace hazelcast {
                         void shutdown();
 
                         boost::future<boost::uuids::uuid>
-                        register_listener(std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
+                        register_listener(std::shared_ptr<ListenerMessageCodec> listener_message_codec,
                                          std::shared_ptr<client::impl::BaseEventHandler> handler);
 
-                        boost::future<bool> deregister_listener(boost::uuids::uuid registrationId);
+                        boost::future<bool> deregister_listener(boost::uuids::uuid registration_id);
 
                         void handle_client_message(const std::shared_ptr<ClientInvocation> invocation,
                                                  const std::shared_ptr<protocol::ClientMessage> response);
@@ -95,10 +95,10 @@ namespace hazelcast {
                         remove_event_handler(int64_t call_id, const std::shared_ptr<connection::Connection> &connection);
 
                         boost::uuids::uuid
-                        register_listener_internal(std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
+                        register_listener_internal(std::shared_ptr<ListenerMessageCodec> listener_message_codec,
                                                  std::shared_ptr<client::impl::BaseEventHandler> handler);
 
-                        bool deregister_listener_internal(boost::uuids::uuid userRegistrationId);
+                        bool deregister_listener_internal(boost::uuids::uuid user_registration_id);
 
                         void
                         connection_added_internal(const std::shared_ptr<connection::Connection> &connection);

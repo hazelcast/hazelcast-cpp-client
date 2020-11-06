@@ -43,7 +43,7 @@ namespace hazelcast {
                     void shutdown();
 
                     bool invoke_on_partition_owner(const std::shared_ptr<ClientInvocation> &invocation,
-                                                int partitionId);
+                                                int partition_id);
 
                     bool invoke(std::shared_ptr<ClientInvocation> invocation);
 
@@ -75,8 +75,8 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseProcessor {
                     public:
                         ResponseProcessor(logger &lg,
-                                          ClientInvocationServiceImpl &invocationService,
-                                          ClientContext &clientContext);
+                                          ClientInvocationServiceImpl &invocation_service,
+                                          ClientContext &client_context);
 
                         virtual ~ResponseProcessor();
 
@@ -98,15 +98,15 @@ namespace hazelcast {
 
                     class BackupListenerMessageCodec : public ListenerMessageCodec {
                     public:
-                        protocol::ClientMessage encode_add_request(bool localOnly) const override;
+                        protocol::ClientMessage encode_add_request(bool local_only) const override;
 
                         protocol::ClientMessage
-                        encode_remove_request(boost::uuids::uuid realRegistrationId) const override;
+                        encode_remove_request(boost::uuids::uuid real_registration_id) const override;
                     };
 
                     class noop_backup_event_handler : public protocol::codec::client_localbackuplistener_handler {
                     public:
-                        void handle_backup(int64_t sourceInvocationCorrelationId) override;
+                        void handle_backup(int64_t source_invocation_correlation_id) override;
                     };
 
                     ClientContext &client_;
@@ -121,7 +121,7 @@ namespace hazelcast {
                     std::chrono::milliseconds backup_timeout_;
 
                     static void write_to_connection(connection::Connection &connection,
-                                           const std::shared_ptr<ClientInvocation> &clientInvocation);
+                                           const std::shared_ptr<ClientInvocation> &client_invocation);
 
                     bool send(const std::shared_ptr<impl::ClientInvocation>& invocation,
                               const std::shared_ptr<connection::Connection>& connection);

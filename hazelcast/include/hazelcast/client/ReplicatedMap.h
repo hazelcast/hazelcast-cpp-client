@@ -254,55 +254,55 @@ namespace hazelcast {
                 return to_object<V>(remove_data(to_data(key)));
             }
         private:
-            ReplicatedMap(const std::string &objectName, spi::ClientContext *context) : proxy::ReplicatedMapImpl(
-                    SERVICE_NAME, objectName, context) {
+            ReplicatedMap(const std::string &object_name, spi::ClientContext *context) : proxy::ReplicatedMapImpl(
+                    SERVICE_NAME, object_name, context) {
             }
 
             template<typename HANDLER>
             class EntryEventHandler : public HANDLER {
             public:
-                EntryEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
-                                  serialization::pimpl::SerializationService &serializationService,
+                EntryEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                                  serialization::pimpl::SerializationService &serialization_service,
                                   EntryListener &&listener, logger &lg)
-                        : instanceName_(instanceName), clusterService_(clusterService), serializationService_(serializationService)
+                        : instanceName_(instance_name), clusterService_(cluster_service), serializationService_(serialization_service)
                         , listener_(std::move(listener)), logger_(lg) {}
 
                 void handle_entry(const boost::optional<Data> &key, const boost::optional<Data> &value,
-                                  const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
-                                  int32_t eventType, boost::uuids::uuid uuid,
-                                  int32_t numberOfAffectedEntries) override {
-                    if (eventType == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
-                        fire_map_wide_event(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                                  const boost::optional<Data> &old_value, const boost::optional<Data> &merging_value,
+                                  int32_t event_type, boost::uuids::uuid uuid,
+                                  int32_t number_of_affected_entries) override {
+                    if (event_type == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
+                        fire_map_wide_event(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
 
-                    fire_entry_event(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                    fire_entry_event(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                 }
 
             private:
                 void fire_map_wide_event(const boost::optional<Data> &key, const boost::optional<Data> &value,
-                                      const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
-                                      int32_t eventType, boost::uuids::uuid uuid,
-                                      int32_t numberOfAffectedEntries) {
+                                      const boost::optional<Data> &old_value, const boost::optional<Data> &merging_value,
+                                      int32_t event_type, boost::uuids::uuid uuid,
+                                      int32_t number_of_affected_entries) {
                     auto member = clusterService_.get_member(uuid);
-                    auto mapEventType = static_cast<EntryEvent::type>(eventType);
-                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName_, numberOfAffectedEntries);
+                    auto mapEventType = static_cast<EntryEvent::type>(event_type);
+                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName_, number_of_affected_entries);
                     listener_.map_cleared_(std::move(mapEvent));
                 }
 
                 void fire_entry_event(const boost::optional<Data> &key, const boost::optional<Data> &value,
-                                    const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
-                                    int32_t eventType, boost::uuids::uuid uuid,
-                                    int32_t numberOfAffectedEntries) {
+                                    const boost::optional<Data> &old_value, const boost::optional<Data> &merging_value,
+                                    int32_t event_type, boost::uuids::uuid uuid,
+                                    int32_t number_of_affected_entries) {
                     TypedData eventKey, val, oldVal, mergingVal;
                     if (value) {
                         val = TypedData(std::move(*value), serializationService_);
                     }
-                    if (oldValue) {
-                        oldVal = TypedData(std::move(*oldValue), serializationService_);
+                    if (old_value) {
+                        oldVal = TypedData(std::move(*old_value), serializationService_);
                     }
-                    if (mergingValue) {
-                        mergingVal = TypedData(std::move(*mergingValue), serializationService_);
+                    if (merging_value) {
+                        mergingVal = TypedData(std::move(*merging_value), serializationService_);
                     }
                     if (key) {
                         eventKey = TypedData(std::move(*key), serializationService_);
@@ -311,7 +311,7 @@ namespace hazelcast {
                     if (!member.has_value()) {
                         member = Member(uuid);
                     }
-                    auto type = static_cast<EntryEvent::type>(eventType);
+                    auto type = static_cast<EntryEvent::type>(event_type);
                     EntryEvent entryEvent(instanceName_, std::move(member.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {

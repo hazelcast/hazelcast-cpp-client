@@ -78,8 +78,8 @@ namespace hazelcast {
         public:
             static constexpr const char *SERVICE_NAME = "hz:impl:PNCounterService";
         private:
-            PNCounter(const std::string &objectName, spi::ClientContext *context) : PNCounterImpl(
-                    SERVICE_NAME, objectName, context) {}
+            PNCounter(const std::string &object_name, spi::ClientContext *context) : PNCounterImpl(
+                    SERVICE_NAME, object_name, context) {}
         };
     }
 }

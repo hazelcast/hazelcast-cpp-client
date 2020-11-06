@@ -152,8 +152,8 @@ namespace hazelcast {
              * @return the sequenceId of the added item, or -1 if the add failed.
              */
             template<typename E>
-            boost::future<int64_t> add(const E &item, ringbuffer::OverflowPolicy overflowPolicy) {
-                return addData(to_data(item), overflowPolicy);
+            boost::future<int64_t> add(const E &item, ringbuffer::OverflowPolicy overflow_policy) {
+                return addData(to_data(item), overflow_policy);
             }
 
             /**
@@ -183,8 +183,8 @@ namespace hazelcast {
              */
             template<typename E>
             boost::future<int64_t>
-            add_all(const std::vector<E> &items, ringbuffer::OverflowPolicy overflowPolicy) { 
-                return add_all_data(to_data_collection(items), overflowPolicy);
+            add_all(const std::vector<E> &items, ringbuffer::OverflowPolicy overflow_policy) { 
+                return add_all_data(to_data_collection(items), overflow_policy);
             }
 
             /**
@@ -228,9 +228,9 @@ namespace hazelcast {
              */
             template<typename IFUNCTION>
             boost::future<ringbuffer::ReadResultSet>
-            read_many(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter = nullptr) {
+            read_many(int64_t start_sequence, int32_t min_count, int32_t max_count, const IFUNCTION *filter = nullptr) {
                 auto filterData = to_data<IFUNCTION>(filter);
-                return read_many_data(startSequence, minCount, maxCount, &filterData).then([=] (boost::future<protocol::ClientMessage> f) {
+                return read_many_data(start_sequence, min_count, max_count, &filterData).then([=] (boost::future<protocol::ClientMessage> f) {
                     return get_result_set(std::move(f));
                 });
             }
@@ -251,14 +251,14 @@ namespace hazelcast {
             }
 
             boost::future<ringbuffer::ReadResultSet>
-            read_many(int64_t startSequence, int32_t minCount, int32_t maxCount) {
-                return read_many_data(startSequence, minCount, maxCount, nullptr).then([=] (boost::future<protocol::ClientMessage> f) {
+            read_many(int64_t start_sequence, int32_t min_count, int32_t max_count) {
+                return read_many_data(start_sequence, min_count, max_count, nullptr).then([=] (boost::future<protocol::ClientMessage> f) {
                     return get_result_set(std::move(f));
                 });
             }
 
         private:
-            Ringbuffer(const std::string &objectName, spi::ClientContext *context) : RingbufferImpl(objectName,
+            Ringbuffer(const std::string &object_name, spi::ClientContext *context) : RingbufferImpl(object_name,
                                                                                                     context) {}
         };
     }

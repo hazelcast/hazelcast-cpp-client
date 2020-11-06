@@ -49,8 +49,8 @@ namespace hazelcast {
                     ClientContext &client_;
 
                     std::exception_ptr
-                    new_operation_timeout_exception(std::exception_ptr cause, std::chrono::milliseconds invocationTimeout,
-                                                 std::chrono::steady_clock::time_point startTime);
+                    new_operation_timeout_exception(std::exception_ptr cause, std::chrono::milliseconds invocation_timeout,
+                                                 std::chrono::steady_clock::time_point start_time);
 
                     void throw_exception(bool smart_routing);
                 };

@@ -72,36 +72,36 @@ namespace hazelcast {
                 public:
                     virtual ~ClientInvocation();
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    std::shared_ptr<protocol::ClientMessage> &&clientMessage,
-                                                                    const std::string &objectName, int partitionId);
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    std::shared_ptr<protocol::ClientMessage> &&client_message,
+                                                                    const std::string &object_name, int partition_id);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    std::shared_ptr<protocol::ClientMessage> &&clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    std::shared_ptr<protocol::ClientMessage> &&client_message,
+                                                                    const std::string &object_name,
                                                                     const std::shared_ptr<connection::Connection> &connection = nullptr);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    std::shared_ptr<protocol::ClientMessage> &&clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    std::shared_ptr<protocol::ClientMessage> &&client_message,
+                                                                    const std::string &object_name,
                                                                     boost::uuids::uuid uuid);
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    protocol::ClientMessage &clientMessage,
-                                                                    const std::string &objectName, int partitionId);
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    protocol::ClientMessage &client_message,
+                                                                    const std::string &object_name, int partition_id);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    protocol::ClientMessage &clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    protocol::ClientMessage &client_message,
+                                                                    const std::string &object_name,
                                                                     const std::shared_ptr<connection::Connection> &connection = nullptr);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    protocol::ClientMessage &clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    protocol::ClientMessage &client_message,
+                                                                    const std::string &object_name,
                                                                     boost::uuids::uuid uuid);
 
                     boost::future<protocol::ClientMessage> invoke();
@@ -112,7 +112,7 @@ namespace hazelcast {
 
                     virtual const std::string get_name() const;
 
-                    void notify(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
+                    void notify(const std::shared_ptr<protocol::ClientMessage> &client_message);
 
                     void notify_exception(std::exception_ptr exception);
 
@@ -123,19 +123,19 @@ namespace hazelcast {
                     std::shared_ptr<connection::Connection> get_send_connection_or_wait() const;
 
                     void
-                    set_send_connection(const std::shared_ptr<connection::Connection> &sendConnection);
+                    set_send_connection(const std::shared_ptr<connection::Connection> &send_connection);
 
                     std::shared_ptr<protocol::ClientMessage> get_client_message() const;
 
                     const std::shared_ptr<EventHandler < protocol::ClientMessage> > &get_event_handler() const;
 
-                    void set_event_handler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &eventHandler);
+                    void set_event_handler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &event_handler);
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
                     boost::promise<protocol::ClientMessage> &get_promise();
 
-                    void detect_and_handle_backup_timeout(const std::chrono::milliseconds &backupTimeout);
+                    void detect_and_handle_backup_timeout(const std::chrono::milliseconds &backup_timeout);
                 private:
                     static constexpr int MAX_FAST_INVOCATION_COUNT = 5;
                     static constexpr int UNASSIGNED_PARTITION = -1;
@@ -179,7 +179,7 @@ namespace hazelcast {
                      */
                     std::chrono::steady_clock::time_point pending_response_received_time_;
 
-                    ClientInvocation(spi::ClientContext &clientContext,
+                    ClientInvocation(spi::ClientContext &client_context,
                                      std::shared_ptr<protocol::ClientMessage> &&message,
                                      const std::string &name, int partition = UNASSIGNED_PARTITION,
                                      const std::shared_ptr<connection::Connection> &conn = nullptr,
@@ -202,7 +202,7 @@ namespace hazelcast {
 
                     std::shared_ptr<protocol::ClientMessage> copy_message();
 
-                    void set_exception(const exception::IException &e, boost::exception_ptr exceptionPtr);
+                    void set_exception(const exception::IException &e, boost::exception_ptr exception_ptr);
 
                     void log_exception(exception::IException &e);
 

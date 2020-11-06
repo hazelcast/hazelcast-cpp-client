@@ -63,7 +63,7 @@ namespace hazelcast {
             * @see #getTransactionType()
             * @see #setDurability(int)
             */
-            TransactionOptions& set_transaction_type(TransactionType transactionType);
+            TransactionOptions& set_transaction_type(TransactionType transaction_type);
 
             /**
              *
@@ -100,7 +100,7 @@ namespace hazelcast {
             * @return the updated TransactionOptions.
             * @throws IllegalArgumentException if durability smaller than 0.
             */
-            TransactionOptions& set_durability(int numMachines);
+            TransactionOptions& set_durability(int num_machines);
 
         private:
             std::chrono::milliseconds timeout_;

@@ -48,7 +48,7 @@ namespace hazelcast {
                  * @throws ConfigurationException if ambiguous configurations are found
                  */
                 virtual std::shared_ptr<std::string>
-                matches(const std::vector<std::string> &configPatterns, const std::string &itemName) const = 0;
+                matches(const std::vector<std::string> &config_patterns, const std::string &item_name) const = 0;
             };
         }
     }

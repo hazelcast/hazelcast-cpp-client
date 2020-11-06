@@ -35,7 +35,7 @@ namespace hazelcast {
                 boost::future<int> size();
 
             protected:
-                TransactionalMultiMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy);
+                TransactionalMultiMapImpl(const std::string &name, txn::TransactionProxy &transaction_proxy);
 
                 boost::future<bool>
                 put_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);

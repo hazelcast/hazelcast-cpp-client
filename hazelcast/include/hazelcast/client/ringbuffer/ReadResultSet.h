@@ -34,12 +34,12 @@ namespace hazelcast {
                  */
                 static const int64_t SEQUENCE_UNAVAILABLE = -1;
 
-                ReadResultSet(int32_t readCount, std::vector<serialization::pimpl::Data> &&dataItems,
-                              serialization::pimpl::SerializationService &serializationService,
-                              boost::optional<std::vector<int64_t>> &itemSeqs, int64_t nextSeq)
-                              : itemsReadCount_(readCount), itemSeqs_(std::move(itemSeqs)), nextSeq_(nextSeq) {
-                    for (auto &&item : dataItems) {
-                        items_.emplace_back(item, serializationService);
+                ReadResultSet(int32_t read_count, std::vector<serialization::pimpl::Data> &&data_items,
+                              serialization::pimpl::SerializationService &serialization_service,
+                              boost::optional<std::vector<int64_t>> &item_seqs, int64_t next_seq)
+                              : itemsReadCount_(read_count), itemSeqs_(std::move(item_seqs)), nextSeq_(next_seq) {
+                    for (auto &&item : data_items) {
+                        items_.emplace_back(item, serialization_service);
                     }
                 }
 

@@ -75,7 +75,7 @@ namespace hazelcast {
 
             class HAZELCAST_API TransactionProxy {
             public:
-                TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, std::shared_ptr<connection::Connection> connection);
+                TransactionProxy(TransactionOptions&, spi::ClientContext& client_context, std::shared_ptr<connection::Connection> connection);
 
                 TransactionProxy(const TransactionProxy &rhs);
 

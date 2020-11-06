@@ -54,7 +54,7 @@ namespace hazelcast {
              * @param jsonString The json string
              * @return The HazelcastJsonValue representing the json string.
              */
-            HazelcastJsonValue(std::string jsonString);
+            HazelcastJsonValue(std::string json_string);
 
             virtual ~HazelcastJsonValue();
 

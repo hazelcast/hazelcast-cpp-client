@@ -47,8 +47,8 @@
 
 namespace hazelcast {
     namespace client {
-        Cluster::Cluster(spi::impl::ClientClusterServiceImpl &clusterService)
-                : clusterService_(clusterService) {
+        Cluster::Cluster(spi::impl::ClientClusterServiceImpl &cluster_service)
+                : clusterService_(cluster_service) {
         }
 
         std::vector<Member> Cluster::get_members() {
@@ -59,8 +59,8 @@ namespace hazelcast {
             return clusterService_.add_membership_listener(std::move(listener));
         }
 
-        bool Cluster::remove_membership_listener(boost::uuids::uuid registrationId) {
-            return clusterService_.remove_membership_listener(registrationId);
+        bool Cluster::remove_membership_listener(boost::uuids::uuid registration_id) {
+            return clusterService_.remove_membership_listener(registration_id);
         }
 
         Member::Member() : liteMember_(false) {
@@ -70,7 +70,7 @@ namespace hazelcast {
                 address_(address), uuid_(uuid), liteMember_(lite), attributes_(attr) {
         }
 
-        Member::Member(Address memberAddress) : address_(memberAddress), liteMember_(false) {
+        Member::Member(Address member_address) : address_(member_address), liteMember_(false) {
         }
 
         Member::Member(boost::uuids::uuid uuid) : uuid_(uuid), liteMember_(false) {
@@ -124,8 +124,8 @@ namespace hazelcast {
             return uuid_ < rhs.uuid_;
         }
 
-        Endpoint::Endpoint(boost::uuids::uuid uuid, boost::optional<Address> socketAddress)
-                : uuid_(uuid), socketAddress_(std::move(socketAddress)) {}
+        Endpoint::Endpoint(boost::uuids::uuid uuid, boost::optional<Address> socket_address)
+                : uuid_(uuid), socketAddress_(std::move(socket_address)) {}
 
         boost::uuids::uuid Endpoint::get_uuid() const {
             return uuid_;
@@ -135,9 +135,9 @@ namespace hazelcast {
             return socketAddress_;
         }
 
-        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
-                                         const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &membersList) :
-                cluster_(cluster), member_(member), eventType_(eventType), members_(membersList) {
+        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType event_type,
+                                         const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &members_list) :
+                cluster_(cluster), member_(member), eventType_(event_type), members_(members_list) {
         }
 
         MembershipEvent::~MembershipEvent() = default;
@@ -158,8 +158,8 @@ namespace hazelcast {
             return member_;
         }
 
-        Client::Client(boost::uuids::uuid uuid, boost::optional<Address> socketAddress, std::string name,
-                       std::unordered_set<std::string> labels) : Endpoint(uuid, std::move(socketAddress)), name_(std::move(name)),
+        Client::Client(boost::uuids::uuid uuid, boost::optional<Address> socket_address, std::string name,
+                       std::unordered_set<std::string> labels) : Endpoint(uuid, std::move(socket_address)), name_(std::move(name)),
                                                                  labels_(std::move(labels)) {}
 
         const std::string &Client::get_name() const {
@@ -250,9 +250,9 @@ namespace hazelcast {
             namespace impl {
                 VectorClock::VectorClock() = default;
 
-                VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps)
-                        : replicaTimestampEntries_(replicaLogicalTimestamps) {
-                    for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replicaLogicalTimestamps) {
+                VectorClock::VectorClock(const VectorClock::TimestampVector &replica_logical_timestamps)
+                        : replicaTimestampEntries_(replica_logical_timestamps) {
+                    for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replica_logical_timestamps) {
                         replicaTimestamps_[replicaTimestamp.first] = replicaTimestamp.second;
                     }
                 }
@@ -279,11 +279,11 @@ namespace hazelcast {
                     return anyTimestampGreater || other.replicaTimestamps_.size() < replicaTimestamps_.size();
                 }
 
-                std::pair<bool, int64_t> VectorClock::get_timestamp_for_replica(boost::uuids::uuid replicaId) {
-                    if (replicaTimestamps_.count(replicaId) == 0) {
+                std::pair<bool, int64_t> VectorClock::get_timestamp_for_replica(boost::uuids::uuid replica_id) {
+                    if (replicaTimestamps_.count(replica_id) == 0) {
                         return std::make_pair(false, -1);
                     }
-                    return std::make_pair(true, replicaTimestamps_[replicaId]);
+                    return std::make_pair(true, replicaTimestamps_[replica_id]);
                 }
             }
         }

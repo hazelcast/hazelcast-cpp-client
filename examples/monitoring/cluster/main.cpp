@@ -21,13 +21,13 @@
 
 MembershipListener make_membership_listener() {
     return MembershipListener()
-        .on_joined([](const hazelcast::client::MembershipEvent &membershipEvent) {
+        .on_joined([](const hazelcast::client::MembershipEvent &membership_event) {
             std::cout << "New member joined: "
-                << membershipEvent.get_member().get_address() << std::endl;
+                << membership_event.get_member().get_address() << std::endl;
         })
-        .on_left([](const hazelcast::client::MembershipEvent &membershipEvent) {
+        .on_left([](const hazelcast::client::MembershipEvent &membership_event) {
             std::cout << "Member left: " 
-                << membershipEvent.get_member().get_address() << std::endl;
+                << membership_event.get_member().get_address() << std::endl;
         });
 }
 
@@ -40,13 +40,13 @@ MembershipListener make_initial_membership_listener() {
                 std::cout << member.get_address() << std::endl;
             }
         })
-        .on_joined([](const hazelcast::client::MembershipEvent &membershipEvent) {
+        .on_joined([](const hazelcast::client::MembershipEvent &membership_event) {
             std::cout << "New member joined: " <<
-            membershipEvent.get_member().get_address() << std::endl;
+            membership_event.get_member().get_address() << std::endl;
         })
-        .on_left([](const hazelcast::client::MembershipEvent &membershipEvent) {
+        .on_left([](const hazelcast::client::MembershipEvent &membership_event) {
             std::cout << "Member left: " <<
-            membershipEvent.get_member().get_address() << std::endl;
+            membership_event.get_member().get_address() << std::endl;
         });
 }
 

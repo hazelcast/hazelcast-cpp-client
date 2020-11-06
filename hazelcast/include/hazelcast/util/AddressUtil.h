@@ -27,7 +27,7 @@ namespace hazelcast {
         public:
             static AddressHolder get_address_holder(const std::string &address);
 
-            static AddressHolder get_address_holder(const std::string &address, int defaultPort);
+            static AddressHolder get_address_holder(const std::string &address, int default_port);
 
             static boost::asio::ip::address get_by_name(const std::string &host);
 

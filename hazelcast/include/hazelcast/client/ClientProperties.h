@@ -39,7 +39,7 @@ namespace hazelcast {
         */
         class HAZELCAST_API ClientProperty {
         public:
-            ClientProperty(const std::string &name, const std::string &defaultValue);
+            ClientProperty(const std::string &name, const std::string &default_value);
 
             const std::string &get_name() const;
 

@@ -37,36 +37,36 @@ namespace hazelcast {
             template<typename BaseType>
             class EntryEventHandler : public BaseType {
             public:
-                EntryEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
-                                  serialization::pimpl::SerializationService &serializationService,
-                                  EntryListener &&listener, bool includeValue, logger &lg)
-                : instanceName_(instanceName), clusterService_(clusterService), serializationService_(serializationService)
-                , listener_(std::move(listener)), includeValue_(includeValue), logger_(lg) {}
+                EntryEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                                  serialization::pimpl::SerializationService &serialization_service,
+                                  EntryListener &&listener, bool include_value, logger &lg)
+                : instanceName_(instance_name), clusterService_(cluster_service), serializationService_(serialization_service)
+                , listener_(std::move(listener)), includeValue_(include_value), logger_(lg) {}
 
                 void handle_entry(const boost::optional<serialization::pimpl::Data> &key,
                                   const boost::optional<serialization::pimpl::Data> &value,
-                                  const boost::optional<serialization::pimpl::Data> &oldValue,
-                                  const boost::optional<serialization::pimpl::Data> &mergingValue,
-                                  int32_t eventType, boost::uuids::uuid uuid,
-                                  int32_t numberOfAffectedEntries) override {
-                    if (eventType == static_cast<int32_t>(EntryEvent::type::EVICT_ALL) || eventType == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
-                        fire_map_wide_event(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                                  const boost::optional<serialization::pimpl::Data> &old_value,
+                                  const boost::optional<serialization::pimpl::Data> &merging_value,
+                                  int32_t event_type, boost::uuids::uuid uuid,
+                                  int32_t number_of_affected_entries) override {
+                    if (event_type == static_cast<int32_t>(EntryEvent::type::EVICT_ALL) || event_type == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
+                        fire_map_wide_event(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
 
-                    fire_entry_event(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                    fire_entry_event(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                 }
 
             private:
                 void fire_map_wide_event(const boost::optional<serialization::pimpl::Data> &key,
                                       const boost::optional<serialization::pimpl::Data> &value,
-                                      const boost::optional<serialization::pimpl::Data> &oldValue,
-                                      const boost::optional<serialization::pimpl::Data> &mergingValue,
-                                      int32_t eventType, boost::uuids::uuid uuid,
-                                      int32_t numberOfAffectedEntries) {
+                                      const boost::optional<serialization::pimpl::Data> &old_value,
+                                      const boost::optional<serialization::pimpl::Data> &merging_value,
+                                      int32_t event_type, boost::uuids::uuid uuid,
+                                      int32_t number_of_affected_entries) {
                     auto member = clusterService_.get_member(uuid);
-                    auto mapEventType = static_cast<EntryEvent::type>(eventType);
-                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName_, numberOfAffectedEntries);
+                    auto mapEventType = static_cast<EntryEvent::type>(event_type);
+                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName_, number_of_affected_entries);
 
                     if (mapEventType == EntryEvent::type::CLEAR_ALL) {
                         listener_.map_cleared_(std::move(mapEvent));
@@ -77,20 +77,20 @@ namespace hazelcast {
 
                 void fire_entry_event(const boost::optional<serialization::pimpl::Data> &key,
                                     const boost::optional<serialization::pimpl::Data> &value,
-                                    const boost::optional<serialization::pimpl::Data> &oldValue,
-                                    const boost::optional<serialization::pimpl::Data> &mergingValue,
-                                    int32_t eventType, boost::uuids::uuid uuid,
-                                    int32_t numberOfAffectedEntries) {
+                                    const boost::optional<serialization::pimpl::Data> &old_value,
+                                    const boost::optional<serialization::pimpl::Data> &merging_value,
+                                    int32_t event_type, boost::uuids::uuid uuid,
+                                    int32_t number_of_affected_entries) {
                     TypedData eventKey, val, oldVal, mergingVal;
                     if (includeValue_) {
                         if (value) {
                             val = TypedData(*value, serializationService_);
                         }
-                        if (oldValue) {
-                            oldVal = TypedData(*oldValue, serializationService_);
+                        if (old_value) {
+                            oldVal = TypedData(*old_value, serializationService_);
                         }
-                        if (mergingValue) {
-                            mergingVal = TypedData(*mergingValue, serializationService_);
+                        if (merging_value) {
+                            mergingVal = TypedData(*merging_value, serializationService_);
                         }
                     }
                     if (key) {
@@ -100,7 +100,7 @@ namespace hazelcast {
                     if (!member.has_value()) {
                         member = Member(uuid);
                     }
-                    auto type = static_cast<EntryEvent::type>(eventType);
+                    auto type = static_cast<EntryEvent::type>(event_type);
                     EntryEvent entryEvent(instanceName_, std::move(member.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {

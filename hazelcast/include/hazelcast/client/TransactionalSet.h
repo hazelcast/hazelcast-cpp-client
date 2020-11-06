@@ -46,8 +46,8 @@ namespace hazelcast {
             }
 
         private:
-            TransactionalSet(const std::string &name, txn::TransactionProxy &transactionProxy)
-                    : TransactionalSetImpl(name, transactionProxy) {}
+            TransactionalSet(const std::string &name, txn::TransactionProxy &transaction_proxy)
+                    : TransactionalSetImpl(name, transaction_proxy) {}
         };
     }
 }

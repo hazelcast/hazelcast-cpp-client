@@ -232,21 +232,21 @@ namespace hazelcast {
                     const Container &buffer_;
                     int pos_;
 
-                    void inline check_available(size_t requestedLength) {
+                    void inline check_available(size_t requested_length) {
                         size_t available = buffer_.size() - pos_;
-                        if (requestedLength > available) {
+                        if (requested_length > available) {
                             BOOST_THROW_EXCEPTION(exception::IOException("DataInput::checkAvailable", (boost::format(
                                     "Not enough bytes in internal buffer. Available:%1% bytes but needed %2% bytes") %
                                                                                                        available %
-                                                                                                       requestedLength).str()));
+                                                                                                       requested_length).str()));
                         }
                     }
 
-                    inline std::string read_utf(int charCount) {
+                    inline std::string read_utf(int char_count) {
                         std::string result;
-                        result.reserve((size_t) MAX_UTF_CHAR_SIZE * charCount);
+                        result.reserve((size_t) MAX_UTF_CHAR_SIZE * char_count);
                         byte b;
-                        for (int i = 0; i < charCount; ++i) {
+                        for (int i = 0; i < char_count; ++i) {
                             b = read<byte>();
                             util::UTFUtil::read_ut_f8_char(*this, b, result);
                         }

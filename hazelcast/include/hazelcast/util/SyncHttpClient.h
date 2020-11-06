@@ -30,7 +30,7 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API SyncHttpClient {
         public:
-            SyncHttpClient(const std::string &serverIp, const std::string &uriPath);
+            SyncHttpClient(const std::string &server_ip, const std::string &uri_path);
 
             std::istream &open_connection();
         private:

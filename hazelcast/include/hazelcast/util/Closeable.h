@@ -24,7 +24,7 @@ namespace hazelcast {
         public:
             virtual ~Closeable();
 
-            virtual void close(const std::string &closeReason) = 0;
+            virtual void close(const std::string &close_reason) = 0;
         };
     }
 }

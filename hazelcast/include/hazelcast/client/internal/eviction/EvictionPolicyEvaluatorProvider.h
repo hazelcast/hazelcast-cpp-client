@@ -49,11 +49,11 @@ namespace hazelcast {
                      */
                     template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
                     static std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> > get_eviction_policy_evaluator(
-                            const client::config::EvictionConfig &evictionConfig) {
+                            const client::config::EvictionConfig &eviction_config) {
 
                         std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
 
-                        EvictionPolicyType evictionPolicyType = evictionConfig.get_eviction_policy_type();
+                        EvictionPolicyType evictionPolicyType = eviction_config.get_eviction_policy_type();
                         evictionPolicyComparator = create_eviction_policy_comparator<MAPKEY, MAPVALUE>(evictionPolicyType);
 
                         return std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> >(
@@ -64,8 +64,8 @@ namespace hazelcast {
                 private:
                     template<typename A, typename E>
                     static std::shared_ptr<EvictionPolicyComparator<A, E> > create_eviction_policy_comparator(
-                            EvictionPolicyType evictionPolicyType) {
-                        switch (evictionPolicyType) {
+                            EvictionPolicyType eviction_policy_type) {
+                        switch (eviction_policy_type) {
                             case LRU:
                                 return std::shared_ptr<EvictionPolicyComparator<A, E> >(
                                         new impl::comparator::LRUEvictionPolicyComparator<A, E>());
@@ -79,7 +79,7 @@ namespace hazelcast {
                                 return std::shared_ptr<EvictionPolicyComparator<A, E> >();
                             default:
                                 std::ostringstream out;
-                                out << "Unsupported eviction policy type: " << (int) evictionPolicyType;
+                                out << "Unsupported eviction policy type: " << (int) eviction_policy_type;
                                 BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
                         }
                     }

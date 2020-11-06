@@ -76,15 +76,15 @@ namespace hazelcast {
             protected:
                 spi::impl::sequence::CallIdSequenceWithoutBackpressure sequence_;
 
-                void next(bool isUrgent) {
+                void next(bool is_urgent) {
                     int64_t oldSequence = sequence_.get_last_call_id();
-                    int64_t result = next_call_id(sequence_, isUrgent);
+                    int64_t result = next_call_id(sequence_, is_urgent);
                     ASSERT_EQ(oldSequence + 1, result);
                     ASSERT_EQ(oldSequence + 1, sequence_.get_last_call_id());
                 }
 
-                int64_t next_call_id(spi::impl::sequence::CallIdSequence &seq, bool isUrgent) {
-                    return isUrgent ? seq.force_next() : seq.next();
+                int64_t next_call_id(spi::impl::sequence::CallIdSequence &seq, bool is_urgent) {
+                    return is_urgent ? seq.force_next() : seq.next();
                 }
             };
 
@@ -127,10 +127,10 @@ namespace hazelcast {
                 class ThreeSecondDelayCompleteOperation {
                 public:
                     ThreeSecondDelayCompleteOperation(spi::impl::sequence::CallIdSequenceWithBackpressure &sequence,
-                                                      boost::latch &nextCalledLatch) : sequence_(
+                                                      boost::latch &next_called_latch) : sequence_(
                             sequence),
                                                                                        nextCalledLatch_(
-                                                                                               nextCalledLatch) {}
+                                                                                               next_called_latch) {}
 
                     virtual const std::string get_name() const {
                         return "ThreeSecondDelayCompleteOperation";
@@ -148,8 +148,8 @@ namespace hazelcast {
                     boost::latch &nextCalledLatch_;
                 };
 
-                int64_t next_call_id(spi::impl::sequence::CallIdSequence &seq, bool isUrgent) {
-                    return isUrgent ? seq.force_next() : seq.next();
+                int64_t next_call_id(spi::impl::sequence::CallIdSequence &seq, bool is_urgent) {
+                    return is_urgent ? seq.force_next() : seq.next();
                 }
             };
 
@@ -293,17 +293,17 @@ namespace hazelcast {
             extern HazelcastServerFactory *g_srvFactory;
             extern std::shared_ptr<RemoteControllerClient> remoteController;
 
-            HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
+            HazelcastServerFactory::HazelcastServerFactory(const std::string &server_xml_config_file_path)
                     : HazelcastServerFactory::HazelcastServerFactory(g_srvFactory->get_server_address(),
-                                                                     serverXmlConfigFilePath) {
+                                                                     server_xml_config_file_path) {
             }
 
-            HazelcastServerFactory::HazelcastServerFactory(const std::string &serverAddress,
-                                                           const std::string &serverXmlConfigFilePath)
+            HazelcastServerFactory::HazelcastServerFactory(const std::string &server_address,
+                                                           const std::string &server_xml_config_file_path)
                     : logger_(std::make_shared<logger>("HazelcastServerFactory", "HazelcastServerFactory",
                                                        logger::level::info, logger::default_handler)),
-                      serverAddress_(serverAddress) {
-                std::string xmlConfig = read_from_xml_file(serverXmlConfigFilePath);
+                      serverAddress_(server_address) {
+                std::string xmlConfig = read_from_xml_file(server_xml_config_file_path);
 
                 remote::Cluster cluster;
                 remoteController->createClusterKeepClusterName(cluster, HAZELCAST_VERSION, xmlConfig);
@@ -333,11 +333,11 @@ namespace hazelcast {
                 return serverAddress_;
             }
 
-            std::string HazelcastServerFactory::read_from_xml_file(const std::string &xmlFilePath) {
-                std::ifstream xmlFile(xmlFilePath.c_str());
+            std::string HazelcastServerFactory::read_from_xml_file(const std::string &xml_file_path) {
+                std::ifstream xmlFile(xml_file_path.c_str());
                 if (!xmlFile) {
                     std::ostringstream out;
-                    out << "Failed to read from xml file to at " << xmlFilePath;
+                    out << "Failed to read from xml file to at " << xml_file_path;
                     BOOST_THROW_EXCEPTION(
                             exception::IllegalStateException("HazelcastServerFactory::readFromXmlFile", out.str()));
                 }
@@ -638,8 +638,8 @@ namespace hazelcast {
             public:
                 PartitionAwareInt() : partitionKey_(0), actualKey_(0) {}
 
-                PartitionAwareInt(int partitionKey, int actualKey)
-                        : partitionKey_(partitionKey), actualKey_(actualKey) {}
+                PartitionAwareInt(int partition_key, int actual_key)
+                        : partitionKey_(partition_key), actualKey_(actual_key) {}
 
                 const int *get_partition_key() const override {
                     return &partitionKey_;
@@ -823,29 +823,29 @@ namespace hazelcast {
                     latch1->count_down();
                 }
 
-                EntryListener make_countdown_listener(boost::latch &addLatch,
-                                                    boost::latch &removeLatch,
-                                                    boost::latch &updateLatch,
-                                                    boost::latch &expiryLatch,
-                                                    boost::latch *evictLatch = nullptr) {
+                EntryListener make_countdown_listener(boost::latch &add_latch,
+                                                    boost::latch &remove_latch,
+                                                    boost::latch &update_latch,
+                                                    boost::latch &expiry_latch,
+                                                    boost::latch *evict_latch = nullptr) {
                     return EntryListener().
-                        on_added([&addLatch](EntryEvent &&) {
-                            addLatch.count_down();
+                        on_added([&add_latch](EntryEvent &&) {
+                            add_latch.count_down();
                         }).
-                        on_removed([&removeLatch](EntryEvent &&) {
-                            removeLatch.count_down();
+                        on_removed([&remove_latch](EntryEvent &&) {
+                            remove_latch.count_down();
                         }).
-                        on_updated([&updateLatch](EntryEvent &&) {
-                            updateLatch.count_down();
+                        on_updated([&update_latch](EntryEvent &&) {
+                            update_latch.count_down();
                         }).
-                        on_expired([&expiryLatch](EntryEvent &&) {
-                            expiryLatch.count_down();
+                        on_expired([&expiry_latch](EntryEvent &&) {
+                            expiry_latch.count_down();
                         }).
-                        on_evicted([evictLatch](EntryEvent &&) {
-                            if (!evictLatch) {
+                        on_evicted([evict_latch](EntryEvent &&) {
+                            if (!evict_latch) {
                                 return;
                             }
-                            evictLatch->count_down();
+                            evict_latch->count_down();
                         });
                 }
 

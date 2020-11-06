@@ -50,8 +50,8 @@ namespace hazelcast {
                 IException();
 
                 // TODO: Remove isRuntime and retryable and use the derived class concept as in Java
-                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           const std::string &details, int32_t errorNo, std::exception_ptr cause, bool isRuntime,
+                IException(const std::string &exception_name, const std::string &source, const std::string &message,
+                           const std::string &details, int32_t error_no, std::exception_ptr cause, bool is_runtime,
                            bool retryable);
 
                 ~IException() noexcept override;

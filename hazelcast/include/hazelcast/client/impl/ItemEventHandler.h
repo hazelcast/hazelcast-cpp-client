@@ -28,20 +28,20 @@ namespace hazelcast {
             template<typename BaseType>
             class ItemEventHandler : public BaseType {
             public:
-                ItemEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
-                                 serialization::pimpl::SerializationService &serializationService,
-                                 ItemListener &&listener, bool includeValue)
-                        : instanceName_(instanceName), clusterService_(clusterService),
-                          serializationService_(serializationService), listener_(std::move(listener)), includeValue_(includeValue) {};
+                ItemEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                                 serialization::pimpl::SerializationService &serialization_service,
+                                 ItemListener &&listener, bool include_value)
+                        : instanceName_(instance_name), clusterService_(cluster_service),
+                          serializationService_(serialization_service), listener_(std::move(listener)), includeValue_(include_value) {};
 
                 void handle_item(const boost::optional<serialization::pimpl::Data> &item, boost::uuids::uuid uuid,
-                                        int32_t eventType) override {
+                                        int32_t event_type) override {
                     TypedData val;
                     if (includeValue_) {
                         val = TypedData(std::move(*item), serializationService_);
                     }
                     auto member = clusterService_.get_member(uuid);
-                    ItemEventType type(static_cast<ItemEventType>(eventType));
+                    ItemEventType type(static_cast<ItemEventType>(event_type));
                     ItemEvent itemEvent(instanceName_, type, std::move(val), std::move(member).value());
                     if (type == ItemEventType::ADDED) {
                         listener_.added_(std::move(itemEvent));

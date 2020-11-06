@@ -55,9 +55,9 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
+            TransactionProxy::TransactionProxy(TransactionOptions &txn_options, spi::ClientContext &client_context,
                                                std::shared_ptr<connection::Connection> connection)
-                    : options_(txnOptions), clientContext_(clientContext), connection_(connection),
+                    : options_(txn_options), clientContext_(client_context), connection_(connection),
                       threadId_(util::get_current_thread_id()), state_(TxnState::NO_TXN) {}
 
             TransactionProxy::TransactionProxy(const TransactionProxy &rhs) : options_(rhs.options_),
@@ -242,12 +242,12 @@ namespace hazelcast {
 
             boost::future<protocol::ClientMessage>
             ClientTransactionUtil::invoke(protocol::ClientMessage &request,
-                                          const std::string &objectName,
+                                          const std::string &object_name,
                                           spi::ClientContext &client,
                                           const std::shared_ptr<connection::Connection> &connection) {
                 try {
                     std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
-                            client, request, objectName, connection);
+                            client, request, object_name, connection);
                     return clientInvocation->invoke();
                 } catch (exception::IException &) {
                     transaction_exception_factory()->rethrow(std::current_exception(),
@@ -275,8 +275,8 @@ namespace hazelcast {
         }
 
         namespace proxy {
-            TransactionalMapImpl::TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy)
-                    : TransactionalObject(IMap::SERVICE_NAME, name, transactionProxy) {}
+            TransactionalMapImpl::TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transaction_proxy)
+                    : TransactionalObject(IMap::SERVICE_NAME, name, transaction_proxy) {}
 
             boost::future<bool> TransactionalMapImpl::contains_key_data(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmap_containskey_encode(
@@ -349,10 +349,10 @@ namespace hazelcast {
             }
 
             boost::future<bool> TransactionalMapImpl::replace_data(const serialization::pimpl::Data &key,
-                                               const serialization::pimpl::Data &oldValue,
-                                               const serialization::pimpl::Data &newValue) {
+                                               const serialization::pimpl::Data &old_value,
+                                               const serialization::pimpl::Data &new_value) {
                 auto request = protocol::codec::transactionalmap_replaceifsame_encode(
-                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, oldValue, newValue);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, old_value, new_value);
 
                 return invoke_and_get_future<bool>(
                         request);
@@ -418,8 +418,8 @@ namespace hazelcast {
             }
 
             TransactionalMultiMapImpl::TransactionalMultiMapImpl(const std::string &name,
-                                                                 txn::TransactionProxy &transactionProxy)
-                    : TransactionalObject(MultiMap::SERVICE_NAME, name, transactionProxy) {}
+                                                                 txn::TransactionProxy &transaction_proxy)
+                    : TransactionalObject(MultiMap::SERVICE_NAME, name, transaction_proxy) {}
 
             boost::future<bool> TransactionalMultiMapImpl::put_data(const serialization::pimpl::Data &key,
                                                 const serialization::pimpl::Data &value) {
@@ -473,8 +473,8 @@ namespace hazelcast {
                         request);
             }
 
-            TransactionalListImpl::TransactionalListImpl(const std::string &objectName, txn::TransactionProxy &context)
-                    : TransactionalObject(IList::SERVICE_NAME, objectName, context) {}
+            TransactionalListImpl::TransactionalListImpl(const std::string &object_name, txn::TransactionProxy &context)
+                    : TransactionalObject(IList::SERVICE_NAME, object_name, context) {}
 
             boost::future<bool> TransactionalListImpl::add(const serialization::pimpl::Data &e) {
                 auto request = protocol::codec::transactionallist_add_encode(
@@ -500,8 +500,8 @@ namespace hazelcast {
                         request);
             }
 
-            TransactionalSetImpl::TransactionalSetImpl(const std::string &name, txn::TransactionProxy &transactionProxy)
-                    : TransactionalObject(ISet::SERVICE_NAME, name, transactionProxy) {}
+            TransactionalSetImpl::TransactionalSetImpl(const std::string &name, txn::TransactionProxy &transaction_proxy)
+                    : TransactionalObject(ISet::SERVICE_NAME, name, transaction_proxy) {}
 
             boost::future<bool> TransactionalSetImpl::add_data(const serialization::pimpl::Data &e) {
                 auto request = protocol::codec::transactionalset_add_encode(
@@ -525,10 +525,10 @@ namespace hazelcast {
                 return invoke_and_get_future<int>(request);
             }
             
-            TransactionalObject::TransactionalObject(const std::string &serviceName, const std::string &objectName,
+            TransactionalObject::TransactionalObject(const std::string &service_name, const std::string &object_name,
                                                      txn::TransactionProxy &context)
-                    : proxy::SerializingProxy(context.get_client_context(), objectName), serviceName_(serviceName),
-                      name_(objectName), context_(context) {}
+                    : proxy::SerializingProxy(context.get_client_context(), object_name), serviceName_(service_name),
+                      name_(object_name), context_(context) {}
 
             TransactionalObject::~TransactionalObject() = default;
 
@@ -557,12 +557,12 @@ namespace hazelcast {
             }
         }
 
-        TransactionContext::TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transactionManager,
-                                               const TransactionOptions &txnOptions) : options_(txnOptions),
+        TransactionContext::TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transaction_manager,
+                                               const TransactionOptions &txn_options) : options_(txn_options),
                                                                                        txnConnection_(
-                                                                                               transactionManager.connect()),
+                                                                                               transaction_manager.connect()),
                                                                                        transaction_(options_,
-                                                                                                   transactionManager.get_client(),
+                                                                                                   transaction_manager.get_client(),
                                                                                                    txnConnection_) {
         }
 
@@ -611,12 +611,12 @@ namespace hazelcast {
             return durability_;
         }
 
-        TransactionOptions &TransactionOptions::set_durability(int numMachines) {
-            if (numMachines < 0) {
+        TransactionOptions &TransactionOptions::set_durability(int num_machines) {
+            if (num_machines < 0) {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setDurability",
                                                                        "Durability cannot be negative!"));
             }
-            this->durability_ = numMachines;
+            this->durability_ = num_machines;
             return *this;
         }
     }

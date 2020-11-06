@@ -31,14 +31,14 @@ namespace hazelcast {
             namespace impl {
                 class TopicEventHandlerImpl : public protocol::codec::topic_addmessagelistener_handler {
                 public:
-                    TopicEventHandlerImpl(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
-                                          serialization::pimpl::SerializationService &serializationService,
-                                          Listener &&messageListener)
-                            :instanceName_(instanceName), clusterService_(clusterService),
-                            serializationService_(serializationService), listener_(std::move(messageListener)) {}
+                    TopicEventHandlerImpl(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                                          serialization::pimpl::SerializationService &serialization_service,
+                                          Listener &&message_listener)
+                            :instanceName_(instance_name), clusterService_(cluster_service),
+                            serializationService_(serialization_service), listener_(std::move(message_listener)) {}
 
-                    void handle_topic(Data const & item, int64_t publishTime, boost::uuids::uuid uuid) override {
-                        listener_.received_(Message(instanceName_, TypedData(std::move(item), serializationService_), publishTime,
+                    void handle_topic(Data const & item, int64_t publish_time, boost::uuids::uuid uuid) override {
+                        listener_.received_(Message(instanceName_, TypedData(std::move(item), serializationService_), publish_time,
                                         clusterService_.get_member(uuid)));
                     }
                 private:

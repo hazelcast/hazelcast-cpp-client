@@ -49,13 +49,13 @@ namespace hazelcast {
                         class AbstractNearCacheRecordStore
                                 : public NearCacheRecordStore<KS, V>, public eviction::EvictionListener<KS, R> {
                         public:
-                            AbstractNearCacheRecordStore(const client::config::NearCacheConfig &cacheConfig,
+                            AbstractNearCacheRecordStore(const client::config::NearCacheConfig &cache_config,
                                                          serialization::pimpl::SerializationService &ss)
-                                    : nearCacheConfig_(cacheConfig),
-                                      timeToLiveMillis_(cacheConfig.get_time_to_live_seconds() * MILLI_SECONDS_IN_A_SECOND),
-                                      maxIdleMillis_(cacheConfig.get_max_idle_seconds() * MILLI_SECONDS_IN_A_SECOND),
+                                    : nearCacheConfig_(cache_config),
+                                      timeToLiveMillis_(cache_config.get_time_to_live_seconds() * MILLI_SECONDS_IN_A_SECOND),
+                                      maxIdleMillis_(cache_config.get_max_idle_seconds() * MILLI_SECONDS_IN_A_SECOND),
                                       serializationService_(ss), nearCacheStats_(new monitor::impl::NearCacheStatsImpl) {
-                                auto &evictionConfig = const_cast<client::config::NearCacheConfig &>(cacheConfig).get_eviction_config();
+                                auto &evictionConfig = const_cast<client::config::NearCacheConfig &>(cache_config).get_eviction_config();
                                 evictionPolicyType_ = evictionConfig.get_eviction_policy_type();
                             }
 
@@ -86,8 +86,8 @@ namespace hazelcast {
                             }
 
                             void on_evict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
-                                                 bool wasExpired) override {
-                                if (wasExpired) {
+                                                 bool was_expired) override {
+                                if (was_expired) {
                                     nearCacheStats_->increment_expirations();
                                 } else {
                                     nearCacheStats_->increment_evictions();
@@ -202,7 +202,7 @@ namespace hazelcast {
                             }
                         protected:
                             virtual std::unique_ptr<eviction::MaxSizeChecker> create_near_cache_max_size_checker(
-                                    const client::config::EvictionConfig &evictionConfig,
+                                    const client::config::EvictionConfig &eviction_config,
                                     const client::config::NearCacheConfig &) {
                                 assert(0);
                                 return std::unique_ptr<eviction::MaxSizeChecker>();
@@ -269,19 +269,19 @@ namespace hazelcast {
                             }
 
                             std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > create_eviction_policy_evaluator(
-                                    const client::config::EvictionConfig &evictionConfig) {
+                                    const client::config::EvictionConfig &eviction_config) {
                                 return eviction::EvictionPolicyEvaluatorProvider::get_eviction_policy_evaluator<K, V, KS, R>(
-                                        evictionConfig);
+                                        eviction_config);
                             }
 
                             std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > create_eviction_strategy(
-                                    const client::config::EvictionConfig &evictionConfig) {
+                                    const client::config::EvictionConfig &eviction_config) {
                                 return eviction::EvictionStrategyProvider<K, V, KS, R, NCRM>::get_eviction_strategy(
-                                        evictionConfig);
+                                        eviction_config);
                             }
 
                             std::unique_ptr<eviction::EvictionChecker> create_eviction_checker(
-                                    const client::config::NearCacheConfig &cacheConfig) {
+                                    const client::config::NearCacheConfig &cache_config) {
                                 return std::unique_ptr<eviction::EvictionChecker>(
                                         new MaxSizeEvictionChecker(maxSizeChecker_.get()));
                             }
@@ -387,7 +387,7 @@ namespace hazelcast {
                             }
 
                             void on_put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
-                                       const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord) {
+                                       const std::shared_ptr<R> &record, const std::shared_ptr<R> &old_record) {
                             }
 
 /*
@@ -398,7 +398,7 @@ namespace hazelcast {
 */
 
                             void on_put_error(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
-                                            const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord,
+                                            const std::shared_ptr<R> &record, const std::shared_ptr<R> &old_record,
                                             const exception::IException &error) {
                             }
 
@@ -459,8 +459,8 @@ namespace hazelcast {
                             class MaxSizeEvictionChecker : public eviction::EvictionChecker {
                             public:
 
-                                MaxSizeEvictionChecker(const eviction::MaxSizeChecker *maxSizeChecker) : maxSizeChecker_(
-                                        maxSizeChecker) { }
+                                MaxSizeEvictionChecker(const eviction::MaxSizeChecker *max_size_checker) : maxSizeChecker_(
+                                        max_size_checker) { }
 
                                 bool is_eviction_required() const override {
                                     return maxSizeChecker_ != NULL && maxSizeChecker_->is_reached_to_max_size();

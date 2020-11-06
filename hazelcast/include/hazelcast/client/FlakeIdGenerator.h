@@ -55,7 +55,7 @@ namespace hazelcast {
             static constexpr const char *SERVICE_NAME = "hz:impl:flakeIdGeneratorService";
 
         private:
-            FlakeIdGenerator(const std::string &objectName, spi::ClientContext *context);
+            FlakeIdGenerator(const std::string &object_name, spi::ClientContext *context);
         };
     }
 }

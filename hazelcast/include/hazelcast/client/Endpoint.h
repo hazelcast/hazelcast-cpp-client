@@ -33,7 +33,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API Endpoint {
         public:
-            Endpoint(boost::uuids::uuid uuid, boost::optional<Address> socketAddress);
+            Endpoint(boost::uuids::uuid uuid, boost::optional<Address> socket_address);
 
             /**
              * Returns the UUID of this endpoint

@@ -55,7 +55,7 @@ namespace hazelcast {
              * @param itemToBeRemoved The item to be removed from the queue
              * @return number of items removed from the queue
              */
-            int remove_all(const T *itemToBeRemoved) {
+            int remove_all(const T *item_to_be_removed) {
                 std::lock_guard<std::mutex> lg(m_);
                 int numErased = 0;
                 bool isFound;
@@ -63,7 +63,7 @@ namespace hazelcast {
                     isFound = false;
                     for (typename std::deque<T *>::iterator it = internalQueue_.begin();it != internalQueue_.end(); ++it) {
                         T *e = *it;
-                        if (itemToBeRemoved == e) {
+                        if (item_to_be_removed == e) {
                             internalQueue_.erase(it);
                             isFound = true;
                             ++numErased;

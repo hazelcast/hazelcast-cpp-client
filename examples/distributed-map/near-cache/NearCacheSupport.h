@@ -44,12 +44,12 @@ public:
     }
 
     static void
-    wait_for_near_cache_eviction_count(std::shared_ptr<hazelcast::client::IMap> &map, int64_t expectedEvictionCount) {
+    wait_for_near_cache_eviction_count(std::shared_ptr<hazelcast::client::IMap> &map, int64_t expected_eviction_count) {
         int64_t evictionCount;
         do {
             auto stats = map->get_local_map_stats().get_near_cache_stats();
             evictionCount = stats->get_evictions();
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        } while (evictionCount > expectedEvictionCount);
+        } while (evictionCount > expected_eviction_count);
     }
 };

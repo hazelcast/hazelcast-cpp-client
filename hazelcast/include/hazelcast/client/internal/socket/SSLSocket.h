@@ -42,9 +42,9 @@ namespace hazelcast {
                         std::string description;
                     };
 
-                    SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &context,
-                              const client::Address &address, client::config::SocketOptions &socketOptions,
-                              std::chrono::milliseconds &connectTimeoutInMillis,
+                    SSLSocket(boost::asio::io_context &io_service, boost::asio::ssl::context &context,
+                              const client::Address &address, client::config::SocketOptions &socket_options,
+                              std::chrono::milliseconds &connect_timeout_in_millis,
                               boost::asio::ip::tcp::resolver &resolver);
 
                     /**

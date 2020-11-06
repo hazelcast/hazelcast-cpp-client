@@ -55,8 +55,8 @@ namespace hazelcast {
                 replace_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 boost::future<bool>
-                replace_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &oldValue,
-                            const serialization::pimpl::Data &newValue);
+                replace_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &old_value,
+                            const serialization::pimpl::Data &new_value);
 
                 boost::future<boost::optional<serialization::pimpl::Data>>remove_data(const serialization::pimpl::Data &key);
 
@@ -75,7 +75,7 @@ namespace hazelcast {
                 boost::future<std::vector<serialization::pimpl::Data>>
                 values_data(const serialization::pimpl::Data &predicate);
 
-                TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy);
+                TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transaction_proxy);
             };
         }
     }

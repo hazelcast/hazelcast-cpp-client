@@ -88,8 +88,8 @@ namespace hazelcast {
                     : public ConnectionListenable, public std::enable_shared_from_this<ClientConnectionManagerImpl> {
             public:
                 ClientConnectionManagerImpl(spi::ClientContext &client,
-                                            const std::shared_ptr<AddressTranslator> &addressTranslator,
-                                            const std::vector<std::shared_ptr<AddressProvider> > &addressProviders);
+                                            const std::shared_ptr<AddressTranslator> &address_translator,
+                                            const std::vector<std::shared_ptr<AddressProvider> > &address_providers);
 
                 virtual ~ClientConnectionManagerImpl();
 
@@ -112,7 +112,7 @@ namespace hazelcast {
 
                 void on_connection_close(Connection &connection, std::exception_ptr ptr);
 
-                void add_connection_listener(const std::shared_ptr<ConnectionListener> &connectionListener) ;
+                void add_connection_listener(const std::shared_ptr<ConnectionListener> &connection_listener) ;
 
                 logger &get_logger();
 
@@ -156,18 +156,18 @@ namespace hazelcast {
                 void connect_to_all_members();
 
                 static void
-                shutdown_with_external_thread(const std::weak_ptr<client::impl::HazelcastClientInstanceImpl>& clientImpl);
+                shutdown_with_external_thread(const std::weak_ptr<client::impl::HazelcastClientInstanceImpl>& client_impl);
 
                 bool do_connect_to_cluster();
 
                 std::vector<Address> get_possible_member_addresses();
 
                 template<typename Container>
-                void shuffle(Container &memberAddresses) const {
-                    if (memberAddresses.empty()) {
+                void shuffle(Container &member_addresses) const {
+                    if (member_addresses.empty()) {
                         return;
                     }
-                    std::random_shuffle(memberAddresses.begin(), memberAddresses.end());
+                    std::random_shuffle(member_addresses.begin(), member_addresses.end());
                 }
 
                 void check_client_active();

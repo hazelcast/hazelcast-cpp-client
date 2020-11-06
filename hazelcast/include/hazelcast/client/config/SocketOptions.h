@@ -54,7 +54,7 @@ namespace hazelcast {
                  *
                  * @param tcpNoDelay
                  */
-                SocketOptions &set_tcp_no_delay(bool tcpNoDelay);
+                SocketOptions &set_tcp_no_delay(bool tcp_no_delay);
 
                 /**
                  * SO_KEEPALIVE socket option
@@ -69,7 +69,7 @@ namespace hazelcast {
                  * @param keepAlive enabled if true
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_keep_alive(bool keepAlive);
+                SocketOptions &set_keep_alive(bool keep_alive);
 
                 /**
                  * SO_REUSEADDR socket option.
@@ -84,7 +84,7 @@ namespace hazelcast {
                  * @param reuseAddress enabled if true
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_reuse_address(bool reuseAddress);
+                SocketOptions &set_reuse_address(bool reuse_address);
 
                 /**
                  * Gets SO_LINGER with the specified linger time in seconds
@@ -102,7 +102,7 @@ namespace hazelcast {
                  * @param lingerSeconds value in seconds
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_linger_seconds(int lingerSeconds);
+                SocketOptions &set_linger_seconds(int linger_seconds);
 
                 /**
                  * If set to 0 or less, then it is not set on the socket.
@@ -124,7 +124,7 @@ namespace hazelcast {
                  * @param bufferSize Number of bytes
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_buffer_size_in_bytes(int bufferSize);
+                SocketOptions &set_buffer_size_in_bytes(int buffer_size);
 
             private:
                 // socket options

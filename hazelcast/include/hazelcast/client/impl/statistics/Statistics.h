@@ -43,7 +43,7 @@ namespace hazelcast {
             namespace statistics {
                 class Statistics {
                 public:
-                    explicit Statistics(spi::ClientContext &clientContext);
+                    explicit Statistics(spi::ClientContext &client_context);
 
                     /**
                      * Registers all client statistics and schedules periodic collection of stats.
@@ -73,10 +73,10 @@ namespace hazelcast {
                         }
 
                         template<typename T>
-                        void add_stat(std::ostringstream &stats, const std::string &keyPrefix, const std::string &name,
+                        void add_stat(std::ostringstream &stats, const std::string &key_prefix, const std::string &name,
                                      const T &value) {
                             stats << STAT_SEPARATOR;
-                            stats << keyPrefix;
+                            stats << key_prefix;
                             stats << name << KEY_VALUE_SEPARATOR << value;
                         }
 
@@ -88,11 +88,11 @@ namespace hazelcast {
                         Statistics &statistics_;
                     };
 
-                    void schedule_periodic_statistics_send_task(int64_t periodSeconds);
+                    void schedule_periodic_statistics_send_task(int64_t period_seconds);
 
                     std::shared_ptr<connection::Connection> get_connection();
 
-                    void send_stats(int64_t timestamp, const std::string &newStats,
+                    void send_stats(int64_t timestamp, const std::string &new_stats,
                                    const std::shared_ptr<connection::Connection> &connection);
 
                     static std::string escape_special_characters(const std::string &name);

@@ -75,13 +75,13 @@
 namespace hazelcast {
     namespace util {
 
-        AddressHolder AddressUtil::get_address_holder(const std::string &address, int defaultPort) {
+        AddressHolder AddressUtil::get_address_holder(const std::string &address, int default_port) {
             int indexBracketStart = static_cast<int>(address.find('['));
             int indexBracketEnd = static_cast<int>(address.find(']', indexBracketStart));
             int indexColon = static_cast<int>(address.find(':'));
             int lastIndexColon = static_cast<int>(address.rfind(':'));
             std::string host;
-            int port = defaultPort;
+            int port = default_port;
             std::string scopeId;
             if (indexColon > -1 && lastIndexColon > indexColon) {
                 // IPv6
@@ -134,8 +134,8 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        SyncHttpsClient::SyncHttpsClient(const std::string &serverIp, const std::string &uriPath) : server_(serverIp),
-                                                                                                    uriPath_(uriPath),
+        SyncHttpsClient::SyncHttpsClient(const std::string &server_ip, const std::string &uri_path) : server_(server_ip),
+                                                                                                    uriPath_(uri_path),
 #ifdef HZ_BUILD_WITH_SSL
                                                                                                     sslContext_(
                                                                                                             boost::asio::ssl::context::sslv23),
@@ -370,10 +370,10 @@ namespace hazelcast {
                     std::chrono::system_clock::now().time_since_epoch()).count();
         }
 
-        int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
+        int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msg_prefix) {
             int numChars = 0;
-            if ((const char *) NULL != msgPrefix) {
-                numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msgPrefix);
+            if ((const char *) NULL != msg_prefix) {
+                numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msg_prefix);
                 if (numChars < 0) {
                     return numChars;
                 }
@@ -475,8 +475,8 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        SyncHttpClient::SyncHttpClient(const std::string &serverIp, const std::string &uriPath)
-                : server_(serverIp), uriPath_(uriPath), socket_(ioService_), responseStream_(&response_) {
+        SyncHttpClient::SyncHttpClient(const std::string &server_ip, const std::string &uri_path)
+                : server_(server_ip), uriPath_(uri_path), socket_(ioService_), responseStream_(&response_) {
         }
 
         std::istream &SyncHttpClient::open_connection() {
@@ -556,10 +556,10 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        void IOUtil::close_resource(Closeable *closable, const char *closeReason) {
+        void IOUtil::close_resource(Closeable *closable, const char *close_reason) {
             if (closable != NULL) {
                 try {
-                    closable->close(closeReason);
+                    closable->close(close_reason);
                 } catch (client::exception::IException &) {
                     // suppress
                 }
@@ -597,19 +597,19 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         namespace concurrent {
-            BackoffIdleStrategy::BackoffIdleStrategy(int64_t maxSpins, int64_t maxYields, int64_t minParkPeriodNs,
-                                                     int64_t maxParkPeriodNs) {
-                Preconditions::check_not_negative(maxSpins, "maxSpins must be positive or zero");
-                Preconditions::check_not_negative(maxYields, "maxYields must be positive or zero");
-                Preconditions::check_not_negative(minParkPeriodNs, "minParkPeriodNs must be positive or zero");
-                Preconditions::check_not_negative(maxParkPeriodNs - minParkPeriodNs,
+            BackoffIdleStrategy::BackoffIdleStrategy(int64_t max_spins, int64_t max_yields, int64_t min_park_period_ns,
+                                                     int64_t max_park_period_ns) {
+                Preconditions::check_not_negative(max_spins, "maxSpins must be positive or zero");
+                Preconditions::check_not_negative(max_yields, "maxYields must be positive or zero");
+                Preconditions::check_not_negative(min_park_period_ns, "minParkPeriodNs must be positive or zero");
+                Preconditions::check_not_negative(max_park_period_ns - min_park_period_ns,
                                                 "maxParkPeriodNs must be greater than or equal to minParkPeriodNs");
-                this->yieldThreshold_ = maxSpins;
-                this->parkThreshold_ = maxSpins + maxYields;
-                this->minParkPeriodNs_ = minParkPeriodNs;
-                this->maxParkPeriodNs_ = maxParkPeriodNs;
-                this->maxShift_ = Int64Util::number_of_leading_zeros(minParkPeriodNs) -
-                                 Int64Util::number_of_leading_zeros(maxParkPeriodNs);
+                this->yieldThreshold_ = max_spins;
+                this->parkThreshold_ = max_spins + max_yields;
+                this->minParkPeriodNs_ = min_park_period_ns;
+                this->maxParkPeriodNs_ = max_park_period_ns;
+                this->maxShift_ = Int64Util::number_of_leading_zeros(min_park_period_ns) -
+                                 Int64Util::number_of_leading_zeros(max_park_period_ns);
 
             }
 
@@ -641,15 +641,15 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         const std::string &Preconditions::check_has_text(const std::string &argument,
-                                                       const std::string &errorMessage) {
+                                                       const std::string &error_message) {
             if (argument.empty()) {
-                throw client::exception::IllegalArgumentException("", errorMessage);
+                throw client::exception::IllegalArgumentException("", error_message);
             }
 
             return argument;
         }
 
-        void Preconditions::check_ssl(const std::string &sourceMethod) {
+        void Preconditions::check_ssl(const std::string &source_method) {
 #ifndef HZ_BUILD_WITH_SSL
             throw client::exception::InvalidConfigurationException(sourceMethod, "You should compile with "
                     "HZ_BUILD_WITH_SSL flag. You should also have the openssl installed on your machine and you need "
@@ -657,9 +657,9 @@ namespace hazelcast {
 #endif
         }
 
-        void Preconditions::check_true(bool expression, const std::string &errorMessage) {
+        void Preconditions::check_true(bool expression, const std::string &error_message) {
             if (!expression) {
-                throw client::exception::IllegalArgumentException(errorMessage);
+                throw client::exception::IllegalArgumentException(error_message);
             }
         }
     }
@@ -685,15 +685,15 @@ namespace hazelcast {
         }
 
         std::vector<client::Address>
-        AddressHelper::get_possible_socket_addresses(int port, const std::string &scopedAddress, int portTryCount,
+        AddressHelper::get_possible_socket_addresses(int port, const std::string &scoped_address, int port_try_count,
                                                   logger &lg) {
             std::unique_ptr<boost::asio::ip::address> inetAddress;
             try {
-                inetAddress.reset(new boost::asio::ip::address(AddressUtil::get_by_name(scopedAddress)));
+                inetAddress.reset(new boost::asio::ip::address(AddressUtil::get_by_name(scoped_address)));
             } catch (client::exception::UnknownHostException &ignored) {
                 HZ_LOG(lg, finest,
                     boost::str(boost::format("Address %1% ip number is not available %2%")
-                                             % scopedAddress % ignored.what())
+                                             % scoped_address % ignored.what())
                 );
             }
 
@@ -704,23 +704,23 @@ namespace hazelcast {
             std::vector<client::Address> addresses;
 
             if (!inetAddress.get()) {
-                for (int i = 0; i < portTryCount; i++) {
+                for (int i = 0; i < port_try_count; i++) {
                     try {
-                        addresses.push_back(client::Address(scopedAddress, possiblePort + i));
+                        addresses.push_back(client::Address(scoped_address, possiblePort + i));
                     } catch (client::exception::UnknownHostException &ignored) {
                         HZ_LOG(lg, finest,
                             boost::str(boost::format("Address [%1%] ip number is not available. %2%")
-                                                     % scopedAddress % ignored.what())
+                                                     % scoped_address % ignored.what())
                         );
                     }
                 }
             } else if (inetAddress->is_v4() || inetAddress->is_v6()) {
-                for (int i = 0; i < portTryCount; i++) {
+                for (int i = 0; i < port_try_count; i++) {
                     if (inetAddress->is_v4()) {
-                        addresses.push_back(client::Address(scopedAddress, possiblePort + i));
+                        addresses.push_back(client::Address(scoped_address, possiblePort + i));
                     } else {
                         addresses.push_back(
-                                client::Address(scopedAddress, possiblePort + i, inetAddress->to_v6().scope_id()));
+                                client::Address(scoped_address, possiblePort + i, inetAddress->to_v6().scope_id()));
                     }
                 }
             }
@@ -729,8 +729,8 @@ namespace hazelcast {
             return addresses;
         }
 
-        AddressHolder::AddressHolder(const std::string &address, const std::string &scopeId, int port) : address_(
-                address), scopeId_(scopeId), port_(port) {}
+        AddressHolder::AddressHolder(const std::string &address, const std::string &scope_id, int port) : address_(
+                address), scopeId_(scope_id), port_(port) {}
 
         std::ostream &operator<<(std::ostream &os, const AddressHolder &holder) {
             os << "AddressHolder [" << holder.address_ + "]:" << holder.port_;
@@ -922,7 +922,7 @@ namespace hazelcast {
         }
 
         void ExceptionUtil::rethrow(std::exception_ptr e,
-                                    const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &runtimeExceptionFactory) {
+                                    const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &runtime_exception_factory) {
             try {
                 std::rethrow_exception(e);
             } catch (client::exception::IException &ie) {
@@ -935,11 +935,11 @@ namespace hazelcast {
                     try {
                         std::rethrow_if_nested(std::current_exception());
                     } catch (...) {
-                        rethrow(std::current_exception(), runtimeExceptionFactory);
+                        rethrow(std::current_exception(), runtime_exception_factory);
                     }
                 }
 
-                runtimeExceptionFactory->rethrow(e, "");
+                runtime_exception_factory->rethrow(e, "");
             }
         }
 
@@ -1052,7 +1052,7 @@ namespace hazelcast {
             pos_ += t;
         }
 
-        hz_thread_pool::hz_thread_pool(size_t numThreads) : pool_(new boost::asio::thread_pool(numThreads)) {}
+        hz_thread_pool::hz_thread_pool(size_t num_threads) : pool_(new boost::asio::thread_pool(num_threads)) {}
 
         void hz_thread_pool::shutdown_gracefully() {
             pool_->join();

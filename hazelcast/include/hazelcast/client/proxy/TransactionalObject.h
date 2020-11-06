@@ -32,7 +32,7 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API TransactionalObject : public proxy::SerializingProxy {
             public:
-                TransactionalObject(const std::string &serviceName, const std::string &objectName,
+                TransactionalObject(const std::string &service_name, const std::string &object_name,
                                     txn::TransactionProxy &context);
 
                 virtual ~TransactionalObject();

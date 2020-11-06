@@ -40,17 +40,17 @@ namespace hazelcast {
                     class InvalidationAwareWrapper : public internal::nearcache::NearCache<K, V> {
                     public:
                         static std::shared_ptr<internal::nearcache::NearCache<K, V> > as_invalidation_aware(
-                                std::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache,
-                                int markerCount) {
+                                std::shared_ptr<internal::nearcache::NearCache<K, V> > near_cache,
+                                int marker_count) {
                             return std::shared_ptr<internal::nearcache::NearCache<K, V> >(
-                                    new InvalidationAwareWrapper<K, V>(nearCache, markerCount));
+                                    new InvalidationAwareWrapper<K, V>(near_cache, marker_count));
                         }
 
                         InvalidationAwareWrapper(
                                 std::shared_ptr<internal::nearcache::NearCache<K, V> > cache,
-                                int partitionCount)
+                                int partition_count)
                                 : nearCache_(cache),
-                                  keyStateMarker_(new internal::nearcache::impl::KeyStateMarkerImpl(partitionCount)) {
+                                  keyStateMarker_(new internal::nearcache::impl::KeyStateMarkerImpl(partition_count)) {
                         }
 
                         ~InvalidationAwareWrapper() override = default;

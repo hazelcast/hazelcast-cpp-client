@@ -55,9 +55,9 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> remove_entry_listener(boost::uuids::uuid registrationId);
+                boost::future<bool> remove_entry_listener(boost::uuids::uuid registration_id);
             protected:
-                MultiMapImpl(const std::string& instanceName, spi::ClientContext *context);
+                MultiMapImpl(const std::string& instance_name, spi::ClientContext *context);
 
                 boost::future<bool> put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
@@ -82,15 +82,15 @@ namespace hazelcast {
                 boost::future<int> value_count(const serialization::pimpl::Data& key);
 
                 boost::future<boost::uuids::uuid>
-                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entryEventHandler, bool includeValue);
+                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, bool include_value);
 
                 boost::future<boost::uuids::uuid>
-                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entryEventHandler, bool includeValue,
+                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, bool include_value,
                                  Data &&key);
 
                 boost::future<void> lock(const serialization::pimpl::Data& key);
 
-                boost::future<void> lock(const serialization::pimpl::Data& key, std::chrono::milliseconds leaseTime);
+                boost::future<void> lock(const serialization::pimpl::Data& key, std::chrono::milliseconds lease_time);
 
                 boost::future<bool> is_locked(const serialization::pimpl::Data& key);
 
@@ -100,7 +100,7 @@ namespace hazelcast {
 
                 boost::future<bool>
                 try_lock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout,
-                        std::chrono::milliseconds leaseTime);
+                        std::chrono::milliseconds lease_time);
 
                 boost::future<void> unlock(const serialization::pimpl::Data& key);
 
@@ -110,11 +110,11 @@ namespace hazelcast {
             private:
                 class MultiMapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    MultiMapEntryListenerMessageCodec(std::string name, bool includeValue);
+                    MultiMapEntryListenerMessageCodec(std::string name, bool include_value);
 
-                    protocol::ClientMessage encode_add_request(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool local_only) const override;
 
-                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid realRegistrationId) const override;
+                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid real_registration_id) const override;
                 private:
                     std::string name_;
                     bool includeValue_;
@@ -122,12 +122,12 @@ namespace hazelcast {
 
                 class MultiMapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    MultiMapEntryListenerToKeyCodec(std::string name, bool includeValue,
+                    MultiMapEntryListenerToKeyCodec(std::string name, bool include_value,
                                                     serialization::pimpl::Data &&key);
 
-                    protocol::ClientMessage encode_add_request(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool local_only) const override;
 
-                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid realRegistrationId) const override;
+                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid real_registration_id) const override;
                 private:
                     std::string  name_;
                     bool includeValue_;
@@ -136,10 +136,10 @@ namespace hazelcast {
 
                 std::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator_;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> create_multi_map_entry_listener_codec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> create_multi_map_entry_listener_codec(bool include_value);
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec>
-                create_multi_map_entry_listener_codec(bool includeValue, serialization::pimpl::Data &&key);
+                create_multi_map_entry_listener_codec(bool include_value, serialization::pimpl::Data &&key);
             };
         }
     }

@@ -44,13 +44,13 @@ namespace hazelcast {
             namespace socket {
                 class HAZELCAST_API SocketFactory {
                 public:
-                    SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io,
+                    SocketFactory(spi::ClientContext &client_context, boost::asio::io_context &io,
                             boost::asio::ip::tcp::resolver &resolver);
 
                     bool start();
 
                     std::unique_ptr<Socket>
-                    create(const Address &address, std::chrono::milliseconds &connectTimeoutInMillis);
+                    create(const Address &address, std::chrono::milliseconds &connect_timeout_in_millis);
 
                 private:
                     spi::ClientContext &clientContext_;

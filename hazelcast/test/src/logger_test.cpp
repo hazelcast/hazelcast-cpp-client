@@ -152,7 +152,7 @@ TEST(log_macro_test, test_log_when_enabled) {
         logger::level level;
         std::string msg;
 
-        bool enabled(logger::level level) {
+        bool enabled(logger::level) {
             return true;
         }
         void log(const char* file_name, int line, logger::level level, const std::string &msg) {

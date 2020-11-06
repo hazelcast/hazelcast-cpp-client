@@ -174,12 +174,12 @@ namespace hazelcast {
             *                     contain the value.
             * @return returns registration id.
             */
-            boost::future<boost::uuids::uuid> add_entry_listener(EntryListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_entry_listener(EntryListener &&listener, bool include_value) {
                 return proxy::MultiMapImpl::add_entry_listener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::multimap_addentrylistener_handler>(
                                         get_name(), get_context().get_client_cluster_service(),
-                                        get_context().get_serialization_service(), std::move(listener), includeValue, get_context().get_logger())), includeValue);
+                                        get_context().get_serialization_service(), std::move(listener), include_value, get_context().get_logger())), include_value);
             }
 
             /**
@@ -199,12 +199,12 @@ namespace hazelcast {
             * @return returns registration id.
             */
             template<typename K>
-            boost::future<boost::uuids::uuid> add_entry_listener(EntryListener &&listener, const K &key, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_entry_listener(EntryListener &&listener, const K &key, bool include_value) {
                 return proxy::MultiMapImpl::add_entry_listener(
                         std::shared_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::multimap_addentrylistenertokey_handler>(
                                         get_name(), get_context().get_client_cluster_service(),
-                                        get_context().get_serialization_service(), std::move(listener), includeValue, get_context().get_logger())), includeValue,
+                                        get_context().get_serialization_service(), std::move(listener), include_value, get_context().get_logger())), include_value,
                         to_data(key));
             }
 
@@ -245,8 +245,8 @@ namespace hazelcast {
             * @param leaseTime time to wait before releasing the lock.
             */
             template<typename K>
-            boost::future<void> lock(const K &key, std::chrono::milliseconds leaseTime) {
-                return proxy::MultiMapImpl::lock(to_data(key), leaseTime);
+            boost::future<void> lock(const K &key, std::chrono::milliseconds lease_time) {
+                return proxy::MultiMapImpl::lock(to_data(key), lease_time);
             }
 
             /**
@@ -315,8 +315,8 @@ namespace hazelcast {
             *         if the waiting time elapsed before the lock was acquired.
             */
             template <typename K>
-            boost::future<bool> try_lock(const K &key, std::chrono::milliseconds timeout, std::chrono::milliseconds leaseTime) {
-                return proxy::MultiMapImpl::try_lock(to_data(key), timeout, leaseTime);
+            boost::future<bool> try_lock(const K &key, std::chrono::milliseconds timeout, std::chrono::milliseconds lease_time) {
+                return proxy::MultiMapImpl::try_lock(to_data(key), timeout, lease_time);
             }
 
             /**
@@ -342,8 +342,8 @@ namespace hazelcast {
                 return proxy::MultiMapImpl::force_unlock(to_data(key));
             }
         private:
-            MultiMap(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::MultiMapImpl(instanceName, context) {}
+            MultiMap(const std::string &instance_name, spi::ClientContext *context)
+                    : proxy::MultiMapImpl(instance_name, context) {}
         };
     }
 }

@@ -27,7 +27,7 @@ namespace hazelcast {
                 class StartsWithStringFilter {
                     friend serialization::hz_serializer<StartsWithStringFilter>;
                 public:
-                    StartsWithStringFilter(const std::string &startString);
+                    StartsWithStringFilter(const std::string &start_string);
                 private:
                     std::string startString_;
                 };

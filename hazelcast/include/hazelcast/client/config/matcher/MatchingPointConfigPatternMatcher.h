@@ -34,10 +34,10 @@ namespace hazelcast {
                 class HAZELCAST_API MatchingPointConfigPatternMatcher : public ConfigPatternMatcher {
                 public:
                     std::shared_ptr<std::string>
-                    matches(const std::vector<std::string> &configPatterns, const std::string &itemName) const override;
+                    matches(const std::vector<std::string> &config_patterns, const std::string &item_name) const override;
 
                 private:
-                    int get_matching_point(const std::string &pattern, const std::string &itemName) const;
+                    int get_matching_point(const std::string &pattern, const std::string &item_name) const;
                 };
             }
         }

@@ -45,15 +45,15 @@ namespace hazelcast {
             *                     to the item listener, <tt>false</tt> otherwise.
             * @return returns registration id.
             */
-            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool include_value) {
                 std::unique_ptr<impl::ItemEventHandler<protocol::codec::queue_addlistener_handler>> itemEventHandler(
                         new impl::ItemEventHandler<protocol::codec::queue_addlistener_handler>(
                                 get_name(), get_context().get_client_cluster_service(),
                                 get_context().get_serialization_service(),
                                 std::move(listener),
-                                includeValue));
+                                include_value));
 
-                return proxy::IQueueImpl::add_item_listener(std::move(itemEventHandler), includeValue);
+                return proxy::IQueueImpl::add_item_listener(std::move(itemEventHandler), include_value);
             }
 
             /**
@@ -151,8 +151,8 @@ namespace hazelcast {
             * @return number of elements drained.
             */
             template<typename E>
-            boost::future<size_t> drain_to(std::vector<E> &elements, size_t maxElements) {
-                return proxy::IQueueImpl::drain_to_data(maxElements).then(boost::launch::deferred, [&](boost::future<std::vector<serialization::pimpl::Data>> f)  {
+            boost::future<size_t> drain_to(std::vector<E> &elements, size_t max_elements) {
+                return proxy::IQueueImpl::drain_to_data(max_elements).then(boost::launch::deferred, [&](boost::future<std::vector<serialization::pimpl::Data>> f)  {
                     return drain_items(std::move(f), elements);
                 });
             }
@@ -228,7 +228,7 @@ namespace hazelcast {
             }
 
         private:
-            IQueue(const std::string &instanceName, spi::ClientContext *context) : proxy::IQueueImpl(instanceName,
+            IQueue(const std::string &instance_name, spi::ClientContext *context) : proxy::IQueueImpl(instance_name,
                                                                                                      context) {}
 
             template<typename E>

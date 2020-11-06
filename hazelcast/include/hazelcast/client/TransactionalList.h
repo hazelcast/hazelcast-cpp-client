@@ -46,8 +46,8 @@ namespace hazelcast {
             }
 
         private:
-            TransactionalList(const std::string &instanceName, txn::TransactionProxy &context)
-                    : proxy::TransactionalListImpl(instanceName, context) {}
+            TransactionalList(const std::string &instance_name, txn::TransactionProxy &context)
+                    : proxy::TransactionalListImpl(instance_name, context) {}
         };
     }
 }

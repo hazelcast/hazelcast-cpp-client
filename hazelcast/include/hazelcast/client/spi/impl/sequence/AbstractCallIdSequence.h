@@ -46,7 +46,7 @@ namespace hazelcast {
                     public:
                         ~AbstractCallIdSequence() override;
 
-                        AbstractCallIdSequence(int32_t maxConcurrentInvocations);
+                        AbstractCallIdSequence(int32_t max_concurrent_invocations);
 
                         int32_t get_max_concurrent_invocations() const override;
 

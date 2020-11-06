@@ -175,14 +175,14 @@ namespace hazelcast {
                 *
                 * @param lifecycleListener Listener object
                 */
-                boost::uuids::uuid add_lifecycle_listener(LifecycleListener &&lifecycleListener);
+                boost::uuids::uuid add_lifecycle_listener(LifecycleListener &&lifecycle_listener);
 
                 /**
                 * Remove lifecycle listener
                 * @param lifecycleListener
                 * @return true if removed successfully
                 */
-                bool remove_lifecycle_listener(const boost::uuids::uuid &registrationId);
+                bool remove_lifecycle_listener(const boost::uuids::uuid &registration_id);
 
                 /**
                 * Shuts down this HazelcastClient.
@@ -248,7 +248,7 @@ namespace hazelcast {
                 std::shared_ptr<spi::impl::ClientExecutionServiceImpl> init_execution_service();
 
                 std::shared_ptr<connection::ClientConnectionManagerImpl> init_connection_manager_service(
-                        const std::vector<std::shared_ptr<connection::AddressProvider> > &addressProviders);
+                        const std::vector<std::shared_ptr<connection::AddressProvider> > &address_providers);
 
                 std::vector<std::shared_ptr<connection::AddressProvider> > create_address_providers();
 

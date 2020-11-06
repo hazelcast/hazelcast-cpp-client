@@ -73,11 +73,11 @@ namespace hazelcast {
 
                     boost::uuids::uuid add_membership_listener(MembershipListener &&listener);
 
-                    bool remove_membership_listener(boost::uuids::uuid registrationId);
+                    bool remove_membership_listener(boost::uuids::uuid registration_id);
 
                     void clear_member_list_version();
 
-                    void handle_event(int32_t version, const std::vector<Member> &memberInfos);
+                    void handle_event(int32_t version, const std::vector<Member> &member_infos);
 
                     void wait_initial_member_list_fetched() const;
 
@@ -107,7 +107,7 @@ namespace hazelcast {
 
                     static std::string members_string(const member_list_snapshot& snapshot);
 
-                    void apply_initial_state(int32_t version, const std::vector<Member> &memberInfos);
+                    void apply_initial_state(int32_t version, const std::vector<Member> &member_infos);
 
                     std::vector<MembershipEvent>
                     detect_membership_events(std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> previous_members,

@@ -103,8 +103,8 @@ namespace hazelcast {
             * @see IMap#replace(key, value, oldValue)
             */
             template<typename K, typename V, typename N>
-            boost::future<bool> replace(const K &key, const V &oldValue, const N &newValue) {
-                return replace_data(to_data(key), to_data(oldValue), to_data(newValue));
+            boost::future<bool> replace(const K &key, const V &old_value, const N &new_value) {
+                return replace_data(to_data(key), to_data(old_value), to_data(new_value));
             }
 
             /**
@@ -187,8 +187,8 @@ namespace hazelcast {
             }
 
         private:
-            TransactionalMap(const std::string &name, txn::TransactionProxy &transactionProxy)
-                    : proxy::TransactionalMapImpl(name, transactionProxy) {}
+            TransactionalMap(const std::string &name, txn::TransactionProxy &transaction_proxy)
+                    : proxy::TransactionalMapImpl(name, transaction_proxy) {}
         };
     }
 }

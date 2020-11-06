@@ -32,7 +32,7 @@ namespace hazelcast {
 
                 ReliableTopicConfig();
 
-                ReliableTopicConfig(const char *topicName);
+                ReliableTopicConfig(const char *topic_name);
 
                 /**
                  * Gets the name of the reliable topic.
@@ -66,7 +66,7 @@ namespace hazelcast {
                  * @return the updated reliable topic config.
                  * @throws IllegalArgumentException if readBatchSize is smaller than 1.
                  */
-                ReliableTopicConfig &set_read_batch_size(int batchSize);
+                ReliableTopicConfig &set_read_batch_size(int batch_size);
             private:
                 int readBatchSize_;
                 std::string name_;

@@ -64,10 +64,10 @@ namespace hazelcast {
 
             class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {
             public:
-                Connection(const Address &address, spi::ClientContext &clientContext, int32_t connectionId,
-                           internal::socket::SocketFactory &socketFactory,
-                           ClientConnectionManagerImpl &clientConnectionManager,
-                           std::chrono::milliseconds &connectTimeoutInMillis);
+                Connection(const Address &address, spi::ClientContext &client_context, int32_t connection_id,
+                           internal::socket::SocketFactory &socket_factory,
+                           ClientConnectionManagerImpl &client_connection_manager,
+                           std::chrono::milliseconds &connect_timeout_in_millis);
 
                 ~Connection() override;
 
@@ -79,7 +79,7 @@ namespace hazelcast {
 
                 void close(const std::string &reason, std::exception_ptr cause);
 
-                void write(const std::shared_ptr<spi::impl::ClientInvocation> &clientInvocation);
+                void write(const std::shared_ptr<spi::impl::ClientInvocation> &client_invocation);
 
                 const boost::optional<Address> &get_remote_address() const;
 
@@ -87,7 +87,7 @@ namespace hazelcast {
 
                 boost::uuids::uuid get_remote_uuid() const;
 
-                void set_remote_uuid(boost::uuids::uuid remoteUuid);
+                void set_remote_uuid(boost::uuids::uuid remote_uuid);
 
                 void handle_client_message(const std::shared_ptr<protocol::ClientMessage> &message);
 
@@ -107,7 +107,7 @@ namespace hazelcast {
 
                 const std::string &get_connected_server_version_string() const;
 
-                void set_connected_server_version(const std::string &connectedServer);
+                void set_connected_server_version(const std::string &connected_server);
 
                 boost::optional<Address> get_local_socket_address() const;
 
@@ -115,7 +115,7 @@ namespace hazelcast {
 
                 Socket &get_socket();
 
-                void deregister_invocation(int64_t callId);
+                void deregister_invocation(int64_t call_id);
 
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
@@ -142,7 +142,7 @@ namespace hazelcast {
                 std::atomic_bool alive_;
                 std::unique_ptr<boost::asio::steady_timer> backup_timer_;
 
-                void schedule_periodic_backup_cleanup(std::chrono::milliseconds backupTimeout,
+                void schedule_periodic_backup_cleanup(std::chrono::milliseconds backup_timeout,
                                                       std::shared_ptr<Connection> this_connection);
             };
         }

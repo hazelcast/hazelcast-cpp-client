@@ -49,7 +49,7 @@ namespace hazelcast {
                 boost::future<int64_t> new_id();
 
             protected:
-                FlakeIdGeneratorImpl(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context);
+                FlakeIdGeneratorImpl(const std::string &service_name, const std::string &object_name, spi::ClientContext *context);
 
             private:
                 /**
@@ -67,7 +67,7 @@ namespace hazelcast {
                 */
                 class IdBatch {
                 public:
-                    IdBatch(int64_t base, int64_t increment, int32_t batchSize);
+                    IdBatch(int64_t base, int64_t increment, int32_t batch_size);
 
                     /**
                      * Returns the first ID in the set.
@@ -118,7 +118,7 @@ namespace hazelcast {
 
                 class Block {
                 public:
-                    Block(IdBatch &&idBatch, std::chrono::milliseconds validity);
+                    Block(IdBatch &&id_batch, std::chrono::milliseconds validity);
 
                     /**
                      * Returns next ID or INT64_MIN, if there is none.

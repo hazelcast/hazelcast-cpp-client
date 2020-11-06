@@ -42,7 +42,7 @@ namespace hazelcast {
                      */
                     class HAZELCAST_API FailFastCallIdSequence : public AbstractCallIdSequence {
                     public:
-                        FailFastCallIdSequence(int32_t maxConcurrentInvocations);
+                        FailFastCallIdSequence(int32_t max_concurrent_invocations);
 
                     protected:
                         void handle_no_space_left() override;

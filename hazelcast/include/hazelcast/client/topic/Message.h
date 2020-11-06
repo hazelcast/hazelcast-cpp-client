@@ -31,14 +31,14 @@ namespace hazelcast {
         namespace topic {
             class HAZELCAST_API Message {
             public:
-                Message(const std::string &topicName, TypedData &&message, int64_t publishTime,
-                        boost::optional<Member> &&member) : Message(topicName, std::move(message),
-                                std::chrono::system_clock::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(publishTime)).count()),
+                Message(const std::string &topic_name, TypedData &&message, int64_t publish_time,
+                        boost::optional<Member> &&member) : Message(topic_name, std::move(message),
+                                std::chrono::system_clock::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(publish_time)).count()),
                                 std::move(member)) {}
 
-                Message(std::string topicName, TypedData &&message, std::chrono::system_clock::time_point publishTime,
+                Message(std::string topic_name, TypedData &&message, std::chrono::system_clock::time_point publish_time,
                         boost::optional<Member> &&member)
-                        : messageObject_(message), publishTime_(publishTime), publishingMember_(member), name_(std::move(topicName)) {}
+                        : messageObject_(message), publishTime_(publish_time), publishingMember_(member), name_(std::move(topic_name)) {}
 
                 const TypedData &get_message_object() const {
                     return messageObject_;

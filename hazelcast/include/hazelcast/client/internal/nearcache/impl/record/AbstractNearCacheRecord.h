@@ -45,9 +45,9 @@ namespace hazelcast {
                         class AbstractNearCacheRecord : public NearCacheRecord<V> {
                         public:
                             typedef V RECORD_TYPE;
-                            AbstractNearCacheRecord(const std::shared_ptr<V> &v, int64_t createTime,
-                                                    int64_t expiryTime)
-                                    : value_(v), creationTime_(createTime), sequence_(0), expirationTime_(expiryTime),
+                            AbstractNearCacheRecord(const std::shared_ptr<V> &v, int64_t create_time,
+                                                    int64_t expiry_time)
+                                    : value_(v), creationTime_(create_time), sequence_(0), expirationTime_(expiry_time),
                                       accessTime_(NearCacheRecord<V>::TIME_NOT_SET), accessHit_(0) {
                             }
 
@@ -63,8 +63,8 @@ namespace hazelcast {
                                 return creationTime_;
                             }
 
-                            void set_creation_time(int64_t creationTime) override {
-                                AbstractNearCacheRecord::creationTime_ = creationTime;
+                            void set_creation_time(int64_t creation_time) override {
+                                AbstractNearCacheRecord::creationTime_ = creation_time;
                             }
 
                             boost::uuids::uuid get_uuid() const {
@@ -79,24 +79,24 @@ namespace hazelcast {
                                 return expirationTime_;
                             }
 
-                            void set_expiration_time(int64_t expirationTime) override {
-                                AbstractNearCacheRecord::expirationTime_ = expirationTime;
+                            void set_expiration_time(int64_t expiration_time) override {
+                                AbstractNearCacheRecord::expirationTime_ = expiration_time;
                             }
 
                             int64_t get_last_access_time() override {
                                 return accessTime_;
                             }
 
-                            void set_access_time(int64_t accessTime) override {
-                                AbstractNearCacheRecord::accessTime_ = accessTime;
+                            void set_access_time(int64_t access_time) override {
+                                AbstractNearCacheRecord::accessTime_ = access_time;
                             }
 
                             int32_t get_access_hit() override {
                                 return accessHit_;
                             }
 
-                            void set_access_hit(int32_t accessHit) override {
-                                AbstractNearCacheRecord::accessHit_ = accessHit;
+                            void set_access_hit(int32_t access_hit) override {
+                                AbstractNearCacheRecord::accessHit_ = access_hit;
                             }
 
                             bool is_expired_at(int64_t now) const override {
@@ -112,12 +112,12 @@ namespace hazelcast {
                                 accessHit_ = 0;
                             }
 
-                            bool is_idle_at(int64_t maxIdleMilliSeconds, int64_t now) override {
-                                if (maxIdleMilliSeconds > 0) {
+                            bool is_idle_at(int64_t max_idle_milli_seconds, int64_t now) override {
+                                if (max_idle_milli_seconds > 0) {
                                     if (accessTime_ > NearCacheRecord<V>::TIME_NOT_SET) {
-                                        return accessTime_ + maxIdleMilliSeconds < now;
+                                        return accessTime_ + max_idle_milli_seconds < now;
                                     } else {
-                                        return creationTime_ + maxIdleMilliSeconds < now;
+                                        return creationTime_ + max_idle_milli_seconds < now;
                                     }
                                 } else {
                                     return false;
@@ -132,8 +132,8 @@ namespace hazelcast {
                                 this->sequence_ = seq;
                             }
 
-                            bool has_same_uuid(boost::uuids::uuid thatUuid) const override {
-                                return uuid_ == thatUuid;
+                            bool has_same_uuid(boost::uuids::uuid that_uuid) const override {
+                                return uuid_ == that_uuid;
                             }
 
                         protected:

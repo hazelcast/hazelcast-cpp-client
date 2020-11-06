@@ -80,8 +80,8 @@ namespace hazelcast {
             }
 
         private :
-            TransactionalMultiMap(const std::string &name, txn::TransactionProxy &transactionProxy)
-                    : proxy::TransactionalMultiMapImpl(name, transactionProxy) {}
+            TransactionalMultiMap(const std::string &name, txn::TransactionProxy &transaction_proxy)
+                    : proxy::TransactionalMultiMapImpl(name, transaction_proxy) {}
         };
     }
 }

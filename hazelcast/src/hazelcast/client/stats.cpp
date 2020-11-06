@@ -55,10 +55,10 @@ namespace hazelcast {
             namespace statistics {
                 const std::string Statistics::NEAR_CACHE_CATEGORY_PREFIX("nc.");
 
-                Statistics::Statistics(spi::ClientContext &clientContext) : clientContext_(clientContext),
+                Statistics::Statistics(spi::ClientContext &client_context) : clientContext_(client_context),
                                                                             clientProperties_(
-                                                                                    clientContext.get_client_properties()),
-                                                                            logger_(clientContext.get_logger()),
+                                                                                    client_context.get_client_properties()),
+                                                                            logger_(client_context.get_logger()),
                                                                             periodicStats_(*this) {
                     this->enabled_ = clientProperties_.get_boolean(clientProperties_.get_statistics_enabled());
                 }
@@ -99,7 +99,7 @@ namespace hazelcast {
                     }
                 }
 
-                void Statistics::schedule_periodic_statistics_send_task(int64_t periodSeconds) {
+                void Statistics::schedule_periodic_statistics_send_task(int64_t period_seconds) {
                     sendTaskTimer_ = clientContext_.get_client_execution_service().schedule_with_repetition([=]() {
                         if (!clientContext_.get_lifecycle_service().is_running()) {
                             return;
@@ -120,17 +120,17 @@ namespace hazelcast {
                         periodicStats_.add_near_cache_stats(stats);
 
                         send_stats(collection_timestamp, stats.str(), connection);
-                    }, std::chrono::seconds(0), std::chrono::seconds(periodSeconds));
+                    }, std::chrono::seconds(0), std::chrono::seconds(period_seconds));
                 }
 
                 std::shared_ptr<connection::Connection> Statistics::get_connection() {
                     return clientContext_.get_connection_manager().get_random_connection();
                 }
 
-                void Statistics::send_stats(int64_t timestamp, const std::string &newStats,
+                void Statistics::send_stats(int64_t timestamp, const std::string &new_stats,
                                            const std::shared_ptr<connection::Connection> &connection) {
                     // TODO: implement metrics blob
-                    auto request = protocol::codec::client_statistics_encode(timestamp, newStats, std::vector<byte>());
+                    auto request = protocol::codec::client_statistics_encode(timestamp, new_stats, std::vector<byte>());
                     try {
                         spi::impl::ClientInvocation::create(clientContext_, request, "", connection)->invoke().get();
                     } catch (exception::IException &e) {
@@ -267,8 +267,8 @@ namespace hazelcast {
                     return ownedEntryCount_;
                 }
 
-                void NearCacheStatsImpl::set_owned_entry_count(int64_t ownedEntryCount) {
-                    this->ownedEntryCount_ = ownedEntryCount;
+                void NearCacheStatsImpl::set_owned_entry_count(int64_t owned_entry_count) {
+                    this->ownedEntryCount_ = owned_entry_count;
                 }
 
                 void NearCacheStatsImpl::increment_owned_entry_count() {
@@ -283,16 +283,16 @@ namespace hazelcast {
                     return ownedEntryMemoryCost_;
                 }
 
-                void NearCacheStatsImpl::set_owned_entry_memory_cost(int64_t ownedEntryMemoryCost) {
-                    this->ownedEntryMemoryCost_ = ownedEntryMemoryCost;
+                void NearCacheStatsImpl::set_owned_entry_memory_cost(int64_t owned_entry_memory_cost) {
+                    this->ownedEntryMemoryCost_ = owned_entry_memory_cost;
                 }
 
-                void NearCacheStatsImpl::increment_owned_entry_memory_cost(int64_t ownedEntryMemoryCost) {
-                    this->ownedEntryMemoryCost_ += ownedEntryMemoryCost;
+                void NearCacheStatsImpl::increment_owned_entry_memory_cost(int64_t owned_entry_memory_cost) {
+                    this->ownedEntryMemoryCost_ += owned_entry_memory_cost;
                 }
 
-                void NearCacheStatsImpl::decrement_owned_entry_memory_cost(int64_t ownedEntryMemoryCost) {
-                    this->ownedEntryMemoryCost_ -= ownedEntryMemoryCost;
+                void NearCacheStatsImpl::decrement_owned_entry_memory_cost(int64_t owned_entry_memory_cost) {
+                    this->ownedEntryMemoryCost_ -= owned_entry_memory_cost;
                 }
 
                 int64_t NearCacheStatsImpl::get_hits() {
@@ -373,12 +373,12 @@ namespace hazelcast {
                     return persistenceCount_;
                 }
 
-                void NearCacheStatsImpl::add_persistence(int64_t duration, int32_t writtenBytes, int32_t keyCount) {
+                void NearCacheStatsImpl::add_persistence(int64_t duration, int32_t written_bytes, int32_t key_count) {
                     ++persistenceCount_;
                     lastPersistenceTime_ = util::current_time_millis();
                     lastPersistenceDuration_ = duration;
-                    lastPersistenceWrittenBytes_ = writtenBytes;
-                    lastPersistenceKeyCount_ = keyCount;
+                    lastPersistenceWrittenBytes_ = written_bytes;
+                    lastPersistenceKeyCount_ = key_count;
                     lastPersistenceFailure_ = "";
                 }
 

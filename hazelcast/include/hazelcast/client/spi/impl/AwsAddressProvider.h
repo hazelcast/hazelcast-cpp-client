@@ -38,7 +38,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API AwsAddressProvider : public connection::AddressProvider {
                 public:
-                    AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort, logger &lg);
+                    AwsAddressProvider(config::ClientAwsConfig &aws_config, int aws_member_port, logger &lg);
 
                     ~AwsAddressProvider() override;
 

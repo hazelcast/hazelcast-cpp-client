@@ -39,9 +39,9 @@ namespace hazelcast {
                             typedef AbstractNearCacheRecordStore<K, V, KS, R, HeapNearCacheRecordMap<K, V, KS, R> > ANCRS;
 
                             BaseHeapNearCacheRecordStore(const std::string &name,
-                                                         const client::config::NearCacheConfig &nearCacheConfig,
-                                                         serialization::pimpl::SerializationService &serializationService
-                            ) : ANCRS(nearCacheConfig, serializationService) {
+                                                         const client::config::NearCacheConfig &near_cache_config,
+                                                         serialization::pimpl::SerializationService &serialization_service
+                            ) : ANCRS(near_cache_config, serialization_service) {
                             }
 
                             const std::shared_ptr<R> get_record(const std::shared_ptr<KS> &key) override {
@@ -49,10 +49,10 @@ namespace hazelcast {
                             }
 
                             void on_evict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
-                                         bool wasExpired) override {
+                                         bool was_expired) override {
                                 ANCRS::on_evict(key,
                                                record,
-                                               wasExpired);
+                                               was_expired);
                                 ANCRS::nearCacheStats_->decrement_owned_entry_memory_cost(
                                         ANCRS::get_total_storage_memory_cost(key, record));
                             }
@@ -72,24 +72,24 @@ namespace hazelcast {
                             }
                         protected:
                             std::unique_ptr<eviction::MaxSizeChecker> create_near_cache_max_size_checker(
-                                    const client::config::EvictionConfig &evictionConfig,
-                                    const client::config::NearCacheConfig &nearCacheConfig) override {
-                                typename client::config::EvictionConfig::MaxSizePolicy maxSizePolicy = evictionConfig.get_maximum_size_policy();
+                                    const client::config::EvictionConfig &eviction_config,
+                                    const client::config::NearCacheConfig &near_cache_config) override {
+                                typename client::config::EvictionConfig::MaxSizePolicy maxSizePolicy = eviction_config.get_maximum_size_policy();
                                 if (maxSizePolicy == client::config::EvictionConfig::ENTRY_COUNT) {
                                     return std::unique_ptr<eviction::MaxSizeChecker>(
                                             new maxsize::EntryCountNearCacheMaxSizeChecker<K, V, KS, R>(
-                                                    evictionConfig.get_size(),
+                                                    eviction_config.get_size(),
                                                     *ANCRS::records_));
                                 }
                                 std::ostringstream out;
                                 out << "Invalid max-size policy " << '(' << (int) maxSizePolicy << ") for " <<
-                                    nearCacheConfig.get_name() << "! Only " <<
+                                    near_cache_config.get_name() << "! Only " <<
                                     (int) client::config::EvictionConfig::ENTRY_COUNT << " is supported.";
                                 BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
                             }
 
                             std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > create_near_cache_record_map(
-                                    const client::config::NearCacheConfig &nearCacheConfig) override {
+                                    const client::config::NearCacheConfig &near_cache_config) override {
                                 return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
                                         new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService_,
                                                                                 DEFAULT_INITIAL_CAPACITY));

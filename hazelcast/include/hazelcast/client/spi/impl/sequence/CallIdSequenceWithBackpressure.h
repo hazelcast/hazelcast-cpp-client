@@ -44,7 +44,7 @@ namespace hazelcast {
                      */
                     class HAZELCAST_API CallIdSequenceWithBackpressure : public AbstractCallIdSequence {
                     public:
-                        CallIdSequenceWithBackpressure(int32_t maxConcurrentInvocations, int64_t backoffTimeoutMs);
+                        CallIdSequenceWithBackpressure(int32_t max_concurrent_invocations, int64_t backoff_timeout_ms);
 
                     protected:
                         void handle_no_space_left() override;

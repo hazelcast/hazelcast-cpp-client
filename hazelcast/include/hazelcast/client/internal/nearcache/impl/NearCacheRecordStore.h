@@ -125,7 +125,7 @@ namespace hazelcast {
                          * @return the best candidate object to store, selected from the given {@code candidates}.
                          */
                         virtual const std::shared_ptr<V> select_to_save(const std::shared_ptr<V> &value,
-                                                                 const std::shared_ptr<serialization::pimpl::Data> &valueData) const {
+                                                                 const std::shared_ptr<serialization::pimpl::Data> &value_data) const {
                             assert(0);
                             return std::shared_ptr<V>();
                         }

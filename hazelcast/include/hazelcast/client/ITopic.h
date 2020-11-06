@@ -76,8 +76,8 @@ namespace hazelcast {
             }
 
         private:
-            ITopic(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::ITopicImpl(instanceName, context) {}
+            ITopic(const std::string &instance_name, spi::ClientContext *context)
+                    : proxy::ITopicImpl(instance_name, context) {}
         };
     }
 }

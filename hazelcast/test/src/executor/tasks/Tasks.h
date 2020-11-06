@@ -60,8 +60,8 @@ namespace hazelcast {
                             return &partition_key;
                         }
 
-                        MapPutPartitionAwareCallable(const std::string &mapName, T partitionKey) :
-                                map_name(mapName), partition_key(partitionKey) {}
+                        MapPutPartitionAwareCallable(const std::string &map_name, T partition_key) :
+                                map_name(map_name), partition_key(partition_key) {}
 
                         std::string map_name;
                         T partition_key;

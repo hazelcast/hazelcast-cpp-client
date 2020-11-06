@@ -37,7 +37,7 @@ namespace hazelcast {
         template<typename K, typename V, typename KS, typename VS>
         class SampleableConcurrentHashMap : public SynchronizedMap<std::shared_ptr<KS>, VS> {
         public:
-            SampleableConcurrentHashMap(int32_t initialCapacity) {
+            SampleableConcurrentHashMap(int32_t initial_capacity) {
             }
 
             /**
@@ -45,8 +45,8 @@ namespace hazelcast {
              */
             class SamplingEntry {
             public:
-                SamplingEntry(const std::shared_ptr<KS> entryKey, const std::shared_ptr<VS> entryValue) : key_(
-                        entryKey), value_(entryValue) {
+                SamplingEntry(const std::shared_ptr<KS> entry_key, const std::shared_ptr<VS> entry_value) : key_(
+                        entry_key), value_(entry_value) {
                 }
 
                 const std::shared_ptr<KS> &get_entry_key() const {
@@ -179,16 +179,16 @@ namespace hazelcast {
              */
             typedef typename SampleableConcurrentHashMap<K, V, KS, VS>::SamplingEntry E;
 
-            std::unique_ptr<util::Iterable<E> > get_random_samples(int sampleCount) const {
-                if (sampleCount < 0) {
+            std::unique_ptr<util::Iterable<E> > get_random_samples(int sample_count) const {
+                if (sample_count < 0) {
                     BOOST_THROW_EXCEPTION(
                             client::exception::IllegalArgumentException("Sample count cannot be a negative value."));
                 }
-                if (sampleCount == 0 || SynchronizedMap<std::shared_ptr<KS>, VS>::size() == 0) {
+                if (sample_count == 0 || SynchronizedMap<std::shared_ptr<KS>, VS>::size() == 0) {
                     return std::unique_ptr<util::Iterable<E> >();
                 }
 
-                return std::unique_ptr<util::Iterable<E> >(new LazySamplingEntryIterableIterator(sampleCount, *this));
+                return std::unique_ptr<util::Iterable<E> >(new LazySamplingEntryIterableIterator(sample_count, *this));
             }
 
         protected:
@@ -216,10 +216,10 @@ namespace hazelcast {
             class LazySamplingEntryIterableIterator
                     : public util::Iterable<E>, public util::Iterator<E> {
             public:
-                LazySamplingEntryIterableIterator(int maxCount, const SampleableConcurrentHashMap<K, V, KS, VS> &sampleableMap)
-                        : maxEntryCount_(maxCount), randomNumber_(std::abs(rand())), returnedEntryCount_(0),
+                LazySamplingEntryIterableIterator(int max_count, const SampleableConcurrentHashMap<K, V, KS, VS> &sampleable_map)
+                        : maxEntryCount_(max_count), randomNumber_(std::abs(rand())), returnedEntryCount_(0),
                           currentIndex_(-1),
-                          reachedToEnd_(false), internalMap_(sampleableMap) {
+                          reachedToEnd_(false), internalMap_(sampleable_map) {
                     size_t mapSize = internalMap_.size();
                     startIndex_ = (int) (randomNumber_ % mapSize);
                     if (startIndex_ < 0) {

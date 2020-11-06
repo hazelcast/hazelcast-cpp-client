@@ -44,7 +44,7 @@ namespace hazelcast {
                 return value;
             }
 
-            static void close_resource(Closeable *closable, const char *closeReason = nullptr);
+            static void close_resource(Closeable *closable, const char *close_reason = nullptr);
         };
 
         template<>

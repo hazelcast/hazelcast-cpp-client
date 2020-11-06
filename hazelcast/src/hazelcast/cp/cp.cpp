@@ -137,13 +137,13 @@ namespace hazelcast {
             return proxy_factory_.create_proxy<counting_semaphore>(name);
         }
 
-        cp_proxy::cp_proxy(const std::string &serviceName, const std::string &proxyName,
+        cp_proxy::cp_proxy(const std::string &service_name, const std::string &proxy_name,
                            client::spi::ClientContext *context,
-                           const raft_group_id &groupId, const std::string &objectName) : ProxyImpl(serviceName,
-                                                                                                    proxyName,
+                           const raft_group_id &group_id, const std::string &object_name) : ProxyImpl(service_name,
+                                                                                                    proxy_name,
                                                                                                     context),
-                                                                                          group_id_(groupId),
-                                                                                          object_name_(objectName) {}
+                                                                                          group_id_(group_id),
+                                                                                          object_name_(object_name) {}
 
         void cp_proxy::on_destroy() {
             auto request = cpgroup_destroycpobject_encode(group_id_, get_service_name(), object_name_);
@@ -155,8 +155,8 @@ namespace hazelcast {
         }
 
         atomic_long::atomic_long(const std::string &name, spi::ClientContext &context,
-                                 const raft_group_id &groupId, const std::string &objectName)
-                : cp_proxy(SERVICE_NAME, name, &context, groupId, objectName) {}
+                                 const raft_group_id &group_id, const std::string &object_name)
+                : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name) {}
 
         boost::future<int64_t> atomic_long::add_and_get(int64_t delta) {
             auto request = atomiclong_addandget_encode(group_id_, object_name_, delta);
@@ -186,8 +186,8 @@ namespace hazelcast {
             return invoke_and_get_future<int64_t>(request);
         }
 
-        boost::future<int64_t> atomic_long::get_and_set(int64_t newValue) {
-            auto request = atomiclong_getandset_encode(group_id_, object_name_, newValue);
+        boost::future<int64_t> atomic_long::get_and_set(int64_t new_value) {
+            auto request = atomiclong_getandset_encode(group_id_, object_name_, new_value);
             return invoke_and_get_future<int64_t>(request);
         }
 
@@ -199,8 +199,8 @@ namespace hazelcast {
             return get_and_add(1);
         }
 
-        boost::future<void> atomic_long::set(int64_t newValue) {
-            return to_void_future(get_and_set(newValue));
+        boost::future<void> atomic_long::set(int64_t new_value) {
+            return to_void_future(get_and_set(new_value));
         }
 
         boost::future<int64_t> atomic_long::alter_data(Data &function_data,
@@ -216,8 +216,8 @@ namespace hazelcast {
         }
 
         atomic_reference::atomic_reference(const std::string &name, spi::ClientContext &context,
-                                           const raft_group_id &groupId, const std::string &objectName)
-                : cp_proxy(SERVICE_NAME, name, &context, groupId, objectName) {}
+                                           const raft_group_id &group_id, const std::string &object_name)
+                : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name) {}
 
         boost::future<boost::optional<Data>> atomic_reference::get_data() {
             auto request = atomicref_get_encode(group_id_, object_name_);
@@ -275,8 +275,8 @@ namespace hazelcast {
             return invoke_and_get_future<boost::optional<Data>>(request);
         }
 
-        latch::latch(const std::string &name, spi::ClientContext &context, const raft_group_id &groupId,
-                     const std::string &objectName) : cp_proxy(SERVICE_NAME, name, &context, groupId, objectName) {}
+        latch::latch(const std::string &name, spi::ClientContext &context, const raft_group_id &group_id,
+                     const std::string &object_name) : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name) {}
 
         boost::future<bool> latch::try_set_count(int32_t count) {
             util::Preconditions::check_positive(count, "count must be positive!");
@@ -346,9 +346,9 @@ namespace hazelcast {
         }
 
         constexpr int64_t fenced_lock::INVALID_FENCE;
-        fenced_lock::fenced_lock(const std::string &name, spi::ClientContext &context, const raft_group_id &groupId,
-                                 const std::string &objectName) : session_aware_proxy(SERVICE_NAME, name, &context,
-                                                                                      groupId, objectName,
+        fenced_lock::fenced_lock(const std::string &name, spi::ClientContext &context, const raft_group_id &group_id,
+                                 const std::string &object_name) : session_aware_proxy(SERVICE_NAME, name, &context,
+                                                                                      group_id, object_name,
                                                                                       context.get_proxy_session_manager()) {}
 
         boost::future<void> fenced_lock::lock() {
@@ -658,11 +658,11 @@ namespace hazelcast {
             locked_session_ids_.clear();
         }
 
-        session_aware_proxy::session_aware_proxy(const std::string &serviceName, const std::string &proxyName,
-                                                 spi::ClientContext *context, const raft_group_id &groupId,
-                                                 const std::string &objectName,
-                                                 internal::session::proxy_session_manager &sessionManager) : cp_proxy(
-                serviceName, proxyName, context, groupId, objectName), session_manager_(sessionManager) {}
+        session_aware_proxy::session_aware_proxy(const std::string &service_name, const std::string &proxy_name,
+                                                 spi::ClientContext *context, const raft_group_id &group_id,
+                                                 const std::string &object_name,
+                                                 internal::session::proxy_session_manager &session_manager) : cp_proxy(
+                service_name, proxy_name, context, group_id, object_name), session_manager_(session_manager) {}
 
         void session_aware_proxy::release_session(int64_t session_id) {
             session_manager_.release_session(group_id_, session_id);
@@ -676,12 +676,12 @@ namespace hazelcast {
             return fence != INVALID_FENCE;
         }
 
-        counting_semaphore::counting_semaphore(const std::string &proxyName, spi::ClientContext *context,
-                                               const raft_group_id &groupId, const std::string &objectName,
-                                               internal::session::proxy_session_manager &sessionManager) : session_aware_proxy(SERVICE_NAME,
-                                                                                                     proxyName, context,
-                                                                                                     groupId,
-                                                                                                     objectName, sessionManager) {}
+        counting_semaphore::counting_semaphore(const std::string &proxy_name, spi::ClientContext *context,
+                                               const raft_group_id &group_id, const std::string &object_name,
+                                               internal::session::proxy_session_manager &session_manager) : session_aware_proxy(SERVICE_NAME,
+                                                                                                     proxy_name, context,
+                                                                                                     group_id,
+                                                                                                     object_name, session_manager) {}
 
         boost::future<bool> counting_semaphore::init(int32_t permits) {
             util::Preconditions::check_not_negative(permits, "Permits must be non-negative!");
@@ -731,10 +731,10 @@ namespace hazelcast {
             return do_change_permits(increase);
         }
 
-        sessionless_semaphore::sessionless_semaphore(const std::string &proxyName, spi::ClientContext *context,
-                                                     const raft_group_id &groupId, const std::string &objectName,
-                                                     internal::session::proxy_session_manager &sessionManager)
-                                                     : counting_semaphore(proxyName, context, groupId, objectName, sessionManager) {}
+        sessionless_semaphore::sessionless_semaphore(const std::string &proxy_name, spi::ClientContext *context,
+                                                     const raft_group_id &group_id, const std::string &object_name,
+                                                     internal::session::proxy_session_manager &session_manager)
+                                                     : counting_semaphore(proxy_name, context, group_id, object_name, session_manager) {}
 
         boost::future<void> sessionless_semaphore::acquire(int32_t permits) {
             util::Preconditions::check_positive(permits, "permits must be positive number.");
@@ -789,10 +789,10 @@ namespace hazelcast {
             return to_void_future(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
-        session_semaphore::session_semaphore(const std::string &proxyName, spi::ClientContext *context,
-                                                     const raft_group_id &groupId, const std::string &objectName,
-                                                     internal::session::proxy_session_manager &sessionManager)
-                                                     : counting_semaphore(proxyName, context, groupId, objectName, sessionManager) {}
+        session_semaphore::session_semaphore(const std::string &proxy_name, spi::ClientContext *context,
+                                                     const raft_group_id &group_id, const std::string &object_name,
+                                                     internal::session::proxy_session_manager &session_manager)
+                                                     : counting_semaphore(proxy_name, context, group_id, object_name, session_manager) {}
 
         boost::future<void> session_semaphore::acquire(int32_t permits) {
             return to_void_future(try_acquire_for_millis(permits, std::chrono::milliseconds(-1)));

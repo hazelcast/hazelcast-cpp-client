@@ -35,7 +35,7 @@ namespace hazelcast {
             namespace security {
                 class HAZELCAST_API EC2RequestSigner {
                 public:
-                    EC2RequestSigner(const config::ClientAwsConfig &awsConfig, const std::string &timestamp,
+                    EC2RequestSigner(const config::ClientAwsConfig &aws_config, const std::string &timestamp,
                                      const std::string &endpoint);
 
                     virtual ~EC2RequestSigner();
@@ -58,20 +58,20 @@ namespace hazelcast {
                     static std::string format_attribute(const std::string &key, const std::string &value);
 
                     /* Task 2 */
-                    std::string create_string_to_sign(const std::string &canonicalRequest) const;
+                    std::string create_string_to_sign(const std::string &canonical_request) const;
 
                     std::string get_credential_scope() const;
 
                     /* Task 3 */
                     std::vector<unsigned char> derive_signing_key() const;
 
-                    std::string create_signature(const std::string &stringToSign, const std::vector<unsigned char> &signingKey) const;
+                    std::string create_signature(const std::string &string_to_sign, const std::vector<unsigned char> &signing_key) const;
 
                     std::string hmac_sh_a256_hex(const std::vector<unsigned char> &key, const std::string &msg) const;
 
                     std::string convert_to_hex_string(const unsigned char *buffer, unsigned int len) const;
 
-                    unsigned int hmac_sh_a256_bytes(const void *key, int keyLen, const std::string &msg,
+                    unsigned int hmac_sh_a256_bytes(const void *key, int key_len, const std::string &msg,
                                                  unsigned char *hash) const;
 
                     unsigned int hmac_sh_a256_bytes(const std::string &key, const std::string &msg,
@@ -80,8 +80,8 @@ namespace hazelcast {
                     unsigned int hmac_sh_a256_bytes(const std::vector<unsigned char> &key, const std::string &msg,
                                                  unsigned char *hash) const;
 
-                    unsigned int hmac_sh_a256_bytes(const void *keyBuffer, int keyLen, const unsigned char *data,
-                                                 size_t dataLen,
+                    unsigned int hmac_sh_a256_bytes(const void *key_buffer, int key_len, const unsigned char *data,
+                                                 size_t data_len,
                                                  unsigned char *hash) const;
 
                     std::string sha256_hashhex(const std::string &in) const;

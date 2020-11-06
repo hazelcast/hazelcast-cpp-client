@@ -42,14 +42,14 @@ namespace hazelcast {
             BasePredicate::BasePredicate(HazelcastClient &client) : out_stream(spi::ClientContext(
                     client).get_serialization_service().new_output_stream()) {}
 
-            NamedPredicate::NamedPredicate(HazelcastClient &client, const std::string &attributeName) : BasePredicate(
+            NamedPredicate::NamedPredicate(HazelcastClient &client, const std::string &attribute_name) : BasePredicate(
                     client) {
-                out_stream.write(attributeName);
+                out_stream.write(attribute_name);
             }
 
-            InstanceOfPredicate::InstanceOfPredicate(HazelcastClient &client, const std::string &javaClassName)
+            InstanceOfPredicate::InstanceOfPredicate(HazelcastClient &client, const std::string &java_class_name)
                     : BasePredicate(client) {
-                out_stream.write(javaClassName);
+                out_stream.write(java_class_name);
             }
 
             SqlPredicate::SqlPredicate(HazelcastClient &client, const std::string &sql)

@@ -56,8 +56,8 @@ namespace hazelcast {
 
                     virtual void to_string(std::ostream &os) const = 0;
 
-                    friend std::ostream &operator<<(std::ostream &os, const MemberSelector &aSelector) {
-                        aSelector.to_string(os);
+                    friend std::ostream &operator<<(std::ostream &os, const MemberSelector &a_selector) {
+                        a_selector.to_string(os);
                         return os;
                     }
                 };

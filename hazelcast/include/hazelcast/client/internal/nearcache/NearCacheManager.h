@@ -70,14 +70,14 @@ namespace hazelcast {
                      */
                     template<typename K, typename V, typename KS>
                     std::shared_ptr<NearCache<KS, V> > get_or_create_near_cache(
-                            const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
+                            const std::string &name, const client::config::NearCacheConfig &near_cache_config) {
                         std::shared_ptr<BaseNearCache> nearCache = nearCacheMap_.get(name);
                         if (NULL == nearCache.get()) {
                             {
                                 std::lock_guard<std::mutex> guard(mutex_);
                                 nearCache = nearCacheMap_.get(name);
                                 if (NULL == nearCache.get()) {
-                                    nearCache = create_near_cache<K, V, KS>(name, nearCacheConfig);
+                                    nearCache = create_near_cache<K, V, KS>(name, near_cache_config);
                                     nearCache->initialize();
 
                                     nearCacheMap_.put(name, nearCache);
@@ -123,10 +123,10 @@ namespace hazelcast {
                 protected:
                     template<typename K, typename V, typename KS>
                     std::unique_ptr<NearCache<KS, V> > create_near_cache(
-                            const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
+                            const std::string &name, const client::config::NearCacheConfig &near_cache_config) {
                         return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
-                                        name, nearCacheConfig, executionService_, serializationService_, logger_));
+                                        name, near_cache_config, executionService_, serializationService_, logger_));
                     }
                 private:
                     std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService_;

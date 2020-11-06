@@ -34,7 +34,7 @@ namespace hazelcast {
         /* Blocking - synchronized queue */
         class BlockingConcurrentQueue {
         public:
-            BlockingConcurrentQueue(size_t maxQueueCapacity) : capacity_(maxQueueCapacity), isInterrupted_(false) {
+            BlockingConcurrentQueue(size_t max_queue_capacity) : capacity_(max_queue_capacity), isInterrupted_(false) {
             }
 
             void push(const T &e) {

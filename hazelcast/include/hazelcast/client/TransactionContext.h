@@ -63,7 +63,7 @@ namespace hazelcast {
              *  Constructor to be used internally. Not public API.
              *
              */
-            TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transactionManager,
+            TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transaction_manager,
                                const TransactionOptions &);
 
             /**
@@ -155,7 +155,7 @@ namespace hazelcast {
              * @return transactionalObject.
              */
             template<typename T>
-            std::shared_ptr<T> get_transactional_object(const std::string &serviceName, const std::string &name) {
+            std::shared_ptr<T> get_transactional_object(const std::string &service_name, const std::string &name) {
                 if (transaction_.get_state() != txn::TxnState::ACTIVE) {
                     std::string message = "No transaction is found while accessing ";
                     message += "transactional object -> [" + name + "]!";
@@ -163,7 +163,7 @@ namespace hazelcast {
                             exception::IllegalStateException("TransactionContext::getMap(const std::string& name)",
                                                              message));
                 }
-                auto key = std::make_pair(serviceName, name);
+                auto key = std::make_pair(service_name, name);
                 std::shared_ptr<T> obj = std::static_pointer_cast<T>(txnObjectMap_.get(key));
                 if (!obj) {
                     obj = std::shared_ptr<T>(new T(name, transaction_));

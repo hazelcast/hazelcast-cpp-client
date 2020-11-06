@@ -42,7 +42,7 @@ namespace hazelcast {
 
             class HAZELCAST_API ReadHandler {
             public:
-                ReadHandler(Connection &connection, size_t bufferSize);
+                ReadHandler(Connection &connection, size_t buffer_size);
 
                 ~ReadHandler();
 

@@ -20,9 +20,9 @@ int main() {
     hazelcast::client::ClientConfig config;
     config.set_socket_interceptor(
         SocketInterceptor()
-            .on_connect([](const hazelcast::client::Socket &connectedSocket) {
+            .on_connect([](const hazelcast::client::Socket &connected_socket) {
                 std::cout << "Connected to remote host " 
-                    << connectedSocket.get_address() << std::endl;
+                    << connected_socket.get_address() << std::endl;
             })
     );
 

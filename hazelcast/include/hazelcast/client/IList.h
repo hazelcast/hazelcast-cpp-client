@@ -41,15 +41,15 @@ namespace hazelcast {
             *  @param includeValue bool value representing value should be included in ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool include_value) {
                 std::unique_ptr<impl::ItemEventHandler<protocol::codec::list_addlistener_handler>> itemEventHandler(
                         new impl::ItemEventHandler<protocol::codec::list_addlistener_handler>(
                                 get_name(), get_context().get_client_cluster_service(),
                                 get_context().get_serialization_service(),
                                 std::move(listener),
-                                includeValue));
+                                include_value));
 
-                return proxy::IListImpl::add_item_listener(std::move(itemEventHandler), includeValue);
+                return proxy::IListImpl::add_item_listener(std::move(itemEventHandler), include_value);
             }
 
             /**
@@ -230,12 +230,12 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             template<typename E>
-            boost::future<std::vector<E>> sub_list(int32_t fromIndex, int32_t toIndex) {
-                return to_object_vector<E>(proxy::IListImpl::sub_list_data(fromIndex, toIndex));
+            boost::future<std::vector<E>> sub_list(int32_t from_index, int32_t to_index) {
+                return to_object_vector<E>(proxy::IListImpl::sub_list_data(from_index, to_index));
             }
 
         private:
-            IList(const std::string &instanceName, spi::ClientContext *context) : proxy::IListImpl(instanceName,
+            IList(const std::string &instance_name, spi::ClientContext *context) : proxy::IListImpl(instance_name,
                                                                                                    context) {}
         };
     }

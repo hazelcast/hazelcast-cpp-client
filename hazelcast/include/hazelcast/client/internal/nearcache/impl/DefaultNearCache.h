@@ -44,11 +44,11 @@ namespace hazelcast {
                     template<typename K, typename V, typename KS>
                     class DefaultNearCache : public NearCache<KS, V> {
                     public:
-                        DefaultNearCache(const std::string &cacheName,
+                        DefaultNearCache(const std::string &cache_name,
                                          const client::config::NearCacheConfig &config,
                                          const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                          serialization::pimpl::SerializationService &ss, logger &lg)
-                                : name_(cacheName), nearCacheConfig_(config), executionService_(es),
+                                : name_(cache_name), nearCacheConfig_(config), executionService_(es),
                                   serializationService_(ss), logger_(lg) {
                         }
 
@@ -136,16 +136,16 @@ namespace hazelcast {
                     private:
                         std::unique_ptr<NearCacheRecordStore<KS, V> >
                         create_near_cache_record_store(const std::string &name,
-                                                   const client::config::NearCacheConfig &nearCacheConfig) {
-                            client::config::InMemoryFormat inMemoryFormat = nearCacheConfig.get_in_memory_format();
+                                                   const client::config::NearCacheConfig &near_cache_config) {
+                            client::config::InMemoryFormat inMemoryFormat = near_cache_config.get_in_memory_format();
                             switch (inMemoryFormat) {
                                 case client::config::BINARY:
                                     return std::unique_ptr<NearCacheRecordStore<KS, V> >(
-                                            new store::NearCacheDataRecordStore<K, V, KS>(name, nearCacheConfig,
+                                            new store::NearCacheDataRecordStore<K, V, KS>(name, near_cache_config,
                                                                                           serializationService_));
                                 case client::config::OBJECT:
                                     return std::unique_ptr<NearCacheRecordStore<KS, V> >(
-                                            new store::NearCacheObjectRecordStore<K, V, KS>(name, nearCacheConfig,
+                                            new store::NearCacheObjectRecordStore<K, V, KS>(name, near_cache_config,
                                                                                             serializationService_));
                                 default:
                                     std::ostringstream out;

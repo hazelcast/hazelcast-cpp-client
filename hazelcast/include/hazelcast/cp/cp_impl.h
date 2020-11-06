@@ -82,7 +82,7 @@ namespace hazelcast {
 
                 private:
                     struct session_state {
-                        session_state(int64_t id, int64_t ttlMillis);
+                        session_state(int64_t id, int64_t ttl_millis);
                         session_state(const session_state &rhs);
 
                         int64_t id;

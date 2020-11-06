@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API hz_thread_pool {
         public:
-            hz_thread_pool(size_t numThreads);
+            hz_thread_pool(size_t num_threads);
 
             void shutdown_gracefully();
 

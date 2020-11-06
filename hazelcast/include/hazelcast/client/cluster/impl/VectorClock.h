@@ -40,7 +40,7 @@ namespace hazelcast {
 
                     VectorClock();
 
-                    VectorClock(const TimestampVector &replicaLogicalTimestamps);
+                    VectorClock(const TimestampVector &replica_logical_timestamps);
 
                     /** Returns a set of replica logical timestamps for this vector clock. */
                     TimestampVector entry_set();
@@ -58,7 +58,7 @@ namespace hazelcast {
                      * @return false for the pair.first if timestamp does not exist for replicaId,
                      * otherwise returns true for pair.first and the timestamp of the replica as the pair.second.
                      */
-                    std::pair<bool, int64_t> get_timestamp_for_replica(boost::uuids::uuid replicaId);
+                    std::pair<bool, int64_t> get_timestamp_for_replica(boost::uuids::uuid replica_id);
 
                     TimestampMap replicaTimestamps_;
                     VectorClock::TimestampVector replicaTimestampEntries_;

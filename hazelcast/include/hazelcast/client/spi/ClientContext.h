@@ -98,9 +98,9 @@ namespace hazelcast {
             class HAZELCAST_API ClientContext {
             public:
                 // This constructor is used from tests
-                explicit ClientContext(const client::HazelcastClient &hazelcastClient);
+                explicit ClientContext(const client::HazelcastClient &hazelcast_client);
 
-                explicit ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
+                explicit ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcast_client);
 
                 serialization::pimpl::SerializationService &get_serialization_service();
 

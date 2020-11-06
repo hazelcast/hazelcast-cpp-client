@@ -164,12 +164,12 @@ namespace hazelcast {
                 }
 
                 void
-                get_and_verify_entries_in_map(const std::shared_ptr<ReplicatedMap>& map, const std::string &expectedValue) {
+                get_and_verify_entries_in_map(const std::shared_ptr<ReplicatedMap>& map, const std::string &expected_value) {
                     execute_for_each([=] (size_t i) {
                         auto key = std::string("foo-") + std::to_string(i);
                         boost::optional<std::string> val = map->get<std::string, std::string>(key).get();
                         ASSERT_TRUE((val));
-                        ASSERT_EQ(expectedValue, (val.value()));
+                        ASSERT_EQ(expected_value, (val.value()));
                     });
                 }
 
@@ -197,8 +197,8 @@ namespace hazelcast {
                     });
                 }
 
-                static bool find_value_for_key(int key, TEST_VALUES_TYPE &testValues, int &value) {
-                    for (const TEST_VALUES_TYPE::value_type &entry : testValues) {
+                static bool find_value_for_key(int key, TEST_VALUES_TYPE &test_values, int &value) {
+                    for (const TEST_VALUES_TYPE::value_type &entry : test_values) {
                         if (key == entry.first) {
                             value = entry.second;
                             return true;
@@ -729,9 +729,9 @@ namespace hazelcast {
                      * @return the {@link NearCacheConfig}
                      */
                     static config::NearCacheConfig create_near_cache_config(
-                            config::InMemoryFormat inMemoryFormat, const std::string &mapName) {
+                            config::InMemoryFormat in_memory_format, const std::string &map_name) {
                         config::NearCacheConfig nearCacheConfig;
-                        nearCacheConfig.set_name(mapName).set_in_memory_format(inMemoryFormat).set_invalidate_on_change(true);
+                        nearCacheConfig.set_name(map_name).set_in_memory_format(in_memory_format).set_invalidate_on_change(true);
 
                         return nearCacheConfig;
                     }
@@ -744,12 +744,12 @@ namespace hazelcast {
                      * @param maxSizePolicy   the {@link MaxSizePolicy} to set
                      * @param maxSize         the max size to set
                      */
-                    static void set_eviction_config(config::NearCacheConfig &nearCacheConfig,
-                                                  config::EvictionPolicy evictionPolicy,
-                                                  typename config::EvictionConfig::MaxSizePolicy maxSizePolicy,
-                                                  int maxSize) {
-                        nearCacheConfig.get_eviction_config().set_eviction_policy(evictionPolicy)
-                                .set_maximum_size_policy(maxSizePolicy).set_size(maxSize);
+                    static void set_eviction_config(config::NearCacheConfig &near_cache_config,
+                                                  config::EvictionPolicy eviction_policy,
+                                                  typename config::EvictionConfig::MaxSizePolicy max_size_policy,
+                                                  int max_size) {
+                        near_cache_config.get_eviction_config().set_eviction_policy(eviction_policy)
+                                .set_maximum_size_policy(max_size_policy).set_size(max_size);
                     }
 
                     /**
@@ -761,9 +761,9 @@ namespace hazelcast {
                      * @param expectedMisses          the expected Near Cache misses
                      */
                     static void assert_near_cache_stats(monitor::NearCacheStats &stats,
-                                                     int64_t expectedOwnedEntryCount, int64_t expectedHits,
-                                                     int64_t expectedMisses) {
-                        assert_near_cache_stats(stats, expectedOwnedEntryCount, expectedHits, expectedMisses, 0, 0);
+                                                     int64_t expected_owned_entry_count, int64_t expected_hits,
+                                                     int64_t expected_misses) {
+                        assert_near_cache_stats(stats, expected_owned_entry_count, expected_hits, expected_misses, 0, 0);
                     }
 
                     /**
@@ -777,25 +777,25 @@ namespace hazelcast {
                      * @param expectedExpirations     the expected Near Cache expirations
                      */
                     static void assert_near_cache_stats(monitor::NearCacheStats &stats,
-                                                     int64_t expectedOwnedEntryCount, int64_t expectedHits,
-                                                     int64_t expectedMisses,
-                                                     int64_t expectedEvictions, int64_t expectedExpirations) {
+                                                     int64_t expected_owned_entry_count, int64_t expected_hits,
+                                                     int64_t expected_misses,
+                                                     int64_t expected_evictions, int64_t expected_expirations) {
                         assert_equals_format("Near Cache entry count should be %ld, but was %ld ",
-                                           expectedOwnedEntryCount, stats.get_owned_entry_count(), stats);
+                                           expected_owned_entry_count, stats.get_owned_entry_count(), stats);
                         assert_equals_format("Near Cache hits should be %ld, but were %ld ",
-                                           expectedHits, stats.get_hits(), stats);
+                                           expected_hits, stats.get_hits(), stats);
                         assert_equals_format("Near Cache misses should be %ld, but were %ld ",
-                                           expectedMisses, stats.get_misses(), stats);
+                                           expected_misses, stats.get_misses(), stats);
                         assert_equals_format("Near Cache evictions should be %ld, but were %ld ",
-                                           expectedEvictions, stats.get_evictions(), stats);
+                                           expected_evictions, stats.get_evictions(), stats);
                         assert_equals_format("Near Cache expirations should be %ld, but were %ld ",
-                                           expectedExpirations, stats.get_expirations(), stats);
+                                           expected_expirations, stats.get_expirations(), stats);
                     }
 
-                    static void assert_equals_format(const char *messageFormat, int64_t expected, int64_t actual,
+                    static void assert_equals_format(const char *message_format, int64_t expected, int64_t actual,
                                                    monitor::NearCacheStats &stats) {
                         char buf[300];
-                        hazelcast::util::hz_snprintf(buf, 300, messageFormat, expected, actual);
+                        hazelcast::util::hz_snprintf(buf, 300, message_format, expected, actual);
                         ASSERT_EQ(expected, actual) << buf << "(" << stats.to_string() << ")";
                     }
 
@@ -831,7 +831,7 @@ namespace hazelcast {
                     this->stats_ = nearCache_ ? nearCache_->get_near_cache_stats() : nullptr;
                 }
 
-                void test_contains_key(bool useNearCachedMapForRemoval) {
+                void test_contains_key(bool use_near_cached_map_for_removal) {
                     create_no_near_cache_context();
 
                     // populate map
@@ -852,7 +852,7 @@ namespace hazelcast {
                     ASSERT_FALSE(nearCachedMap_->contains_key(5).get());
 
                     // remove a key which is in the Near Cache
-                    std::shared_ptr<ReplicatedMap> &adapter = useNearCachedMapForRemoval
+                    std::shared_ptr<ReplicatedMap> &adapter = use_near_cached_map_for_removal
                                                                                  ? nearCachedMap_
                                                                                  : noNearCacheMap_;
                     adapter->remove<int, std::string>(1).get();
@@ -870,10 +870,10 @@ namespace hazelcast {
                 }
 
                 void
-                assert_near_cache_invalidation_requests(monitor::NearCacheStats &stat, int64_t invalidationRequests) {
-                    if (nearCacheConfig_.is_invalidate_on_change() && invalidationRequests > 0) {
+                assert_near_cache_invalidation_requests(monitor::NearCacheStats &stat, int64_t invalidation_requests) {
+                    if (nearCacheConfig_.is_invalidate_on_change() && invalidation_requests > 0) {
                         auto &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stat;
-                        ASSERT_EQ_EVENTUALLY(invalidationRequests, nearCacheStatsImpl.get_invalidation_requests());
+                        ASSERT_EQ_EVENTUALLY(invalidation_requests, nearCacheStatsImpl.get_invalidation_requests());
                         nearCacheStatsImpl.reset_invalidation_events();
                     }
                 }
@@ -918,10 +918,10 @@ namespace hazelcast {
                     return stats_->get_hits() + 1;
                 }
 
-                bool check_misses_and_hits(int64_t &expectedMisses, int64_t &expectedHits,
+                bool check_misses_and_hits(int64_t &expected_misses, int64_t &expected_hits,
                                         boost::optional<std::string> &value) {
-                    expectedMisses = get_expected_misses_with_local_update_policy();
-                    expectedHits = get_expected_hits_with_local_update_policy();
+                    expected_misses = get_expected_misses_with_local_update_policy();
+                    expected_hits = get_expected_hits_with_local_update_policy();
 
                     value = nearCachedMap_->get<int, std::string>(1).get();
                     if (!value.has_value() || value.value() != "newValue") {
@@ -932,10 +932,10 @@ namespace hazelcast {
                         return false;
                     }
 
-                    return expectedHits == stats_->get_hits() && expectedMisses == stats_->get_misses();
+                    return expected_hits == stats_->get_hits() && expected_misses == stats_->get_misses();
                 }
 
-                void when_put_all_is_used_then_near_cache_should_be_invalidated(bool useNearCacheAdapter) {
+                void when_put_all_is_used_then_near_cache_should_be_invalidated(bool use_near_cache_adapter) {
                     create_no_near_cache_context();
 
                     create_near_cache_context();
@@ -950,7 +950,7 @@ namespace hazelcast {
                     }
 
                     // this should invalidate the Near Cache
-                    std::shared_ptr<ReplicatedMap> &adapter = useNearCacheAdapter ? nearCachedMap_ : noNearCacheMap_;
+                    std::shared_ptr<ReplicatedMap> &adapter = use_near_cache_adapter ? nearCachedMap_ : noNearCacheMap_;
                     adapter->put_all(invalidationMap).get();
 
                     WAIT_EQ_EVENTUALLY(0, nearCache_->size());
@@ -1255,16 +1255,16 @@ namespace hazelcast {
                     return map_;
                 }
 
-                std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats(ReplicatedMap &repMap) {
+                std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats(ReplicatedMap &rep_map) {
                     spi::ClientContext clientContext(*client_);
                     auto nearCacheManager = &clientContext.get_near_cache_manager();
                     auto nearCache = nearCacheManager->
-                            get_near_cache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(repMap.get_name());
+                            get_near_cache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(rep_map.get_name());
                     return nearCache->get_near_cache_stats();
                 }
 
-                void assert_that_owned_entry_count_equals(ReplicatedMap &clientMap, int64_t expected) {
-                    ASSERT_EQ(expected, get_near_cache_stats(clientMap)->get_owned_entry_count());
+                void assert_that_owned_entry_count_equals(ReplicatedMap &client_map, int64_t expected) {
+                    ASSERT_EQ(expected, get_near_cache_stats(client_map)->get_owned_entry_count());
                 }
 
                 std::unique_ptr<ClientConfig> clientConfig_;

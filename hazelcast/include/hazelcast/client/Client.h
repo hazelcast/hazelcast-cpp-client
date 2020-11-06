@@ -31,7 +31,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API Client : public Endpoint {
         public:
-            Client(boost::uuids::uuid uuid, boost::optional<Address> socketAddress, std::string name,
+            Client(boost::uuids::uuid uuid, boost::optional<Address> socket_address, std::string name,
                    std::unordered_set<std::string> labels);
 
             const std::string &get_name() const;

@@ -36,7 +36,7 @@ namespace hazelcast {
             friend struct serialization::hz_serializer<Address>;
             friend struct std::hash<hazelcast::client::Address>;
         public:
-            Address(const std::string &hostname, int port, unsigned long scopeId);
+            Address(const std::string &hostname, int port, unsigned long scope_id);
 
             static const int ID;
 

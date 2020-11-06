@@ -36,7 +36,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API AddressHolder {
         public:
-            AddressHolder(const std::string &address, const std::string &scopeId, int port);
+            AddressHolder(const std::string &address, const std::string &scope_id, int port);
 
             const std::string &get_address() const;
 
@@ -64,7 +64,7 @@ namespace hazelcast {
             static const int INITIAL_FIRST_PORT;
 
             static std::vector<client::Address>
-            get_possible_socket_addresses(int port, const std::string &scopedAddress, int portTryCount, logger &lg);
+            get_possible_socket_addresses(int port, const std::string &scoped_address, int port_try_count, logger &lg);
         };
     }
 }

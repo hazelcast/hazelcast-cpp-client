@@ -33,7 +33,7 @@ namespace hazelcast {
 
         class HAZELCAST_API ItemEventBase {
         public:
-            ItemEventBase(const std::string &name, const Member &member, const ItemEventType &eventType);
+            ItemEventBase(const std::string &name, const Member &member, const ItemEventType &event_type);
 
             virtual ~ItemEventBase();
 
@@ -72,8 +72,8 @@ namespace hazelcast {
          */
         class HAZELCAST_API ItemEvent : public ItemEventBase {
         public:
-            ItemEvent(const std::string &name, ItemEventType eventType, TypedData &&item, const Member &member)
-            : ItemEventBase(name, member, eventType), item_(item) {}
+            ItemEvent(const std::string &name, ItemEventType event_type, TypedData &&item, const Member &member)
+            : ItemEventBase(name, member, event_type), item_(item) {}
 
             /**
              * @returns the item.

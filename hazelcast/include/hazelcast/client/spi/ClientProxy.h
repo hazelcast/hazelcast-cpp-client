@@ -49,7 +49,7 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientProxy : public DistributedObject {
             public:
-                ClientProxy(const std::string &name, const std::string &serviceName, ClientContext &context);
+                ClientProxy(const std::string &name, const std::string &service_name, ClientContext &context);
 
                 ~ClientProxy() override;
 
@@ -110,7 +110,7 @@ namespace hazelcast {
                 * @param handler Event handler for the listener
                 */
                 boost::future<boost::uuids::uuid> register_listener(
-                        std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
+                        std::shared_ptr<impl::ListenerMessageCodec> listener_message_codec,
                         std::shared_ptr<client::impl::BaseEventHandler> handler);
 
                 /**
@@ -118,7 +118,7 @@ namespace hazelcast {
                 *
                 * @param registrationId The registration id for the listener to be unregistered.
                 */
-                boost::future<bool> deregister_listener(boost::uuids::uuid registrationId);
+                boost::future<bool> deregister_listener(boost::uuids::uuid registration_id);
             protected:
                 /**
                  * Called before proxy is destroyed and determines whether destroy should be done.

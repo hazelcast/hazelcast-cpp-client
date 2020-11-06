@@ -100,8 +100,8 @@ namespace hazelcast {
             *
             * @return true if registration is removed, false otherwise
             */
-            bool remove_message_listener(const std::string &registrationId) {
-                int id = util::IOUtil::to_value<int>(registrationId);
+            bool remove_message_listener(const std::string &registration_id) {
+                int id = util::IOUtil::to_value<int>(registration_id);
                 auto runner = runnersMap_.get(id);
                 if (!runner) {
                     return false;
@@ -122,8 +122,8 @@ namespace hazelcast {
             }
 
         private:
-            ReliableTopic(const std::string &instanceName, spi::ClientContext *context) : proxy::ReliableTopicImpl(
-                    instanceName, context) {}
+            ReliableTopic(const std::string &instance_name, spi::ClientContext *context) : proxy::ReliableTopicImpl(
+                    instance_name, context) {}
 
             template<typename Listener>
             class MessageRunner
@@ -132,11 +132,11 @@ namespace hazelcast {
                       public util::concurrent::Cancellable {
             public:
                 MessageRunner(int id, Listener &&listener, const std::shared_ptr<Ringbuffer> &rb,
-                              const std::string &topicName, serialization::pimpl::SerializationService &service,
-                              const config::ReliableTopicConfig &reliableTopicConfig, logger &lg)
+                              const std::string &topic_name, serialization::pimpl::SerializationService &service,
+                              const config::ReliableTopicConfig &reliable_topic_config, logger &lg)
                         : listener_(listener), id_(id), ringbuffer_(rb), cancelled_(false), logger_(lg),
-                        name_(topicName), executor_(rb, lg), serializationService_(service),
-                        config_(reliableTopicConfig) {
+                        name_(topic_name), executor_(rb, lg), serializationService_(service),
+                        config_(reliable_topic_config) {
                     // we are going to listen to next publication. We don't care about what already has been published.
                     int64_t initialSequence = listener.initial_sequence_id_;
                     if (initialSequence == -1) {
@@ -161,14 +161,14 @@ namespace hazelcast {
                 }
 
                 // This method is called from the provided executor.
-                void on_response(const boost::optional<ringbuffer::ReadResultSet> &allMessages) override {
+                void on_response(const boost::optional<ringbuffer::ReadResultSet> &all_messages) override {
                     if (cancelled_) {
                         return;
                     }
 
                     // we process all messages in batch. So we don't release the thread and reschedule ourselves;
                     // but we'll process whatever was received in 1 go.
-                    for (auto &item : allMessages->get_items()) {
+                    for (auto &item : all_messages->get_items()) {
                         try {
                             listener_.store_sequence_id_(sequence_);
                             process(item.get<topic::impl::reliable::ReliableTopicMessage>().get_ptr());

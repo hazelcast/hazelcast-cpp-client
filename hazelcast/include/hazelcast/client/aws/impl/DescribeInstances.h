@@ -43,7 +43,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API DescribeInstances {
                 public:
-                    DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
+                    DescribeInstances(config::ClientAwsConfig &aws_config, const std::string &endpoint,
                                       logger &lg);
 
                     virtual ~DescribeInstances();

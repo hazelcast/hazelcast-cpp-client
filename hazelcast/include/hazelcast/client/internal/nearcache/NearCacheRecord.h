@@ -99,7 +99,7 @@ namespace hazelcast {
                      * @param now                 current time in milliseconds
                      * @return {@code true} if exceeds max idle seconds, otherwise {@code false}
                      */
-                    virtual bool is_idle_at(int64_t maxIdleMilliSeconds, int64_t now) = 0;
+                    virtual bool is_idle_at(int64_t max_idle_milli_seconds, int64_t now) = 0;
 
                     /**
                      * @return last known invalidation sequence at time of this records' creation
@@ -120,7 +120,7 @@ namespace hazelcast {
                      * @return {@code true} if supplied uuid equals existing one, otherwise and when one of supplied
                      * or existing is null returns {@code false}
                      */
-                    virtual bool has_same_uuid(boost::uuids::uuid thatUuid) const = 0;
+                    virtual bool has_same_uuid(boost::uuids::uuid that_uuid) const = 0;
                 };
             }
         }

@@ -38,7 +38,7 @@ namespace hazelcast {
                     public:
                         ReliableTopicMessage();
 
-                        ReliableTopicMessage(serialization::pimpl::Data &&payloadData, std::unique_ptr<Address> address);
+                        ReliableTopicMessage(serialization::pimpl::Data &&payload_data, std::unique_ptr<Address> address);
 
                         std::chrono::system_clock::time_point get_publish_time() const;
 

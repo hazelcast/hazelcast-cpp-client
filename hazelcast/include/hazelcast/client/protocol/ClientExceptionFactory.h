@@ -48,7 +48,7 @@ namespace hazelcast {
                 std::exception_ptr create_exception(const std::vector<codec::ErrorHolder> &errors) const;
 
             private:
-                void register_exception(int32_t errorCode, ExceptionFactory *factory);
+                void register_exception(int32_t error_code, ExceptionFactory *factory);
 
                 std::exception_ptr create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,
                                                     std::vector<codec::ErrorHolder>::const_iterator end) const;

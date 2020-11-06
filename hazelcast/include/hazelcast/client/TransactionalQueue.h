@@ -68,8 +68,8 @@ namespace hazelcast {
             }
 
         private:
-            TransactionalQueue(const std::string &name, txn::TransactionProxy &transactionProxy)
-                    : proxy::TransactionalQueueImpl(name, transactionProxy) {
+            TransactionalQueue(const std::string &name, txn::TransactionProxy &transaction_proxy)
+                    : proxy::TransactionalQueueImpl(name, transaction_proxy) {
 
             }
         };

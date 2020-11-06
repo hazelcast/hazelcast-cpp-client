@@ -52,8 +52,8 @@ namespace hazelcast {
              * Internal API.
              * Constructor.
              */
-            MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
-                            const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &membersList);
+            MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType event_type,
+                            const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &members_list);
 
             /**
              * Destructor

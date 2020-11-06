@@ -112,11 +112,11 @@ namespace hazelcast {
                 }
 
                 std::unordered_map<std::string, std::string>
-                get_stats_from_response(const Response &statsResponse) {
+                get_stats_from_response(const Response &stats_response) {
                     std::unordered_map<std::string, std::string> statsMap;
-                    if (statsResponse.success && !statsResponse.result.empty()) {
+                    if (stats_response.success && !stats_response.result.empty()) {
                         std::vector<std::string> keyValuePairs;
-                        boost::split(keyValuePairs, statsResponse.result, boost::is_any_of(","));
+                        boost::split(keyValuePairs, stats_response.result, boost::is_any_of(","));
 
                         for(const auto &pair : keyValuePairs) {
                             std::vector<std::string> keyValuePair;
@@ -173,9 +173,9 @@ namespace hazelcast {
                     return localAddressString.str();
                 }
 
-                bool is_stats_updated(const std::string &lastStatisticsCollectionTime) {
+                bool is_stats_updated(const std::string &last_statistics_collection_time) {
                     auto stats = get_stats();
-                    if (stats["lastStatisticsCollectionTime"] != lastStatisticsCollectionTime) {
+                    if (stats["lastStatisticsCollectionTime"] != last_statistics_collection_time) {
                         return true;
                     }
                     return false;
@@ -425,8 +425,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace ringbuffer {
-                StartsWithStringFilter::StartsWithStringFilter(const std::string &startString) : startString_(
-                        startString) {}
+                StartsWithStringFilter::StartsWithStringFilter(const std::string &start_string) : startString_(
+                        start_string) {}
             }
         }
 
@@ -911,7 +911,7 @@ namespace hazelcast {
                                                         boost::latch &started,
                                                         boost::latch &connected,
                                                         boost::latch &disconnected,
-                                                        boost::latch &shuttingDown,
+                                                        boost::latch &shutting_down,
                                                         boost::latch &shutdown) {
                     return LifecycleListener()
                         .on_starting([&starting](){
@@ -926,16 +926,16 @@ namespace hazelcast {
                         .on_disconnected([&disconnected](){
                             disconnected.count_down();
                         })
-                        .on_shutting_down([&shuttingDown](){
-                            shuttingDown.count_down();
+                        .on_shutting_down([&shutting_down](){
+                            shutting_down.count_down();
                         })
                         .on_shutdown([&shutdown](){
                             shutdown.count_down();
                         });
                 }
                 
-                std::unique_ptr<HazelcastServer> start_server(ClientConfig &clientConfig) {
-                    if (clientConfig.get_network_config().get_ssl_config().is_enabled()) {
+                std::unique_ptr<HazelcastServer> start_server(ClientConfig &client_config) {
+                    if (client_config.get_network_config().get_ssl_config().is_enabled()) {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(sslFactory_));
                     } else {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
@@ -1400,8 +1400,8 @@ namespace hazelcast {
                     class ClientPNCounterConsistencyLostTest : public ClientTestSupport {
                     protected:
                         boost::shared_ptr<Member> get_current_target_replica_address(
-                                const std::shared_ptr<PNCounter> &pnCounter) {
-                            return pnCounter->get_current_target_replica_address();
+                                const std::shared_ptr<PNCounter> &pn_counter) {
+                            return pn_counter->get_current_target_replica_address();
                         }
 
                         void

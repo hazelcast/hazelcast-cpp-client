@@ -17,7 +17,7 @@
 #include <hazelcast/client/PartitionAware.h>
 
 struct PartitionAwareString : public hazelcast::client::PartitionAware<std::string> {
-    PartitionAwareString(const std::string &actualKey) : actual_key(actualKey) {}
+    PartitionAwareString(const std::string &actual_key) : actual_key(actual_key) {}
 
     const std::string *get_partition_key() const override {
         return &desiredPartitionString;

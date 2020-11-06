@@ -50,21 +50,21 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
 
-                LifecycleService(ClientContext &clientContext, 
-                                 const std::vector<LifecycleListener> &lifecycleListeners,
-                                 LoadBalancer *const loadBalancer, Cluster &cluster);
+                LifecycleService(ClientContext &client_context, 
+                                 const std::vector<LifecycleListener> &lifecycle_listeners,
+                                 LoadBalancer *const load_balancer, Cluster &cluster);
 
                 virtual ~LifecycleService();
 
                 bool start();
 
-                void fire_lifecycle_event(const LifecycleEvent &lifecycleEvent);
+                void fire_lifecycle_event(const LifecycleEvent &lifecycle_event);
 
                 void shutdown();
 
-                boost::uuids::uuid add_listener(LifecycleListener &&lifecycleListener);
+                boost::uuids::uuid add_listener(LifecycleListener &&lifecycle_listener);
 
-                bool remove_listener(const boost::uuids::uuid &registrationId);
+                bool remove_listener(const boost::uuids::uuid &registration_id);
 
                 bool is_running();
 

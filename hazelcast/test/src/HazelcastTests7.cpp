@@ -115,13 +115,13 @@ namespace hazelcast {
             class ClientMultiMapTest : public ClientTestSupport {
             protected:
 
-                EntryListener make_add_remove_listener(boost::latch &addedLatch, boost::latch &removedLatch) {
+                EntryListener make_add_remove_listener(boost::latch &added_latch, boost::latch &removed_latch) {
                     return EntryListener().
-                        on_added([&addedLatch](EntryEvent &&) {
-                            addedLatch.count_down();
+                        on_added([&added_latch](EntryEvent &&) {
+                            added_latch.count_down();
                         }).
-                        on_removed([&removedLatch](EntryEvent &&) {
-                            removedLatch.count_down();
+                        on_removed([&removed_latch](EntryEvent &&) {
+                            removed_latch.count_down();
                         });
                 }
 
@@ -524,14 +524,14 @@ namespace hazelcast {
 
                 ItemListener listener;
 
-                listener.on_added([&latch1](ItemEvent &&itemEvent) {
-                    auto type = itemEvent.get_event_type();
+                listener.on_added([&latch1](ItemEvent &&item_event) {
+                    auto type = item_event.get_event_type();
                     ASSERT_EQ(ItemEventType::ADDED, type);
-                    ASSERT_EQ("MyList", itemEvent.get_name());
-                    std::string host = itemEvent.get_member().get_address().get_host();
+                    ASSERT_EQ("MyList", item_event.get_name());
+                    std::string host = item_event.get_member().get_address().get_host();
                     ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
-                    ASSERT_EQ(5701, itemEvent.get_member().get_address().get_port());
-                    ASSERT_EQ("item-1", itemEvent.get_item().get<std::string>().value());
+                    ASSERT_EQ(5701, item_event.get_member().get_address().get_port());
+                    ASSERT_EQ("item-1", item_event.get_item().get<std::string>().value());
                     latch1.count_down();
                 });
 
@@ -558,8 +558,8 @@ namespace hazelcast {
         namespace test {
             class ClientQueueTest : public ClientTestSupport {
             protected:
-                void offer(int numberOfItems) {
-                    for (int i = 1; i <= numberOfItems; ++i) {
+                void offer(int number_of_items) {
+                    for (int i = 1; i <= number_of_items; ++i) {
                         ASSERT_TRUE(q->offer(std::string("item") + std::to_string(i)).get());
                     }
                 }
@@ -602,7 +602,7 @@ namespace hazelcast {
                 boost::latch latch1(5);
 
                 auto listener = ItemListener()
-                    .on_added([&latch1](ItemEvent &&itemEvent) {
+                    .on_added([&latch1](ItemEvent &&item_event) {
                         latch1.count_down();
                     });
 
@@ -927,12 +927,12 @@ namespace hazelcast {
                 class MultiExecutionCompletionCallback : public MultiExecutionCallback<std::string> {
                 public:
                     MultiExecutionCompletionCallback(std::string msg,
-                                                     std::shared_ptr<boost::latch> responseLatch,
-                                                     const std::shared_ptr<boost::latch> &completeLatch) : msg_(std::move(msg)),
+                                                     std::shared_ptr<boost::latch> response_latch,
+                                                     const std::shared_ptr<boost::latch> &complete_latch) : msg_(std::move(msg)),
                                                                                                            responseLatch_(std::move(
-                                                                                                                   responseLatch)),
+                                                                                                                   response_latch)),
                                                                                                            completeLatch_(
-                                                                                                                   completeLatch) {}
+                                                                                                                   complete_latch) {}
 
                     void on_response(const Member &member, const boost::optional<std::string> &response) override {
                         if (response && *response == msg_ + APPENDAGE) {
@@ -963,9 +963,9 @@ namespace hazelcast {
 
                 class MultiExecutionNullCallback : public MultiExecutionCallback<std::string> {
                 public:
-                    MultiExecutionNullCallback(std::shared_ptr<boost::latch> responseLatch,
-                                               std::shared_ptr<boost::latch> completeLatch)
-                            : responseLatch_(std::move(responseLatch)), completeLatch_(std::move(completeLatch)) {}
+                    MultiExecutionNullCallback(std::shared_ptr<boost::latch> response_latch,
+                                               std::shared_ptr<boost::latch> complete_latch)
+                            : responseLatch_(std::move(response_latch)), completeLatch_(std::move(complete_latch)) {}
 
                     void on_response(const Member &member, const boost::optional<std::string> &response) override {
                         if (!response) {

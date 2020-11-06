@@ -67,8 +67,8 @@ namespace hazelcast {
         }
 
         void SerializationConfig::set_global_serializer(
-                const std::shared_ptr<serialization::global_serializer> &globalSerializer) {
-            globalSerializer_ = globalSerializer;
+                const std::shared_ptr<serialization::global_serializer> &global_serializer) {
+            globalSerializer_ = global_serializer;
         }
 
         namespace config {
@@ -79,9 +79,9 @@ namespace hazelcast {
                 return enabled_;
             }
 
-            SSLConfig &SSLConfig::set_enabled(bool isEnabled) {
+            SSLConfig &SSLConfig::set_enabled(bool is_enabled) {
                 util::Preconditions::check_ssl("getAwsConfig");
-                this->enabled_ = isEnabled;
+                this->enabled_ = is_enabled;
                 return *this;
             }
 
@@ -170,8 +170,8 @@ namespace hazelcast {
                 return connectionTimeout_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_aws_config(const ClientAwsConfig &clientAwsConfig) {
-                this->clientAwsConfig_ = clientAwsConfig;
+            ClientNetworkConfig &ClientNetworkConfig::set_aws_config(const ClientAwsConfig &client_aws_config) {
+                this->clientAwsConfig_ = client_aws_config;
                 return *this;
             }
 
@@ -183,8 +183,8 @@ namespace hazelcast {
                 return smartRouting_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_smart_routing(bool smartRouting) {
-                ClientNetworkConfig::smartRouting_ = smartRouting;
+            ClientNetworkConfig &ClientNetworkConfig::set_smart_routing(bool smart_routing) {
+                ClientNetworkConfig::smartRouting_ = smart_routing;
                 return *this;
             }
 
@@ -192,13 +192,13 @@ namespace hazelcast {
                 return connectionAttemptLimit_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_connection_attempt_limit(int32_t connectionAttemptLimit) {
-                if (connectionAttemptLimit < 0) {
+            ClientNetworkConfig &ClientNetworkConfig::set_connection_attempt_limit(int32_t connection_attempt_limit) {
+                if (connection_attempt_limit < 0) {
                     BOOST_THROW_EXCEPTION(
                             exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptLimit",
                                                                 "connectionAttemptLimit cannot be negative"));
                 }
-                this->connectionAttemptLimit_ = connectionAttemptLimit;
+                this->connectionAttemptLimit_ = connection_attempt_limit;
                 return *this;
             }
 
@@ -253,14 +253,14 @@ namespace hazelcast {
                 return asyncStart_;
             }
 
-            ClientConnectionStrategyConfig &ClientConnectionStrategyConfig::set_async_start(bool asyncStart) {
-                this->asyncStart_ = asyncStart;
+            ClientConnectionStrategyConfig &ClientConnectionStrategyConfig::set_async_start(bool async_start) {
+                this->asyncStart_ = async_start;
                 return *this;
             }
 
             ClientConnectionStrategyConfig &
-            ClientConnectionStrategyConfig::set_reconnect_mode(ReconnectMode reconnectMode) {
-                this->reconnectMode_ = reconnectMode;
+            ClientConnectionStrategyConfig::set_reconnect_mode(ReconnectMode reconnect_mode) {
+                this->reconnectMode_ = reconnect_mode;
                 return *this;
             }
 
@@ -268,8 +268,8 @@ namespace hazelcast {
 
             ReliableTopicConfig::ReliableTopicConfig() = default;
 
-            ReliableTopicConfig::ReliableTopicConfig(const char *topicName) : readBatchSize_(DEFAULT_READ_BATCH_SIZE),
-                                                                              name_(topicName) {
+            ReliableTopicConfig::ReliableTopicConfig(const char *topic_name) : readBatchSize_(DEFAULT_READ_BATCH_SIZE),
+                                                                              name_(topic_name) {
             }
 
             const std::string &ReliableTopicConfig::get_name() const {
@@ -280,13 +280,13 @@ namespace hazelcast {
                 return readBatchSize_;
             }
 
-            ReliableTopicConfig &ReliableTopicConfig::set_read_batch_size(int batchSize) {
-                if (batchSize <= 0) {
+            ReliableTopicConfig &ReliableTopicConfig::set_read_batch_size(int batch_size) {
+                if (batch_size <= 0) {
                     BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
                                                                               "readBatchSize should be positive"));
                 }
 
-                this->readBatchSize_ = batchSize;
+                this->readBatchSize_ = batch_size;
 
                 return *this;
             }
@@ -298,8 +298,8 @@ namespace hazelcast {
                 return tcpNoDelay_;
             }
 
-            SocketOptions &SocketOptions::set_tcp_no_delay(bool tcpNoDelay) {
-                SocketOptions::tcpNoDelay_ = tcpNoDelay;
+            SocketOptions &SocketOptions::set_tcp_no_delay(bool tcp_no_delay) {
+                SocketOptions::tcpNoDelay_ = tcp_no_delay;
                 return *this;
             }
 
@@ -307,8 +307,8 @@ namespace hazelcast {
                 return keepAlive_;
             }
 
-            SocketOptions &SocketOptions::set_keep_alive(bool keepAlive) {
-                SocketOptions::keepAlive_ = keepAlive;
+            SocketOptions &SocketOptions::set_keep_alive(bool keep_alive) {
+                SocketOptions::keepAlive_ = keep_alive;
                 return *this;
             }
 
@@ -316,8 +316,8 @@ namespace hazelcast {
                 return reuseAddress_;
             }
 
-            SocketOptions &SocketOptions::set_reuse_address(bool reuseAddress) {
-                SocketOptions::reuseAddress_ = reuseAddress;
+            SocketOptions &SocketOptions::set_reuse_address(bool reuse_address) {
+                SocketOptions::reuseAddress_ = reuse_address;
                 return *this;
             }
 
@@ -325,8 +325,8 @@ namespace hazelcast {
                 return lingerSeconds_;
             }
 
-            SocketOptions &SocketOptions::set_linger_seconds(int lingerSeconds) {
-                SocketOptions::lingerSeconds_ = lingerSeconds;
+            SocketOptions &SocketOptions::set_linger_seconds(int linger_seconds) {
+                SocketOptions::lingerSeconds_ = linger_seconds;
                 return *this;
             }
 
@@ -334,8 +334,8 @@ namespace hazelcast {
                 return bufferSize_;
             }
 
-            SocketOptions &SocketOptions::set_buffer_size_in_bytes(int bufferSize) {
-                SocketOptions::bufferSize_ = bufferSize;
+            SocketOptions &SocketOptions::set_buffer_size_in_bytes(int buffer_size) {
+                SocketOptions::bufferSize_ = buffer_size;
                 return *this;
             }
 
@@ -347,8 +347,8 @@ namespace hazelcast {
                 return accessKey_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_access_key(const std::string &accessKey) {
-                this->accessKey_ = util::Preconditions::check_has_text(accessKey, "accessKey must contain text");
+            ClientAwsConfig &ClientAwsConfig::set_access_key(const std::string &access_key) {
+                this->accessKey_ = util::Preconditions::check_has_text(access_key, "accessKey must contain text");
                 return *this;
             }
 
@@ -356,8 +356,8 @@ namespace hazelcast {
                 return secretKey_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_secret_key(const std::string &secretKey) {
-                this->secretKey_ = util::Preconditions::check_has_text(secretKey, "secretKey must contain text");
+            ClientAwsConfig &ClientAwsConfig::set_secret_key(const std::string &secret_key) {
+                this->secretKey_ = util::Preconditions::check_has_text(secret_key, "secretKey must contain text");
                 return *this;
             }
 
@@ -374,8 +374,8 @@ namespace hazelcast {
                 return hostHeader_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_host_header(const std::string &hostHeader) {
-                this->hostHeader_ = util::Preconditions::check_has_text(hostHeader, "hostHeader must contain text");
+            ClientAwsConfig &ClientAwsConfig::set_host_header(const std::string &host_header) {
+                this->hostHeader_ = util::Preconditions::check_has_text(host_header, "hostHeader must contain text");
                 return *this;
             }
 
@@ -389,8 +389,8 @@ namespace hazelcast {
                 return enabled_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_security_group_name(const std::string &securityGroupName) {
-                this->securityGroupName_ = securityGroupName;
+            ClientAwsConfig &ClientAwsConfig::set_security_group_name(const std::string &security_group_name) {
+                this->securityGroupName_ = security_group_name;
                 return *this;
             }
 
@@ -398,8 +398,8 @@ namespace hazelcast {
                 return securityGroupName_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_tag_key(const std::string &tagKey) {
-                this->tagKey_ = tagKey;
+            ClientAwsConfig &ClientAwsConfig::set_tag_key(const std::string &tag_key) {
+                this->tagKey_ = tag_key;
                 return *this;
             }
 
@@ -407,8 +407,8 @@ namespace hazelcast {
                 return tagKey_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_tag_value(const std::string &tagValue) {
-                this->tagValue_ = tagValue;
+            ClientAwsConfig &ClientAwsConfig::set_tag_value(const std::string &tag_value) {
+                this->tagValue_ = tag_value;
                 return *this;
             }
 
@@ -420,8 +420,8 @@ namespace hazelcast {
                 return iamRole_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_iam_role(const std::string &iamRole) {
-                this->iamRole_ = iamRole;
+            ClientAwsConfig &ClientAwsConfig::set_iam_role(const std::string &iam_role) {
+                this->iamRole_ = iam_role;
                 return *this;
             }
 
@@ -429,8 +429,8 @@ namespace hazelcast {
                 return insideAws_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_inside_aws(bool insideAws) {
-                this->insideAws_ = insideAws;
+            ClientAwsConfig &ClientAwsConfig::set_inside_aws(bool inside_aws) {
+                this->insideAws_ = inside_aws;
                 return *this;
             }
 
@@ -447,13 +447,13 @@ namespace hazelcast {
 
             namespace matcher {
                 std::shared_ptr<std::string>
-                MatchingPointConfigPatternMatcher::matches(const std::vector<std::string> &configPatterns,
-                                                           const std::string &itemName) const {
+                MatchingPointConfigPatternMatcher::matches(const std::vector<std::string> &config_patterns,
+                                                           const std::string &item_name) const {
                     std::shared_ptr<std::string> candidate;
                     std::shared_ptr<std::string> duplicate;
                     int lastMatchingPoint = -1;
-                    for (const std::string &pattern  : configPatterns) {
-                        int matchingPoint = get_matching_point(pattern, itemName);
+                    for (const std::string &pattern  : config_patterns) {
+                        int matchingPoint = get_matching_point(pattern, item_name);
                         if (matchingPoint > -1 && matchingPoint >= lastMatchingPoint) {
                             if (matchingPoint == lastMatchingPoint) {
                                 duplicate = candidate;
@@ -466,7 +466,7 @@ namespace hazelcast {
                     }
                     if (duplicate.get() != NULL) {
                         throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
-                                "MatchingPointConfigPatternMatcher::matches") << "Configuration " << itemName
+                                "MatchingPointConfigPatternMatcher::matches") << "Configuration " << item_name
                                                                               << " has duplicate configuration. Candidate:"
                                                                               << *candidate << ", duplicate:"
                                                                               << *duplicate).build();
@@ -475,19 +475,19 @@ namespace hazelcast {
                 }
 
                 int MatchingPointConfigPatternMatcher::get_matching_point(const std::string &pattern,
-                                                                        const std::string &itemName) const {
+                                                                        const std::string &item_name) const {
                     size_t index = pattern.find('*');
                     if (index == std::string::npos) {
                         return -1;
                     }
 
                     std::string firstPart = pattern.substr(0, index);
-                    if (itemName.find(firstPart) != 0) {
+                    if (item_name.find(firstPart) != 0) {
                         return -1;
                     }
 
                     std::string secondPart = pattern.substr(index + 1);
-                    if (itemName.rfind(secondPart) != (itemName.length() - secondPart.length())) {
+                    if (item_name.rfind(secondPart) != (item_name.length() - secondPart.length())) {
                         return -1;
                     }
 
@@ -525,8 +525,8 @@ namespace hazelcast {
                 return maxSizePolicy_;
             }
 
-            EvictionConfig &EvictionConfig::set_maximum_size_policy(const EvictionConfig::MaxSizePolicy &maxSizePolicy) {
-                this->maxSizePolicy_ = maxSizePolicy;
+            EvictionConfig &EvictionConfig::set_maximum_size_policy(const EvictionConfig::MaxSizePolicy &max_size_policy) {
+                this->maxSizePolicy_ = max_size_policy;
                 return *this;
             }
 
@@ -576,22 +576,22 @@ namespace hazelcast {
                                                  cacheLocalEntries_(false) {
             }
 
-            NearCacheConfig::NearCacheConfig(const std::string &cacheName) : NearCacheConfig() {
-                name_ = cacheName;
+            NearCacheConfig::NearCacheConfig(const std::string &cache_name) : NearCacheConfig() {
+                name_ = cache_name;
             }
 
-            NearCacheConfig::NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat)
+            NearCacheConfig::NearCacheConfig(const std::string &cache_name, InMemoryFormat memory_format)
                     : NearCacheConfig(name_) {
-                this->inMemoryFormat_ = memoryFormat;
+                this->inMemoryFormat_ = memory_format;
             }
 
-            NearCacheConfig::NearCacheConfig(int32_t timeToLiveSeconds, int32_t maxIdleSeconds, bool invalidateOnChange,
-                                             InMemoryFormat inMemoryFormat, const EvictionConfig &evictConfig)
-                    : NearCacheConfig(name_, inMemoryFormat) {
-                this->timeToLiveSeconds_ = timeToLiveSeconds;
-                this->maxIdleSeconds_ = maxIdleSeconds;
-                this->invalidateOnChange_ = invalidateOnChange;
-                this->evictionConfig_ = evictConfig;
+            NearCacheConfig::NearCacheConfig(int32_t time_to_live_seconds, int32_t max_idle_seconds, bool invalidate_on_change,
+                                             InMemoryFormat in_memory_format, const EvictionConfig &evict_config)
+                    : NearCacheConfig(name_, in_memory_format) {
+                this->timeToLiveSeconds_ = time_to_live_seconds;
+                this->maxIdleSeconds_ = max_idle_seconds;
+                this->invalidateOnChange_ = invalidate_on_change;
+                this->evictionConfig_ = evict_config;
             }
 
             const std::string &NearCacheConfig::get_name() const {
@@ -607,8 +607,8 @@ namespace hazelcast {
                 return timeToLiveSeconds_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_time_to_live_seconds(int32_t timeToLiveSeconds) {
-                this->timeToLiveSeconds_ = util::Preconditions::check_not_negative(timeToLiveSeconds,
+            NearCacheConfig &NearCacheConfig::set_time_to_live_seconds(int32_t time_to_live_seconds) {
+                this->timeToLiveSeconds_ = util::Preconditions::check_not_negative(time_to_live_seconds,
                                                                                 "TTL seconds cannot be negative!");
                 return *this;
             }
@@ -617,8 +617,8 @@ namespace hazelcast {
                 return maxIdleSeconds_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_max_idle_seconds(int32_t maxIdleSeconds) {
-                this->maxIdleSeconds_ = util::Preconditions::check_not_negative(maxIdleSeconds,
+            NearCacheConfig &NearCacheConfig::set_max_idle_seconds(int32_t max_idle_seconds) {
+                this->maxIdleSeconds_ = util::Preconditions::check_not_negative(max_idle_seconds,
                                                                              "Max-Idle seconds cannot be negative!");
                 return *this;
             }
@@ -627,8 +627,8 @@ namespace hazelcast {
                 return invalidateOnChange_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_invalidate_on_change(bool invalidateOnChange) {
-                this->invalidateOnChange_ = invalidateOnChange;
+            NearCacheConfig &NearCacheConfig::set_invalidate_on_change(bool invalidate_on_change) {
+                this->invalidateOnChange_ = invalidate_on_change;
                 return *this;
             }
 
@@ -636,8 +636,8 @@ namespace hazelcast {
                 return inMemoryFormat_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_in_memory_format(const InMemoryFormat &inMemoryFormat) {
-                this->inMemoryFormat_ = inMemoryFormat;
+            NearCacheConfig &NearCacheConfig::set_in_memory_format(const InMemoryFormat &in_memory_format) {
+                this->inMemoryFormat_ = in_memory_format;
                 return *this;
             }
 
@@ -645,8 +645,8 @@ namespace hazelcast {
                 return cacheLocalEntries_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_cache_local_entries(bool cacheLocalEntries) {
-                this->cacheLocalEntries_ = cacheLocalEntries;
+            NearCacheConfig &NearCacheConfig::set_cache_local_entries(bool cache_local_entries) {
+                this->cacheLocalEntries_ = cache_local_entries;
                 return *this;
             }
 
@@ -654,8 +654,8 @@ namespace hazelcast {
                 return localUpdatePolicy_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_local_update_policy(const LocalUpdatePolicy &localUpdatePolicy) {
-                this->localUpdatePolicy_ = localUpdatePolicy;
+            NearCacheConfig &NearCacheConfig::set_local_update_policy(const LocalUpdatePolicy &local_update_policy) {
+                this->localUpdatePolicy_ = local_update_policy;
                 return *this;
             }
 
@@ -663,13 +663,13 @@ namespace hazelcast {
                 return evictionConfig_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_eviction_config(const EvictionConfig &evictionConfig) {
-                this->evictionConfig_ = evictionConfig;
+            NearCacheConfig &NearCacheConfig::set_eviction_config(const EvictionConfig &eviction_config) {
+                this->evictionConfig_ = eviction_config;
                 return *this;
             }
 
-            int32_t NearCacheConfig::calculate_max_size(int32_t maxSize) {
-                return (maxSize == 0) ? INT32_MAX : util::Preconditions::check_not_negative(maxSize,
+            int32_t NearCacheConfig::calculate_max_size(int32_t max_size) {
+                return (max_size == 0) ? INT32_MAX : util::Preconditions::check_not_negative(max_size,
                                                                                           "Max-size cannot be negative!");
             }
 
@@ -691,8 +691,8 @@ namespace hazelcast {
         ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer_(NULL), redoOperation_(false),
                                        socketInterceptor_(), executorPoolSize_(-1) {}
 
-        ClientConfig &ClientConfig::set_redo_operation(bool redoOperation) {
-            this->redoOperation_ = redoOperation;
+        ClientConfig &ClientConfig::set_redo_operation(bool redo_operation) {
+            this->redoOperation_ = redo_operation;
             return *this;
         }
 
@@ -706,8 +706,8 @@ namespace hazelcast {
             return loadBalancer_;
         }
 
-        ClientConfig &ClientConfig::set_load_balancer(LoadBalancer *loadBalancer) {
-            this->loadBalancer_ = loadBalancer;
+        ClientConfig &ClientConfig::set_load_balancer(LoadBalancer *load_balancer) {
+            this->loadBalancer_ = load_balancer;
             return *this;
         }
 
@@ -746,8 +746,8 @@ namespace hazelcast {
             return serializationConfig_;
         }
 
-        ClientConfig &ClientConfig::set_serialization_config(SerializationConfig const &serializationConfig) {
-            this->serializationConfig_ = serializationConfig;
+        ClientConfig &ClientConfig::set_serialization_config(SerializationConfig const &serialization_config) {
+            this->serializationConfig_ = serialization_config;
             return *this;
         }
 
@@ -760,8 +760,8 @@ namespace hazelcast {
             return *this;
         }
 
-        ClientConfig &ClientConfig::add_reliable_topic_config(const config::ReliableTopicConfig &reliableTopicConfig) {
-            reliableTopicConfigMap_[reliableTopicConfig.get_name()] = reliableTopicConfig;
+        ClientConfig &ClientConfig::add_reliable_topic_config(const config::ReliableTopicConfig &reliable_topic_config) {
+            reliableTopicConfigMap_[reliable_topic_config.get_name()] = reliable_topic_config;
             return *this;
         }
 
@@ -778,8 +778,8 @@ namespace hazelcast {
             return networkConfig_;
         }
 
-        ClientConfig &ClientConfig::add_near_cache_config(const config::NearCacheConfig &nearCacheConfig) {
-            nearCacheConfigMap_.emplace(nearCacheConfig.get_name(), nearCacheConfig);
+        ClientConfig &ClientConfig::add_near_cache_config(const config::NearCacheConfig &near_cache_config) {
+            nearCacheConfigMap_.emplace(near_cache_config.get_name(), near_cache_config);
             return *this;
         }
 
@@ -800,8 +800,8 @@ namespace hazelcast {
             return nullptr;
         }
 
-        ClientConfig &ClientConfig::set_network_config(const config::ClientNetworkConfig &networkConfig) {
-            this->networkConfig_ = networkConfig;
+        ClientConfig &ClientConfig::set_network_config(const config::ClientNetworkConfig &network_config) {
+            this->networkConfig_ = network_config;
             return *this;
         }
 
@@ -809,16 +809,16 @@ namespace hazelcast {
             return instanceName_;
         }
 
-        void ClientConfig::set_instance_name(const std::shared_ptr<std::string> &instanceName) {
-            ClientConfig::instanceName_ = instanceName;
+        void ClientConfig::set_instance_name(const std::shared_ptr<std::string> &instance_name) {
+            ClientConfig::instanceName_ = instance_name;
         }
 
         int32_t ClientConfig::get_executor_pool_size() const {
             return executorPoolSize_;
         }
 
-        void ClientConfig::set_executor_pool_size(int32_t executorPoolSize) {
-            ClientConfig::executorPoolSize_ = executorPoolSize;
+        void ClientConfig::set_executor_pool_size(int32_t executor_pool_size) {
+            ClientConfig::executorPoolSize_ = executor_pool_size;
         }
 
         config::ClientConnectionStrategyConfig &ClientConfig::get_connection_strategy_config() {
@@ -826,8 +826,8 @@ namespace hazelcast {
         }
 
         ClientConfig &ClientConfig::set_connection_strategy_config(
-                const config::ClientConnectionStrategyConfig &connectionStrategyConfig) {
-            ClientConfig::connectionStrategyConfig_ = connectionStrategyConfig;
+                const config::ClientConnectionStrategyConfig &connection_strategy_config) {
+            ClientConfig::connectionStrategyConfig_ = connection_strategy_config;
             return *this;
         }
 
@@ -872,8 +872,8 @@ namespace hazelcast {
             return cluster_name_;
         }
 
-        ClientConfig &ClientConfig::set_cluster_name(const std::string &clusterName) {
-            cluster_name_ = clusterName;
+        ClientConfig &ClientConfig::set_cluster_name(const std::string &cluster_name) {
+            cluster_name_ = cluster_name;
             return *this;
         }
 

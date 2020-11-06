@@ -62,18 +62,18 @@ namespace hazelcast {
 
 class PredicateMember {
 public:
-    std::vector<Person> get_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
-        return personMap.values<Person>(query::SqlPredicate(hz, std::string("name==") + name)).get();
+    std::vector<Person> get_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &person_map) {
+        return person_map.values<Person>(query::SqlPredicate(hz, std::string("name==") + name)).get();
     }
 
     std::vector<Person>
-    get_not_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
-        return personMap.values<Person>(query::SqlPredicate(hz, std::string("name!=") + name)).get();
+    get_not_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &person_map) {
+        return person_map.values<Person>(query::SqlPredicate(hz, std::string("name!=") + name)).get();
     }
 
     std::vector<Person> get_with_name_and_age(HazelcastClient &hz, const std::string &name, int32_t age,
-                                          hazelcast::client::IMap &personMap) {
-        return personMap.values<Person>(
+                                          hazelcast::client::IMap &person_map) {
+        return person_map.values<Person>(
                 query::SqlPredicate(hz, (boost::format("name == %1% AND age == %2%") % name % age).str())).get();
     }
 

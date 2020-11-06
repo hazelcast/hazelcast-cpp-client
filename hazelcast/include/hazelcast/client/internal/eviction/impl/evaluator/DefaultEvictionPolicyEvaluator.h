@@ -62,10 +62,10 @@ namespace hazelcast {
                              * @return multiple {@link com.hazelcast.internal.eviction.EvictionCandidate} these are available to be evicted
                              */
                             std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
-                                    util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidates) const override {
+                                    util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &eviction_candidates) const override {
                                 std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > selectedEvictionCandidate;
                                 int64_t now = util::current_time_millis();
-                                util::Iterator<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > *iterator = evictionCandidates.iterator();
+                                util::Iterator<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > *iterator = eviction_candidates.iterator();
                                 while (iterator->has_next()) {
                                     std::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > currentEvictionCandidate = iterator->next();
                                     if (selectedEvictionCandidate.get() == NULL) {
@@ -89,13 +89,13 @@ namespace hazelcast {
 
                         private:
                             std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > return_eviction_candidate(
-                                    const std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidate) const {
-                                if (evictionCandidate.get() == NULL) {
+                                    const std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &eviction_candidate) const {
+                                if (eviction_candidate.get() == NULL) {
                                     return std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > >();
                                 } else {
                                     std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > result(
                                             new std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > >());
-                                    result->push_back(evictionCandidate);
+                                    result->push_back(eviction_candidate);
                                     return result;
                                 }
                             }

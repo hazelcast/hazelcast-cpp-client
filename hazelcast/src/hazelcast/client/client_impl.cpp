@@ -94,12 +94,12 @@ namespace hazelcast {
             return clientImpl_->get_cluster();
         }
 
-        boost::uuids::uuid HazelcastClient::add_lifecycle_listener(LifecycleListener &&lifecycleListener) {
-            return clientImpl_->add_lifecycle_listener(std::move(lifecycleListener));
+        boost::uuids::uuid HazelcastClient::add_lifecycle_listener(LifecycleListener &&lifecycle_listener) {
+            return clientImpl_->add_lifecycle_listener(std::move(lifecycle_listener));
         }
 
-        bool HazelcastClient::remove_lifecycle_listener(const boost::uuids::uuid &registrationId) {
-            return clientImpl_->remove_lifecycle_listener(registrationId);
+        bool HazelcastClient::remove_lifecycle_listener(const boost::uuids::uuid &registration_id) {
+            return clientImpl_->remove_lifecycle_listener(registration_id);
         }
 
         void HazelcastClient::shutdown() {
@@ -204,12 +204,12 @@ namespace hazelcast {
                 return cluster_;
             }
 
-            boost::uuids::uuid HazelcastClientInstanceImpl::add_lifecycle_listener(LifecycleListener &&lifecycleListener) {
-                return lifecycleService_.add_listener(std::move(lifecycleListener));
+            boost::uuids::uuid HazelcastClientInstanceImpl::add_lifecycle_listener(LifecycleListener &&lifecycle_listener) {
+                return lifecycleService_.add_listener(std::move(lifecycle_listener));
             }
 
-            bool HazelcastClientInstanceImpl::remove_lifecycle_listener(const boost::uuids::uuid &registrationId) {
-                return lifecycleService_.remove_listener(registrationId);
+            bool HazelcastClientInstanceImpl::remove_lifecycle_listener(const boost::uuids::uuid &registration_id) {
+                return lifecycleService_.remove_listener(registration_id);
             }
 
             void HazelcastClientInstanceImpl::shutdown() {
@@ -251,7 +251,7 @@ namespace hazelcast {
 
             std::shared_ptr<connection::ClientConnectionManagerImpl>
             HazelcastClientInstanceImpl::init_connection_manager_service(
-                    const std::vector<std::shared_ptr<connection::AddressProvider>> &addressProviders) {
+                    const std::vector<std::shared_ptr<connection::AddressProvider>> &address_providers) {
                 config::ClientAwsConfig &awsConfig = clientConfig_.get_network_config().get_aws_config();
                 std::shared_ptr<connection::AddressTranslator> addressTranslator;
                 if (awsConfig.is_enabled()) {
@@ -267,7 +267,7 @@ namespace hazelcast {
                     addressTranslator.reset(new spi::impl::DefaultAddressTranslator());
                 }
                 return std::make_shared<connection::ClientConnectionManagerImpl>(
-                        clientContext_, addressTranslator, addressProviders);
+                        clientContext_, addressTranslator, address_providers);
 
             }
 
@@ -382,8 +382,8 @@ namespace hazelcast {
                 : host_(url), port_(port), type_(IPV4), scopeId_(0) {
         }
 
-        Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host_(hostname), port_(port),
-                                                                                         type_(IPV6), scopeId_(scopeId) {
+        Address::Address(const std::string &hostname, int port, unsigned long scope_id) : host_(hostname), port_(port),
+                                                                                         type_(IPV6), scopeId_(scope_id) {
         }
 
         bool Address::operator==(const Address &rhs) const {
@@ -465,18 +465,18 @@ namespace hazelcast {
         }
 
         std::vector<Member>
-        IExecutorService::select_members(const cluster::memberselector::MemberSelector &memberSelector) {
+        IExecutorService::select_members(const cluster::memberselector::MemberSelector &member_selector) {
             std::vector<Member> selected;
             std::vector<Member> members = get_context().get_client_cluster_service().get_member_list();
             for (const Member &member : members) {
-                if (memberSelector.select(member)) {
+                if (member_selector.select(member)) {
                     selected.push_back(member);
                 }
             }
             if (selected.empty()) {
                 throw (exception::ExceptionBuilder<exception::RejectedExecutionException>(
                         "IExecutorService::selectMembers") << "No member selected with memberSelector["
-                                                           << memberSelector << "]").build();
+                                                           << member_selector << "]").build();
             }
             return selected;
         }
@@ -494,10 +494,10 @@ namespace hazelcast {
         }
 
         std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
-        IExecutorService::invoke_on_partition_owner(protocol::ClientMessage &&request, int partitionId) {
+        IExecutorService::invoke_on_partition_owner(protocol::ClientMessage &&request, int partition_id) {
             try {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
-                        get_context(), request, get_name(), partitionId);
+                        get_context(), request, get_name(), partition_id);
                 return std::make_pair(clientInvocation->invoke(), clientInvocation);
             } catch (exception::IException &) {
                 util::ExceptionUtil::rethrow(std::current_exception());
@@ -505,7 +505,7 @@ namespace hazelcast {
             return std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
         }
 
-        bool IExecutorService::is_sync_computation(bool preventSync) {
+        bool IExecutorService::is_sync_computation(bool prevent_sync) {
             int64_t now = util::current_time_millis();
 
             int64_t last = lastSubmitTime_;
@@ -516,7 +516,7 @@ namespace hazelcast {
                 return false;
             }
 
-            return !preventSync && (consecutiveSubmits_++ % MAX_CONSECUTIVE_SUBMITS == 0);
+            return !prevent_sync && (consecutiveSubmits_++ % MAX_CONSECUTIVE_SUBMITS == 0);
         }
 
         Address IExecutorService::get_member_address(const Member &member) {
@@ -599,8 +599,8 @@ namespace hazelcast {
         const std::string ClientProperties::RESPONSE_EXECUTOR_THREAD_COUNT = "hazelcast.client.response.executor.thread.count";
         const std::string ClientProperties::RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT = "0";
 
-        ClientProperty::ClientProperty(const std::string &name, const std::string &defaultValue)
-                : name_(name), defaultValue_(defaultValue) {
+        ClientProperty::ClientProperty(const std::string &name, const std::string &default_value)
+                : name_(name), defaultValue_(default_value) {
         }
 
         const std::string &ClientProperty::get_name() const {
@@ -746,12 +746,12 @@ namespace hazelcast {
         }
 
         namespace exception {
-            IException::IException(const std::string &exceptionName, const std::string &source,
-                                   const std::string &message, const std::string &details, int32_t errorNo,
-                                   std::exception_ptr cause, bool isRuntime, bool retryable)
-                    : src_(source), msg_(message), details_(details), errorCode_(errorNo), cause_(cause),
-                    runtimeException_(isRuntime), retryable_(retryable), report_((boost::format(
-                            "%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") % exceptionName % message % errorNo %
+            IException::IException(const std::string &exception_name, const std::string &source,
+                                   const std::string &message, const std::string &details, int32_t error_no,
+                                   std::exception_ptr cause, bool is_runtime, bool retryable)
+                    : src_(source), msg_(message), details_(details), errorCode_(error_no), cause_(cause),
+                    runtimeException_(is_runtime), retryable_(retryable), report_((boost::format(
+                            "%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") % exception_name % message % error_no %
                                                     details % source).str()) {
             }
 
@@ -800,12 +800,12 @@ namespace hazelcast {
                     "RetryableHazelcastException", protocol::RETRYABLE_HAZELCAST, source, message, details, cause, true,
                     true) {}
 
-            RetryableHazelcastException::RetryableHazelcastException(const std::string &errorName, int32_t errorCode,
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &error_name, int32_t error_code,
                                                                      const std::string &source,
                                                                      const std::string &message,
                                                                      const std::string &details, std::exception_ptr cause,
-                                                                     bool runtime, bool retryable) : HazelcastException(errorName,
-                                                                                                          errorCode,
+                                                                     bool runtime, bool retryable) : HazelcastException(error_name,
+                                                                                                          error_code,
                                                                                                           source,
                                                                                                           message,
                                                                                                           details,

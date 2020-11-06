@@ -68,7 +68,7 @@ namespace hazelcast {
                  * @param asyncStart true for async client creation
                  * @return the updated ClientConnectionStrategyConfig
                  */
-                ClientConnectionStrategyConfig &set_async_start(bool asyncStart);
+                ClientConnectionStrategyConfig &set_async_start(bool async_start);
 
                 /**
                  * @return reconnect mode
@@ -82,7 +82,7 @@ namespace hazelcast {
                  * @param reconnectMode
                  * @return the updated ClientConnectionStrategyConfig
                  */
-                ClientConnectionStrategyConfig &set_reconnect_mode(ReconnectMode reconnectMode);
+                ClientConnectionStrategyConfig &set_reconnect_mode(ReconnectMode reconnect_mode);
 
             private:
                 bool asyncStart_;

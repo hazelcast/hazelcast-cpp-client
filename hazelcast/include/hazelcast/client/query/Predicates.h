@@ -47,7 +47,7 @@ namespace hazelcast {
 
             class HAZELCAST_API NamedPredicate : public BasePredicate {
             protected:
-                explicit NamedPredicate(HazelcastClient &client, const std::string &attributeName);
+                explicit NamedPredicate(HazelcastClient &client, const std::string &attribute_name);
             };
 
             class MultiPredicate : public BasePredicate {
@@ -59,8 +59,8 @@ namespace hazelcast {
                 }
 
                 template<typename ...Args>
-                MultiPredicate(const std::string attributeName, HazelcastClient &client, const Args &...values) : BasePredicate(client) {
-                    out_stream.write(attributeName);
+                MultiPredicate(const std::string attribute_name, HazelcastClient &client, const Args &...values) : BasePredicate(client) {
+                    out_stream.write(attribute_name);
                     out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
                     out_stream.write_objects(values...);
                 }
@@ -109,8 +109,8 @@ namespace hazelcast {
                  * @tparam from The value of the attribute.
                  */
                 template<typename T>
-                EqualPredicate(HazelcastClient &client, const std::string &attributeName, const T &value)
-                        : NamedPredicate(client, attributeName) {
+                EqualPredicate(HazelcastClient &client, const std::string &attribute_name, const T &value)
+                        : NamedPredicate(client, attribute_name) {
                     out_stream.write_object(value);
                 }
             };
@@ -122,8 +122,8 @@ namespace hazelcast {
                  * @tparam from The value of the attribute.
                  */
                 template<typename T>
-                NotEqualPredicate(HazelcastClient &client, const std::string &attributeName, const T &value)
-                        : NamedPredicate(client, attributeName) {
+                NotEqualPredicate(HazelcastClient &client, const std::string &attribute_name, const T &value)
+                        : NamedPredicate(client, attribute_name) {
                     out_stream.write_object(value);
                 }
             };
@@ -137,12 +137,12 @@ namespace hazelcast {
                  * @param less If true, allow "less than" matching otherwise do "greater than" matching
                  */
                 template<typename T>
-                GreaterLessPredicate(HazelcastClient &client, const std::string &attributeName, const T &value,
-                                     bool isEqual, bool isLess)
-                        : NamedPredicate(client, attributeName) {
+                GreaterLessPredicate(HazelcastClient &client, const std::string &attribute_name, const T &value,
+                                     bool is_equal, bool is_less)
+                        : NamedPredicate(client, attribute_name) {
                     out_stream.write_object(value);
-                    out_stream.write(isEqual);
-                    out_stream.write(isLess);
+                    out_stream.write(is_equal);
+                    out_stream.write(is_less);
                 }
             };
 
@@ -154,9 +154,9 @@ namespace hazelcast {
                  * @tparam to The ending value to match (end is inclusive).
                  */
                 template<typename FROM_TYPE, typename TO_TYPE>
-                BetweenPredicate(HazelcastClient &client, const std::string &attributeName, const FROM_TYPE &from,
+                BetweenPredicate(HazelcastClient &client, const std::string &attribute_name, const FROM_TYPE &from,
                                  const TO_TYPE &to)
-                        : NamedPredicate(client, attributeName) {
+                        : NamedPredicate(client, attribute_name) {
                     out_stream.write_object(to);
                     out_stream.write_object(from);
                 }
@@ -177,7 +177,7 @@ namespace hazelcast {
                 /**
                  * @param javaClassName The name of the java class as identified by Class.get_name() in java.
                  */
-                InstanceOfPredicate(HazelcastClient &client, const std::string &javaClassName);
+                InstanceOfPredicate(HazelcastClient &client, const std::string &java_class_name);
             };
 
             class HAZELCAST_API SqlPredicate : public BasePredicate {
@@ -228,8 +228,8 @@ namespace hazelcast {
                  * @tparam value The values to search for
                  */
                 template<typename ...Args>
-                InPredicate(HazelcastClient &client, const std::string &attributeName, const Args &...values)
-                        : MultiPredicate(attributeName, client, values...) {}
+                InPredicate(HazelcastClient &client, const std::string &attribute_name, const Args &...values)
+                        : MultiPredicate(attribute_name, client, values...) {}
             };
 
             class AndPredicate : public MultiPredicate {

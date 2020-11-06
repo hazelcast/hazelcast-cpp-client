@@ -37,12 +37,12 @@ namespace hazelcast {
                 public:
                     virtual ~ListenerMessageCodec() = default;
 
-                    virtual protocol::ClientMessage encode_add_request(bool localOnly) const = 0;
+                    virtual protocol::ClientMessage encode_add_request(bool local_only) const = 0;
 
                     boost::uuids::uuid decode_add_response(protocol::ClientMessage &msg) const;
 
                     virtual protocol::ClientMessage
-                    encode_remove_request(boost::uuids::uuid realRegistrationId) const = 0;
+                    encode_remove_request(boost::uuids::uuid real_registration_id) const = 0;
 
                     bool decode_remove_response(protocol::ClientMessage &msg) const;
                 };

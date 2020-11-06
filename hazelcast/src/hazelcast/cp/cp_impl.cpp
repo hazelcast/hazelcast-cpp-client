@@ -227,8 +227,8 @@ namespace hazelcast {
                     return std::chrono::steady_clock::now() > expirationTime;
                 }
 
-                proxy_session_manager::session_state::session_state(int64_t id, int64_t ttlMillis)
-                        : id(id), ttl(ttlMillis), creation_time(std::chrono::steady_clock::now()) {}
+                proxy_session_manager::session_state::session_state(int64_t id, int64_t ttl_millis)
+                        : id(id), ttl(ttl_millis), creation_time(std::chrono::steady_clock::now()) {}
 
                 proxy_session_manager::session_state::session_state(const session_state &rhs)
                         : id(rhs.id), ttl(rhs.ttl), creation_time(rhs.creation_time),

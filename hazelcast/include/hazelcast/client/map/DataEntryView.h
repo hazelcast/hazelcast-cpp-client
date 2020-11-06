@@ -30,9 +30,9 @@ namespace hazelcast {
             class HAZELCAST_API DataEntryView {
             public:
                 DataEntryView(serialization::pimpl::Data &&key, serialization::pimpl::Data &&value,
-                              int64_t cost, int64_t creationTime, int64_t expirationTime, int64_t hits,
-                              int64_t lastAccessTime, int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version,
-                              int64_t ttl, int64_t maxIdle);
+                              int64_t cost, int64_t creation_time, int64_t expiration_time, int64_t hits,
+                              int64_t last_access_time, int64_t last_stored_time, int64_t last_update_time, int64_t version,
+                              int64_t ttl, int64_t max_idle);
 
                 const serialization::pimpl::Data &get_key() const;
 

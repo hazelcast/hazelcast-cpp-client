@@ -49,7 +49,7 @@ namespace hazelcast {
                      * @param expirationTime
                      * @see System#currentTimeMillis()
                      */
-                    virtual void set_expiration_time(int64_t expirationTime) = 0;
+                    virtual void set_expiration_time(int64_t expiration_time) = 0;
 
                     /**
                      * Checks whether the expiration time is passed with respect to the provided time.

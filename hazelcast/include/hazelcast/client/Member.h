@@ -51,7 +51,7 @@ namespace hazelcast {
 
             Member(Address address, boost::uuids::uuid uuid, bool lite, std::unordered_map<std::string, std::string> attr);
 
-            Member(Address memberAddress);
+            Member(Address member_address);
 
             Member(boost::uuids::uuid uuid);
 

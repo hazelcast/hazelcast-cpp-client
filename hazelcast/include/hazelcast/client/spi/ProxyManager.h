@@ -100,7 +100,7 @@ namespace hazelcast {
                 void destroy();
 
             private:
-                void initialize(const std::shared_ptr<ClientProxy> &clientProxy);
+                void initialize(const std::shared_ptr<ClientProxy> &client_proxy);
 
                 proxy_map proxies_;
                 std::mutex lock_;

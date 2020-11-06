@@ -234,8 +234,8 @@ namespace hazelcast {
 
                 void wrap_for_read();
 
-                inline byte *wr_ptr(size_t requestedBytes) {
-                    return wr_ptr(requestedBytes, requestedBytes);
+                inline byte *wr_ptr(size_t requested_bytes) {
+                    return wr_ptr(requested_bytes, requested_bytes);
                 }
 
                 inline byte *wr_ptr(size_t bytes_to_reserve, size_t actual_number_of_bytes) {
@@ -255,9 +255,9 @@ namespace hazelcast {
                     return b->insert(b->end(), actual_number_of_bytes, 0).operator->();
                 }
 
-                inline byte *rd_ptr(size_t requestedBytes) {
-                    byte *result = peek(requestedBytes);
-                    offset_ += requestedBytes;
+                inline byte *rd_ptr(size_t requested_bytes) {
+                    byte *result = peek(requested_bytes);
+                    offset_ += requested_bytes;
                     return result;
                 }
 
@@ -266,8 +266,8 @@ namespace hazelcast {
                     offset_ = position;
                 }
 
-                inline byte *peek(size_t requestedBytes) {
-                    if(requestedBytes <= 0) {
+                inline byte *peek(size_t requested_bytes) {
+                    if(requested_bytes <= 0) {
                         return nullptr;
                     }
 
@@ -276,16 +276,16 @@ namespace hazelcast {
                         if (buffer_index_ == data_buffer_.size()) {
                             BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
                                                                                                      (boost::format("Not enough bytes in client message to read. Requested %1% bytes but "
-                                                                                                                    "there is no more bytes left to read. %2%") %requestedBytes %*this).str()));
+                                                                                                                    "there is no more bytes left to read. %2%") %requested_bytes %*this).str()));
                         }
 
                         offset_ = 0;
                     }
 
-                    if (offset_ + requestedBytes > data_buffer_[buffer_index_].size()) {
+                    if (offset_ + requested_bytes > data_buffer_[buffer_index_].size()) {
                         BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
                                                                                                  (boost::format("Not enough bytes in client message to read. Requested %1% bytes but there "
-                                                                                                                "is not enough bytes left to read. %2%") %requestedBytes %*this).str()));
+                                                                                                                "is not enough bytes left to read. %2%") %requested_bytes %*this).str()));
                     }
 
                     return &data_buffer_[buffer_index_][offset_];
@@ -701,7 +701,7 @@ namespace hazelcast {
                  */
                 int8_t get_number_of_backups() const;
 
-                void set_partition_id(int32_t partitionId);
+                void set_partition_id(int32_t partition_id);
 
                 template<typename T>
                 void set_nullable(const T *value, bool is_final = false) {
@@ -879,7 +879,7 @@ namespace hazelcast {
 
                 bool is_retryable() const;
 
-                void set_retryable(bool shouldRetry);
+                void set_retryable(bool should_retry);
 
                 std::string get_operation_name() const;
 

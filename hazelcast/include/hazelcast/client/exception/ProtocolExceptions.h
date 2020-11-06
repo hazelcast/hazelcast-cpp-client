@@ -161,7 +161,7 @@ namespace hazelcast {
 
             class HAZELCAST_API RetryableHazelcastException : public HazelcastException {
             public:
-                RetryableHazelcastException(const std::string &errorName, int32_t errorCode, const std::string &source,
+                RetryableHazelcastException(const std::string &error_name, int32_t error_code, const std::string &source,
                                             const std::string &message, const std::string &details,
                                             std::exception_ptr cause, bool runtime,
                                             bool retryable);

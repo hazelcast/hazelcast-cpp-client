@@ -39,9 +39,9 @@ namespace hazelcast {
 
             class HazelcastServerFactory {
             public:
-                HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
+                HazelcastServerFactory(const std::string &server_xml_config_file_path);
 
-                HazelcastServerFactory(const std::string &serverAddress, const std::string &serverXmlConfigFilePath);
+                HazelcastServerFactory(const std::string &server_address, const std::string &server_xml_config_file_path);
 
                 const std::string& get_server_address();
 
@@ -60,7 +60,7 @@ namespace hazelcast {
                 std::string serverAddress_;
                 std::string clusterId_;
 
-                std::string read_from_xml_file(const std::string &xmlFilePath);
+                std::string read_from_xml_file(const std::string &xml_file_path);
             };
         }
     }

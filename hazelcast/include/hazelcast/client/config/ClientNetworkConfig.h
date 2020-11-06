@@ -82,7 +82,7 @@ namespace hazelcast {
                  * @param clientAwsConfig the ClientAwsConfig
                  * @see #getAwsConfig()
                  */
-                ClientNetworkConfig &set_aws_config(const ClientAwsConfig &clientAwsConfig);
+                ClientNetworkConfig &set_aws_config(const ClientAwsConfig &client_aws_config);
 
                 /**
                  * Returns the current ClientAwsConfig.
@@ -112,7 +112,7 @@ namespace hazelcast {
                  * @param smartRouting true if smart routing should be enabled.
                  * @return configured ClientNetworkConfig for chaining
                  */
-                ClientNetworkConfig &set_smart_routing(bool smartRouting);
+                ClientNetworkConfig &set_smart_routing(bool smart_routing);
 
                 /**
                  * See ClientNetworkConfig#setConnectionAttemptLimit(int32_t) for details
@@ -131,7 +131,7 @@ namespace hazelcast {
                  *                               A negative value means default value
                  * @return configured \ClientNetworkConfig for chaining
                  */
-                ClientNetworkConfig &set_connection_attempt_limit(int32_t connectionAttemptLimit);
+                ClientNetworkConfig &set_connection_attempt_limit(int32_t connection_attempt_limit);
 
                 /**
                  * Period for the next attempt to find a member to connect.

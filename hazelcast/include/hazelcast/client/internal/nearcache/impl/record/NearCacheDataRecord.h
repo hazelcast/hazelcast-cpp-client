@@ -40,8 +40,8 @@ namespace hazelcast {
                         class HAZELCAST_API NearCacheDataRecord
                                 : public AbstractNearCacheRecord<serialization::pimpl::Data> {
                         public:
-                            NearCacheDataRecord(const std::shared_ptr<serialization::pimpl::Data> &dataValue,
-                                                int64_t creationTime, int64_t expiryTime);
+                            NearCacheDataRecord(const std::shared_ptr<serialization::pimpl::Data> &data_value,
+                                                int64_t creation_time, int64_t expiry_time);
                         };
                     }
                 }

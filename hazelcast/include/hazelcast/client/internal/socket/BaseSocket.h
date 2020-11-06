@@ -33,21 +33,21 @@ namespace hazelcast {
                 class BaseSocket : public Socket {
                 public:
                     template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
-                    BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
-                            const Address &address, client::config::SocketOptions &socketOptions,
-                            boost::asio::io_context &io, std::chrono::milliseconds &connectTimeoutInMillis)
-                            : socketOptions_(socketOptions), remoteEndpoint_(address), io_(io), socketStrand_(io),
-                              connectTimeout_(connectTimeoutInMillis), resolver_(ioResolver), socket_(socketStrand_) {
+                    BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
+                            const Address &address, client::config::SocketOptions &socket_options,
+                            boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis)
+                            : socketOptions_(socket_options), remoteEndpoint_(address), io_(io), socketStrand_(io),
+                              connectTimeout_(connect_timeout_in_millis), resolver_(io_resolver), socket_(socketStrand_) {
                     }
                     
 #ifdef HZ_BUILD_WITH_SSL
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
-                    BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
-                            const Address &address, client::config::SocketOptions &socketOptions,
-                            boost::asio::io_context &io, std::chrono::milliseconds &connectTimeoutInMillis,
+                    BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
+                            const Address &address, client::config::SocketOptions &socket_options,
+                            boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis,
                             CONTEXT &context)
-                            : socketOptions_(socketOptions), remoteEndpoint_(address), io_(io), socketStrand_(io),
-                              connectTimeout_(connectTimeoutInMillis), resolver_(ioResolver),
+                            : socketOptions_(socket_options), remoteEndpoint_(address), io_(io), socketStrand_(io),
+                              connectTimeout_(connect_timeout_in_millis), resolver_(io_resolver),
                               socket_(socketStrand_, context) {
                     }
 #endif // HZ_BUILD_WITH_SSL
@@ -112,7 +112,7 @@ namespace hazelcast {
                             } while (!success);
 
                             auto handler = [=](const boost::system::error_code &ec,
-                                               std::size_t bytesWritten) {
+                                               std::size_t bytes_written) {
                                 if (ec) {
                                     auto invocationIt = connection->invocations.find(message_call_id);
 
@@ -212,7 +212,7 @@ namespace hazelcast {
 
                         socket_.async_read_some(buffer(connection->read_handler.byte_buffer.ix(),
                                                         connection->read_handler.byte_buffer.remaining()),
-                                                 [=](const boost::system::error_code &ec, std::size_t bytesRead) {
+                                                 [=](const boost::system::error_code &ec, std::size_t bytes_read) {
                                                      if (ec) {
                                                          // prevent any exceptions
                                                          util::IOUtil::close_resource(connection.get(),
@@ -222,7 +222,7 @@ namespace hazelcast {
                                                      }
 
                                                      connection->read_handler.byte_buffer.safe_increment_position(
-                                                             bytesRead);
+                                                             bytes_read);
 
                                                      connection->read_handler.handle();
 

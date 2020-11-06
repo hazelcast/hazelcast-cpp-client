@@ -41,18 +41,18 @@ namespace hazelcast {
 
                     int64_t get_owned_entry_count() override;
 
-                    void set_owned_entry_count(int64_t ownedEntryCount);
+                    void set_owned_entry_count(int64_t owned_entry_count);
 
                     void increment_owned_entry_count();
                     void decrement_owned_entry_count();
 
                     int64_t get_owned_entry_memory_cost() override;
 
-                    void set_owned_entry_memory_cost(int64_t ownedEntryMemoryCost);
+                    void set_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    void increment_owned_entry_memory_cost(int64_t ownedEntryMemoryCost);
+                    void increment_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    void decrement_owned_entry_memory_cost(int64_t ownedEntryMemoryCost);
+                    void decrement_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
                     int64_t get_hits() override;
 
@@ -90,7 +90,7 @@ namespace hazelcast {
 
                     int64_t get_persistence_count() override;
 
-                    void add_persistence(int64_t duration, int32_t writtenBytes, int32_t keyCount);
+                    void add_persistence(int64_t duration, int32_t written_bytes, int32_t key_count);
 
                     int64_t get_last_persistence_time() override;
 

@@ -146,21 +146,21 @@ namespace hazelcast {
                 }
 
             protected:
-                RingbufferImpl(const std::string &objectName, spi::ClientContext *context)
-                        : PartitionSpecificClientProxy(SERVICE_NAME, objectName, context) {}
+                RingbufferImpl(const std::string &object_name, spi::ClientContext *context)
+                        : PartitionSpecificClientProxy(SERVICE_NAME, object_name, context) {}
 
-                boost::future<int64_t> add_data(serialization::pimpl::Data &&itemData) {
+                boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
                                                                                   static_cast<int32_t>(ringbuffer::OverflowPolicy::OVERWRITE),
-                                                                                  itemData);
+                                                                                  item_data);
                     return invoke_and_get_future<int64_t>(
                             request, partitionId_);
                 }
 
-                boost::future<int64_t> add_data(serialization::pimpl::Data &&itemData, ringbuffer::OverflowPolicy policy) {
+                boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data, ringbuffer::OverflowPolicy policy) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
                                                                                   static_cast<int32_t>(policy),
-                                                                                  itemData);
+                                                                                  item_data);
                     return invoke_and_get_future<int64_t>(
                             request, partitionId_);
                 }
@@ -173,22 +173,22 @@ namespace hazelcast {
                 }
 
                 boost::future<int64_t>
-                add_all_data(std::vector<serialization::pimpl::Data> &&items, ringbuffer::OverflowPolicy overflowPolicy) {
+                add_all_data(std::vector<serialization::pimpl::Data> &&items, ringbuffer::OverflowPolicy overflow_policy) {
                     util::Preconditions::check_not_empty(items, "items can't be empty");
                     util::Preconditions::check_max((int32_t) items.size(), MAX_BATCH_SIZE, "items");
 
                     auto request = protocol::codec::ringbuffer_addall_encode(name_, items,
-                                                                             static_cast<int32_t>(overflowPolicy));
+                                                                             static_cast<int32_t>(overflow_policy));
                     return invoke_and_get_future<int64_t>(request, partitionId_);
                 }
 
             protected:
                 boost::future<protocol::ClientMessage>
-                read_many_data(int64_t startSequence, int32_t minCount, int32_t maxCount,
-                             serialization::pimpl::Data *filterData) {
-                    check_sequence(startSequence);
-                    util::Preconditions::check_not_negative(minCount, "minCount can't be smaller than 0");
-                    util::Preconditions::check_true(maxCount >= minCount,
+                read_many_data(int64_t start_sequence, int32_t min_count, int32_t max_count,
+                             serialization::pimpl::Data *filter_data) {
+                    check_sequence(start_sequence);
+                    util::Preconditions::check_not_negative(min_count, "minCount can't be smaller than 0");
+                    util::Preconditions::check_true(max_count >= min_count,
                                                    "maxCount should be equal or larger than minCount");
                     try {
                         capacity().get();
@@ -203,16 +203,16 @@ namespace hazelcast {
                         }
                     }
 
-                    util::Preconditions::check_true(maxCount <= bufferCapacity_.get(),
+                    util::Preconditions::check_true(max_count <= bufferCapacity_.get(),
                                                    "the maxCount should be smaller than or equal to the capacity");
-                    util::Preconditions::check_max(maxCount, RingbufferImpl::MAX_BATCH_SIZE, "maxCount");
+                    util::Preconditions::check_max(max_count, RingbufferImpl::MAX_BATCH_SIZE, "maxCount");
 
                     auto request = protocol::codec::ringbuffer_readmany_encode(
                             name_,
-                            startSequence,
-                            minCount,
-                            maxCount,
-                            filterData);
+                            start_sequence,
+                            min_count,
+                            max_count,
+                            filter_data);
 
                     return invoke_on_partition(request, partitionId_);
                 }

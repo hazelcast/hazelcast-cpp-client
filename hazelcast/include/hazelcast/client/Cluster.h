@@ -38,7 +38,7 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            Cluster(spi::impl::ClientClusterServiceImpl &clusterService);
+            Cluster(spi::impl::ClientClusterServiceImpl &cluster_service);
 
             /**
              * Adds MembershipListener to listen for membership updates.
@@ -67,7 +67,7 @@ namespace hazelcast {
              * \return true if the registration is removed, false otherwise
              * 
              */
-            bool remove_membership_listener(boost::uuids::uuid registrationId);
+            bool remove_membership_listener(boost::uuids::uuid registration_id);
 
             /**
              * Set of current members of the cluster.

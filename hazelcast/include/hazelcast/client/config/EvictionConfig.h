@@ -90,7 +90,7 @@ namespace hazelcast {
 
                 MaxSizePolicy get_maximum_size_policy() const;
 
-                EvictionConfig &set_maximum_size_policy(const MaxSizePolicy &maxSizePolicy);
+                EvictionConfig &set_maximum_size_policy(const MaxSizePolicy &max_size_policy);
 
                 EvictionPolicy get_eviction_policy() const;
 

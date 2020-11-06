@@ -51,7 +51,7 @@ namespace hazelcast {
                     static std::unordered_map<std::string, std::string> unmarshal_the_response(std::istream &stream,
                             logger &lg);
 
-                    static void unmarshal_json_response(std::istream &stream, config::ClientAwsConfig &awsConfig,
+                    static void unmarshal_json_response(std::istream &stream, config::ClientAwsConfig &aws_config,
                                                       std::unordered_map<std::string, std::string> &attributes);
                 };
             }

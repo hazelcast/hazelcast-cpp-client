@@ -45,7 +45,7 @@
 
 namespace hazelcast {
     namespace client {
-        HazelcastJsonValue::HazelcastJsonValue(std::string jsonString) : jsonString_(std::move(jsonString)) {
+        HazelcastJsonValue::HazelcastJsonValue(std::string json_string) : jsonString_(std::move(json_string)) {
         }
 
         HazelcastJsonValue::~HazelcastJsonValue() = default;
@@ -75,8 +75,8 @@ namespace hazelcast {
         }
 
         TypedData::TypedData(serialization::pimpl::Data d,
-                             serialization::pimpl::SerializationService &serializationService) : data_(std::move(d)),
-                                                                                                 ss_(&serializationService) {}
+                             serialization::pimpl::SerializationService &serialization_service) : data_(std::move(d)),
+                                                                                                 ss_(&serialization_service) {}
 
         serialization::pimpl::ObjectType TypedData::get_type() const {
             return ss_->get_object_type(&data_);
@@ -94,11 +94,11 @@ namespace hazelcast {
         }
 
         namespace serialization {
-            PortableWriter::PortableWriter(pimpl::DefaultPortableWriter *defaultPortableWriter)
-                    : defaultPortableWriter_(defaultPortableWriter), classDefinitionWriter_(nullptr), isDefaultWriter_(true) {}
+            PortableWriter::PortableWriter(pimpl::DefaultPortableWriter *default_portable_writer)
+                    : defaultPortableWriter_(default_portable_writer), classDefinitionWriter_(nullptr), isDefaultWriter_(true) {}
 
-            PortableWriter::PortableWriter(pimpl::ClassDefinitionWriter *classDefinitionWriter)
-                    : defaultPortableWriter_(nullptr), classDefinitionWriter_(classDefinitionWriter),
+            PortableWriter::PortableWriter(pimpl::ClassDefinitionWriter *class_definition_writer)
+                    : defaultPortableWriter_(nullptr), classDefinitionWriter_(class_definition_writer),
                       isDefaultWriter_(false) {}
 
             void PortableWriter::end() {
@@ -113,10 +113,10 @@ namespace hazelcast {
                 return classDefinitionWriter_->get_raw_data_output();
             }
 
-            ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId, int version)
-                    : factoryId_(factoryId), classId_(classId), version_(version), index_(0), done_(false) {}
+            ClassDefinitionBuilder::ClassDefinitionBuilder(int factory_id, int class_id, int version)
+                    : factoryId_(factory_id), classId_(class_id), version_(version), index_(0), done_(false) {}
 
-            ClassDefinitionBuilder &ClassDefinitionBuilder::add_portable_field(const std::string &fieldName,
+            ClassDefinitionBuilder &ClassDefinitionBuilder::add_portable_field(const std::string &field_name,
                                                                              std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->get_class_id() == 0) {
@@ -124,13 +124,13 @@ namespace hazelcast {
                             exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
                                                                 "Portable class id cannot be zero!"));
                 }
-                FieldDefinition fieldDefinition(index_++, fieldName, FieldType::TYPE_PORTABLE, def->get_factory_id(),
+                FieldDefinition fieldDefinition(index_++, field_name, FieldType::TYPE_PORTABLE, def->get_factory_id(),
                                                 def->get_class_id(), def->get_version());
                 fieldDefinitions_.push_back(fieldDefinition);
                 return *this;
             }
 
-            ClassDefinitionBuilder &ClassDefinitionBuilder::add_portable_array_field(const std::string &fieldName,
+            ClassDefinitionBuilder &ClassDefinitionBuilder::add_portable_array_field(const std::string &field_name,
                                                                                   std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->get_class_id() == 0) {
@@ -138,15 +138,15 @@ namespace hazelcast {
                             exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
                                                                 "Portable class id cannot be zero!"));
                 }
-                FieldDefinition fieldDefinition(index_++, fieldName, FieldType::TYPE_PORTABLE_ARRAY,
+                FieldDefinition fieldDefinition(index_++, field_name, FieldType::TYPE_PORTABLE_ARRAY,
                                                 def->get_factory_id(), def->get_class_id(), def->get_version());
                 fieldDefinitions_.push_back(fieldDefinition);
                 return *this;
             }
 
-            ClassDefinitionBuilder &ClassDefinitionBuilder::add_field(FieldDefinition &fieldDefinition) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::add_field(FieldDefinition &field_definition) {
                 check();
-                int defIndex = fieldDefinition.get_index();
+                int defIndex = field_definition.get_index();
                 if (index_ != defIndex) {
                     char buf[100];
                     util::hz_snprintf(buf, 100, "Invalid field index. Index in definition:%d, being added at index:%d",
@@ -154,7 +154,7 @@ namespace hazelcast {
                     BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf));
                 }
                 index_++;
-                fieldDefinitions_.push_back(fieldDefinition);
+                fieldDefinitions_.push_back(field_definition);
                 return *this;
             }
 
@@ -177,9 +177,9 @@ namespace hazelcast {
                 }
             }
 
-            void ClassDefinitionBuilder::add_field(const std::string &fieldName, FieldType const &fieldType) {
+            void ClassDefinitionBuilder::add_field(const std::string &field_name, FieldType const &field_type) {
                 check();
-                FieldDefinition fieldDefinition(index_++, fieldName, fieldType, version_);
+                FieldDefinition fieldDefinition(index_++, field_name, field_type, version_);
                 fieldDefinitions_.push_back(fieldDefinition);
             }
 
@@ -199,14 +199,14 @@ namespace hazelcast {
                     : index_(0), classId_(0), factoryId_(0), version_(-1) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string &fieldName, FieldType const &type,
+            FieldDefinition::FieldDefinition(int index, const std::string &field_name, FieldType const &type,
                                              int version)
-                    : index_(index), fieldName_(fieldName), type_(type), classId_(0), factoryId_(0), version_(version) {
+                    : index_(index), fieldName_(field_name), type_(type), classId_(0), factoryId_(0), version_(version) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string &fieldName, FieldType const &type,
-                                             int factoryId, int classId, int version)
-                    : index_(index), fieldName_(fieldName), type_(type), classId_(classId), factoryId_(factoryId),
+            FieldDefinition::FieldDefinition(int index, const std::string &field_name, FieldType const &type,
+                                             int factory_id, int class_id, int version)
+                    : index_(index), fieldName_(field_name), type_(type), classId_(class_id), factoryId_(factory_id),
                       version_(version) {}
 
             const FieldType &FieldDefinition::get_type() const {
@@ -229,20 +229,20 @@ namespace hazelcast {
                 return classId_;
             }
 
-            void FieldDefinition::write_data(pimpl::DataOutput &dataOutput) {
-                dataOutput.write<int32_t>(index_);
-                dataOutput.write<std::string>(fieldName_);
-                dataOutput.write<byte>(static_cast<int32_t>(type_));
-                dataOutput.write<int32_t>(factoryId_);
-                dataOutput.write<int32_t>(classId_);
+            void FieldDefinition::write_data(pimpl::DataOutput &data_output) {
+                data_output.write<int32_t>(index_);
+                data_output.write<std::string>(fieldName_);
+                data_output.write<byte>(static_cast<int32_t>(type_));
+                data_output.write<int32_t>(factoryId_);
+                data_output.write<int32_t>(classId_);
             }
 
-            void FieldDefinition::read_data(ObjectDataInput &dataInput) {
-                index_ = dataInput.read<int32_t>();
-                fieldName_ = dataInput.read<std::string>();
-                type_ = static_cast<FieldType>(dataInput.read<byte>());
-                factoryId_ = dataInput.read<int32_t>();
-                classId_ = dataInput.read<int32_t>();
+            void FieldDefinition::read_data(ObjectDataInput &data_input) {
+                index_ = data_input.read<int32_t>();
+                fieldName_ = data_input.read<std::string>();
+                type_ = static_cast<FieldType>(data_input.read<byte>());
+                factoryId_ = data_input.read<int32_t>();
+                classId_ = data_input.read<int32_t>();
             }
 
             bool FieldDefinition::operator==(const FieldDefinition &rhs) const {
@@ -265,22 +265,22 @@ namespace hazelcast {
             }
 
             ObjectDataInput::ObjectDataInput(const std::vector<byte> &buffer, int offset,
-                    pimpl::PortableSerializer &portableSer, pimpl::DataSerializer &dataSer,
-                    std::shared_ptr<serialization::global_serializer> globalSerializer)
-                    : pimpl::DataInput<std::vector<byte>>(buffer, offset), portableSerializer_(portableSer), dataSerializer_(dataSer),
-                      globalSerializer_(std::move(globalSerializer)) {}
+                    pimpl::PortableSerializer &portable_ser, pimpl::DataSerializer &data_ser,
+                    std::shared_ptr<serialization::global_serializer> global_serializer)
+                    : pimpl::DataInput<std::vector<byte>>(buffer, offset), portableSerializer_(portable_ser), dataSerializer_(data_ser),
+                      globalSerializer_(std::move(global_serializer)) {}
 
-            ObjectDataOutput::ObjectDataOutput(bool dontWrite, pimpl::PortableSerializer *portableSer,
-                                               std::shared_ptr<serialization::global_serializer> globalSerializer)
-                    : DataOutput(dontWrite), portableSerializer_(portableSer), globalSerializer_(std::move(globalSerializer)) {}
+            ObjectDataOutput::ObjectDataOutput(bool dont_write, pimpl::PortableSerializer *portable_ser,
+                                               std::shared_ptr<serialization::global_serializer> global_serializer)
+                    : DataOutput(dont_write), portableSerializer_(portable_ser), globalSerializer_(std::move(global_serializer)) {}
 
-            PortableReader::PortableReader(pimpl::PortableSerializer &portableSer, ObjectDataInput &input,
-                                           const std::shared_ptr<ClassDefinition> &cd, bool isDefaultReader)
-                    : isDefaultReader_(isDefaultReader) {
-                if (isDefaultReader) {
-                    defaultPortableReader_ = boost::make_optional(pimpl::DefaultPortableReader(portableSer, input, cd));
+            PortableReader::PortableReader(pimpl::PortableSerializer &portable_ser, ObjectDataInput &input,
+                                           const std::shared_ptr<ClassDefinition> &cd, bool is_default_reader)
+                    : isDefaultReader_(is_default_reader) {
+                if (is_default_reader) {
+                    defaultPortableReader_ = boost::make_optional(pimpl::DefaultPortableReader(portable_ser, input, cd));
                 } else {
-                    morphingPortableReader_ = boost::make_optional(pimpl::MorphingPortableReader(portableSer, input, cd));
+                    morphingPortableReader_ = boost::make_optional(pimpl::MorphingPortableReader(portable_ser, input, cd));
                 }
             }
 
@@ -310,8 +310,8 @@ namespace hazelcast {
                     : factoryId_(0), classId_(0), version_(-1), binary_(new std::vector<byte>) {
             }
 
-            ClassDefinition::ClassDefinition(int factoryId, int classId, int version)
-                    : factoryId_(factoryId), classId_(classId), version_(version), binary_(new std::vector<byte>) {
+            ClassDefinition::ClassDefinition(int factory_id, int class_id, int version)
+                    : factoryId_(factory_id), classId_(class_id), version_(version), binary_(new std::vector<byte>) {
             }
 
             void ClassDefinition::add_field_def(FieldDefinition &fd) {
@@ -328,12 +328,12 @@ namespace hazelcast {
                         %name %classId_ %version_).str()));
             }
 
-            bool ClassDefinition::has_field(const std::string &fieldName) const {
-                return fieldDefinitionsMap_.find(fieldName) != fieldDefinitionsMap_.end();
+            bool ClassDefinition::has_field(const std::string &field_name) const {
+                return fieldDefinitionsMap_.find(field_name) != fieldDefinitionsMap_.end();
             }
 
-            FieldType ClassDefinition::get_field_type(const std::string &fieldName) const {
-                FieldDefinition const &fd = get_field(fieldName);
+            FieldType ClassDefinition::get_field_type(const std::string &field_name) const {
+                FieldDefinition const &fd = get_field(field_name);
                 return fd.get_type();
             }
 
@@ -354,30 +354,30 @@ namespace hazelcast {
                 return version_;
             }
 
-            void ClassDefinition::set_version_if_not_set(int newVersion) {
+            void ClassDefinition::set_version_if_not_set(int new_version) {
                 if (get_version() < 0) {
-                    this->version_ = newVersion;
+                    this->version_ = new_version;
                 }
             }
 
-            void ClassDefinition::write_data(pimpl::DataOutput &dataOutput) {
-                dataOutput.write<int32_t>(factoryId_);
-                dataOutput.write<int32_t>(classId_);
-                dataOutput.write<int32_t>(version_);
-                dataOutput.write<int16_t>(fieldDefinitionsMap_.size());
+            void ClassDefinition::write_data(pimpl::DataOutput &data_output) {
+                data_output.write<int32_t>(factoryId_);
+                data_output.write<int32_t>(classId_);
+                data_output.write<int32_t>(version_);
+                data_output.write<int16_t>(fieldDefinitionsMap_.size());
                 for (auto &entry : fieldDefinitionsMap_) {
-                    entry.second.write_data(dataOutput);
+                    entry.second.write_data(data_output);
                 }
             }
 
-            void ClassDefinition::read_data(ObjectDataInput &dataInput) {
-                factoryId_ = dataInput.read<int32_t>();
-                classId_ = dataInput.read<int32_t>();
-                version_ = dataInput.read<int32_t>();
-                int size = dataInput.read<int16_t>();
+            void ClassDefinition::read_data(ObjectDataInput &data_input) {
+                factoryId_ = data_input.read<int32_t>();
+                classId_ = data_input.read<int32_t>();
+                version_ = data_input.read<int32_t>();
+                int size = data_input.read<int16_t>();
                 for (int i = 0; i < size; i++) {
                     FieldDefinition fieldDefinition;
-                    fieldDefinition.read_data(dataInput);
+                    fieldDefinition.read_data(data_input);
                     add_field_def(fieldDefinition);
                 }
             }
@@ -406,9 +406,9 @@ namespace hazelcast {
             }
 
             namespace pimpl {
-                ClassDefinitionWriter::ClassDefinitionWriter(PortableContext &portableContext,
+                ClassDefinitionWriter::ClassDefinitionWriter(PortableContext &portable_context,
                                                              ClassDefinitionBuilder &builder)
-                        : builder_(builder), context_(portableContext), emptyDataOutput_(true) {}
+                        : builder_(builder), context_(portable_context), emptyDataOutput_(true) {}
 
                 std::shared_ptr<ClassDefinition> ClassDefinitionWriter::register_and_get() {
                     std::shared_ptr<ClassDefinition> cd = builder_.build();
@@ -421,7 +421,7 @@ namespace hazelcast {
 
                 void ClassDefinitionWriter::end() {}
 
-                DataOutput::DataOutput(bool dontWrite) :isNoWrite_(dontWrite) {
+                DataOutput::DataOutput(bool dont_write) :isNoWrite_(dont_write) {
                     if (isNoWrite_) {
                         outputStream_.reserve(0);
                     } else {
@@ -545,26 +545,26 @@ namespace hazelcast {
                     return in.read<int32_t>();
                 }
 
-                PortableContext::PortableContext(const SerializationConfig &serializationConf) :
-                        serializationConfig_(serializationConf) {}
+                PortableContext::PortableContext(const SerializationConfig &serialization_conf) :
+                        serializationConfig_(serialization_conf) {}
 
-                int PortableContext::get_class_version(int factoryId, int classId) {
-                    return get_class_definition_context(factoryId).get_class_version(classId);
+                int PortableContext::get_class_version(int factory_id, int class_id) {
+                    return get_class_definition_context(factory_id).get_class_version(class_id);
                 }
 
-                void PortableContext::set_class_version(int factoryId, int classId, int version) {
-                    get_class_definition_context(factoryId).set_class_version(classId, version);
-                }
-
-                std::shared_ptr<ClassDefinition>
-                PortableContext::lookup_class_definition(int factoryId, int classId, int version) {
-                    return get_class_definition_context(factoryId).lookup(classId, version);
+                void PortableContext::set_class_version(int factory_id, int class_id, int version) {
+                    get_class_definition_context(factory_id).set_class_version(class_id, version);
                 }
 
                 std::shared_ptr<ClassDefinition>
-                PortableContext::read_class_definition(ObjectDataInput &in, int factoryId, int classId, int version) {
+                PortableContext::lookup_class_definition(int factory_id, int class_id, int version) {
+                    return get_class_definition_context(factory_id).lookup(class_id, version);
+                }
+
+                std::shared_ptr<ClassDefinition>
+                PortableContext::read_class_definition(ObjectDataInput &in, int factory_id, int class_id, int version) {
                     bool shouldRegister = true;
-                    ClassDefinitionBuilder builder(factoryId, classId, version);
+                    ClassDefinitionBuilder builder(factory_id, class_id, version);
 
                     // final position after portable is read
                     in.read<int32_t>();
@@ -636,11 +636,11 @@ namespace hazelcast {
                     return serializationConfig_.get_portable_version();
                 }
 
-                ClassDefinitionContext &PortableContext::get_class_definition_context(int factoryId) {
-                    std::shared_ptr<ClassDefinitionContext> value = classDefContextMap_.get(factoryId);
+                ClassDefinitionContext &PortableContext::get_class_definition_context(int factory_id) {
+                    std::shared_ptr<ClassDefinitionContext> value = classDefContextMap_.get(factory_id);
                     if (value == NULL) {
-                        value = std::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(factoryId, this));
-                        std::shared_ptr<ClassDefinitionContext> current = classDefContextMap_.put_if_absent(factoryId,
+                        value = std::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(factory_id, this));
+                        std::shared_ptr<ClassDefinitionContext> current = classDefContextMap_.put_if_absent(factory_id,
                                                                                                          value);
                         if (current != NULL) {
                             value = current;
@@ -657,10 +657,10 @@ namespace hazelcast {
                         : serializationConfig_(config), portableContext_(serializationConfig_),
                           portableSerializer_(portableContext_) {}
 
-                DefaultPortableWriter::DefaultPortableWriter(PortableSerializer &portableSer,
+                DefaultPortableWriter::DefaultPortableWriter(PortableSerializer &portable_ser,
                                                              std::shared_ptr<ClassDefinition> cd,
                                                              ObjectDataOutput &output)
-                        : raw_(false), portableSerializer_(portableSer), objectDataOutput_(output), 
+                        : raw_(false), portableSerializer_(portable_ser), objectDataOutput_(output), 
                         begin_(objectDataOutput_.position()), cd_(cd) {
                     // room for final offset
                     objectDataOutput_.write<int32_t>(0);
@@ -673,35 +673,35 @@ namespace hazelcast {
                     objectDataOutput_.write_zero_bytes(fieldIndexesLength);
                 }
 
-                FieldDefinition const &DefaultPortableWriter::set_position(const std::string &fieldName, FieldType fieldType) {
+                FieldDefinition const &DefaultPortableWriter::set_position(const std::string &field_name, FieldType field_type) {
                     if (raw_) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableWriter::setPosition",
                                                                                          "Cannot write Portable fields after getRawDataOutput() is called!"));
                     }
 
                     try {
-                        FieldDefinition const &fd = cd_->get_field(fieldName);
+                        FieldDefinition const &fd = cd_->get_field(field_name);
 
-                        if (writtenFields_.find(fieldName) != writtenFields_.end()) {
+                        if (writtenFields_.find(field_name) != writtenFields_.end()) {
                             BOOST_THROW_EXCEPTION(
                                     exception::HazelcastSerializationException("PortableWriter::setPosition",
-                                                                               "Field '" + std::string(fieldName) +
+                                                                               "Field '" + std::string(field_name) +
                                                                                "' has already been written!"));
                         }
 
-                        writtenFields_.insert(fieldName);
+                        writtenFields_.insert(field_name);
                         size_t pos = objectDataOutput_.position();
                         int32_t index = fd.get_index();
                         objectDataOutput_.write_at(offset_ + index * util::Bits::INT_SIZE_IN_BYTES, static_cast<int32_t>(pos));
-                        objectDataOutput_.write(static_cast<int16_t>(fieldName.size()));
-                        objectDataOutput_.write_bytes(fieldName);
-                        objectDataOutput_.write<byte>(static_cast<byte>(fieldType));
+                        objectDataOutput_.write(static_cast<int16_t>(field_name.size()));
+                        objectDataOutput_.write_bytes(field_name);
+                        objectDataOutput_.write<byte>(static_cast<byte>(field_type));
 
                         return fd;
 
                     } catch (exception::IllegalArgumentException &iae) {
                         std::stringstream error;
-                        error << "HazelcastSerializationException( Invalid field name: '" << fieldName;
+                        error << "HazelcastSerializationException( Invalid field name: '" << field_name;
                         error << "' for ClassDefinition {class id: " << util::IOUtil::to_string(cd_->get_class_id());
                         error << ", factoryId:" + util::IOUtil::to_string(cd_->get_factory_id());
                         error << ", version: " << util::IOUtil::to_string(cd_->get_version()) << "}. Error:";
@@ -876,28 +876,28 @@ namespace hazelcast {
                     return lhs.data_ == rhs.data_;
                 }
 
-                ClassDefinitionContext::ClassDefinitionContext(int factoryId, PortableContext *portableContext)
-                        : factoryId_(factoryId), portableContext_(portableContext) {}
+                ClassDefinitionContext::ClassDefinitionContext(int factory_id, PortableContext *portable_context)
+                        : factoryId_(factory_id), portableContext_(portable_context) {}
 
-                int ClassDefinitionContext::get_class_version(int classId) {
-                    std::shared_ptr<int> version = currentClassVersions_.get(classId);
+                int ClassDefinitionContext::get_class_version(int class_id) {
+                    std::shared_ptr<int> version = currentClassVersions_.get(class_id);
                     return version != NULL ? *version : -1;
                 }
 
-                void ClassDefinitionContext::set_class_version(int classId, int version) {
-                    std::shared_ptr<int> current = currentClassVersions_.put_if_absent(classId, std::shared_ptr<int>(
+                void ClassDefinitionContext::set_class_version(int class_id, int version) {
+                    std::shared_ptr<int> current = currentClassVersions_.put_if_absent(class_id, std::shared_ptr<int>(
                             new int(version)));
                     if (current != NULL && *current != version) {
                         std::stringstream error;
-                        error << "Class-id: " << classId << " is already registered!";
+                        error << "Class-id: " << class_id << " is already registered!";
                         BOOST_THROW_EXCEPTION(
                                 exception::IllegalArgumentException("ClassDefinitionContext::setClassVersion",
                                                                     error.str()));
                     }
                 }
 
-                std::shared_ptr<ClassDefinition> ClassDefinitionContext::lookup(int classId, int version) {
-                    long long key = combine_to_long(classId, version);
+                std::shared_ptr<ClassDefinition> ClassDefinitionContext::lookup(int class_id, int version) {
+                    long long key = combine_to_long(class_id, version);
                     return versionedDefinitions_.get(key);
 
                 }
@@ -936,14 +936,14 @@ namespace hazelcast {
                     return ((int64_t) x) << 32 | (((int64_t) y) & 0xFFFFFFFL);
                 }
 
-                DefaultPortableReader::DefaultPortableReader(PortableSerializer &portableSer,
+                DefaultPortableReader::DefaultPortableReader(PortableSerializer &portable_ser,
                                                              ObjectDataInput &input,
                                                              std::shared_ptr<ClassDefinition> cd)
-                        : PortableReaderBase(portableSer, input, cd) {}
+                        : PortableReaderBase(portable_ser, input, cd) {}
 
-                PortableReaderBase::PortableReaderBase(PortableSerializer &portableSer, ObjectDataInput &input,
+                PortableReaderBase::PortableReaderBase(PortableSerializer &portable_ser, ObjectDataInput &input,
                                                        std::shared_ptr<ClassDefinition> cd)
-                        : cd_(cd), dataInput_(&input), portableSerializer_(&portableSer), raw_(false) {
+                        : cd_(cd), dataInput_(&input), portableSerializer_(&portable_ser), raw_(false) {
                     int fieldCount;
                     try {
                         // final position after portable is read
@@ -965,26 +965,26 @@ namespace hazelcast {
                     this->offset_ = input.position();
                 }
                 
-                void PortableReaderBase::set_position(const std::string &fieldName, FieldType const &fieldType) {
+                void PortableReaderBase::set_position(const std::string &field_name, FieldType const &field_type) {
                     if (raw_) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
                                                                                          "Cannot read Portable fields after getRawDataInput() is called!"));
                     }
-                    if (!cd_->has_field(fieldName)) {
+                    if (!cd_->has_field(field_name)) {
                         // TODO: if no field def found, java client reads nested position:
                         // readNestedPosition(fieldName, type);
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
                                                                                          "Don't have a field named " +
-                                                                                         std::string(fieldName)));
+                                                                                         std::string(field_name)));
                     }
 
-                    if (cd_->get_field_type(fieldName) != fieldType) {
+                    if (cd_->get_field_type(field_name) != field_type) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
                                                                                          "Field type did not matched for " +
-                                                                                         std::string(fieldName)));
+                                                                                         std::string(field_name)));
                     }
 
-                    dataInput_->position(offset_ + cd_->get_field(fieldName).get_index() * util::Bits::INT_SIZE_IN_BYTES);
+                    dataInput_->position(offset_ + cd_->get_field(field_name).get_index() * util::Bits::INT_SIZE_IN_BYTES);
                     int32_t pos = dataInput_->read<int32_t>();
 
                     dataInput_->position(pos);
@@ -1009,49 +1009,49 @@ namespace hazelcast {
                 }
 
                 void
-                PortableReaderBase::check_factory_and_class(FieldDefinition fd, int32_t factoryId, int32_t classId) const {
-                    if (factoryId != fd.get_factory_id()) {
+                PortableReaderBase::check_factory_and_class(FieldDefinition fd, int32_t factory_id, int32_t class_id) const {
+                    if (factory_id != fd.get_factory_id()) {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.get_factory_id(),
-                                          factoryId);
+                                          factory_id);
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
                                                       "DefaultPortableReader::checkFactoryAndClass ",
                                                               std::string(msg)));
                     }
-                    if (classId != fd.get_class_id()) {
+                    if (class_id != fd.get_class_id()) {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.get_class_id(),
-                                          classId);
+                                          class_id);
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
                                                       "DefaultPortableReader::checkFactoryAndClass ",
                                                               std::string(msg)));
                     }
                 }
 
-                MorphingPortableReader::MorphingPortableReader(PortableSerializer &portableSer, ObjectDataInput &input,
+                MorphingPortableReader::MorphingPortableReader(PortableSerializer &portable_ser, ObjectDataInput &input,
                                                                std::shared_ptr<ClassDefinition> cd)
-                        : PortableReaderBase(portableSer, input, cd) {}
+                        : PortableReaderBase(portable_ser, input, cd) {}
 
-                PortableSerializer::PortableSerializer(PortableContext &portableContext) : context_(portableContext) {}
+                PortableSerializer::PortableSerializer(PortableContext &portable_context) : context_(portable_context) {}
 
                 PortableReader
-                PortableSerializer::create_reader(ObjectDataInput &input, int factoryId, int classId, int version,
-                                                 int portableVersion) {
+                PortableSerializer::create_reader(ObjectDataInput &input, int factory_id, int class_id, int version,
+                                                 int portable_version) {
 
                     int effectiveVersion = version;
                     if (version < 0) {
                         effectiveVersion = context_.get_version();
                     }
 
-                    std::shared_ptr<ClassDefinition> cd = context_.lookup_class_definition(factoryId, classId,
+                    std::shared_ptr<ClassDefinition> cd = context_.lookup_class_definition(factory_id, class_id,
                                                                                         effectiveVersion);
                     if (cd == nullptr) {
                         int begin = input.position();
-                        cd = context_.read_class_definition(input, factoryId, classId, effectiveVersion);
+                        cd = context_.read_class_definition(input, factory_id, class_id, effectiveVersion);
                         input.position(begin);
                     }
 
-                    return PortableReader(*this, input, cd, effectiveVersion == portableVersion);
+                    return PortableReader(*this, input, cd, effectiveVersion == portable_version);
                 }
 
                 int32_t PortableSerializer::read_int(ObjectDataInput &in) const {

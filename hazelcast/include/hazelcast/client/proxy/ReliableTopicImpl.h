@@ -44,7 +44,7 @@ namespace hazelcast {
             protected:
                 static constexpr const char * TOPIC_RB_PREFIX = "_hz_rb_";
 
-                ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context);
+                ReliableTopicImpl(const std::string &instance_name, spi::ClientContext *context);
 
                 boost::future<void> publish(serialization::pimpl::Data &&data);
             protected:

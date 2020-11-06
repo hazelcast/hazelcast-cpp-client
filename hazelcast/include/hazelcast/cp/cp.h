@@ -52,8 +52,8 @@ namespace hazelcast {
 
         class HAZELCAST_API cp_proxy : public client::proxy::ProxyImpl {
         public:
-            cp_proxy(const std::string &serviceName, const std::string &proxyName, client::spi::ClientContext *context,
-                     const raft_group_id &groupId, const std::string &objectName);
+            cp_proxy(const std::string &service_name, const std::string &proxy_name, client::spi::ClientContext *context,
+                     const raft_group_id &group_id, const std::string &object_name);
 
             const raft_group_id &get_group_id() const;
 
@@ -71,10 +71,10 @@ namespace hazelcast {
         }
         class HAZELCAST_API session_aware_proxy : public cp_proxy {
         public:
-            session_aware_proxy(const std::string &serviceName, const std::string &proxyName,
-                                client::spi::ClientContext *context, const raft_group_id &groupId,
-                                const std::string &objectName,
-                                internal::session::proxy_session_manager &sessionManager);
+            session_aware_proxy(const std::string &service_name, const std::string &proxy_name,
+                                client::spi::ClientContext *context, const raft_group_id &group_id,
+                                const std::string &object_name,
+                                internal::session::proxy_session_manager &session_manager);
 
         protected:
             internal::session::proxy_session_manager &session_manager_;
@@ -92,7 +92,7 @@ namespace hazelcast {
         class HAZELCAST_API atomic_long : public cp_proxy {
         public:
             atomic_long(const std::string &name, client::spi::ClientContext &context,
-                        const raft_group_id &groupId, const std::string &objectName);
+                        const raft_group_id &group_id, const std::string &object_name);
 
             /**
              * Atomically adds the given value to the current value.
@@ -148,7 +148,7 @@ namespace hazelcast {
              * @param newValue the new value
              * @return the old value
              */
-            boost::future<int64_t> get_and_set(int64_t newValue);
+            boost::future<int64_t> get_and_set(int64_t new_value);
 
             /**
              * Atomically increments the current value by one.
@@ -169,7 +169,7 @@ namespace hazelcast {
              *
              * @param newValue the new value
              */
-            boost::future<void> set(int64_t newValue);
+            boost::future<void> set(int64_t new_value);
 
             /**
              * Alters the currently stored value by applying a function on it.
@@ -250,7 +250,7 @@ namespace hazelcast {
         class HAZELCAST_API atomic_reference : public cp_proxy {
         public:
             atomic_reference(const std::string &name, client::spi::ClientContext &context,
-                             const raft_group_id &groupId, const std::string &objectName);
+                             const raft_group_id &group_id, const std::string &object_name);
 
             template<typename T>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> get() {
@@ -337,8 +337,8 @@ namespace hazelcast {
 
         class HAZELCAST_API latch : public cp_proxy {
         public:
-            latch(const std::string &name, client::spi::ClientContext &context, const raft_group_id &groupId,
-                  const std::string &objectName);
+            latch(const std::string &name, client::spi::ClientContext &context, const raft_group_id &group_id,
+                  const std::string &object_name);
 
             /**
              * Sets the count to the given value if the current count is zero.
@@ -458,7 +458,7 @@ namespace hazelcast {
             static constexpr int64_t INVALID_FENCE = 0L;
 
             fenced_lock(const std::string &name, client::spi::ClientContext &context,
-                             const raft_group_id &groupId, const std::string &objectName);
+                             const raft_group_id &group_id, const std::string &object_name);
 
             /**
              * Acquires the lock.
@@ -1155,9 +1155,9 @@ namespace hazelcast {
         protected:
             static constexpr const char *SERVICE_NAME = "hz:raft:semaphoreService";
 
-            counting_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
-                               const raft_group_id &groupId, const std::string &objectName,
-                               internal::session::proxy_session_manager &sessionManager);
+            counting_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
+                               const raft_group_id &group_id, const std::string &object_name,
+                               internal::session::proxy_session_manager &session_manager);
 
             virtual boost::future<bool> try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) = 0;
 
@@ -1170,9 +1170,9 @@ namespace hazelcast {
 
         class HAZELCAST_API sessionless_semaphore : public counting_semaphore {
         public:
-            sessionless_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
-                                  const raft_group_id &groupId, const std::string &objectName,
-                                  internal::session::proxy_session_manager &sessionManager);
+            sessionless_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
+                                  const raft_group_id &group_id, const std::string &object_name,
+                                  internal::session::proxy_session_manager &session_manager);
 
             boost::future<void> acquire(int32_t permits) override;
 
@@ -1193,9 +1193,9 @@ namespace hazelcast {
 
         class HAZELCAST_API session_semaphore : public counting_semaphore {
         public:
-            session_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
-                                  const raft_group_id &groupId, const std::string &objectName,
-                                  internal::session::proxy_session_manager &sessionManager);
+            session_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
+                                  const raft_group_id &group_id, const std::string &object_name,
+                                  internal::session::proxy_session_manager &session_manager);
 
             boost::future<void> acquire(int32_t permits) override;
 

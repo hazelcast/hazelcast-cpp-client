@@ -69,7 +69,7 @@ namespace hazelcast {
          * @return 0 if error string could be obtained, non-zero otherwise
          */
         HAZELCAST_API int
-        strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix = (const char *) NULL);
+        strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msg_prefix = (const char *) NULL);
 
         int32_t HAZELCAST_API get_available_core_count();
 

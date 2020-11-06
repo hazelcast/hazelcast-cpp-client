@@ -52,7 +52,7 @@ namespace hazelcast {
                 struct HAZELCAST_API ErrorCodec {
                     static constexpr int32_t EXCEPTION_MESSAGE_TYPE = 0;
 
-                    static std::vector<ErrorHolder> decode(ClientMessage &clientMessage);
+                    static std::vector<ErrorHolder> decode(ClientMessage &client_message);
                 };
             }
         }

@@ -40,15 +40,15 @@ namespace hazelcast {
             *  @param includeValue boolean value representing value should be included in incoming ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool include_value) {
                 std::unique_ptr<impl::ItemEventHandler<protocol::codec::set_addlistener_handler>> itemEventHandler(
                         new impl::ItemEventHandler<protocol::codec::set_addlistener_handler>(
                                 get_name(), get_context().get_client_cluster_service(),
                                 get_context().get_serialization_service(),
                                 std::move(listener),
-                                includeValue));
+                                include_value));
 
-                return proxy::ISetImpl::add_item_listener(std::move(itemEventHandler), includeValue);
+                return proxy::ISetImpl::add_item_listener(std::move(itemEventHandler), include_value);
             }
 
             /**
@@ -133,8 +133,8 @@ namespace hazelcast {
             }
 
         private:
-            ISet(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::ISetImpl(instanceName, context) {}
+            ISet(const std::string &instance_name, spi::ClientContext *context)
+                    : proxy::ISetImpl(instance_name, context) {}
         };
     }
 }

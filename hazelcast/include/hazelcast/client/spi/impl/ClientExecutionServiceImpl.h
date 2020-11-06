@@ -43,7 +43,7 @@ namespace hazelcast {
                         public std::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
                     ClientExecutionServiceImpl(const std::string &name, const ClientProperties &properties,
-                                               int32_t poolSize, spi::LifecycleService &service);
+                                               int32_t pool_size, spi::LifecycleService &service);
 
                     void start();
 

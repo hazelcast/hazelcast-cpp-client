@@ -44,8 +44,8 @@ namespace hazelcast {
                  * @param minParkPeriodNs to use when initiating parking
                  * @param maxParkPeriodNs to use when parking
                  */
-                BackoffIdleStrategy(int64_t maxSpins, int64_t maxYields, int64_t minParkPeriodNs,
-                                    int64_t maxParkPeriodNs);
+                BackoffIdleStrategy(int64_t max_spins, int64_t max_yields, int64_t min_park_period_ns,
+                                    int64_t max_park_period_ns);
 
                 bool idle(int64_t n) override;
 

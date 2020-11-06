@@ -28,11 +28,11 @@ struct Car {
         attributes["tripStop"] = "0";
     }
 
-    Car(const char *name, int breakHorsePower, int mileage) {
+    Car(const char *name, int break_horse_power, int mileage) {
         attributes["name"] = name;
         attributes["tripStart"] = "0";
         attributes["tripStop"] = "0";
-        attributes["bhp"] = std::to_string(breakHorsePower);
+        attributes["bhp"] = std::to_string(break_horse_power);
         attributes["mileage"] = std::to_string(mileage);
     }
 
