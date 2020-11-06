@@ -369,7 +369,7 @@ namespace hazelcast {
                     client_config clientConfig = get_config(true);
                     clientConfig.get_network_config().get_ssl_config().set_cipher_list("HIGH");
 #else
-                    client_config clientConfig = getConfig();
+                    client_config clientConfig = get_config();
 #endif // HZ_BUILD_WITH_SSL
                     client = new hazelcast_client(clientConfig);
                     list = client->get_list("MyList");
@@ -1790,20 +1790,20 @@ namespace hazelcast {
                  * Following test can only run from inside the AWS network
                  */
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                                                                                                                                        TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
-                    client_config clientConfig = getConfig();
+                TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
+                    client_config clientConfig = get_config();
 
-                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
-                    clientConfig.get_network_config().get_aws_config().set_enabled(true).setIamRole("cloudbees-role").set_tag_key(
+                    clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
+                    clientConfig.get_network_config().get_aws_config().set_enabled(true).set_iam_role("cloudbees-role").set_tag_key(
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
                     hazelcast_client hazelcastClient(clientConfig);
                 }
 
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
-                    client_config clientConfig = getConfig();
+                    client_config clientConfig = get_config();
 
-                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
+                    clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).set_tag_key(
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 

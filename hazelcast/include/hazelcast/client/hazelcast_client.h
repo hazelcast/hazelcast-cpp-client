@@ -37,7 +37,7 @@ namespace hazelcast {
          * * Ability to add cluster listeners to a cluster and entry/item listeners to distributed data structures.
          * @see MembershipListener, IMap#add_entry_listener , IQueue#add_item_listener etc .
          * * C++ Client is smart by default, which means that it knows where the data is and asks directly to correct node.
-         * Note that you can turn this feature off ( ClientConfig#setSmart), if you don't want your clients to connect every
+         * Note that you can turn this feature off ( client_config#setSmart), if you don't want your clients to connect every
          * node.
          *
          * Our C++ client is completely open source and the source code is freely available at https://github.com/hazelcast/hazelcast-cpp-client .

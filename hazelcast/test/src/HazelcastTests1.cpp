@@ -1035,7 +1035,7 @@ namespace hazelcast {
 #else
             INSTANTIATE_TEST_SUITE_P(All, 
                                      ClusterTest, 
-                                     ::testing::Values(ClientTestSupportBase::getConfig()));
+                                     ::testing::Values(ClientTestSupportBase::get_config()));
 #endif
         }
     }

@@ -187,7 +187,7 @@ namespace hazelcast {
                  * Gets the iamRole name
                  *
                  * @return the iamRole. empty string if nothing is returned.
-                 * @see #setIamRole(std::string) (int32_t)
+                 * @see #set_iam_role(std::string) (int32_t)
                  */
                 const std::string &get_iam_role() const;
 

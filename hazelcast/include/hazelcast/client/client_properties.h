@@ -34,7 +34,7 @@ namespace hazelcast {
 
         /**
         * A client property is a configuration for hazelcast client. For available configurations
-        * see ClientProperties class.
+        * see client_properties class.
         *
         */
         class HAZELCAST_API client_property {
@@ -60,7 +60,7 @@ namespace hazelcast {
 
         /**
         * Client Properties is an internal class. Only use properties documentations as references to be used
-        * in ClientConfig#setProperty
+        * in client_config#set_property
         *
         */
         class HAZELCAST_API client_properties {

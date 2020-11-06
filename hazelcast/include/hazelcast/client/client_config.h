@@ -246,7 +246,7 @@ namespace hazelcast {
             /**
             * Sets the value of a named property
             *
-            * @see ClientProperties for properties that is used to configure client
+            * @see client_properties for properties that is used to configure client
             *
             * \param name  property name
             * \param value value of the property
