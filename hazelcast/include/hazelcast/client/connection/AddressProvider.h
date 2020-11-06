@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/Address.h"
+#include "hazelcast/client/address.h"
 
 namespace hazelcast {
     namespace client {
@@ -32,7 +32,7 @@ namespace hazelcast {
                 /**
                  * @return The possible member addresses to connect to.
                  */
-                virtual std::vector<Address> load_addresses() = 0;
+                virtual std::vector<address> load_addresses() = 0;
 
                 virtual ~AddressProvider() = default;
             };

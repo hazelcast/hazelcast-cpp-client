@@ -17,7 +17,7 @@
 #include <hazelcast/client/HazelcastAll.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
     config.set_socket_interceptor(
         SocketInterceptor()
             .on_connect([](const hazelcast::client::Socket &connected_socket) {

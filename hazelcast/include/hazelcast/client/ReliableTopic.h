@@ -272,14 +272,14 @@ namespace hazelcast {
                     listener_.received_(to_message(message));
                 }
 
-                topic::Message to_message(topic::impl::reliable::ReliableTopicMessage *m) {
-                    boost::optional<Member> member;
-                    auto &addr = m->get_publisher_address();
+                topic::Message to_message(topic::impl::reliable::ReliableTopicMessage *message) {
+                    boost::optional<member> m;
+                    auto &addr = message->get_publisher_address();
                     if (addr.has_value()) {
-                        member = boost::make_optional<Member>(addr.value());
+                        m = boost::make_optional<member>(addr.value());
                     }
-                    return topic::Message(name_, TypedData(std::move(m->get_payload()), serialization_service_),
-                                          m->get_publish_time(), std::move(member));
+                    return topic::Message(name_, typed_data(std::move(message->get_payload()), serialization_service_),
+                                          message->get_publish_time(), std::move(m));
                 }
 
                 bool terminate(const exception::IException &failure) {

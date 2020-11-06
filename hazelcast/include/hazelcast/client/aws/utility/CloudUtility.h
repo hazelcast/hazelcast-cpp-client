@@ -33,7 +33,7 @@ namespace hazelcast {
 
     namespace client {
         namespace config {
-            class ClientAwsConfig;
+            class client_aws_config;
         }
         namespace aws {
             namespace utility {
@@ -51,7 +51,7 @@ namespace hazelcast {
                     static std::unordered_map<std::string, std::string> unmarshal_the_response(std::istream &stream,
                             logger &lg);
 
-                    static void unmarshal_json_response(std::istream &stream, config::ClientAwsConfig &aws_config,
+                    static void unmarshal_json_response(std::istream &stream, config::client_aws_config &aws_config,
                                                       std::unordered_map<std::string, std::string> &attributes);
                 };
             }

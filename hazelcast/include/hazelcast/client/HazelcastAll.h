@@ -15,12 +15,12 @@
  */
 #pragma once
 
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/address.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/EntryView.h"
+#include "hazelcast/client/entry_view.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/IList.h"
@@ -33,7 +33,7 @@
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/LoadBalancer.h"
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/MultiMap.h"

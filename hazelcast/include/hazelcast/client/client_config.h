@@ -22,7 +22,7 @@
 #include <boost/optional.hpp>
 #include <hazelcast/client/serialization/serialization.h>
 
-#include "hazelcast/client/Address.h"
+#include "hazelcast/client/address.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LoadBalancer.h"
@@ -33,7 +33,7 @@
 #include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
-#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
+#include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
 #include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -101,7 +101,7 @@ namespace hazelcast {
         /**
         * HazelcastClient configuration class.
         */
-        class HAZELCAST_API ClientConfig {
+        class HAZELCAST_API client_config {
             friend class spi::impl::ClientClusterServiceImpl;
             friend class connection::ClientConnectionManagerImpl;
         public:
@@ -114,7 +114,7 @@ namespace hazelcast {
             * attemptPeriod(3000)
             * defaultLoadBalancer(impl::RoundRobinLB)
             */
-            ClientConfig();
+            client_config();
 
             /**
              * Returns the configured cluster name. The name is sent as part of client authentication message and may be verified on the
@@ -124,14 +124,14 @@ namespace hazelcast {
              */
             const std::string &get_cluster_name() const;
 
-            ClientConfig &set_cluster_name(const std::string &cluster_name);
+            client_config &set_cluster_name(const std::string &cluster_name);
 
             /**
             *  There are two types of credentials you can provide, \username_password_credentials and \token_credentials
             *
             *  \return itself ClientConfig
             */
-            ClientConfig &set_credentials(const std::shared_ptr<security::credentials> &credential);
+            client_config &set_credentials(const std::shared_ptr<security::credentials> &credential);
 
             const std::shared_ptr<security::credentials> &get_credentials() const;
 
@@ -146,7 +146,7 @@ namespace hazelcast {
             * \param redoOperation
             * return itself ClientConfig
             */
-            ClientConfig &set_redo_operation(bool redo_operation);
+            client_config &set_redo_operation(bool redo_operation);
 
             /**
             *
@@ -160,7 +160,7 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            ClientConfig &set_socket_interceptor(SocketInterceptor &&interceptor);
+            client_config &set_socket_interceptor(SocketInterceptor &&interceptor);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
@@ -177,7 +177,7 @@ namespace hazelcast {
             * \param listener LifecycleListener
             * \return itself ClientConfig
             */
-            ClientConfig &add_listener(LifecycleListener &&listener);
+            client_config &add_listener(LifecycleListener &&listener);
 
             /**
             *
@@ -195,7 +195,7 @@ namespace hazelcast {
             * \param listener MembershipListener
             * \return itself ClientConfig
             */
-            ClientConfig &add_listener(MembershipListener &&listener);
+            client_config &add_listener(MembershipListener &&listener);
 
             /**
             * Returns registered membershipListeners
@@ -219,7 +219,7 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            ClientConfig &set_load_balancer(LoadBalancer *load_balancer);
+            client_config &set_load_balancer(LoadBalancer *load_balancer);
 
             /**
             *
@@ -234,7 +234,7 @@ namespace hazelcast {
             * \param serializationConfig
             * \return itself ClientConfig
             */
-            ClientConfig &set_serialization_config(SerializationConfig const &serialization_config);
+            client_config &set_serialization_config(SerializationConfig const &serialization_config);
 
             /**
             * Gets a reference to properties map
@@ -252,7 +252,7 @@ namespace hazelcast {
             * \param value value of the property
             * \return itself ClientConfig
             */
-            ClientConfig &set_property(const std::string &name, const std::string &value);
+            client_config &set_property(const std::string &name, const std::string &value);
 
             /**
              * Adds a ClientReliableTopicConfig.
@@ -260,7 +260,7 @@ namespace hazelcast {
              * \param reliableTopicConfig the ReliableTopicConfig to add
              * \return configured {\link ClientConfig} for chaining
              */
-            ClientConfig &add_reliable_topic_config(const config::ReliableTopicConfig &reliable_topic_config);
+            client_config &add_reliable_topic_config(const config::ReliableTopicConfig &reliable_topic_config);
 
             /**
              * Gets the ClientReliableTopicConfig for a given reliable topic name.
@@ -279,7 +279,7 @@ namespace hazelcast {
              * 
              * Memory ownership of the config is passed to the client config
              */
-            ClientConfig &add_near_cache_config(const config::NearCacheConfig &near_cache_config);
+            client_config &add_near_cache_config(const config::NearCacheConfig &near_cache_config);
 
             /**
              * Gets the NearCacheConfig configured for the map / cache with name
@@ -305,7 +305,7 @@ namespace hazelcast {
              * \return configured ClientConfig for chaining
              * @see com.hazelcast.client.config.ClientNetworkConfig
              */
-            ClientConfig &set_network_config(const config::ClientNetworkConfig &network_config);
+            client_config &set_network_config(const config::ClientNetworkConfig &network_config);
 
             const std::shared_ptr<std::string> &get_instance_name() const;
 
@@ -328,7 +328,7 @@ namespace hazelcast {
 
             config::ClientConnectionStrategyConfig &get_connection_strategy_config();
 
-            ClientConfig &
+            client_config &
             set_connection_strategy_config(const config::ClientConnectionStrategyConfig &connection_strategy_config);
 
             /**
@@ -383,7 +383,7 @@ namespace hazelcast {
              * \param config the flake ID configuration
              * \return this config instance
              */
-            ClientConfig &add_flake_id_generator_config(const config::ClientFlakeIdGeneratorConfig &config);
+            client_config &add_flake_id_generator_config(const config::ClientFlakeIdGeneratorConfig &config);
 
             /**
              *
@@ -393,9 +393,9 @@ namespace hazelcast {
 
             const std::unordered_set<std::string> &get_labels() const;
 
-            ClientConfig &set_labels(const std::unordered_set<std::string> &labels);
+            client_config &set_labels(const std::unordered_set<std::string> &labels);
 
-            ClientConfig &add_label(const std::string &label);
+            client_config &add_label(const std::string &label);
 
             /**
              * This feature reduces number of hops and increase performance for smart clients.
@@ -406,7 +406,7 @@ namespace hazelcast {
              *                that backups are applied
              * @return configured \ClientConfig for chaining
              */
-            ClientConfig &backup_acks_enabled(bool enabled);
+            client_config &backup_acks_enabled(bool enabled);
 
             /**
              * Note that backup acks to client can be enabled only for smart client.
@@ -454,7 +454,7 @@ namespace hazelcast {
 
             std::unordered_map<std::string, config::ClientFlakeIdGeneratorConfig> flake_id_generator_config_map_;
 
-            config::matcher::MatchingPointConfigPatternMatcher config_pattern_matcher_;
+            config::matcher::matching_point_config_pattern_matcher config_pattern_matcher_;
 
             config::LoggerConfig logger_config_;
 

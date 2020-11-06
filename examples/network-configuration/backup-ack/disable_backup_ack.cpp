@@ -17,7 +17,7 @@
 
 int main() {
     // Disable the default backup ack feature
-    HazelcastClient hz(ClientConfig().backup_acks_enabled(false));
+    HazelcastClient hz(client_config().backup_acks_enabled(false));
 
     // perform operations
 

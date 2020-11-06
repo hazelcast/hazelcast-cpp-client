@@ -58,21 +58,21 @@ namespace hazelcast {
                     return register_listener(create_item_listener_codec(include_value), std::move(item_event_handler));
                 }
 
-                boost::future<bool> contains(const serialization::pimpl::Data& element);
+                boost::future<bool> contains(const serialization::pimpl::data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> to_array_data();
+                boost::future<std::vector<serialization::pimpl::data>> to_array_data();
 
-                boost::future<bool> add(const serialization::pimpl::Data& element);
+                boost::future<bool> add(const serialization::pimpl::data& element);
 
-                boost::future<bool> remove(const serialization::pimpl::Data& element);
+                boost::future<bool> remove(const serialization::pimpl::data& element);
 
-                boost::future<bool> contains_all(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> contains_all(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> add_all(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> remove_all(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> remove_all(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> retain_all(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> retain_all(const std::vector<serialization::pimpl::data>& elements);
 
             private:
                 class SetListenerMessageCodec : public spi::impl::ListenerMessageCodec {

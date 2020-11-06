@@ -30,9 +30,9 @@ namespace hazelcast {
             public:
                 TransactionalListImpl(const std::string& object_name, txn::TransactionProxy &context);
 
-                boost::future<bool> add(const serialization::pimpl::Data& e);
+                boost::future<bool> add(const serialization::pimpl::data& e);
 
-                boost::future<bool> remove(const serialization::pimpl::Data& e);
+                boost::future<bool> remove(const serialization::pimpl::data& e);
             };
         }
     }

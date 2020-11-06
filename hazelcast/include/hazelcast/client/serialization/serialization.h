@@ -26,7 +26,7 @@
 
 #include "hazelcast/client/HazelcastJsonValue.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/client/PartitionAware.h"
@@ -120,15 +120,15 @@ namespace hazelcast {
         }
 
         /**
-         * TypedData class is a wrapper class for the serialized binary data. It does late deserialization of the data
+         * typed_data class is a wrapper class for the serialized binary data. It does late deserialization of the data
          * only when the get method is called.
          */
-        class HAZELCAST_API TypedData {
+        class HAZELCAST_API typed_data {
         public:
-            TypedData();
+            typed_data();
 
-            TypedData(serialization::pimpl::Data d,
-                      serialization::pimpl::SerializationService &serialization_service);
+            typed_data(serialization::pimpl::data d,
+                       serialization::pimpl::SerializationService &serialization_service);
 
             /**
              *
@@ -152,14 +152,14 @@ namespace hazelcast {
              * Internal API
              * @return The pointer to the internal binary data.
              */
-            const serialization::pimpl::Data &get_data() const;
+            const serialization::pimpl::data &get_data() const;
 
         private:
-            serialization::pimpl::Data data_;
+            serialization::pimpl::data data_;
             serialization::pimpl::SerializationService *ss_;
         };
 
-        bool HAZELCAST_API operator<(const TypedData &lhs, const TypedData &rhs);
+        bool HAZELCAST_API operator<(const typed_data &lhs, const typed_data &rhs);
 
         namespace serialization {
             class ObjectDataInput;
@@ -1308,7 +1308,7 @@ namespace hazelcast {
                     DataSerializer &get_data_serializer();
 
                     template<typename T>
-                    inline Data to_data(const T *object) {
+                    inline data to_data(const T *object) {
                         ObjectDataOutput output(false, &portable_serializer_, serialization_config_.get_global_serializer());
 
                         write_hash<T>(object, output);
@@ -1319,7 +1319,7 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    inline Data to_data(const T &object) {
+                    inline data to_data(const T &object) {
                         ObjectDataOutput output(false, &portable_serializer_, serialization_config_.get_global_serializer());
 
                         write_hash<T>(&object, output);
@@ -1330,15 +1330,15 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    inline std::shared_ptr<Data> to_shared_data(const T *object) {
+                    inline std::shared_ptr<data> to_shared_data(const T *object) {
                         if (NULL == object) {
-                            return std::shared_ptr<Data>();
+                            return std::shared_ptr<data>();
                         }
-                        return std::shared_ptr<Data>(new Data(to_data<T>(object)));
+                        return std::shared_ptr<data>(new data(to_data<T>(object)));
                     }
 
                     template<typename T>
-                    inline boost::optional<T> to_object(const Data *data) {
+                    inline boost::optional<T> to_object(const data *data) {
                         if (!data) {
                             return boost::none;
                         }
@@ -1348,8 +1348,8 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<!(std::is_same<T, const char *>::value ||
                                               std::is_same<T, const char *>::value ||
-                                              std::is_same<T, TypedData>::value), boost::optional<T>>::type
-                    inline to_object(const Data &data) {
+                                              std::is_same<T, typed_data>::value), boost::optional<T>>::type
+                    inline to_object(const data &data) {
                         if (is_null_data(data)) {
                             return boost::none;
                         }
@@ -1364,32 +1364,32 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<T, TypedData>::value, boost::optional<T>>::type
-                    inline to_object(const Data &data) {
-                        return boost::make_optional(TypedData(Data(data), *this));
+                    typename std::enable_if<std::is_same<T, typed_data>::value, boost::optional<T>>::type
+                    inline to_object(const data &d) {
+                        return boost::make_optional(typed_data(data(d), *this));
                     }
 
                     template<typename T>
                     typename std::enable_if<std::is_same<T, const char *>::value, boost::optional<std::string>>::type
-                    inline to_object(const Data &data) {
+                    inline to_object(const data &data) {
                         return to_object<std::string>(data);
                     }
 
                     template<typename T>
                     typename std::enable_if<std::is_array<T>::value &&
                                             std::is_same<typename std::remove_all_extents<T>::type, char>::value, boost::optional<std::string>>::type
-                    inline to_object(const Data &data) {
+                    inline to_object(const data &data) {
                         return to_object<std::string>(data);
                     }
 
                     template<typename T>
-                    inline std::shared_ptr<Data> to_shared_object(const std::shared_ptr<Data> &data) {
+                    inline std::shared_ptr<data> to_shared_object(const std::shared_ptr<data> &data) {
                         return data;
                     }
 
                     const byte get_version() const;
 
-                    ObjectType get_object_type(const Data *data);
+                    ObjectType get_object_type(const data *data);
 
                     /**
                      * @link Disposable interface implementation
@@ -1407,7 +1407,7 @@ namespace hazelcast {
                     serialization::pimpl::PortableSerializer portable_serializer_;
                     serialization::pimpl::DataSerializer data_serializer_;
 
-                    static bool is_null_data(const Data &data);
+                    static bool is_null_data(const data &data);
 
                     template<typename T>
                     void write_hash(const PartitionAwareMarker *obj, DataOutput &out) {
@@ -1415,7 +1415,7 @@ namespace hazelcast {
                         const PartitionAware<PK_TYPE> *partitionAwareObj = static_cast<const PartitionAware<PK_TYPE> *>(obj);
                         const PK_TYPE *pk = partitionAwareObj->get_partition_key();
                         if (pk != NULL) {
-                            Data partitionKey = to_data<PK_TYPE>(pk);
+                            data partitionKey = to_data<PK_TYPE>(pk);
                             out.write<int32_t>(partitionKey.get_partition_hash());
                         }
                     }
@@ -1427,7 +1427,7 @@ namespace hazelcast {
                 };
 
                 template<>
-                Data HAZELCAST_API SerializationService::to_data(const char *object);
+                data HAZELCAST_API SerializationService::to_data(const char *object);
             }
 
             /**
@@ -1826,7 +1826,7 @@ namespace hazelcast {
 
             namespace pimpl {
                 template<>
-                Data SerializationService::to_data(const TypedData *object);
+                data SerializationService::to_data(const typed_data *object);
 
                 template<typename T>
                 boost::optional<T> DefaultPortableReader::read_portable(const std::string &field_name) {
@@ -2096,7 +2096,7 @@ namespace hazelcast {
         }
 
         template <typename T>
-        boost::optional<T> TypedData::get() const {
+        boost::optional<T> typed_data::get() const {
             return ss_->to_object<T>(data_);
         }
     }

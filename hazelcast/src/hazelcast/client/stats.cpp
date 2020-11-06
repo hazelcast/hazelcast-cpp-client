@@ -47,7 +47,7 @@
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 
 namespace hazelcast {
     namespace client {

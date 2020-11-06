@@ -23,7 +23,7 @@
 #include "hazelcast/client/EntryListener.h"
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
-#include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/client_config.h>
 #include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
@@ -77,9 +77,9 @@
 #include <openssl/crypto.h>
 #endif
 
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -366,7 +366,7 @@ namespace hazelcast {
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
-                    ClientConfig clientConfig = get_config(true);
+                    client_config clientConfig = get_config(true);
                     clientConfig.get_network_config().get_ssl_config().set_cipher_list("HIGH");
 #else
                     ClientConfig clientConfig = getConfig();
@@ -813,7 +813,7 @@ namespace hazelcast {
         namespace test {
             namespace executor {
                 namespace tasks {
-                    bool SelectAllMembers::select(const hazelcast::client::Member &member) const {
+                    bool SelectAllMembers::select(const hazelcast::client::member &member) const {
                         return true;
                     }
 
@@ -821,7 +821,7 @@ namespace hazelcast {
                         os << "SelectAllMembers";
                     }
 
-                    bool SelectNoMembers::select(const hazelcast::client::Member &member) const {
+                    bool SelectNoMembers::select(const hazelcast::client::member &member) const {
                         return false;
                     }
 
@@ -852,7 +852,7 @@ namespace hazelcast {
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
-                    client = new HazelcastClient(ClientConfig().set_cluster_name("executor-test"));
+                    client = new HazelcastClient(client_config().set_cluster_name("executor-test"));
                 }
 
                 static void TearDownTestCase() {
@@ -934,19 +934,19 @@ namespace hazelcast {
                                                                                                            complete_latch_(
                                                                                                                    complete_latch) {}
 
-                    void on_response(const Member &member, const boost::optional<std::string> &response) override {
+                    void on_response(const member &member, const boost::optional<std::string> &response) override {
                         if (response && *response == msg_ + APPENDAGE) {
                             response_latch_->count_down();
                         }
                     }
 
                     void
-                    on_failure(const Member &member, std::exception_ptr exception) override {
+                    on_failure(const member &member, std::exception_ptr exception) override {
                     }
 
-                    void on_complete(const std::unordered_map<Member, boost::optional<std::string> > &values,
-                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) override {
-                        typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
+                    void on_complete(const std::unordered_map<member, boost::optional<std::string> > &values,
+                                            const std::unordered_map<member, std::exception_ptr> &exceptions) override {
+                        typedef std::unordered_map<member, boost::optional<std::string> > VALUE_MAP;
                         std::string expectedValue(msg_ + APPENDAGE);
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (entry.second && *entry.second == expectedValue) {
@@ -967,19 +967,19 @@ namespace hazelcast {
                                                std::shared_ptr<boost::latch> complete_latch)
                             : response_latch_(std::move(response_latch)), complete_latch_(std::move(complete_latch)) {}
 
-                    void on_response(const Member &member, const boost::optional<std::string> &response) override {
+                    void on_response(const member &member, const boost::optional<std::string> &response) override {
                         if (!response) {
                             response_latch_->count_down();
                         }
                     }
 
                     void
-                    on_failure(const Member &member, std::exception_ptr exception) override {
+                    on_failure(const member &member, std::exception_ptr exception) override {
                     }
 
-                    void on_complete(const std::unordered_map<Member, boost::optional<std::string> > &values,
-                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) override {
-                        typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
+                    void on_complete(const std::unordered_map<member, boost::optional<std::string> > &values,
+                                            const std::unordered_map<member, std::exception_ptr> &exceptions) override {
+                        typedef std::unordered_map<member, boost::optional<std::string> > VALUE_MAP;
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (!entry.second) {
                                 complete_latch_->count_down();
@@ -1135,7 +1135,7 @@ namespace hazelcast {
 
                 executor::tasks::SerializedCounterCallable counterCallable{0};
 
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 ASSERT_FALSE(members.empty());
                 auto future = service->submit_to_member<executor::tasks::SerializedCounterCallable, int>(
                         counterCallable, members[0]).get_future();
@@ -1182,7 +1182,7 @@ namespace hazelcast {
 
                 executor::tasks::GetMemberUuidTask task;
 
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
                 auto future = service->submit_to_member<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(
@@ -1198,13 +1198,13 @@ namespace hazelcast {
 
                 executor::tasks::GetMemberUuidTask task;
 
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
                 auto futuresMap = service->submit_to_members<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(task,
                                                                                                             members);
 
-                for (const Member &member : members) {
+                for (const member &member : members) {
                     ASSERT_EQ(1U, futuresMap.count(member));
                     auto it = futuresMap.find(member);
                     ASSERT_NE(futuresMap.end(), it);
@@ -1238,7 +1238,7 @@ namespace hazelcast {
                         task, selectAll);
 
                 for (auto &pair : futuresMap) {
-                    const Member &member = pair.first;
+                    const member &member = pair.first;
                     auto future = pair.second.get_future();
 
                     auto uuid = future.get();
@@ -1273,7 +1273,7 @@ namespace hazelcast {
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
                 std::shared_ptr<SuccessfullExecutionCallback> callback(new SuccessfullExecutionCallback(latch1));
 
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
                 service->submit_to_member<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, members[0],
@@ -1293,7 +1293,7 @@ namespace hazelcast {
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
                 std::shared_ptr<MultiExecutionCallback<std::string> > callback(
@@ -1451,9 +1451,9 @@ namespace hazelcast {
 
                 auto map = client->get_map(testName);
 
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
-                Member &member = members[0];
+                member &member = members[0];
                 auto key = generate_key_owned_by(clientContext, member);
 
                 executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable{testName, key};
@@ -1473,9 +1473,9 @@ namespace hazelcast {
 
                 auto map = client->get_map(testName);
 
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
-                Member &member = members[0];
+                member &member = members[0];
                 auto key = generate_key_owned_by(clientContext, member);
 
                 executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, key);
@@ -1523,9 +1523,9 @@ namespace hazelcast {
                 auto map = client->get_map(testName);
                 map->put(1, 1).get();
 
-                std::vector<Member> members = client->get_cluster().get_members();
+                std::vector<member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
-                Member &member = members[0];
+                member &member = members[0];
                 auto targetUuid = member.get_uuid();
                 auto key = generate_key_owned_by(clientContext, member);
 
@@ -1542,8 +1542,8 @@ namespace hazelcast {
 
                 auto map = client->get_map(testName);
 
-                std::vector<Member> members = client->get_cluster().get_members();
-                Member &member = members[0];
+                std::vector<member> members = client->get_cluster().get_members();
+                member &member = members[0];
                 auto targetUuid = member.get_uuid();
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
@@ -1559,8 +1559,8 @@ namespace hazelcast {
 
                 auto map = client->get_map(testName);
 
-                std::vector<Member> allMembers = client->get_cluster().get_members();
-                std::vector<Member> members(allMembers.begin(), allMembers.begin() + 2);
+                std::vector<member> allMembers = client->get_cluster().get_members();
+                std::vector<member> members(allMembers.begin(), allMembers.begin() + 2);
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
@@ -1577,7 +1577,7 @@ namespace hazelcast {
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->execute_on_members(callable, std::vector<Member>());
+                service->execute_on_members(callable, std::vector<member>());
 
                 assertSizeEventually(0, map);
             }
@@ -1623,7 +1623,7 @@ namespace hazelcast {
                 };
 
                 TEST_F (AwsConfigTest, testDefaultValues) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     ASSERT_EQ("", awsConfig.get_access_key());
                     ASSERT_EQ("us-east-1", awsConfig.get_region());
                     ASSERT_EQ("ec2.amazonaws.com", awsConfig.get_host_header());
@@ -1637,7 +1637,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsConfigTest, testSetValues) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
 
                     awsConfig.set_access_key("mykey");
                     awsConfig.set_region("myregion");
@@ -1663,7 +1663,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsConfigTest, testSetEmptyValues) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
 
                     ASSERT_THROW(awsConfig.set_access_key(""), exception::IllegalArgumentException);
                     ASSERT_THROW(awsConfig.set_region(""), exception::IllegalArgumentException);
@@ -1672,13 +1672,13 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsConfigTest, testClientConfigUsage) {
-                    ClientConfig clientConfig;
-                    client::config::ClientAwsConfig &awsConfig = clientConfig.get_network_config().get_aws_config();
+                    client_config clientConfig;
+                    client::config::client_aws_config &awsConfig = clientConfig.get_network_config().get_aws_config();
                     awsConfig.set_enabled(true);
 
                     ASSERT_TRUE(clientConfig.get_network_config().get_aws_config().is_enabled());
 
-                    client::config::ClientAwsConfig newConfig;
+                    client::config::client_aws_config newConfig;
 
                     clientConfig.get_network_config().set_aws_config(newConfig);
                     // default constructor sets enabled to false
@@ -1686,7 +1686,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
-                    ClientConfig clientConfig = get_config();
+                    client_config clientConfig = get_config();
 
                     clientConfig.set_property(ClientProperties::PROP_AWS_MEMBER_PORT, "65536");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
@@ -1716,7 +1716,7 @@ namespace hazelcast {
                 };
 
                 TEST_F (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
-                    ClientConfig clientConfig;
+                    client_config clientConfig;
 
                     clientConfig.set_property(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
@@ -1737,7 +1737,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole) {
-                    ClientConfig clientConfig;
+                    client_config clientConfig;
                     clientConfig.set_property(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
                             set_security_group_name("launch-wizard-147");
@@ -1828,7 +1828,7 @@ namespace hazelcast {
                 };
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
@@ -1838,7 +1838,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value(
                             "non-existent-value");
@@ -1848,7 +1848,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
@@ -1858,7 +1858,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("non-existent-tag");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
@@ -1867,7 +1867,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("aws-tag-value-1");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
@@ -1877,7 +1877,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSetToNonExistentValue) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("non-existent-value");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
@@ -1886,7 +1886,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesSecurityGroup) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("launch-wizard-147");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
@@ -1896,7 +1896,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup) {
-                    client::config::ClientAwsConfig awsConfig;
+                    client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("non-existent-group");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
@@ -1927,7 +1927,7 @@ namespace hazelcast {
                     ASSERT_TRUE(fb.open("hazelcast/test/resources/sample_aws_response.xml", std::ios::in));
                     std::istream responseStream(&fb);
 
-                    config::ClientAwsConfig awsConfig;
+                    config::client_aws_config awsConfig;
                     std::unordered_map<std::string, std::string> results = hazelcast::client::aws::utility::CloudUtility::unmarshal_the_response(
                             responseStream, get_logger());
                     ASSERT_EQ(4U, results.size());

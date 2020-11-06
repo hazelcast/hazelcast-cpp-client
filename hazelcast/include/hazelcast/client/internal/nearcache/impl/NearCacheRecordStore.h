@@ -29,7 +29,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class Data;
+                class data;
             }
         }
 
@@ -81,7 +81,7 @@ namespace hazelcast {
                          */
 /*
                         virtual void put(const std::shared_ptr<K> &key,
-                                         const std::shared_ptr<serialization::pimpl::Data> &value) {
+                                         const std::shared_ptr<serialization::pimpl::data> &value) {
                             assert(0);
                         }
 */
@@ -125,7 +125,7 @@ namespace hazelcast {
                          * @return the best candidate object to store, selected from the given {@code candidates}.
                          */
                         virtual const std::shared_ptr<V> select_to_save(const std::shared_ptr<V> &value,
-                                                                 const std::shared_ptr<serialization::pimpl::Data> &value_data) const {
+                                                                 const std::shared_ptr<serialization::pimpl::data> &value_data) const {
                             assert(0);
                             return std::shared_ptr<V>();
                         }

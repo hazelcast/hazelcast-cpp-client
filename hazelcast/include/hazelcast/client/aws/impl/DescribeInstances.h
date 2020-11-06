@@ -33,7 +33,7 @@ namespace hazelcast {
 
     namespace client {
         namespace config {
-            class ClientAwsConfig;
+            class client_aws_config;
         }
         namespace aws {
             namespace impl {
@@ -43,7 +43,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API DescribeInstances {
                 public:
-                    DescribeInstances(config::ClientAwsConfig &aws_config, const std::string &endpoint,
+                    DescribeInstances(config::client_aws_config &aws_config, const std::string &endpoint,
                                       logger &lg);
 
                     virtual ~DescribeInstances();
@@ -74,7 +74,7 @@ namespace hazelcast {
                     void add_filters();
 
                     std::unique_ptr<security::EC2RequestSigner> rs_;
-                    config::ClientAwsConfig &aws_config_;
+                    config::client_aws_config &aws_config_;
                     const std::string &endpoint_;
                     std::unordered_map<std::string, std::string> attributes_;
                     std::unique_ptr<util::SyncHttpsClient> https_client_;

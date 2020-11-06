@@ -75,7 +75,7 @@ public:
 private:
     HazelcastClient client_;
     std::shared_ptr<IMap> map_;
-    ClientConfig client_config_;
+    client_config client_config_;
     static const int keyDomain = 100000;
     static const int iterations = 500;
     static const int getsPerIteration = 1000;

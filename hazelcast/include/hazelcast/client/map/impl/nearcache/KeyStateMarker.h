@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class Data;
+                class data;
             }
         }
 
@@ -46,13 +46,13 @@ namespace hazelcast {
                     public:
                         virtual ~KeyStateMarker() = default;
 
-                        virtual bool try_mark(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_mark(const serialization::pimpl::data &key) = 0;
 
-                        virtual bool try_unmark(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_unmark(const serialization::pimpl::data &key) = 0;
 
-                        virtual bool try_remove(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_remove(const serialization::pimpl::data &key) = 0;
 
-                        virtual void force_unmark(const serialization::pimpl::Data &key) = 0;
+                        virtual void force_unmark(const serialization::pimpl::data &key) = 0;
 
                         virtual void init() = 0;
 
@@ -67,13 +67,13 @@ namespace hazelcast {
 
                     class HAZELCAST_API TrueMarkerImpl : public KeyStateMarker {
                     public:
-                        bool try_mark(const serialization::pimpl::Data &key) override;
+                        bool try_mark(const serialization::pimpl::data &key) override;
 
-                        bool try_unmark(const serialization::pimpl::Data &key) override;
+                        bool try_unmark(const serialization::pimpl::data &key) override;
 
-                        bool try_remove(const serialization::pimpl::Data &key) override;
+                        bool try_remove(const serialization::pimpl::data &key) override;
 
-                        void force_unmark(const serialization::pimpl::Data &key) override;
+                        void force_unmark(const serialization::pimpl::data &key) override;
 
                         void init() override;
                     };

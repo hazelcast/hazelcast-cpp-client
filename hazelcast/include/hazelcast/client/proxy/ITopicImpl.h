@@ -36,7 +36,7 @@ namespace hazelcast {
             protected:
                 ITopicImpl(const std::string& instance_name, spi::ClientContext *context);
 
-                boost::future<void> publish(const serialization::pimpl::Data& data);
+                boost::future<void> publish(const serialization::pimpl::data& data);
 
                 boost::future<boost::uuids::uuid> add_message_listener(std::shared_ptr<impl::BaseEventHandler> topic_event_handler);
 

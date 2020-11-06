@@ -30,17 +30,17 @@ namespace hazelcast {
 
     namespace client {
         namespace config {
-            class ClientAwsConfig;
+            class client_aws_config;
         }
         namespace aws {
             class HAZELCAST_API AWSClient {
             public:
-                AWSClient(config::ClientAwsConfig &aws_config, logger &lg);
+                AWSClient(config::client_aws_config &aws_config, logger &lg);
 
                 std::unordered_map<std::string, std::string> get_addresses();
 
             private:
-                config::ClientAwsConfig &aws_config_;
+                config::client_aws_config &aws_config_;
                 std::string endpoint_;
                 logger &logger_;
             };

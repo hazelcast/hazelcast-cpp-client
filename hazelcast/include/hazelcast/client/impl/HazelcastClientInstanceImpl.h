@@ -37,7 +37,7 @@
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/ProxyManager.h"
@@ -86,7 +86,7 @@ namespace hazelcast {
             }
         }
 
-        class ClientConfig;
+        class client_config;
 
         class TransactionContext;
 
@@ -106,7 +106,7 @@ namespace hazelcast {
                 * Note: ClientConfig will be copied.
                 * @param config client configuration to start the client with
                 */
-                explicit HazelcastClientInstanceImpl(const ClientConfig &config);
+                explicit HazelcastClientInstanceImpl(const client_config &config);
 
                 /**
                 * Destructor
@@ -137,7 +137,7 @@ namespace hazelcast {
                 *
                 * @return configuration of this Hazelcast client.
                 */
-                ClientConfig& get_client_config();
+                client_config& get_client_config();
 
                 /**
                 * Creates a new TransactionContext associated with the current thread using default options.
@@ -209,7 +209,7 @@ namespace hazelcast {
 
                 cp::cp_subsystem &get_cp_subsystem();
             private:
-                ClientConfig client_config_;
+                client_config client_config_;
                 ClientProperties client_properties_;
                 spi::ClientContext client_context_;
                 serialization::pimpl::SerializationService serialization_service_;

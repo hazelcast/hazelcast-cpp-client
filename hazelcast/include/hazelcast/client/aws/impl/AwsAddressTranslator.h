@@ -36,7 +36,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API AwsAddressTranslator : public connection::AddressTranslator {
                 public:
-                    AwsAddressTranslator(config::ClientAwsConfig &aws_config, logger &lg);
+                    AwsAddressTranslator(config::client_aws_config &aws_config, logger &lg);
 
                     /**
                      * Translates an IP address from the private AWS network to the public network.
@@ -46,7 +46,7 @@ namespace hazelcast {
                      *
                      * @throws IOException if the address can not be translated.
                      */
-                    Address translate(const Address &address) override;
+                    address translate(const address &addr) override;
 
                     /**
                      * Update the internal lookup table from AWS.
@@ -54,7 +54,7 @@ namespace hazelcast {
                     void refresh() override;
 
                 private:
-                    bool find_from_cache(const Address &address, Address &translated_address);
+                    bool find_from_cache(const address &addr, address &translated_address);
 
                     std::unique_ptr<AWSClient> aws_client_;
                     util::Sync<std::shared_ptr<std::unordered_map<std::string, std::string> > > private_to_public_;

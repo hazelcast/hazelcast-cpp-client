@@ -278,19 +278,19 @@ namespace hazelcast {
             TransactionalMapImpl::TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transaction_proxy)
                     : TransactionalObject(IMap::SERVICE_NAME, name, transaction_proxy) {}
 
-            boost::future<bool> TransactionalMapImpl::contains_key_data(const serialization::pimpl::Data &key) {
+            boost::future<bool> TransactionalMapImpl::contains_key_data(const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmap_containskey_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
                 return invoke_and_get_future<bool>(request);
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::get_data(const serialization::pimpl::Data &key) {
+            boost::future<boost::optional<serialization::pimpl::data>>
+            TransactionalMapImpl::get_data(const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmap_get_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                         request);
             }
 
@@ -309,48 +309,48 @@ namespace hazelcast {
                         request);
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>> TransactionalMapImpl::put_data(
-                    const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
+            boost::future<boost::optional<serialization::pimpl::data>> TransactionalMapImpl::put_data(
+                    const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
 
                 auto request = protocol::codec::transactionalmap_put_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, value,
                                 std::chrono::duration_cast<std::chrono::milliseconds>(get_timeout()).count());
 
-                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                         request);
             }
 
             boost::future<void>
-            TransactionalMapImpl::set_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
+            TransactionalMapImpl::set_data(const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
                 auto request = protocol::codec::transactionalmap_set_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
                 return to_void_future(invoke(request));
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::put_if_absent_data(const serialization::pimpl::Data &key,
-                                                  const serialization::pimpl::Data &value) {
+            boost::future<boost::optional<serialization::pimpl::data>>
+            TransactionalMapImpl::put_if_absent_data(const serialization::pimpl::data &key,
+                                                  const serialization::pimpl::data &value) {
                 auto request = protocol::codec::transactionalmap_putifabsent_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::replace_data(const serialization::pimpl::Data &key,
-                                              const serialization::pimpl::Data &value) {
+            boost::future<boost::optional<serialization::pimpl::data>>
+            TransactionalMapImpl::replace_data(const serialization::pimpl::data &key,
+                                              const serialization::pimpl::data &value) {
                 auto request = protocol::codec::transactionalmap_replace_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<bool> TransactionalMapImpl::replace_data(const serialization::pimpl::Data &key,
-                                               const serialization::pimpl::Data &old_value,
-                                               const serialization::pimpl::Data &new_value) {
+            boost::future<bool> TransactionalMapImpl::replace_data(const serialization::pimpl::data &key,
+                                               const serialization::pimpl::data &old_value,
+                                               const serialization::pimpl::data &new_value) {
                 auto request = protocol::codec::transactionalmap_replaceifsame_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, old_value, new_value);
 
@@ -358,24 +358,24 @@ namespace hazelcast {
                         request);
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::remove_data(const serialization::pimpl::Data &key) {
+            boost::future<boost::optional<serialization::pimpl::data>>
+            TransactionalMapImpl::remove_data(const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmap_remove_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<void> TransactionalMapImpl::delete_entry_data(const serialization::pimpl::Data &key) {
+            boost::future<void> TransactionalMapImpl::delete_entry_data(const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmap_delete_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
                 return to_void_future(invoke(request));
             }
 
-            boost::future<bool> TransactionalMapImpl::remove_data(const serialization::pimpl::Data &key,
-                                              const serialization::pimpl::Data &value) {
+            boost::future<bool> TransactionalMapImpl::remove_data(const serialization::pimpl::data &key,
+                                              const serialization::pimpl::data &value) {
                 auto request = protocol::codec::transactionalmap_removeifsame_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
@@ -383,37 +383,37 @@ namespace hazelcast {
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMapImpl::key_set_data() {
+            boost::future<std::vector<serialization::pimpl::data>> TransactionalMapImpl::key_set_data() {
                 auto request = protocol::codec::transactionalmap_keyset_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>>
-            TransactionalMapImpl::key_set_data(const serialization::pimpl::Data &predicate) {
+            boost::future<std::vector<serialization::pimpl::data>>
+            TransactionalMapImpl::key_set_data(const serialization::pimpl::data &predicate) {
                 auto request = protocol::codec::transactionalmap_keysetwithpredicate_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), predicate);
 
-                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMapImpl::values_data() {
+            boost::future<std::vector<serialization::pimpl::data>> TransactionalMapImpl::values_data() {
                 auto request = protocol::codec::transactionalmap_values_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>>
-            TransactionalMapImpl::values_data(const serialization::pimpl::Data &predicate) {
+            boost::future<std::vector<serialization::pimpl::data>>
+            TransactionalMapImpl::values_data(const serialization::pimpl::data &predicate) {
                 auto request = protocol::codec::transactionalmap_valueswithpredicate_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), predicate);
 
-                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                         request);
             }
 
@@ -421,8 +421,8 @@ namespace hazelcast {
                                                                  txn::TransactionProxy &transaction_proxy)
                     : TransactionalObject(MultiMap::SERVICE_NAME, name, transaction_proxy) {}
 
-            boost::future<bool> TransactionalMultiMapImpl::put_data(const serialization::pimpl::Data &key,
-                                                const serialization::pimpl::Data &value) {
+            boost::future<bool> TransactionalMultiMapImpl::put_data(const serialization::pimpl::data &key,
+                                                const serialization::pimpl::data &value) {
                 auto request = protocol::codec::transactionalmultimap_put_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
@@ -430,17 +430,17 @@ namespace hazelcast {
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMultiMapImpl::get_data(
-                    const serialization::pimpl::Data &key) {
+            boost::future<std::vector<serialization::pimpl::data>> TransactionalMultiMapImpl::get_data(
+                    const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmultimap_get_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<bool> TransactionalMultiMapImpl::remove(const serialization::pimpl::Data &key,
-                                                   const serialization::pimpl::Data &value) {
+            boost::future<bool> TransactionalMultiMapImpl::remove(const serialization::pimpl::data &key,
+                                                   const serialization::pimpl::data &value) {
                 auto request = protocol::codec::transactionalmultimap_removeentry_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
@@ -448,16 +448,16 @@ namespace hazelcast {
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMultiMapImpl::remove_data(
-                    const serialization::pimpl::Data &key) {
+            boost::future<std::vector<serialization::pimpl::data>> TransactionalMultiMapImpl::remove_data(
+                    const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmultimap_remove_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                         request);
             }
 
-            boost::future<int> TransactionalMultiMapImpl::value_count(const serialization::pimpl::Data &key) {
+            boost::future<int> TransactionalMultiMapImpl::value_count(const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmultimap_valuecount_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
@@ -476,7 +476,7 @@ namespace hazelcast {
             TransactionalListImpl::TransactionalListImpl(const std::string &object_name, txn::TransactionProxy &context)
                     : TransactionalObject(IList::SERVICE_NAME, object_name, context) {}
 
-            boost::future<bool> TransactionalListImpl::add(const serialization::pimpl::Data &e) {
+            boost::future<bool> TransactionalListImpl::add(const serialization::pimpl::data &e) {
                 auto request = protocol::codec::transactionallist_add_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 
@@ -484,7 +484,7 @@ namespace hazelcast {
                         request);
             }
 
-            boost::future<bool> TransactionalListImpl::remove(const serialization::pimpl::Data &e) {
+            boost::future<bool> TransactionalListImpl::remove(const serialization::pimpl::data &e) {
                 auto request = protocol::codec::transactionallist_remove_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 
@@ -503,14 +503,14 @@ namespace hazelcast {
             TransactionalSetImpl::TransactionalSetImpl(const std::string &name, txn::TransactionProxy &transaction_proxy)
                     : TransactionalObject(ISet::SERVICE_NAME, name, transaction_proxy) {}
 
-            boost::future<bool> TransactionalSetImpl::add_data(const serialization::pimpl::Data &e) {
+            boost::future<bool> TransactionalSetImpl::add_data(const serialization::pimpl::data &e) {
                 auto request = protocol::codec::transactionalset_add_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 
                 return invoke_and_get_future<bool>(request);
             }
 
-            boost::future<bool> TransactionalSetImpl::remove_data(const serialization::pimpl::Data &e) {
+            boost::future<bool> TransactionalSetImpl::remove_data(const serialization::pimpl::data &e) {
                 auto request = protocol::codec::transactionalset_remove_encode(
                                 get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 

@@ -30,21 +30,21 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/SerializationConfig.h"
-#include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
-#include "hazelcast/client/Address.h"
+#include "hazelcast/client/address.h"
 #include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/client/config/index_config.h"
-#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
+#include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
 #include "hazelcast/client/query/Predicates.h"
 #include "hazelcast/client/LifecycleListener.h"
 
@@ -72,42 +72,42 @@ namespace hazelcast {
         }
 
         namespace config {
-            SSLConfig::SSLConfig() : enabled_(false), ssl_protocol_(tlsv12) {
+            ssl_config::ssl_config() : enabled_(false), ssl_protocol_(tlsv12) {
             }
 
-            bool SSLConfig::is_enabled() const {
+            bool ssl_config::is_enabled() const {
                 return enabled_;
             }
 
-            SSLConfig &SSLConfig::set_enabled(bool is_enabled) {
+            ssl_config &ssl_config::set_enabled(bool is_enabled) {
                 util::Preconditions::check_ssl("getAwsConfig");
                 this->enabled_ = is_enabled;
                 return *this;
             }
 
-            SSLConfig &SSLConfig::set_protocol(ssl_protocol protocol) {
+            ssl_config &ssl_config::set_protocol(ssl_protocol protocol) {
                 this->ssl_protocol_ = protocol;
                 return *this;
             }
 
-            ssl_protocol SSLConfig::get_protocol() const {
+            ssl_protocol ssl_config::get_protocol() const {
                 return ssl_protocol_;
             }
 
-            const std::vector<std::string> &SSLConfig::get_verify_files() const {
+            const std::vector<std::string> &ssl_config::get_verify_files() const {
                 return client_verify_files_;
             }
 
-            SSLConfig &SSLConfig::add_verify_file(const std::string &filename) {
+            ssl_config &ssl_config::add_verify_file(const std::string &filename) {
                 this->client_verify_files_.push_back(filename);
                 return *this;
             }
 
-            const std::string &SSLConfig::get_cipher_list() const {
+            const std::string &ssl_config::get_cipher_list() const {
                 return cipher_list_;
             }
 
-            SSLConfig &SSLConfig::set_cipher_list(const std::string &ciphers) {
+            ssl_config &ssl_config::set_cipher_list(const std::string &ciphers) {
                 this->cipher_list_ = ciphers;
                 return *this;
             }
@@ -157,11 +157,11 @@ namespace hazelcast {
                     : connection_timeout_(5000), smart_routing_(true), connection_attempt_limit_(-1),
                       connection_attempt_period_(CONNECTION_ATTEMPT_PERIOD) {}
 
-            SSLConfig &ClientNetworkConfig::get_ssl_config() {
+            ssl_config &ClientNetworkConfig::get_ssl_config() {
                 return ssl_config_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_ssl_config(const config::SSLConfig &config) {
+            ClientNetworkConfig &ClientNetworkConfig::set_ssl_config(const config::ssl_config &config) {
                 ssl_config_ = config;
                 return *this;
             }
@@ -170,12 +170,12 @@ namespace hazelcast {
                 return connection_timeout_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_aws_config(const ClientAwsConfig &client_aws_config) {
+            ClientNetworkConfig &ClientNetworkConfig::set_aws_config(const client_aws_config &client_aws_config) {
                 this->client_aws_config_ = client_aws_config;
                 return *this;
             }
 
-            ClientAwsConfig &ClientNetworkConfig::get_aws_config() {
+            client_aws_config &ClientNetworkConfig::get_aws_config() {
                 return client_aws_config_;
             }
 
@@ -206,21 +206,21 @@ namespace hazelcast {
                 return connection_attempt_period_;
             }
 
-            std::vector<Address> ClientNetworkConfig::get_addresses() const {
+            std::vector<address> ClientNetworkConfig::get_addresses() const {
                 return address_list_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::add_addresses(const std::vector<Address> &addresses) {
+            ClientNetworkConfig &ClientNetworkConfig::add_addresses(const std::vector<address> &addresses) {
                 address_list_.insert(address_list_.end(), addresses.begin(), addresses.end());
                 return *this;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_addresses(const std::vector<Address> &addresses) {
+            ClientNetworkConfig &ClientNetworkConfig::set_addresses(const std::vector<address> &addresses) {
                 address_list_ = addresses;
                 return *this;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::add_address(const Address &address) {
+            ClientNetworkConfig &ClientNetworkConfig::add_address(const address &address) {
                 address_list_.push_back(address);
                 return *this;
             }
@@ -339,102 +339,102 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClientAwsConfig::ClientAwsConfig() : enabled_(false), region_("us-east-1"), host_header_("ec2.amazonaws.com"),
-                                                 inside_aws_(false) {
+            client_aws_config::client_aws_config() : enabled_(false), region_("us-east-1"), host_header_("ec2.amazonaws.com"),
+                                                     inside_aws_(false) {
             }
 
-            const std::string &ClientAwsConfig::get_access_key() const {
+            const std::string &client_aws_config::get_access_key() const {
                 return access_key_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_access_key(const std::string &access_key) {
+            client_aws_config &client_aws_config::set_access_key(const std::string &access_key) {
                 this->access_key_ = util::Preconditions::check_has_text(access_key, "accessKey must contain text");
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::get_secret_key() const {
+            const std::string &client_aws_config::get_secret_key() const {
                 return secret_key_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_secret_key(const std::string &secret_key) {
+            client_aws_config &client_aws_config::set_secret_key(const std::string &secret_key) {
                 this->secret_key_ = util::Preconditions::check_has_text(secret_key, "secretKey must contain text");
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::get_region() const {
+            const std::string &client_aws_config::get_region() const {
                 return region_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_region(const std::string &region) {
+            client_aws_config &client_aws_config::set_region(const std::string &region) {
                 this->region_ = util::Preconditions::check_has_text(region, "region must contain text");
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::get_host_header() const {
+            const std::string &client_aws_config::get_host_header() const {
                 return host_header_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_host_header(const std::string &host_header) {
+            client_aws_config &client_aws_config::set_host_header(const std::string &host_header) {
                 this->host_header_ = util::Preconditions::check_has_text(host_header, "hostHeader must contain text");
                 return *this;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_enabled(bool enabled) {
+            client_aws_config &client_aws_config::set_enabled(bool enabled) {
                 util::Preconditions::check_ssl("getAwsConfig");
                 this->enabled_ = enabled;
                 return *this;
             }
 
-            bool ClientAwsConfig::is_enabled() const {
+            bool client_aws_config::is_enabled() const {
                 return enabled_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_security_group_name(const std::string &security_group_name) {
+            client_aws_config &client_aws_config::set_security_group_name(const std::string &security_group_name) {
                 this->security_group_name_ = security_group_name;
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::get_security_group_name() const {
+            const std::string &client_aws_config::get_security_group_name() const {
                 return security_group_name_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_tag_key(const std::string &tag_key) {
+            client_aws_config &client_aws_config::set_tag_key(const std::string &tag_key) {
                 this->tag_key_ = tag_key;
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::get_tag_key() const {
+            const std::string &client_aws_config::get_tag_key() const {
                 return tag_key_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_tag_value(const std::string &tag_value) {
+            client_aws_config &client_aws_config::set_tag_value(const std::string &tag_value) {
                 this->tag_value_ = tag_value;
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::get_tag_value() const {
+            const std::string &client_aws_config::get_tag_value() const {
                 return tag_value_;
             }
 
-            const std::string &ClientAwsConfig::get_iam_role() const {
+            const std::string &client_aws_config::get_iam_role() const {
                 return iam_role_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_iam_role(const std::string &iam_role) {
+            client_aws_config &client_aws_config::set_iam_role(const std::string &iam_role) {
                 this->iam_role_ = iam_role;
                 return *this;
             }
 
-            bool ClientAwsConfig::is_inside_aws() const {
+            bool client_aws_config::is_inside_aws() const {
                 return inside_aws_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::set_inside_aws(bool inside_aws) {
+            client_aws_config &client_aws_config::set_inside_aws(bool inside_aws) {
                 this->inside_aws_ = inside_aws;
                 return *this;
             }
 
-            std::ostream &operator<<(std::ostream &out, const ClientAwsConfig &config) {
+            std::ostream &operator<<(std::ostream &out, const client_aws_config &config) {
                 return out << "ClientAwsConfig{"
                            << "enabled=" << config.is_enabled()
                            << ", region='" << config.get_region() << '\''
@@ -447,8 +447,8 @@ namespace hazelcast {
 
             namespace matcher {
                 std::shared_ptr<std::string>
-                MatchingPointConfigPatternMatcher::matches(const std::vector<std::string> &config_patterns,
-                                                           const std::string &item_name) const {
+                matching_point_config_pattern_matcher::matches(const std::vector<std::string> &config_patterns,
+                                                               const std::string &item_name) const {
                     std::shared_ptr<std::string> candidate;
                     std::shared_ptr<std::string> duplicate;
                     int lastMatchingPoint = -1;
@@ -474,8 +474,8 @@ namespace hazelcast {
                     return candidate;
                 }
 
-                int MatchingPointConfigPatternMatcher::get_matching_point(const std::string &pattern,
-                                                                        const std::string &item_name) const {
+                int matching_point_config_pattern_matcher::get_matching_point(const std::string &pattern,
+                                                                              const std::string &item_name) const {
                     size_t index = pattern.find('*');
                     if (index == std::string::npos) {
                         return -1;
@@ -688,102 +688,102 @@ namespace hazelcast {
             }
         }
 
-        ClientConfig::ClientConfig() : cluster_name_("dev"), load_balancer_(NULL), redo_operation_(false),
+        client_config::client_config() : cluster_name_("dev"), load_balancer_(NULL), redo_operation_(false),
                                        socket_interceptor_(), executor_pool_size_(-1) {}
 
-        ClientConfig &ClientConfig::set_redo_operation(bool redo_operation) {
+        client_config &client_config::set_redo_operation(bool redo_operation) {
             this->redo_operation_ = redo_operation;
             return *this;
         }
 
-        bool ClientConfig::is_redo_operation() const {
+        bool client_config::is_redo_operation() const {
             return redo_operation_;
         }
 
-        LoadBalancer *const ClientConfig::get_load_balancer() {
+        LoadBalancer *const client_config::get_load_balancer() {
             if (!load_balancer_)
                 return &default_load_balancer_;
             return load_balancer_;
         }
 
-        ClientConfig &ClientConfig::set_load_balancer(LoadBalancer *load_balancer) {
+        client_config &client_config::set_load_balancer(LoadBalancer *load_balancer) {
             this->load_balancer_ = load_balancer;
             return *this;
         }
 
-        config::LoggerConfig &ClientConfig::get_logger_config() {
+        config::LoggerConfig &client_config::get_logger_config() {
             return logger_config_;
         }
 
-        ClientConfig &ClientConfig::add_listener(LifecycleListener &&listener) {
+        client_config &client_config::add_listener(LifecycleListener &&listener) {
             lifecycle_listeners_.emplace_back(std::move(listener));
             return *this;
         }
 
-        ClientConfig &ClientConfig::add_listener(MembershipListener &&listener) {
+        client_config &client_config::add_listener(MembershipListener &&listener) {
             membership_listeners_.emplace_back(std::move(listener));
             return *this;
         }
 
-        const std::vector<LifecycleListener> &ClientConfig::get_lifecycle_listeners() const {
+        const std::vector<LifecycleListener> &client_config::get_lifecycle_listeners() const {
             return lifecycle_listeners_;
         }
 
-        const std::vector<MembershipListener> &ClientConfig::get_membership_listeners() const {
+        const std::vector<MembershipListener> &client_config::get_membership_listeners() const {
             return membership_listeners_;
         }
 
-        ClientConfig &ClientConfig::set_socket_interceptor(SocketInterceptor &&interceptor) {
+        client_config &client_config::set_socket_interceptor(SocketInterceptor &&interceptor) {
             this->socket_interceptor_ = std::move(interceptor);
             return *this;
         }
 
-        const SocketInterceptor &ClientConfig::get_socket_interceptor() const {
+        const SocketInterceptor &client_config::get_socket_interceptor() const {
             return socket_interceptor_;
         }
 
-        SerializationConfig &ClientConfig::get_serialization_config() {
+        SerializationConfig &client_config::get_serialization_config() {
             return serialization_config_;
         }
 
-        ClientConfig &ClientConfig::set_serialization_config(SerializationConfig const &serialization_config) {
+        client_config &client_config::set_serialization_config(SerializationConfig const &serialization_config) {
             this->serialization_config_ = serialization_config;
             return *this;
         }
 
-        const std::unordered_map<std::string, std::string> &ClientConfig::get_properties() const {
+        const std::unordered_map<std::string, std::string> &client_config::get_properties() const {
             return properties_;
         }
 
-        ClientConfig &ClientConfig::set_property(const std::string &name, const std::string &value) {
+        client_config &client_config::set_property(const std::string &name, const std::string &value) {
             properties_[name] = value;
             return *this;
         }
 
-        ClientConfig &ClientConfig::add_reliable_topic_config(const config::ReliableTopicConfig &reliable_topic_config) {
+        client_config &client_config::add_reliable_topic_config(const config::ReliableTopicConfig &reliable_topic_config) {
             reliable_topic_config_map_[reliable_topic_config.get_name()] = reliable_topic_config;
             return *this;
         }
 
-        const config::ReliableTopicConfig *ClientConfig::get_reliable_topic_config(const std::string &name) {
+        const config::ReliableTopicConfig &client_config::get_reliable_topic_config(const std::string &name) {
             auto it = reliable_topic_config_map_.find(name);
             if (reliable_topic_config_map_.end() == it) {
                 reliable_topic_config_map_[name] = config::ReliableTopicConfig(name.c_str());
             }
 
-            return reliableTopicConfigMap_[name];
+            return reliable_topic_config_map_[name];
         }
 
-        config::ClientNetworkConfig &ClientConfig::get_network_config() {
+        config::ClientNetworkConfig &client_config::get_network_config() {
             return network_config_;
         }
 
-        ClientConfig &ClientConfig::add_near_cache_config(const config::NearCacheConfig &near_cache_config) {
+        client_config &client_config::add_near_cache_config(const config::NearCacheConfig &near_cache_config) {
             near_cache_config_map_.emplace(near_cache_config.get_name(), near_cache_config);
             return *this;
         }
 
-        const config::NearCacheConfig *ClientConfig::get_near_cache_config(const std::string &name) const {
+        const config::NearCacheConfig *client_config::get_near_cache_config(const std::string &name) const {
             auto nearCacheConfig = internal::config::ConfigUtils::lookup_by_pattern(
                     config_pattern_matcher_, near_cache_config_map_, name);
             if (nearCacheConfig) {
@@ -800,39 +800,39 @@ namespace hazelcast {
             return nullptr;
         }
 
-        ClientConfig &ClientConfig::set_network_config(const config::ClientNetworkConfig &network_config) {
+        client_config &client_config::set_network_config(const config::ClientNetworkConfig &network_config) {
             this->network_config_ = network_config;
             return *this;
         }
 
-        const std::shared_ptr<std::string> &ClientConfig::get_instance_name() const {
+        const std::shared_ptr<std::string> &client_config::get_instance_name() const {
             return instance_name_;
         }
 
-        void ClientConfig::set_instance_name(const std::shared_ptr<std::string> &instance_name) {
-            ClientConfig::instance_name_ = instance_name;
+        void client_config::set_instance_name(const std::shared_ptr<std::string> &instance_name) {
+            client_config::instance_name_ = instance_name;
         }
 
-        int32_t ClientConfig::get_executor_pool_size() const {
+        int32_t client_config::get_executor_pool_size() const {
             return executor_pool_size_;
         }
 
-        void ClientConfig::set_executor_pool_size(int32_t executor_pool_size) {
-            ClientConfig::executor_pool_size_ = executor_pool_size;
+        void client_config::set_executor_pool_size(int32_t executor_pool_size) {
+            client_config::executor_pool_size_ = executor_pool_size;
         }
 
-        config::ClientConnectionStrategyConfig &ClientConfig::get_connection_strategy_config() {
+        config::ClientConnectionStrategyConfig &client_config::get_connection_strategy_config() {
             return connection_strategy_config_;
         }
 
-        ClientConfig &ClientConfig::set_connection_strategy_config(
+        client_config &client_config::set_connection_strategy_config(
                 const config::ClientConnectionStrategyConfig &connection_strategy_config) {
-            ClientConfig::connection_strategy_config_ = connection_strategy_config;
+            client_config::connection_strategy_config_ = connection_strategy_config;
             return *this;
         }
 
         const config::ClientFlakeIdGeneratorConfig *
-        ClientConfig::find_flake_id_generator_config(const std::string &name) {
+        client_config::find_flake_id_generator_config(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::get_base_name(name);
             auto config = internal::config::ConfigUtils::lookup_by_pattern<config::ClientFlakeIdGeneratorConfig>(
                     config_pattern_matcher_, flake_id_generator_config_map_, baseName);
@@ -844,7 +844,7 @@ namespace hazelcast {
 
 
         const config::ClientFlakeIdGeneratorConfig *
-        ClientConfig::get_flake_id_generator_config(const std::string &name) {
+        client_config::get_flake_id_generator_config(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::get_base_name(name);
             auto config = internal::config::ConfigUtils::lookup_by_pattern<config::ClientFlakeIdGeneratorConfig>(
                     config_pattern_matcher_, flake_id_generator_config_map_, baseName);
@@ -862,49 +862,49 @@ namespace hazelcast {
             return &flake_id_generator_config_map_.find(name)->second;
         }
 
-        ClientConfig &
-        ClientConfig::add_flake_id_generator_config(const config::ClientFlakeIdGeneratorConfig &config) {
+        client_config &
+        client_config::add_flake_id_generator_config(const config::ClientFlakeIdGeneratorConfig &config) {
             flake_id_generator_config_map_.emplace(config.get_name(), config);
             return *this;
         }
 
-        const std::string &ClientConfig::get_cluster_name() const {
+        const std::string &client_config::get_cluster_name() const {
             return cluster_name_;
         }
 
-        ClientConfig &ClientConfig::set_cluster_name(const std::string &cluster_name) {
+        client_config &client_config::set_cluster_name(const std::string &cluster_name) {
             cluster_name_ = cluster_name;
             return *this;
         }
 
-        const std::unordered_set<std::string> &ClientConfig::get_labels() const {
+        const std::unordered_set<std::string> &client_config::get_labels() const {
             return labels_;
         }
 
-        ClientConfig &ClientConfig::set_labels(const std::unordered_set<std::string> &labels) {
+        client_config &client_config::set_labels(const std::unordered_set<std::string> &labels) {
             labels_ = labels;
             return *this;
         }
 
-        ClientConfig &ClientConfig::add_label(const std::string &label) {
+        client_config &client_config::add_label(const std::string &label) {
             labels_.insert(label);
             return *this;
         }
 
-        ClientConfig &ClientConfig::backup_acks_enabled(bool enabled) {
+        client_config &client_config::backup_acks_enabled(bool enabled) {
             backup_acks_enabled_ = enabled;
             return *this;
         }
 
-        bool ClientConfig::backup_acks_enabled() {
+        bool client_config::backup_acks_enabled() {
             return backup_acks_enabled_;
         }
 
-        const std::shared_ptr<security::credentials> &ClientConfig::get_credentials() const {
+        const std::shared_ptr<security::credentials> &client_config::get_credentials() const {
             return credentials_;
         }
 
-        ClientConfig &ClientConfig::set_credentials(const std::shared_ptr<security::credentials> &credential) {
+        client_config &client_config::set_credentials(const std::shared_ptr<security::credentials> &credential) {
             credentials_ = credential;
             return *this;
         }

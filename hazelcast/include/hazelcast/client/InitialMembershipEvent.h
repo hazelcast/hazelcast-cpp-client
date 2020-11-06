@@ -22,7 +22,7 @@
 #include <unordered_set>
 #include <memory>
 
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -41,7 +41,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API InitialMembershipEvent {
         public:
-            InitialMembershipEvent(Cluster &cluster, std::unordered_set<Member> members);
+            InitialMembershipEvent(Cluster &cluster, std::unordered_set<member> members);
 
             /**
              * Returns an immutable set of ordered members at the moment this MembershipListener is
@@ -49,7 +49,7 @@ namespace hazelcast {
              *
              * @return a set of members.
              */
-            const std::unordered_set<Member> &get_members() const;
+            const std::unordered_set<member> &get_members() const;
 
             /**
              * Returns the cluster of the event.
@@ -60,7 +60,7 @@ namespace hazelcast {
 
         private:
             Cluster &cluster_;
-            std::unordered_set<Member> members_;
+            std::unordered_set<member> members_;
         };
 
     }

@@ -18,7 +18,7 @@
 #include <vector>
 #include <memory>
 
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 
 namespace hazelcast {
     namespace client {
@@ -77,7 +77,7 @@ namespace hazelcast {
              *
              * @return current members of the cluster
              */
-            std::vector<Member> get_members();
+            std::vector<member> get_members();
 
         private:
             spi::impl::ClientClusterServiceImpl &cluster_service_;

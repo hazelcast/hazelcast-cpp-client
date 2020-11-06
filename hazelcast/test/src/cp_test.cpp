@@ -30,7 +30,7 @@ namespace hazelcast {
                 protected:
                     virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
 
-                    virtual ClientConfig get_client_config() {
+                    virtual client_config get_client_config() {
                         return get_config().set_cluster_name("cp-test");
                     }
 
@@ -721,7 +721,7 @@ namespace hazelcast {
                         return client_->get_cp_subsystem().get_semaphore(name);
                     }
 
-                    ClientConfig get_client_config() override {
+                    client_config get_client_config() override {
                         return cp_test::get_client_config().set_cluster_name("sessionless-semaphore");
                     }
                 };
@@ -1027,7 +1027,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies) {
-                    HazelcastClient client2(ClientConfig().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    HazelcastClient client2(client_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
                     auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());
@@ -1381,7 +1381,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_session_semaphore_test, test_acquire_on_multiple_proxies) {
-                    HazelcastClient client2(ClientConfig().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    HazelcastClient client2(client_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
                     auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());

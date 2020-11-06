@@ -53,7 +53,7 @@ namespace hazelcast {
             }
         }
 
-        class Address;
+        class address;
 
         class SocketInterceptor;
 
@@ -64,7 +64,7 @@ namespace hazelcast {
 
             class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {
             public:
-                Connection(const Address &address, spi::ClientContext &client_context, int32_t connection_id,
+                Connection(const address &address, spi::ClientContext &client_context, int32_t connection_id,
                            internal::socket::SocketFactory &socket_factory,
                            ClientConnectionManagerImpl &client_connection_manager,
                            std::chrono::milliseconds &connect_timeout_in_millis);
@@ -81,9 +81,9 @@ namespace hazelcast {
 
                 void write(const std::shared_ptr<spi::impl::ClientInvocation> &client_invocation);
 
-                const boost::optional<Address> &get_remote_address() const;
+                const boost::optional<address> &get_remote_address() const;
 
-                void set_remote_address(boost::optional<Address> endpoint);
+                void set_remote_address(boost::optional<address> endpoint);
 
                 boost::uuids::uuid get_remote_uuid() const;
 
@@ -109,7 +109,7 @@ namespace hazelcast {
 
                 void set_connected_server_version(const std::string &connected_server);
 
-                boost::optional<Address> get_local_socket_address() const;
+                boost::optional<address> get_local_socket_address() const;
 
                 std::chrono::system_clock::time_point get_start_time() const;
 
@@ -136,7 +136,7 @@ namespace hazelcast {
                 std::exception_ptr close_cause_;
                 std::string connected_server_version_string_;
                 // TODO: check if they need to be atomic
-                boost::optional<Address> remote_address_;
+                boost::optional<address> remote_address_;
                 boost::uuids::uuid remote_uuid_;
                 logger &logger_;
                 std::atomic_bool alive_;

@@ -239,9 +239,9 @@ namespace hazelcast {
             };
 
             boost::future<int64_t>
-            alter_data(Data &function_data, alter_result_type result_type);
+            alter_data(data &function_data, alter_result_type result_type);
 
-            boost::future<boost::optional<Data>> apply_data(Data &function_data);
+            boost::future<boost::optional<data>> apply_data(data &function_data);
         };
 
         /**
@@ -313,25 +313,25 @@ namespace hazelcast {
                 NEW
             };
 
-            boost::future<boost::optional<Data>> get_data();
+            boost::future<boost::optional<data>> get_data();
 
-            boost::future<boost::optional<Data>> set_data(const Data &new_value_data);
+            boost::future<boost::optional<data>> set_data(const data &new_value_data);
 
-            boost::future<boost::optional<Data>> get_and_set_data(const Data &new_value_data);
+            boost::future<boost::optional<data>> get_and_set_data(const data &new_value_data);
 
-            boost::future<bool> compare_and_set_data(const Data &expect_data, const Data &update_data);
+            boost::future<bool> compare_and_set_data(const data &expect_data, const data &update_data);
 
-            boost::future<bool> contains_data(const Data &value_data);
+            boost::future<bool> contains_data(const data &value_data);
 
-            boost::future<void> alter_data(const Data &function_data);
+            boost::future<void> alter_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> alter_and_get_data(const Data &function_data);
+            boost::future<boost::optional<data>> alter_and_get_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> get_and_alter_data(const Data &function_data);
+            boost::future<boost::optional<data>> get_and_alter_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> apply_data(const Data &function_data);
+            boost::future<boost::optional<data>> apply_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> invoke_apply(const Data function_data, return_value_type return_type,
+            boost::future<boost::optional<data>> invoke_apply(const data function_data, return_value_type return_type,
                                                               bool alter);
         };
 

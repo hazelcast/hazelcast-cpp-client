@@ -25,7 +25,7 @@
 #include <memory>
 #include <ostream>
 
-#include <hazelcast/client/Address.h>
+#include <hazelcast/client/address.h>
 #include <hazelcast/logger.h>
 
 using namespace apache::thrift;

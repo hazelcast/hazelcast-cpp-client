@@ -18,7 +18,7 @@
 // You should use the config file hazelcast-username-password.xml when starting the server
 // so that the server will authenticate the client successfully.
 int main() {
-    hazelcast::client::ClientConfig clientConfig;
+    hazelcast::client::client_config clientConfig;
 
     // set the username and password to match the server side config.
     clientConfig.set_credentials(std::make_shared<security::username_password_credentials>("test-user", "test-pass"));

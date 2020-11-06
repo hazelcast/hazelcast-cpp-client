@@ -30,7 +30,7 @@
 
 namespace hazelcast {
     namespace client {
-        class ClientConfig;
+        class client_config;
 
         /**
         * A client property is a configuration for hazelcast client. For available configurations

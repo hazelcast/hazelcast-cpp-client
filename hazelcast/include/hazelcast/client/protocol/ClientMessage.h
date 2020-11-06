@@ -33,10 +33,10 @@
 #include <boost/uuid/nil_generator.hpp>
 
 #include <hazelcast/client/query/PagingPredicate.h>
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/Member.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/map/DataEntryView.h"
+#include "hazelcast/client/address.h"
+#include "hazelcast/client/member.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
+#include "hazelcast/client/map/data_entry_view.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/config/index_config.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
@@ -65,8 +65,8 @@ namespace hazelcast {
                         byte iteration_type;
 
                         const query::anchor_data_list &anchor_list;
-                        const serialization::pimpl::Data *predicate_data;
-                        const serialization::pimpl::Data *comparator_data;
+                        const serialization::pimpl::data *predicate_data;
+                        const serialization::pimpl::data *comparator_data;
 
                         template<typename K, typename V>
                         static paging_predicate_holder
@@ -89,11 +89,11 @@ namespace hazelcast {
             { };
 
             template <>
-            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, boost::optional<hazelcast::client::serialization::pimpl::Data>>>> : std::false_type
+            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::data, boost::optional<hazelcast::client::serialization::pimpl::data>>>> : std::false_type
             { };
 
             template <>
-            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, hazelcast::client::serialization::pimpl::Data>>> : std::false_type
+            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::data, hazelcast::client::serialization::pimpl::data>>> : std::false_type
             { };
 
             /**
@@ -446,7 +446,7 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, Address>::value, T>::type
+                typename std::enable_if<std::is_same<T, address>::value, T>::type
                 inline get() {
                     // skip begin frame
                     rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -460,11 +460,11 @@ namespace hazelcast {
 
                     fast_forward_to_end_frame();
 
-                    return Address(host, port);
+                    return address(host, port);
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, Member>::value, T>::type
+                typename std::enable_if<std::is_same<T, member>::value, T>::type
                 inline get() {
                     // skip begin frame
                     rd_ptr(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -476,12 +476,12 @@ namespace hazelcast {
                     // skip rest of the bytes in initial frame
                     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS - UUID_SIZE - UINT8_SIZE);
 
-                    auto address = get<Address>();
+                    auto addr = get<address>();
                     auto attributes = get<std::unordered_map<std::string, std::string>>();
 
                     fast_forward_to_end_frame();
 
-                    return Member(std::move(address), uuid, lite_member, std::move(attributes));
+                    return member(std::move(addr), uuid, lite_member, std::move(attributes));
                 }
 
                 template<typename T>
@@ -496,14 +496,14 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, serialization::pimpl::Data>::value, T>::type
+                typename std::enable_if<std::is_same<T, serialization::pimpl::data>::value, T>::type
                 inline get() {
                     auto f = reinterpret_cast<frame_header_t *>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
                     auto data_size = static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
                     auto mem_ptr = rd_ptr(data_size);
                     std::vector<byte> bytes(data_size);
                     std::memcpy(&bytes[0], mem_ptr, data_size);
-                    return serialization::pimpl::Data(std::move(bytes));
+                    return serialization::pimpl::data(std::move(bytes));
                 }
 
                 template<typename T>
@@ -541,7 +541,7 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, map::DataEntryView>::value, T>::type
+                typename std::enable_if<std::is_same<T, map::data_entry_view>::value, T>::type
                 inline get() {
                     // skip begin frame
                     rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -561,8 +561,8 @@ namespace hazelcast {
                     // skip bytes in initial frame
                     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS - 10 * INT64_SIZE);
 
-                    auto key = get<serialization::pimpl::Data>();
-                    auto value = get<serialization::pimpl::Data>();
+                    auto key = get<serialization::pimpl::data>();
+                    auto value = get<serialization::pimpl::data>();
 
                     fast_forward_to_end_frame();
 
@@ -732,7 +732,7 @@ namespace hazelcast {
                     set_nullable<std::string>(value);
                 }
 
-                inline void set(const Address &a, bool is_final = false) {
+                inline void set(const address &a, bool is_final = false) {
                     add_begin_frame();
 
                     auto f = reinterpret_cast<frame_header_t *>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
@@ -788,7 +788,7 @@ namespace hazelcast {
                     }
                 }
 
-                inline void set(const serialization::pimpl::Data &value, bool is_final = false) {
+                inline void set(const serialization::pimpl::data &value, bool is_final = false) {
                     if (value.data_size() == 0) {
                         auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
                         *h = null_frame();
@@ -806,8 +806,8 @@ namespace hazelcast {
                     std::memcpy(fp + SIZE_OF_FRAME_LENGTH_AND_FLAGS, &bytes[0], bytes.size());
                 }
 
-                inline void set(const serialization::pimpl::Data *value, bool is_final = false) {
-                    set_nullable<serialization::pimpl::Data>(value, is_final);
+                inline void set(const serialization::pimpl::data *value, bool is_final = false) {
+                    set_nullable<serialization::pimpl::data>(value, is_final);
                 }
 
                 void set(const cp::raft_group_id &o, bool is_final = false);

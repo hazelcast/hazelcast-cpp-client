@@ -71,13 +71,13 @@ namespace hazelcast {
                     };
 
                     struct SelectAllMembers : public cluster::memberselector::MemberSelector {
-                        bool select(const Member &member) const override;
+                        bool select(const member &member) const override;
 
                         void to_string(std::ostream &os) const override;
                     };
 
                     struct SelectNoMembers : public cluster::memberselector::MemberSelector {
-                        bool select(const Member &member) const override;
+                        bool select(const member &member) const override;
 
                         void to_string(std::ostream &os) const override;
                     };

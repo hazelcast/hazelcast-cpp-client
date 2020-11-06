@@ -16,10 +16,10 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    config.get_network_config().add_address(hazelcast::client::Address("127.0.0.1", 5702)).add_address(
-            hazelcast::client::Address("127.0.0.1", 9090)).add_address(hazelcast::client::Address("127.0.0.1", 9091))
-            .add_address(hazelcast::client::Address("127.0.0.1", 5701));
+    hazelcast::client::client_config config;
+    config.get_network_config().add_address(hazelcast::client::address("127.0.0.1", 5702)).add_address(
+            hazelcast::client::address("127.0.0.1", 9090)).add_address(hazelcast::client::address("127.0.0.1", 9091))
+            .add_address(hazelcast::client::address("127.0.0.1", 5701));
 
     /**
      * Client shuffles the given member list to prevent all clients to connect to the same node when

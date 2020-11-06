@@ -59,37 +59,37 @@ namespace hazelcast {
                     return register_listener(create_item_listener_codec(include_value), std::move(item_event_handler));
                 }
 
-                boost::future<bool> contains(const serialization::pimpl::Data& element);
+                boost::future<bool> contains(const serialization::pimpl::data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> to_array_data();
+                boost::future<std::vector<serialization::pimpl::data>> to_array_data();
 
-                boost::future<bool> add(const serialization::pimpl::Data& element);
+                boost::future<bool> add(const serialization::pimpl::data& element);
 
-                boost::future<bool> remove(const serialization::pimpl::Data& element);
+                boost::future<bool> remove(const serialization::pimpl::data& element);
 
-                boost::future<bool> contains_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> contains_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> add_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> add_all_data(int32_t index, const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all_data(int32_t index, const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> remove_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> remove_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> retain_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> retain_all_data(const std::vector<serialization::pimpl::data>& elements);
                 
-                 boost::future<boost::optional<serialization::pimpl::Data>> get_data(int32_t index);
+                 boost::future<boost::optional<serialization::pimpl::data>> get_data(int32_t index);
 
-                 boost::future<boost::optional<serialization::pimpl::Data>> set_data(int32_t index, const serialization::pimpl::Data& element);
+                 boost::future<boost::optional<serialization::pimpl::data>> set_data(int32_t index, const serialization::pimpl::data& element);
 
-                boost::future<void> add(int32_t index, const serialization::pimpl::Data& element);
+                boost::future<void> add(int32_t index, const serialization::pimpl::data& element);
 
-                 boost::future<boost::optional<serialization::pimpl::Data>> remove_data(int32_t index);
+                 boost::future<boost::optional<serialization::pimpl::data>> remove_data(int32_t index);
 
-                boost::future<int32_t> index_of(const serialization::pimpl::Data& element);
+                boost::future<int32_t> index_of(const serialization::pimpl::data& element);
 
-                boost::future<int32_t> last_index_of(const serialization::pimpl::Data& element);
+                boost::future<int32_t> last_index_of(const serialization::pimpl::data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> sub_list_data(int32_t from_index, int32_t to_index);
+                boost::future<std::vector<serialization::pimpl::data>> sub_list_data(int32_t from_index, int32_t to_index);
             private:
                 class ListListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:

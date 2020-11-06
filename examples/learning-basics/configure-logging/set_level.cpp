@@ -18,7 +18,7 @@
 
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     config.get_logger_config().level(hazelcast::logger::level::finest);
 

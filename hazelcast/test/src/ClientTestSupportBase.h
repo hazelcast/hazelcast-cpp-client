@@ -23,13 +23,13 @@
 #include <stdint.h>
 
 #include <TestHelperFunctions.h>
-#include <hazelcast/client/Member.h>
+#include <hazelcast/client/member.h>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/logger.h>
 
 namespace hazelcast {
     namespace client {
-        class ClientConfig;
+        class client_config;
 
         class HazelcastClient;
 
@@ -50,9 +50,9 @@ namespace hazelcast {
 
                 static void sleep_seconds(int32_t seconds);
 
-                static boost::uuids::uuid generate_key_owned_by(spi::ClientContext &context, const Member &member);
+                static boost::uuids::uuid generate_key_owned_by(spi::ClientContext &context, const member &member);
 
-                static hazelcast::client::ClientConfig get_config(bool ssl_enabled = false, bool smart = true);
+                static hazelcast::client::client_config get_config(bool ssl_enabled = false, bool smart = true);
             protected:
                 static const std::string get_ssl_cluster_name();
 

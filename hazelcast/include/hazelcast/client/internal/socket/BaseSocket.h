@@ -34,7 +34,7 @@ namespace hazelcast {
                 public:
                     template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
-                            const Address &address, client::config::SocketOptions &socket_options,
+                            const address &address, client::config::SocketOptions &socket_options,
                             boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis)
                             : socket_options_(socket_options), remote_endpoint_(address), io_(io), socket_strand_(io),
                               connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver), socket_(socket_strand_) {
@@ -43,7 +43,7 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
-                            const Address &address, client::config::SocketOptions &socket_options,
+                            const address &address, client::config::SocketOptions &socket_options,
                             boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis,
                             CONTEXT &context)
                             : socket_options_(socket_options), remote_endpoint_(address), io_(io), socket_strand_(io),
@@ -152,8 +152,8 @@ namespace hazelcast {
                         socket_.lowest_layer().close(ignored);
                     }
 
-                    Address get_address() const override {
-                        return Address(socket_.lowest_layer().remote_endpoint().address().to_string(),
+                    address get_address() const override {
+                        return address(socket_.lowest_layer().remote_endpoint().address().to_string(),
                                        remote_endpoint_.get_port());
                     }
 
@@ -163,17 +163,17 @@ namespace hazelcast {
                      *
                      * @returns An address that represents the local endpoint of the socket.
                      */
-                    boost::optional<Address> local_socket_address() const override {
+                    boost::optional<address> local_socket_address() const override {
                         boost::system::error_code ec;
                         boost::asio::ip::basic_endpoint<boost::asio::ip::tcp> localEndpoint = socket_.lowest_layer().local_endpoint(
                                 ec);
                         if (ec) {
                             return boost::none;
                         }
-                        return boost::optional<Address>(Address(localEndpoint.address().to_string(), localEndpoint.port()));
+                        return boost::optional<address>(address(localEndpoint.address().to_string(), localEndpoint.port()));
                     }
 
-                    const Address &get_remote_endpoint() const override {
+                    const address &get_remote_endpoint() const override {
                         return remote_endpoint_;
                     }
 
@@ -248,7 +248,7 @@ namespace hazelcast {
                     }
 
                     client::config::SocketOptions &socket_options_;
-                    Address remote_endpoint_;
+                    address remote_endpoint_;
                     boost::asio::io_context &io_;
                     boost::asio::io_context::strand socket_strand_;
                     std::chrono::milliseconds connect_timeout_;

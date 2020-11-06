@@ -74,7 +74,7 @@ namespace hazelcast {
 /*
                         //@Override
                         void put(const std::shared_ptr<K> &key,
-                                 const std::shared_ptr<serialization::pimpl::Data> &value) {
+                                 const std::shared_ptr<serialization::pimpl::data> &value) {
                             nearCache->put(key, value);
                         }
 */

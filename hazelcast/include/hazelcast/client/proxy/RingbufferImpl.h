@@ -149,7 +149,7 @@ namespace hazelcast {
                 RingbufferImpl(const std::string &object_name, spi::ClientContext *context)
                         : PartitionSpecificClientProxy(SERVICE_NAME, object_name, context) {}
 
-                boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data) {
+                boost::future<int64_t> add_data(serialization::pimpl::data &&item_data) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
                                                                                   static_cast<int32_t>(ringbuffer::overflow_policy::OVERWRITE),
                                                                                   item_data);
@@ -157,7 +157,7 @@ namespace hazelcast {
                             request, partition_id_);
                 }
 
-                boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data, ringbuffer::overflow_policy policy) {
+                boost::future<int64_t> add_data(serialization::pimpl::data &&item_data, ringbuffer::overflow_policy policy) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
                                                                                   static_cast<int32_t>(policy),
                                                                                   item_data);
@@ -165,15 +165,15 @@ namespace hazelcast {
                             request, partition_id_);
                 }
 
-                boost::future<boost::optional<serialization::pimpl::Data>>read_one_data(int64_t sequence) {
+                boost::future<boost::optional<serialization::pimpl::data>>read_one_data(int64_t sequence) {
                     check_sequence(sequence);
                     auto request = protocol::codec::ringbuffer_readone_encode(get_name(), sequence);
-                    return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                             request, partition_id_);
                 }
 
                 boost::future<int64_t>
-                add_all_data(std::vector<serialization::pimpl::Data> &&items, ringbuffer::overflow_policy overflow_policy) {
+                add_all_data(std::vector<serialization::pimpl::data> &&items, ringbuffer::overflow_policy overflow_policy) {
                     util::Preconditions::check_not_empty(items, "items can't be empty");
                     util::Preconditions::check_max((int32_t) items.size(), MAX_BATCH_SIZE, "items");
 
@@ -185,7 +185,7 @@ namespace hazelcast {
             protected:
                 boost::future<protocol::ClientMessage>
                 read_many_data(int64_t start_sequence, int32_t min_count, int32_t max_count,
-                             serialization::pimpl::Data *filter_data) {
+                             serialization::pimpl::data *filter_data) {
                     check_sequence(start_sequence);
                     util::Preconditions::check_not_negative(min_count, "minCount can't be smaller than 0");
                     util::Preconditions::check_true(max_count >= min_count,

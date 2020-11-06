@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include <mutex>
 
@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 void set_members_ref();
 
-                std::vector<Member> get_members();
+                std::vector<member> get_members();
 
                 void init(Cluster &cluster) override;
 
@@ -49,7 +49,7 @@ namespace hazelcast {
 
             private:
                 mutable std::mutex members_lock_;
-                std::vector<Member> members_ref_;
+                std::vector<member> members_ref_;
                 Cluster *cluster_;
             };
         }

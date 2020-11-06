@@ -18,7 +18,7 @@
 #include <string>
 #include <memory>
 
-#include "hazelcast/client/config/ConfigPatternMatcher.h"
+#include "hazelcast/client/config/config_pattern_matcher.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,7 +31,7 @@ namespace hazelcast {
                  * In addition the candidates are weighted by the best match. The best result is returned.
                  * Throws {@link exception::ConfigurationException} is multiple configurations are found.
                  */
-                class HAZELCAST_API MatchingPointConfigPatternMatcher : public ConfigPatternMatcher {
+                class HAZELCAST_API matching_point_config_pattern_matcher : public config_pattern_matcher {
                 public:
                     std::shared_ptr<std::string>
                     matches(const std::vector<std::string> &config_patterns, const std::string &item_name) const override;

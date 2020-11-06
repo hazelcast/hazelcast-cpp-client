@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
 
 #include <stdint.h>
 
@@ -27,16 +27,16 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API DataEntryView {
+            class HAZELCAST_API data_entry_view {
             public:
-                DataEntryView(serialization::pimpl::Data &&key, serialization::pimpl::Data &&value,
-                              int64_t cost, int64_t creation_time, int64_t expiration_time, int64_t hits,
-                              int64_t last_access_time, int64_t last_stored_time, int64_t last_update_time, int64_t version,
-                              int64_t ttl, int64_t max_idle);
+                data_entry_view(serialization::pimpl::data &&key, serialization::pimpl::data &&value,
+                                int64_t cost, int64_t creation_time, int64_t expiration_time, int64_t hits,
+                                int64_t last_access_time, int64_t last_stored_time, int64_t last_update_time, int64_t version,
+                                int64_t ttl, int64_t max_idle);
 
-                const serialization::pimpl::Data &get_key() const;
+                const serialization::pimpl::data &get_key() const;
 
-                const serialization::pimpl::Data &get_value() const;
+                const serialization::pimpl::data &get_value() const;
 
                 int64_t get_cost() const;
 
@@ -59,8 +59,8 @@ namespace hazelcast {
                 int64_t get_max_idle() const;
 
             private:
-                serialization::pimpl::Data key_;
-                serialization::pimpl::Data value_;
+                serialization::pimpl::data key_;
+                serialization::pimpl::data value_;
                 int64_t cost_;
                 int64_t creation_time_;
                 int64_t expiration_time_;

@@ -35,7 +35,7 @@ namespace hazelcast {
     namespace client {
         class Socket;
 
-        class Address;
+        class address;
 
         namespace spi {
             class ClientContext;
@@ -50,7 +50,7 @@ namespace hazelcast {
                     bool start();
 
                     std::unique_ptr<Socket>
-                    create(const Address &address, std::chrono::milliseconds &connect_timeout_in_millis);
+                    create(const address &address, std::chrono::milliseconds &connect_timeout_in_millis);
 
                 private:
                     spi::ClientContext &client_context_;

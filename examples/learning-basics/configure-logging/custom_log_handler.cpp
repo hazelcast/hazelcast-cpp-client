@@ -43,7 +43,7 @@ void my_log_handler(const std::string &instance_name,
 }
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     // my_log_handler will be called for each log message.
     config.get_logger_config().handler(my_log_handler);

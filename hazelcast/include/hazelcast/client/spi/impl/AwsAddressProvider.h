@@ -38,11 +38,11 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API AwsAddressProvider : public connection::AddressProvider {
                 public:
-                    AwsAddressProvider(config::ClientAwsConfig &aws_config, int aws_member_port, logger &lg);
+                    AwsAddressProvider(config::client_aws_config &aws_config, int aws_member_port, logger &lg);
 
                     ~AwsAddressProvider() override;
 
-                    std::vector<Address> load_addresses() override;
+                    std::vector<address> load_addresses() override;
 
                 private:
                     std::string aws_member_port_;

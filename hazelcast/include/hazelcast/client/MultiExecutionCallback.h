@@ -20,7 +20,7 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,7 +48,7 @@ namespace hazelcast {
              * @param member member that the task is submitted to.
              * @param value result of the execution
              */
-            virtual void on_response(const Member &member, const boost::optional<V> &response) = 0;
+            virtual void on_response(const member &member, const boost::optional<V> &response) = 0;
 
             /**
              * Called when an execution is completed with an exception on a member.
@@ -56,7 +56,7 @@ namespace hazelcast {
              * @param member member that the task is submitted to.
              * @param exception result of the execution
              */
-            virtual void on_failure(const Member &member, const std::exception_ptr exception) = 0;
+            virtual void on_failure(const member &member, const std::exception_ptr exception) = 0;
 
             /**
              * Called after all executions are completed.
@@ -64,8 +64,8 @@ namespace hazelcast {
              * @param values map of Member-Response pairs where no exception occured.
              * @param exceptions The exceptions produced by failing members.
              */
-            virtual void on_complete(const std::unordered_map<Member, boost::optional<V> > &values,
-                                    const std::unordered_map<Member, std::exception_ptr> &exceptions) = 0;
+            virtual void on_complete(const std::unordered_map<member, boost::optional<V> > &values,
+                                    const std::unordered_map<member, std::exception_ptr> &exceptions) = 0;
         };
     }
 }

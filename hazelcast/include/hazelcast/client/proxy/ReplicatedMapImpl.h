@@ -18,8 +18,8 @@
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/client_config.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -85,14 +85,14 @@ namespace hazelcast {
                 }
 
             protected:
-                boost::future<boost::optional<serialization::pimpl::Data>>
-                put_data(serialization::pimpl::Data &&key_data, serialization::pimpl::Data &&value_data,
+                boost::future<boost::optional<serialization::pimpl::data>>
+                put_data(serialization::pimpl::data &&key_data, serialization::pimpl::data &&value_data,
                     std::chrono::milliseconds ttl) {
                     try {
                         auto request = protocol::codec::replicatedmap_put_encode(name_, key_data, value_data,
                                                                                              std::chrono::duration_cast<std::chrono::milliseconds>(
                                                                                                      ttl).count());
-                        auto result = invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                        auto result = invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                                 request, key_data);
 
                         invalidate(std::move(key_data));
@@ -104,11 +104,11 @@ namespace hazelcast {
                     }
                 }
 
-                boost::future<boost::optional<serialization::pimpl::Data>>remove_data(serialization::pimpl::Data &&key_data) {
-                    std::shared_ptr<serialization::pimpl::Data> sharedKey(new serialization::pimpl::Data(std::move(key_data)));
+                boost::future<boost::optional<serialization::pimpl::data>>remove_data(serialization::pimpl::data &&key_data) {
+                    std::shared_ptr<serialization::pimpl::data> sharedKey(new serialization::pimpl::data(std::move(key_data)));
                     try {
                         auto request = protocol::codec::replicatedmap_remove_encode(name_, *sharedKey);
-                        auto result = invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
+                        auto result = invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
                                 request, *sharedKey);
 
                         invalidate(sharedKey);
@@ -142,13 +142,13 @@ namespace hazelcast {
                     }
                 }
 
-                boost::future<bool> contains_key_data(serialization::pimpl::Data &&key_data) {
+                boost::future<bool> contains_key_data(serialization::pimpl::data &&key_data) {
                     auto request = protocol::codec::replicatedmap_containskey_encode(name_, key_data);
                     return invoke_and_get_future<bool>(
                             request, key_data);
                 }
 
-                boost::future<bool> contains_value_data(serialization::pimpl::Data &&value_data) {
+                boost::future<bool> contains_value_data(serialization::pimpl::data &&value_data) {
                     auto request = protocol::codec::replicatedmap_containsvalue_encode(name_, value_data);
                     return invoke_and_get_future<bool>(
                             request, value_data);
@@ -159,23 +159,23 @@ namespace hazelcast {
                 }
 
                 boost::future<boost::uuids::uuid> add_entry_listener_to_key(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
-                                                                                         serialization::pimpl::Data &&key) {
+                                                                                         serialization::pimpl::data &&key) {
                     return register_listener(create_entry_listener_to_key_codec(std::move(key)), std::move(entry_event_handler));
                 }
 
                 boost::future<boost::uuids::uuid> add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
-                                                                                    serialization::pimpl::Data &&predicate) {
+                                                                                    serialization::pimpl::data &&predicate) {
                     return register_listener(create_entry_listener_with_predicate_codec(std::move(predicate)), std::move(entry_event_handler));
                 }
 
                 boost::future<boost::uuids::uuid> add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
-                                                                                    serialization::pimpl::Data &&key, serialization::pimpl::Data &&predicate) {
+                                                                                    serialization::pimpl::data &&key, serialization::pimpl::data &&predicate) {
                     return register_listener(create_entry_listener_to_key_with_predicate_codec(std::move(key), std::move(predicate)), std::move(entry_event_handler));
                 }
 
-                boost::future<std::vector<serialization::pimpl::Data>> values_data() {
+                boost::future<std::vector<serialization::pimpl::data>> values_data() {
                     auto request = protocol::codec::replicatedmap_values_encode(get_name());
-                    return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                    return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                             request, target_partition_id_);
                 }
 
@@ -184,28 +184,28 @@ namespace hazelcast {
                     return invoke_and_get_future<EntryVector>(request, target_partition_id_);
                 }
 
-                boost::future<std::vector<serialization::pimpl::Data>> key_set_data() {
+                boost::future<std::vector<serialization::pimpl::data>> key_set_data() {
                     auto request = protocol::codec::replicatedmap_keyset_encode(get_name());
-                    return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
+                    return invoke_and_get_future<std::vector<serialization::pimpl::data>>(
                             request, target_partition_id_);
                 }
 
-                boost::future<boost::optional<serialization::pimpl::Data>> get_data(serialization::pimpl::Data &&key) {
-                    auto sharedKey = std::make_shared<serialization::pimpl::Data>(key);
+                boost::future<boost::optional<serialization::pimpl::data>> get_data(serialization::pimpl::data &&key) {
+                    auto sharedKey = std::make_shared<serialization::pimpl::data>(key);
                     auto cachedValue = get_cached_data(sharedKey);
                     if (cachedValue) {
                         return boost::make_ready_future(boost::make_optional(*cachedValue));
                     }
                     auto request = protocol::codec::replicatedmap_get_encode(get_name(), *sharedKey);
-                    return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
-                            request, key).then(boost::launch::deferred, [=] (boost::future<boost::optional<serialization::pimpl::Data>> f) {
+                    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+                            request, key).then(boost::launch::deferred, [=] (boost::future<boost::optional<serialization::pimpl::data>> f) {
                                 try {
                                     auto response = f.get();
                                     if (!response) {
-                                        return boost::optional<serialization::pimpl::Data>();
+                                        return boost::optional<serialization::pimpl::data>();
                                     }
 
-                                    auto sharedValue = std::make_shared<serialization::pimpl::Data>(std::move(*response));
+                                    auto sharedValue = std::make_shared<serialization::pimpl::data>(std::move(*response));
                                     if (near_cache_) {
                                         near_cache_->put(sharedKey, sharedValue);
                                     }
@@ -217,7 +217,7 @@ namespace hazelcast {
                             });
                 }
 
-                std::shared_ptr<serialization::pimpl::Data> get_cached_data(const std::shared_ptr<serialization::pimpl::Data> &key) {
+                std::shared_ptr<serialization::pimpl::data> get_cached_data(const std::shared_ptr<serialization::pimpl::data> &key) {
                     if (!near_cache_) {
                         return nullptr;
                     }
@@ -251,7 +251,7 @@ namespace hazelcast {
                                   spi::ClientContext *context);
             private:
                 int target_partition_id_;
-                std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> near_cache_;
+                std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>> near_cache_;
                 boost::uuids::uuid invalidation_listener_id_;
                 
                 class NearCacheInvalidationListenerMessageCodec : public spi::impl::ListenerMessageCodec {
@@ -275,8 +275,8 @@ namespace hazelcast {
                         : public spi::impl::ListenerMessageCodec {
                 public:
                     ReplicatedMapAddEntryListenerToKeyWithPredicateMessageCodec(const std::string &name,
-                                                                                serialization::pimpl::Data &&key_data,
-                                                                                serialization::pimpl::Data &&predicate_data)
+                                                                                serialization::pimpl::data &&key_data,
+                                                                                serialization::pimpl::data &&predicate_data)
                             : name_(name), key_data_(key_data), predicate_data_(predicate_data) {}
 
                     protocol::ClientMessage encode_add_request(bool local_only) const override {
@@ -291,14 +291,14 @@ namespace hazelcast {
 
                 private:
                     std::string name_;
-                    serialization::pimpl::Data key_data_;
-                    serialization::pimpl::Data predicate_data_;
+                    serialization::pimpl::data key_data_;
+                    serialization::pimpl::data predicate_data_;
                 };
 
                 class ReplicatedMapAddEntryListenerWithPredicateMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     ReplicatedMapAddEntryListenerWithPredicateMessageCodec(const std::string &name,
-                                                                          serialization::pimpl::Data &&key_data)
+                                                                          serialization::pimpl::data &&key_data)
                             : name_(name), predicate_data_(key_data) {}
 
                     protocol::ClientMessage encode_add_request(bool local_only) const override {
@@ -312,13 +312,13 @@ namespace hazelcast {
 
                 private:
                     std::string name_;
-                    serialization::pimpl::Data predicate_data_;
+                    serialization::pimpl::data predicate_data_;
                 };
 
                 class ReplicatedMapAddEntryListenerToKeyMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     ReplicatedMapAddEntryListenerToKeyMessageCodec(const std::string &name,
-                                                                   serialization::pimpl::Data &&key_data) : name_(name), key_data_(key_data) {}
+                                                                   serialization::pimpl::data &&key_data) : name_(name), key_data_(key_data) {}
 
                     protocol::ClientMessage encode_add_request(bool local_only) const override {
                         return protocol::codec::replicatedmap_addentrylistenertokey_encode(name_, key_data_, local_only);
@@ -331,7 +331,7 @@ namespace hazelcast {
 
                 private:
                     std::string name_;
-                    serialization::pimpl::Data key_data_;
+                    serialization::pimpl::data key_data_;
                 };
 
                 class ReplicatedMapListenerMessageCodec : public spi::impl::ListenerMessageCodec {
@@ -355,7 +355,7 @@ namespace hazelcast {
                         : public protocol::codec::replicatedmap_addnearcacheentrylistener_handler {
                 public:
                     ReplicatedMapAddNearCacheEventHandler(
-                            const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> &near_cache) : near_cache_(near_cache) {}
+                            const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>> &near_cache) : near_cache_(near_cache) {}
 
                     void before_listener_register() override {
                         near_cache_->clear();
@@ -365,8 +365,8 @@ namespace hazelcast {
                         near_cache_->clear();
                     }
 
-                    void handle_entry(const boost::optional<Data> &key, const boost::optional<Data> &value,
-                                      const boost::optional<Data> &old_value, const boost::optional<Data> &merging_value,
+                    void handle_entry(const boost::optional<data> &key, const boost::optional<data> &value,
+                                      const boost::optional<data> &old_value, const boost::optional<data> &merging_value,
                                       int32_t event_type, boost::uuids::uuid uuid,
                                       int32_t number_of_affected_entries) override {
                         switch (event_type) {
@@ -374,7 +374,7 @@ namespace hazelcast {
                             case static_cast<int32_t>(EntryEvent::type::REMOVED):
                             case static_cast<int32_t>(EntryEvent::type::UPDATED):
                             case static_cast<int32_t>(EntryEvent::type::EVICTED): {
-                                near_cache_->invalidate(std::make_shared<serialization::pimpl::Data>(std::move(*key)));
+                                near_cache_->invalidate(std::make_shared<serialization::pimpl::data>(std::move(*key)));
                                 break;
                             }
                             case static_cast<int32_t>(EntryEvent::type::CLEAR_ALL):
@@ -388,7 +388,7 @@ namespace hazelcast {
                     }
 
                 private:
-                    std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> near_cache_;
+                    std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>> near_cache_;
                 };
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> create_entry_listener_codec(const std::string name) {
@@ -397,20 +397,20 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec>
-                create_entry_listener_to_key_codec(serialization::pimpl::Data &&key_data) {
+                create_entry_listener_to_key_codec(serialization::pimpl::data &&key_data) {
                     return std::shared_ptr<spi::impl::ListenerMessageCodec>(
                             new ReplicatedMapAddEntryListenerToKeyMessageCodec(name_, std::move(key_data)));
                 }
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec>
-                create_entry_listener_with_predicate_codec(serialization::pimpl::Data &&predicate_data) {
+                create_entry_listener_with_predicate_codec(serialization::pimpl::data &&predicate_data) {
                     return std::shared_ptr<spi::impl::ListenerMessageCodec>(
                             new ReplicatedMapAddEntryListenerWithPredicateMessageCodec(name_, std::move(predicate_data)));
                 }
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec>
-                create_entry_listener_to_key_with_predicate_codec(serialization::pimpl::Data &&key_data,
-                                                           serialization::pimpl::Data &&predicate_data) {
+                create_entry_listener_to_key_with_predicate_codec(serialization::pimpl::data &&key_data,
+                                                           serialization::pimpl::data &&predicate_data) {
                     return std::shared_ptr<spi::impl::ListenerMessageCodec>(
                             new ReplicatedMapAddEntryListenerToKeyWithPredicateMessageCodec(name_, std::move(key_data),
                                                                                             std::move(predicate_data)));
@@ -438,7 +438,7 @@ namespace hazelcast {
                 void init_near_cache() {
                     auto nearCacheConfig = get_context().get_client_config().get_near_cache_config(name_);
                     if (nearCacheConfig) {
-                        near_cache_ = get_context().get_near_cache_manager().template get_or_create_near_cache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
+                        near_cache_ = get_context().get_near_cache_manager().template get_or_create_near_cache<serialization::pimpl::data, serialization::pimpl::data, serialization::pimpl::data>(
                                 name_, *nearCacheConfig);
                         if (nearCacheConfig->is_invalidate_on_change()) {
                             register_invalidation_listener();
@@ -455,14 +455,14 @@ namespace hazelcast {
                     }
                 }
 
-                void invalidate(serialization::pimpl::Data &&key) {
+                void invalidate(serialization::pimpl::data &&key) {
                     if (!near_cache_) {
                         return;
                     }
-                    near_cache_->invalidate(std::make_shared<serialization::pimpl::Data>(key));
+                    near_cache_->invalidate(std::make_shared<serialization::pimpl::data>(key));
                 }
 
-                void invalidate(const std::shared_ptr<serialization::pimpl::Data> &key) {
+                void invalidate(const std::shared_ptr<serialization::pimpl::data> &key) {
                     if (!near_cache_) {
                         return;
                     }

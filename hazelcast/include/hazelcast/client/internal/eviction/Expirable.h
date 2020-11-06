@@ -29,7 +29,7 @@ namespace hazelcast {
         namespace internal {
             namespace eviction {
                 /**
-                 * Expiring Data model interface.
+                 * Expiring data model interface.
                  * <p>This interface provides a time variable to be compared against other time values
                  * to decide on "future" or "past".</p>
                  */

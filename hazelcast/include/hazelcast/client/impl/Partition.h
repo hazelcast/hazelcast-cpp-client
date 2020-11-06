@@ -27,7 +27,7 @@
 
 namespace hazelcast {
     namespace client {
-        class Member;
+        class member;
 
         namespace impl {
             class HAZELCAST_API Partition {
@@ -49,7 +49,7 @@ namespace hazelcast {
                  *
                  * @return the owner member of the partition
                  */
-                virtual boost::optional<Member> get_owner() const = 0;
+                virtual boost::optional<member> get_owner() const = 0;
 
                 virtual ~Partition() = default;
             };

@@ -17,14 +17,14 @@
 
 using namespace hazelcast::client;
 
-struct Employee {
-    friend std::ostream &operator<<(std::ostream &os, const Employee &person);
+struct employee {
+    friend std::ostream &operator<<(std::ostream &os, const employee &person);
 
     int32_t id;
     std::string name;
 };
 
-std::ostream &operator<<(std::ostream &os, const Employee &person) {
+std::ostream &operator<<(std::ostream &os, const employee &person) {
     os << "id: " << person.id << " name: " << person.name;
     return os;
 }
@@ -33,7 +33,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             template<>
-            struct hz_serializer<Employee> : identified_data_serializer {
+            struct hz_serializer<employee> : identified_data_serializer {
                 static int32_t get_factory_id() noexcept {
                     return 100;
                 }
@@ -42,13 +42,13 @@ namespace hazelcast {
                     return 1000;
                 }
 
-                static void write_data(const Employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.id);
                     out.write(object.name);
                 }
 
-                static Employee read_data(hazelcast::client::serialization::ObjectDataInput &in) {
-                    return Employee{in.read<int32_t>(), in.read<std::string>()};
+                static employee read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return employee{in.read<int32_t>(), in.read<std::string>()};
                 }
             };
         }

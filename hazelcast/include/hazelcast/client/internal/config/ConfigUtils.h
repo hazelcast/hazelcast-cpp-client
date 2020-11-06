@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "hazelcast/client/config/ConfigPatternMatcher.h"
+#include "hazelcast/client/config/config_pattern_matcher.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
@@ -31,7 +31,7 @@ namespace hazelcast {
                 public:
                     template<typename T>
                     static const T *
-                    lookup_by_pattern(const client::config::ConfigPatternMatcher &config_pattern_matcher,
+                    lookup_by_pattern(const client::config::config_pattern_matcher &config_pattern_matcher,
                                     const std::unordered_map<std::string, T> &config_patterns, const std::string &item_name) {
                         auto candidate = config_patterns.find(item_name);
                         if (candidate != config_patterns.end()) {

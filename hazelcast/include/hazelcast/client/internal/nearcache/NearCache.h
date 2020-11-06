@@ -35,7 +35,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class Data;
+                class data;
             }
         }
 
@@ -126,11 +126,11 @@ namespace hazelcast {
                      * Puts (associates) a value with the given <code>key</code>.
                      *
                      * @param key   the key of the value will be stored
-                     * @param value the value as Data which will be stored
+                     * @param value the value as data which will be stored
                      */
 /*
                     virtual void put(const std::shared_ptr<K> &key,
-                                     const std::shared_ptr<serialization::pimpl::Data> &value) {
+                                     const std::shared_ptr<serialization::pimpl::data> &value) {
                         assert(0);
                     }
 */
@@ -175,7 +175,7 @@ namespace hazelcast {
                     }
                 };
 
-                template class HAZELCAST_API NearCache<serialization::pimpl::Data, serialization::pimpl::Data>;
+                template class HAZELCAST_API NearCache<serialization::pimpl::data, serialization::pimpl::data>;
 
                 template<typename K, typename V>
                 std::shared_ptr<V> NearCache<K, V>::NULL_OBJECT(new V);

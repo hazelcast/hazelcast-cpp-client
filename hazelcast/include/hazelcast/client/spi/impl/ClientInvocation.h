@@ -40,7 +40,7 @@ namespace hazelcast {
     class logger;
 
     namespace client {
-        class Address;
+        class address;
 
         namespace connection {
             class Connection;

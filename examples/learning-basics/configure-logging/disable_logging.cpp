@@ -18,7 +18,7 @@
 
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     // Setting the log level to hazelcast::logger::level::off
     // will disable the logs completely.

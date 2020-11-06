@@ -19,8 +19,8 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::Address serverAddress("127.0.0.1", 5701);
+    hazelcast::client::client_config config;
+    hazelcast::client::address serverAddress("127.0.0.1", 5701);
     config.get_network_config().add_address(serverAddress);
 
     config.get_network_config().get_ssl_config().

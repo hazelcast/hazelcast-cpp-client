@@ -32,7 +32,7 @@ namespace hazelcast {
          * PartitionAware means that data will be based in the same member based on the partition key
          * and implementing tasks will be executed on the {@link #getPartitionKey()}'s owner member.
          * <p/>
-         * This achieves data affinity. Data and execution occurs on the same partition.
+         * This achieves data affinity. data and execution occurs on the same partition.
          * <p/>
          * In Hazelcast, disparate data structures will be stored on the same partition,
          * based on the partition key. For example, if "Steve" was used, then the following would be on one partition.

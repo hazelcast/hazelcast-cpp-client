@@ -48,7 +48,7 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/client/ClientProperties.h"
@@ -58,7 +58,7 @@
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/sync_associative_container.h"
 
@@ -193,7 +193,7 @@ namespace hazelcast {
             }
 
             std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::get_or_connect(const Address &address) {
+            ClientConnectionManagerImpl::get_or_connect(const address &address) {
                 auto connection = get_connection(address);
                 if (connection) {
                     return connection;
@@ -225,7 +225,7 @@ namespace hazelcast {
             }
 
             std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::get_connection(const Address &address) {
+            ClientConnectionManagerImpl::get_connection(const address &address) {
                 for (const auto &connection : active_connections_.values()) {
                     auto remote_address = connection->get_remote_address();
                     if (remote_address && *remote_address == address) {
@@ -263,7 +263,7 @@ namespace hazelcast {
                     response.rd_ptr(static_cast<int32_t>(initial_frame->frame_len) - ClientMessage::RESPONSE_HEADER_LEN - 2 * ClientMessage::UINT8_SIZE -
                                     2 * (sizeof(boost::uuids::uuid) + ClientMessage::UINT8_SIZE) - ClientMessage::INT32_SIZE);
 
-                    result.address = response.get_nullable<Address>();
+                    result.address = response.get_nullable<address>();
                     result.server_version = response.get<std::string>();
                 } catch (exception::IException &) {
                     connection->close("Failed to authenticate connection", std::current_exception());
@@ -295,7 +295,7 @@ namespace hazelcast {
             protocol::ClientMessage
             ClientConnectionManagerImpl::encode_authentication_request(serialization::pimpl::SerializationService &ss) {
                 byte serializationVersion = ss.get_version();
-                ClientConfig &clientConfig = client_.get_client_config();
+                client_config &clientConfig = client_.get_client_config();
                 auto cluster_name = clientConfig.get_cluster_name();
 
                 auto credential = clientConfig.get_credentials();
@@ -401,15 +401,15 @@ namespace hazelcast {
                     return;
                 }
 
-                auto connecting_addresses = std::make_shared<util::sync_associative_container<std::unordered_set<Address>>>();
+                auto connecting_addresses = std::make_shared<util::sync_associative_container<std::unordered_set<address>>>();
                 for (const auto &member : client_.get_client_cluster_service().get_member_list()) {
-                    const auto& address = member.get_address();
+                    const auto& member_addr = member.get_address();
 
-                    if (client_.get_lifecycle_service().is_running() && !get_connection(address)
-                        && connecting_addresses->insert(address).second) {
+                    if (client_.get_lifecycle_service().is_running() && !get_connection(member_addr)
+                        && connecting_addresses->insert(member_addr).second) {
                         // submit a task for this address only if there is no
                         // another connection attempt for it
-                        Address addr = address;
+                        address addr = member_addr;
                         boost::asio::post(executor_->get_executor(), [=] () {
                             try {
                                 if (!client_.get_lifecycle_service().is_running()) {
@@ -429,13 +429,13 @@ namespace hazelcast {
 
             bool ClientConnectionManagerImpl::do_connect_to_cluster() {
                 int attempt = 0;
-                std::unordered_set<Address> triedAddresses;
+                std::unordered_set<address> triedAddresses;
 
                 while (attempt < connection_attempt_limit_) {
                     attempt++;
                     auto nextTryTime = std::chrono::steady_clock::now() + connection_attempt_period_;
 
-                    for (const Address &address : get_possible_member_addresses()) {
+                    for (const address &address : get_possible_member_addresses()) {
                         check_client_active();
                         triedAddresses.insert(address);
                         auto connection = connect(address);
@@ -480,8 +480,8 @@ namespace hazelcast {
                         exception::IllegalStateException("ConnectionManager::do_connect_to_cluster", out.str()));
             }
 
-            std::vector<Address> ClientConnectionManagerImpl::get_possible_member_addresses() {
-                std::vector<Address> addresses;
+            std::vector<address> ClientConnectionManagerImpl::get_possible_member_addresses() {
+                std::vector<address> addresses;
                 for (auto &&member : client_.get_client_cluster_service().get_member_list()) {
                     addresses.emplace_back(std::move(member.get_address()));
                 }
@@ -490,7 +490,7 @@ namespace hazelcast {
                     shuffle(addresses);
                 }
 
-                std::vector<Address> provided_addresses;
+                std::vector<address> provided_addresses;
                 for (auto &addressProvider : address_providers_) {
                     auto addrList = addressProvider->load_addresses();
                     provided_addresses.insert(provided_addresses.end(), addrList.begin(), addrList.end());
@@ -578,7 +578,7 @@ namespace hazelcast {
                 }
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const Address &address) {
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &address) {
                 try {
                     HZ_LOG(logger_, info, 
                         boost::str(boost::format("Trying to connect to %1%") % address));
@@ -770,7 +770,7 @@ namespace hazelcast {
 
                 byte_buffer.flip();
 
-                // it is important to check the onData return value since there may be left data less than a message
+                // it is important to check the ondata return value since there may be left data less than a message
                 // header size, and this may cause an infinite loop.
                 while (byte_buffer.has_remaining() && builder_.on_data(byte_buffer)) {
                 }
@@ -787,7 +787,7 @@ namespace hazelcast {
                         std::chrono::duration_cast<std::chrono::steady_clock::duration>(last_read_time_duration_.load()));
             }
 
-            Connection::Connection(const Address &address, spi::ClientContext &client_context, int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
+            Connection::Connection(const address &address, spi::ClientContext &client_context, int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
                                    internal::socket::SocketFactory &socket_factory,
                                    ClientConnectionManagerImpl &client_connection_manager,
                                    std::chrono::milliseconds &connect_timeout_in_millis)
@@ -878,11 +878,11 @@ namespace hazelcast {
                 socket_->async_write(shared_from_this(), client_invocation);
             }
 
-            const boost::optional<Address> &Connection::get_remote_address() const {
+            const boost::optional<address> &Connection::get_remote_address() const {
                 return remote_address_;
             }
 
-            void Connection::set_remote_address(boost::optional<Address> endpoint) {
+            void Connection::set_remote_address(boost::optional<address> endpoint) {
                 this->remote_address_ = std::move(endpoint);
             }
 
@@ -982,7 +982,7 @@ namespace hazelcast {
                 Connection::connected_server_version_string_ = connected_server;
             }
 
-            boost::optional<Address> Connection::get_local_socket_address() const {
+            boost::optional<address> Connection::get_local_socket_address() const {
                 return socket_->local_socket_address();
             }
 
@@ -1123,7 +1123,7 @@ namespace hazelcast {
 
                 bool SocketFactory::start() {
 #ifdef HZ_BUILD_WITH_SSL
-                    const client::config::SSLConfig &sslConfig = client_context_.get_client_config().get_network_config().get_ssl_config();
+                    const client::config::ssl_config &sslConfig = client_context_.get_client_config().get_network_config().get_ssl_config();
                     if (sslConfig.is_enabled()) {
                         ssl_context_ = std::unique_ptr<boost::asio::ssl::context>(new boost::asio::ssl::context(
                                 (boost::asio::ssl::context_base::method) sslConfig.get_protocol()));
@@ -1175,7 +1175,7 @@ namespace hazelcast {
                     return true;
                 }
 
-                std::unique_ptr<Socket> SocketFactory::create(const Address &address,
+                std::unique_ptr<Socket> SocketFactory::create(const address &address,
                                                               std::chrono::milliseconds &connect_timeout_in_millis) {
 #ifdef HZ_BUILD_WITH_SSL
                     if (ssl_context_.get()) {
@@ -1193,7 +1193,7 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
 
                 SSLSocket::SSLSocket(boost::asio::io_context &io_service, boost::asio::ssl::context &ssl_context,
-                                     const client::Address &address, client::config::SocketOptions &socket_options,
+                                     const client::address &address, client::config::SocketOptions &socket_options,
                                      std::chrono::milliseconds &connect_timeout_in_millis,
                                      boost::asio::ip::tcp::resolver &resolver)
                         : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(resolver, address,
@@ -1232,7 +1232,7 @@ namespace hazelcast {
 
 #endif // HZ_BUILD_WITH_SSL
 
-                TcpSocket::TcpSocket(boost::asio::io_context &io, const Address &address,
+                TcpSocket::TcpSocket(boost::asio::io_context &io, const address &address,
                                      client::config::SocketOptions &socket_options,
                                      std::chrono::milliseconds &connect_timeout_in_millis,
                                      boost::asio::ip::tcp::resolver &resolver)

@@ -43,7 +43,7 @@ public:
 };
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
     hazelcast::client::SerializationConfig serializationConfig;
     serializationConfig.set_global_serializer(std::make_shared<MyGlobalSerializer>());
     config.set_serialization_config(serializationConfig);

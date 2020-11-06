@@ -15,7 +15,7 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/query/Predicates.h>
-#include "Employee.h"
+#include "employee.h"
 
 using namespace hazelcast::client;
 using namespace examples;

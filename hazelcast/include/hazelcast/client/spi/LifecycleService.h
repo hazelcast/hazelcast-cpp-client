@@ -37,7 +37,7 @@ namespace hazelcast {
     namespace client {
         class LifecycleEvent;
 
-        class ClientConfig;
+        class client_config;
 
         class LoadBalancer;
 

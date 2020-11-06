@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 
-#include "hazelcast/client/map/DataEntryView.h"
+#include "hazelcast/client/map/data_entry_view.h"
 #include "hazelcast/client/serialization/serialization.h"
 
 namespace hazelcast {
@@ -29,9 +29,9 @@ namespace hazelcast {
          * @param <V> value
          */
         template<typename K, typename V>
-        class EntryView{
+        class entry_view{
         public:
-            EntryView(K key, V value, map::DataEntryView rhs)
+            entry_view(K key, V value, map::data_entry_view rhs)
             : key(std::move(key))
             , value(std::move(value))
             , cost (rhs.get_cost())

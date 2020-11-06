@@ -20,9 +20,9 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            Employee::Employee() = default;
+            employee::employee() = default;
 
-            Employee::Employee(std::string name, int32_t age) : age_(age), name_(name) {
+            employee::employee(std::string name, int32_t age) : age_(age), name_(name) {
                 by_ = 2;
                 boolean_ = true;
                 c_ = 'c';
@@ -52,30 +52,30 @@ namespace hazelcast {
                 dd_ = std::vector<double>(doubleArray, doubleArray + 3);
             }
 
-            bool Employee::operator==(const Employee &rhs) const {
+            bool employee::operator==(const employee &rhs) const {
                 return age_ == rhs.get_age() && name_ == rhs.get_name();
             }
 
-            bool Employee::operator!=(const Employee &employee) const {
+            bool employee::operator!=(const employee &employee) const {
                 return !(*this == employee);
             }
 
-            int32_t Employee::get_age() const {
+            int32_t employee::get_age() const {
                 return age_;
             }
 
-            const std::string &Employee::get_name() const {
+            const std::string &employee::get_name() const {
                 return name_;
             }
 
-            bool Employee::operator<(const Employee &rhs) const {
+            bool employee::operator<(const employee &rhs) const {
                 return age_ < rhs.get_age();
             }
 
-            int32_t EmployeeEntryComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
-                                                     const std::pair<const int32_t *, const Employee *> *rhs) const {
-                const Employee *lv = lhs->second;
-                const Employee *rv = rhs->second;
+            int32_t EmployeeEntryComparator::compare(const std::pair<const int32_t *, const employee *> *lhs,
+                                                     const std::pair<const int32_t *, const employee *> *rhs) const {
+                const employee *lv = lhs->second;
+                const employee *rv = rhs->second;
 
                 if (nullptr == lv && nullptr == rv) {
                     // order by key
@@ -116,8 +116,8 @@ namespace hazelcast {
             }
 
 
-            int32_t EmployeeEntryKeyComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
-                                                        const std::pair<const int32_t *, const Employee *> *rhs) const {
+            int32_t EmployeeEntryKeyComparator::compare(const std::pair<const int32_t *, const employee *> *lhs,
+                                                        const std::pair<const int32_t *, const employee *> *rhs) const {
                 const int32_t *key1 = lhs->first;
                 const int32_t *key2 = rhs->first;
 
@@ -140,7 +140,7 @@ namespace hazelcast {
                 return 1;
             }
 
-            std::ostream &operator<<(std::ostream &out, const Employee &employee) {
+            std::ostream &operator<<(std::ostream &out, const employee &employee) {
                 out << "Employee:[" << employee.get_name() << ", " << employee.get_age() << "]";
                 return out;
             }
@@ -220,15 +220,15 @@ namespace hazelcast {
         }
 
         namespace serialization {
-            int32_t hz_serializer<test::Employee>::get_factory_id() {
+            int32_t hz_serializer<test::employee>::get_factory_id() {
                 return 666;
             }
 
-            int32_t hz_serializer<test::Employee>::get_class_id() {
+            int32_t hz_serializer<test::employee>::get_class_id() {
                 return 2;
             }
 
-            void hz_serializer<test::Employee>::write_portable(const test::Employee &object, PortableWriter &writer) {
+            void hz_serializer<test::employee>::write_portable(const test::employee &object, PortableWriter &writer) {
                 writer.write("n", object.name_);
                 writer.write<int32_t>("a", object.age_);
 
@@ -263,8 +263,8 @@ namespace hazelcast {
                 out.write_object<std::string>(&object.utf_str_);
             }
 
-            test::Employee hz_serializer<test::Employee>::read_portable(PortableReader &reader) {
-                test::Employee employee;
+            test::employee hz_serializer<test::employee>::read_portable(PortableReader &reader) {
+                test::employee employee;
                 employee.name_ = reader.read<std::string>("n");
                 employee.age_ = reader.read<int32_t>("a");
                 employee.by_ = reader.read<byte>("b");

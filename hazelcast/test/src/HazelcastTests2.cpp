@@ -18,7 +18,7 @@
 #include "ClientTestSupport.h"
 #include <vector>
 #include "ClientTestSupportBase.h"
-#include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/client_config.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
@@ -79,14 +79,14 @@ namespace hazelcast {
             };
 
             TEST_F(AddressHelperTest, testGetPossibleSocketAddresses) {
-                std::string address("10.2.3.1");
-                std::vector<Address> addresses = util::AddressHelper::get_socket_addresses(address, get_logger());
+                std::string addr("10.2.3.1");
+                std::vector<address> addresses = util::AddressHelper::get_socket_addresses(addr, get_logger());
                 ASSERT_EQ(3U, addresses.size());
-                std::unordered_set<Address> socketAddresses;
+                std::unordered_set<address> socketAddresses;
                 socketAddresses.insert(addresses.begin(), addresses.end());
-                ASSERT_NE(socketAddresses.end(), socketAddresses.find(Address(address, 5701)));
-                ASSERT_NE(socketAddresses.end(), socketAddresses.find(Address(address, 5702)));
-                ASSERT_NE(socketAddresses.end(), socketAddresses.find(Address(address, 5703)));
+                ASSERT_NE(socketAddresses.end(), socketAddresses.find(address(addr, 5701)));
+                ASSERT_NE(socketAddresses.end(), socketAddresses.find(address(addr, 5702)));
+                ASSERT_NE(socketAddresses.end(), socketAddresses.find(address(addr, 5703)));
             }
 
             TEST_F(AddressHelperTest, testAddressHolder) {
@@ -474,8 +474,8 @@ namespace hazelcast {
             {};
 
             TEST_F(ClientConfigTest, testGetAddresses) {
-                ClientConfig clientConfig;
-                Address address("localhost", 5555);
+                client_config clientConfig;
+                address address("localhost", 5555);
                 clientConfig.get_network_config().add_address(address);
 
                 auto addresses = clientConfig.get_network_config().get_addresses();
@@ -484,20 +484,20 @@ namespace hazelcast {
             }
 
             TEST_F(ClientConfigTest, testAddresseses) {
-                ClientConfig clientConfig;
-                std::vector<Address> addresses{Address("localhost", 5555), Address("localhost", 6666)};
+                client_config clientConfig;
+                std::vector<address> addresses{address("localhost", 5555), address("localhost", 6666)};
                 std::sort(addresses.begin(), addresses.end());
                 clientConfig.get_network_config().add_addresses(addresses);
 
                 auto configuredAddresses = clientConfig.get_network_config().get_addresses();
                 ASSERT_EQ(2U, addresses.size());
-                std::vector<Address> configuredAddressVector(configuredAddresses.begin(), configuredAddresses.end());
+                std::vector<address> configuredAddressVector(configuredAddresses.begin(), configuredAddresses.end());
                 std::sort(configuredAddressVector.begin(), configuredAddressVector.end());
                 ASSERT_EQ(addresses, configuredAddressVector);
             }
 
             TEST_F(ClientConfigTest, testSetCredentials) {
-                ClientConfig clientConfig;
+                client_config clientConfig;
                 std::string name("myGroup");
                 std::string password("myPass");
                 clientConfig.set_credentials(std::make_shared<security::username_password_credentials>(name, password));
@@ -525,7 +525,7 @@ namespace hazelcast {
                     }
 
                 protected:
-                    ClientConfig client_config_;
+                    client_config client_config_;
                 };
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster) {
@@ -551,8 +551,8 @@ namespace hazelcast {
                     boost::latch connectedLatch(1);
 
                     // trying 8.8.8.8 address will delay the initial connection since no such server exist
-                    client_config_.get_network_config().add_address(Address("8.8.8.8", 5701))
-                            .add_address(Address("127.0.0.1", 5701)).set_connection_attempt_limit(INT32_MAX);
+                    client_config_.get_network_config().add_address(address("8.8.8.8", 5701))
+                            .add_address(address("127.0.0.1", 5701)).set_connection_attempt_limit(INT32_MAX);
                     client_config_.set_property("hazelcast.client.shuffle.member.list", "false");
                     client_config_.add_listener(
                         LifecycleListener()
@@ -781,7 +781,7 @@ namespace hazelcast {
             public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(ClientConfig());
+                    client = new HazelcastClient(client_config());
 
                     map = client->get_map(MAP_NAME);
                     expected = new std::vector<int>;
@@ -901,7 +901,7 @@ namespace hazelcast {
 
                 //serialized parent from ss1
                 Parent parent(Child("sancar"));
-                serialization::pimpl::Data data = ss1.to_data<Parent>(&parent);
+                serialization::pimpl::data data = ss1.to_data<Parent>(&parent);
 
                 // cached class definition of Child and the class definition from data coming from ss1 should be compatible
                 ASSERT_EQ(parent, *ss2.to_object<Parent>(data));
@@ -978,13 +978,13 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 SimplePartitionAwareObject obj;
-                serialization::pimpl::Data data = serializationService.to_data<SimplePartitionAwareObject>(&obj);
+                serialization::pimpl::data data = serializationService.to_data<SimplePartitionAwareObject>(&obj);
                 ASSERT_TRUE(data.has_partition_hash());
 
                 int testKey = obj.get_test_key();
-                serialization::pimpl::Data expectedData = serializationService.to_data<int>(&testKey);
+                serialization::pimpl::data expected_data = serializationService.to_data<int>(&testKey);
 
-                ASSERT_EQ(expectedData.get_partition_hash(), data.get_partition_hash());
+                ASSERT_EQ(expected_data.get_partition_hash(), data.get_partition_hash());
             }
 
             TEST_F(PartitionAwareTest, testNonPartitionAwareObjectSerialisation) {
@@ -992,7 +992,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 int obj = 7;
-                serialization::pimpl::Data data = serializationService.to_data<int>(&obj);
+                serialization::pimpl::data data = serializationService.to_data<int>(&obj);
                 ASSERT_FALSE(data.has_partition_hash());
             }
         }
@@ -1032,8 +1032,8 @@ namespace hazelcast {
 
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {
                 HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
-                serialization::pimpl::Data jsonData = serialization_service_.to_data<HazelcastJsonValue>(&jsonValue);
-                auto jsonDeserialized = serialization_service_.to_object<HazelcastJsonValue>(jsonData);
+                serialization::pimpl::data json_data = serialization_service_.to_data<HazelcastJsonValue>(&jsonValue);
+                auto jsonDeserialized = serialization_service_.to_object<HazelcastJsonValue>(json_data);
                 ASSERT_TRUE(jsonDeserialized.has_value());
                 ASSERT_EQ(jsonValue, jsonDeserialized.value());
             }
@@ -1086,7 +1086,7 @@ namespace hazelcast {
 
                 template<typename T>
                 T to_data_and_back_to_object(serialization::pimpl::SerializationService &ss, T &value) {
-                    serialization::pimpl::Data data = ss.to_data<T>(value);
+                    serialization::pimpl::data data = ss.to_data<T>(value);
                     return *(ss.to_object<T>(data));
                 }
 
@@ -1104,13 +1104,13 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 TestCustomXSerializable a{131321};
-                serialization::pimpl::Data data = serializationService.to_data<TestCustomXSerializable>(&a);
+                serialization::pimpl::data data = serializationService.to_data<TestCustomXSerializable>(&a);
                 auto a2 = serializationService.to_object<TestCustomXSerializable>(data);
                 ASSERT_TRUE(a2);
                 ASSERT_EQ(a, a2.value());
 
                 TestCustomPerson b{"TestCustomPerson"};
-                serialization::pimpl::Data data1 = serializationService.to_data<TestCustomPerson>(&b);
+                serialization::pimpl::data data1 = serializationService.to_data<TestCustomPerson>(&b);
                 auto b2 = serializationService.to_object<TestCustomPerson>(data1);
                 ASSERT_TRUE(b2);
                 ASSERT_EQ(b, *b2);
@@ -1129,7 +1129,7 @@ namespace hazelcast {
                 TestNamedPortable np{"named portable", 34567};
                 TestRawDataPortable p{123213, chars, np, 22, "Testing raw portable", ds};
 
-                serialization::pimpl::Data data = serializationService.to_data<TestRawDataPortable>(&p);
+                serialization::pimpl::data data = serializationService.to_data<TestRawDataPortable>(&p);
                 auto x = serializationService.to_object<TestRawDataPortable>(data);
                 ASSERT_TRUE(x);
                 ASSERT_EQ(p, *x);
@@ -1139,7 +1139,7 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
-                serialization::pimpl::Data data;
+                serialization::pimpl::data data;
                 TestDataSerializable np{4, 'k'};
                 data = serializationService.to_data<TestDataSerializable>(&np);
 
@@ -1166,7 +1166,7 @@ namespace hazelcast {
                 TestDataSerializable ds{123, 's'};
                 TestRawDataPortable p{123213, chars, np, 22, "Testing raw portable", ds};
 
-                serialization::pimpl::Data data = serializationService.to_data<TestRawDataPortable>(&p);
+                serialization::pimpl::data data = serializationService.to_data<TestRawDataPortable>(&p);
                 auto x = serializationService.to_object<TestRawDataPortable>(data);
                 ASSERT_TRUE(x);
                 ASSERT_EQ(p, *x);
@@ -1186,7 +1186,7 @@ namespace hazelcast {
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 TestInvalidReadPortable p{2131, 123, "q4edfd"};
-                serialization::pimpl::Data data = serializationService.to_data<TestInvalidReadPortable>(&p);
+                serialization::pimpl::data data = serializationService.to_data<TestInvalidReadPortable>(&p);
                 ASSERT_THROW(serializationService.to_object<TestInvalidReadPortable>(data),
                              exception::HazelcastSerializationException);
             }
@@ -1200,10 +1200,10 @@ namespace hazelcast {
                 serializationConfig2.set_portable_version(2);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
-                serialization::pimpl::Data data = serializationService.to_data<TestNamedPortable>(
+                serialization::pimpl::data data = serializationService.to_data<TestNamedPortable>(
                         TestNamedPortable{"portable-v1", 111});
 
-                serialization::pimpl::Data data2 = serializationService2.to_data<TestNamedPortableV2>(
+                serialization::pimpl::data data2 = serializationService2.to_data<TestNamedPortableV2>(
                         TestNamedPortableV2{"portable-v2", 123});
 
                 auto t2 = serializationService2.to_object<TestNamedPortableV2>(data);
@@ -1223,7 +1223,7 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
-                serialization::pimpl::Data data;
+                serialization::pimpl::data data;
 
                 int x = 3;
                 data = serializationService.to_data<int>(&x);
@@ -1280,7 +1280,7 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
-                serialization::pimpl::Data data;
+                serialization::pimpl::data data;
 
                 std::vector<byte> bb(LARGE_ARRAY_SIZE);
                 std::vector<bool> ba(LARGE_ARRAY_SIZE);
@@ -1315,7 +1315,7 @@ namespace hazelcast {
                 SerializationConfig serializationConfig2;
                 serializationConfig2.set_portable_version(2);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
-                serialization::pimpl::Data data;
+                serialization::pimpl::data data;
 
                 int32_t x = 3;
                 data = serializationService.to_data<int32_t>(&x);
@@ -1363,8 +1363,8 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 std::string serializable = "key1";
-                serialization::pimpl::Data data = serializationService.to_data<std::string>(&serializable);
-                serialization::pimpl::Data data2 = serializationService.to_data<std::string>(&serializable);
+                serialization::pimpl::data data = serializationService.to_data<std::string>(&serializable);
+                serialization::pimpl::data data2 = serializationService.to_data<std::string>(&serializable);
                 ASSERT_EQ(data.get_partition_hash(), data2.get_partition_hash());
 
             }
@@ -1438,7 +1438,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 ObjectCarryingPortable<TestNamedPortable> objectCarryingPortable{TestNamedPortable{"name", 2}};
-                serialization::pimpl::Data data = ss.to_data < ObjectCarryingPortable < TestNamedPortable > > (
+                serialization::pimpl::data data = ss.to_data < ObjectCarryingPortable < TestNamedPortable > > (
                         &objectCarryingPortable);
                 auto ptr = ss.to_object < ObjectCarryingPortable < TestNamedPortable > > (data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
@@ -1449,7 +1449,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 ObjectCarryingPortable <TestDataSerializable> objectCarryingPortable{TestDataSerializable{2, 'c'}};
-                serialization::pimpl::Data data = ss.to_data < ObjectCarryingPortable < TestDataSerializable > > (
+                serialization::pimpl::data data = ss.to_data < ObjectCarryingPortable < TestDataSerializable > > (
                         &objectCarryingPortable);
                 auto ptr = ss.to_object < ObjectCarryingPortable < TestDataSerializable > > (data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
@@ -1459,7 +1459,7 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
                 ObjectCarryingPortable <TestCustomXSerializable> objectCarryingPortable{TestCustomXSerializable{131321}};
-                serialization::pimpl::Data data = ss.to_data < ObjectCarryingPortable < TestCustomXSerializable > > (
+                serialization::pimpl::data data = ss.to_data < ObjectCarryingPortable < TestCustomXSerializable > > (
                         &objectCarryingPortable);
                 auto ptr = ss.to_object < ObjectCarryingPortable < TestCustomXSerializable > > (data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
@@ -1470,7 +1470,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 ObjectCarryingPortable <TestCustomPerson> objectCarryingPortable{TestCustomPerson{"TestCustomPerson"}};
-                serialization::pimpl::Data data = ss.to_data < ObjectCarryingPortable < TestCustomPerson > > (
+                serialization::pimpl::data data = ss.to_data < ObjectCarryingPortable < TestCustomPerson > > (
                         &objectCarryingPortable);
                 auto ptr = ss.to_object < ObjectCarryingPortable < TestCustomPerson > > (data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
@@ -1478,7 +1478,7 @@ namespace hazelcast {
 
 
             TEST_F(ClientSerializationTest, testNullData) {
-                serialization::pimpl::Data data;
+                serialization::pimpl::data data;
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
                 auto ptr = ss.to_object<int32_t>(data);
@@ -1491,7 +1491,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 TestNamedPortable p{"portable-v1", 123};
-                serialization::pimpl::Data data = serializationService.to_data<TestNamedPortable>(p);
+                serialization::pimpl::data data = serializationService.to_data<TestNamedPortable>(p);
 
                 auto p2 = serializationService.to_object<TestNamedPortableV2>(data);
                 ASSERT_TRUE(p2);
@@ -1506,7 +1506,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 TestNamedPortableV2 p2{"portable-v2", 123, 9999};
-                serialization::pimpl::Data data = serializationService.to_data<TestNamedPortableV2>(p2);
+                serialization::pimpl::data data = serializationService.to_data<TestNamedPortableV2>(p2);
 
                 auto p = serializationService.to_object<TestNamedPortable>(data);
                 ASSERT_TRUE(p);
@@ -1520,7 +1520,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 TestNamedPortable p{"portable-v1", 123};
-                serialization::pimpl::Data data = serializationService.to_data<TestNamedPortable>(p);
+                serialization::pimpl::data data = serializationService.to_data<TestNamedPortable>(p);
 
                 ASSERT_THROW(serializationService.to_object<TestNamedPortableV3>(data), exception::HazelcastSerializationException);
             }
@@ -1535,7 +1535,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
                 TestNamedPortableV2 p2{"portable-v2", 123, 7};
-                serialization::pimpl::Data data2 = serializationService2.to_data<TestNamedPortableV2>(p2);
+                serialization::pimpl::data data2 = serializationService2.to_data<TestNamedPortableV2>(p2);
 
                 auto t1 = serializationService.to_object<TestNamedPortable>(data2);
                 ASSERT_TRUE(t1.has_value());
@@ -1667,7 +1667,7 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                serialization::pimpl::Data data = serializationService.to_data<std::string>(&utfStr);
+                serialization::pimpl::data data = serializationService.to_data<std::string>(&utfStr);
                 auto deserializedString = serializationService.to_object<std::string>(data);
                 ASSERT_TRUE(deserializedString.has_value());
                 ASSERT_EQ(utfStr, deserializedString.value());
@@ -1689,7 +1689,7 @@ namespace hazelcast {
 
                 NonSerializableObject obj{"My class with no serializer"};
 
-                serialization::pimpl::Data data = serializationService.to_data(obj);
+                serialization::pimpl::data data = serializationService.to_data(obj);
 
                 auto deserializedValue = serializationService.to_object<NonSerializableObject>(data);
                 ASSERT_TRUE(deserializedValue.has_value());
@@ -1740,7 +1740,7 @@ namespace hazelcast {
                             auto nearCacheRecordStore = create_near_cache_record_store(nearCacheConfig, in_memory_format);
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                                std::shared_ptr<serialization::pimpl::Data> key = get_shared_key(i);
+                                std::shared_ptr<serialization::pimpl::data> key = get_shared_key(i);
                                 nearCacheRecordStore->put(key, get_shared_value(i));
 
                                 // ensure that they are stored
@@ -1750,7 +1750,7 @@ namespace hazelcast {
                             ASSERT_EQ(DEFAULT_RECORD_COUNT, nearCacheRecordStore->size());
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                                std::shared_ptr<serialization::pimpl::Data> key = get_shared_key(i);
+                                std::shared_ptr<serialization::pimpl::data> key = get_shared_key(i);
                                 ASSERT_TRUE(nearCacheRecordStore->invalidate(key));
                                 ASSERT_FALSE(nearCacheRecordStore->get(key)) << "Should not exist";
                             }
@@ -1764,7 +1764,7 @@ namespace hazelcast {
                             auto nearCacheRecordStore = create_near_cache_record_store(nearCacheConfig, in_memory_format);
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                                std::shared_ptr<serialization::pimpl::Data> key = get_shared_key(i);
+                                std::shared_ptr<serialization::pimpl::data> key = get_shared_key(i);
                                 nearCacheRecordStore->put(key, get_shared_value(i));
 
                                 // ensure that they are stored
@@ -1962,19 +1962,19 @@ namespace hazelcast {
                             }
                         }
 
-                        std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> > create_near_cache_record_store(
+                        std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::data, serialization::pimpl::data> > create_near_cache_record_store(
                                 config::NearCacheConfig &near_cache_config,
                                 config::in_memory_format in_memory_format) {
-                            std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> > recordStore;
+                            std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::data, serialization::pimpl::data> > recordStore;
                             switch (in_memory_format) {
                                 case config::BINARY:
-                                    recordStore = std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> >(
-                                            new hazelcast::client::internal::nearcache::impl::store::NearCacheDataRecordStore<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
+                                    recordStore = std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::data, serialization::pimpl::data> >(
+                                            new hazelcast::client::internal::nearcache::impl::store::NearCacheDataRecordStore<serialization::pimpl::data, serialization::pimpl::data, serialization::pimpl::data>(
                                                     DEFAULT_NEAR_CACHE_NAME, near_cache_config, *ss_));
                                     break;
                                 case config::OBJECT:
-                                    recordStore = std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> >(
-                                            new hazelcast::client::internal::nearcache::impl::store::NearCacheObjectRecordStore<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
+                                    recordStore = std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::data, serialization::pimpl::data> >(
+                                            new hazelcast::client::internal::nearcache::impl::store::NearCacheObjectRecordStore<serialization::pimpl::data, serialization::pimpl::data, serialization::pimpl::data>(
                                                     DEFAULT_NEAR_CACHE_NAME,
                                                     near_cache_config, *ss_));
                                     break;
@@ -1997,13 +1997,13 @@ namespace hazelcast {
                             return config;
                         }
 
-                        std::shared_ptr<serialization::pimpl::Data> get_shared_value(int value) const {
+                        std::shared_ptr<serialization::pimpl::data> get_shared_value(int value) const {
                             char buf[30];
                             hazelcast::util::hz_snprintf(buf, 30, "Record-%ld", value);
                             return ss_->to_shared_data(new std::string(buf));
                         }
 
-                        std::shared_ptr<serialization::pimpl::Data> get_shared_key(int value) {
+                        std::shared_ptr<serialization::pimpl::data> get_shared_key(int value) {
                             return ss_->to_shared_data<int>(&value);
                         }
 

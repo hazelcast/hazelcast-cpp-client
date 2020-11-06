@@ -18,7 +18,7 @@
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/config/SocketOptions.h"
-#include "hazelcast/client/Address.h"
+#include "hazelcast/client/address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -51,7 +51,7 @@ namespace hazelcast {
 
             virtual void close() = 0;
 
-            virtual Address get_address() const = 0;
+            virtual address get_address() const = 0;
 
             /**
              *
@@ -59,9 +59,9 @@ namespace hazelcast {
              *
              * @returns An address that represents the local endpoint of the socket.
              */
-            virtual boost::optional<Address> local_socket_address() const = 0;
+            virtual boost::optional<address> local_socket_address() const = 0;
 
-            virtual const Address &get_remote_endpoint() const = 0;
+            virtual const address &get_remote_endpoint() const = 0;
 
             virtual boost::asio::executor get_executor() noexcept = 0;
         };

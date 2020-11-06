@@ -32,7 +32,7 @@
 #include "hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h"
 #include "hazelcast/client/internal/eviction/EvictionListener.h"
 #include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -131,8 +131,8 @@ namespace hazelcast {
 /*
                             //@Override
                             void put(const std::shared_ptr<KS> &key,
-                                     const std::shared_ptr<serialization::pimpl::Data> &value) {
-                                putInternal<serialization::pimpl::Data>(key, value);
+                                     const std::shared_ptr<serialization::pimpl::data> &value) {
+                                putInternal<serialization::pimpl::data>(key, value);
                             }
 */
 
@@ -229,7 +229,7 @@ namespace hazelcast {
 
 /*
                             virtual std::unique_ptr<R> valueToRecord(
-                                    const std::shared_ptr<serialization::pimpl::Data> &value) {
+                                    const std::shared_ptr<serialization::pimpl::data> &value) {
                                 assert(0);
                                 return std::unique_ptr<R>();
                             }
@@ -290,30 +290,30 @@ namespace hazelcast {
                                 return records_.get() != NULL;
                             }
 
-                            std::shared_ptr<serialization::pimpl::Data> value_to_data(
+                            std::shared_ptr<serialization::pimpl::data> value_to_data(
                                     const std::shared_ptr<V> &value) {
                                 if (value.get() != NULL) {
-                                    return std::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(
+                                    return std::shared_ptr<serialization::pimpl::data>(new serialization::pimpl::data(
                                             serialization_service_.to_data<V>(value.get())));
                                 } else {
-                                    return std::shared_ptr<serialization::pimpl::Data>();
+                                    return std::shared_ptr<serialization::pimpl::data>();
                                 }
                             }
 
 /*
-                            std::shared_ptr<serialization::pimpl::Data> valueToData(
-                                    std::shared_ptr<serialization::pimpl::Data> &value) {
+                            std::shared_ptr<serialization::pimpl::data> valueToData(
+                                    std::shared_ptr<serialization::pimpl::data> &value) {
                                 return value;
                             }
 */
 
                             std::shared_ptr<V> data_to_value(
-                                    const std::shared_ptr<serialization::pimpl::Data> &data, const TypedData *dummy) {
-                                return std::shared_ptr<V>(new TypedData(*data, serialization_service_));
+                                    const std::shared_ptr<serialization::pimpl::data> &data, const typed_data *dummy) {
+                                return std::shared_ptr<V>(new typed_data(*data, serialization_service_));
                             }
 
                             std::shared_ptr<V> data_to_value(
-                                    const std::shared_ptr<serialization::pimpl::Data> &data, void *dummy) {
+                                    const std::shared_ptr<serialization::pimpl::data> &data, void *dummy) {
                                 return data;
 /*
                                 if (data.get() != NULL) {
@@ -326,23 +326,23 @@ namespace hazelcast {
                             }
 
 /*
-                            const std::shared_ptr<serialization::pimpl::Data> to_data(
-                                    const std::shared_ptr<serialization::pimpl::Data> &obj) {
+                            const std::shared_ptr<serialization::pimpl::data> to_data(
+                                    const std::shared_ptr<serialization::pimpl::data> &obj) {
                                 return obj;
                             }
 */
 
-                            const std::shared_ptr<serialization::pimpl::Data> to_data(
+                            const std::shared_ptr<serialization::pimpl::data> to_data(
                                     const std::shared_ptr<V> &obj) {
                                 if (obj.get() == NULL) {
-                                    return std::shared_ptr<serialization::pimpl::Data>();
+                                    return std::shared_ptr<serialization::pimpl::data>();
                                 } else {
                                     return value_to_data(obj);
                                 }
                             }
 
 /*
-                            std::shared_ptr<V> toValue(std::shared_ptr<serialization::pimpl::Data> &obj) {
+                            std::shared_ptr<V> toValue(std::shared_ptr<serialization::pimpl::data> &obj) {
                                 if (obj.get() == NULL) {
                                     return std::shared_ptr<V>();
                                 } else {
@@ -392,7 +392,7 @@ namespace hazelcast {
 
 /*
                             void onPut(const std::shared_ptr<KS> &key,
-                                       const std::shared_ptr<serialization::pimpl::Data> &value,
+                                       const std::shared_ptr<serialization::pimpl::data> &value,
                                        const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord) {
                             }
 */
@@ -404,7 +404,7 @@ namespace hazelcast {
 
 /*
                             void onPutError(const std::shared_ptr<KS> &key,
-                                            const std::shared_ptr<serialization::pimpl::Data> &value,
+                                            const std::shared_ptr<serialization::pimpl::data> &value,
                                             const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord,
                                             const exception::IException &error) {
                             }

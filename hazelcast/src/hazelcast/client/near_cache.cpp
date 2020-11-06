@@ -85,9 +85,9 @@ namespace hazelcast {
                 namespace impl {
                     namespace record {
                         NearCacheDataRecord::NearCacheDataRecord(
-                                const std::shared_ptr<serialization::pimpl::Data> &data_value,
+                                const std::shared_ptr<serialization::pimpl::data> &data_value,
                                 int64_t create_time, int64_t expiry_time)
-                                : AbstractNearCacheRecord<serialization::pimpl::Data>(data_value,
+                                : AbstractNearCacheRecord<serialization::pimpl::data>(data_value,
                                                                                       create_time,
                                                                                       expiry_time) {
                         }
@@ -104,19 +104,19 @@ namespace hazelcast {
                         delete[] marks_;
                     }
 
-                    bool KeyStateMarkerImpl::try_mark(const serialization::pimpl::Data &key) {
+                    bool KeyStateMarkerImpl::try_mark(const serialization::pimpl::data &key) {
                         return cas_state(key, UNMARKED, MARKED);
                     }
 
-                    bool KeyStateMarkerImpl::try_unmark(const serialization::pimpl::Data &key) {
+                    bool KeyStateMarkerImpl::try_unmark(const serialization::pimpl::data &key) {
                         return cas_state(key, MARKED, UNMARKED);
                     }
 
-                    bool KeyStateMarkerImpl::try_remove(const serialization::pimpl::Data &key) {
+                    bool KeyStateMarkerImpl::try_remove(const serialization::pimpl::data &key) {
                         return cas_state(key, MARKED, REMOVED);
                     }
 
-                    void KeyStateMarkerImpl::force_unmark(const serialization::pimpl::Data &key) {
+                    void KeyStateMarkerImpl::force_unmark(const serialization::pimpl::data &key) {
                         int slot = get_slot(key);
                         marks_[slot] = UNMARKED;
                     }
@@ -128,13 +128,13 @@ namespace hazelcast {
                     }
 
                     bool
-                    KeyStateMarkerImpl::cas_state(const serialization::pimpl::Data &key, state expect, state update) {
+                    KeyStateMarkerImpl::cas_state(const serialization::pimpl::data &key, state expect, state update) {
                         int slot = get_slot(key);
                         int expected = expect;
                         return marks_[slot].compare_exchange_strong(expected, update);
                     }
 
-                    int KeyStateMarkerImpl::get_slot(const serialization::pimpl::Data &key) {
+                    int KeyStateMarkerImpl::get_slot(const serialization::pimpl::data &key) {
                         return util::HashUtil::hash_to_index(key.get_partition_hash(), mark_count_);
                     }
 
@@ -155,19 +155,19 @@ namespace hazelcast {
         namespace map {
             namespace impl {
                 namespace nearcache {
-                    bool TrueMarkerImpl::try_mark(const serialization::pimpl::Data &key) {
+                    bool TrueMarkerImpl::try_mark(const serialization::pimpl::data &key) {
                         return true;
                     }
 
-                    bool TrueMarkerImpl::try_unmark(const serialization::pimpl::Data &key) {
+                    bool TrueMarkerImpl::try_unmark(const serialization::pimpl::data &key) {
                         return true;
                     }
 
-                    bool TrueMarkerImpl::try_remove(const serialization::pimpl::Data &key) {
+                    bool TrueMarkerImpl::try_remove(const serialization::pimpl::data &key) {
                         return true;
                     }
 
-                    void TrueMarkerImpl::force_unmark(const serialization::pimpl::Data &key) {
+                    void TrueMarkerImpl::force_unmark(const serialization::pimpl::data &key) {
                     }
 
                     void TrueMarkerImpl::init() {

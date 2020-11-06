@@ -670,7 +670,7 @@ namespace hazelcast {
         const int AddressHelper::MAX_PORT_TRIES = 3;
         const int AddressHelper::INITIAL_FIRST_PORT = 5701;
 
-        std::vector<client::Address> AddressHelper::get_socket_addresses(const std::string &address, logger &lg) {
+        std::vector<client::address> AddressHelper::get_socket_addresses(const std::string &address, logger &lg) {
             const AddressHolder addressHolder = AddressUtil::get_address_holder(address, -1);
             const std::string scopedAddress = !addressHolder.get_scope_id().empty()
                                               ? addressHolder.get_address() + '%' + addressHolder.get_scope_id()
@@ -684,7 +684,7 @@ namespace hazelcast {
             return get_possible_socket_addresses(port, scopedAddress, maxPortTryCount, lg);
         }
 
-        std::vector<client::Address>
+        std::vector<client::address>
         AddressHelper::get_possible_socket_addresses(int port, const std::string &scoped_address, int port_try_count,
                                                   logger &lg) {
             std::unique_ptr<boost::asio::ip::address> inetAddress;
@@ -701,12 +701,12 @@ namespace hazelcast {
             if (possiblePort == -1) {
                 possiblePort = INITIAL_FIRST_PORT;
             }
-            std::vector<client::Address> addresses;
+            std::vector<client::address> addresses;
 
             if (!inetAddress.get()) {
                 for (int i = 0; i < port_try_count; i++) {
                     try {
-                        addresses.push_back(client::Address(scoped_address, possiblePort + i));
+                        addresses.push_back(client::address(scoped_address, possiblePort + i));
                     } catch (client::exception::UnknownHostException &ignored) {
                         HZ_LOG(lg, finest,
                             boost::str(boost::format("Address [%1%] ip number is not available. %2%")
@@ -717,10 +717,10 @@ namespace hazelcast {
             } else if (inetAddress->is_v4() || inetAddress->is_v6()) {
                 for (int i = 0; i < port_try_count; i++) {
                     if (inetAddress->is_v4()) {
-                        addresses.push_back(client::Address(scoped_address, possiblePort + i));
+                        addresses.push_back(client::address(scoped_address, possiblePort + i));
                     } else {
                         addresses.push_back(
-                                client::Address(scoped_address, possiblePort + i, inetAddress->to_v6().scope_id()));
+                                client::address(scoped_address, possiblePort + i, inetAddress->to_v6().scope_id()));
                     }
                 }
             }

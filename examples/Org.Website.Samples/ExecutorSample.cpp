@@ -107,7 +107,7 @@ public:
 
 class MyMemberSelector : public hazelcast::client::cluster::memberselector::MemberSelector {
 public:
-    bool select(const Member &member) const override {
+    bool select(const member &member) const override {
         const std::string *attribute = member.get_attribute("my.special.executor");
         if (attribute == NULL) {
             return false;
@@ -132,7 +132,7 @@ int main() {
     auto result = promise.get_future().get();
     std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
-    Member firstMember = hz.get_cluster().get_members()[0];
+    member firstMember = hz.get_cluster().get_members()[0];
     // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
     ex->execute_on_member<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, firstMember);
     // Submit the MessagePrinter Runnable to all Hazelcast Cluster Members

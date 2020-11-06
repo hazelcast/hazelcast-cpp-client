@@ -203,60 +203,60 @@ namespace hazelcast {
             return to_void_future(get_and_set(new_value));
         }
 
-        boost::future<int64_t> atomic_long::alter_data(Data &function_data,
+        boost::future<int64_t> atomic_long::alter_data(data &function_data,
                                                        alter_result_type result_type) {
             auto request = atomiclong_alter_encode(group_id_, object_name_, function_data,
                                                    static_cast<int32_t>(result_type));
             return invoke_and_get_future<int64_t>(request);
         }
 
-        boost::future<boost::optional<Data>> atomic_long::apply_data(Data &function_data) {
+        boost::future<boost::optional<data>> atomic_long::apply_data(data &function_data) {
             auto request = atomiclong_apply_encode(group_id_, object_name_, function_data);
-            return invoke_and_get_future<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<data>>(request);
         }
 
         atomic_reference::atomic_reference(const std::string &name, spi::ClientContext &context,
                                            const raft_group_id &group_id, const std::string &object_name)
                 : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name) {}
 
-        boost::future<boost::optional<Data>> atomic_reference::get_data() {
+        boost::future<boost::optional<data>> atomic_reference::get_data() {
             auto request = atomicref_get_encode(group_id_, object_name_);
-            return invoke_and_get_future<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<data>>(request);
         }
 
-        boost::future<boost::optional<Data>> atomic_reference::set_data(const Data &new_value_data) {
+        boost::future<boost::optional<data>> atomic_reference::set_data(const data &new_value_data) {
             auto request = atomicref_set_encode(group_id_, object_name_, &new_value_data, false);
-            return invoke_and_get_future<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<data>>(request);
         }
 
-        boost::future<boost::optional<Data>> atomic_reference::get_and_set_data(const Data &new_value_data) {
+        boost::future<boost::optional<data>> atomic_reference::get_and_set_data(const data &new_value_data) {
             auto request = atomicref_set_encode(group_id_, object_name_, &new_value_data, true);
-            return invoke_and_get_future<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<data>>(request);
         }
 
-        boost::future<bool> atomic_reference::compare_and_set_data(const Data &expect_data, const Data &update_data) {
+        boost::future<bool> atomic_reference::compare_and_set_data(const data &expect_data, const data &update_data) {
             auto request = atomicref_compareandset_encode(group_id_, object_name_, &expect_data, &update_data);
             return invoke_and_get_future<bool>(request);
         }
 
-        boost::future<bool> atomic_reference::contains_data(const Data &value_data) {
+        boost::future<bool> atomic_reference::contains_data(const data &value_data) {
             auto request = atomicref_contains_encode(group_id_, object_name_, &value_data);
             return invoke_and_get_future<bool>(request);
         }
 
-        boost::future<void> atomic_reference::alter_data(const Data &function_data) {
+        boost::future<void> atomic_reference::alter_data(const data &function_data) {
             return to_void_future(invoke_apply(function_data, return_value_type::NO_VALUE, true));
         }
 
-        boost::future<boost::optional<Data>> atomic_reference::alter_and_get_data(const Data &function_data) {
+        boost::future<boost::optional<data>> atomic_reference::alter_and_get_data(const data &function_data) {
             return invoke_apply(function_data, return_value_type::NEW, true);
         }
 
-        boost::future<boost::optional<Data>> atomic_reference::get_and_alter_data(const Data &function_data) {
+        boost::future<boost::optional<data>> atomic_reference::get_and_alter_data(const data &function_data) {
             return invoke_apply(function_data, return_value_type::OLD, true);
         }
 
-        boost::future<boost::optional<Data>> atomic_reference::apply_data(const Data &function_data) {
+        boost::future<boost::optional<data>> atomic_reference::apply_data(const data &function_data) {
             return invoke_apply(function_data, return_value_type::NEW, false);
         }
 
@@ -268,11 +268,11 @@ namespace hazelcast {
             return to_void_future(set(static_cast<byte *>(nullptr)));
         }
 
-        boost::future<boost::optional<Data>>
-        atomic_reference::invoke_apply(const Data function_data, return_value_type return_type, bool alter) {
+        boost::future<boost::optional<data>>
+        atomic_reference::invoke_apply(const data function_data, return_value_type return_type, bool alter) {
             auto request = atomicref_apply_encode(group_id_, object_name_, function_data,
                                                   static_cast<int32_t>(return_type), alter);
-            return invoke_and_get_future<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<data>>(request);
         }
 
         latch::latch(const std::string &name, spi::ClientContext &context, const raft_group_id &group_id,

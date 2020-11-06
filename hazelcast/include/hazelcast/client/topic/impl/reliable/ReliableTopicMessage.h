@@ -18,9 +18,9 @@
 
 #include <memory>
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/topic/Message.h"
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -38,17 +38,17 @@ namespace hazelcast {
                     public:
                         ReliableTopicMessage();
 
-                        ReliableTopicMessage(serialization::pimpl::Data &&payload_data, std::unique_ptr<Address> address);
+                        ReliableTopicMessage(serialization::pimpl::data &&payload_data, std::unique_ptr<address> address);
 
                         std::chrono::system_clock::time_point get_publish_time() const;
 
-                        const boost::optional<Address> &get_publisher_address() const;
+                        const boost::optional<address> &get_publisher_address() const;
 
-                        serialization::pimpl::Data &get_payload();
+                        serialization::pimpl::data &get_payload();
                     private:
                         std::chrono::system_clock::time_point publish_time_;
-                        boost::optional<Address> publisher_address_;
-                        serialization::pimpl::Data payload_;
+                        boost::optional<address> publisher_address_;
+                        serialization::pimpl::data payload_;
                     };
                 }
             }

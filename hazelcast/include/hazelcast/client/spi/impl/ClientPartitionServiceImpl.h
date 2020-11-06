@@ -53,7 +53,7 @@ namespace hazelcast {
 
                     boost::uuids::uuid get_partition_owner(int partition_id);
 
-                    int32_t get_partition_id(const serialization::pimpl::Data &key);
+                    int32_t get_partition_id(const serialization::pimpl::data &key);
 
                     int32_t get_partition_count();
 
@@ -76,7 +76,7 @@ namespace hazelcast {
 
                         int get_partition_id() const override;
 
-                        boost::optional<Member> get_owner() const override;
+                        boost::optional<member> get_owner() const override;
 
                     private:
                         int partition_id_;

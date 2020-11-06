@@ -47,22 +47,22 @@ namespace hazelcast {
                 EMPLOYEE_FACTORY = 666
             };
 
-            class Employee {
-                friend serialization::hz_serializer<Employee>;
+            class employee {
+                friend serialization::hz_serializer<employee>;
             public:
-                Employee();
+                employee();
 
-                Employee(std::string name, int age);
+                employee(std::string name, int age);
 
-                bool operator ==(const Employee &employee) const;
+                bool operator ==(const employee &employee) const;
 
-                bool operator !=(const Employee &employee) const;
+                bool operator !=(const employee &employee) const;
 
                 int32_t get_age() const;
 
                 const std::string &get_name() const;
 
-                bool operator<(const Employee &rhs) const;
+                bool operator<(const employee &rhs) const;
 
             private:
                 int32_t age_;
@@ -91,20 +91,20 @@ namespace hazelcast {
             };
 
             // Compares based on the employee age
-            class EmployeeEntryComparator : public query::EntryComparator<int32_t, Employee> {
+            class EmployeeEntryComparator : public query::EntryComparator<int32_t, employee> {
             public:
-                int compare(const std::pair<const int32_t *, const Employee *> *lhs,
-                                    const std::pair<const int32_t *, const Employee *> *rhs) const override;
+                int compare(const std::pair<const int32_t *, const employee *> *lhs,
+                                    const std::pair<const int32_t *, const employee *> *rhs) const override;
             };
 
             // Compares based on the employee age
             class EmployeeEntryKeyComparator : public EmployeeEntryComparator {
             public:
-                int compare(const std::pair<const int32_t *, const Employee *> *lhs,
-                            const std::pair<const int32_t *, const Employee *> *rhs) const override;
+                int compare(const std::pair<const int32_t *, const employee *> *lhs,
+                            const std::pair<const int32_t *, const employee *> *rhs) const override;
             };
 
-            std::ostream &operator<<(std::ostream &out, const Employee &employee);
+            std::ostream &operator<<(std::ostream &out, const employee &employee);
 
             struct TestDataSerializable {
                 int i;
@@ -235,14 +235,14 @@ namespace hazelcast {
 
         namespace serialization {
             template<>
-            struct hz_serializer<test::Employee> : public portable_serializer {
+            struct hz_serializer<test::employee> : public portable_serializer {
                 static int32_t get_factory_id();
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::Employee &object, PortableWriter &writer);
+                static void write_portable(const test::employee &object, PortableWriter &writer);
 
-                static test::Employee read_portable(PortableReader &reader);
+                static test::employee read_portable(PortableReader &reader);
             };
 
             template<>

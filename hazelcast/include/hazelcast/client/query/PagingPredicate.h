@@ -66,7 +66,7 @@ namespace hazelcast {
 
             struct anchor_data_list {
                 std::vector<int32_t> page_list;
-                std::vector<std::pair<serialization::pimpl::Data, boost::optional<serialization::pimpl::Data>>> data_list;
+                std::vector<std::pair<serialization::pimpl::data, boost::optional<serialization::pimpl::data>>> data_list;
             };
 
             /**
@@ -174,8 +174,8 @@ namespace hazelcast {
                 size_t page_size_;
                 size_t page_;
                 iteration_type iteration_type_;
-                boost::optional<serialization::pimpl::Data> comparator_data_;
-                boost::optional<serialization::pimpl::Data> predicate_data_;
+                boost::optional<serialization::pimpl::data> comparator_data_;
+                boost::optional<serialization::pimpl::data> predicate_data_;
 
                 /**
                  * Construct with a pageSize
@@ -299,7 +299,7 @@ namespace hazelcast {
                 static query::PagingPredicate<K, V> read_data(ObjectDataInput &in) {
                     // Not need to read at the client side
                     BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("readData",
-                                                                                     "Client should not need to use readData method!!!"));
+                                                                                     "Client should not need to use readdata method!!!"));
                 }
             };
 

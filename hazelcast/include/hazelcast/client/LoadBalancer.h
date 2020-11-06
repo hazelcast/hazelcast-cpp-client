@@ -19,7 +19,7 @@
 
 namespace hazelcast {
     namespace client {
-        class Member;
+        class member;
 
         class Cluster;
         /**
@@ -46,7 +46,7 @@ namespace hazelcast {
              * Returns the next member to route to
              * @return Returns the next member or boost::none if no member is available
              */
-            virtual boost::optional<Member> next() = 0;
+            virtual boost::optional<member> next() = 0;
 
             virtual ~LoadBalancer();
         };

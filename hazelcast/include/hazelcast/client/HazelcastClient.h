@@ -57,7 +57,7 @@ namespace hazelcast {
             * Note: ClientConfig will be copied.
             * @param config client configuration to start the client with
             */
-            explicit HazelcastClient(const ClientConfig &config);
+            explicit HazelcastClient(const client_config &config);
 
             virtual ~HazelcastClient();
 
@@ -223,7 +223,7 @@ namespace hazelcast {
             *
             * @return configuration of this Hazelcast client.
             */
-            ClientConfig& get_client_config();
+            client_config& get_client_config();
 
             /**
             * Creates a new TransactionContext associated with the current thread using default options.

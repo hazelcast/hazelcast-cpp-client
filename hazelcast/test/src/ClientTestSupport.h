@@ -31,7 +31,7 @@
 
 namespace hazelcast {
     namespace client {
-        class ClientConfig;
+        class client_config;
 
         class HazelcastClient;
 

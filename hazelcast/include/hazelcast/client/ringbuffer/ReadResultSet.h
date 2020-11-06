@@ -34,7 +34,7 @@ namespace hazelcast {
                  */
                 static const int64_t SEQUENCE_UNAVAILABLE = -1;
 
-                ReadResultSet(int32_t read_count, std::vector<serialization::pimpl::Data> &&data_items,
+                ReadResultSet(int32_t read_count, std::vector<serialization::pimpl::data> &&data_items,
                               serialization::pimpl::SerializationService &serialization_service,
                               boost::optional<std::vector<int64_t>> &item_seqs, int64_t next_seq)
                               : items_read_count_(read_count), item_seqs_(std::move(item_seqs)), next_seq_(next_seq) {
@@ -60,7 +60,7 @@ namespace hazelcast {
                     return items_read_count_;
                 }
 
-                const std::vector<TypedData> &get_items() const {
+                const std::vector<typed_data> &get_items() const {
                     return items_;
                 }
 
@@ -110,7 +110,7 @@ namespace hazelcast {
 
             private:
                 int32_t items_read_count_;
-                std::vector<TypedData> items_;
+                std::vector<typed_data> items_;
                 boost::optional<std::vector<int64_t>> item_seqs_;
                 int64_t next_seq_;
             };

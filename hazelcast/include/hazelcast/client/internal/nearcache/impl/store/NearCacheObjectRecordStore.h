@@ -39,7 +39,7 @@ namespace hazelcast {
                             NearCacheObjectRecordStore(const std::string &name,
                                                        const client::config::NearCacheConfig &config,
                                                        serialization::pimpl::SerializationService &ss)
-                                    : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheObjectRecord<V> >(
+                                    : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::data, record::NearCacheObjectRecord<V> >(
                                     name, config, ss) {
                             }
                         protected:
@@ -56,9 +56,9 @@ namespace hazelcast {
                             //@Override
 /*
                             std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
-                                    const std::shared_ptr<serialization::pimpl::Data> &valueData) {
-                                std::shared_ptr<serialization::pimpl::Data> data = std::const_pointer_cast<serialization::pimpl::Data>(
-                                        valueData);
+                                    const std::shared_ptr<serialization::pimpl::data> &value_data) {
+                                std::shared_ptr<serialization::pimpl::data> data = std::const_pointer_cast<serialization::pimpl::data>(
+                                        value_data);
                                 const std::shared_ptr<V> value = ANCRS::toValue(data);
                                 return valueToRecordInternal(value);
                             }

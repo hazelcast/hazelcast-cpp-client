@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 #include "ClientTestSupportBase.h"
-#include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/client_config.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
@@ -52,9 +52,9 @@
 
 #endif
 
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -98,7 +98,7 @@
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/ReliableTopic.h"
@@ -259,7 +259,7 @@ namespace hazelcast {
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
                     near_cache_ = near_cache_manager_->
-                            get_near_cache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(get_test_name());
+                            get_near_cache<serialization::pimpl::data, serialization::pimpl::data, serialization::pimpl::data>(get_test_name());
                     this->stats_ = near_cache_ ? near_cache_->get_near_cache_stats() : nullptr;
                 }
 
@@ -328,7 +328,7 @@ namespace hazelcast {
                     }
                 }
 
-                std::shared_ptr<serialization::pimpl::Data> get_near_cache_key(int key) {
+                std::shared_ptr<serialization::pimpl::data> get_near_cache_key(int key) {
                     spi::ClientContext clientContext(*client_);
                     return clientContext.get_serialization_service().to_shared_data<int>(&key);
                 }
@@ -394,15 +394,15 @@ namespace hazelcast {
                     ASSERT_EQ(0, near_cache_->size()) << "Invalidation is not working on putAll()";
                 }
 
-                ClientConfig client_config_;
-                ClientConfig near_cached_client_config_;
+                client_config client_config_;
+                client_config near_cached_client_config_;
                 config::NearCacheConfig near_cache_config_;
                 std::unique_ptr<HazelcastClient> client_;
                 std::unique_ptr<HazelcastClient> near_cached_client_;
                 std::shared_ptr<IMap> no_near_cache_map_;
                 std::shared_ptr<IMap> near_cached_map_;
                 hazelcast::client::internal::nearcache::NearCacheManager *near_cache_manager_;
-                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data> > near_cache_;
+                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data> > near_cache_;
                 std::shared_ptr<monitor::NearCacheStats> stats_;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -447,7 +447,7 @@ namespace hazelcast {
                                                 << "Expected null from Near cached data structure for key " << i;
 
                     // fetch internal value directly from Near Cache
-                    std::shared_ptr<serialization::pimpl::Data> key = get_near_cache_key(i);
+                    std::shared_ptr<serialization::pimpl::data> key = get_near_cache_key(i);
                     auto value = near_cache_->get(key);
                     if (value) {
                         // the internal value should either be `null` or `NULL_OBJECT`
@@ -680,8 +680,8 @@ namespace hazelcast {
                     return config::NearCacheConfig();
                 }
 
-                static std::unique_ptr<ClientConfig> new_client_config() {
-                    return std::unique_ptr<ClientConfig>(new ClientConfig(get_config()));
+                static std::unique_ptr<client_config> new_client_config() {
+                    return std::unique_ptr<client_config>(new client_config(get_config()));
                 }
 
                 std::shared_ptr<IMap> get_near_cached_map_from_client(
@@ -706,7 +706,7 @@ namespace hazelcast {
                     ASSERT_EQ(expected, get_near_cache_stats(client_map)->get_owned_entry_count());
                 }
 
-                std::unique_ptr<ClientConfig> client_config_;
+                std::unique_ptr<client_config> client_config_;
                 config::NearCacheConfig near_cache_config_;
                 std::unique_ptr<HazelcastClient> client_;
                 std::shared_ptr<IMap> map_;
@@ -992,14 +992,14 @@ namespace hazelcast {
                 auto state = std::make_shared<ListenerState>(1);
                 ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
-                Employee empl1("first", 20);
+                employee empl1("first", 20);
                 ASSERT_NO_THROW(topic_->publish(empl1).get());
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ(1, state->number_of_messages_received);
-                auto employee = state->messages.poll()->get_message_object().template get<Employee>();
-                ASSERT_TRUE(employee.has_value());
-                ASSERT_EQ(empl1, employee.value());
+                auto e = state->messages.poll()->get_message_object().template get<employee>();
+                ASSERT_TRUE(e.has_value());
+                ASSERT_EQ(empl1, e.value());
 
                 // remove listener
                 ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
@@ -1009,8 +1009,8 @@ namespace hazelcast {
             TEST_F(ReliableTopicTest, testListenerSequence) {
                 ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testListenerSequence"));
 
-                Employee empl1("first", 10);
-                Employee empl2("second", 20);
+                employee empl1("first", 10);
+                employee empl2("second", 20);
 
                 ASSERT_NO_THROW(topic_->publish(empl1).get());
                 ASSERT_NO_THROW(topic_->publish(empl2).get());
@@ -1020,9 +1020,9 @@ namespace hazelcast {
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ(1, state->number_of_messages_received);
-                auto employee = state->messages.poll()->get_message_object().template get<Employee>();
-                ASSERT_TRUE(employee.has_value());
-                ASSERT_EQ(empl2, employee.value());
+                auto e = state->messages.poll()->get_message_object().template get<employee>();
+                ASSERT_TRUE(e.has_value());
+                ASSERT_EQ(empl2, e.value());
 
                 // remove listener
                 ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
@@ -1031,7 +1031,7 @@ namespace hazelcast {
             TEST_F(ReliableTopicTest, removeMessageListener_whenExisting) {
                 ASSERT_NO_THROW(topic_ = client->get_reliable_topic("removeMessageListener_whenExisting"));
 
-                Employee empl1("first", 10);
+                employee empl1("first", 10);
 
                 auto state = std::make_shared<ListenerState>(1);
                 ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
@@ -1078,8 +1078,8 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, testConfig) {
-                ClientConfig clientConfig;
-                clientConfig.get_network_config().add_address(Address(g_srvFactory->get_server_address(), 5701));
+                client_config clientConfig;
+                clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
                 config::ReliableTopicConfig relConfig("testConfig");
                 relConfig.set_read_batch_size(2);
                 clientConfig.add_reliable_topic_config(relConfig);
@@ -1321,10 +1321,10 @@ namespace hazelcast {
                         std::cerr << "    Get Percentage: " << GET_PERCENTAGE << std::endl;
                         std::cerr << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
                         std::cerr << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
-                        ClientConfig clientConfig;
+                        client_config clientConfig;
                         clientConfig.set_property(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
                         auto member = server.get_member();
-                        clientConfig.get_network_config().add_address(Address(member.host, member.port)).set_connection_attempt_period(std::chrono::seconds(10));
+                        clientConfig.get_network_config().add_address(address(member.host, member.port)).set_connection_attempt_period(std::chrono::seconds(10));
 
                         Stats stats;
                         auto lg = std::make_shared<logger>("SimpleMapTest", "SimpleMapTest",
@@ -1397,7 +1397,7 @@ namespace hazelcast {
                 HazelcastServer hz1(*g_srvFactory);
                 HazelcastServer hz2(*g_srvFactory);
 
-                ClientConfig clientConfig(get_config());
+                client_config clientConfig(get_config());
                 clientConfig.set_redo_operation(true);
                 clientConfig.get_network_config().set_smart_routing(false);
 
@@ -1422,7 +1422,7 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // 2. Start a client
-                ClientConfig clientConfig = get_config();
+                client_config clientConfig = get_config();
                 clientConfig.get_network_config().set_connection_attempt_limit(10);
 
                 HazelcastClient client(clientConfig);
@@ -1642,7 +1642,7 @@ namespace hazelcast {
 
                     BufferedMessageHandler handler;
                     protocol::ClientMessageBuilder<BufferedMessageHandler> builder(handler);
-                    // it is important to check the onData return value since there may be left data less than a message
+                    // it is important to check the ondata return value since there may be left data less than a message
                     // header size, and this may cause an infinite loop.
                     while (buffer.has_remaining() && builder.on_data(buffer)) {
                     }
@@ -1651,7 +1651,7 @@ namespace hazelcast {
                     // the expected message is
                     ASSERT_TRUE(handler.msg);
 
-                    auto datas_opt = handler.msg->get_first_var_sized_field<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data>>>();
+                    auto datas_opt = handler.msg->get_first_var_sized_field<std::vector<std::pair<serialization::pimpl::data, serialization::pimpl::data>>>();
                     ASSERT_TRUE(datas_opt);
                     auto &datas = datas_opt.value();
                     ASSERT_EQ(10, datas.size());

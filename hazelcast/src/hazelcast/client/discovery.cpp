@@ -40,7 +40,7 @@
 
 #include "hazelcast/client/aws/utility/AwsURLEncoder.h"
 #include "hazelcast/client/aws/impl/Constants.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/security/EC2RequestSigner.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/aws/impl/Filter.h"
@@ -63,7 +63,7 @@ namespace hazelcast {
                 std::string EC2RequestSigner::NEW_LINE = "\n";
                 size_t EC2RequestSigner::DATE_LENGTH = 8;
 
-                EC2RequestSigner::EC2RequestSigner(const config::ClientAwsConfig &aws_config,
+                EC2RequestSigner::EC2RequestSigner(const config::client_aws_config &aws_config,
                                                    const std::string &timestamp,
                                                    const std::string &endpoint) : aws_config_(aws_config),
                                                                                   timestamp_(timestamp),
@@ -316,33 +316,33 @@ namespace hazelcast {
                     return filters_;
                 }
 
-                AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &aws_config, logger &lg)
+                AwsAddressTranslator::AwsAddressTranslator(config::client_aws_config &aws_config, logger &lg)
                         : logger_(lg) {
                     if (aws_config.is_enabled() && !aws_config.is_inside_aws()) {
                         aws_client_ = std::unique_ptr<AWSClient>(new AWSClient(aws_config, lg));
                     }
                 }
 
-                Address AwsAddressTranslator::translate(const Address &address) {
+                address AwsAddressTranslator::translate(const address &addr) {
                     // if no translation is needed just return the address as it is
                     if (NULL == aws_client_.get()) {
-                        return address;
+                        return addr;
                     }
 
-                    Address translatedAddress = address;
+                    address translatedAddress = addr;
 
-                    if (find_from_cache(address, translatedAddress)) {
+                    if (find_from_cache(addr, translatedAddress)) {
                         return translatedAddress;
                     }
 
                     refresh();
 
-                    if (find_from_cache(address, translatedAddress)) {
+                    if (find_from_cache(addr, translatedAddress)) {
                         return translatedAddress;
                     }
 
                     std::stringstream out;
-                    out << "No translation is found for private ip:" << address;
+                    out << "No translation is found for private ip:" << addr;
                     BOOST_THROW_EXCEPTION(exception::IOException("AwsAddressTranslator::translate", out.str()));
                 }
 
@@ -356,18 +356,18 @@ namespace hazelcast {
                     }
                 }
 
-                bool AwsAddressTranslator::find_from_cache(const Address &address, Address &translated_address) {
+                bool AwsAddressTranslator::find_from_cache(const address &addr, address &translated_address) {
                     std::shared_ptr<std::unordered_map<std::string, std::string> > mapping = private_to_public_;
                     if (mapping.get() == NULL) {
                         return false;
                     }
 
                     std::unordered_map<std::string, std::string>::const_iterator publicAddressIt = mapping->find(
-                            address.get_host());
+                            addr.get_host());
                     if (publicAddressIt != mapping->end()) {
                         const std::string &publicIp = (*publicAddressIt).second;
                         if (!publicIp.empty()) {
-                            translated_address = Address((*publicAddressIt).second, address.get_port());
+                            translated_address = address((*publicAddressIt).second, addr.get_port());
                             return true;
                         }
                     }
@@ -380,7 +380,7 @@ namespace hazelcast {
                 const std::string DescribeInstances::IAM_ROLE_QUERY = "/latest/meta-data/iam/security-credentials/";
                 const std::string DescribeInstances::IAM_TASK_ROLE_ENDPOINT = "169.254.170.2";
 
-                DescribeInstances::DescribeInstances(config::ClientAwsConfig &aws_config, const std::string &endpoint,
+                DescribeInstances::DescribeInstances(config::client_aws_config &aws_config, const std::string &endpoint,
                                                      logger &lg) : aws_config_(aws_config), endpoint_(endpoint),
                                                                               logger_(lg) {
                     check_keys_from_iam_roles();
@@ -599,7 +599,7 @@ namespace hazelcast {
                     return privatePublicPairs;
                 }
 
-                void CloudUtility::unmarshal_json_response(std::istream &stream, config::ClientAwsConfig &aws_config,
+                void CloudUtility::unmarshal_json_response(std::istream &stream, config::client_aws_config &aws_config,
                                                          std::unordered_map<std::string, std::string> &attributes) {
                     pt::ptree json;
                     pt::read_json(stream, json);
@@ -610,8 +610,8 @@ namespace hazelcast {
 
             }
 
-            AWSClient::AWSClient(config::ClientAwsConfig &aws_config, logger &lg) : aws_config_(aws_config),
-                                                                                              logger_(lg) {
+            AWSClient::AWSClient(config::client_aws_config &aws_config, logger &lg) : aws_config_(aws_config),
+                                                                                      logger_(lg) {
                 this->endpoint_ = aws_config.get_host_header();
                 if (!aws_config.get_region().empty() && aws_config.get_region().length() > 0) {
                     if (aws_config.get_host_header().find("ec2.") != 0) {

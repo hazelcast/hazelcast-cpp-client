@@ -19,8 +19,8 @@
 int main() {
     const char *serverIp = "127.0.0.1";
     const int port = 5701;
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::Address addr(serverIp, port);
+    hazelcast::client::client_config config;
+    hazelcast::client::address addr(serverIp, port);
     config.get_network_config().add_address(addr);
     hazelcast::client::HazelcastClient hz(config);
 

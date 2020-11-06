@@ -43,10 +43,10 @@ namespace hazelcast {
                 : instance_name_(instance_name), cluster_service_(cluster_service), serialization_service_(serialization_service)
                 , listener_(std::move(listener)), include_value_(include_value), logger_(lg) {}
 
-                void handle_entry(const boost::optional<serialization::pimpl::Data> &key,
-                                  const boost::optional<serialization::pimpl::Data> &value,
-                                  const boost::optional<serialization::pimpl::Data> &old_value,
-                                  const boost::optional<serialization::pimpl::Data> &merging_value,
+                void handle_entry(const boost::optional<serialization::pimpl::data> &key,
+                                  const boost::optional<serialization::pimpl::data> &value,
+                                  const boost::optional<serialization::pimpl::data> &old_value,
+                                  const boost::optional<serialization::pimpl::data> &merging_value,
                                   int32_t event_type, boost::uuids::uuid uuid,
                                   int32_t number_of_affected_entries) override {
                     if (event_type == static_cast<int32_t>(EntryEvent::type::EVICT_ALL) || event_type == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
@@ -58,10 +58,10 @@ namespace hazelcast {
                 }
 
             private:
-                void fire_map_wide_event(const boost::optional<serialization::pimpl::Data> &key,
-                                      const boost::optional<serialization::pimpl::Data> &value,
-                                      const boost::optional<serialization::pimpl::Data> &old_value,
-                                      const boost::optional<serialization::pimpl::Data> &merging_value,
+                void fire_map_wide_event(const boost::optional<serialization::pimpl::data> &key,
+                                      const boost::optional<serialization::pimpl::data> &value,
+                                      const boost::optional<serialization::pimpl::data> &old_value,
+                                      const boost::optional<serialization::pimpl::data> &merging_value,
                                       int32_t event_type, boost::uuids::uuid uuid,
                                       int32_t number_of_affected_entries) {
                     auto member = cluster_service_.get_member(uuid);
@@ -75,33 +75,33 @@ namespace hazelcast {
                     }
                 }
 
-                void fire_entry_event(const boost::optional<serialization::pimpl::Data> &key,
-                                    const boost::optional<serialization::pimpl::Data> &value,
-                                    const boost::optional<serialization::pimpl::Data> &old_value,
-                                    const boost::optional<serialization::pimpl::Data> &merging_value,
+                void fire_entry_event(const boost::optional<serialization::pimpl::data> &key,
+                                    const boost::optional<serialization::pimpl::data> &value,
+                                    const boost::optional<serialization::pimpl::data> &old_value,
+                                    const boost::optional<serialization::pimpl::data> &merging_value,
                                     int32_t event_type, boost::uuids::uuid uuid,
                                     int32_t number_of_affected_entries) {
-                    TypedData eventKey, val, oldVal, mergingVal;
+                    typed_data eventKey, val, oldVal, mergingVal;
                     if (include_value_) {
                         if (value) {
-                            val = TypedData(*value, serialization_service_);
+                            val = typed_data(*value, serialization_service_);
                         }
                         if (old_value) {
-                            oldVal = TypedData(*old_value, serialization_service_);
+                            oldVal = typed_data(*old_value, serialization_service_);
                         }
                         if (merging_value) {
-                            mergingVal = TypedData(*merging_value, serialization_service_);
+                            mergingVal = typed_data(*merging_value, serialization_service_);
                         }
                     }
                     if (key) {
-                        eventKey = TypedData(*key, serialization_service_);
+                        eventKey = typed_data(*key, serialization_service_);
                     }
-                    auto member = cluster_service_.get_member(uuid);
-                    if (!member.has_value()) {
-                        member = Member(uuid);
+                    auto m = cluster_service_.get_member(uuid);
+                    if (!m.has_value()) {
+                        m = member(uuid);
                     }
                     auto type = static_cast<EntryEvent::type>(event_type);
-                    EntryEvent entryEvent(instance_name_, std::move(member.value()), type, std::move(eventKey), std::move(val),
+                    EntryEvent entryEvent(instance_name_, std::move(m.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:

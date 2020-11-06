@@ -21,7 +21,7 @@
 
 namespace hazelcast {
     namespace client {
-        class Member;
+        class member;
 
         namespace cluster {
             namespace memberselector {
@@ -50,7 +50,7 @@ namespace hazelcast {
                      * @param member the member instance to decide upon
                      * @return true if the member should take part in the operation, false otherwise
                      */
-                    virtual bool select(const Member &member) const = 0;
+                    virtual bool select(const member &member) const = 0;
 
                     virtual ~MemberSelector() = default;
 
@@ -68,7 +68,7 @@ namespace hazelcast {
                 class MemberSelectors {
                 public:
                     class DataMemberSelector : public MemberSelector {
-                        bool select(const Member &member) const override;
+                        bool select(const member &member) const override;
 
                     public:
                         void to_string(std::ostream &os) const override;

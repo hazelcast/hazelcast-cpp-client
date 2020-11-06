@@ -53,12 +53,12 @@ namespace hazelcast {
             /**
              * Contains configuration parameters for client network related behaviour
              */
-            class HAZELCAST_API SSLConfig {
+            class HAZELCAST_API ssl_config {
             public:
                 /**
                  * Default protocol is tlsv12 and ssl is disabled by default
                  */
-                SSLConfig();
+                ssl_config();
 
                 /**
                  * Returns if this configuration is enabled.
@@ -72,14 +72,14 @@ namespace hazelcast {
                  *
                  * @param isEnabled true to enable, false to disable
                  */
-                SSLConfig &set_enabled(bool is_enabled);
+                ssl_config &set_enabled(bool is_enabled);
 
                 /**
                  * Sets the ssl protocol to be used for this SSL socket.
                  *
                  * @param protocol One of the supported protocols
                  */
-                SSLConfig &set_protocol(ssl_protocol protocol);
+                ssl_config &set_protocol(ssl_protocol protocol);
 
                 /**
                  * @return The configured SSL protocol
@@ -99,7 +99,7 @@ namespace hazelcast {
                  *
                  * @param filename the name of a file containing certification authority certificates in PEM format.
                  */
-                SSLConfig &add_verify_file(const std::string &filename);
+                ssl_config &add_verify_file(const std::string &filename);
 
                 /**
                  * @return Returns the use configured cipher list string.
@@ -116,7 +116,7 @@ namespace hazelcast {
                  * If non of the provided ciphers could be selected the client initialization will fail.
                  *
                  */
-                SSLConfig &set_cipher_list(const std::string &ciphers);
+                ssl_config &set_cipher_list(const std::string &ciphers);
             private:
                 bool enabled_;
                 ssl_protocol ssl_protocol_;

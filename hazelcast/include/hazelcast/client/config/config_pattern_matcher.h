@@ -37,7 +37,7 @@ namespace hazelcast {
              * <p>
              * The default matcher is {@link hazelcast::config::matcher::MatchingPointConfigPatternMatcher}.
              */
-            class HAZELCAST_API ConfigPatternMatcher {
+            class HAZELCAST_API config_pattern_matcher {
             public:
                 /**
                  * Returns the best match for an item name out of a list of configuration patterns.

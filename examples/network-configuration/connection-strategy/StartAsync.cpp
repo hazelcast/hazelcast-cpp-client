@@ -22,7 +22,7 @@
 
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     /**
      * Set true for non blocking {@link HazelcastClient(const ClientConfig &)}. The client creation won't wait to

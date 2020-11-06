@@ -17,7 +17,7 @@
 
 #include <memory>
 #include <ostream>
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/serialization/serialization.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -52,8 +52,8 @@ namespace hazelcast {
                 ALL = 0xFF
             };
 
-            EntryEvent(const std::string &name, Member &&member, type event_type,
-                       TypedData &&key, TypedData &&value, TypedData &&old_value, TypedData &&merging_value);
+            EntryEvent(const std::string &name, member &&member, type event_type,
+                       typed_data &&key, typed_data &&value, typed_data &&old_value, typed_data &&merging_value);
 
             /**
              *
@@ -61,14 +61,14 @@ namespace hazelcast {
              *
              * @return the key
              */
-            const TypedData &get_key() const;
+            const typed_data &get_key() const;
 
             /**
              * Returns the old value of the entry event
              *
              * @return The older value for the entry
              */
-            const TypedData &get_old_value() const;
+            const typed_data &get_old_value() const;
 
             /**
              *
@@ -76,7 +76,7 @@ namespace hazelcast {
              *
              * @return The value of for the entry
              */
-            const TypedData &get_value() const;
+            const typed_data &get_value() const;
 
             /**
             *
@@ -84,14 +84,14 @@ namespace hazelcast {
             *
             * @return merging value
             */
-            const TypedData &get_merging_value() const;
+            const typed_data &get_merging_value() const;
 
             /**
              * Returns the member fired this event.
              *
              * @return the member fired this event.
              */
-            const Member &get_member() const;
+            const member &get_member() const;
 
             /**
              * Return the event type
@@ -111,12 +111,12 @@ namespace hazelcast {
 
         protected:
             std::string name_;
-            Member member_;
+            member member_;
             type event_type_;
-            TypedData key_;
-            TypedData value_;
-            TypedData old_value_;
-            TypedData merging_value_;
+            typed_data key_;
+            typed_data value_;
+            typed_data old_value_;
+            typed_data merging_value_;
         };
     }
 }

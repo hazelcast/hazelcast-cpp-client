@@ -16,7 +16,7 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     /**
      * Pause time between each retry cycle of an invocation in milliseconds.

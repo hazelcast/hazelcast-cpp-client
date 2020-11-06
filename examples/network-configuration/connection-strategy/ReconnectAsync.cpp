@@ -33,7 +33,7 @@ hazelcast::client::LifecycleListener make_connection_listener(std::promise<void>
 }
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     /**
      * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and

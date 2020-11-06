@@ -26,7 +26,7 @@
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/logger.h"
@@ -84,7 +84,7 @@ namespace hazelcast {
                         //@Override
 /*
                         void put(const std::shared_ptr<KS> &key,
-                                 const std::shared_ptr<serialization::pimpl::Data> &value) {
+                                 const std::shared_ptr<serialization::pimpl::data> &value) {
                             util::Preconditions::checkNotNull<KS>(key, "key cannot be null on put!");
 
                             nearCacheRecordStore->doEvictionIfRequired();

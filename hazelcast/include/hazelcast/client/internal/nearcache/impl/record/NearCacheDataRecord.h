@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/internal/nearcache/impl/record/AbstractNearCacheRecord.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -38,9 +38,9 @@ namespace hazelcast {
                          * {@link Data} type objects.
                          */
                         class HAZELCAST_API NearCacheDataRecord
-                                : public AbstractNearCacheRecord<serialization::pimpl::Data> {
+                                : public AbstractNearCacheRecord<serialization::pimpl::data> {
                         public:
-                            NearCacheDataRecord(const std::shared_ptr<serialization::pimpl::Data> &data_value,
+                            NearCacheDataRecord(const std::shared_ptr<serialization::pimpl::data> &data_value,
                                                 int64_t creation_time, int64_t expiry_time);
                         };
                     }

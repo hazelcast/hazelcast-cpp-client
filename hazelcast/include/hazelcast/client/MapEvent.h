@@ -19,7 +19,7 @@
 #pragma once
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/EntryEvent.h"
 #include <string>
 #include <ostream>
@@ -39,14 +39,14 @@ namespace hazelcast {
             /**
             * Constructor
             */
-            MapEvent(Member &&member, EntryEvent::type event_type, const std::string& name, int number_of_entries_affected);
+            MapEvent(member &&member, EntryEvent::type event_type, const std::string& name, int number_of_entries_affected);
 
             /**
             * Returns the member fired this event.
             *
             * @return the member fired this event.
             */
-            const Member &get_member() const;
+            const member &get_member() const;
 
             /**
             * Return the event type
@@ -72,7 +72,7 @@ namespace hazelcast {
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const MapEvent &event);
 
         private:
-            Member member_;
+            member member_;
             EntryEvent::type event_type_;
             std::string name_;
             int number_of_entries_affected_;

@@ -26,21 +26,21 @@
 
 namespace hazelcast {
     namespace client {
-        class Member;
+        class member;
 
         namespace topic {
             class HAZELCAST_API Message {
             public:
-                Message(const std::string &topic_name, TypedData &&message, int64_t publish_time,
-                        boost::optional<Member> &&member) : Message(topic_name, std::move(message),
+                Message(const std::string &topic_name, typed_data &&message, int64_t publish_time,
+                        boost::optional<member> &&member) : Message(topic_name, std::move(message),
                                 std::chrono::system_clock::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(publish_time)).count()),
                                 std::move(member)) {}
 
-                Message(std::string topic_name, TypedData &&message, std::chrono::system_clock::time_point publish_time,
-                        boost::optional<Member> &&member)
+                Message(std::string topic_name, typed_data &&message, std::chrono::system_clock::time_point publish_time,
+                        boost::optional<member> &&member)
                         : message_object_(message), publish_time_(publish_time), publishing_member_(member), name_(std::move(topic_name)) {}
 
-                const TypedData &get_message_object() const {
+                const typed_data &get_message_object() const {
                     return message_object_;
                 }
 
@@ -48,7 +48,7 @@ namespace hazelcast {
                     return publish_time_;
                 }
 
-                const Member *get_publishing_member() const {
+                const member *get_publishing_member() const {
                     return publishing_member_.get_ptr();
                 }
 
@@ -61,9 +61,9 @@ namespace hazelcast {
                 }
 
             private:
-                TypedData message_object_;
+                typed_data message_object_;
                 std::chrono::system_clock::time_point publish_time_;
-                boost::optional<Member> publishing_member_;
+                boost::optional<member> publishing_member_;
                 std::string name_;
             };
         }

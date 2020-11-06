@@ -41,7 +41,7 @@
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 
 namespace hazelcast {
     namespace client {
@@ -71,26 +71,26 @@ namespace hazelcast {
             return os;
         }
 
-        TypedData::TypedData() : ss_(nullptr) {
+        typed_data::typed_data() : ss_(nullptr) {
         }
 
-        TypedData::TypedData(serialization::pimpl::Data d,
-                             serialization::pimpl::SerializationService &serialization_service) : data_(std::move(d)),
+        typed_data::typed_data(serialization::pimpl::data d,
+                               serialization::pimpl::SerializationService &serialization_service) : data_(std::move(d)),
                                                                                                  ss_(&serialization_service) {}
 
-        serialization::pimpl::ObjectType TypedData::get_type() const {
+        serialization::pimpl::ObjectType typed_data::get_type() const {
             return ss_->get_object_type(&data_);
         }
 
-        const serialization::pimpl::Data &TypedData::get_data() const {
+        const serialization::pimpl::data &typed_data::get_data() const {
             return data_;
         }
 
-        bool operator<(const TypedData &lhs, const TypedData &rhs) {
-            const auto& lhsData = lhs.get_data();
-            const auto& rhsData = rhs.get_data();
+        bool operator<(const typed_data &lhs, const typed_data &rhs) {
+            const auto& lhs_data = lhs.get_data();
+            const auto& rhs_data = rhs.get_data();
 
-            return lhsData < rhsData;
+            return lhs_data < rhs_data;
         }
 
         namespace serialization {
@@ -727,13 +727,13 @@ namespace hazelcast {
                     object_data_output_.write_at(begin_, static_cast<int32_t>(object_data_output_.position()));
                 }
 
-                bool SerializationService::is_null_data(const Data &data) {
+                bool SerializationService::is_null_data(const data &data) {
                     return data.data_size() == 0 &&
                            data.get_type() == static_cast<int32_t>(serialization_constants::CONSTANT_TYPE_NULL);
                 }
 
                 template<>
-                Data SerializationService::to_data(const char *object) {
+                data SerializationService::to_data(const char *object) {
                     if (!object) {
                         return to_data<std::string>(nullptr);
                     }
@@ -745,7 +745,7 @@ namespace hazelcast {
                     return 1;
                 }
 
-                ObjectType SerializationService::get_object_type(const Data *data) {
+                ObjectType SerializationService::get_object_type(const data *data) {
                     ObjectType type;
 
                     if (NULL == data) {
@@ -757,7 +757,7 @@ namespace hazelcast {
 
                     if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id ||
                         serialization_constants::CONSTANT_TYPE_PORTABLE == type.type_id) {
-                        // 8 (Data Header) = Hash(4-bytes) + Data TypeId(4 bytes)
+                        // 8 (data Header) = Hash(4-bytes) + data TypeId(4 bytes)
                         DataInput<std::vector<byte>> dataInput(data->to_byte_array(), 8);
 
                         if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id) {
@@ -792,87 +792,86 @@ namespace hazelcast {
                 }
 
                 template<>
-                Data SerializationService::to_data(const TypedData *object) {
+                data SerializationService::to_data(const typed_data *object) {
                     if (!object) {
-                        return Data();
+                        return data();
                     }
 
-                    auto data = object->get_data();
-                    return Data(data);
+                    return object->get_data();
                 }
 
                 //first 4 byte is partition hash code and next last 4 byte is type id
-                unsigned int Data::PARTITION_HASH_OFFSET = 0;
+                unsigned int data::PARTITION_HASH_OFFSET = 0;
 
-                unsigned int Data::TYPE_OFFSET = Data::PARTITION_HASH_OFFSET + util::Bits::INT_SIZE_IN_BYTES;
+                unsigned int data::TYPE_OFFSET = data::PARTITION_HASH_OFFSET + util::Bits::INT_SIZE_IN_BYTES;
 
-                unsigned int Data::DATA_OFFSET = Data::TYPE_OFFSET + util::Bits::INT_SIZE_IN_BYTES;
+                unsigned int data::DATA_OFFSET = data::TYPE_OFFSET + util::Bits::INT_SIZE_IN_BYTES;
 
-                unsigned int Data::DATA_OVERHEAD = Data::DATA_OFFSET;
+                unsigned int data::DATA_OVERHEAD = data::DATA_OFFSET;
 
-                Data::Data() : cached_hash_value_(-1) {}
+                data::data() : cached_hash_value_(-1) {}
                 
-                Data::Data(std::vector<byte> buffer) : data_(std::move(buffer)), cached_hash_value_(-1) {
+                data::data(std::vector<byte> buffer) : data_(std::move(buffer)), cached_hash_value_(-1) {
                     size_t size = data_.size();
-                    if (size > 0 && size < Data::DATA_OVERHEAD) {
+                    if (size > 0 && size < data::DATA_OVERHEAD) {
                         throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Data::setBuffer")
                                 << "Provided buffer should be either empty or should contain more than "
-                                << Data::DATA_OVERHEAD << " bytes! Provided buffer size:" << size).build();
+                                << data::DATA_OVERHEAD << " bytes! Provided buffer size:" << size).build();
                     }
 
                     cached_hash_value_ = calculate_hash();
                 }
 
-                size_t Data::data_size() const {
-                    return (size_t) std::max<int>((int) total_size() - (int) Data::DATA_OVERHEAD, 0);
+                size_t data::data_size() const {
+                    return (size_t) std::max<int>((int) total_size() - (int) data::DATA_OVERHEAD, 0);
                 }
 
-                size_t Data::total_size() const {
+                size_t data::total_size() const {
                     return data_.size();
                 }
 
-                int Data::get_partition_hash() const {
+                int data::get_partition_hash() const {
                     return cached_hash_value_;
                 }
 
-                bool Data::has_partition_hash() const {
-                    return data_.size() >= Data::DATA_OVERHEAD &&
+                bool data::has_partition_hash() const {
+                    return data_.size() >= data::DATA_OVERHEAD &&
                            *reinterpret_cast<const int32_t *>(&data_[PARTITION_HASH_OFFSET]) != 0;
                 }
 
-                const std::vector<byte> &Data::to_byte_array() const {
+                const std::vector<byte> &data::to_byte_array() const {
                     return data_;
                 }
 
-                int32_t Data::get_type() const {
+                int32_t data::get_type() const {
                     if (total_size() == 0) {
                         return static_cast<int32_t>(serialization_constants::CONSTANT_TYPE_NULL);
                     }
-                    return util::Bits::read_int_b(data_, Data::TYPE_OFFSET);
+                    return util::Bits::read_int_b(data_, data::TYPE_OFFSET);
                 }
 
-                int Data::hash() const {
+                int data::hash() const {
                     return cached_hash_value_;
                 }
 
-                int Data::calculate_hash() const {
+                int data::calculate_hash() const {
                     size_t size = data_size();
                     if (size == 0) {
                         return 0;
                     }
 
                     if (has_partition_hash()) {
-                        return util::Bits::read_int_b(data_, Data::PARTITION_HASH_OFFSET);
+                        return util::Bits::read_int_b(data_, data::PARTITION_HASH_OFFSET);
                     }
 
-                    return util::murmur_hash3_x86_32((void *) &((data_)[Data::DATA_OFFSET]), (int) size);
+                    return util::murmur_hash3_x86_32((void *) &((data_)[data::DATA_OFFSET]), (int) size);
                 }
 
-                bool Data::operator<(const Data &rhs) const {
+                bool data::operator<(const data &rhs) const {
                     return cached_hash_value_ < rhs.cached_hash_value_;
                 }
 
-                bool operator==(const Data &lhs, const Data &rhs) {
+                bool operator==(const data &lhs, const data &rhs) {
                     return lhs.data_ == rhs.data_;
                 }
 
@@ -1068,22 +1067,22 @@ namespace std {
         return std::hash<std::string>{}(object.to_string());
     }
 
-    std::size_t hash<hazelcast::client::serialization::pimpl::Data>::operator()
-            (const hazelcast::client::serialization::pimpl::Data &val) const noexcept {
+    std::size_t hash<hazelcast::client::serialization::pimpl::data>::operator()
+            (const hazelcast::client::serialization::pimpl::data &val) const noexcept {
         return std::hash<int>{}(val.hash());
     }
 
-    std::size_t hash<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()
-        (const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &val) const noexcept {
+    std::size_t hash<std::shared_ptr<hazelcast::client::serialization::pimpl::data>>::operator()
+        (const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &val) const noexcept {
         if (!val) {
             return std::hash<int>{}(-1);
         }
         return std::hash<int>{}(val->hash());
     }
 
-    bool equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()
-            (std::shared_ptr<hazelcast::client::serialization::pimpl::Data> const &lhs,
-            std::shared_ptr<hazelcast::client::serialization::pimpl::Data> const &rhs) const noexcept {
+    bool equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::data>>::operator()
+            (std::shared_ptr<hazelcast::client::serialization::pimpl::data> const &lhs,
+            std::shared_ptr<hazelcast::client::serialization::pimpl::data> const &rhs) const noexcept {
         if (lhs == rhs) {
             return true;
         }
@@ -1095,11 +1094,11 @@ namespace std {
         return lhs->to_byte_array() == rhs->to_byte_array();
     }
 
-    bool less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()(
-            const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
-            const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept {
-        const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
-        const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();
+    bool less<std::shared_ptr<hazelcast::client::serialization::pimpl::data>>::operator()(
+            const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &lhs,
+            const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &rhs) const noexcept {
+        const hazelcast::client::serialization::pimpl::data *leftPtr = lhs.get();
+        const hazelcast::client::serialization::pimpl::data *rightPtr = rhs.get();
         if (leftPtr == rightPtr) {
             return false;
         }

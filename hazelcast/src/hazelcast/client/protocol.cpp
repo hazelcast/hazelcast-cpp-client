@@ -38,7 +38,7 @@
 #include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
@@ -143,7 +143,7 @@ namespace hazelcast {
 
                 set(p.predicate_data);
                 set(p.comparator_data);
-                set(static_cast<serialization::pimpl::Data *>(nullptr));
+                set(static_cast<serialization::pimpl::data *>(nullptr));
 
                 add_end_frame(is_final);
             }

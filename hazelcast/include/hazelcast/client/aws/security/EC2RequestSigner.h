@@ -29,13 +29,13 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class ClientAwsConfig;
+            class client_aws_config;
         }
         namespace aws {
             namespace security {
                 class HAZELCAST_API EC2RequestSigner {
                 public:
-                    EC2RequestSigner(const config::ClientAwsConfig &aws_config, const std::string &timestamp,
+                    EC2RequestSigner(const config::client_aws_config &aws_config, const std::string &timestamp,
                                      const std::string &endpoint);
 
                     virtual ~EC2RequestSigner();
@@ -89,7 +89,7 @@ namespace hazelcast {
                     static std::string NEW_LINE;
                     static size_t DATE_LENGTH;
 
-                    const config::ClientAwsConfig &aws_config_;
+                    const config::client_aws_config &aws_config_;
                     std::string timestamp_;
                     const std::string &endpoint_;
                 };

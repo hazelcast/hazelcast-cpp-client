@@ -22,7 +22,7 @@
 #include <vector>
 #include <fstream>
 #include "ClientTestSupportBase.h"
-#include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/client_config.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
@@ -391,7 +391,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    ClientConfig clientConfig = get_config();
+                    client_config clientConfig = get_config();
                     clientConfig.get_serialization_config().set_global_serializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
                     client = new HazelcastClient(clientConfig);
@@ -507,7 +507,7 @@ namespace hazelcast {
             public:
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    ClientConfig clientConfig(get_config());
+                    client_config clientConfig(get_config());
                     clientConfig.set_property(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "20");
                     client = new HazelcastClient(clientConfig);
                     map = client->get_map("map");
@@ -653,7 +653,7 @@ namespace hazelcast {
                 int actual_key_;
             };
 
-            class MapClientConfig : public ClientConfig {
+            class MapClientConfig : public client_config {
             public:
                 static constexpr const char *intMapName = "IntMap";
                 static constexpr const char *employeesMapName = "EmployeesMap";
@@ -661,7 +661,7 @@ namespace hazelcast {
                 static constexpr const char *ONE_SECOND_MAP_NAME = "OneSecondTtlMap";
 
                 MapClientConfig() {
-                    get_network_config().add_address(Address(g_srvFactory->get_server_address(), 5701));
+                    get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
                 }
 
                 virtual ~MapClientConfig() = default;
@@ -693,7 +693,7 @@ namespace hazelcast {
                 }
             };
 
-            class ClientMapTest : public ClientTestSupport, public ::testing::WithParamInterface<ClientConfig> {
+            class ClientMapTest : public ClientTestSupport, public ::testing::WithParamInterface<client_config> {
             public:
                 ClientMapTest() : client_(HazelcastClient(GetParam())),
                                   imap_(client_.get_map(MapClientConfig::imapName)),
@@ -1564,12 +1564,12 @@ namespace hazelcast {
                 ASSERT_EQ(0, (int) values.size());
 
                 // test paging predicate with comparator
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
-                Employee empl4("ali", 33);
-                Employee empl5("veli", 44);
-                Employee empl6("aylin", 5);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
+                employee empl4("ali", 33);
+                employee empl5("veli", 44);
+                employee empl6("aylin", 5);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -1579,14 +1579,14 @@ namespace hazelcast {
                 employees_->put(8, empl6).get();
 
                 predSize = 2;
-                auto predicate3 = int_map_->new_paging_predicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
-                std::vector<Employee> result = employees_->values<int, Employee>(predicate3).get();
+                auto predicate3 = int_map_->new_paging_predicate<int, employee>(EmployeeEntryComparator(), (size_t) predSize);
+                std::vector<employee> result = employees_->values<int, employee>(predicate3).get();
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(empl6, result[0]);
                 ASSERT_EQ(empl2, result[1]);
 
                 predicate3.next_page();
-                result = employees_->values<int, Employee>(predicate3).get();
+                result = employees_->values<int, employee>(predicate3).get();
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(empl3, result[0]);
                 ASSERT_EQ(empl4, result[1]);
@@ -1936,12 +1936,12 @@ namespace hazelcast {
                 ASSERT_EQ(0, (int) values.size());
 
                 // test paging predicate with comparator
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
-                Employee empl4("ali", 33);
-                Employee empl5("veli", 44);
-                Employee empl6("aylin", 5);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
+                employee empl4("ali", 33);
+                employee empl5("veli", 44);
+                employee empl6("aylin", 5);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -1951,7 +1951,7 @@ namespace hazelcast {
                 employees_->put(8, empl6).get();
 
                 predSize = 2;
-                auto predicate3 = int_map_->new_paging_predicate<int, Employee>(EmployeeEntryKeyComparator(), (size_t) predSize);
+                auto predicate3 = int_map_->new_paging_predicate<int, employee>(EmployeeEntryKeyComparator(), (size_t) predSize);
                 std::vector<int> result = employees_->key_set<int>(predicate3).get();
                 // since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
                 ASSERT_EQ(2, (int) result.size());
@@ -2325,12 +2325,12 @@ namespace hazelcast {
                 ASSERT_EQ(0, (int) values.size());
 
 // test paging predicate with comparator
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
-                Employee empl4("ali", 33);
-                Employee empl5("veli", 44);
-                Employee empl6("aylin", 5);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
+                employee empl4("ali", 33);
+                employee empl5("veli", 44);
+                employee empl6("aylin", 5);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -2340,21 +2340,21 @@ namespace hazelcast {
                 employees_->put(8, empl6).get();
 
                 predSize = 2;
-                auto predicate3 = int_map_->new_paging_predicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
-                std::vector<std::pair<int, Employee> > result = employees_->entry_set<int, Employee>(
+                auto predicate3 = int_map_->new_paging_predicate<int, employee>(EmployeeEntryComparator(), (size_t) predSize);
+                std::vector<std::pair<int, employee> > result = employees_->entry_set<int, employee>(
                         predicate3).get();
                 ASSERT_EQ(2, (int) result.size());
-                std::pair<int, Employee> value(8, empl6);
+                std::pair<int, employee> value(8, empl6);
                 ASSERT_EQ(value, result[0]);
-                value = std::pair<int, Employee>(4, empl2);
+                value = std::pair<int, employee>(4, empl2);
                 ASSERT_EQ(value, result[1]);
 
                 predicate3.next_page();
-                result = employees_->entry_set<int, Employee>(predicate3).get();
+                result = employees_->entry_set<int, employee>(predicate3).get();
                 ASSERT_EQ(2, (int) result.size());
-                value = std::pair<int, Employee>(5, empl3);
+                value = std::pair<int, employee>(5, empl3);
                 ASSERT_EQ(value, result[0]);
-                value = std::pair<int, Employee>(6, empl4);
+                value = std::pair<int, employee>(6, empl4);
                 ASSERT_EQ(value, result[1]);
             }
 
@@ -2388,11 +2388,11 @@ namespace hazelcast {
                         countDownLatch.count_down();
                     });
 
-                Employee key("a", 1);
+                employee key("a", 1);
                 auto id = tradeMap->add_entry_listener(std::move(listener), true, key).get();
-                Employee key2("a", 2);
-                tradeMap->put<Employee, int>(key2, 1).get();
-                tradeMap->put<Employee, int>(key, 3).get();
+                employee key2("a", 2);
+                tradeMap->put<employee, int>(key2, 1).get();
+                tradeMap->put<employee, int>(key, 3).get();
                 ASSERT_OPEN_EVENTUALLY(countDownLatch);
                 ASSERT_EQ(1, (int) atomicInteger);
 
@@ -2883,14 +2883,14 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testMapWithPortable) {
-                boost::optional<Employee> n1 = employees_->get<int, Employee>(1).get();
+                boost::optional<employee> n1 = employees_->get<int, employee>(1).get();
                 ASSERT_FALSE(n1);
-                Employee employee("sancar", 24);
-                boost::optional<Employee> ptr = employees_->put(1, employee).get();
+                employee e("sancar", 24);
+                boost::optional<employee> ptr = employees_->put(1, e).get();
                 ASSERT_FALSE(ptr);
                 ASSERT_FALSE(employees_->is_empty().get());
-                EntryView<int, Employee> view = employees_->get_entry_view<int, Employee>(1).get().value();
-                ASSERT_EQ(view.value, employee);
+                entry_view<int, employee> view = employees_->get_entry_view<int, employee>(1).get().value();
+                ASSERT_EQ(view.value, e);
                 ASSERT_EQ(view.key, 1);
 
                 employees_->add_index(config::index_config::index_type::SORTED, std::string("a")).get();
@@ -2907,8 +2907,8 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnKey) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -2922,8 +2922,8 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testSubmitToKey) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -2946,9 +2946,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnKeys) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -2975,9 +2975,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntries) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -2998,9 +2998,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithTruePredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3021,9 +3021,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithFalsePredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3038,9 +3038,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithAndPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3061,9 +3061,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithOrPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3085,9 +3085,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithBetweenPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3106,9 +3106,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithEqualPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3129,9 +3129,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithNotEqualPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3148,9 +3148,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithGreaterLessPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3186,9 +3186,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithLikePredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3204,9 +3204,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithILikePredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3222,9 +3222,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithInPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3242,9 +3242,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithInstanceOfPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3261,9 +3261,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithNotPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();
@@ -3295,9 +3295,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testExecuteOnEntriesWithRegexPredicate) {
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
+                employee empl1("ahmet", 35);
+                employee empl2("mehmet", 21);
+                employee empl3("deniz", 25);
 
                 employees_->put(3, empl1).get();
                 employees_->put(4, empl2).get();

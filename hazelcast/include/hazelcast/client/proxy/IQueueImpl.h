@@ -25,7 +25,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class Data;
+                class data;
             }
         }
         namespace proxy {
@@ -72,31 +72,31 @@ namespace hazelcast {
                     return register_listener(create_item_listener_codec(include_value), std::move(item_event_handler));
                 }
                 
-                boost::future<bool> offer(const serialization::pimpl::Data& element, std::chrono::milliseconds timeout);
+                boost::future<bool> offer(const serialization::pimpl::data& element, std::chrono::milliseconds timeout);
 
-                boost::future<void> put(const serialization::pimpl::Data& element);
+                boost::future<void> put(const serialization::pimpl::data& element);
 
-                boost::future<boost::optional<serialization::pimpl::Data>>poll_data(std::chrono::milliseconds timeout);
+                boost::future<boost::optional<serialization::pimpl::data>>poll_data(std::chrono::milliseconds timeout);
 
-                boost::future<bool> remove(const serialization::pimpl::Data& element);
+                boost::future<bool> remove(const serialization::pimpl::data& element);
 
-                boost::future<bool> contains(const serialization::pimpl::Data& element);
+                boost::future<bool> contains(const serialization::pimpl::data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> drain_to_data(size_t max_elements);
+                boost::future<std::vector<serialization::pimpl::data>> drain_to_data(size_t max_elements);
 
-                boost::future<std::vector<serialization::pimpl::Data>> drain_to_data();
+                boost::future<std::vector<serialization::pimpl::data>> drain_to_data();
 
-                boost::future<boost::optional<serialization::pimpl::Data>>peek_data();
+                boost::future<boost::optional<serialization::pimpl::data>>peek_data();
 
-                boost::future<std::vector<serialization::pimpl::Data>> to_array_data();
+                boost::future<std::vector<serialization::pimpl::data>> to_array_data();
 
-                boost::future<bool> contains_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> contains_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> add_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> remove_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> remove_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> retain_all_data(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> retain_all_data(const std::vector<serialization::pimpl::data>& elements);
 
             private:
                 class QueueListenerMessageCodec : public spi::impl::ListenerMessageCodec {

@@ -28,7 +28,7 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/ConcurrentSet.h"
 #include "hazelcast/client/LifecycleEvent.h"
-#include "hazelcast/client/Address.h"
+#include "hazelcast/client/address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
@@ -102,7 +102,7 @@ namespace hazelcast {
                  * @return associated connection if available, creates new connection otherwise
                  * @throws IOException if connection is not established
                  */
-                std::shared_ptr<Connection> get_or_connect(const Address &address);
+                std::shared_ptr<Connection> get_or_connect(const address &address);
 
                 std::vector<std::shared_ptr<Connection>> get_active_connections();
 
@@ -137,11 +137,11 @@ namespace hazelcast {
                     byte serialization_version;
                     int32_t partition_count;
                     boost::uuids::uuid cluster_id;
-                    boost::optional<Address> address;
+                    boost::optional<address> address;
                     std::string server_version;
                 };
 
-                std::shared_ptr<Connection> get_connection(const Address &address);
+                std::shared_ptr<Connection> get_connection(const address &address);
 
                 void authenticate_on_cluster(std::shared_ptr<Connection> &connection);
 
@@ -160,7 +160,7 @@ namespace hazelcast {
 
                 bool do_connect_to_cluster();
 
-                std::vector<Address> get_possible_member_addresses();
+                std::vector<address> get_possible_member_addresses();
 
                 template<typename Container>
                 void shuffle(Container &member_addresses) const {
@@ -172,7 +172,7 @@ namespace hazelcast {
 
                 void check_client_active();
 
-                std::shared_ptr<Connection> connect(const Address &address);
+                std::shared_ptr<Connection> connect(const address &address);
 
                 protocol::ClientMessage
                 encode_authentication_request(serialization::pimpl::SerializationService &ss);
@@ -189,7 +189,7 @@ namespace hazelcast {
                 std::shared_ptr<AddressTranslator> translator_;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> active_connections_;
                 util::SynchronizedMap<int32_t, Connection> active_connection_ids_;
-                util::sync_associative_container<std::unordered_map<Address, std::unique_ptr<std::mutex>>> conn_locks_;
+                util::sync_associative_container<std::unordered_map<address, std::unique_ptr<std::mutex>>> conn_locks_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connection_listeners_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;

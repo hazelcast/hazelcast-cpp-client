@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -52,8 +52,8 @@ namespace hazelcast {
              * Internal API.
              * Constructor.
              */
-            MembershipEvent(Cluster &cluster, const Member &member, membership_event_type event_type,
-                            const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &members_list);
+            MembershipEvent(Cluster &cluster, const member &m, membership_event_type event_type,
+                            const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> &members_list);
 
             /**
              * Destructor
@@ -73,7 +73,7 @@ namespace hazelcast {
              *
              * @return the members at the moment after this event.
              */
-            virtual std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> get_members() const;
+            virtual std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> get_members() const;
 
             /**
              * Returns the cluster of the event.
@@ -95,13 +95,13 @@ namespace hazelcast {
              *
              * @return member which is removed/added
              */
-            virtual const Member &get_member() const;
+            virtual const member &get_member() const;
 
         private:
             Cluster &cluster_;
-            Member member_;
+            member member_;
             membership_event_type event_type_;
-            std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members_;
+            std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> members_;
         };
     }
 }

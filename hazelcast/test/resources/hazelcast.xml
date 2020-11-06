@@ -117,7 +117,7 @@
 
     <map name="default">
         <!--
-           Data type that will be used for storing recordMap.
+           data type that will be used for storing recordMap.
            Possible values:
            BINARY (default): keys and values will be stored as binary data
            OBJECT : values will be stored in their object forms

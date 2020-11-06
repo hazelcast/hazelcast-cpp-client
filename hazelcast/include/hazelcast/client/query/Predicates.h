@@ -277,7 +277,7 @@ namespace hazelcast {
                 static T read_data(ObjectDataInput &in) {
                     // Not need to read at the client side
                     BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("readData",
-                                                                                     "Client should not need to use readData method!!!"));
+                                                                                     "Client should not need to use readdata method!!!"));
                 }
             };
 

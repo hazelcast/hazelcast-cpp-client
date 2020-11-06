@@ -107,7 +107,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> add_all(const std::vector<E> &elements) {
-                std::vector<serialization::pimpl::Data> dataCollection = to_data_collection(elements);
+                std::vector<serialization::pimpl::data> dataCollection = to_data_collection(elements);
                 return proxy::ISetImpl::add_all(to_data_collection(elements));
             }
 

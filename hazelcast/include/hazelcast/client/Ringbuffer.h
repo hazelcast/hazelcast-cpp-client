@@ -229,8 +229,8 @@ namespace hazelcast {
             template<typename IFUNCTION>
             boost::future<ringbuffer::ReadResultSet>
             read_many(int64_t start_sequence, int32_t min_count, int32_t max_count, const IFUNCTION *filter = nullptr) {
-                auto filterData = to_data<IFUNCTION>(filter);
-                return read_many_data(start_sequence, min_count, max_count, &filterData).then([=] (boost::future<protocol::ClientMessage> f) {
+                auto filter_data = to_data<IFUNCTION>(filter);
+                return read_many_data(start_sequence, min_count, max_count, &filter_data).then([=] (boost::future<protocol::ClientMessage> f) {
                     return get_result_set(std::move(f));
                 });
             }
@@ -244,7 +244,7 @@ namespace hazelcast {
                         static_cast<int32_t>(initial_frame->frame_len) - ClientMessage::RESPONSE_HEADER_LEN - ClientMessage::INT32_SIZE -
                         ClientMessage::INT64_SIZE);
 
-                auto datas = msg.get<std::vector<Data>>();
+                auto datas = msg.get<std::vector<data>>();
                 auto item_seqs = msg.get_nullable<std::vector<int64_t>>();
                 return ringbuffer::ReadResultSet(read_count, std::move(datas), get_serialization_service(), item_seqs,
                                                  next_seq);

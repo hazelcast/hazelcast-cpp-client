@@ -46,7 +46,7 @@ public:
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
     hazelcast::client::SerializationConfig serializationConfig;
     serializationConfig.set_global_serializer(std::make_shared<MyGlobalSerializer>());
     config.set_serialization_config(serializationConfig);

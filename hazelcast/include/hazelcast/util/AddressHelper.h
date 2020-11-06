@@ -19,7 +19,7 @@
 #include <ostream>
 #include <vector>
 
-#include "hazelcast/client/Address.h"
+#include "hazelcast/client/address.h"
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -58,12 +58,12 @@ namespace hazelcast {
          */
         class HAZELCAST_API AddressHelper {
         public:
-            static std::vector<client::Address> get_socket_addresses(const std::string &address, logger &lg);
+            static std::vector<client::address> get_socket_addresses(const std::string &address, logger &lg);
         private:
             static const int MAX_PORT_TRIES;
             static const int INITIAL_FIRST_PORT;
 
-            static std::vector<client::Address>
+            static std::vector<client::address>
             get_possible_socket_addresses(int port, const std::string &scoped_address, int port_try_count, logger &lg);
         };
     }

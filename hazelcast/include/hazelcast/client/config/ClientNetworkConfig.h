@@ -19,8 +19,8 @@
 #include <stdint.h>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/config/SSLConfig.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/ssl_config.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/config/SocketOptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -49,7 +49,7 @@ namespace hazelcast {
                  * @return the SSLConfig.
                  * @see #setSSLConfig(SSLConfig)
                  */
-                SSLConfig &get_ssl_config();
+                ssl_config &get_ssl_config();
 
                 /**
                  * Sets the SSLConfig
@@ -58,7 +58,7 @@ namespace hazelcast {
                  * @return the updated ClientNetworkConfig.
                  * @see #getSSLConfig()
                  */
-                ClientNetworkConfig &set_ssl_config(const config::SSLConfig &config);
+                ClientNetworkConfig &set_ssl_config(const config::ssl_config &config);
 
                 /**
                 * @param connectionTimeout Timeout value for nodes to accept client connection requests.
@@ -82,14 +82,14 @@ namespace hazelcast {
                  * @param clientAwsConfig the ClientAwsConfig
                  * @see #getAwsConfig()
                  */
-                ClientNetworkConfig &set_aws_config(const ClientAwsConfig &client_aws_config);
+                ClientNetworkConfig &set_aws_config(const client_aws_config &client_aws_config);
 
                 /**
                  * Returns the current ClientAwsConfig.
                  *
                  * @return ClientAwsConfig
                  */
-                ClientAwsConfig &get_aws_config();
+                client_aws_config &get_aws_config();
 
                 /**
                  * See ClientNetworkConfig#setSmartRouting(boolean)  for details
@@ -155,7 +155,7 @@ namespace hazelcast {
                  *
                  * @return list of addresses
                  */
-                std::vector<Address> get_addresses() const;
+                std::vector<address> get_addresses() const;
 
                 /**
                  * Adds given addresses to candidate address list that client will use to establish initial connection
@@ -163,7 +163,7 @@ namespace hazelcast {
                  * @param addresses to be added to initial address list
                  * @return configured \ClientNetworkConfig for chaining
                  */
-                ClientNetworkConfig &add_addresses(const std::vector<Address> &addresses);
+                ClientNetworkConfig &add_addresses(const std::vector<address> &addresses);
 
                 /**
                  * Adds given addresses to candidate address list that client will use to establish initial connection
@@ -171,7 +171,7 @@ namespace hazelcast {
                  * @param addresses to be added to initial address list
                  * @return configured \ClientNetworkConfig for chaining
                  */
-                ClientNetworkConfig &set_addresses(const std::vector<Address> &addresses);
+                ClientNetworkConfig &set_addresses(const std::vector<address> &addresses);
 
                 /**
                 * Adds given address to candidate address list that client will use to establish initial connection
@@ -179,15 +179,15 @@ namespace hazelcast {
                 * @param address to be added to initial address list
                 * @return configured \ClientNetworkConfig for chaining
                 */
-                ClientNetworkConfig &add_address(const Address &address);
+                ClientNetworkConfig &add_address(const address &address);
 
                 SocketOptions &get_socket_options();
 
             private:
                 static int32_t CONNECTION_ATTEMPT_PERIOD;
 
-                config::SSLConfig ssl_config_;
-                config::ClientAwsConfig client_aws_config_;
+                config::ssl_config ssl_config_;
+                config::client_aws_config client_aws_config_;
 
                 std::chrono::milliseconds connection_timeout_;
                 bool smart_routing_;
@@ -195,7 +195,7 @@ namespace hazelcast {
                 int32_t connection_attempt_limit_;
                 std::chrono::milliseconds connection_attempt_period_;
 
-                std::vector<Address> address_list_;
+                std::vector<address> address_list_;
 
                 SocketOptions socket_options_;
             };

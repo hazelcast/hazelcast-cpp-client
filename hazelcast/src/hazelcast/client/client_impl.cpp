@@ -65,11 +65,11 @@
 
 namespace hazelcast {
     namespace client {
-        HazelcastClient::HazelcastClient() : client_impl_(new impl::HazelcastClientInstanceImpl(ClientConfig())) {
+        HazelcastClient::HazelcastClient() : client_impl_(new impl::HazelcastClientInstanceImpl(client_config())) {
             client_impl_->start();
         }
 
-        HazelcastClient::HazelcastClient(const ClientConfig &config) : client_impl_(
+        HazelcastClient::HazelcastClient(const client_config &config) : client_impl_(
                 new impl::HazelcastClientInstanceImpl(config)) {
             client_impl_->start();
         }
@@ -78,7 +78,7 @@ namespace hazelcast {
             return client_impl_->get_name();
         }
 
-        ClientConfig &HazelcastClient::get_client_config() {
+        client_config &HazelcastClient::get_client_config() {
             return client_impl_->get_client_config();
         }
 
@@ -125,7 +125,7 @@ namespace hazelcast {
         namespace impl {
             std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
-            HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
+            HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const client_config &config)
                     : client_config_(config), client_properties_(config.get_properties()),
                       client_context_(*this),
                       serialization_service_(client_config_.get_serialization_config()), cluster_service_(client_context_),
@@ -196,7 +196,7 @@ namespace hazelcast {
                 }
             }
 
-            ClientConfig &HazelcastClientInstanceImpl::get_client_config() {
+            client_config &HazelcastClientInstanceImpl::get_client_config() {
                 return client_config_;
             }
 
@@ -252,7 +252,7 @@ namespace hazelcast {
             std::shared_ptr<connection::ClientConnectionManagerImpl>
             HazelcastClientInstanceImpl::init_connection_manager_service(
                     const std::vector<std::shared_ptr<connection::AddressProvider>> &address_providers) {
-                config::ClientAwsConfig &awsConfig = client_config_.get_network_config().get_aws_config();
+                config::client_aws_config &awsConfig = client_config_.get_network_config().get_aws_config();
                 std::shared_ptr<connection::AddressTranslator> addressTranslator;
                 if (awsConfig.is_enabled()) {
                     try {
@@ -283,7 +283,7 @@ namespace hazelcast {
             std::vector<std::shared_ptr<connection::AddressProvider>>
             HazelcastClientInstanceImpl::create_address_providers() {
                 config::ClientNetworkConfig &networkConfig = get_client_config().get_network_config();
-                config::ClientAwsConfig &awsConfig = networkConfig.get_aws_config();
+                config::client_aws_config &awsConfig = networkConfig.get_aws_config();
                 std::vector<std::shared_ptr<connection::AddressProvider>> addressProviders;
 
                 if (awsConfig.is_enabled()) {
@@ -334,7 +334,7 @@ namespace hazelcast {
             std::shared_ptr<IMap> HazelcastClientInstanceImpl::get_distributed_object(const std::string& name) {
                 auto nearCacheConfig = client_config_.get_near_cache_config(name);
                 if (nearCacheConfig) {
-                    return proxy_manager_.get_or_create_proxy<map::NearCachedClientMapProxy<serialization::pimpl::Data, serialization::pimpl::Data>>(
+                    return proxy_manager_.get_or_create_proxy<map::NearCachedClientMapProxy<serialization::pimpl::data, serialization::pimpl::data>>(
                             IMap::SERVICE_NAME, name);
                 } else {
                     return proxy_manager_.get_or_create_proxy<IMap>(IMap::SERVICE_NAME, name);
@@ -370,39 +370,39 @@ namespace hazelcast {
 
         LoadBalancer::~LoadBalancer() = default;
 
-        const int Address::ID = cluster::impl::ADDRESS;
+        const int address::ID = cluster::impl::ADDRESS;
 
-        const byte Address::IPV4 = 4;
-        const byte Address::IPV6 = 6;
+        const byte address::IPV4 = 4;
+        const byte address::IPV6 = 6;
 
-        Address::Address() : host_("localhost"), type_(IPV4), scope_id_(0) {
+        address::address() : host_("localhost"), type_(IPV4), scope_id_(0) {
         }
 
-        Address::Address(const std::string &url, int port)
+        address::address(const std::string &url, int port)
                 : host_(url), port_(port), type_(IPV4), scope_id_(0) {
         }
 
-        Address::Address(const std::string &hostname, int port, unsigned long scope_id) : host_(hostname), port_(port),
+        address::address(const std::string &hostname, int port, unsigned long scope_id) : host_(hostname), port_(port),
                                                                                          type_(IPV6), scope_id_(scope_id) {
         }
 
-        bool Address::operator==(const Address &rhs) const {
+        bool address::operator==(const address &rhs) const {
             return rhs.port_ == port_ && rhs.type_ == type_ && 0 == rhs.host_.compare(host_);
         }
 
-        bool Address::operator!=(const Address &rhs) const {
+        bool address::operator!=(const address &rhs) const {
             return !(*this == rhs);
         }
 
-        int Address::get_port() const {
+        int address::get_port() const {
             return port_;
         }
 
-        const std::string &Address::get_host() const {
+        const std::string &address::get_host() const {
             return host_;
         }
 
-        bool Address::operator<(const Address &rhs) const {
+        bool address::operator<(const address &rhs) const {
             if (host_ < rhs.host_) {
                 return true;
             }
@@ -418,41 +418,41 @@ namespace hazelcast {
             return type_ < rhs.type_;
         }
 
-        bool Address::is_ip_v4() const {
+        bool address::is_ip_v4() const {
             return type_ == IPV4;
         }
 
-        unsigned long Address::get_scope_id() const {
+        unsigned long address::get_scope_id() const {
             return scope_id_;
         }
 
-        std::string Address::to_string() const {
+        std::string address::to_string() const {
             std::ostringstream out;
             out << "Address[" << get_host() << ":" << get_port() << "]";
             return out.str();
         }
 
-        std::ostream &operator<<(std::ostream &stream, const Address &address) {
+        std::ostream &operator<<(std::ostream &stream, const address &address) {
             return stream << address.to_string();
         }
 
         namespace serialization {
-            int32_t hz_serializer<Address>::get_factory_id() {
+            int32_t hz_serializer<address>::get_factory_id() {
                 return F_ID;
             }
 
-            int32_t hz_serializer<Address>::get_class_id() {
+            int32_t hz_serializer<address>::get_class_id() {
                 return ADDRESS;
             }
 
-            void hz_serializer<Address>::write_data(const Address &object, ObjectDataOutput &out) {
+            void hz_serializer<address>::write_data(const address &object, ObjectDataOutput &out) {
                 out.write<int32_t>(object.port_);
                 out.write<byte>(object.type_);
                 out.write(object.host_);
             }
 
-            Address hz_serializer<Address>::read_data(ObjectDataInput &in) {
-                Address object;
+            address hz_serializer<address>::read_data(ObjectDataInput &in) {
+                address object;
                 object.port_ = in.read<int32_t>();
                 object.type_ = in.read<byte>();
                 object.host_ = in.read<std::string>();
@@ -464,11 +464,11 @@ namespace hazelcast {
                 SERVICE_NAME, name, context), consecutive_submits_(0), last_submit_time_(0) {
         }
 
-        std::vector<Member>
+        std::vector<member>
         IExecutorService::select_members(const cluster::memberselector::MemberSelector &member_selector) {
-            std::vector<Member> selected;
-            std::vector<Member> members = get_context().get_client_cluster_service().get_member_list();
-            for (const Member &member : members) {
+            std::vector<member> selected;
+            std::vector<member> members = get_context().get_client_cluster_service().get_member_list();
+            for (const member &member : members) {
                 if (member_selector.select(member)) {
                     selected.push_back(member);
                 }
@@ -519,7 +519,7 @@ namespace hazelcast {
             return !prevent_sync && (consecutive_submits_++ % MAX_CONSECUTIVE_SUBMITS == 0);
         }
 
-        Address IExecutorService::get_member_address(const Member &member) {
+        address IExecutorService::get_member_address(const member &member) {
             auto m = get_context().get_client_cluster_service().get_member(member.get_uuid());
             if (!m) {
                 throw (exception::ExceptionBuilder<exception::HazelcastException>(
@@ -827,7 +827,7 @@ namespace hazelcast {
 }
 
 namespace std {
-    std::size_t hash<hazelcast::client::Address>::operator()(const hazelcast::client::Address &address) const noexcept {
+    std::size_t hash<hazelcast::client::address>::operator()(const hazelcast::client::address &address) const noexcept {
         return std::hash<std::string>()(address.get_host()) + std::hash<int>()(address.get_port()) +
                std::hash<unsigned long>()(address.type_);
     }

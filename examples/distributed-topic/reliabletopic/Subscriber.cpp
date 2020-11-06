@@ -55,7 +55,7 @@ void listen_with_default_config() {
 }
 
 void listen_with_config() {
-    hazelcast::client::ClientConfig clientConfig;
+    hazelcast::client::client_config clientConfig;
     std::string topicName("MyReliableTopic");
     hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
     reliableTopicConfig.set_read_batch_size(5);

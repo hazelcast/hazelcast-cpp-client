@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -33,7 +33,7 @@ namespace hazelcast {
 
         class HAZELCAST_API ItemEventBase {
         public:
-            ItemEventBase(const std::string &name, const Member &member, const item_event_type &event_type);
+            ItemEventBase(const std::string &name, const member &member, const item_event_type &event_type);
 
             virtual ~ItemEventBase();
 
@@ -42,7 +42,7 @@ namespace hazelcast {
              *
              * @return the member fired this event.
              */
-            const Member &get_member() const;
+            const member &get_member() const;
 
             /**
              * Return the event type
@@ -60,7 +60,7 @@ namespace hazelcast {
 
         private:
             std::string name_;
-            Member member_;
+            member member_;
             item_event_type event_type_;
         };
 
@@ -72,18 +72,18 @@ namespace hazelcast {
          */
         class HAZELCAST_API ItemEvent : public ItemEventBase {
         public:
-            ItemEvent(const std::string &name, item_event_type event_type, TypedData &&item, const Member &member)
+            ItemEvent(const std::string &name, item_event_type event_type, typed_data &&item, const member &member)
             : ItemEventBase(name, member, event_type), item_(item) {}
 
             /**
              * @returns the item.
              */
-            const TypedData &get_item() const {
+            const typed_data &get_item() const {
                 return item_;
             }
 
         private:
-            TypedData item_;
+            typed_data item_;
         };
     }
 }

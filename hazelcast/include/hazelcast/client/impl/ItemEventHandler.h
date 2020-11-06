@@ -34,11 +34,11 @@ namespace hazelcast {
                         : instance_name_(instance_name), cluster_service_(cluster_service),
                           serialization_service_(serialization_service), listener_(std::move(listener)), include_value_(include_value) {};
 
-                void handle_item(const boost::optional<serialization::pimpl::Data> &item, boost::uuids::uuid uuid,
+                void handle_item(const boost::optional<serialization::pimpl::data> &item, boost::uuids::uuid uuid,
                                         int32_t event_type) override {
-                    TypedData val;
+                    typed_data val;
                     if (include_value_) {
-                        val = TypedData(std::move(*item), serialization_service_);
+                        val = typed_data(std::move(*item), serialization_service_);
                     }
                     auto member = cluster_service_.get_member(uuid);
                     item_event_type type(static_cast<item_event_type>(event_type));

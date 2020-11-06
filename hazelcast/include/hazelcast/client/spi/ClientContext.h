@@ -39,7 +39,7 @@ namespace hazelcast {
     namespace client {
         class Cluster;
         class HazelcastClient;
-        class ClientConfig;
+        class client_config;
         class ClientProperties;
 
         namespace serialization {
@@ -108,7 +108,7 @@ namespace hazelcast {
 
                 impl::ClientInvocationServiceImpl &get_invocation_service();
 
-                ClientConfig &get_client_config();
+                client_config &get_client_config();
 
                 impl::ClientPartitionServiceImpl & get_partition_service();
 

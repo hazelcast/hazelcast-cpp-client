@@ -23,9 +23,9 @@
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
 #include "hazelcast/client/MembershipEvent.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/client_config.h"
+#include "hazelcast/client/address.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/Client.h"
@@ -62,11 +62,11 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    boost::optional<Member> get_member(boost::uuids::uuid uuid) const;
+                    boost::optional<member> get_member(boost::uuids::uuid uuid) const;
 
-                    std::vector<Member> get_member_list() const;
+                    std::vector<member> get_member_list() const;
 
-                    std::vector<Member> get_members(
+                    std::vector<member> get_members(
                             const cluster::memberselector::MemberSelector &selector) const;
 
                     Client get_local_client() const;
@@ -77,7 +77,7 @@ namespace hazelcast {
 
                     void clear_member_list_version();
 
-                    void handle_event(int32_t version, const std::vector<Member> &member_infos);
+                    void handle_event(int32_t version, const std::vector<member> &member_infos);
 
                     void wait_initial_member_list_fetched() const;
 
@@ -85,7 +85,7 @@ namespace hazelcast {
                     static constexpr boost::chrono::milliseconds INITIAL_MEMBERS_TIMEOUT{boost::chrono::seconds(120)};
                     struct member_list_snapshot {
                         int32_t version;
-                        std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members;
+                        std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> members;
                     };
 
                     ClientContext &client_;
@@ -103,15 +103,15 @@ namespace hazelcast {
 
                     void fire_initial_membership_event(const InitialMembershipEvent &event);
 
-                    static member_list_snapshot create_snapshot(int32_t version, const std::vector<Member> &vector);
+                    static member_list_snapshot create_snapshot(int32_t version, const std::vector<member> &vector);
 
                     static std::string members_string(const member_list_snapshot& snapshot);
 
-                    void apply_initial_state(int32_t version, const std::vector<Member> &member_infos);
+                    void apply_initial_state(int32_t version, const std::vector<member> &member_infos);
 
                     std::vector<MembershipEvent>
-                    detect_membership_events(std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> previous_members,
-                                             const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>>& current_members);
+                    detect_membership_events(std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> previous_members,
+                                             const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>>& current_members);
 
                     void fire_events(std::vector<MembershipEvent> events);
                 };

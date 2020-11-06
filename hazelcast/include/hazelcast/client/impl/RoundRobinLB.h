@@ -27,7 +27,7 @@
 namespace hazelcast {
     namespace client {
 
-        class Member;
+        class member;
 
         class Cluster;
 
@@ -43,7 +43,7 @@ namespace hazelcast {
 
                 void init(Cluster &cluster) override;
 
-                boost::optional<Member> next() override;
+                boost::optional<member> next() override;
 
             private:
                 std::atomic<int> index_{ 0 };

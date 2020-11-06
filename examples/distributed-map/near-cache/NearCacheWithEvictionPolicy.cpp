@@ -18,7 +18,7 @@
 using namespace hazelcast::client;
 
 int main() {
-    ClientConfig config;
+    client_config config;
     const char *mapName = "EvictionPolicyMap";
     config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
     nearCacheConfig.set_invalidate_on_change(false);

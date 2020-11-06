@@ -73,7 +73,7 @@
 
 namespace hazelcast {
     namespace client {
-        const std::unordered_set<Member> &InitialMembershipEvent::get_members() const {
+        const std::unordered_set<member> &InitialMembershipEvent::get_members() const {
             return members_;
         }
 
@@ -81,7 +81,7 @@ namespace hazelcast {
             return cluster_;
         }
 
-        InitialMembershipEvent::InitialMembershipEvent(Cluster &cluster, std::unordered_set<Member> members) : cluster_(
+        InitialMembershipEvent::InitialMembershipEvent(Cluster &cluster, std::unordered_set<member> members) : cluster_(
                 cluster), members_(std::move(members)) {
         }
 
@@ -187,7 +187,7 @@ namespace hazelcast {
                 return *hazelcast_client_.invocation_service_;
             }
 
-            ClientConfig &ClientContext::get_client_config() {
+            client_config &ClientContext::get_client_config() {
                 return hazelcast_client_.client_config_;
             }
 
@@ -681,8 +681,8 @@ namespace hazelcast {
                         network_config), no_other_address_provider_exist_(no_other_address_provider_exist) {
                 }
 
-                std::vector<Address> DefaultAddressProvider::load_addresses() {
-                    std::vector<Address> addresses = network_config_.get_addresses();
+                std::vector<address> DefaultAddressProvider::load_addresses() {
+                    std::vector<address> addresses = network_config_.get_addresses();
                     if (addresses.empty() && no_other_address_provider_exist_) {
                         addresses.emplace_back("127.0.0.1", 5701);
                     }
@@ -710,7 +710,7 @@ namespace hazelcast {
                     return id;
                 }
 
-                boost::optional<Member> ClientClusterServiceImpl::get_member(boost::uuids::uuid uuid) const {
+                boost::optional<member> ClientClusterServiceImpl::get_member(boost::uuids::uuid uuid) const {
                     assert(!uuid.is_nil());
                     auto members_view_ptr = member_list_snapshot_.load();
                     const auto it = members_view_ptr->members.find(uuid);
@@ -720,9 +720,9 @@ namespace hazelcast {
                     return {it->second};
                 }
 
-                std::vector<Member> ClientClusterServiceImpl::get_member_list() const {
+                std::vector<member> ClientClusterServiceImpl::get_member_list() const {
                     auto members_view_ptr = member_list_snapshot_.load();
-                    std::vector<Member> result;
+                    std::vector<member> result;
                     result.reserve(members_view_ptr->members.size());
                     for (const auto &e : members_view_ptr->members) {
                         result.emplace_back(e.second);
@@ -764,7 +764,7 @@ namespace hazelcast {
                         auto &cluster = client_.get_cluster();
                         auto members_ptr = member_list_snapshot_.load();
                         if (!members_ptr->members.empty()) {
-                            std::unordered_set<Member> members;
+                            std::unordered_set<member> members;
                             for (const auto &e : members_ptr->members) {
                                 members.insert(e.second);
                             }
@@ -780,9 +780,9 @@ namespace hazelcast {
                     return listeners_.erase(registration_id) == 1;
                 }
 
-                std::vector<Member>
+                std::vector<member>
                 ClientClusterServiceImpl::get_members(const cluster::memberselector::MemberSelector &selector) const {
-                    std::vector<Member> result;
+                    std::vector<member> result;
                     for (auto &&member : get_member_list()) {
                         if (selector.select(member)) {
                             result.emplace_back(std::move(member));
@@ -814,7 +814,7 @@ namespace hazelcast {
                 }
 
                 void
-                ClientClusterServiceImpl::handle_event(int32_t version, const std::vector<Member> &member_infos) {
+                ClientClusterServiceImpl::handle_event(int32_t version, const std::vector<member> &member_infos) {
                     auto &lg = client_.get_logger();
                     HZ_LOG(lg, finest, 
                         boost::str(boost::format("Handling new snapshot with membership version: %1%, "
@@ -850,7 +850,7 @@ namespace hazelcast {
                 }
 
                 ClientClusterServiceImpl::member_list_snapshot
-                ClientClusterServiceImpl::create_snapshot(int32_t version, const std::vector<Member> &members) {
+                ClientClusterServiceImpl::create_snapshot(int32_t version, const std::vector<member> &members) {
                     member_list_snapshot result;
                     result.version = version;
                     for (auto &m : members) {
@@ -873,11 +873,11 @@ namespace hazelcast {
                 }
 
                 void
-                ClientClusterServiceImpl::apply_initial_state(int32_t version, const std::vector<Member> &member_infos) {
+                ClientClusterServiceImpl::apply_initial_state(int32_t version, const std::vector<member> &member_infos) {
                     auto snapshot = boost::make_shared<member_list_snapshot>(create_snapshot(version, member_infos));
                     member_list_snapshot_.store(snapshot);
                     HZ_LOG(client_.get_logger(), info, members_string(*snapshot));
-                    std::unordered_set<Member> members;
+                    std::unordered_set<member> members;
                     for(auto const &e : snapshot->members) {
                         members.insert(e.second);
                     }
@@ -891,9 +891,9 @@ namespace hazelcast {
                 }
 
                 std::vector<MembershipEvent> ClientClusterServiceImpl::detect_membership_events(
-                        std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> previous_members,
-                        const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>>& current_members) {
-                    std::vector<Member> new_members;
+                        std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> previous_members,
+                        const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>>& current_members) {
+                    std::vector<member> new_members;
 
                     for (auto const & e : current_members) {
                         if (!previous_members.erase(e.first)) {
@@ -1534,7 +1534,7 @@ namespace hazelcast {
                     auto &invocationService = client_.get_invocation_service();
                     auto startTime = std::chrono::steady_clock::now();
                     auto invocationTimeout = invocationService.get_invocation_timeout();
-                    ClientConfig &clientConfig = client_.get_client_config();
+                    client_config &clientConfig = client_.get_client_config();
                     bool smartRouting = clientConfig.get_network_config().is_smart_routing();
 
                     while (client_.get_lifecycle_service().is_running()) {
@@ -1614,19 +1614,19 @@ namespace hazelcast {
                                                   "No active connection is found"));
                 }
 
-                AwsAddressProvider::AwsAddressProvider(config::ClientAwsConfig &aws_config, int aws_member_port,
+                AwsAddressProvider::AwsAddressProvider(config::client_aws_config &aws_config, int aws_member_port,
                                                        logger &lg) : aws_member_port_(
                         util::IOUtil::to_string<int>(aws_member_port)), logger_(lg), aws_client_(aws_config, lg) {
                 }
 
-                std::vector<Address> AwsAddressProvider::load_addresses() {
+                std::vector<address> AwsAddressProvider::load_addresses() {
                     update_lookup_table();
                     std::unordered_map<std::string, std::string> lookupTable = get_lookup_table();
-                    std::vector<Address> addresses;
+                    std::vector<address> addresses;
 
                     typedef std::unordered_map<std::string, std::string> LookupTable;
                     for (const LookupTable::value_type &privateAddress : lookupTable) {
-                        std::vector<Address> possibleAddresses = util::AddressHelper::get_socket_addresses(
+                        std::vector<address> possibleAddresses = util::AddressHelper::get_socket_addresses(
                                 privateAddress.first + ":" + aws_member_port_, logger_);
                         addresses.insert(addresses.begin(), possibleAddresses.begin(),
                                          possibleAddresses.end());
@@ -1650,7 +1650,7 @@ namespace hazelcast {
 
                 AwsAddressProvider::~AwsAddressProvider() = default;
 
-                Address DefaultAddressTranslator::translate(const Address &address) {
+                address DefaultAddressTranslator::translate(const address &address) {
                     return address;
                 }
 
@@ -1694,7 +1694,7 @@ namespace hazelcast {
                     return boost::uuids::nil_uuid();
                 }
 
-                int32_t ClientPartitionServiceImpl::get_partition_id(const serialization::pimpl::Data &key) {
+                int32_t ClientPartitionServiceImpl::get_partition_id(const serialization::pimpl::data &key) {
                     int32_t pc = get_partition_count();
                     if (pc <= 0) {
                         return 0;
@@ -1797,7 +1797,7 @@ namespace hazelcast {
                     return partition_id_;
                 }
 
-                boost::optional<Member> ClientPartitionServiceImpl::PartitionImpl::get_owner() const {
+                boost::optional<member> ClientPartitionServiceImpl::PartitionImpl::get_owner() const {
                     auto owner = partition_service_.get_partition_owner(partition_id_);
                     if (!owner.is_nil()) {
                         return client_.get_client_cluster_service().get_member(owner);
@@ -2266,7 +2266,7 @@ namespace hazelcast {
 
                     void
                     cluster_view_listener::event_handler::handle_membersview(int32_t version,
-                                                                             const std::vector<Member> &member_infos) {
+                                                                             const std::vector<member> &member_infos) {
                         view_listener.client_context_.get_client_cluster_service().handle_event(version, member_infos);
                     }
 

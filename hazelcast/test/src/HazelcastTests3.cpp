@@ -20,7 +20,7 @@
 #include <vector>
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
-#include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/client_config.h>
 #include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
@@ -71,9 +71,9 @@
 #include <openssl/crypto.h>
 #endif
 
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
-#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -117,7 +117,7 @@
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/ReliableTopic.h"
@@ -147,7 +147,7 @@ namespace hazelcast {
                 }
 
                 void verify_entries_in_map(const std::shared_ptr<ReplicatedMap>& map) {
-                    auto entries = map->entry_set<TypedData, TypedData>().get();
+                    auto entries = map->entry_set<typed_data, typed_data>().get();
                     ASSERT_EQ(OPERATION_COUNT, entries.size());
                     for (auto &entry : entries) {
                         auto key = entry.first.get<std::string>();
@@ -248,7 +248,7 @@ namespace hazelcast {
                     factory = nullptr;
                 }
 
-                static ClientConfig get_client_config_with_near_cache_invalidation_enabled() {
+                static client_config get_client_config_with_near_cache_invalidation_enabled() {
                     config::NearCacheConfig nearCacheConfig;
                     nearCacheConfig.set_invalidate_on_change(true).set_in_memory_format(config::BINARY);
                     return get_config().set_cluster_name("replicated-map-binary-test").add_near_cache_config(nearCacheConfig);
@@ -481,8 +481,8 @@ namespace hazelcast {
                     map->put(entry.first, entry.second).get();
                 }
 
-                auto entrySet1 = map1->entry_set<TypedData, TypedData>().get();
-                auto entrySet2 = map2->entry_set<TypedData, TypedData>().get();
+                auto entrySet1 = map1->entry_set<typed_data, typed_data>().get();
+                auto entrySet2 = map2->entry_set<typed_data, typed_data>().get();
 
                 for (auto &entry : entrySet2) {
                     int value;
@@ -506,7 +506,7 @@ namespace hazelcast {
             TEST_F(ClientReplicatedMapTest, testNearCacheInvalidation) {
                 std::string mapName = random_string();
 
-                ClientConfig clientConfig = get_client_config_with_near_cache_invalidation_enabled();
+                client_config clientConfig = get_client_config_with_near_cache_invalidation_enabled();
                 HazelcastClient client1(clientConfig);
                 HazelcastClient client2(clientConfig);
 
@@ -820,14 +820,14 @@ namespace hazelcast {
                 }
 
                 void create_near_cache_context() {
-                    ClientConfig nearCachedClientConfig = get_config();
+                    client_config nearCachedClientConfig = get_config();
                     nearCachedClientConfig.add_near_cache_config(near_cache_config_);
                     near_cached_client_ = std::unique_ptr<HazelcastClient>(new HazelcastClient(nearCachedClientConfig));
                     near_cached_map_ = near_cached_client_->get_replicated_map(get_test_name());
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
                     near_cache_ = near_cache_manager_->
-                            get_near_cache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(get_test_name());
+                            get_near_cache<serialization::pimpl::data, serialization::pimpl::data, serialization::pimpl::data>(get_test_name());
                     this->stats_ = near_cache_ ? near_cache_->get_near_cache_stats() : nullptr;
                 }
 
@@ -894,7 +894,7 @@ namespace hazelcast {
                     }
                 }
 
-                std::shared_ptr<serialization::pimpl::Data> get_near_cache_key(int key) {
+                std::shared_ptr<serialization::pimpl::data> get_near_cache_key(int key) {
                     spi::ClientContext clientContext(*client_);
                     return clientContext.get_serialization_service().to_shared_data<int>(&key);
                 }
@@ -963,7 +963,7 @@ namespace hazelcast {
                 std::shared_ptr<ReplicatedMap> no_near_cache_map_;
                 std::shared_ptr<ReplicatedMap> near_cached_map_;
                 hazelcast::client::internal::nearcache::NearCacheManager *near_cache_manager_{};
-                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> near_cache_;
+                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>> near_cache_;
                 std::shared_ptr<monitor::NearCacheStats> stats_;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -1009,12 +1009,12 @@ namespace hazelcast {
                                                 << "Expected null from Near cached data structure for key " << i;
 
                     // fetch internal value directly from Near Cache
-                    std::shared_ptr<serialization::pimpl::Data> key = get_near_cache_key(i);
+                    std::shared_ptr<serialization::pimpl::data> key = get_near_cache_key(i);
                     auto value = near_cache_->get(key);
                     if (value.get() != NULL) {
                         // the internal value should either be `null` or `NULL_OBJECT`
                         ASSERT_EQ(
-                        (hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>::NULL_OBJECT),
+                        (hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>::NULL_OBJECT),
                                 near_cache_->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
                     }
                 }
@@ -1237,8 +1237,8 @@ namespace hazelcast {
                     return config::NearCacheConfig();
                 }
 
-                static std::unique_ptr<ClientConfig> new_client_config() {
-                    return std::unique_ptr<ClientConfig>(new ClientConfig(get_config()));
+                static std::unique_ptr<client_config> new_client_config() {
+                    return std::unique_ptr<client_config>(new client_config(get_config()));
                 }
 
                 std::shared_ptr<ReplicatedMap> get_near_cached_map_from_client(
@@ -1259,7 +1259,7 @@ namespace hazelcast {
                     spi::ClientContext clientContext(*client_);
                     auto nearCacheManager = &clientContext.get_near_cache_manager();
                     auto nearCache = nearCacheManager->
-                            get_near_cache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(rep_map.get_name());
+                            get_near_cache<serialization::pimpl::data, serialization::pimpl::data, serialization::pimpl::data>(rep_map.get_name());
                     return nearCache->get_near_cache_stats();
                 }
 
@@ -1267,7 +1267,7 @@ namespace hazelcast {
                     ASSERT_EQ(expected, get_near_cache_stats(client_map)->get_owned_entry_count());
                 }
 
-                std::unique_ptr<ClientConfig> client_config_;
+                std::unique_ptr<client_config> client_config_;
                 config::NearCacheConfig near_cache_config_;
                 std::unique_ptr<HazelcastClient> client_;
                 std::shared_ptr<ReplicatedMap> map_;
@@ -1349,7 +1349,7 @@ namespace hazelcast {
                 ClientTopicTest();
             protected:
                 HazelcastServer instance_;
-                ClientConfig client_config_;
+                client_config client_config_;
                 HazelcastClient client_;
                 std::shared_ptr<ITopic> topic_;
             };

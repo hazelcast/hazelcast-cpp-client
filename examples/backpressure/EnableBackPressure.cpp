@@ -46,7 +46,7 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     /**
      * The maximum number of concurrent invocations allowed.

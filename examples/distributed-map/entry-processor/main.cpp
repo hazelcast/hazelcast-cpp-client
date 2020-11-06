@@ -15,7 +15,7 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 
-#include "Employee.h"
+#include "employee.h"
 
 int main() {
     hazelcast::client::HazelcastClient hz;

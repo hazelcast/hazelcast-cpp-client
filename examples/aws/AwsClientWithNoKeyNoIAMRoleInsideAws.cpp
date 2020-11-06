@@ -22,7 +22,7 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig clientConfig;
+    hazelcast::client::client_config clientConfig;
 
     // Your instance should be inside AWS and the instance profile should have an instance profile associated for
     // a valid IAM role. See http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html
