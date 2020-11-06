@@ -263,7 +263,7 @@ namespace hazelcast {
                     response.rd_ptr(static_cast<int32_t>(initial_frame->frame_len) - ClientMessage::RESPONSE_HEADER_LEN - 2 * ClientMessage::UINT8_SIZE -
                                     2 * (sizeof(boost::uuids::uuid) + ClientMessage::UINT8_SIZE) - ClientMessage::INT32_SIZE);
 
-                    result.address = response.get_nullable<address>();
+                    result.server_address = response.get_nullable<address>();
                     result.server_version = response.get<std::string>();
                 } catch (exception::IException &) {
                     connection->close("Failed to authenticate connection", std::current_exception());
@@ -595,7 +595,7 @@ namespace hazelcast {
                                                                    auth_response response) {
                 check_partition_count(response.partition_count);
                 connection->set_connected_server_version(response.server_version);
-                connection->set_remote_address(std::move(response.address));
+                connection->set_remote_address(std::move(response.server_address));
                 connection->set_remote_uuid(response.member_uuid);
 
                 auto new_cluster_id = response.cluster_id;
@@ -629,15 +629,15 @@ namespace hazelcast {
                     HZ_LOG(logger_, info,
                         boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
                                                  "local address: %4%")
-                                                 % response.address % response.member_uuid
-                                                 % response.server_version % *local_address)
+                                   % response.server_address % response.member_uuid
+                                   % response.server_version % *local_address)
                     );
                 } else {
                     HZ_LOG(logger_, info,
                         boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
                                                  "no local address: (connection disconnected ?)")
-                                                 % response.address % response.member_uuid
-                                                 % response.server_version)
+                                   % response.server_address % response.member_uuid
+                                   % response.server_version)
                     );
                 }
 

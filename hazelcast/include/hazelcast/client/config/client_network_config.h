@@ -80,7 +80,7 @@ namespace hazelcast {
                  * Sets configuration to connect nodes in aws environment.
                  *
                  * @param clientAwsConfig the client_aws_config
-                 * @see #getAwsConfig()
+                 * @see #get_aws_config()
                  */
                 client_network_config &set_aws_config(const client_aws_config &client_aws_config);
 

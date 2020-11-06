@@ -395,33 +395,33 @@ namespace hazelcast {
                     clientConfig.get_serialization_config().set_global_serializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
                     client = new hazelcast_client(clientConfig);
-                    imap = client->get_map("UnknownObject");
+                    unknown_object_map = client->get_map("UnknownObject");
                 }
 
                 static void TearDownTestCase() {
                     delete client;
                     delete instance;
 
-                    imap = nullptr;
+                    unknown_object_map = nullptr;
                     client = nullptr;
                     instance = nullptr;
                 }
 
                 static HazelcastServer *instance;
                 static hazelcast_client *client;
-                static std::shared_ptr<imap> imap;
+                static std::shared_ptr<imap> unknown_object_map;
             };
 
             HazelcastServer *MapGlobalSerializerTest::instance = nullptr;
             hazelcast_client *MapGlobalSerializerTest::client = nullptr;
-            std::shared_ptr<imap> MapGlobalSerializerTest::imap;
+            std::shared_ptr<imap> MapGlobalSerializerTest::unknown_object_map;
 
             TEST_F(MapGlobalSerializerTest, testPutGetUnserializableObject) {
                 MapGlobalSerializerTest::UnknownObject myObject(8);
-                imap->put<int, MapGlobalSerializerTest::UnknownObject>(2, myObject).get();
+                unknown_object_map->put<int, MapGlobalSerializerTest::UnknownObject>(2, myObject).get();
 
                 boost::optional<MapGlobalSerializerTest::UnknownObject> data =
-                        imap->get<int, MapGlobalSerializerTest::UnknownObject>(2).get();
+                        unknown_object_map->get<int, MapGlobalSerializerTest::UnknownObject>(2).get();
                 ASSERT_TRUE(data.has_value());
                 ASSERT_EQ(8, data.value().get_value());
             }
@@ -436,14 +436,14 @@ namespace hazelcast {
             protected:
                 void TearDown() override {
                     // clear maps
-                    imap->clear().get();
+                    int_map->clear().get();
                 }
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
-                    imap = client->get_map("IntMap");
+                    int_map = client->get_map("IntMap");
                 }
 
                 static void TearDownTestCase() {
@@ -451,7 +451,7 @@ namespace hazelcast {
                     delete instance2;
                     delete instance;
 
-                    imap = nullptr;
+                    int_map = nullptr;
                     client = nullptr;
                     instance2 = nullptr;
                     instance = nullptr;
@@ -460,13 +460,13 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
                 static hazelcast_client *client;
-                static std::shared_ptr<imap> imap;
+                static std::shared_ptr<imap> int_map;
             };
 
             HazelcastServer *ClientExpirationListenerTest::instance = nullptr;
             HazelcastServer *ClientExpirationListenerTest::instance2 = nullptr;
             hazelcast_client *ClientExpirationListenerTest::client = nullptr;
-            std::shared_ptr<imap> ClientExpirationListenerTest::imap = nullptr;
+            std::shared_ptr<imap> ClientExpirationListenerTest::int_map = nullptr;
 
             TEST_F(ClientExpirationListenerTest, notified_afterExpirationOfEntries) {
                 int numberOfPutOperations = 10000;
@@ -479,10 +479,10 @@ namespace hazelcast {
                         expirationEventArrivalCount.count_down();
                     });
 
-                auto registrationId = imap->add_entry_listener(std::move(expirationListener), true).get();
+                auto registrationId = int_map->add_entry_listener(std::move(expirationListener), true).get();
 
                 for (int i = 0; i < numberOfPutOperations; i++) {
-                    imap->put<int, int>(i, i, std::chrono::milliseconds(100)).get();
+                    int_map->put<int, int>(i, i, std::chrono::milliseconds(100)).get();
                 }
 
                 // wait expiration of entries.
@@ -490,11 +490,11 @@ namespace hazelcast {
 
                 // trigger immediate fire of expiration events by touching them.
                 for (int i = 0; i < numberOfPutOperations; ++i) {
-                    imap->get<int, int>(i).get();
+                    int_map->get<int, int>(i).get();
                 }
 
                 ASSERT_OPEN_EVENTUALLY(expirationEventArrivalCount);
-                ASSERT_TRUE(imap->remove_entry_listener(registrationId).get());
+                ASSERT_TRUE(int_map->remove_entry_listener(registrationId).get());
             }
         }
     }

@@ -1724,7 +1724,7 @@ namespace hazelcast {
                             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
+                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
 #else
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
 #endif
@@ -1744,7 +1744,7 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                                                                                                                                             // The access key and secret will be retrieved from default IAM role at windows machine
-                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
+                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
 #else
                     clientConfig.get_network_config().get_aws_config().set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).
                             set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY"));
@@ -1761,24 +1761,24 @@ namespace hazelcast {
                 // FIPS_mode_set is not available for Mac OS X built-in openssl library
 #ifndef __APPLE__
                     TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
-                    client_config clientConfig = getConfig();
+                    client_config clientConfig = get_config();
 
-                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
-                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
-                            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
-                            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
+                    clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
+                    clientConfig.get_network_config().get_aws_config().set_enabled(true).
+                            set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
+                            set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
 
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
+                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
                     #else
-                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
+                    clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
                     #endif
 
                     // Turn Fips mode on
                     FIPS_mode_set(1);
 
                     hazelcast_client hazelcastClient(clientConfig);
-                    auto map = hazelcastClient.getMap("myMap");
+                    auto map = hazelcastClient.get_map("myMap");
                     map->put(5, 20);
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val);
@@ -1794,8 +1794,8 @@ namespace hazelcast {
                     client_config clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
-                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setIamRole("cloudbees-role").setTagKey(
-                            "aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
+                    clientConfig.get_network_config().get_aws_config().set_enabled(true).setIamRole("cloudbees-role").set_tag_key(
+                            "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
                     hazelcast_client hazelcastClient(clientConfig);
                 }
@@ -1804,8 +1804,8 @@ namespace hazelcast {
                     client_config clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
-                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey(
-                            "aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
+                    clientConfig.get_network_config().get_aws_config().set_enabled(true).set_tag_key(
+                            "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
                     hazelcast_client hazelcastClient(clientConfig);
                 }

@@ -56,7 +56,7 @@ namespace hazelcast {
                  * Gets the access key to access AWS. Returns empty string if no access key is configured.
                  *
                  * @return the access key to access AWS
-                 * @see #setAccessKey(std::string)
+                 * @see #set_access_key(std::string)
                  */
                 const std::string &get_access_key() const;
 
@@ -67,14 +67,14 @@ namespace hazelcast {
                  * @return the updated client_aws_config.
                  * @throws IllegalArgumentException if accessKey is empty.
                  * @see #getAccessKey()
-                 * @see #setSecretKey(std::string)
+                 * @see #set_secret_key(std::string)
                  */
                 client_aws_config &set_access_key(const std::string &access_key);
                 /**
                  * Gets the secret key to access AWS. Returns empty string if no access key is configured.
                  *
                  * @return the secret key.
-                 * @see #setSecretKey(std::string)
+                 * @see #set_secret_key(std::string)
                  */
                 const std::string &get_secret_key() const;
 
@@ -85,7 +85,7 @@ namespace hazelcast {
                  * @return the updated client_aws_config.
                  * @throws IllegalArgumentException if secretKey is empty.
                  * @see #getSecretKey()
-                 * @see #setAccessKey(std::string)
+                 * @see #set_access_key(std::string)
                  */
                 client_aws_config &set_secret_key(const std::string &secret_key);
 
@@ -155,7 +155,7 @@ namespace hazelcast {
                  *
                  * @param tagKey the tag key. See the filtering section above for more information.
                  * @return the updated client_aws_config.
-                 * @see #setTagKey(std::string)
+                 * @see #set_tag_key(std::string)
                  */
                 client_aws_config &set_tag_key(const std::string &tag_key);
 
@@ -171,7 +171,7 @@ namespace hazelcast {
                  *
                  * @param tagValue the tag value. See the filtering section above for more information.
                  * @return the updated client_aws_config.
-                 * @see #setTagKey(std::string)
+                 * @see #set_tag_key(std::string)
                  * @see #getTagValue()
                  */
                 client_aws_config &set_tag_value(const std::string &tag_value);

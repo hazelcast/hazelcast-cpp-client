@@ -80,7 +80,7 @@ namespace hazelcast {
             }
 
             ssl_config &ssl_config::set_enabled(bool is_enabled) {
-                util::Preconditions::check_ssl("getAwsConfig");
+                util::Preconditions::check_ssl("get_aws_config");
                 this->enabled_ = is_enabled;
                 return *this;
             }
@@ -380,7 +380,7 @@ namespace hazelcast {
             }
 
             client_aws_config &client_aws_config::set_enabled(bool enabled) {
-                util::Preconditions::check_ssl("getAwsConfig");
+                util::Preconditions::check_ssl("get_aws_config");
                 this->enabled_ = enabled;
                 return *this;
             }

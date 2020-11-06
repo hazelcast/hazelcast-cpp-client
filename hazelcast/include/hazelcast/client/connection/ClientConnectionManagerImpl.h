@@ -137,7 +137,7 @@ namespace hazelcast {
                     byte serialization_version;
                     int32_t partition_count;
                     boost::uuids::uuid cluster_id;
-                    boost::optional<address> address;
+                    boost::optional<address> server_address;
                     std::string server_version;
                 };
 

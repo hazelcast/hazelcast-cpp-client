@@ -251,7 +251,7 @@ namespace hazelcast {
 
                     return len;
 #else
-                    util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
+                    util::Preconditions::check_ssl("EC2RequestSigner::hmacSHA256Bytes");
                     return 0;
 #endif
                 }
@@ -267,7 +267,7 @@ namespace hazelcast {
                         EVP_DigestUpdate(&ctx, in.c_str(), in.size());
                         EVP_DigestFinal_ex(&ctx, hash, &hashLen);
                         EVP_MD_CTX_cleanup(&ctx);
-                        return convertToHexString(hash, hashLen);
+                        return convert_to_hex_string(hash, hashLen);
 #else
                     unsigned char hash[SHA256_DIGEST_LENGTH];
                     SHA256_CTX sha256;
@@ -278,7 +278,7 @@ namespace hazelcast {
                     return convert_to_hex_string(hash, SHA256_DIGEST_LENGTH);
 #endif // OPENSSL_FIPS
 #else
-                    util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
+                    util::Preconditions::check_ssl("EC2RequestSigner::hmacSHA256Bytes");
                     return "";
 #endif // HZ_BUILD_WITH_SSL
                 }

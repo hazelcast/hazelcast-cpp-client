@@ -34,19 +34,19 @@ namespace hazelcast {
                 public:
                     template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
-                            const address &address, client::config::SocketOptions &socket_options,
+                            const address &addr, client::config::SocketOptions &socket_options,
                             boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis)
-                            : socket_options_(socket_options), remote_endpoint_(address), io_(io), socket_strand_(io),
+                            : socket_options_(socket_options), remote_endpoint_(addr), io_(io), socket_strand_(io),
                               connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver), socket_(socket_strand_) {
                     }
                     
 #ifdef HZ_BUILD_WITH_SSL
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
-                            const address &address, client::config::SocketOptions &socket_options,
+                            const address &addr, client::config::SocketOptions &socket_options,
                             boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis,
                             CONTEXT &context)
-                            : socket_options_(socket_options), remote_endpoint_(address), io_(io), socket_strand_(io),
+                            : socket_options_(socket_options), remote_endpoint_(addr), io_(io), socket_strand_(io),
                               connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver),
                               socket_(socket_strand_, context) {
                     }
