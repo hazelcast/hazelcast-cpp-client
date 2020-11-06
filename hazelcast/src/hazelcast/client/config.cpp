@@ -524,14 +524,12 @@ namespace hazelcast {
             return redoOperation;
         }
 
-        LoadBalancer *const ClientConfig::getLoadBalancer() {
-            if (!loadBalancer)
-                return &defaultLoadBalancer;
+        std::shared_ptr<LoadBalancer> ClientConfig::getLoadBalancer() {
             return loadBalancer;
         }
 
-        ClientConfig &ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
-            this->loadBalancer = loadBalancer;
+        ClientConfig &ClientConfig::setLoadBalancer(std::shared_ptr<LoadBalancer> loadBalancer) {
+            this->loadBalancer = std::move(loadBalancer);
             return *this;
         }
 

@@ -209,7 +209,7 @@ namespace hazelcast {
             *
             * \return loadBalancer
             */
-            LoadBalancer *const getLoadBalancer();
+            std::shared_ptr<LoadBalancer> getLoadBalancer();
 
             /**
             * Used to distribute the operations to multiple Endpoints.
@@ -219,7 +219,7 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            ClientConfig &setLoadBalancer(LoadBalancer *loadBalancer);
+            ClientConfig &setLoadBalancer(std::shared_ptr<LoadBalancer> loadBalancer);
 
             /**
             *
@@ -437,9 +437,7 @@ namespace hazelcast {
 
             SerializationConfig serializationConfig;
 
-            LoadBalancer *loadBalancer;
-
-            impl::RoundRobinLB defaultLoadBalancer;
+            std::shared_ptr<LoadBalancer> loadBalancer;
 
             std::vector<MembershipListener> membershipListeners;
 

@@ -2131,7 +2131,7 @@ namespace hazelcast {
                 std::unique_ptr<HazelcastServer> server;
                 std::unique_ptr<HazelcastServer> second;
                 std::unique_ptr<HazelcastClient> client;
-                std::unique_ptr<LoadBalancer> loadBalancer;
+                std::shared_ptr<LoadBalancer> loadBalancer;
             };
 
             class MyLoadBalancer : public impl::AbstractLoadBalancer {
@@ -2165,7 +2165,7 @@ namespace hazelcast {
                 ClientConfig clientConfig = getConfig();
                 //always start the txn on first member
                 loadBalancer.reset(new MyLoadBalancer());
-                clientConfig.setLoadBalancer(loadBalancer.get());
+                clientConfig.setLoadBalancer(loadBalancer);
                 client.reset(new HazelcastClient(clientConfig));
                 second.reset(new HazelcastServer(hazelcastInstanceFactory));
             }

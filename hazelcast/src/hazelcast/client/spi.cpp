@@ -270,10 +270,9 @@ namespace hazelcast {
             }
 
             LifecycleService::LifecycleService(ClientContext &clientContext,
-                                               const std::vector<LifecycleListener> &listeners,
-                                               LoadBalancer *const loadBalancer, Cluster &cluster) : 
-                    clientContext(clientContext), listeners(), loadBalancer(loadBalancer),
-                    cluster(cluster), shutdownCompletedLatch(1) {
+                                               const std::vector<LifecycleListener> &listeners) :
+                    clientContext(clientContext), listeners(),
+                    shutdownCompletedLatch(1) {
                 for (const auto &listener: listeners) {
                     addListener(LifecycleListener(listener));
                 }
@@ -309,8 +308,6 @@ namespace hazelcast {
                 }
 
                 clientContext.getInvocationService().add_backup_listener();
-
-                loadBalancer->init(cluster);
 
                 clientContext.getClientstatistics().start();
 

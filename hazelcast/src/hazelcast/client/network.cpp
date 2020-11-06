@@ -31,11 +31,13 @@
  */
 
 #include <cstdlib>
+#include <memory>
 #include <unordered_set>
 
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/connection/AddressProvider.h"
+#include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
@@ -84,8 +86,16 @@ namespace hazelcast {
                       connect_to_cluster_task_submitted_(false),
                       client_uuid_(client.random_uuid()),
                       authentication_timeout_(heartbeat.getHeartbeatTimeout().count()),
-                      cluster_id_(boost::uuids::nil_uuid()),
-                      load_balancer_(client.getClientConfig().getLoadBalancer()) {
+                      cluster_id_(boost::uuids::nil_uuid()) {
+
+                auto configured_load_balancer = client.getClientConfig().getLoadBalancer();
+                if (configured_load_balancer) {
+                    load_balancer_= configured_load_balancer;
+                }
+                else {
+                    load_balancer_ = std::make_shared<impl::RoundRobinLB>();
+                }
+
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
                 if (connTimeout > 0) {
@@ -142,6 +152,8 @@ namespace hazelcast {
                 if (smart_routing_enabled_) {
                     schedule_connect_to_all_members();
                 }
+
+                load_balancer_->init(client.getCluster());
 
                 return true;
             }
