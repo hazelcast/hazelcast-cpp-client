@@ -21,7 +21,7 @@
 #include <vector>
 #include <string>
 
-#include <hazelcast/client/query/EntryComparator.h>
+#include <hazelcast/client/query/entry_comparator.h>
 
 namespace hazelcast {
     namespace client {
@@ -91,7 +91,7 @@ namespace hazelcast {
             };
 
             // Compares based on the employee age
-            class EmployeeEntryComparator : public query::EntryComparator<int32_t, employee> {
+            class EmployeeEntryComparator : public query::entry_comparator<int32_t, employee> {
             public:
                 int compare(const std::pair<const int32_t *, const employee *> *lhs,
                                     const std::pair<const int32_t *, const employee *> *rhs) const override;

@@ -27,7 +27,7 @@ namespace hazelcast {
     namespace client {
         namespace query {
             template <typename K, typename V>
-            class EntryComparator : public util::Comparator<std::pair<const K *, const V *> > {
+            class entry_comparator : public util::Comparator<std::pair<const K *, const V *> > {
             public:
                 int compare(const std::pair<const K *, const V *> *,
                             const std::pair<const K *, const V *> *) const override {

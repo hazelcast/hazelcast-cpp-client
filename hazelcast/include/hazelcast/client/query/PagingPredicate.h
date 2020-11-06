@@ -23,7 +23,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/query/Predicates.h"
-#include "hazelcast/client/query/EntryComparator.h"
+#include "hazelcast/client/query/entry_comparator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -159,7 +159,7 @@ namespace hazelcast {
                     return page_size_;
                 }
 
-                const query::EntryComparator<K, V> *get_comparator() const {
+                const query::entry_comparator<K, V> *get_comparator() const {
                     return comparator_.get();
                 }
 
@@ -169,7 +169,7 @@ namespace hazelcast {
 
             private:
                 anchor_data_list anchor_data_list_;
-                std::shared_ptr<query::EntryComparator<K, V>> comparator_;
+                std::shared_ptr<query::entry_comparator<K, V>> comparator_;
                 serialization::object_data_output out_stream_;
                 size_t page_size_;
                 size_t page_;

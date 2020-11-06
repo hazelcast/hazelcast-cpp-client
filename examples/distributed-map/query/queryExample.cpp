@@ -156,18 +156,18 @@ void query_map_using_paging_predicate() {
 
     // test paging predicate with comparator
     auto employees = client.get_map("testComplexObjectWithPagingPredicate");
-    employees->put_all<int32_t, Employee>({
-                                                 {3, Employee("ahmet", 35)},
-                                                 {4, Employee("mehmet", 21)},
-                                                 {5, Employee("deniz", 25)},
-                                                 {6, Employee("ali", 33)},
-                                                 {7, Employee("veli", 44)},
-                                                 {8, Employee("aylin", 5)}
+    employees->put_all<int32_t, employee>({
+                                                 {3, employee("ahmet", 35)},
+                                                 {4, employee("mehmet", 21)},
+                                                 {5, employee("deniz", 25)},
+                                                 {6, employee("ali", 33)},
+                                                 {7, employee("veli", 44)},
+                                                 {8, employee("aylin", 5)}
                                          }).get();
 
     predSize = 2;
-    std::unique_ptr<query::EntryComparator<int, Employee> > comparator(new EmployeeEntryComparator());
-    auto predicate3 = employees->new_paging_predicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
+    std::unique_ptr<query::entry_comparator<int, employee> > comparator(new employee_entry_comparator());
+    auto predicate3 = employees->new_paging_predicate<int, employee>(employee_entry_comparator(), (size_t) predSize);
     auto result = employees->values(predicate3).get();
 
     predicate3.next_page();

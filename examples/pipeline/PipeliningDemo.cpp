@@ -42,14 +42,14 @@ public:
         cout << "Starting pipelined with depth:" << depth << endl;
         int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
-            std::shared_ptr<pipelining<string> > pipelining = pipelining<string>::create(depth);
+            std::shared_ptr<pipelining<string> > p = pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
                 int key = dist_(gen_) % keyDomain;
-                pipelining->add(map_->get<int, std::string>(key));
+                p->add(map_->get<int, std::string>(key));
             }
 
             // wait for completion
-            auto results = pipelining->results();
+            auto results = p->results();
             // and verification we got the appropriate number of results.
             if ((int) results.size() != getsPerIteration) {
                 throw hazelcast::client::exception::IllegalStateException("pipelined", "Incorrect number of results");

@@ -19,7 +19,7 @@
 #include <string>
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/Comparator.h"
-#include "hazelcast/client/query/EntryComparator.h"
+#include "hazelcast/client/query/entry_comparator.h"
 
 namespace hazelcast {
     namespace client {

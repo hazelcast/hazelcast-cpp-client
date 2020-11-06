@@ -41,7 +41,7 @@ namespace hazelcast {
                 }
 
                 static employee read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return Employee{in.read<int32_t>();};
+                    return employee{in.read<int32_t>()};
                 }
             };
 
