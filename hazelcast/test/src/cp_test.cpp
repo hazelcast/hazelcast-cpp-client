@@ -705,7 +705,7 @@ namespace hazelcast {
 
                     std::ostringstream script;
                     script << "result = instance_0.getCPSubsystem().getLock(\"" << proxy_name
-                           << "\").is_locked() ? \"1\" : \"0\";";
+                           << "\").isLocked() ? \"1\" : \"0\";";
                     Response response;
 
                     ASSERT_TRUE_EVENTUALLY((remoteController->executeOnController(response, factory->get_cluster_id(),
