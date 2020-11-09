@@ -142,7 +142,7 @@ namespace hazelcast {
                         try {
                             proxy.destroy_locally();
                             return proxy.destroy_remotely();
-                        } catch (exception::IException &) {
+                        } catch (exception::iexception &) {
                             proxy.destroy_remotely();
                             throw;
                         }
@@ -488,7 +488,7 @@ namespace hazelcast {
                     try {
                         on_destroy();
                         post_destroy();
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         post_destroy();
                         throw;
                     }
@@ -593,7 +593,7 @@ namespace hazelcast {
                                                            const std::shared_ptr<connection::Connection>& connection) {
                     if (is_shutdown_) {
                         BOOST_THROW_EXCEPTION(
-                                exception::hazelcast_clientNotActiveException("ClientInvocationServiceImpl::send",
+                                exception::hazelcast_client_not_active("ClientInvocationServiceImpl::send",
                                                                              "Client is shut down"));
                     }
 
@@ -908,7 +908,7 @@ namespace hazelcast {
                         events.emplace_back(client_.get_cluster(), e.second, membership_event::membership_event_type::MEMBER_LEFT, current_members);
                         auto connection = client_.get_connection_manager().get_connection(e.second.get_uuid());
                         if (connection) {
-                            connection->close("", std::make_exception_ptr(exception::TargetDisconnectedException(
+                            connection->close("", std::make_exception_ptr(exception::target_disconnected(
                                     "ClientClusterServiceImpl::detect_membership_events", (boost::format(
                                             "The client has closed the connection to this member, after receiving a member left event from the cluster. %1%") %
                                                                                            *connection).str())));
@@ -945,7 +945,7 @@ namespace hazelcast {
                 void ClientClusterServiceImpl::wait_initial_member_list_fetched() const {
                     // safe to const cast here since latch operations are already thread safe ops.
                     if ((const_cast<boost::latch&>(initial_list_fetched_latch_)).wait_for(INITIAL_MEMBERS_TIMEOUT) == boost::cv_status::timeout) {
-                        BOOST_THROW_EXCEPTION(exception::IllegalStateException(
+                        BOOST_THROW_EXCEPTION(exception::illegal_state(
                                                       "ClientClusterServiceImpl::wait_initial_member_list_fetched",
                                                               "Could not get initial member list from cluster!"));
                     }
@@ -1100,7 +1100,7 @@ namespace hazelcast {
                         if (is_bind_to_single_connection()) {
                             auto invoked = invocation_service_.invoke_on_connection(shared_from_this(), connection_);
                             if (!invoked) {
-                                notify_exception(std::make_exception_ptr(exception::IOException("", (boost::format(
+                                notify_exception(std::make_exception_ptr(exception::io("", (boost::format(
                                         "Could not invoke on connection %1%") % *connection_).str())));
                             }
                             return;
@@ -1122,9 +1122,9 @@ namespace hazelcast {
                             invoked = invocation_service_.invoke(shared_from_this());
                         }
                         if (!invoked) {
-                            notify_exception(std::make_exception_ptr(exception::IOException("No connection found to invoke")));
+                            notify_exception(std::make_exception_ptr(exception::io("No connection found to invoke")));
                         }
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         notify_exception(std::current_exception());
                     } catch (std::exception &) {
                         assert(false);
@@ -1146,14 +1146,14 @@ namespace hazelcast {
 
                     try {
                         invoke_on_selection();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         set_exception(e, boost::current_exception());
                     } catch (std::exception &) {
                         assert(false);
                     }
                 }
 
-                void ClientInvocation::set_exception(const exception::IException &e, boost::exception_ptr exception_ptr) {
+                void ClientInvocation::set_exception(const exception::iexception &e, boost::exception_ptr exception_ptr) {
                     try {
                         auto send_conn = *send_connection_.load();
                         if (send_conn) {
@@ -1178,15 +1178,15 @@ namespace hazelcast {
                     erase_invocation();
                     try {
                         std::rethrow_exception(exception);
-                    } catch (exception::IException &iex) {
+                    } catch (exception::iexception &iex) {
                         log_exception(iex);
 
                         if (!lifecycle_service_.is_running()) {
                             try {
                                 std::throw_with_nested(boost::enable_current_exception(
-                                        exception::hazelcast_clientNotActiveException(iex.get_source(),
+                                        exception::hazelcast_client_not_active(iex.get_source(),
                                                                                      "Client is shutting down")));
-                            } catch (exception::IException &e) {
+                            } catch (exception::iexception &e) {
                                 set_exception(e, boost::current_exception());
                             }
                             return;
@@ -1206,8 +1206,8 @@ namespace hazelcast {
 
                             auto now = std::chrono::steady_clock::now();
 
-                            auto timeoutException = (exception::ExceptionBuilder<exception::OperationTimeoutException>(
-                                    "ClientInvocation::newOperationTimeoutException") << *this
+                            auto timeoutException = (exception::exception_builder<exception::operation_timeout>(
+                                    "ClientInvocation::newoperation_timeout_exception") << *this
                                             << " timed out because exception occurred after client invocation timeout "
                                             << std::chrono::duration_cast<std::chrono::milliseconds>(invocation_service_.get_invocation_timeout()).count()
                                             << "msecs. Last exception:" << iex
@@ -1227,7 +1227,7 @@ namespace hazelcast {
 
                         try {
                             execute();
-                        } catch (exception::IException &e) {
+                        } catch (exception::iexception &e) {
                             set_exception(e, boost::current_exception());
                         }
                     } catch (...) {
@@ -1247,7 +1247,7 @@ namespace hazelcast {
                     }
                 }
 
-                bool ClientInvocation::should_retry(exception::IException &exception) {
+                bool ClientInvocation::should_retry(exception::iexception &exception) {
                     auto errorCode = exception.get_error_code();
                     if (is_bind_to_single_connection() && (errorCode == protocol::IO || errorCode == protocol::TARGET_DISCONNECTED)) {
                         return false;
@@ -1354,7 +1354,7 @@ namespace hazelcast {
                         std::this_thread::yield();
                     }
                     if (!lifecycle_service_.is_running()) {
-                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("Client is being shut down!"));
+                        BOOST_THROW_EXCEPTION(exception::illegal_argument("Client is being shut down!"));
                     }
                     return *send_connection_.load();
                 }
@@ -1366,7 +1366,7 @@ namespace hazelcast {
 
                 void ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage> &msg) {
                     if (!msg) {
-                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("response can't be null"));
+                        BOOST_THROW_EXCEPTION(exception::illegal_argument("response can't be null"));
                     }
 
                     int8_t expected_backups = msg->get_number_of_backups();
@@ -1461,7 +1461,7 @@ namespace hazelcast {
                     return invocation_promise_;
                 }
 
-                void ClientInvocation::log_exception(exception::IException &e) {
+                void ClientInvocation::log_exception(exception::iexception &e) {
                     HZ_LOG(logger_, finest,
                         boost::str(boost::format("Invocation got an exception %1%, invoke count : %2%, "
                                                  "exception : %3%")
@@ -1508,7 +1508,7 @@ namespace hazelcast {
                     }
 
                     if (invocation_service_.fail_on_indeterminate_state()) {
-                        auto exception = boost::enable_current_exception((exception::ExceptionBuilder<exception::IndeterminateOperationStateException>(
+                        auto exception = boost::enable_current_exception((exception::exception_builder<exception::indeterminate_operation_state>(
                                 "ClientInvocation::detect_and_handle_backup_timeout") << *this
                                                                                       << " failed because backup acks missed.").build());
                         notify_exception(std::make_exception_ptr(exception));
@@ -1544,9 +1544,9 @@ namespace hazelcast {
                                 throw_exception(smartRouting);
                             }
                             return connection;
-                        } catch (exception::hazelcast_clientOfflineException &) {
+                        } catch (exception::hazelcast_client_offline &) {
                             throw;
-                        } catch (exception::IException &) {
+                        } catch (exception::iexception &) {
                             if (std::chrono::steady_clock::now() - startTime > invocationTimeout) {
                                 std::rethrow_exception(
                                         new_operation_timeout_exception(std::current_exception(), invocationTimeout,
@@ -1556,7 +1556,7 @@ namespace hazelcast {
                         std::this_thread::sleep_for(invocationService.get_invocation_retry_pause());
                     }
                     BOOST_THROW_EXCEPTION(
-                            exception::hazelcast_clientNotActiveException("ClientTransactionManagerServiceImpl::connect",
+                            exception::hazelcast_client_not_active("ClientTransactionManagerServiceImpl::connect",
                                                                          "Client is shutdown"));
                 }
 
@@ -1576,8 +1576,8 @@ namespace hazelcast {
                         std::rethrow_exception(cause);
                     } catch (...) {
                         try {
-                            std::throw_with_nested(boost::enable_current_exception(exception::OperationTimeoutException(
-                                    "ClientTransactionManagerServiceImpl::newOperationTimeoutException", sb.str())));
+                            std::throw_with_nested(boost::enable_current_exception(exception::operation_timeout(
+                                    "ClientTransactionManagerServiceImpl::newoperation_timeout_exception", sb.str())));
                         } catch (...) {
                             return std::current_exception();
                         }
@@ -1590,7 +1590,7 @@ namespace hazelcast {
                     auto &connection_strategy_Config = client_config.get_connection_strategy_config();
                     auto reconnect_mode = connection_strategy_Config.get_reconnect_mode();
                     if (reconnect_mode == config::ClientConnectionStrategyConfig::reconnect_mode::ASYNC) {
-                        BOOST_THROW_EXCEPTION(exception::hazelcast_clientOfflineException(
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
                                 "ClientTransactionManagerServiceImpl::throw_exception", ""));
                     }
                     if (smart_routing) {
@@ -1606,10 +1606,10 @@ namespace hazelcast {
                             }
                             msg << "}";
                         }
-                        BOOST_THROW_EXCEPTION(exception::IllegalStateException(
+                        BOOST_THROW_EXCEPTION(exception::illegal_state(
                                                       "ClientTransactionManagerServiceImpl::throw_exception", msg.str()));
                     }
-                    BOOST_THROW_EXCEPTION(exception::IllegalStateException(
+                    BOOST_THROW_EXCEPTION(exception::illegal_state(
                                                   "ClientTransactionManagerServiceImpl::throw_exception",
                                                   "No active connection is found"));
                 }
@@ -1637,7 +1637,7 @@ namespace hazelcast {
                 void AwsAddressProvider::update_lookup_table() {
                     try {
                         private_to_public_ = aws_client_.get_addresses();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Aws addresses failed to load: %1%") % e.get_message())
                         );
@@ -1906,7 +1906,7 @@ namespace hazelcast {
                             int64_t elapsedNanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
                                     std::chrono::steady_clock::now() - start).count();
                             if (elapsedNanos > backoff_timeout_nanos_) {
-                                throw (exception::ExceptionBuilder<exception::HazelcastOverloadException>(
+                                throw (exception::exception_builder<exception::hazelcast_overload>(
                                         "CallIdSequenceWithBackpressure::handleNoSpaceLeft")
                                         << "Timed out trying to acquire another call ID."
                                         << " maxConcurrentInvocations = " << get_max_concurrent_invocations()
@@ -1927,7 +1927,7 @@ namespace hazelcast {
                             : AbstractCallIdSequence(max_concurrent_invocations) {}
 
                     void FailFastCallIdSequence::handle_no_space_left() {
-                        throw (exception::ExceptionBuilder<exception::HazelcastOverloadException>(
+                        throw (exception::exception_builder<exception::hazelcast_overload>(
                                 "FailFastCallIdSequence::handleNoSpaceLeft")
                                 << "Maximum invocation count is reached. maxConcurrentInvocations = "
                                 << get_max_concurrent_invocations()).build();
@@ -2062,10 +2062,10 @@ namespace hazelcast {
                         for (auto const &connection : client_connection_manager_.get_active_connections()) {
                             try {
                                 invoke(registration, connection);
-                            } catch (exception::IException &e) {
+                            } catch (exception::iexception &e) {
                                 if (connection->is_alive()) {
                                     deregister_listener_internal(user_registration_id);
-                                    BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::HazelcastException>(
+                                    BOOST_THROW_EXCEPTION((exception::exception_builder<exception::hazelcast_>(
                                             "ClientListenerService::RegisterListenerTask::call")
                                             << "Listener can not be added " << e).build());
                                 }
@@ -2097,7 +2097,7 @@ namespace hazelcast {
                                 remove_event_handler(registration->call_id, subscriber);
 
                                 it = listener_registrations.erase(it);
-                            } catch (exception::IException &e) {
+                            } catch (exception::iexception &e) {
                                 ++it;
                                 if (subscriber->is_alive()) {
                                     successful = false;
@@ -2143,7 +2143,7 @@ namespace hazelcast {
                             const std::shared_ptr<connection::Connection> &connection) {
                         try {
                             invoke(listener_registration, connection);
-                        } catch (exception::IException &e) {
+                        } catch (exception::iexception &e) {
                             HZ_LOG(logger_, warning,
                                 boost::str(boost::format("Listener with pointer %1% can not be added to "
                                                          "a new connection: %2%, reason: %3%")

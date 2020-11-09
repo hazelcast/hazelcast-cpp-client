@@ -29,7 +29,7 @@ namespace hazelcast {
              *
              * @param length the length of the array/list
              * @return the mod of the hash
-             * @throws IllegalArgumentException if mod smaller than 1.
+             * @throws illegal_argument if mod smaller than 1.
              */
             static int hash_to_index(int hash, int length);
         };

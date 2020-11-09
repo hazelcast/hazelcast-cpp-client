@@ -287,7 +287,7 @@ namespace hazelcast {
             boost::future<int64_t> PNCounterImpl::get() {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
-                    BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::get",
+                    BOOST_THROW_EXCEPTION(exception::no_data_member_in_cluster("ClientPNCounterProxy::get",
                                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_get_internal(EMPTY_ADDRESS_LIST, nullptr, target);
@@ -296,7 +296,7 @@ namespace hazelcast {
             boost::future<int64_t> PNCounterImpl::get_and_add(int64_t delta) {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
-                    BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndAdd",
+                    BOOST_THROW_EXCEPTION(exception::no_data_member_in_cluster("ClientPNCounterProxy::getAndAdd",
                                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(delta, true, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -305,7 +305,7 @@ namespace hazelcast {
             boost::future<int64_t> PNCounterImpl::add_and_get(int64_t delta) {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
-                    BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::addAndGet",
+                    BOOST_THROW_EXCEPTION(exception::no_data_member_in_cluster("ClientPNCounterProxy::addAndGet",
                                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(delta, false, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -315,7 +315,7 @@ namespace hazelcast {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
                     BOOST_THROW_EXCEPTION(
-                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndSubtract",
+                            exception::no_data_member_in_cluster("ClientPNCounterProxy::getAndSubtract",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(-delta, true, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -326,7 +326,7 @@ namespace hazelcast {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
                     BOOST_THROW_EXCEPTION(
-                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::subtractAndGet",
+                            exception::no_data_member_in_cluster("ClientPNCounterProxy::subtractAndGet",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(-delta, false, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -336,7 +336,7 @@ namespace hazelcast {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
                     BOOST_THROW_EXCEPTION(
-                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::decrementAndGet",
+                            exception::no_data_member_in_cluster("ClientPNCounterProxy::decrementAndGet",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(-1, false, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -346,7 +346,7 @@ namespace hazelcast {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
                     BOOST_THROW_EXCEPTION(
-                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::incrementAndGet",
+                            exception::no_data_member_in_cluster("ClientPNCounterProxy::incrementAndGet",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(1, false, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -356,7 +356,7 @@ namespace hazelcast {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
                     BOOST_THROW_EXCEPTION(
-                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndDecrement",
+                            exception::no_data_member_in_cluster("ClientPNCounterProxy::getAndDecrement",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(-1, true, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -366,7 +366,7 @@ namespace hazelcast {
                 boost::shared_ptr<member> target = get_crdt_operation_target(*EMPTY_ADDRESS_LIST);
                 if (!target) {
                     BOOST_THROW_EXCEPTION(
-                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndIncrement",
+                            exception::no_data_member_in_cluster("ClientPNCounterProxy::getAndIncrement",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
                 return invoke_add_internal(1, true, EMPTY_ADDRESS_LIST,nullptr, target);
@@ -435,7 +435,7 @@ namespace hazelcast {
             boost::shared_ptr<member>
             PNCounterImpl::try_choose_a_new_target(std::shared_ptr<std::unordered_set<member>> excluded_addresses,
                                                boost::shared_ptr<member> last_target,
-                                               const exception::HazelcastException &last_exception) {
+                                               const exception::hazelcast_ &last_exception) {
                 HZ_LOG(logger_, finest,
                     boost::str(boost::format("Exception occurred while invoking operation on target %1%, "
                                              "choosing different target. Cause: %2%")
@@ -458,7 +458,7 @@ namespace hazelcast {
                         std::rethrow_exception(last_exception);
                     } else {
                         BOOST_THROW_EXCEPTION(
-                                exception::NoDataMemberInClusterException("ClientPNCounterProxy::invokeGetInternal",
+                                exception::no_data_member_in_cluster("ClientPNCounterProxy::invokeGetInternal",
                                                                           "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                     }
                 }
@@ -468,12 +468,12 @@ namespace hazelcast {
                     return invoke_on_member(request, target->get_uuid()).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             return get_and_update_timestamps(std::move(f));
-                        } catch (exception::HazelcastException &e) {
+                        } catch (exception::hazelcast_ &e) {
                             return invoke_get_internal(excluded_addresses, std::current_exception(),
                                                      try_choose_a_new_target(excluded_addresses, target, e)).get();
                         }
                     });
-                } catch (exception::HazelcastException &e) {
+                } catch (exception::hazelcast_ &e) {
                     return invoke_get_internal(excluded_addresses, std::current_exception(),
                                                     try_choose_a_new_target(excluded_addresses, target, e));
                 }
@@ -489,7 +489,7 @@ namespace hazelcast {
                         std::rethrow_exception(last_exception);
                     } else {
                         BOOST_THROW_EXCEPTION(
-                                exception::NoDataMemberInClusterException("ClientPNCounterProxy::invokeGetInternal",
+                                exception::no_data_member_in_cluster("ClientPNCounterProxy::invokeGetInternal",
                                                                           "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                     }
                 }
@@ -500,12 +500,12 @@ namespace hazelcast {
                     return invoke_on_member(request, target->get_uuid()).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             return get_and_update_timestamps(std::move(f));
-                        } catch (exception::HazelcastException &e) {
+                        } catch (exception::hazelcast_ &e) {
                             return invoke_add_internal(delta, getBeforeUpdate, excluded_addresses, std::current_exception(),
                                                      try_choose_a_new_target(excluded_addresses, target, e)).get();
                         }
                     });
-                } catch (exception::HazelcastException &e) {
+                } catch (exception::hazelcast_ &e) {
                     return invoke_add_internal(delta, getBeforeUpdate, excluded_addresses, std::current_exception(),
                                              try_choose_a_new_target(excluded_addresses, target, e));
                 }
@@ -929,8 +929,8 @@ namespace hazelcast {
                     protocol::ClientMessage &request, int partition_id) {
                 try {
                     return spi::impl::ClientInvocation::create(client_context_, std::make_shared<protocol::ClientMessage>(std::move(request)), object_name_, partition_id)->invoke();
-                } catch (exception::IException &) {
-                    util::ExceptionUtil::rethrow(std::current_exception());
+                } catch (exception::iexception &) {
+                    util::exception_util::rethrow(std::current_exception());
                     return boost::make_ready_future(protocol::ClientMessage(0));
                 }
             }
@@ -938,8 +938,8 @@ namespace hazelcast {
             boost::future<protocol::ClientMessage> SerializingProxy::invoke(protocol::ClientMessage &request) {
                 try {
                     return spi::impl::ClientInvocation::create(client_context_, std::make_shared<protocol::ClientMessage>(std::move(request)), object_name_)->invoke();
-                } catch (exception::IException &) {
-                    util::ExceptionUtil::rethrow(std::current_exception());
+                } catch (exception::iexception &) {
+                    util::exception_util::rethrow(std::current_exception());
                     return boost::make_ready_future(protocol::ClientMessage(0));
                 }
             }
@@ -948,8 +948,8 @@ namespace hazelcast {
                                                                       std::shared_ptr<connection::Connection> connection) {
                 try {
                     return spi::impl::ClientInvocation::create(client_context_, std::make_shared<protocol::ClientMessage>(std::move(request)), object_name_, connection)->invoke();
-                } catch (exception::IException &) {
-                    util::ExceptionUtil::rethrow(std::current_exception());
+                } catch (exception::iexception &) {
+                    util::exception_util::rethrow(std::current_exception());
                     return boost::make_ready_future(protocol::ClientMessage(0));
                 }
             }
@@ -959,8 +959,8 @@ namespace hazelcast {
                                         const serialization::pimpl::data &key_data) {
                 try {
                     return invoke_on_partition(request, get_partition_id(key_data));
-                } catch (exception::IException &) {
-                    util::ExceptionUtil::rethrow(std::current_exception());
+                } catch (exception::iexception &) {
+                    util::exception_util::rethrow(std::current_exception());
                     return boost::make_ready_future(protocol::ClientMessage(0));
                 }
             }
@@ -970,8 +970,8 @@ namespace hazelcast {
                 try {
                     auto invocation = spi::impl::ClientInvocation::create(client_context_, std::make_shared<protocol::ClientMessage>(std::move(request)), object_name_, uuid);
                     return invocation->invoke();
-                } catch (exception::IException &) {
-                    util::ExceptionUtil::rethrow(std::current_exception());
+                } catch (exception::iexception &) {
+                    util::exception_util::rethrow(std::current_exception());
                     return boost::make_ready_future(protocol::ClientMessage(0));
                 }
             }
@@ -1683,7 +1683,7 @@ namespace hazelcast {
                                 if (f.is_ready()) {
                                     m.callback->on_response(boost::make_optional<rb::read_result_set>(f.get()));
                                 }
-                            } catch (exception::IException &) {
+                            } catch (exception::iexception &) {
                                 m.callback->on_failure(std::current_exception());
                             }
                         }

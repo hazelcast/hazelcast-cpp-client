@@ -348,7 +348,7 @@ namespace hazelcast {
              * @param count the number of times \count_down must be invoked
              *              before threads can pass through \wait_for
              * @return \true if the new count was set, \false if the current count is not zero
-             * @throws IllegalArgumentException if \count is not positive number
+             * @throws illegal_argument if \count is not positive number
              */
             boost::future<bool> try_set_count(int32_t count);
 
@@ -418,7 +418,7 @@ namespace hazelcast {
              * @param rel_time the maximum time to wait
              * @return \no_timeout if the count reached zero, \timeout
              * if the waiting time elapsed before the count reached zero
-             * @throws IllegalStateException if the Hazelcast instance is shutdown while waiting
+             * @throws illegal_state if the Hazelcast instance is shutdown while waiting
              */
             boost::future<std::cv_status> wait_for(std::chrono::milliseconds timeout);
 
@@ -465,7 +465,7 @@ namespace hazelcast {
              * <p>
              * When the caller already holds the lock and the current lock() call is
              * reentrant, the call can fail with
-             * \LockAcquireLimitReachedException if the lock acquire limit is
+             * \lock_acquire_limit_reached if the lock acquire limit is
              * already reached. Please see server side FencedLockConfig for more
              * information.
              * <p>
@@ -488,13 +488,13 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the user pause
              * wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException. If the caller wants to deal with
+             * \lock_ownership_lost. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
-             * @throws LockAcquireLimitReachedException if the lock call is reentrant
+             * @throws lock_acquire_limit_reached if the lock call is reentrant
              *         and the configured lock acquire limit is already reached.
              */
             boost::future<void> lock();
@@ -503,7 +503,7 @@ namespace hazelcast {
              * Acquires the lock and returns the fencing token assigned to the current
              * thread for this lock acquire. If the lock is acquired reentrantly,
              * the same fencing token is returned, or the lock() call can fail with
-             * \LockAcquireLimitReachedException if the lock acquire limit is
+             * \lock_acquire_limit_reached if the lock acquire limit is
              * already reached. Please see server FencedLockConfig for more
              * information.
              * <p>
@@ -533,9 +533,9 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the user pause
              * wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException. If the caller wants to deal with
+             * \lock_ownership_lost. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              *
              * Fencing tokens are monotonic numbers that are incremented each time
              * the lock switches from the free state to the acquired state. They are
@@ -564,9 +564,9 @@ namespace hazelcast {
              * is not reentrant, its fencing token is guaranteed to be larger than the
              * previous tokens, independent of the thread that has acquired the lock.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
-             * @throws LockAcquireLimitReachedException if the lock call is reentrant
+             * @throws lock_acquire_limit_reached if the lock call is reentrant
              *         and the configured lock acquire limit is already reached.
              */
             boost::future<int64_t> lock_and_get_fence();
@@ -600,7 +600,7 @@ namespace hazelcast {
              * @return \true if the lock was acquired and
              *         \false otherwise
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<bool> try_lock();
@@ -630,7 +630,7 @@ namespace hazelcast {
              * @return \true if the lock was acquired and \false
              *         if the waiting time elapsed before the lock was acquired
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<bool> try_lock(std::chrono::milliseconds timeout);
@@ -670,10 +670,10 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the JVM
              * instance wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException which extends
-             * \IllegalMonitorStateException. If the caller wants to deal with
+             * \lock_ownership_lost which extends
+             * \illegal_monitor_state_exception. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              * <p>
              * Fencing tokens are monotonic numbers that are incremented each time
              * the lock switches from the free state to the acquired state. They are
@@ -705,7 +705,7 @@ namespace hazelcast {
              * @return the fencing token if the lock was acquired and
              *         \INVALID_FENCE otherwise
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<int64_t> try_lock_and_get_fence();
@@ -753,10 +753,10 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the process
              * wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException which extends
-             * {@link IllegalMonitorStateException}. If the caller wants to deal with
+             * \lock_ownership_lost which extends
+             * {@link illegal_monitor_state}. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              * <p>
              * Fencing tokens are monotonic numbers that are incremented each time
              * the lock switches from the free state to the acquired state. They are
@@ -789,7 +789,7 @@ namespace hazelcast {
              * @return the fencing token if the lock was acquired and
              *         \INVALID_FENCE otherwise
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<int64_t> try_lock_and_get_fence(std::chrono::milliseconds timeout);
@@ -797,9 +797,9 @@ namespace hazelcast {
             /**
              * Releases the lock if the lock is currently held by the current thread.
              *
-             * @throws IllegalMonitorStateException if the lock is not held by
+             * @throws illegal_monitor_state if the lock is not held by
              *         the current thread
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed before the current thread releases the lock
              */
             boost::future<void> unlock();
@@ -816,9 +816,9 @@ namespace hazelcast {
              *
              * @return the fencing token if the lock is held by the current thread
              *
-             * @throws IllegalMonitorStateException if the lock is not held by
+             * @throws illegal_monitor_state if the lock is not held by
              *         the current thread
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<int64_t> get_fence();
@@ -829,7 +829,7 @@ namespace hazelcast {
              * @return \true if this lock is locked by any thread
              *         in the cluster, \false otherwise.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<bool> is_locked();
@@ -840,7 +840,7 @@ namespace hazelcast {
              * @return \true if the lock is held by the current thread or not,
              *         \false otherwise.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<bool> is_locked_by_current_thread();
@@ -852,7 +852,7 @@ namespace hazelcast {
              * @return the reentrant lock count if the lock is held by any thread
              *         in the cluster
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<int32_t> get_lock_count();
@@ -1016,12 +1016,12 @@ namespace hazelcast {
              * <li>has its interrupted status set on entry to this method; or</li>
              * <li>is interrupted while waiting for a permit,</li>
              * </ul>
-             * then \InterruptedException is thrown and the current thread's
+             * then \interrupted is thrown and the current thread's
              * interrupted status is cleared.
              *
              * @param permits the number of permits to acquire
-             * @throws IllegalArgumentException if \permits is negative or zero
-             * @throws IllegalStateException if hazelcast instance is shutdown while waiting
+             * @throws illegal_argument if \permits is negative or zero
+             * @throws illegal_state if hazelcast instance is shutdown while waiting
              */
             virtual boost::future<void> acquire(int32_t permits = 1) = 0;
 
@@ -1043,8 +1043,8 @@ namespace hazelcast {
              * of a semaphore is established by programming convention in the application.
              *
              * @param permits The number of permits to release.
-             * @throws IllegalArgumentException if \permits is negative or zero
-             * @throws IllegalStateException if the Semaphore is non-JDK-compatible
+             * @throws illegal_argument if \permits is negative or zero
+             * @throws illegal_state if the Semaphore is non-JDK-compatible
              *         and the caller does not have a permit
              */
             virtual boost::future<void> release(int32_t permits = 1 ) = 0;
@@ -1087,8 +1087,8 @@ namespace hazelcast {
              * @param rel_time the maximum time to wait for a permit. The supported resolution is milliseconds.
              * @return \true if a permit was acquired and {@code false}
              * if the waiting time elapsed before a permit was acquired
-             * @throws InterruptedException  if the current server thread is interrupted
-             * @throws IllegalStateException if hazelcast instance is shutdown while waiting
+             * @throws interrupted  if the current server thread is interrupted
+             * @throws illegal_state if hazelcast instance is shutdown while waiting
              */
             boost::future<bool> try_acquire_for(std::chrono::milliseconds rel_time, int32_t permits = 1);
 
@@ -1110,7 +1110,7 @@ namespace hazelcast {
              *
              * @param permits the given permit count
              * @return true if initialization success. false if already initialized
-             * @throws IllegalArgumentException if \permits is negative
+             * @throws illegal_argument if \permits is negative
              */
             boost::future<bool> init(int32_t permits);
 
@@ -1137,7 +1137,7 @@ namespace hazelcast {
              * they are not released with this call.
              *
              * @param reduction the number of permits to reduce
-             * @throws IllegalArgumentException if \reduction is negative
+             * @throws illegal_argument if \reduction is negative
              */
             boost::future<void> reduce_permits(int32_t reduction);
 
@@ -1148,7 +1148,7 @@ namespace hazelcast {
              * they are not released with this call.
              *
              * @param increase the number of permits to increase
-             * @throws IllegalArgumentException if \increase is negative
+             * @throws illegal_argument if \increase is negative
              */
             boost::future<void> increase_permits(int32_t increase);
 
@@ -1311,7 +1311,7 @@ namespace hazelcast {
              *
              * @param name name of the atomic_long proxy
              * @return atomic_long proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<atomic_long> get_atomic_long(const std::string &name);
 
@@ -1335,7 +1335,7 @@ namespace hazelcast {
              * @param name name of the atomic_reference proxy
              * @param <E>  the type of object referred to by the reference
              * @return atomic_reference proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
 
             std::shared_ptr<atomic_reference> get_atomic_reference(const std::string &name);
@@ -1359,7 +1359,7 @@ namespace hazelcast {
              *
              * @param name name of the count_down_latch proxy
              * @return count_down_latch proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<latch> get_latch(const std::string &name);
 
@@ -1381,7 +1381,7 @@ namespace hazelcast {
              *
              * @param name name of the fenced_lock proxy
              * @return fenced_lock proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<fenced_lock> get_lock(const std::string &name);
 
@@ -1403,7 +1403,7 @@ namespace hazelcast {
              *
              * @param name name of the semaphore proxy
              * @return semaphore proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<counting_semaphore> get_semaphore(const std::string &name);
 

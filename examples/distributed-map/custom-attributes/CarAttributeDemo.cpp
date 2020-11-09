@@ -95,7 +95,7 @@ int main() {
 
     // we're using a custom attribute called 'attribute' which is provided by the 'CarAttributeExtractor'
     // we are also passing an argument 'mileage' to the extractor
-    hazelcast::client::query::SqlPredicate criteria(hz, "attribute[mileage] < 30000");
+    hazelcast::client::query::sql_predicate criteria(hz, "attribute[mileage] < 30000");
     auto cars = map->values<Car>(criteria).get();
 
     for (const auto &car : cars) {

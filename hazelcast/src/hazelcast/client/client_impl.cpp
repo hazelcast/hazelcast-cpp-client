@@ -187,7 +187,7 @@ namespace hazelcast {
                 try {
                     if (!lifecycle_service_.start()) {
                         lifecycle_service_.shutdown();
-                        BOOST_THROW_EXCEPTION(exception::IllegalStateException("hazelcast_client",
+                        BOOST_THROW_EXCEPTION(exception::illegal_state("hazelcast_client",
                                                                                "hazelcast_client could not be started!"));
                     }
                 } catch (std::exception &) {
@@ -257,7 +257,7 @@ namespace hazelcast {
                 if (awsConfig.is_enabled()) {
                     try {
                         addressTranslator.reset(new aws::impl::AwsAddressTranslator(awsConfig, *logger_));
-                    } catch (exception::InvalidConfigurationException &e) {
+                    } catch (exception::invalid_configuration &e) {
                         HZ_LOG(*logger_, warning,
                             boost::str(boost::format("Invalid aws configuration! %1%") % e.what())
                         );
@@ -289,7 +289,7 @@ namespace hazelcast {
                 if (awsConfig.is_enabled()) {
                     int awsMemberPort = client_properties_.get_integer(client_properties_.get_aws_member_port());
                     if (awsMemberPort < 0 || awsMemberPort > 65535) {
-                        throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
+                        throw (exception::exception_builder<exception::invalid_configuration>(
                                 "hazelcast_client_instance_impl::createAddressProviders") << "Configured aws member port "
                                                                                        << awsMemberPort
                                                                                        << " is not a valid port number. It should be between 0-65535 inclusive.").build();
@@ -474,7 +474,7 @@ namespace hazelcast {
                 }
             }
             if (selected.empty()) {
-                throw (exception::ExceptionBuilder<exception::RejectedExecutionException>(
+                throw (exception::exception_builder<exception::rejected_execution>(
                         "IExecutorService::selectMembers") << "No member selected with memberSelector["
                                                            << member_selector << "]").build();
             }
@@ -487,8 +487,8 @@ namespace hazelcast {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         get_context(), request, get_name(), target);
                 return std::make_pair(clientInvocation->invoke(), clientInvocation);
-            } catch (exception::IException &) {
-                util::ExceptionUtil::rethrow(std::current_exception());
+            } catch (exception::iexception &) {
+                util::exception_util::rethrow(std::current_exception());
             }
             return std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
         }
@@ -499,8 +499,8 @@ namespace hazelcast {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         get_context(), request, get_name(), partition_id);
                 return std::make_pair(clientInvocation->invoke(), clientInvocation);
-            } catch (exception::IException &) {
-                util::ExceptionUtil::rethrow(std::current_exception());
+            } catch (exception::iexception &) {
+                util::exception_util::rethrow(std::current_exception());
             }
             return std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
         }
@@ -522,7 +522,7 @@ namespace hazelcast {
         address iexecutor_service::get_member_address(const member &member) {
             auto m = get_context().get_client_cluster_service().get_member(member.get_uuid());
             if (!m) {
-                throw (exception::ExceptionBuilder<exception::HazelcastException>(
+                throw (exception::exception_builder<exception::hazelcast_>(
                         "IExecutorService::getMemberAddress(Member)") << member << " is not available!").build();
             }
             return m->get_address();
@@ -746,7 +746,7 @@ namespace hazelcast {
         }
 
         namespace exception {
-            IException::IException(const std::string &exception_name, const std::string &source,
+            iexception::iexception(const std::string &exception_name, const std::string &source,
                                    const std::string &message, const std::string &details, int32_t error_no,
                                    std::exception_ptr cause, bool is_runtime, bool retryable)
                     : src_(source), msg_(message), details_(details), error_code_(error_no), cause_(cause),
@@ -755,56 +755,56 @@ namespace hazelcast {
                                                     details % source).str()) {
             }
 
-            IException::~IException() noexcept = default;
+            iexception::~iexception() noexcept = default;
 
-            char const *IException::what() const noexcept {
+            char const *iexception::what() const noexcept {
                 return report_.c_str();
             }
 
-            const std::string &IException::get_source() const {
+            const std::string &iexception::get_source() const {
                 return src_;
             }
 
-            const std::string &IException::get_message() const {
+            const std::string &iexception::get_message() const {
                 return msg_;
             }
 
-            std::ostream &operator<<(std::ostream &os, const IException &exception) {
+            std::ostream &operator<<(std::ostream &os, const iexception &exception) {
                 os << exception.what();
                 return os;
             }
 
-            const std::string &IException::get_details() const {
+            const std::string &iexception::get_details() const {
                 return details_;
             }
 
-            int32_t IException::get_error_code() const {
+            int32_t iexception::get_error_code() const {
                 return error_code_;
             }
 
-            bool IException::is_runtime_exception() const {
+            bool iexception::is_runtime() const {
                 return runtime_exception_;
             }
 
-            bool IException::is_retryable() const {
+            bool iexception::is_retryable() const {
                 return retryable_;
             }
 
-            IException::IException() = default;
+            iexception::iexception() = default;
 
-            RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
+            retryable_hazelcast::retryable_hazelcast(const std::string &source,
                                                                      const std::string &message,
                                                                      const std::string &details,
                                                                      std::exception_ptr cause)
-                    : RetryableHazelcastException(
-                    "RetryableHazelcastException", protocol::RETRYABLE_HAZELCAST, source, message, details, cause, true,
+                    : retryable_hazelcast(
+                    "retryable_hazelcast", protocol::RETRYABLE_HAZELCAST, source, message, details, cause, true,
                     true) {}
 
-            RetryableHazelcastException::RetryableHazelcastException(const std::string &error_name, int32_t error_code,
+            retryable_hazelcast::retryable_hazelcast(const std::string &error_name, int32_t error_code,
                                                                      const std::string &source,
                                                                      const std::string &message,
                                                                      const std::string &details, std::exception_ptr cause,
-                                                                     bool runtime, bool retryable) : HazelcastException(error_name,
+                                                                     bool runtime, bool retryable) : hazelcast_(error_name,
                                                                                                           error_code,
                                                                                                           source,
                                                                                                           message,
@@ -813,14 +813,14 @@ namespace hazelcast {
                                                                                                           runtime,
                                                                                                           retryable) {}
 
-            MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
+            member_left::member_left(const std::string &source, const std::string &message,
                                                      const std::string &details, std::exception_ptr cause)
-                    : ExecutionException("MemberLeftException", protocol::MEMBER_LEFT, source, message, details,
+                    : execution("member_left", protocol::MEMBER_LEFT, source, message, details,
                                          cause, false,true) {}
 
-            ConsistencyLostException::ConsistencyLostException(const std::string &source, const std::string &message,
+            consistency_lost::consistency_lost(const std::string &source, const std::string &message,
                                                                const std::string &details, std::exception_ptr cause)
-                    : HazelcastException("ConsistencyLostException", protocol::CONSISTENCY_LOST_EXCEPTION, source, message,
+                    : hazelcast_("consistency_lost", protocol::CONSISTENCY_LOST_EXCEPTION, source, message,
                                          details, cause, true,false) {}
         }
     }

@@ -64,7 +64,7 @@
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/util/ExceptionUtil.h"
+#include "hazelcast/util/exception_util.h"
 #include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -125,7 +125,7 @@ namespace hazelcast {
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
                 out << "Address " << host << " ip number is not available. " << e.what();
-                throw client::exception::UnknownHostException("AddressUtil::getByName", out.str());
+                throw client::exception::unknown_host("AddressUtil::getByName", out.str());
             }
         }
 
@@ -197,12 +197,12 @@ namespace hazelcast {
                 std::string statusMessage;
                 std::getline(response_stream_, statusMessage);
                 if (!response_stream_ || httpVersion.substr(0, 5) != "HTTP/") {
-                    throw client::exception::IOException("openConnection", "Invalid response");
+                    throw client::exception::io("openConnection", "Invalid response");
                 }
                 if (statusCode != 200) {
                     std::stringstream out;
                     out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
-                    throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());;
+                    throw client::exception::io("SyncHttpsClient::openConnection", out.str());;
                 }
 
                 // Read the response headers, which are terminated by a blank line.
@@ -226,7 +226,7 @@ namespace hazelcast {
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
                 out << "Could not retrieve response from https://" << server_ << uri_path_ << " Error:" << e.what();
-                throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
+                throw client::exception::io("SyncHttpsClient::openConnection", out.str());
             }
 #endif // HZ_BUILD_WITH_SSL
 
@@ -516,12 +516,12 @@ namespace hazelcast {
                 std::string statusMessage;
                 std::getline(response_stream_, statusMessage);
                 if (!response_stream_ || httpVersion.substr(0, 5) != "HTTP/") {
-                    throw client::exception::IOException("openConnection", "Invalid response");
+                    throw client::exception::io("openConnection", "Invalid response");
                 }
                 if (statusCode != 200) {
                     std::stringstream out;
                     out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
-                    throw client::exception::IOException("SyncHttpClient::openConnection", out.str());;
+                    throw client::exception::io("SyncHttpClient::openConnection", out.str());;
                 }
 
                 // Read the response headers, which are terminated by a blank line.
@@ -547,7 +547,7 @@ namespace hazelcast {
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
                 out << "Could not retrieve response from http://" << server_ << uri_path_ << " Error:" << e.what();
-                throw client::exception::IOException("SyncHttpClient::openConnection", out.str());
+                throw client::exception::io("SyncHttpClient::openConnection", out.str());
             }
         }
     }
@@ -560,7 +560,7 @@ namespace hazelcast {
             if (closable != NULL) {
                 try {
                     closable->close(close_reason);
-                } catch (client::exception::IException &) {
+                } catch (client::exception::iexception &) {
                     // suppress
                 }
 
@@ -643,7 +643,7 @@ namespace hazelcast {
         const std::string &Preconditions::check_has_text(const std::string &argument,
                                                        const std::string &error_message) {
             if (argument.empty()) {
-                throw client::exception::IllegalArgumentException("", error_message);
+                throw client::exception::illegal_argument("", error_message);
             }
 
             return argument;
@@ -651,7 +651,7 @@ namespace hazelcast {
 
         void Preconditions::check_ssl(const std::string &source_method) {
 #ifndef HZ_BUILD_WITH_SSL
-            throw client::exception::InvalidConfigurationException(sourceMethod, "You should compile with "
+            throw client::exception::invalid_configuration(sourceMethod, "You should compile with "
                     "HZ_BUILD_WITH_SSL flag. You should also have the openssl installed on your machine and you need "
                     "to link with the openssl library.");
 #endif
@@ -659,7 +659,7 @@ namespace hazelcast {
 
         void Preconditions::check_true(bool expression, const std::string &error_message) {
             if (!expression) {
-                throw client::exception::IllegalArgumentException(error_message);
+                throw client::exception::illegal_argument(error_message);
             }
         }
     }
@@ -690,7 +690,7 @@ namespace hazelcast {
             std::unique_ptr<boost::asio::ip::address> inetAddress;
             try {
                 inetAddress.reset(new boost::asio::ip::address(AddressUtil::get_by_name(scoped_address)));
-            } catch (client::exception::UnknownHostException &ignored) {
+            } catch (client::exception::unknown_host &ignored) {
                 HZ_LOG(lg, finest,
                     boost::str(boost::format("Address %1% ip number is not available %2%")
                                              % scoped_address % ignored.what())
@@ -707,7 +707,7 @@ namespace hazelcast {
                 for (int i = 0; i < port_try_count; i++) {
                     try {
                         addresses.push_back(client::address(scoped_address, possiblePort + i));
-                    } catch (client::exception::UnknownHostException &ignored) {
+                    } catch (client::exception::unknown_host &ignored) {
                         HZ_LOG(lg, finest,
                             boost::str(boost::format("Address [%1%] ip number is not available. %2%")
                                                      % scoped_address % ignored.what())
@@ -914,19 +914,19 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> ExceptionUtil::hazelcastExceptionFactory(
-                new HazelcastExceptionFactory());
+        const std::shared_ptr<exception_util::runtime_exception_factory> exception_util::hazelcastExceptionFactory(
+                new class hazelcast_exception_factory());
 
-        void ExceptionUtil::rethrow(std::exception_ptr e) {
+        void exception_util::rethrow(std::exception_ptr e) {
             return rethrow(e, hazelcast_exception_factory());
         }
 
-        void ExceptionUtil::rethrow(std::exception_ptr e,
-                                    const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &runtime_exception_factory) {
+        void exception_util::rethrow(std::exception_ptr e,
+                                     const std::shared_ptr<exception_util::runtime_exception_factory> &runtime_exception_factory) {
             try {
                 std::rethrow_exception(e);
-            } catch (client::exception::IException &ie) {
-                if (ie.is_runtime_exception()) {
+            } catch (client::exception::iexception &ie) {
+                if (ie.is_runtime()) {
                     std::rethrow_exception(e);
                 }
 
@@ -943,19 +943,19 @@ namespace hazelcast {
             }
         }
 
-        const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &ExceptionUtil::hazelcast_exception_factory() {
+        const std::shared_ptr<exception_util::runtime_exception_factory> &exception_util::hazelcast_exception_factory() {
             return hazelcastExceptionFactory;
         }
 
-        ExceptionUtil::RuntimeExceptionFactory::~RuntimeExceptionFactory() = default;
+        exception_util::runtime_exception_factory::~runtime_exception_factory() = default;
 
-        void ExceptionUtil::HazelcastExceptionFactory::rethrow(
+        void exception_util::hazelcast_exception_factory::rethrow(
                 std::exception_ptr throwable, const std::string &message) {
             try {
                 std::rethrow_exception(throwable);
             } catch (...) {
                 std::throw_with_nested(boost::enable_current_exception(
-                        client::exception::HazelcastException("HazelcastExceptionFactory::create", message)));
+                        client::exception::hazelcast_("hazelcast_Factory::create", message)));
             }
         }
     }

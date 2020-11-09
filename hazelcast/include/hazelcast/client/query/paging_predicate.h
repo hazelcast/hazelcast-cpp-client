@@ -22,7 +22,7 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Comparator.h"
-#include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/client/query/predicates.h"
 #include "hazelcast/client/query/entry_comparator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -41,7 +41,7 @@ namespace hazelcast {
         }
         class imap;
         namespace query {
-            class PagingPredicateMarker {};
+            class paging_predicate_marker {};
 
             /**
              * To differentiate users selection on result collection on map-wide operations
@@ -70,12 +70,12 @@ namespace hazelcast {
             };
 
             /**
-             * NOTE: PagingPredicate can only be used with values(), keySet() and entries() methods!!!
+             * NOTE: paging_predicate can only be used with values(), keySet() and entries() methods!!!
              *
              * This class is a special Predicate which helps to get a page-by-page result of a query.
              * It can be constructed with a page-size, an inner predicate for filtering, and a comparator for sorting.
              * This class is not thread-safe and stateless. To be able to reuse for another query, one should call
-             * {@link PagingPredicate#reset()}
+             * {@link paging_predicate#reset()}
              * <br/>
              * Here is an example usage.
              * <pre>
@@ -83,7 +83,7 @@ namespace hazelcast {
              *
              * // We are constructing our paging predicate with a predicate and page size. In this case query results fetched two
              * by two.
-             * PagingPredicate predicate = new PagingPredicate(lessEqualThanFour, 2);
+             * paging_predicate predicate = new paging_predicate(lessEqualThanFour, 2);
              *
              * // we are initializing our map with integers from 0 to 10 as keys and values.
              * IMap map = hazelcastInstance.getMap(...);
@@ -106,12 +106,12 @@ namespace hazelcast {
              * </pre>
              */
             template<typename K, typename V>
-            class PagingPredicate : public Predicate, public PagingPredicateMarker {
+            class paging_predicate : public predicate, public paging_predicate_marker {
                 friend imap;
                 friend protocol::codec::holder::paging_predicate_holder;
-                friend serialization::hz_serializer<query::PagingPredicate<K, V>>;
+                friend serialization::hz_serializer<query::paging_predicate<K, V>>;
             public:
-                ~PagingPredicate() = default;
+                ~paging_predicate() = default;
 
                 /**
                  * resets for reuse
@@ -181,12 +181,12 @@ namespace hazelcast {
                  * Construct with a pageSize
                  * results will not be filtered
                  * results will be natural ordered
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
+                 * throws illegal_argument {@link illegal_argument} if pageSize is not greater than 0
                  *
                  * @param predicatePageSize size of the page
                  */
-                PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
-                        size_t predicate_page_size) : out_stream_(serialization_service.new_output_stream()),
+                paging_predicate(serialization::pimpl::SerializationService &serialization_service,
+                                 size_t predicate_page_size) : out_stream_(serialization_service.new_output_stream()),
                         page_size_(predicate_page_size), page_(0), iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object<bool>(nullptr);
                     out_stream_.write_object<bool>(nullptr);
@@ -196,15 +196,15 @@ namespace hazelcast {
                  * Construct with an inner predicate and pageSize
                  * results will be filtered via inner predicate
                  * results will be natural ordered
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if inner predicate is also {@link PagingPredicate}
+                 * throws illegal_argument {@link illegal_argument} if pageSize is not greater than 0
+                 * throws illegal_argument {@link illegal_argument} if inner predicate is also {@link paging_predicate}
                  *
                  * @param predicate the inner predicate through which results will be filtered
                  * @param predicatePageSize  the page size
                  */
                 template<typename INNER_PREDICATE>
-                PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
-                        size_t predicate_page_size, const INNER_PREDICATE &predicate)
+                paging_predicate(serialization::pimpl::SerializationService &serialization_service,
+                                 size_t predicate_page_size, const INNER_PREDICATE &predicate)
                         : out_stream_(serialization_service.new_output_stream()), page_size_(predicate_page_size), page_(0),
                         iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object(predicate);
@@ -216,14 +216,14 @@ namespace hazelcast {
                  * Construct with a comparator and pageSize
                  * results will not be filtered
                  * results will be ordered via comparator
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
+                 * throws illegal_argument {@link illegal_argument} if pageSize is not greater than 0
                  *
                  * @param comparatorObj the comparator through which results will be ordered
                  * @param predicatePageSize   the page size
                  */
                 template<typename COMPARATOR>
-                PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
-                        COMPARATOR &&comp, size_t predicate_page_size)
+                paging_predicate(serialization::pimpl::SerializationService &serialization_service,
+                                 COMPARATOR &&comp, size_t predicate_page_size)
                         : out_stream_(serialization_service.new_output_stream()), page_size_(predicate_page_size), page_(0),
                         iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object<bool>(nullptr);
@@ -236,16 +236,16 @@ namespace hazelcast {
                  * Construct with an inner predicate, comparator and pageSize
                  * results will be filtered via inner predicate
                  * results will be ordered via comparator
-                 * throws {@link IllegalArgumentException} if pageSize is not greater than 0
-                 * throws {@link IllegalArgumentException} if inner predicate is also {@link PagingPredicate}
+                 * throws {@link illegal_argument} if pageSize is not greater than 0
+                 * throws {@link illegal_argument} if inner predicate is also {@link paging_predicate}
                  *
                  * @param predicate  the inner predicate through which results will be filtered
                  * @param comparatorObj the comparator through which results will be ordered
                  * @param predicatePageSize   the page size
                  */
                 template<typename INNER_PREDICATE, typename COMPARATOR>
-                PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
-                        const INNER_PREDICATE &predicate, COMPARATOR &&comp, size_t predicate_page_size)
+                paging_predicate(serialization::pimpl::SerializationService &serialization_service,
+                                 const INNER_PREDICATE &predicate, COMPARATOR &&comp, size_t predicate_page_size)
                         : out_stream_(serialization_service.new_output_stream()), page_size_(predicate_page_size), page_(0),
                         iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object(predicate);
@@ -259,7 +259,7 @@ namespace hazelcast {
 
         namespace serialization {
             template<typename K, typename V>
-            struct hz_serializer<query::PagingPredicate<K, V>> : public identified_data_serializer {
+            struct hz_serializer<query::paging_predicate<K, V>> : public identified_data_serializer {
                 /**
                  * @return factory id
                  */
@@ -278,7 +278,7 @@ namespace hazelcast {
                  * Defines how this class will be written.
                  * @param writer object_data_output
                  */
-                static void write_data(const query::PagingPredicate<K, V> &obj, object_data_output &out) {
+                static void write_data(const query::paging_predicate<K, V> &obj, object_data_output &out) {
                     out.write_bytes(obj.outStream.toByteArray());
                     out.write<int32_t>((int32_t) obj.page);
                     out.write<int32_t>((int32_t) obj.pageSize);
@@ -296,10 +296,10 @@ namespace hazelcast {
                 /**
                  * Should not be called at the client side!
                  */
-                static query::PagingPredicate<K, V> read_data(object_data_input &in) {
+                static query::paging_predicate<K, V> read_data(object_data_input &in) {
                     // Not need to read at the client side
-                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("readData",
-                                                                                     "Client should not need to use readdata method!!!"));
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("readData",
+                                                                                       "Client should not need to use readdata method!!!"));
                 }
             };
 

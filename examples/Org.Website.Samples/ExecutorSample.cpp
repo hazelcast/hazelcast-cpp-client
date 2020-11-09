@@ -42,13 +42,13 @@ using namespace hazelcast::client;
 //
 //    @Override
 //    public void writeData(object_data_output out)
-//            throws IOException {
+//            throws io {
 //        out.writeUTF(message);
 //    }
 //
 //    @Override
 //    public void readData(object_data_input in)
-//            throws IOException {
+//            throws io {
 //        message = in.readUTF();
 //    }
 //
@@ -99,7 +99,7 @@ public:
     void on_failure(std::exception_ptr e) override {
         try {
             std::rethrow_exception(e);
-        } catch (hazelcast::client::exception::IException &e) {
+        } catch (hazelcast::client::exception::iexception &e) {
             std::cout << "The execution of the task failed with exception:" << e << std::endl;
         }
     }

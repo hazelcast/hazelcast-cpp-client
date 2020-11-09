@@ -18,7 +18,7 @@
 #include <sstream>
 #include <memory>
 
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/eviction/impl/comparator/LRUEvictionPolicyComparator.h"
 #include "hazelcast/client/internal/eviction/impl/comparator/LFUEvictionPolicyComparator.h"
 #include "hazelcast/client/internal/eviction/impl/comparator/RandomEvictionPolicyComparator.h"
@@ -80,7 +80,7 @@ namespace hazelcast {
                             default:
                                 std::ostringstream out;
                                 out << "Unsupported eviction policy type: " << (int) eviction_policy_type;
-                                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
+                                BOOST_THROW_EXCEPTION(exception::illegal_argument(out.str()));
                         }
                     }
 

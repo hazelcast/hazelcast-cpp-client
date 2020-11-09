@@ -121,7 +121,7 @@ namespace hazelcast {
                 check();
                 if (def->get_class_id() == 0) {
                     BOOST_THROW_EXCEPTION(
-                            exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
+                            exception::illegal_argument("ClassDefinitionBuilder::addPortableField",
                                                                 "Portable class id cannot be zero!"));
                 }
                 FieldDefinition fieldDefinition(index_++, field_name, field_type::TYPE_PORTABLE, def->get_factory_id(),
@@ -135,7 +135,7 @@ namespace hazelcast {
                 check();
                 if (def->get_class_id() == 0) {
                     BOOST_THROW_EXCEPTION(
-                            exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
+                            exception::illegal_argument("ClassDefinitionBuilder::addPortableField",
                                                                 "Portable class id cannot be zero!"));
                 }
                 FieldDefinition fieldDefinition(index_++, field_name, field_type::TYPE_PORTABLE_ARRAY,
@@ -151,7 +151,7 @@ namespace hazelcast {
                     char buf[100];
                     util::hz_snprintf(buf, 100, "Invalid field index. Index in definition:%d, being added at index:%d",
                                       defIndex, index_);
-                    BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf));
+                    BOOST_THROW_EXCEPTION(exception::illegal_argument("ClassDefinitionBuilder::addField", buf));
                 }
                 index_++;
                 field_definitions_.push_back(field_definition);
@@ -171,7 +171,7 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::check() {
                 if (done_) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("ClassDefinitionBuilder::check",
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("ClassDefinitionBuilder::check",
                                                                                      "ClassDefinition is already built for " +
                                                                                      util::IOUtil::to_string(class_id_)));
                 }
@@ -323,8 +323,8 @@ namespace hazelcast {
                 if (it != field_definitions_map_.end()) {
                     return it->second;
                 }
-                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("ClassDefinition::getField",
-                        (boost::format("Invalid field name: '%1%' for ClassDefinition {id: %2%, version: %3%}")
+                BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("ClassDefinition::getField",
+                                                                                   (boost::format("Invalid field name: '%1%' for ClassDefinition {id: %2%, version: %3%}")
                         %name %class_id_ %version_).str()));
             }
 
@@ -516,7 +516,7 @@ namespace hazelcast {
                     if (is_no_write_) { return; }
                     int32_t len = util::UTFUtil::is_valid_ut_f8(str);
                     if (len < 0) {
-                        BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::UTFDataFormatException>(
+                        BOOST_THROW_EXCEPTION((exception::exception_builder<exception::utf_data_format>(
                                 "DataOutput::write")
                                 << "String \"" << str << "\" is not UTF-8 formatted !!!").build());
                     }
@@ -675,8 +675,8 @@ namespace hazelcast {
 
                 FieldDefinition const &DefaultPortableWriter::set_position(const std::string &field_name, field_type field_type) {
                     if (raw_) {
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableWriter::setPosition",
-                                                                                         "Cannot write Portable fields after getRawDataOutput() is called!"));
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("PortableWriter::setPosition",
+                                                                                           "Cannot write Portable fields after getRawDataOutput() is called!"));
                     }
 
                     try {
@@ -684,7 +684,7 @@ namespace hazelcast {
 
                         if (written_fields_.find(field_name) != written_fields_.end()) {
                             BOOST_THROW_EXCEPTION(
-                                    exception::HazelcastSerializationException("PortableWriter::setPosition",
+                                    exception::hazelcast_serialization("PortableWriter::setPosition",
                                                                                "Field '" + std::string(field_name) +
                                                                                "' has already been written!"));
                         }
@@ -699,16 +699,16 @@ namespace hazelcast {
 
                         return fd;
 
-                    } catch (exception::IllegalArgumentException &iae) {
+                    } catch (exception::illegal_argument &iae) {
                         std::stringstream error;
-                        error << "HazelcastSerializationException( Invalid field name: '" << field_name;
+                        error << "hazelcast_serialization_exception( Invalid field name: '" << field_name;
                         error << "' for ClassDefinition {class id: " << util::IOUtil::to_string(cd_->get_class_id());
                         error << ", factoryId:" + util::IOUtil::to_string(cd_->get_factory_id());
                         error << ", version: " << util::IOUtil::to_string(cd_->get_version()) << "}. Error:";
                         error << iae.what();
 
                         BOOST_THROW_EXCEPTION(
-                                exception::HazelcastSerializationException("PortableWriter::setPosition", error.str()));
+                                exception::hazelcast_serialization("PortableWriter::setPosition", error.str()));
                     }
 
                 }
@@ -763,7 +763,7 @@ namespace hazelcast {
                         if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id) {
                             bool identified = dataInput.read<bool>();
                             if (!identified) {
-                                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                                BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                               "SerializationService::getObjectType",
                                                               " DataSerializable is not 'identified data'"));
                             }
@@ -814,7 +814,7 @@ namespace hazelcast {
                 data::data(std::vector<byte> buffer) : data_(std::move(buffer)), cached_hash_value_(-1) {
                     size_t size = data_.size();
                     if (size > 0 && size < data::DATA_OVERHEAD) {
-                        throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Data::setBuffer")
+                        throw (exception::exception_builder<exception::illegal_argument>("Data::setBuffer")
                                 << "Provided buffer should be either empty or should contain more than "
                                 << data::DATA_OVERHEAD << " bytes! Provided buffer size:" << size).build();
                     }
@@ -890,7 +890,7 @@ namespace hazelcast {
                         std::stringstream error;
                         error << "Class-id: " << class_id << " is already registered!";
                         BOOST_THROW_EXCEPTION(
-                                exception::IllegalArgumentException("ClassDefinitionContext::setClassVersion",
+                                exception::illegal_argument("ClassDefinitionContext::setClassVersion",
                                                                     error.str()));
                     }
                 }
@@ -907,7 +907,7 @@ namespace hazelcast {
                         return std::shared_ptr<ClassDefinition>();
                     }
                     if (cd->get_factory_id() != factory_id_) {
-                        throw (exception::ExceptionBuilder<exception::HazelcastSerializationException>(
+                        throw (exception::exception_builder<exception::hazelcast_serialization>(
                                 "ClassDefinitionContext::registerClassDefinition") << "Invalid factory-id! "
                                                                                    << factory_id_ << " -> "
                                                                                    << cd).build();
@@ -922,7 +922,7 @@ namespace hazelcast {
                     }
 
                     if (currentCd.get() != cd.get() && *currentCd != *cd) {
-                        throw (exception::ExceptionBuilder<exception::HazelcastSerializationException>(
+                        throw (exception::exception_builder<exception::hazelcast_serialization>(
                                 "ClassDefinitionContext::registerClassDefinition")
                                 << "Incompatible class-definitions with same class-id: " << *cd << " VS "
                                 << *currentCd).build();
@@ -949,8 +949,8 @@ namespace hazelcast {
                         final_position_ = input.read<int32_t>();
                         // field count
                         fieldCount = input.read<int32_t>();
-                    } catch (exception::IException &e) {
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                    } catch (exception::iexception &e) {
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                       "[PortableReaderBase::PortableReaderBase]", e.what()));
                     }
                     if (fieldCount != cd->get_field_count()) {
@@ -958,7 +958,7 @@ namespace hazelcast {
                         util::hz_snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount,
                                           cd->get_field_count());
                         BOOST_THROW_EXCEPTION(
-                                exception::IllegalStateException("[PortableReaderBase::PortableReaderBase]",
+                                exception::illegal_state("[PortableReaderBase::PortableReaderBase]",
                                                                  msg));
                     }
                     this->offset_ = input.position();
@@ -966,19 +966,19 @@ namespace hazelcast {
                 
                 void PortableReaderBase::set_position(const std::string &field_name, field_type const &field_type) {
                     if (raw_) {
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
-                                                                                         "Cannot read Portable fields after getRawDataInput() is called!"));
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("PortableReader::getPosition ",
+                                                                                           "Cannot read Portable fields after getRawDataInput() is called!"));
                     }
                     if (!cd_->has_field(field_name)) {
                         // TODO: if no field def found, java client reads nested position:
                         // readNestedPosition(fieldName, type);
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("PortableReader::getPosition ",
                                                                                          "Don't have a field named " +
                                                                                          std::string(field_name)));
                     }
 
                     if (cd_->get_field_type(field_name) != field_type) {
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("PortableReader::getPosition ",
                                                                                          "Field type did not matched for " +
                                                                                          std::string(field_name)));
                     }
@@ -1013,7 +1013,7 @@ namespace hazelcast {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.get_factory_id(),
                                           factory_id);
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                       "DefaultPortableReader::checkFactoryAndClass ",
                                                               std::string(msg)));
                     }
@@ -1021,7 +1021,7 @@ namespace hazelcast {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.get_class_id(),
                                           class_id);
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                       "DefaultPortableReader::checkFactoryAndClass ",
                                                               std::string(msg)));
                     }

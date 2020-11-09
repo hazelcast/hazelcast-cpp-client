@@ -22,7 +22,7 @@
 
 #include "hazelcast/client/hz_socket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/socket_interceptor.h"
 
 namespace hazelcast {
@@ -124,7 +124,7 @@ namespace hazelcast {
                                     invocationIt->second->notify_exception(
                                             boost::enable_current_exception(
                                                     std::make_exception_ptr(
-                                                            exception::IOException(
+                                                            exception::io(
                                                                     "Connection::write",
                                                                     message))));
 
@@ -237,7 +237,7 @@ namespace hazelcast {
                                           const std::shared_ptr<spi::impl::ClientInvocation> &invocation) {
                         if (!connection->is_alive()) {
                             invocation->notify_exception(
-                                    std::make_exception_ptr(boost::enable_current_exception(exception::IOException(
+                                    std::make_exception_ptr(boost::enable_current_exception(exception::io(
                                             "Connection::write", (boost::format{
                                                     "Socket closed. Invocation write for %1% on connection %2% failed"} %
                                                                   *invocation % *connection).str()))));

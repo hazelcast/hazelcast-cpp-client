@@ -24,7 +24,7 @@
 #include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
-#include "hazelcast/client/exception/HazelcastSerializationException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -134,14 +134,14 @@ namespace hazelcast {
 
                     void inline check_available(int index, int requested_length) {
                         if (index < 0) {
-                            BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
+                            BOOST_THROW_EXCEPTION(exception::illegal_argument("DataOutput::checkAvailable",
                                                                                       (boost::format("Negative pos! -> %1%") % index).str()));
                         }
 
                         size_t available = output_stream_.size() - index;
 
                         if (requested_length > (int) available) {
-                            BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
+                            BOOST_THROW_EXCEPTION(exception::illegal_argument("DataOutput::checkAvailable",
                                                                                       (boost::format("Cannot write %1% bytes!") % requested_length).str()));
                         }
                     }

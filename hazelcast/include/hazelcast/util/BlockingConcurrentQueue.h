@@ -21,7 +21,7 @@
 #include <condition_variable>
 
 #include "hazelcast/util/hazelcast_dll.h"
-#include "hazelcast/client/exception/InterruptedException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -41,7 +41,7 @@ namespace hazelcast {
                 std::unique_lock<std::mutex> lock(m_);
                 while (internal_queue_.size() == capacity_) {
                     if (is_interrupted_) {
-                        throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                        throw client::exception::interrupted("BlockingConcurrentQueue::push");
                     }
                     // wait on condition
                     not_full_.wait(lock);
@@ -54,7 +54,7 @@ namespace hazelcast {
                 std::unique_lock<std::mutex> lock(m_);
                 while (internal_queue_.empty()) {
                     if (is_interrupted_) {
-                        throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
+                        throw client::exception::interrupted("BlockingConcurrentQueue::pop");
                     }
                     // wait for notEmpty condition
                     not_empty_.wait(lock);

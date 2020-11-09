@@ -133,7 +133,7 @@ namespace hazelcast {
                     auto request = protocol::codec::client_statistics_encode(timestamp, new_stats, std::vector<byte>());
                     try {
                         spi::impl::ClientInvocation::create(client_context_, request, "", connection)->invoke().get();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         // suppress exception, do not print too many messages
                         HZ_LOG(logger_, finest,
                             boost::str(boost::format("Could not send stats %1%") % e)

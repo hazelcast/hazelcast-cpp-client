@@ -31,12 +31,12 @@ int main() {
         map->lock(i).get();
     }
 
-    std::cout << "# Map size before evictAll\t:" << map->size().get() << std::endl;
+    std::cout << "# Map size before evict_all\t:" << map->size().get() << std::endl;
 
     // should keep locked keys and evict all others.
     map->evict_all().get();
 
-    std::cout << "# After calling evictAll..." << std::endl;
+    std::cout << "# After calling evict_all..." << std::endl;
     std::cout << "# Expected map size\t: " << numberOfKeysToLock << std::endl;
     std::cout << "# Actual map size\t: " << map->size().get() << std::endl;
 

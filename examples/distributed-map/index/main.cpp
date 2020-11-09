@@ -68,7 +68,7 @@ int main() {
 
     start = std::chrono::steady_clock::now();
     auto entries = map->entry_set<std::string, Person>(
-            hazelcast::client::query::SqlPredicate(hz, "name == 'myname-30'")).get();
+            hazelcast::client::query::sql_predicate(hz, "name == 'myname-30'")).get();
     end = std::chrono::steady_clock::now();
     std::cout << "The query resulted in " << entries.size() << " entries in "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " milliseconds" << '\n';

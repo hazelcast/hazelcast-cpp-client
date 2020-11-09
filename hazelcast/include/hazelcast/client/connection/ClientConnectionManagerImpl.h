@@ -100,7 +100,7 @@ namespace hazelcast {
                 /**
                  * @param address to be connected
                  * @return associated connection if available, creates new connection otherwise
-                 * @throws IOException if connection is not established
+                 * @throws io if connection is not established
                  */
                 std::shared_ptr<Connection> get_or_connect(const address &address);
 

@@ -523,14 +523,14 @@ namespace hazelcast {
                 /**
                 * @param fieldName name of the field
                 * @return field definition by given name
-                * @throws IllegalArgumentException when field not found
+                * @throws illegal_argument when field not found
                 */
                 const FieldDefinition &get_field(const std::string &field_name) const;
 
                 /**
                 * @param fieldName name of the field
                 * @return type of given field
-                * @throws IllegalArgumentException
+                * @throws illegal_argument_exception
                 */
                 field_type get_field_type(const std::string &field_name) const;
 
@@ -658,7 +658,7 @@ namespace hazelcast {
 
                 /**
                 * @return the object read
-                * @throws IOException if it reaches end of file before finish reading
+                * @throws io if it reaches end of file before finish reading
                 */
                 template<typename T>
                 typename std::enable_if<!(std::is_array<T>::value &&
@@ -928,8 +928,8 @@ namespace hazelcast {
                                                                                                         context_.get_version());
                         if (!nestedClassDef) {
                             BOOST_THROW_EXCEPTION(
-                                    exception::HazelcastSerializationException("ClassDefWriter::write_null_portable",
-                                                                               "Cannot write null portable without explicitly registering class definition!"));
+                                    exception::hazelcast_serialization("ClassDefWriter::write_null_portable",
+                                                                                 "Cannot write null portable without explicitly registering class definition!"));
                         }
                         builder_.add_portable_field(field_name, nestedClassDef);
                     }
@@ -938,8 +938,8 @@ namespace hazelcast {
                     void write_portable(const std::string &field_name, const T *portable) {
                         if (NULL == portable) {
                             BOOST_THROW_EXCEPTION(
-                                    exception::HazelcastSerializationException("ClassDefinitionWriter::write_portable",
-                                                                               "Cannot write null portable without explicitly registering class definition!"));
+                                    exception::hazelcast_serialization("ClassDefinitionWriter::write_portable",
+                                                                                 "Cannot write null portable without explicitly registering class definition!"));
                         }
 
                         std::shared_ptr<ClassDefinition> nestedClassDef = create_nested_class_def(*portable);
@@ -949,7 +949,7 @@ namespace hazelcast {
                     template<typename T>
                     void write_portable_array(const std::string &field_name, const std::vector<T> *portables) {
                         if (NULL == portables || portables->size() == 0) {
-                            BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                            BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                           "ClassDefinitionWriter::write_portableArray",
                                                                   "Cannot write null portable array without explicitly registering class definition!"));
                         }
@@ -1132,8 +1132,8 @@ namespace hazelcast {
                             case field_type::TYPE_SHORT:
                                 return PortableReaderBase::read<int16_t>(field_name);
                             default:
-                                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("MorphingPortableReader::*",
-                                                                                                 "IncompatibleClassChangeError"));
+                                BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("MorphingPortableReader::*",
+                                                                                                   "IncompatibleClassChangeError"));
                         }
                     }
 
@@ -1228,7 +1228,7 @@ namespace hazelcast {
                     static boost::optional<T> read_object(object_data_input &in) {
                         bool identified = in.read<bool>();
                         if (!identified) {
-                            BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                            BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                           "object_data_input::read_object<identified_data_serializer>",
                                                                   "Received data is not identified data serialized."));
                         }
@@ -1238,7 +1238,7 @@ namespace hazelcast {
                         int32_t factoryId = in.read<int32_t>();
                         int32_t classId = in.read<int32_t>();
                         if (expectedFactoryId != factoryId || expectedClassId != classId) {
-                            BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                            BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                           "object_data_input::read_object<identified_data_serializer>",
                                                                   (boost::format(
                                                                           "Factory id %1% and class id %2% of data do not match expected "
@@ -1499,10 +1499,10 @@ namespace hazelcast {
                 * @see PortableWriter#getRawDataOutput
                 *
                 * Note that portable fields can not read after getRawDataInput() is called. In case this happens,
-                * IOException will be thrown.
+                * io will be thrown.
                 *
                 * @return rawDataInput
-                * @throws IOException
+                * @throws io_exception
                 */
                 object_data_input &get_raw_data_input();
 
@@ -1553,7 +1553,7 @@ namespace hazelcast {
                 * @tparam type of the portable field
                 * @param fieldName name of the field
                 *
-                * @throws IOException
+                * @throws io_exception
                 */
                 template<typename T>
                 void write_null_portable(const std::string &field_name);
@@ -1562,7 +1562,7 @@ namespace hazelcast {
                 * @tparam type of the portable class
                 * @param fieldName name of the field
                 * @param portable  Portable to be written
-                * @throws IOException
+                * @throws io_exception
                 */
                 template<typename T>
                 void write_portable(const std::string &field_name, const T *portable);
@@ -1571,7 +1571,7 @@ namespace hazelcast {
                 * @tparam type of the portable class
                 * @param fieldName name of the field
                 * @param values portable array to be written
-                * @throws IOException
+                * @throws io_exception
                 */
                 template<typename T>
                 void write_portable_array(const std::string &field_name, const std::vector<T> *values);
@@ -1579,10 +1579,10 @@ namespace hazelcast {
                 /**
                 * After writing portable fields, one can write remaining fields in old fashioned way consecutively at the end
                 * of stream. User should not that after getting rawDataOutput trying to write portable fields will result
-                * in IOException
+                * in io_exception
                 *
                 * @return object_data_output
-                * @throws IOException
+                * @throws io_exception
                 */
                 object_data_output &get_raw_data_output();
 
@@ -1603,7 +1603,7 @@ namespace hazelcast {
             * @tparam type of the portable class in array
             * @param fieldName name of the field
             * @return the portable array value read
-            * @throws IOException
+            * @throws io_exception
             */
             template<typename T>
             boost::optional<std::vector<T>> portable_reader::read_portable_array(const std::string &field_name) {
@@ -1623,7 +1623,7 @@ namespace hazelcast {
             * @tparam type of the portable class
             * @param fieldName name of the field
             * @param portable  Portable to be written
-            * @throws IOException
+            * @throws io_exception
             */
             template<typename T>
             void portable_writer::write_portable(const std::string &field_name, const T *portable) {
@@ -1637,7 +1637,7 @@ namespace hazelcast {
             * @tparam type of the portable class
             * @param fieldName name of the field
             * @param values portable array to be written
-            * @throws IOException
+            * @throws io_exception
             */
             template<typename T>
             void portable_writer::write_portable_array(const std::string &field_name, const std::vector<T> *values) {
@@ -1723,8 +1723,8 @@ namespace hazelcast {
                                        std::is_same<typename std::remove_all_extents<T>::type, char>::value)), void>::type
             inline object_data_output::write_object(const T object) {
                 if (!global_serializer_) {
-                    throw exception::HazelcastSerializationException("object_data_output::write_object",
-                            (boost::format("No serializer found for type(%1%).") %typeid(T).name()).str());
+                    throw exception::hazelcast_serialization("object_data_output::write_object",
+                                                                       (boost::format("No serializer found for type(%1%).") %typeid(T).name()).str());
                 }
                 if (is_no_write_) { return; }
                 write<int32_t>(static_cast<int32_t>(global_serializer::get_type_id()));
@@ -1753,7 +1753,7 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<identified_data_serializer, hz_serializer<T>>::value, boost::optional<T>>::type
             inline object_data_input::read_object(int32_t type_id) {
                 if (type_id != static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_DATA)) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                   "object_data_input::read_object<identified_data_serializer>",
                                                           (boost::format(
                                                                   "The associated serializer Serializer<T> is identified_data_serializer "
@@ -1767,7 +1767,7 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<portable_serializer, hz_serializer<T>>::value, boost::optional<T>>::type
             inline object_data_input::read_object(int32_t type_id) {
                 if (type_id != static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_PORTABLE)) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                   "object_data_input::read_object<portable_serializer>",
                                                           (boost::format(
                                                                   "The associated serializer Serializer<T> is portable_serializer "
@@ -1781,8 +1781,8 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<custom_serializer, hz_serializer<T>>::value, boost::optional<T>>::type
             inline object_data_input::read_object(int32_t type_id) {
                 if (type_id != hz_serializer<T>::get_type_id()) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("object_data_input::read_object<>",
-                                                                                     (boost::format(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("object_data_input::read_object<>",
+                                                                                       (boost::format(
                                                                                              "The associated serializer Serializer<T> type id %1% does not match "
                                                                                              "received data type id is %2%") %
                                                                                       hz_serializer<T>::get_type_id() %
@@ -1807,13 +1807,13 @@ namespace hazelcast {
                                       std::is_base_of<custom_serializer, hz_serializer<T>>::value), boost::optional<T>>::type
             inline object_data_input::read_object(int32_t type_id) {
                 if (!global_serializer_) {
-                    throw exception::HazelcastSerializationException("object_data_input::read_object",
-                            (boost::format("No serializer found for type %1%.") %typeid(T).name()).str());
+                    throw exception::hazelcast_serialization("object_data_input::read_object",
+                                                                       (boost::format("No serializer found for type %1%.") %typeid(T).name()).str());
                 }
 
                 if (type_id != static_cast<int32_t>(global_serializer_->get_type_id())) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("object_data_input::read_object<>",
-                                                                                     (boost::format(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("object_data_input::read_object<>",
+                                                                                       (boost::format(
                                                                                              "The global serializer type id %1% does not match "
                                                                                              "received data type id is %2%") %
                                                                                              static_cast<int32_t>(global_serializer_->get_type_id()) %
@@ -1908,8 +1908,8 @@ namespace hazelcast {
 
                     if (factoryId != hz_serializer<T>::get_factory_id() || classId != hz_serializer<T>::get_class_id()) {
                         BOOST_THROW_EXCEPTION(
-                                exception::HazelcastSerializationException("PortableSerializer::read_object",
-                                                                           (boost::format("Received data (factory-class id)=(%1%, %2%) does not match expected factory-class id (%3%, %4%)") %
+                                exception::hazelcast_serialization("PortableSerializer::read_object",
+                                                                             (boost::format("Received data (factory-class id)=(%1%, %2%) does not match expected factory-class id (%3%, %4%)") %
                                                                             factoryId % classId %
                                                                             hz_serializer<T>::get_factory_id() %
                                                                             hz_serializer<T>::get_class_id()).str()));
@@ -2067,13 +2067,13 @@ namespace hazelcast {
                 template<typename T>
                 void DefaultPortableWriter::check_portable_attributes(const FieldDefinition &fd) {
                     if (fd.get_factory_id() != hz_serializer<T>::get_factory_id()) {
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                       "DefaultPortableWriter::::checkPortableAttributes", (boost::format(
                                                               "Wrong Portable type! Expected factory-id: %1%, Actual factory-id: %2%")
                                                               %fd.get_factory_id() %hz_serializer<T>::get_factory_id()).str()));
                     }
                     if (fd.get_class_id() != hz_serializer<T>::get_class_id()) {
-                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
                                                       "DefaultPortableWriter::::checkPortableAttributes", (boost::format(
                                                               "Wrong Portable type! Expected class-id: %1%, Actual class-id: %2%")
                                                               %fd.get_class_id() %hz_serializer<T>::get_class_id()).str()));

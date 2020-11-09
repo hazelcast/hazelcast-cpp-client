@@ -43,7 +43,7 @@ namespace hazelcast {
          * The items in the ringbuffer can be found by a sequence that is in between (inclusive) the head and tail sequence.
          *
          * If data is read from a ringbuffer with a sequence that is smaller than the headSequence, it means that the data
-         * is not available anymore and a {@link StaleSequenceException} is thrown.
+         * is not available anymore and a {@link stale_sequence} is thrown.
          *
          * A Ringbuffer currently is not a distributed data-structure. So all data is stored in a single partition; comparable to the
          * IQueue implementation. But we'll provide an option to partition the data in the near future.
@@ -105,14 +105,14 @@ namespace hazelcast {
              *
              * @param sequence the sequence of the item to read.
              * @return the read item
-             * @throws StaleSequenceException             if the sequence is smaller then {@link #headSequence()}. Because a
+             * @throws stale_sequence             if the sequence is smaller then {@link #headSequence()}. Because a
              *                                            Ringbuffer won't store all event indefinitely, it can be that the data for the
-             *                                            given sequence doesn't exist anymore and the {@link StaleSequenceException}
+             *                                            given sequence doesn't exist anymore and the {@link stale_sequence}
              *                                            is thrown. It is up to the caller to deal with this particular situation, e.g.
              *                                            throw an Exception or restart from the last known head. That is why the
-             *                                            StaleSequenceException contains the last known head.
-             * @throws IllegalArgumentException if sequence is smaller than 0 or larger than {@link #tailSequence()}+1.
-             * @throws InterruptedException               if the call is interrupted while blocking.
+             *                                            stale_sequence contains the last known head.
+             * @throws illegal_argument if sequence is smaller than 0 or larger than {@link #tailSequence()}+1.
+             * @throws interrupted               if the call is interrupted while blocking.
              */
             template<typename E>
             boost::future<boost::optional<E>> read_one(int64_t sequence) {
@@ -179,7 +179,7 @@ namespace hazelcast {
              * @param collection the batch of items to add.
              * @return the future to synchronize on completion. The result of the future contains the sequenceId of
              * the last written item.
-             * @throws IllegalArgumentException if items is empty
+             * @throws illegal_argument if items is empty
              */
             template<typename E>
             boost::future<int64_t>
@@ -219,7 +219,7 @@ namespace hazelcast {
              * @param filter        the filter. Filter is allowed to be null, indicating
              *                      there is no filter.
              * @return a future containing the items read.
-             * @throws IllegalArgumentException if startSequence is smaller than 0
+             * @throws illegal_argument if startSequence is smaller than 0
              *                                  or if startSequence larger than {@link #tailSequence()}
              *                                  or if minCount smaller than 0
              *                                  or if minCount larger than maxCount,

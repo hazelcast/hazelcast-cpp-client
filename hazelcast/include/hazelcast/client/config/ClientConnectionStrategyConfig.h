@@ -46,7 +46,7 @@ namespace hazelcast {
                             ON,
                     /**
                      * Reconnect to cluster without blocking invocations. Invocations will receive
-                     * {@link hazelcast_clientOfflineException}
+                     * {@link hazelcast_client_offline}
                      */
                             ASYNC
                 };

@@ -22,7 +22,7 @@
 #include <sstream>
 
 #include "hazelcast/util/Closeable.h"
-#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/exception/iexception.h"
 
 
 namespace hazelcast {

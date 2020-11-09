@@ -65,7 +65,7 @@ int main() {
             map->put(key, v).get();
 
             map->unlock(key).get();
-        } catch (hazelcast::client::exception::IException &e) {
+        } catch (hazelcast::client::exception::iexception &e) {
             map->unlock(key).get();
             throw e;
         }

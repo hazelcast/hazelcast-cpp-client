@@ -340,137 +340,137 @@ namespace hazelcast {
 
             ClientExceptionFactory::ClientExceptionFactory() {
                 register_exception(UNDEFINED,
-                                  new ExceptionFactoryImpl<exception::UndefinedErrorCodeException>());
+                                  new ExceptionFactoryImpl<exception::undefined_error_code>());
                 register_exception(ARRAY_INDEX_OUT_OF_BOUNDS,
-                                  new ExceptionFactoryImpl<exception::ArrayIndexOutOfBoundsException>());
-                register_exception(ARRAY_STORE, new ExceptionFactoryImpl<exception::ArrayStoreException>());
-                register_exception(AUTHENTICATION, new ExceptionFactoryImpl<exception::AuthenticationException>());
-                register_exception(CACHE_NOT_EXISTS, new ExceptionFactoryImpl<exception::CacheNotExistsException>());
-                register_exception(CALLER_NOT_MEMBER, new ExceptionFactoryImpl<exception::CallerNotMemberException>());
-                register_exception(CANCELLATION, new ExceptionFactoryImpl<exception::CancellationException>());
-                register_exception(CLASS_CAST, new ExceptionFactoryImpl<exception::ClassCastException>());
-                register_exception(CLASS_NOT_FOUND, new ExceptionFactoryImpl<exception::ClassNotFoundException>());
+                                  new ExceptionFactoryImpl<exception::array_index_out_of_bounds>());
+                register_exception(ARRAY_STORE, new ExceptionFactoryImpl<exception::array_store>());
+                register_exception(AUTHENTICATION, new ExceptionFactoryImpl<exception::authentication>());
+                register_exception(CACHE_NOT_EXISTS, new ExceptionFactoryImpl<exception::cache_not_exists>());
+                register_exception(CALLER_NOT_MEMBER, new ExceptionFactoryImpl<exception::caller_not_member>());
+                register_exception(CANCELLATION, new ExceptionFactoryImpl<exception::cancellation>());
+                register_exception(CLASS_CAST, new ExceptionFactoryImpl<exception::class_cast>());
+                register_exception(CLASS_NOT_FOUND, new ExceptionFactoryImpl<exception::class_not_found>());
                 register_exception(CONCURRENT_MODIFICATION,
-                                  new ExceptionFactoryImpl<exception::ConcurrentModificationException>());
-                register_exception(CONFIG_MISMATCH, new ExceptionFactoryImpl<exception::ConfigMismatchException>());
+                                  new ExceptionFactoryImpl<exception::concurrent_modification>());
+                register_exception(CONFIG_MISMATCH, new ExceptionFactoryImpl<exception::config_mismatch>());
                 register_exception(DISTRIBUTED_OBJECT_DESTROYED,
-                                  new ExceptionFactoryImpl<exception::DistributedObjectDestroyedException>());
-                register_exception(ENDOFFILE, new ExceptionFactoryImpl<exception::EOFException>());
-                register_exception(EXECUTION, new ExceptionFactoryImpl<exception::ExecutionException>());
-                register_exception(HAZELCAST, new ExceptionFactoryImpl<exception::HazelcastException>());
+                                  new ExceptionFactoryImpl<exception::distributed_object_destroyed>());
+                register_exception(ENDOFFILE, new ExceptionFactoryImpl<exception::eof>());
+                register_exception(EXECUTION, new ExceptionFactoryImpl<exception::execution>());
+                register_exception(HAZELCAST, new ExceptionFactoryImpl<exception::hazelcast_>());
                 register_exception(HAZELCAST_INSTANCE_NOT_ACTIVE,
-                                  new ExceptionFactoryImpl<exception::HazelcastInstanceNotActiveException>());
+                                  new ExceptionFactoryImpl<exception::hazelcast_instance_not_active>());
                 register_exception(HAZELCAST_OVERLOAD,
-                                  new ExceptionFactoryImpl<exception::HazelcastOverloadException>());
+                                  new ExceptionFactoryImpl<exception::hazelcast_overload>());
                 register_exception(HAZELCAST_SERIALIZATION,
-                                  new ExceptionFactoryImpl<exception::HazelcastSerializationException>());
-                register_exception(IO, new ExceptionFactoryImpl<exception::IOException>());
-                register_exception(ILLEGAL_ARGUMENT, new ExceptionFactoryImpl<exception::IllegalArgumentException>());
+                                  new ExceptionFactoryImpl<exception::hazelcast_serialization>());
+                register_exception(IO, new ExceptionFactoryImpl<exception::io>());
+                register_exception(ILLEGAL_ARGUMENT, new ExceptionFactoryImpl<exception::illegal_argument>());
                 register_exception(ILLEGAL_ACCESS_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::IllegalAccessException>());
-                register_exception(ILLEGAL_ACCESS_ERROR, new ExceptionFactoryImpl<exception::IllegalAccessError>());
+                                  new ExceptionFactoryImpl<exception::illegal_access>());
+                register_exception(ILLEGAL_ACCESS_ERROR, new ExceptionFactoryImpl<exception::illegal_access_error>());
                 register_exception(ILLEGAL_MONITOR_STATE,
-                                  new ExceptionFactoryImpl<exception::IllegalMonitorStateException>());
-                register_exception(ILLEGAL_STATE, new ExceptionFactoryImpl<exception::IllegalStateException>());
+                                  new ExceptionFactoryImpl<exception::illegal_monitor_state>());
+                register_exception(ILLEGAL_STATE, new ExceptionFactoryImpl<exception::illegal_state>());
                 register_exception(ILLEGAL_THREAD_STATE,
-                                  new ExceptionFactoryImpl<exception::IllegalThreadStateException>());
+                                  new ExceptionFactoryImpl<exception::illegal_thread_state>());
                 register_exception(INDEX_OUT_OF_BOUNDS,
-                                  new ExceptionFactoryImpl<exception::IndexOutOfBoundsException>());
-                register_exception(INTERRUPTED, new ExceptionFactoryImpl<exception::InterruptedException>());
-                register_exception(INVALID_ADDRESS, new ExceptionFactoryImpl<exception::InvalidAddressException>());
+                                  new ExceptionFactoryImpl<exception::index_out_of_bounds>());
+                register_exception(INTERRUPTED, new ExceptionFactoryImpl<exception::interrupted>());
+                register_exception(INVALID_ADDRESS, new ExceptionFactoryImpl<exception::invalid_address>());
                 register_exception(INVALID_CONFIGURATION,
-                                  new ExceptionFactoryImpl<exception::InvalidConfigurationException>());
-                register_exception(MEMBER_LEFT, new ExceptionFactoryImpl<exception::MemberLeftException>());
+                                  new ExceptionFactoryImpl<exception::invalid_configuration>());
+                register_exception(MEMBER_LEFT, new ExceptionFactoryImpl<exception::member_left>());
                 register_exception(NEGATIVE_ARRAY_SIZE,
-                                  new ExceptionFactoryImpl<exception::NegativeArraySizeException>());
-                register_exception(NO_SUCH_ELEMENT, new ExceptionFactoryImpl<exception::NoSuchElementException>());
-                register_exception(NOT_SERIALIZABLE, new ExceptionFactoryImpl<exception::NotSerializableException>());
-                register_exception(NULL_POINTER, new ExceptionFactoryImpl<exception::NullPointerException>());
-                register_exception(OPERATION_TIMEOUT, new ExceptionFactoryImpl<exception::OperationTimeoutException>());
+                                  new ExceptionFactoryImpl<exception::negative_array_size>());
+                register_exception(NO_SUCH_ELEMENT, new ExceptionFactoryImpl<exception::no_such_element>());
+                register_exception(NOT_SERIALIZABLE, new ExceptionFactoryImpl<exception::not_serializable>());
+                register_exception(NULL_POINTER, new ExceptionFactoryImpl<exception::null_pointer>());
+                register_exception(OPERATION_TIMEOUT, new ExceptionFactoryImpl<exception::operation_timeout>());
                 register_exception(PARTITION_MIGRATING,
-                                  new ExceptionFactoryImpl<exception::PartitionMigratingException>());
-                register_exception(QUERY, new ExceptionFactoryImpl<exception::QueryException>());
+                                  new ExceptionFactoryImpl<exception::partition_migrating>());
+                register_exception(QUERY, new ExceptionFactoryImpl<exception::query>());
                 register_exception(QUERY_RESULT_SIZE_EXCEEDED,
-                                  new ExceptionFactoryImpl<exception::QueryResultSizeExceededException>());
-                register_exception(REACHED_MAX_SIZE, new ExceptionFactoryImpl<exception::ReachedMaxSizeException>());
+                                  new ExceptionFactoryImpl<exception::query_result_size_exceeded>());
+                register_exception(REACHED_MAX_SIZE, new ExceptionFactoryImpl<exception::reached_max_size>());
                 register_exception(REJECTED_EXECUTION,
-                                  new ExceptionFactoryImpl<exception::RejectedExecutionException>());
+                                  new ExceptionFactoryImpl<exception::rejected_execution>());
                 register_exception(RESPONSE_ALREADY_SENT,
-                                  new ExceptionFactoryImpl<exception::ResponseAlreadySentException>());
+                                  new ExceptionFactoryImpl<exception::response_already_sent>());
                 register_exception(RETRYABLE_HAZELCAST,
-                                  new ExceptionFactoryImpl<exception::RetryableHazelcastException>());
-                register_exception(RETRYABLE_IO, new ExceptionFactoryImpl<exception::RetryableIOException>());
-                register_exception(RUNTIME, new ExceptionFactoryImpl<exception::RuntimeException>());
+                                  new ExceptionFactoryImpl<exception::retryable_hazelcast>());
+                register_exception(RETRYABLE_IO, new ExceptionFactoryImpl<exception::retryable_io>());
+                register_exception(RUNTIME, new ExceptionFactoryImpl<exception::runtime>());
                 register_exception(SECURITY, new ExceptionFactoryImpl<exception::SecurityException>());
-                register_exception(SOCK_ERROR, new ExceptionFactoryImpl<exception::SocketException>());
-                register_exception(STALE_SEQUENCE, new ExceptionFactoryImpl<exception::StaleSequenceException>());
+                register_exception(SOCK_ERROR, new ExceptionFactoryImpl<exception::socket>());
+                register_exception(STALE_SEQUENCE, new ExceptionFactoryImpl<exception::stale_sequence>());
                 register_exception(TARGET_DISCONNECTED,
-                                  new ExceptionFactoryImpl<exception::TargetDisconnectedException>());
-                register_exception(TARGET_NOT_MEMBER, new ExceptionFactoryImpl<exception::TargetNotMemberException>());
-                register_exception(TIMEOUT, new ExceptionFactoryImpl<exception::TimeoutException>());
-                register_exception(TOPIC_OVERLOAD, new ExceptionFactoryImpl<exception::TopicOverloadException>());
-                register_exception(TRANSACTION, new ExceptionFactoryImpl<exception::TransactionException>());
+                                  new ExceptionFactoryImpl<exception::target_disconnected>());
+                register_exception(TARGET_NOT_MEMBER, new ExceptionFactoryImpl<exception::target_not_member>());
+                register_exception(TIMEOUT, new ExceptionFactoryImpl<exception::timeout>());
+                register_exception(TOPIC_OVERLOAD, new ExceptionFactoryImpl<exception::topic_overload>());
+                register_exception(TRANSACTION, new ExceptionFactoryImpl<exception::transaction>());
                 register_exception(TRANSACTION_NOT_ACTIVE,
-                                  new ExceptionFactoryImpl<exception::TransactionNotActiveException>());
+                                  new ExceptionFactoryImpl<exception::transaction_not_active>());
                 register_exception(TRANSACTION_TIMED_OUT,
-                                  new ExceptionFactoryImpl<exception::TransactionTimedOutException>());
-                register_exception(URI_SYNTAX, new ExceptionFactoryImpl<exception::URISyntaxException>());
-                register_exception(UTF_DATA_FORMAT, new ExceptionFactoryImpl<exception::UTFDataFormatException>());
+                                  new ExceptionFactoryImpl<exception::transaction_timed_out>());
+                register_exception(URI_SYNTAX, new ExceptionFactoryImpl<exception::uri_syntax>());
+                register_exception(UTF_DATA_FORMAT, new ExceptionFactoryImpl<exception::utf_data_format>());
                 register_exception(UNSUPPORTED_OPERATION,
-                                  new ExceptionFactoryImpl<exception::UnsupportedOperationException>());
-                register_exception(WRONG_TARGET, new ExceptionFactoryImpl<exception::WrongTargetException>());
-                register_exception(XA, new ExceptionFactoryImpl<exception::XAException>());
-                register_exception(ACCESS_CONTROL, new ExceptionFactoryImpl<exception::AccessControlException>());
-                register_exception(LOGIN, new ExceptionFactoryImpl<exception::LoginException>());
+                                  new ExceptionFactoryImpl<exception::unsupported_operation>());
+                register_exception(WRONG_TARGET, new ExceptionFactoryImpl<exception::wrong_target>());
+                register_exception(XA, new ExceptionFactoryImpl<exception::xa>());
+                register_exception(ACCESS_CONTROL, new ExceptionFactoryImpl<exception::access_control>());
+                register_exception(LOGIN, new ExceptionFactoryImpl<exception::login>());
                 register_exception(UNSUPPORTED_CALLBACK,
-                                  new ExceptionFactoryImpl<exception::UnsupportedCallbackException>());
+                                  new ExceptionFactoryImpl<exception::unsupported_callback>());
                 register_exception(NO_DATA_MEMBER,
-                                  new ExceptionFactoryImpl<exception::NoDataMemberInClusterException>());
+                                  new ExceptionFactoryImpl<exception::no_data_member_in_cluster>());
                 register_exception(REPLICATED_MAP_CANT_BE_CREATED,
-                                  new ExceptionFactoryImpl<exception::ReplicatedMapCantBeCreatedOnLiteMemberException>());
+                                  new ExceptionFactoryImpl<exception::replicated_map_cant_be_created_on_lite_member>());
                 register_exception(MAX_MESSAGE_SIZE_EXCEEDED,
-                                  new ExceptionFactoryImpl<exception::MaxMessageSizeExceeded>());
+                                  new ExceptionFactoryImpl<exception::max_message_size_exceeded>());
                 register_exception(WAN_REPLICATION_QUEUE_FULL,
-                                  new ExceptionFactoryImpl<exception::WANReplicationQueueFullException>());
-                register_exception(ASSERTION_ERROR, new ExceptionFactoryImpl<exception::AssertionError>());
-                register_exception(OUT_OF_MEMORY_ERROR, new ExceptionFactoryImpl<exception::OutOfMemoryError>());
-                register_exception(STACK_OVERFLOW_ERROR, new ExceptionFactoryImpl<exception::StackOverflowError>());
+                                  new ExceptionFactoryImpl<exception::wan_replication_queue_full>());
+                register_exception(ASSERTION_ERROR, new ExceptionFactoryImpl<exception::assertion_error>());
+                register_exception(OUT_OF_MEMORY_ERROR, new ExceptionFactoryImpl<exception::out_of_memory_error>());
+                register_exception(STACK_OVERFLOW_ERROR, new ExceptionFactoryImpl<exception::stack_overflow_error>());
                 register_exception(NATIVE_OUT_OF_MEMORY_ERROR,
-                                  new ExceptionFactoryImpl<exception::NativeOutOfMemoryError>());
-                register_exception(SERVICE_NOT_FOUND, new ExceptionFactoryImpl<exception::ServiceNotFoundException>());
-                register_exception(STALE_TASK_ID, new ExceptionFactoryImpl<exception::StaleTaskIdException>());
-                register_exception(DUPLICATE_TASK, new ExceptionFactoryImpl<exception::DuplicateTaskException>());
-                register_exception(STALE_TASK, new ExceptionFactoryImpl<exception::StaleTaskException>());
-                register_exception(LOCAL_MEMBER_RESET, new ExceptionFactoryImpl<exception::LocalMemberResetException>());
+                                  new ExceptionFactoryImpl<exception::native_out_of_memory_error>());
+                register_exception(SERVICE_NOT_FOUND, new ExceptionFactoryImpl<exception::service_not_found>());
+                register_exception(STALE_TASK_ID, new ExceptionFactoryImpl<exception::stale_task_id>());
+                register_exception(DUPLICATE_TASK, new ExceptionFactoryImpl<exception::duplicate_task>());
+                register_exception(STALE_TASK, new ExceptionFactoryImpl<exception::stale_task>());
+                register_exception(LOCAL_MEMBER_RESET, new ExceptionFactoryImpl<exception::local_member_reset>());
                 register_exception(INDETERMINATE_OPERATION_STATE,
-                                  new ExceptionFactoryImpl<exception::IndeterminateOperationStateException>());
+                                  new ExceptionFactoryImpl<exception::indeterminate_operation_state>());
                 register_exception(FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::NodeIdOutOfRangeException>());
+                                  new ExceptionFactoryImpl<exception::node_id_out_of_range>());
                 register_exception(TARGET_NOT_REPLICA_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::TargetNotReplicaException>());
+                                  new ExceptionFactoryImpl<exception::target_not_replica>());
                 register_exception(MUTATION_DISALLOWED_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::MutationDisallowedException>());
+                                  new ExceptionFactoryImpl<exception::mutation_disallowed>());
                 register_exception(CONSISTENCY_LOST_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::ConsistencyLostException>());
+                                  new ExceptionFactoryImpl<exception::consistency_lost>());
                 register_exception(SESSION_EXPIRED_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::SessionExpiredException>());
+                                  new ExceptionFactoryImpl<exception::session_expired>());
                 register_exception(WAIT_KEY_CANCELLED_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::WaitKeyCancelledException>());
+                                  new ExceptionFactoryImpl<exception::wait_key_cancelled>());
                 register_exception(LOCK_ACQUIRE_LIMIT_REACHED_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::LockAcquireLimitReachedException>());
+                                  new ExceptionFactoryImpl<exception::lock_acquire_limit_reached>());
                 register_exception(LOCK_OWNERSHIP_LOST_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::LockOwnershipLostException>());
+                                  new ExceptionFactoryImpl<exception::lock_ownership_lost>());
                 register_exception(CP_GROUP_DESTROYED_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::CPGroupDestroyedException>());
+                                  new ExceptionFactoryImpl<exception::cp_group_destroyed>());
                 register_exception(CANNOT_REPLICATE_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::CannotReplicateException>());
+                                  new ExceptionFactoryImpl<exception::cannot_replicate>());
                 register_exception(LEADER_DEMOTED_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::LeaderDemotedException>());
+                                  new ExceptionFactoryImpl<exception::leader_demoted>());
                 register_exception(STALE_APPEND_REQUEST_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::StaleAppendRequestException>());
-                register_exception(NOT_LEADER_EXCEPTION, new ExceptionFactoryImpl<exception::NotLeaderException>());
+                                  new ExceptionFactoryImpl<exception::stale_append_request>());
+                register_exception(NOT_LEADER_EXCEPTION, new ExceptionFactoryImpl<exception::not_leader>());
                 register_exception(VERSION_MISMATCH_EXCEPTION,
-                                  new ExceptionFactoryImpl<exception::VersionMismatchException>());
+                                  new ExceptionFactoryImpl<exception::version_mismatch>());
             }
 
             ClientExceptionFactory::~ClientExceptionFactory() {
@@ -487,7 +487,7 @@ namespace hazelcast {
                     char msg[100];
                     util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", error_code);
                     BOOST_THROW_EXCEPTION(
-                            exception::IllegalStateException("ClientExceptionFactory::registerException", msg));
+                            exception::illegal_state("ClientExceptionFactory::registerException", msg));
                 }
 
                 error_code_to_factory_[error_code] = factory;

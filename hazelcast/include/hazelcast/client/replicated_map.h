@@ -22,7 +22,7 @@
 #include "hazelcast/client/entry_listener.h"
 #include "hazelcast/client/entry_event.h"
 #include "hazelcast/client/map_event.h"
-#include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/client/query/predicates.h"
 #include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -107,7 +107,7 @@ namespace hazelcast {
              * @param key      the key to listen to
              */
             template<typename K>
-            typename std::enable_if<!std::is_base_of<query::Predicate, K>::value, boost::future<boost::uuids::uuid>>::type
+            typename std::enable_if<!std::is_base_of<query::predicate, K>::value, boost::future<boost::uuids::uuid>>::type
             add_entry_listener(entry_listener &&listener, const K &key) {
                 return proxy::ReplicatedMapImpl::add_entry_listener_to_key(
                         std::shared_ptr<impl::BaseEventHandler>(
@@ -124,7 +124,7 @@ namespace hazelcast {
              * @param predicate the predicate for filtering entries
              */
             template<typename P>
-            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<boost::uuids::uuid>>::type
+            typename std::enable_if<std::is_base_of<query::predicate, P>::value, boost::future<boost::uuids::uuid>>::type
             add_entry_listener(entry_listener &&listener, const P &predicate) {
                 return proxy::ReplicatedMapImpl::add_entry_listener(
                         std::shared_ptr<impl::BaseEventHandler>(
@@ -142,7 +142,7 @@ namespace hazelcast {
              * @param key       the key to listen to
              */
             template<typename K, typename P>
-            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<boost::uuids::uuid>>::type
+            typename std::enable_if<std::is_base_of<query::predicate, P>::value, boost::future<boost::uuids::uuid>>::type
             add_entry_listener(entry_listener &&listener, const P &predicate, const K &key) {
                 return proxy::ReplicatedMapImpl::add_entry_listener(
                         std::shared_ptr<impl::BaseEventHandler>(

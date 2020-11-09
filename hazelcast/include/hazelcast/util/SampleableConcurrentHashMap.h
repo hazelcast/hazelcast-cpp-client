@@ -182,7 +182,7 @@ namespace hazelcast {
             std::unique_ptr<util::Iterable<E> > get_random_samples(int sample_count) const {
                 if (sample_count < 0) {
                     BOOST_THROW_EXCEPTION(
-                            client::exception::IllegalArgumentException("Sample count cannot be a negative value."));
+                            client::exception::illegal_argument("Sample count cannot be a negative value."));
                 }
                 if (sample_count == 0 || SynchronizedMap<std::shared_ptr<KS>, VS>::size() == 0) {
                     return std::unique_ptr<util::Iterable<E> >();
@@ -276,13 +276,13 @@ namespace hazelcast {
                     if (current_sample_.get() != NULL) {
                         return current_sample_;
                     } else {
-                        BOOST_THROW_EXCEPTION(client::exception::NoSuchElementException(
+                        BOOST_THROW_EXCEPTION(client::exception::no_such_element(
                                                       "No more elements in the iterated collection"));
                     }
                 }
 
                 void remove() override {
-                    throw client::exception::UnsupportedOperationException("Removing is not supported");
+                    throw client::exception::unsupported_operation("Removing is not supported");
                 }
 
             private:

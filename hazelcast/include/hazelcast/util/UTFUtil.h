@@ -58,19 +58,19 @@ namespace hazelcast {
                 } else if ((first_byte & 0xF8) == 0xF0) {
                     n = 3; // 11110bbb
                 } else {
-                    throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
+                    throw client::exception::utf_data_format("Bits::readUTF8Char", "Malformed byte sequence");
                 }
 
                 utf_buffer.push_back((char) first_byte);
                 for (size_t j = 0; j < n; j++) {
                     byte b = in.template read<byte>();
                     if (first_byte == 0xed && (b & 0xa0) == 0xa0) {
-                        throw client::exception::UTFDataFormatException("Bits::readUTF8Char",
+                        throw client::exception::utf_data_format("Bits::readUTF8Char",
                                                                         "Malformed byte sequence U+d800 to U+dfff"); //U+d800 to U+dfff
                     }
 
                     if ((b & 0xC0) != 0x80) { // n bytes matching 10bbbbbb follow ?
-                        throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
+                        throw client::exception::utf_data_format("Bits::readUTF8Char", "Malformed byte sequence");
                     }
                     utf_buffer.push_back((char) b);
                 }

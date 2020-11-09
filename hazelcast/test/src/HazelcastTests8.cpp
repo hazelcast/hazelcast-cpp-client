@@ -73,14 +73,14 @@
 #include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/pipelining.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -92,7 +92,7 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/item_listener.h"
 #include "hazelcast/client/multi_map.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/entry_event.h"
 #include "hazelcast/client/hazelcast_json_value.h"
 #include "hazelcast/client/ilist.h"
@@ -771,7 +771,7 @@ namespace hazelcast {
                     map->get<int, int>(i).get();
                 }
 
-                map->remove_all(query::EqualPredicate(*client_, query::QueryConstants::KEY_ATTRIBUTE_NAME, 20)).get();
+                map->remove_all(query::equal_predicate(*client_, query::query_constants::KEY_ATTRIBUTE_NAME, 20)).get();
 
                 assert_that_owned_entry_count_equals(*map, 0);
             }
@@ -1271,11 +1271,11 @@ namespace hazelcast {
                                         ++removeCount;
                                     }
                                     update_stats(updateIntervalCount, getCount, putCount, removeCount);
-                                } catch (hazelcast::client::exception::IOException &e) {
-                                    HZ_LOG(*logger_, warning, std::string("[SimpleMapTest IOException] ") + e.what());
-                                } catch (hazelcast::client::exception::hazelcast_clientNotActiveException &e) {
+                                } catch (hazelcast::client::exception::io &e) {
+                                    HZ_LOG(*logger_, warning, std::string("[SimpleMapTest io_exception] ") + e.what());
+                                } catch (hazelcast::client::exception::hazelcast_client_not_active &e) {
                                     HZ_LOG(*logger_, warning, std::string("[SimpleMapTest::run] ") + e.what());
-                                } catch (hazelcast::client::exception::IException &e) {
+                                } catch (hazelcast::client::exception::iexception &e) {
                                     HZ_LOG(*logger_, warning, std::string("[SimpleMapTest::run] ") + e.what());
                                 } catch (...) {
                                     HZ_LOG(*logger_, warning, "[SimpleMapTest:run] unknown exception!");
@@ -1465,7 +1465,7 @@ namespace hazelcast {
 
                 server.shutdown();
 
-                ASSERT_THROW((map->get<int, int>(1).get()), exception::hazelcast_clientNotActiveException);
+                ASSERT_THROW((map->get<int, int>(1).get()), exception::hazelcast_client_not_active);
             }
         }
     }
@@ -1493,7 +1493,7 @@ namespace hazelcast {
                     member_ = factory_.start_server();
                     is_started_ = true;
                     return true;
-                } catch (exception::IllegalStateException &e) {
+                } catch (exception::illegal_state &e) {
                     HZ_LOG(*logger_, severe,
                         boost::str(boost::format("Could not start new member!!! %1%") % e.what())
                     );

@@ -18,7 +18,7 @@
 #include "hazelcast/client/transaction_options.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/transactional_map.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/transactional_queue.h"
 #include "hazelcast/client/transactional_multi_map.h"
 #include "hazelcast/client/transactional_list.h"
@@ -74,21 +74,21 @@ namespace hazelcast {
             /**
              * Begins a transaction.
              *
-             * @throws IllegalStateException if a transaction already is active.
+             * @throws illegal_state if a transaction already is active.
              */
             boost::future<void> begin_transaction();
 
             /**
              * Commits a transaction.
              *
-             * @throws TransactionException if no transaction is active or the transaction could not be committed.
+             * @throws transaction if no transaction is active or the transaction could not be committed.
              */
             boost::future<void> commit_transaction();
 
             /**
              * Begins a transaction.
              *
-             * @throws IllegalStateException if a transaction already is active.
+             * @throws illegal_state if a transaction already is active.
              */
             boost::future<void> rollback_transaction();
 
@@ -160,7 +160,7 @@ namespace hazelcast {
                     std::string message = "No transaction is found while accessing ";
                     message += "transactional object -> [" + name + "]!";
                     BOOST_THROW_EXCEPTION(
-                            exception::IllegalStateException("TransactionContext::getMap(const std::string& name)",
+                            exception::illegal_state("TransactionContext::getMap(const std::string& name)",
                                                              message));
                 }
                 auto key = std::make_pair(service_name, name);

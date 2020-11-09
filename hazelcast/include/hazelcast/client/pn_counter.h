@@ -47,20 +47,20 @@ namespace hazelcast {
          * When invoking updates from non-replica instance, the invocation is remote.
          * This may lead to indeterminate state - the update may be applied but the
          * response has not been received. In this case, the caller will be notified
-         * with a {@link com.hazelcast.spi.exception.TargetDisconnectedException}
+         * with a {@link com.hazelcast.spi.exception.target_disconnected}
          * when invoking from a client or a
-         * {@link com.hazelcast.core.MemberLeftException} when invoked from a member.
+         * {@link com.hazelcast.core.member_left} when invoked from a member.
          * <p>
          * The read and write methods provide monotonic read and RYW (read-your-write)
          * guarantees. These guarantees are session guarantees which means that if
          * no replica with the previously observed state is reachable, the session
          * guarantees are lost and the method invocation will throw a
-         * {@link ConsistencyLostException}. This does not mean
+         * {@link consistency_lost}. This does not mean
          * that an update is lost. All of the updates are part of some replica and
          * will be eventually reflected in the state of all other replicas. This
          * exception just means that you cannot observe your own writes because
          * all replicas that contain your updates are currently unreachable.
-         * After you have received a {@link ConsistencyLostException}, you can either
+         * After you have received a {@link consistency_lost}, you can either
          * wait for a sufficiently up-to-date replica to become reachable in which
          * case the session can be continued or you can reset the session by calling
          * the {@link #reset()} method. If you have called the {@link #reset()} method,
@@ -69,7 +69,7 @@ namespace hazelcast {
          * <b>NOTE:</b>
          * The CRDT state is kept entirely on non-lite (data) members. If there
          * aren't any and the methods here are invoked on a lite member, they will
-         * fail with an {@link NoDataMemberInClusterException}.
+         * fail with an {@link no_data_member_in_cluster}.
          *
          * @since 3.10
          */

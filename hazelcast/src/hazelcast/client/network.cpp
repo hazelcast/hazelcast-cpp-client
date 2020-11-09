@@ -39,7 +39,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
-#include "hazelcast/client/exception/AuthenticationException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/connection/ConnectionListener.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -248,7 +248,7 @@ namespace hazelcast {
                 struct auth_response result;
                 try {
                     if (f.wait_for(authentication_timeout_) != boost::future_status::ready) {
-                        BOOST_THROW_EXCEPTION(exception::TimeoutException(
+                        BOOST_THROW_EXCEPTION(exception::timeout(
                                 "ClientConnectionManagerImpl::authenticate", (boost::format("Authentication response is "
                                 "not received for %1% msecs for %2%") %authentication_timeout_.count() %*clientInvocation).str()));
                     }
@@ -265,7 +265,7 @@ namespace hazelcast {
 
                     result.server_address = response.get_nullable<address>();
                     result.server_version = response.get<std::string>();
-                } catch (exception::IException &) {
+                } catch (exception::iexception &) {
                     connection->close("Failed to authenticate connection", std::current_exception());
                     throw;
                 }
@@ -277,13 +277,13 @@ namespace hazelcast {
                         break;
                     }
                     case protocol::CREDENTIALS_FAILED: {
-                        auto e = std::make_exception_ptr(exception::AuthenticationException("AuthCallback::onResponse",
+                        auto e = std::make_exception_ptr(exception::authentication("AuthCallback::onResponse",
                                                                                             "Authentication failed. The configured cluster name on the client (see ClientConfig::setClusterName()) does not match the one configured in the cluster or the credentials set in the Client security config could not be authenticated"));
                         connection->close("Failed to authenticate connection", e);
                         std::rethrow_exception(e);
                     }
                     default: {
-                        auto e = std::make_exception_ptr(exception::AuthenticationException(
+                        auto e = std::make_exception_ptr(exception::authentication(
                                 "AuthCallback::onResponse",
                                 (boost::format("Authentication status code not supported. status: %1%") %authentication_status).str()));
                         connection->close("Failed to authenticate connection", e);
@@ -354,7 +354,7 @@ namespace hazelcast {
 
                     try {
                         clientInstance->get_lifecycle_service().shutdown();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         HZ_LOG(*clientInstance->get_logger(), severe, 
                             boost::str(boost::format("Exception during client shutdown "
                                                      "%1%.clientShutdown-:%2%")
@@ -384,7 +384,7 @@ namespace hazelcast {
                             submit_connect_to_cluster_task();
                         }
 
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Could not connect to any cluster, "
                                                      "shutting down the client: %1%")
@@ -477,7 +477,7 @@ namespace hazelcast {
                 }
                 out << "}";
                 BOOST_THROW_EXCEPTION(
-                        exception::IllegalStateException("ConnectionManager::do_connect_to_cluster", out.str()));
+                        exception::illegal_state("ConnectionManager::do_connect_to_cluster", out.str()));
             }
 
             std::vector<address> ClientConnectionManagerImpl::get_possible_member_addresses() {
@@ -573,7 +573,7 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::check_client_active() {
                 if (!client_.get_lifecycle_service().is_running()) {
-                    BOOST_THROW_EXCEPTION(exception::hazelcast_clientNotActiveException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
                             "ClientConnectionManagerImpl::check_client_active", "Client is shutdown"));
                 }
             }
@@ -651,7 +651,7 @@ namespace hazelcast {
             void ClientConnectionManagerImpl::check_partition_count(int32_t new_partition_count) {
                 auto &partition_service = static_cast<spi::impl::ClientPartitionServiceImpl &>(client_.get_partition_service());
                 if (!partition_service.check_and_set_partition_count(new_partition_count)) {
-                    BOOST_THROW_EXCEPTION(exception::ClientNotAllowedInClusterException("ClientConnectionManagerImpl::check_partition_count",
+                    BOOST_THROW_EXCEPTION(exception::client_not_allowed_in_cluster("ClientConnectionManagerImpl::check_partition_count",
                           (boost::format("Client can not work with this cluster because it has a different partition count. "
                                          "Expected partition count: %1%, Member partition count: %2%")
                                          %partition_service.get_partition_count() %new_partition_count).str()));
@@ -700,16 +700,16 @@ namespace hazelcast {
                 }
 
                 if (async_start_) {
-                    BOOST_THROW_EXCEPTION(exception::hazelcast_clientOfflineException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and async start is configured."));
                 } else if (reconnect_mode_ == config::ClientConnectionStrategyConfig::reconnect_mode::ASYNC) {
-                    BOOST_THROW_EXCEPTION(exception::hazelcast_clientOfflineException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and reconnect mode is async."));
                 } else {
                     BOOST_THROW_EXCEPTION(
-                            exception::IOException("ClientConnectionManagerImpl::check_invocation_allowed",
+                            exception::io("ClientConnectionManagerImpl::check_invocation_allowed",
                                                    "No connection found to cluster."));
                 }
             }
@@ -855,7 +855,7 @@ namespace hazelcast {
 
                 try {
                     inner_close();
-                } catch (exception::IException &e) {
+                } catch (exception::iexception &e) {
                     HZ_LOG(client_context_.get_logger(), warning,
                         boost::str(boost::format("Exception while closing connection %1%")
                                                  % e.get_message())
@@ -868,7 +868,7 @@ namespace hazelcast {
                 boost::asio::post(socket_->get_executor(), [=]() {
                     for (auto &invocationEntry : thisConnection->invocations) {
                         invocationEntry.second->notify_exception(std::make_exception_ptr(boost::enable_current_exception(
-                                exception::TargetDisconnectedException("Connection::close",
+                                exception::target_disconnected("Connection::close",
                                                                        thisConnection->get_close_reason()))));
                     }
                 });
@@ -930,7 +930,7 @@ namespace hazelcast {
                 } else if (close_cause_) {
                     try {
                         std::rethrow_exception(close_cause_);
-                    } catch (exception::IException &ie) {
+                    } catch (exception::iexception &ie) {
                         message << ie.get_source() << "[" + ie.get_message() << "]";
                     }
                 } else {
@@ -943,7 +943,7 @@ namespace hazelcast {
                     } else {
                         try {
                             std::rethrow_exception(close_cause_);
-                        } catch (exception::IException &ie) {
+                        } catch (exception::iexception &ie) {
                             HZ_LOG(logger_, warning, 
                                 boost::str(boost::format("%1%%2%") % message.str() % ie)
                             );
@@ -956,7 +956,7 @@ namespace hazelcast {
                             if (close_cause_) {
                                 try {
                                     std::rethrow_exception(close_cause_);
-                                } catch (exception::IException &ie) {
+                                } catch (exception::iexception &ie) {
                                     return ie.what();
                                 }
                             }
@@ -1096,7 +1096,7 @@ namespace hazelcast {
             HeartbeatManager::on_heartbeat_stopped(const std::shared_ptr<Connection> &connection,
                                                  const std::string &reason) {
                 connection->close(reason, std::make_exception_ptr(
-                        (exception::ExceptionBuilder<exception::TargetDisconnectedException>(
+                        (exception::exception_builder<exception::target_disconnected>(
                                 "HeartbeatManager::onHeartbeatStopped") << "Heartbeat timed out to connection "
                                                                         << *connection).build()));
             }

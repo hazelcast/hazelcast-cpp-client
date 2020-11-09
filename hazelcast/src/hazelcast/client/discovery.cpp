@@ -343,14 +343,14 @@ namespace hazelcast {
 
                     std::stringstream out;
                     out << "No translation is found for private ip:" << addr;
-                    BOOST_THROW_EXCEPTION(exception::IOException("AwsAddressTranslator::translate", out.str()));
+                    BOOST_THROW_EXCEPTION(exception::io("AwsAddressTranslator::translate", out.str()));
                 }
 
                 void AwsAddressTranslator::refresh() {
                     try {
                         private_to_public_ = std::shared_ptr<std::unordered_map<std::string, std::string> >(
                                 new std::unordered_map<std::string, std::string>(aws_client_->get_addresses()));
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("AWS addresses failed to load: %1%") % e.what()));
                     }
@@ -449,8 +449,8 @@ namespace hazelcast {
                         std::istream &responseStream = httpClient.open_connection();
                         responseStream >> roleName;
                         aws_config_.set_iam_role(roleName);
-                    } catch (exception::IOException &e) {
-                        BOOST_THROW_EXCEPTION(exception::InvalidConfigurationException("tryGetDefaultIamRole",
+                    } catch (exception::io &e) {
+                        BOOST_THROW_EXCEPTION(exception::invalid_configuration("tryGetDefaultIamRole",
                                                                                        std::string(
                                                                                                "Invalid Aws Configuration. ") +
                                                                                        e.what()));
@@ -469,7 +469,7 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
                     if (!uri) {
-                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("getKeysFromIamTaskRole",
+                        BOOST_THROW_EXCEPTION(exception::illegal_argument("getKeysFromIamTaskRole",
                                                                                   "Could not acquire credentials! Did not find declared AWS access key or IAM Role, and could not discover IAM Task Role or default role."));
                     }
 
@@ -478,11 +478,11 @@ namespace hazelcast {
                     try {
                         std::istream &istream = httpClient.open_connection();
                         parse_and_store_role_creds(istream);
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         std::stringstream out;
                         out << "Unable to retrieve credentials from IAM Task Role. URI: " << uri << ". \n " << e.what();
                         BOOST_THROW_EXCEPTION(
-                                exception::InvalidConfigurationException("getKeysFromIamTaskRole", out.str()));
+                                exception::invalid_configuration("getKeysFromIamTaskRole", out.str()));
                     }
                 }
 
@@ -494,12 +494,12 @@ namespace hazelcast {
                     try {
                         std::istream &istream = httpClient.open_connection();
                         parse_and_store_role_creds(istream);
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         std::stringstream out;
                         out << "Unable to retrieve credentials from IAM Task Role. URI: " << query << ". \n "
                             << e.what();
                         BOOST_THROW_EXCEPTION(
-                                exception::InvalidConfigurationException("getKeysFromIamRole", out.str()));
+                                exception::invalid_configuration("getKeysFromIamRole", out.str()));
                     }
                 }
 
@@ -615,7 +615,7 @@ namespace hazelcast {
                 this->endpoint_ = aws_config.get_host_header();
                 if (!aws_config.get_region().empty() && aws_config.get_region().length() > 0) {
                     if (aws_config.get_host_header().find("ec2.") != 0) {
-                        BOOST_THROW_EXCEPTION(exception::InvalidConfigurationException("AWSClient::AWSClient",
+                        BOOST_THROW_EXCEPTION(exception::invalid_configuration("AWSClient::AWSClient",
                                                                                        "HostHeader should start with \"ec2.\" prefix"));
                     }
                     boost::replace_all(this->endpoint_, "ec2.", std::string("ec2.") + aws_config.get_region() + ".");

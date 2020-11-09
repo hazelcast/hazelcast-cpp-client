@@ -65,7 +65,7 @@ namespace hazelcast {
                  *
                  * @param accessKey the access key to access AWS
                  * @return the updated client_aws_config.
-                 * @throws IllegalArgumentException if accessKey is empty.
+                 * @throws illegal_argument if accessKey is empty.
                  * @see #getAccessKey()
                  * @see #set_secret_key(std::string)
                  */
@@ -83,7 +83,7 @@ namespace hazelcast {
                  *
                  * @param secretKey the secret key to access AWS
                  * @return the updated client_aws_config.
-                 * @throws IllegalArgumentException if secretKey is empty.
+                 * @throws illegal_argument if secretKey is empty.
                  * @see #getSecretKey()
                  * @see #set_access_key(std::string)
                  */
@@ -101,7 +101,7 @@ namespace hazelcast {
                  *
                  * @param region the region where the EC2 instances running the Hazelcast members will be running
                  * @return the updated client_aws_config
-                 * @throws IllegalArgumentException if region is empty.
+                 * @throws illegal_argument if region is empty.
                  */
                 client_aws_config &set_region(const std::string &region);
 
@@ -116,7 +116,7 @@ namespace hazelcast {
                  *
                  * @param hostHeader the new host header; the address where the EC2 API can be found
                  * @return the updated client_aws_config
-                 * @throws IllegalArgumentException if hostHeader is an empty string.
+                 * @throws illegal_argument if hostHeader is an empty string.
                  */
                 client_aws_config &set_host_header(const std::string &host_header);
 

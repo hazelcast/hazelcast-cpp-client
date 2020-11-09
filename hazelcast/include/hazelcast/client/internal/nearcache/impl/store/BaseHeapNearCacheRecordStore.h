@@ -85,7 +85,7 @@ namespace hazelcast {
                                 out << "Invalid max-size policy " << '(' << (int) maxSizePolicy << ") for " <<
                                     near_cache_config.get_name() << "! Only " <<
                                     (int) client::config::EvictionConfig::ENTRY_COUNT << " is supported.";
-                                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
+                                BOOST_THROW_EXCEPTION(exception::illegal_argument(out.str()));
                             }
 
                             std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > create_near_cache_record_map(

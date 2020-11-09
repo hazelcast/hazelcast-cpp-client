@@ -150,7 +150,7 @@ namespace hazelcast {
                                 default:
                                     std::ostringstream out;
                                     out << "Invalid in memory format: " << (int) inMemoryFormat;
-                                    BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
+                                    BOOST_THROW_EXCEPTION(exception::illegal_argument(out.str()));
                             }
                         }
 
@@ -165,7 +165,7 @@ namespace hazelcast {
                                             if (expirationInProgress.compare_exchange_strong(expected, true)) {
                                                 try {
                                                     near_cache_record_store_->do_expiration();
-                                                } catch (exception::IException &e) {
+                                                } catch (exception::iexception &e) {
                                                     expirationInProgress.store(false);
                                                     // TODO: What to do here
                                                     HZ_LOG(logger_, info,

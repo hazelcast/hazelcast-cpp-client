@@ -22,7 +22,7 @@
 
 #include <cstdint>
 
-#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/exception/iexception.h"
 #include "hazelcast/util/noop.h"
 #include "hazelcast/util/type_traits.h"
 
@@ -149,7 +149,7 @@ namespace hazelcast {
             private:
                 using received_handler_t = std::function<void(message &&)>;
                 using store_sequence_id_handler_t = std::function<void(int64_t)>;
-                using exception_handler_t = std::function<bool(const exception::IException &)>;
+                using exception_handler_t = std::function<bool(const exception::iexception &)>;
 
                 bool loss_tolerant_;
                 int64_t initial_sequence_id_;
@@ -157,7 +157,7 @@ namespace hazelcast {
                 received_handler_t received_{ util::noop<message &&> };
                 store_sequence_id_handler_t store_sequence_id_ { util::noop<int64_t> };
                 exception_handler_t terminal_{ 
-                    [](const exception::IException &){
+                    [](const exception::iexception &){
                         return false;
                     }
                 };

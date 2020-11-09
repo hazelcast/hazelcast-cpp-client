@@ -28,7 +28,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class IException;
+            class iexception;
         }
         /**
          * execution_callback allows to asynchronously get notified when the execution is completed,

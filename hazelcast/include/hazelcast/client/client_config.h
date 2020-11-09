@@ -141,7 +141,7 @@ namespace hazelcast {
             * application is performed or not. For idempotent operations this is harmless, but for non idempotent ones
             * retrying can cause to undesirable effects. Note that the redo can perform on any member.
             *
-            * If false, the operation will throw IOException.
+            * If false, the operation will throw io_exception.
             *
             * \param redoOperation
             * return itself ClientConfig

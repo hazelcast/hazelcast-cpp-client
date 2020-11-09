@@ -69,7 +69,7 @@ int main() {
                        {"6", Person{"Jane", false, 43}}}).get();
 
     // Remove entries that whose name start with 'M'
-    personMap->remove_all(query::LikePredicate(hz, "name", "M%")).get();
+    personMap->remove_all(query::like_predicate(hz, "name", "M%")).get();
 
     if (personMap->get<std::string, Person>("3").get()) {
         std::cerr << "Entry 3 is not deleted. This is unexpected!!!" << std::endl;

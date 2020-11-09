@@ -109,7 +109,7 @@ namespace hazelcast {
 
                 TEST_F(ExceptionTest, testExceptionDetail) {
                     std::string details("A lot of details");
-                    exception::TargetDisconnectedException targetDisconnectedException("testExceptionCause",
+                    exception::target_disconnected targetDisconnectedException("testExceptionCause",
                                                                                        "test message", details);
 
 
@@ -119,14 +119,14 @@ namespace hazelcast {
                 TEST_F(ExceptionTest, testExceptionStreaming) {
                     std::string source("testException");
                     std::string originalMessage("original message");
-                    exception::IOException e(source, originalMessage);
+                    exception::io e(source, originalMessage);
 
                     ASSERT_EQ(source, e.get_source());
                     ASSERT_EQ(originalMessage, e.get_message());
 
                     std::string extendedMessage(" this is an extension message");
                     int messageNumber = 1;
-                    exception::IOException ioException = (exception::ExceptionBuilder<exception::IOException>(source)
+                    exception::io ioException = (exception::exception_builder<exception::io>(source)
                             << originalMessage << extendedMessage << messageNumber).build();
 
                     ASSERT_EQ(source, ioException.get_source());
@@ -222,7 +222,7 @@ namespace hazelcast {
                     });
                     // Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
                     // other thread executes the interrup call.
-                    ASSERT_THROW(q.pop(), client::exception::InterruptedException);
+                    ASSERT_THROW(q.pop(), client::exception::interrupted);
                     finished = true;
                     t.join();
                 }
@@ -275,7 +275,7 @@ namespace hazelcast {
                         // The 4th utf character is missing one byte intentionally in the invalid utf string
                         if (i == 4) {
                             ASSERT_THROW(hazelcast::util::UTFUtil::read_ut_f8_char(in, c, utfBuffer),
-                                         exception::UTFDataFormatException);
+                                         exception::utf_data_format);
                         } else {
                             hazelcast::util::UTFUtil::read_ut_f8_char(in, c, utfBuffer);
                         }
@@ -533,7 +533,7 @@ namespace hazelcast {
                     hazelcast_client client(client_config_);
 
                     ASSERT_THROW((client.get_map(random_map_name())),
-                                 exception::hazelcast_clientOfflineException);
+                                 exception::hazelcast_client_offline);
 
                     client.shutdown();
                 }
@@ -542,7 +542,7 @@ namespace hazelcast {
                     client_config_.get_connection_strategy_config().set_async_start(true);
                     hazelcast_client client(client_config_);
                     client.shutdown();
-                    ASSERT_THROW((client.get_map(random_map_name())), exception::hazelcast_clientNotActiveException);
+                    ASSERT_THROW((client.get_map(random_map_name())), exception::hazelcast_client_not_active);
 
                     client.shutdown();
                 }
@@ -597,7 +597,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_clientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
 
                     client.shutdown();
                 }
@@ -625,7 +625,7 @@ namespace hazelcast {
                     server2.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_clientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
 
                     client.shutdown();
                 }
@@ -651,7 +651,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_clientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
 
                     client.shutdown();
                 }
@@ -830,8 +830,8 @@ namespace hazelcast {
             std::vector<int> *PipeliningTest::expected = nullptr;
 
             TEST_F(PipeliningTest, testConstructor_whenNegativeDepth) {
-                ASSERT_THROW(pipelining<std::string>::create(0), exception::IllegalArgumentException);
-                ASSERT_THROW(pipelining<std::string>::create(-1), exception::IllegalArgumentException);
+                ASSERT_THROW(pipelining<std::string>::create(0), exception::illegal_argument);
+                ASSERT_THROW(pipelining<std::string>::create(-1), exception::illegal_argument);
             }
 
             TEST_F(PipeliningTest, testPipeliningFunctionalityDepthOne) {
@@ -1178,7 +1178,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 TestInvalidWritePortable p{2131, 123, "q4edfd"};
                 ASSERT_THROW(serializationService.to_data<TestInvalidWritePortable>(&p),
-                             exception::HazelcastSerializationException);
+                             exception::hazelcast_serialization);
             }
 
             TEST_F(ClientSerializationTest, testInvalidRead) {
@@ -1188,7 +1188,7 @@ namespace hazelcast {
                 TestInvalidReadPortable p{2131, 123, "q4edfd"};
                 serialization::pimpl::data data = serializationService.to_data<TestInvalidReadPortable>(&p);
                 ASSERT_THROW(serializationService.to_object<TestInvalidReadPortable>(data),
-                             exception::HazelcastSerializationException);
+                             exception::hazelcast_serialization);
             }
 
             TEST_F(ClientSerializationTest, testDifferentVersions) {
@@ -1522,7 +1522,7 @@ namespace hazelcast {
                 TestNamedPortable p{"portable-v1", 123};
                 serialization::pimpl::data data = serializationService.to_data<TestNamedPortable>(p);
 
-                ASSERT_THROW(serializationService.to_object<TestNamedPortableV3>(data), exception::HazelcastSerializationException);
+                ASSERT_THROW(serializationService.to_object<TestNamedPortableV3>(data), exception::hazelcast_serialization);
             }
 
             TEST_F(ClientSerializationTest, testMorphingPortableWithDifferentTypes_differentVersions_V2ToV1) {
@@ -1679,7 +1679,7 @@ namespace hazelcast {
                 serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                ASSERT_THROW(serializationService.to_data<std::string>(&utfStr), exception::UTFDataFormatException);
+                ASSERT_THROW(serializationService.to_data<std::string>(&utfStr), exception::utf_data_format);
             }
 
             TEST_F(ClientSerializationTest, testGlobalSerializer) {
@@ -1982,7 +1982,7 @@ namespace hazelcast {
                                     std::ostringstream out;
                                     out << "Unsupported in-memory format: " << in_memory_format;
                                     BOOST_THROW_EXCEPTION(
-                                            exception::IllegalArgumentException("NearCacheRecordStoreTest", out.str()));
+                                            exception::illegal_argument("NearCacheRecordStoreTest", out.str()));
                             }
                             recordStore->initialize();
 

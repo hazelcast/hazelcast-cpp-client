@@ -62,8 +62,8 @@ int main() {
     // Continuous Query example
     // Register listener with predicate
     // Only listen events for entries with key >= 7
-    listenerId = map->add_entry_listener(make_listener(), hazelcast::client::query::GreaterLessPredicate(hz,
-            hazelcast::client::query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, true, false), true).get();
+    listenerId = map->add_entry_listener(make_listener(), hazelcast::client::query::greater_less_predicate(hz,
+                                                                                                           hazelcast::client::query::query_constants::KEY_ATTRIBUTE_NAME, 7, true, false), true).get();
 
     // wait for modifymap executable to run
     std::this_thread::sleep_for(std::chrono::seconds(10));

@@ -69,12 +69,12 @@ namespace hazelcast {
                  *
                  * @param index the index
                  * @return the sequence number for the ringbuffer item
-                 * @throws IllegalArgumentException if index out of bounds.
+                 * @throws illegal_argument if index out of bounds.
                  * @since 3.9
                  */
                 int64_t get_sequence(int32_t index) const {
                     if (index >= (int32_t) item_seqs_->size() || index < 0) {
-                        BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalArgumentException>(
+                        BOOST_THROW_EXCEPTION((exception::exception_builder<exception::illegal_argument>(
                                 "read_result_set::getSequence") << "Index " << index
                                                               << " is out of bounds. Sequences size is:"
                                                               << item_seqs_->size()).build());

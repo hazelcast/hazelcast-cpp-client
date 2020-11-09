@@ -29,7 +29,7 @@
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/util/ExceptionUtil.h"
+#include "hazelcast/util/exception_util.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 // CODECs
@@ -75,8 +75,8 @@ namespace hazelcast {
 
                     try {
                         return invoke_cancel_request(may_interrupt_if_running);
-                    } catch (exception::IException &) {
-                        util::ExceptionUtil::rethrow(std::current_exception());
+                    } catch (exception::iexception &) {
+                        util::exception_util::rethrow(std::current_exception());
                     }
                     return false;
                 }
@@ -117,7 +117,7 @@ namespace hazelcast {
              * thread, at the discretion of the {@code Executor} implementation.
              *
              * @param command the runnable task
-             * @throws RejectedExecutionException if this task cannot be
+             * @throws rejected_execution if this task cannot be
              * accepted for execution
              */
             template<typename HazelcastSerializable>
@@ -130,7 +130,7 @@ namespace hazelcast {
              *
              * @param command        the task that is executed on a randomly selected member
              * @param memberSelector memberSelector
-             * @throws RejectedExecutionException if no member is selected
+             * @throws rejected_execution if no member is selected
              */
             template<typename HazelcastSerializable>
             void execute(const HazelcastSerializable &command,
@@ -180,7 +180,7 @@ namespace hazelcast {
              *
              * @param command        a task executed on each of the selected members
              * @param memberSelector memberSelector
-             * @throws RejectedExecutionException if no member is selected
+             * @throws rejected_execution if no member is selected
              */
             template<typename HazelcastSerializable>
             void execute_on_members(const HazelcastSerializable &command,
@@ -261,7 +261,7 @@ namespace hazelcast {
              * @param memberSelector memberSelector
              * @param <T>            the result type of callable
              * @return map of Member-executor_promise pairs representing pending completion of the task on each member
-             * @throws RejectedExecutionException if no member is selected
+             * @throws rejected_execution if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
             std::unordered_map<member, executor_promise<T>>
@@ -300,9 +300,9 @@ namespace hazelcast {
              * @param result the result to return
              * @param <T> the type of the result
              * @return a executor_promise representing pending completion of the task
-             * @throws RejectedExecutionException if the task cannot be
+             * @throws rejected_execution if the task cannot be
              *         scheduled for execution
-             * @throws NullPointerException if the task is null
+             * @throws null_pointer if the task is null
              */
             template<typename HazelcastSerializable, typename T>
             executor_promise<T>
@@ -347,7 +347,7 @@ namespace hazelcast {
              * @param memberSelector memberSelector
              * @param <T>            the result type of callable
              * @return a executor_promise representing pending completion of the task
-             * @throws RejectedExecutionException if no member is selected
+             * @throws rejected_execution if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
             executor_promise<T>
@@ -365,7 +365,7 @@ namespace hazelcast {
              * @param memberSelector memberSelector
              * @param callback       callback
              * @param <T>            the response type of callback
-             * @throws RejectedExecutionException if no member is selected
+             * @throws rejected_execution if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
             void
@@ -436,7 +436,7 @@ namespace hazelcast {
              * @param task           the task submitted to the selected members
              * @param memberSelector memberSelector
              * @param callback       callback
-             * @throws RejectedExecutionException if no member is selected
+             * @throws rejected_execution if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
             void submit_to_members(const HazelcastSerializable &task,
@@ -586,7 +586,7 @@ namespace hazelcast {
                     try {
                         auto result = retrieve_result_from_message<T>(serializationService, std::move(f));
                         executionService->execute([=]() { callback->on_response(result); });
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         auto exception = std::current_exception();
                         executionService->execute([=]() { callback->on_failure(exception); });
                     }
@@ -663,7 +663,7 @@ namespace hazelcast {
                     try {
                         auto result = retrieve_result_from_message<T>(serializationService, std::move(f));
                         executionService->execute([=]() { callback->on_response(result); });
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         auto exception = std::current_exception();
                         executionService->execute([=]() { callback->on_failure(exception); });
                     }
@@ -708,7 +708,7 @@ namespace hazelcast {
                 try {
                     auto response = retrieve_result_from_message<T>(&(get_serialization_service()), std::move(future));
                     return boost::make_ready_future(response);
-                } catch (exception::IException &) {
+                } catch (exception::iexception &) {
                     return boost::make_exceptional_future<boost::optional<T>>(boost::current_exception());
                 }
             }

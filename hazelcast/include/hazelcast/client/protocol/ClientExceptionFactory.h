@@ -28,7 +28,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class IException;
+            class iexception;
         }
 
         namespace protocol {

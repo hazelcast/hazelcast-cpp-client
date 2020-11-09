@@ -44,7 +44,7 @@ namespace hazelcast {
                      * @param address the private address to translate
                      * @return public address of network whose private address is given.
                      *
-                     * @throws IOException if the address can not be translated.
+                     * @throws io if the address can not be translated.
                      */
                     address translate(const address &addr) override;
 

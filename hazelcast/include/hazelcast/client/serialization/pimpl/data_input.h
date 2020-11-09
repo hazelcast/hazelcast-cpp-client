@@ -17,7 +17,7 @@
 
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
-#include "hazelcast/client/exception/HazelcastSerializationException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/UTFUtil.h"
 
 #include <vector>
@@ -148,7 +148,7 @@ namespace hazelcast {
                     inline read() {
                         int32_t charCount = read<int32_t>();
                         if (util::Bits::NULL_ARRAY == charCount) {
-                            BOOST_THROW_EXCEPTION(exception::IOException("DataInput::read()", "Null string!!!"));
+                            BOOST_THROW_EXCEPTION(exception::io("DataInput::read()", "Null string!!!"));
                         }
 
                         return read_utf(charCount);
@@ -204,9 +204,9 @@ namespace hazelcast {
 
                         if (len < 0) {
                             BOOST_THROW_EXCEPTION(
-                                    exception::HazelcastSerializationException("DataInput::readArray", (boost::format(
+                                    exception::hazelcast_serialization("DataInput::readArray", (boost::format(
                                             "Incorrect negative array size found in the byte stream. The size is: %1%") %
-                                                                                                        len).str()));
+                                                                                                          len).str()));
                         }
 
                         T values;
@@ -235,7 +235,7 @@ namespace hazelcast {
                     void inline check_available(size_t requested_length) {
                         size_t available = buffer_.size() - pos_;
                         if (requested_length > available) {
-                            BOOST_THROW_EXCEPTION(exception::IOException("DataInput::checkAvailable", (boost::format(
+                            BOOST_THROW_EXCEPTION(exception::io("DataInput::checkAvailable", (boost::format(
                                     "Not enough bytes in internal buffer. Available:%1% bytes but needed %2% bytes") %
                                                                                                        available %
                                                                                                        requested_length).str()));

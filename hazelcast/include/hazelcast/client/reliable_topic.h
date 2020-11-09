@@ -172,7 +172,7 @@ namespace hazelcast {
                         try {
                             listener_.store_sequence_id_(sequence_);
                             process(item.get<topic::impl::reliable::ReliableTopicMessage>().get_ptr());
-                        } catch (exception::IException &e) {
+                        } catch (exception::iexception &e) {
                             if (terminate(e)) {
                                 cancel();
                                 return;
@@ -193,12 +193,12 @@ namespace hazelcast {
 
                     try {
                         std::rethrow_exception(throwable);
-                    } catch (exception::IException &ie) {
+                    } catch (exception::iexception &ie) {
                         int32_t err = ie.get_error_code();
                         int32_t causeErrorCode = protocol::UNDEFINED;
                         try {
                             std::rethrow_if_nested(std::current_exception());
-                        } catch (exception::IException &causeException) {
+                        } catch (exception::iexception &causeException) {
                             causeErrorCode = causeException.get_error_code();
                         }
                         if (protocol::TIMEOUT == err) {
@@ -211,7 +211,7 @@ namespace hazelcast {
                             return;
                         } else if (protocol::EXECUTION == err &&
                                    protocol::STALE_SEQUENCE == causeErrorCode) {
-                            // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
+                            // stale_sequence_exception.getHeadSeq() is not available on the client-side, see #7317
                             int64_t remoteHeadSeq = ringbuffer_->head_sequence().get();
 
                             if (listener_.loss_tolerant_) {
@@ -282,7 +282,7 @@ namespace hazelcast {
                                           message->get_publish_time(), std::move(m));
                 }
 
-                bool terminate(const exception::IException &failure) {
+                bool terminate(const exception::iexception &failure) {
                     if (cancelled_) {
                         return true;
                     }
@@ -304,7 +304,7 @@ namespace hazelcast {
                             );
                         }
                         return terminate;
-                    } catch (exception::IException &t) {
+                    } catch (exception::iexception &t) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Terminating ReliableListener %1% on topic: %2%. "
                                                      "Reason: Unhandled exception while calling the function set by "

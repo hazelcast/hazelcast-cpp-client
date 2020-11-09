@@ -83,7 +83,7 @@ namespace hazelcast {
              * we need to make sure that the `Pipelining` instance is not destructed when these methods are accessed.
              *
              * @param depth the maximum number of concurrent calls allowed in this Pipelining.
-             * @throws IllegalArgumentException if depth smaller than 1. But if you use depth 1, it means that
+             * @throws illegal_argument if depth smaller than 1. But if you use depth 1, it means that
              *                                  every call is sync and you will not benefit from pipelining at all.
              */
             static std::shared_ptr<pipelining> create(int depth) {
@@ -119,7 +119,7 @@ namespace hazelcast {
              * returned the ICompletableFuture got blocked.
              *
              * @param future the future to add.
-             * @throws NullPointerException if future is null.
+             * @throws null_pointer if future is null.
              */
             void add(boost::future<boost::optional<E>> future) {
                 down();

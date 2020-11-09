@@ -38,23 +38,23 @@ namespace hazelcast {
              *
              *
              * @see InstanceNotActiveException
-             * @see InterruptedException
-             * @see IOException
-             * @see HazelcastSerializationException
-             * @see IClassCastException
-             * @see IllegalStateException
-             * @see IllegalArgumentException
+             * @see interrupted_exception
+             * @see io_exception
+             * @see hazelcast_serialization_exception
+             * @see Iclass_cast_exception
+             * @see illegal_state_exception
+             * @see illegal_argument_exception
              */
-            class HAZELCAST_API IException : public std::exception {
+            class HAZELCAST_API iexception : public std::exception {
             public:
-                IException();
+                iexception();
 
                 // TODO: Remove isRuntime and retryable and use the derived class concept as in Java
-                IException(const std::string &exception_name, const std::string &source, const std::string &message,
+                iexception(const std::string &exception_name, const std::string &source, const std::string &message,
                            const std::string &details, int32_t error_no, std::exception_ptr cause, bool is_runtime,
                            bool retryable);
 
-                ~IException() noexcept override;
+                ~iexception() noexcept override;
 
                 /**
                  *
@@ -70,11 +70,11 @@ namespace hazelcast {
 
                 int32_t get_error_code() const;
 
-                bool is_runtime_exception() const;
+                bool is_runtime() const;
 
                 bool is_retryable() const;
 
-                friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const iexception &exception);
 
             protected:
                 std::string src_;
@@ -87,15 +87,15 @@ namespace hazelcast {
                 std::string report_;
             };
 
-            std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
+            std::ostream HAZELCAST_API &operator<<(std::ostream &os, const iexception &exception);
 
             template<typename EXCEPTIONCLASS>
-            class ExceptionBuilder {
+            class exception_builder {
             public:
-                explicit ExceptionBuilder(const std::string &source) : source_(source) {}
+                explicit exception_builder(const std::string &source) : source_(source) {}
 
                 template<typename T>
-                ExceptionBuilder &operator<<(const T &message) {
+                exception_builder &operator<<(const T &message) {
                     msg_ << message;
                     return *this;
                 }

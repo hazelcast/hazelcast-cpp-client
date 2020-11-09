@@ -32,7 +32,7 @@ namespace hazelcast {
                  * If the same listener is registered multiple times, it will be notified multiple times.
                  *
                  * @param listener the ConnectionListener to add.
-                 * @throws NullPointerException if listener is null.
+                 * @throws null_pointer if listener is null.
                  */
                 virtual void add_connection_listener(const std::shared_ptr<ConnectionListener> &listener) = 0;
             };

@@ -75,7 +75,7 @@ int main() {
 
         cluster.remove_membership_listener(listenerId);
         cluster.remove_membership_listener(initialListenerId);
-    } catch (hazelcast::client::exception::IException &e) {
+    } catch (hazelcast::client::exception::iexception &e) {
         std::cerr << "Test failed !!! " << e.what() << std::endl;
         if (nullptr != clusterPtr) {
             clusterPtr->remove_membership_listener(listenerId);

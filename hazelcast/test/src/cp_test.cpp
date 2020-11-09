@@ -87,7 +87,7 @@ namespace hazelcast {
                 
                 TEST_F(basic_atomic_long_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client_->get_cp_subsystem().get_atomic_long("long@METADATA"),
-                                 exception::IllegalArgumentException);
+                                 exception::illegal_argument);
                 }
 
                 TEST_F(basic_atomic_long_test, test_set) {
@@ -175,7 +175,7 @@ namespace hazelcast {
                 TEST_F(basic_atomic_long_test, test_use_after_destroy) {
                     cp_structure_->destroy().get();
                     ASSERT_THROW(cp_structure_->increment_and_get().get(),
-                                 exception::DistributedObjectDestroyedException);
+                                 exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_atomic_long_test, test_create_after_destroy) {
@@ -184,7 +184,7 @@ namespace hazelcast {
 
                     cp_structure_ = client_->get_cp_subsystem().get_atomic_long(name);
                     ASSERT_THROW(cp_structure_->increment_and_get().get(),
-                                 exception::DistributedObjectDestroyedException);
+                                 exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_atomic_long_test, test_multiple_destroy) {
@@ -201,7 +201,7 @@ namespace hazelcast {
 
                 TEST_F(basic_atomic_ref_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client_->get_cp_subsystem().get_atomic_reference("ref@METADATA"),
-                                 exception::IllegalArgumentException);
+                                 exception::illegal_argument);
                 }
 
                 TEST_F(basic_atomic_ref_test, test_set) {
@@ -278,7 +278,7 @@ namespace hazelcast {
                 TEST_F(basic_atomic_ref_test, test_use_after_destroy) {
                     cp_structure_->destroy().get();
                     ASSERT_THROW((cp_structure_->set(std::string("str1")).get()),
-                                 exception::DistributedObjectDestroyedException);
+                                 exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_atomic_ref_test, test_create_after_destroy) {
@@ -287,7 +287,7 @@ namespace hazelcast {
 
                     cp_structure_ = client_->get_cp_subsystem().get_atomic_reference(name);
                     ASSERT_THROW(cp_structure_->set(std::string("str1")).get(),
-                                 exception::DistributedObjectDestroyedException);
+                                 exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_atomic_ref_test, test_multiple_destroy) {
@@ -304,15 +304,15 @@ namespace hazelcast {
 
                 TEST_F(basic_latch_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client_->get_cp_subsystem().get_latch("ref@METADATA"),
-                                 exception::IllegalArgumentException);
+                                 exception::illegal_argument);
                 }
 
                 TEST_F(basic_latch_test, test_try_set_count_when_argument_negative) {
-                    ASSERT_THROW(cp_structure_->try_set_count(-20).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->try_set_count(-20).get(), exception::illegal_argument);
                 }
 
                 TEST_F(basic_latch_test, test_try_set_count_when_argument_zero) {
-                    ASSERT_THROW(cp_structure_->try_set_count(0).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->try_set_count(0).get(), exception::illegal_argument);
                 }
 
                 TEST_F(basic_latch_test, test_try_set_count_when_count_is_not_zero) {
@@ -374,7 +374,7 @@ namespace hazelcast {
                     std::thread([=]() {
                         try {
                             cp_structure_->count_down().get();
-                        } catch (exception::hazelcast_clientNotActiveException &) {
+                        } catch (exception::hazelcast_client_not_active &) {
                             // can get this exception if below wait finishes earlier and client is shutting down
                         }
                     }).detach();
@@ -394,7 +394,7 @@ namespace hazelcast {
                 TEST_F(basic_latch_test, test_count_down_after_destroy) {
                     cp_structure_->destroy().get();
 
-                    ASSERT_THROW(cp_structure_->count_down().get(), exception::DistributedObjectDestroyedException);
+                    ASSERT_THROW(cp_structure_->count_down().get(), exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_latch_test, test_multiple_destroy) {
@@ -437,7 +437,7 @@ namespace hazelcast {
                         auto session_id = spi::ClientContext(*client_).get_proxy_session_manager().get_session(group_id);
                         close_session(group_id, session_id);
 
-                        ASSERT_THROW(f(), exception::LockOwnershipLostException);
+                        ASSERT_THROW(f(), exception::lock_ownership_lost);
                     }
 
                     void test_when_new_session_created(std::function<void()> f) {
@@ -453,7 +453,7 @@ namespace hazelcast {
                         // now we have a new session
                         try {
                             f();
-                        } catch (exception::LockOwnershipLostException &) {
+                        } catch (exception::lock_ownership_lost &) {
                             // ignored
                         }
 
@@ -501,11 +501,11 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_lock_test, test_unlock_when_free) {
-                    ASSERT_THROW(cp_structure_->unlock().get(), exception::IllegalMonitorStateException);
+                    ASSERT_THROW(cp_structure_->unlock().get(), exception::illegal_monitor_state);
                 }
 
                 TEST_F(basic_lock_test, test_get_fence_when_free) {
-                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::illegal_monitor_state);
                 }
 
                 TEST_F(basic_lock_test, test_is_locked_when_free) {
@@ -528,7 +528,7 @@ namespace hazelcast {
                     ASSERT_FALSE(cp_structure_->is_locked().get());
                     ASSERT_EQ(0, cp_structure_->get_lock_count().get());
 
-                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::illegal_monitor_state);
                 }
 
                 TEST_F(basic_lock_test, test_unlock_when_reentrantly_locked_by_self) {
@@ -559,7 +559,7 @@ namespace hazelcast {
                     ASSERT_EQ(1, cp_structure_->get_lock_count().get());
                     ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
 
-                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::illegal_monitor_state);
                 }
 
 
@@ -584,7 +584,7 @@ namespace hazelcast {
                     ASSERT_TRUE(cp_structure_->is_locked().get());
                     ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
                     ASSERT_EQ(1, cp_structure_->get_lock_count().get());
-                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::illegal_monitor_state);
                 }
 
                 TEST_F(basic_lock_test, test_unlock_when_locked_by_other) {
@@ -592,7 +592,7 @@ namespace hazelcast {
                         cp_structure_->lock().get();
                     }).get();
 
-                    ASSERT_THROW(cp_structure_->unlock().get(), exception::IllegalMonitorStateException);
+                    ASSERT_THROW(cp_structure_->unlock().get(), exception::illegal_monitor_state);
 
                     ASSERT_TRUE(cp_structure_->is_locked().get());
                     ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
@@ -692,7 +692,7 @@ namespace hazelcast {
                     cp_structure_->try_lock().get();
                     cp_structure_->destroy().get();
 
-                    ASSERT_THROW(cp_structure_->try_lock().get(), exception::DistributedObjectDestroyedException);
+                    ASSERT_THROW(cp_structure_->try_lock().get(), exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
@@ -728,7 +728,7 @@ namespace hazelcast {
 
                 TEST_F(basic_sessionless_semaphore_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client_->get_cp_subsystem().get_semaphore("semaphore@METADATA"),
-                                 exception::IllegalArgumentException);
+                                 exception::illegal_argument);
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_init) {
@@ -776,7 +776,7 @@ namespace hazelcast {
 
                     try {
                         f.get();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         std::cout << e << '\n';
                     }
                 }
@@ -829,7 +829,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_release_when_argument_negative) {
-                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::illegal_argument);
 
                     ASSERT_EQ(0, cp_structure_->drain_permits().get());
                 }
@@ -863,7 +863,7 @@ namespace hazelcast {
 
                     ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
 
-                    ASSERT_THROW(cp_structure_->acquire(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->acquire(-5).get(), exception::illegal_argument);
 
                     ASSERT_EQ(number_of_permits, cp_structure_->available_permits().get());
                 }
@@ -900,7 +900,7 @@ namespace hazelcast {
                 TEST_F(basic_sessionless_semaphore_test, test_multiple_release_when_negative) {
                     ASSERT_TRUE(cp_structure_->init(0).get());
 
-                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::illegal_argument);
 
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
@@ -946,12 +946,12 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_reduce_when_negative) {
-                    ASSERT_THROW(cp_structure_->reduce_permits(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->reduce_permits(-5).get(), exception::illegal_argument);
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_increase_when_negative) {
-                    ASSERT_THROW(cp_structure_->increase_permits(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->increase_permits(-5).get(), exception::illegal_argument);
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
 
@@ -1017,13 +1017,13 @@ namespace hazelcast {
 
                 TEST_F(basic_sessionless_semaphore_test, test_try_acquire_multiple_when_argument_negative) {
                     ASSERT_TRUE(cp_structure_->init(0).get());
-                    ASSERT_THROW(cp_structure_->try_acquire(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->try_acquire(-5).get(), exception::illegal_argument);
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_destroy) {
                     ASSERT_NO_THROW(cp_structure_->destroy().get());
-                    ASSERT_THROW(cp_structure_->init(1).get(), exception::DistributedObjectDestroyedException);
+                    ASSERT_THROW(cp_structure_->init(1).get(), exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies) {
@@ -1043,7 +1043,7 @@ namespace hazelcast {
 
                 TEST_F(basic_session_semaphore_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client_->get_cp_subsystem().get_semaphore("semaphore@METADATA"),
-                                 exception::IllegalArgumentException);
+                                 exception::illegal_argument);
                 }
 
                 TEST_F(basic_session_semaphore_test, test_init) {
@@ -1091,7 +1091,7 @@ namespace hazelcast {
 
                     try {
                         f.get();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         std::cout << e << '\n';
                     }
                 }
@@ -1106,12 +1106,12 @@ namespace hazelcast {
                 TEST_F(basic_session_semaphore_test, test_release_when_not_acquired) {
                     ASSERT_TRUE(cp_structure_->init(7).get());
                     ASSERT_NO_THROW(cp_structure_->acquire().get());
-                    ASSERT_THROW(cp_structure_->release(3).get(), exception::IllegalStateException);
+                    ASSERT_THROW(cp_structure_->release(3).get(), exception::illegal_state);
                 }
 
                 TEST_F(basic_session_semaphore_test, test_release_when_no_session_created) {
                     ASSERT_TRUE(cp_structure_->init(7).get());
-                    ASSERT_THROW(cp_structure_->release().get(), exception::IllegalStateException);
+                    ASSERT_THROW(cp_structure_->release().get(), exception::illegal_state);
                 }
 
                 TEST_F(basic_session_semaphore_test, test_acquire_after_release) {
@@ -1179,7 +1179,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_session_semaphore_test, test_release_when_argument_negative) {
-                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::illegal_argument);
 
                     ASSERT_EQ(0, cp_structure_->drain_permits().get());
                 }
@@ -1215,7 +1215,7 @@ namespace hazelcast {
 
                     ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
 
-                    ASSERT_THROW(cp_structure_->acquire(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->acquire(-5).get(), exception::illegal_argument);
 
                     ASSERT_EQ(number_of_permits, cp_structure_->available_permits().get());
                 }
@@ -1254,7 +1254,7 @@ namespace hazelcast {
                 TEST_F(basic_session_semaphore_test, test_multiple_release_when_negative) {
                     ASSERT_TRUE(cp_structure_->init(0).get());
 
-                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::illegal_argument);
 
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
@@ -1300,12 +1300,12 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_session_semaphore_test, test_reduce_when_negative) {
-                    ASSERT_THROW(cp_structure_->reduce_permits(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->reduce_permits(-5).get(), exception::illegal_argument);
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
 
                 TEST_F(basic_session_semaphore_test, test_increase_when_negative) {
-                    ASSERT_THROW(cp_structure_->increase_permits(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->increase_permits(-5).get(), exception::illegal_argument);
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
 
@@ -1371,13 +1371,13 @@ namespace hazelcast {
 
                 TEST_F(basic_session_semaphore_test, test_try_acquire_multiple_when_argument_negative) {
                     ASSERT_TRUE(cp_structure_->init(0).get());
-                    ASSERT_THROW(cp_structure_->try_acquire(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->try_acquire(-5).get(), exception::illegal_argument);
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
 
                 TEST_F(basic_session_semaphore_test, test_destroy) {
                     ASSERT_NO_THROW(cp_structure_->destroy().get());
-                    ASSERT_THROW(cp_structure_->init(1).get(), exception::DistributedObjectDestroyedException);
+                    ASSERT_THROW(cp_structure_->init(1).get(), exception::distributed_object_destroyed);
                 }
 
                 TEST_F(basic_session_semaphore_test, test_acquire_on_multiple_proxies) {

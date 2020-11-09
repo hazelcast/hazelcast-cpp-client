@@ -119,7 +119,7 @@ namespace hazelcast {
             * @param index start point of inserting given elements
             * @param elements vector of elements that will be added to list
             * @return true if list elements are added.
-            * @throws IndexOutOfBoundsException if the index is out of range.
+            * @throws index_out_of_bounds if the index is out of range.
             */
             template<typename E>
             boost::future<bool> add_all(int32_t index, const std::vector<E> &elements) {
@@ -156,7 +156,7 @@ namespace hazelcast {
             *
             * @param index
             * @return element in given index. If not available returns empty constructed shared_ptr.
-            * @throws IndexOutOfBoundsException if the index is out of range.
+            * @throws index_out_of_bounds if the index is out of range.
             *
             */
             template<typename E>
@@ -170,8 +170,8 @@ namespace hazelcast {
             * @param index insert position
             * @param element to be inserted.
             * @return oldElement in given index.
-            * @throws IClassCastException if the type of the specified element is incompatible with the server side.
-            * @throws IndexOutOfBoundsException if the index is out of range.
+            * @throws Iclass_cast if the type of the specified element is incompatible with the server side.
+            * @throws index_out_of_bounds if the index is out of range.
             */
             template<typename E, typename R = E>
             boost::future<boost::optional<R>> set(int32_t index, const E &element) {
@@ -183,8 +183,8 @@ namespace hazelcast {
             *
             * @param index insert position
             * @param element to be inserted.
-            * @throws IClassCastException if the type of the specified element is incompatible with the server side.
-            * @throws IndexOutOfBoundsException if the index is out of range.
+            * @throws Iclass_cast if the type of the specified element is incompatible with the server side.
+            * @throws index_out_of_bounds if the index is out of range.
             */
             template<typename E>
             boost::future<void> add(int32_t index, const E &element) {
@@ -196,7 +196,7 @@ namespace hazelcast {
             * @param index
             * @return element in given index.  If not available returns empty constructed shared_ptr.
             * @see get
-            * @throws IndexOutOfBoundsException if the index is out of range.
+            * @throws index_out_of_bounds if the index is out of range.
             */
             template<typename E>
             boost::future<boost::optional<E>> remove(int32_t index) {
@@ -227,7 +227,7 @@ namespace hazelcast {
             /**
             *
             * @return the sublist as vector between given indexes.
-            * @throws IndexOutOfBoundsException if the index is out of range.
+            * @throws index_out_of_bounds if the index is out of range.
             */
             template<typename E>
             boost::future<std::vector<E>> sub_list(int32_t from_index, int32_t to_index) {

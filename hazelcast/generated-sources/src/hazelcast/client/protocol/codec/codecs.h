@@ -655,7 +655,7 @@ namespace hazelcast {
                 /**
                  * Returns a set clone of the keys contained in this map. The set is NOT backed by the map, so changes to the map
                  * are NOT reflected in the set, and vice-versa. This method is always executed by a distributed query, so it may
-                 * throw a QueryResultSizeExceededException if query result size limit is configured.
+                 * throw a query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_keyset_encode(const std::string  & name);
 
@@ -671,7 +671,7 @@ namespace hazelcast {
                 /**
                  * Returns a collection clone of the values contained in this map.
                  * The collection is NOT backed by the map, so changes to the map are NOT reflected in the collection, and vice-versa.
-                 * This method is always executed by a distributed query, so it may throw a QueryResultSizeExceededException
+                 * This method is always executed by a distributed query, so it may throw a query_result_size_exceeded_exception
                  * if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_values_encode(const std::string  & name);
@@ -679,7 +679,7 @@ namespace hazelcast {
                 /**
                  * Returns a Set clone of the mappings contained in this map.
                  * The collection is NOT backed by the map, so changes to the map are NOT reflected in the collection, and vice-versa.
-                 * This method is always executed by a distributed query, so it may throw a QueryResultSizeExceededException
+                 * This method is always executed by a distributed query, so it may throw a query_result_size_exceeded_exception
                  * if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_entryset_encode(const std::string  & name);
@@ -688,7 +688,7 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the keys of matching entries. Specified predicate
                  * runs on all members in parallel.The set is NOT backed by the map, so changes to the map are NOT reflected in the
                  * set, and vice-versa. This method is always executed by a distributed query, so it may throw a
-                 * QueryResultSizeExceededException if query result size limit is configured.
+                 * query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_keysetwithpredicate_encode(const std::string  & name, const data  & predicate);
 
@@ -696,7 +696,7 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the values of matching entries.Specified predicate
                  * runs on all members in parallel. The collection is NOT backed by the map, so changes to the map are NOT reflected
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
-                 * QueryResultSizeExceededException if query result size limit is configured.
+                 * query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_valueswithpredicate_encode(const std::string  & name, const data  & predicate);
 
@@ -704,7 +704,7 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the matching entries.Specified predicate
                  * runs on all members in parallel. The collection is NOT backed by the map, so changes to the map are NOT reflected
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
-                 * QueryResultSizeExceededException if query result size limit is configured.
+                 * query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_entrieswithpredicate_encode(const std::string  & name, const data  & predicate);
 
@@ -782,7 +782,7 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the keys of matching entries. Specified predicate
                  * runs on all members in parallel. The collection is NOT backed by the map, so changes to the map are NOT reflected
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
-                 * QueryResultSizeExceededException if query result size limit is configured.
+                 * query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_keysetwithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
 
@@ -790,7 +790,7 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the values of matching entries. Specified predicate
                  * runs on all members in parallel. The collection is NOT backed by the map, so changes to the map are NOT reflected
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
-                 * QueryResultSizeExceededException if query result size limit is configured.
+                 * query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_valueswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
 
@@ -798,7 +798,7 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the matching entries. Specified predicate
                  * runs on all members in parallel. The collection is NOT backed by the map, so changes to the map are NOT reflected
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
-                 * QueryResultSizeExceededException if query result size limit is configured.
+                 * query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API map_entrieswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
 
@@ -1543,7 +1543,7 @@ namespace hazelcast {
                  * If the lock is held by some other endpoint when this method is called,
                  * the caller thread is blocked until the lock is released. If the session
                  * is closed between reentrant acquires, the call fails with
-                 * {@code LockOwnershipLostException}.
+                 * {@code lock_ownership_lost}.
                  */
                 ClientMessage HAZELCAST_API fencedlock_lock_encode(const raft_group_id  & group_id, const std::string  & name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid);
 
@@ -1555,15 +1555,15 @@ namespace hazelcast {
                  * If the lock is held by some other endpoint when this method is called,
                  * the caller thread is blocked until the lock is released or the timeout
                  * duration passes. If the session is closed between reentrant acquires,
-                 * the call fails with {@code LockOwnershipLostException}.
+                 * the call fails with {@code lock_ownership_lost}.
                  */
                 ClientMessage HAZELCAST_API fencedlock_trylock_encode(const raft_group_id  & group_id, const std::string  & name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid, int64_t timeout_ms);
 
                 /**
                  * Unlocks the given FencedLock on the given CP group. If the lock is
-                 * not acquired, the call fails with {@link IllegalMonitorStateException}.
+                 * not acquired, the call fails with {@link illegal_monitor_state}.
                  * If the session is closed while holding the lock, the call fails with
-                 * {@code LockOwnershipLostException}. Returns true if the lock is still
+                 * {@code lock_ownership_lost}. Returns true if the lock is still
                  * held by the caller after a successful unlock() call, false otherwise.
                  */
                 ClientMessage HAZELCAST_API fencedlock_unlock_encode(const raft_group_id  & group_id, const std::string  & name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid);
@@ -1685,7 +1685,7 @@ namespace hazelcast {
                  * thread, or the specified waiting time elapses. If the count reaches zero
                  * then the method returns with the value true. If the current thread has
                  * its interrupted status set on entry to this method, or is interrupted
-                 * while waiting, then {@code InterruptedException} is thrown
+                 * while waiting, then {@code interrupted} is thrown
                  * and the current thread's interrupted status is cleared. If the specified
                  * waiting time elapses then the value false is returned.  If the time is
                  * less than or equal to zero, the method will not wait at all.
@@ -2074,7 +2074,7 @@ namespace hazelcast {
                 /**
                  * Returns a set clone of the keys contained in this map. The set is NOT backed by the map, so changes to the map
                  * are NOT reflected in the set, and vice-versa. This method is always executed by a distributed query, so it may throw
-                 * a QueryResultSizeExceededException if query result size limit is configured.
+                 * a query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API transactionalmap_keyset_encode(const std::string  & name, boost::uuids::uuid txn_id, int64_t thread_id);
 
@@ -2082,14 +2082,14 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the keys of matching entries. Specified predicate
                  * runs on all members in parallel.The set is NOT backed by the map, so changes to the map are NOT reflected in the
                  * set, and vice-versa. This method is always executed by a distributed query, so it may throw a
-                 * QueryResultSizeExceededException if query result size limit is configured.
+                 * query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API transactionalmap_keysetwithpredicate_encode(const std::string  & name, boost::uuids::uuid txn_id, int64_t thread_id, const data  & predicate);
 
                 /**
                  * Returns a collection clone of the values contained in this map. The collection is NOT backed by the map,
                  * so changes to the map are NOT reflected in the collection, and vice-versa. This method is always executed by a
-                 * distributed query, so it may throw a QueryResultSizeExceededException if query result size limit is configured.
+                 * distributed query, so it may throw a query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API transactionalmap_values_encode(const std::string  & name, boost::uuids::uuid txn_id, int64_t thread_id);
 
@@ -2097,7 +2097,7 @@ namespace hazelcast {
                  * Queries the map based on the specified predicate and returns the values of matching entries.Specified predicate
                  * runs on all members in parallel. The collection is NOT backed by the map, so changes to the map are NOT reflected
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw
-                 * a QueryResultSizeExceededException if query result size limit is configured.
+                 * a query_result_size_exceeded if query result size limit is configured.
                  */
                 ClientMessage HAZELCAST_API transactionalmap_valueswithpredicate_encode(const std::string  & name, boost::uuids::uuid txn_id, int64_t thread_id, const data  & predicate);
 

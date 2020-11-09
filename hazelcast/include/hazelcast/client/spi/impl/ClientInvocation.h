@@ -192,7 +192,7 @@ namespace hazelcast {
 
                     void retry();
 
-                    bool should_retry(exception::IException &exception);
+                    bool should_retry(exception::iexception &exception);
 
                     void execute();
 
@@ -202,9 +202,9 @@ namespace hazelcast {
 
                     std::shared_ptr<protocol::ClientMessage> copy_message();
 
-                    void set_exception(const exception::IException &e, boost::exception_ptr exception_ptr);
+                    void set_exception(const exception::iexception &e, boost::exception_ptr exception_ptr);
 
-                    void log_exception(exception::IException &e);
+                    void log_exception(exception::iexception &e);
 
                     void erase_invocation() const;
 

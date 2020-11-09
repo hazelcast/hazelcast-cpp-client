@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <hazelcast/client/Hazelcast.h>
-#include <hazelcast/client/query/Predicates.h>
+#include <hazelcast/client/query/predicates.h>
 
 using namespace hazelcast::client;
 
@@ -70,12 +70,12 @@ int main() {
     // Add some users to the Distributed Map
     generate_users(users);
     // Create a Predicate from a String (a SQL like Where clause)
-    // Creating the same Predicate as above but with AndPredicate builder
-    query::AndPredicate criteriaQuery(hz, query::EqualPredicate(hz, "active", true),
-            query::BetweenPredicate(hz, "age", 18, 21));
+    // Creating the same Predicate as above but with and_predicate builder
+    query::and_predicate criteriaQuery(hz, query::equal_predicate(hz, "active", true),
+                                       query::between_predicate(hz, "age", 18, 21));
     // Get result collections using the two different Predicates
     // Use SQL Query
-    auto result1 = users->values<User>(query::SqlPredicate(hz, "active AND age BETWEEN 18 AND 21)")).get();
+    auto result1 = users->values<User>(query::sql_predicate(hz, "active AND age BETWEEN 18 AND 21)")).get();
     auto result2 = users->values<User>(criteriaQuery).get();
     // Print out the results
     std::cout << "Result 1:" << std::endl;

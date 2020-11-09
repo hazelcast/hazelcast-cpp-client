@@ -21,7 +21,7 @@
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/client_config.h>
-#include <hazelcast/client/exception/IllegalStateException.h>
+#include <hazelcast/client/exception/ProtocolExceptions.h>
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
@@ -37,7 +37,7 @@
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/client/serialization/pimpl/data_output.h>
 #include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/client/exception/IOException.h>
+#include <hazelcast/client/exception/ProtocolExceptions.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
 
@@ -93,14 +93,14 @@
 #include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/pipelining.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -111,7 +111,7 @@
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/multi_map.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/entry_event.h"
 #include "hazelcast/client/hazelcast_json_value.h"
 #include "hazelcast/client/ilist.h"
@@ -671,7 +671,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {
                 auto replicatedMap = client->get_replicated_map(get_test_name());
-                replicatedMap->add_entry_listener(make_event_counting_listener(state_), query::FalsePredicate(*client)).get();
+                replicatedMap->add_entry_listener(make_event_counting_listener(state_), query::false_predicate(*client)).get();
                 replicatedMap->put(2, 2).get();
                 ASSERT_TRUE_ALL_THE_TIME((state_.add_count.load() == 0), 1);
             }

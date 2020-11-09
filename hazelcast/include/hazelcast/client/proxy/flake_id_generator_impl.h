@@ -43,7 +43,7 @@ namespace hazelcast {
                  *
                  * @return new cluster-wide unique ID
                  *
-                 * @throws NodeIdOutOfRangeException if node ID for all members in the cluster is out of valid range.
+                 * @throws node_id_out_of_range if node ID for all members in the cluster is out of valid range.
                  *      See "Node ID overflow" in {@link FlakeIdGenerator class documentation} for more details.
                  */
                 boost::future<int64_t> new_id();

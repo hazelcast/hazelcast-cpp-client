@@ -20,7 +20,7 @@
 
 #include <boost/thread/future.hpp>
 
-#include "hazelcast/util/ExceptionUtil.h"
+#include "hazelcast/util/exception_util.h"
 
 namespace hazelcast {
     namespace client {
@@ -39,28 +39,28 @@ namespace hazelcast {
             /**
              * Contains static method that is used from client transaction classes.
              */
-            class ClientTransactionUtil {
+            class client_transaction_util {
             public:
                 /**
                  * Handles the invocation exception for transactions so that users will not see internal exceptions.
                  * <p>
-                 * More specifically IOException, because in case of a IO problem in ClientInvocation that send to a connection
-                 * sends IOException to user. This wraps that exception into a TransactionException.
+                 * More specifically io , because in case of a IO problem in ClientInvocation that send to a connection
+                 * sends io to user. This wraps that exception into a transaction_exception.
                  */
                 static boost::future<protocol::ClientMessage>
                 invoke(protocol::ClientMessage &request, const std::string &object_name,
                        spi::ClientContext &client, const std::shared_ptr<connection::Connection> &connection);
 
-                static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
+                static const std::shared_ptr<util::exception_util::runtime_exception_factory> &
                 transaction_exception_factory();
 
             private:
-                class TransactionExceptionFactory : public util::ExceptionUtil::RuntimeExceptionFactory {
+                class transaction_exception_factory : public util::exception_util::runtime_exception_factory {
                 public:
                     void rethrow(std::exception_ptr throwable, const std::string &message) override;
                 };
 
-                static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> exceptionFactory;
+                static const std::shared_ptr<util::exception_util::runtime_exception_factory> exceptionFactory;
             };
         }
     }

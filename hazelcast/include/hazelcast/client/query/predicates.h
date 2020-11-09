@@ -27,7 +27,7 @@ namespace hazelcast {
         class hazelcast_client;
 
         namespace query {
-            struct HAZELCAST_API QueryConstants {
+            struct HAZELCAST_API query_constants {
                 static constexpr const char *KEY_ATTRIBUTE_NAME = "__key";
                 static constexpr const char *THIS_ATTRIBUTE_NAME = "this";
             };
@@ -36,30 +36,30 @@ namespace hazelcast {
              * This is a marker class for Predicate classes. All predicate classes shall extend this class. This class
              * also indicates that a Java implementation is required at the server side.
              */
-            class HAZELCAST_API Predicate {
+            class HAZELCAST_API predicate {
             };
 
-            struct HAZELCAST_API BasePredicate : public Predicate {
-                explicit BasePredicate(hazelcast_client &client);
+            struct HAZELCAST_API base_predicate : public predicate {
+                explicit base_predicate(hazelcast_client &client);
 
                 serialization::object_data_output out_stream;
             };
 
-            class HAZELCAST_API NamedPredicate : public BasePredicate {
+            class HAZELCAST_API named_predicate : public base_predicate {
             protected:
-                explicit NamedPredicate(hazelcast_client &client, const std::string &attribute_name);
+                explicit named_predicate(hazelcast_client &client, const std::string &attribute_name);
             };
 
-            class MultiPredicate : public BasePredicate {
+            class multi_predicate : public base_predicate {
             public:
                 template<typename ...Args>
-                MultiPredicate(hazelcast_client &client, const Args &...values) : BasePredicate(client) {
+                multi_predicate(hazelcast_client &client, const Args &...values) : base_predicate(client) {
                     out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
                     out_stream.write_objects(values...);
                 }
 
                 template<typename ...Args>
-                MultiPredicate(const std::string attribute_name, hazelcast_client &client, const Args &...values) : BasePredicate(client) {
+                multi_predicate(const std::string attribute_name, hazelcast_client &client, const Args &...values) : base_predicate(client) {
                     out_stream.write(attribute_name);
                     out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
                     out_stream.write_objects(values...);
@@ -102,33 +102,33 @@ namespace hazelcast {
                 PAGING_PREDICATE = 15
             };
 
-            class EqualPredicate : public NamedPredicate {
+            class equal_predicate : public named_predicate {
             public:
                 /**
                  * @param attributeName The attribute whose value shall be compared to.
                  * @tparam from The value of the attribute.
                  */
                 template<typename T>
-                EqualPredicate(hazelcast_client &client, const std::string &attribute_name, const T &value)
-                        : NamedPredicate(client, attribute_name) {
+                equal_predicate(hazelcast_client &client, const std::string &attribute_name, const T &value)
+                        : named_predicate(client, attribute_name) {
                     out_stream.write_object(value);
                 }
             };
 
-            class NotEqualPredicate : public NamedPredicate {
+            class not_equal_predicate : public named_predicate {
             public:
                 /**
                  * @param attributeName The attribute whose value shall be compared to.
                  * @tparam from The value of the attribute.
                  */
                 template<typename T>
-                NotEqualPredicate(hazelcast_client &client, const std::string &attribute_name, const T &value)
-                        : NamedPredicate(client, attribute_name) {
+                not_equal_predicate(hazelcast_client &client, const std::string &attribute_name, const T &value)
+                        : named_predicate(client, attribute_name) {
                     out_stream.write_object(value);
                 }
             };
 
-            class GreaterLessPredicate : public NamedPredicate {
+            class greater_less_predicate : public named_predicate {
             public:
                 /**
                  * @param attributeName The attribute whose value shall be compared to.
@@ -137,16 +137,16 @@ namespace hazelcast {
                  * @param less If true, allow "less than" matching otherwise do "greater than" matching
                  */
                 template<typename T>
-                GreaterLessPredicate(hazelcast_client &client, const std::string &attribute_name, const T &value,
-                                     bool is_equal, bool is_less)
-                        : NamedPredicate(client, attribute_name) {
+                greater_less_predicate(hazelcast_client &client, const std::string &attribute_name, const T &value,
+                                       bool is_equal, bool is_less)
+                        : named_predicate(client, attribute_name) {
                     out_stream.write_object(value);
                     out_stream.write(is_equal);
                     out_stream.write(is_less);
                 }
             };
 
-            class BetweenPredicate : public NamedPredicate {
+            class between_predicate : public named_predicate {
             public:
                 /**
                  * @param attributeName The attribute whose value shall be compared to.
@@ -154,73 +154,73 @@ namespace hazelcast {
                  * @tparam to The ending value to match (end is inclusive).
                  */
                 template<typename FROM_TYPE, typename TO_TYPE>
-                BetweenPredicate(hazelcast_client &client, const std::string &attribute_name, const FROM_TYPE &from,
-                                 const TO_TYPE &to)
-                        : NamedPredicate(client, attribute_name) {
+                between_predicate(hazelcast_client &client, const std::string &attribute_name, const FROM_TYPE &from,
+                                  const TO_TYPE &to)
+                        : named_predicate(client, attribute_name) {
                     out_stream.write_object(to);
                     out_stream.write_object(from);
                 }
             };
 
-            class HAZELCAST_API FalsePredicate : public BasePredicate {
+            class HAZELCAST_API false_predicate : public base_predicate {
             public:
-                FalsePredicate(hazelcast_client &client);
+                false_predicate(hazelcast_client &client);
             };
 
-            class HAZELCAST_API TruePredicate : public BasePredicate {
+            class HAZELCAST_API true_predicate : public base_predicate {
             public:
-                TruePredicate(hazelcast_client &client);
+                true_predicate(hazelcast_client &client);
             };
 
-            class HAZELCAST_API InstanceOfPredicate : public BasePredicate {
+            class HAZELCAST_API instance_of_predicate : public base_predicate {
             public:
                 /**
                  * @param javaClassName The name of the java class as identified by Class.get_name() in java.
                  */
-                InstanceOfPredicate(hazelcast_client &client, const std::string &java_class_name);
+                instance_of_predicate(hazelcast_client &client, const std::string &java_class_name);
             };
 
-            class HAZELCAST_API SqlPredicate : public BasePredicate {
+            class HAZELCAST_API sql_predicate : public base_predicate {
             public:
                 /**
                  *
                  * @param client The client to be used for serialization.
                  * @param sql The sql query string.
                  */
-                SqlPredicate(hazelcast_client &client, const std::string &sql);
+                sql_predicate(hazelcast_client &client, const std::string &sql);
             };
 
-            class HAZELCAST_API LikePredicate : public NamedPredicate {
+            class HAZELCAST_API like_predicate : public named_predicate {
             public:
                 /**
                  *
                  * @param attribute The name of the attribute
                  * @param expression The expression value to match
                  */
-                LikePredicate(hazelcast_client &client, const std::string &attribute, const std::string &expression);
+                like_predicate(hazelcast_client &client, const std::string &attribute, const std::string &expression);
             };
 
-            class HAZELCAST_API ILikePredicate : public NamedPredicate {
+            class HAZELCAST_API ilike_predicate : public named_predicate {
             public:
                 /**
                  *
                  * @param attribute The name of the attribute
                  * @param expression The expression value to match
                  */
-                ILikePredicate(hazelcast_client &client, const std::string &attribute, const std::string &expression);
+                ilike_predicate(hazelcast_client &client, const std::string &attribute, const std::string &expression);
             };
 
-            class HAZELCAST_API RegexPredicate : public NamedPredicate {
+            class HAZELCAST_API regex_predicate : public named_predicate {
             public:
                 /**
                  *
                  * @param attribute The name of the attribute
                  * @param expression The expression value to match
                  */
-                RegexPredicate(hazelcast_client &client, const std::string &attribute, const std::string &expression);
+                regex_predicate(hazelcast_client &client, const std::string &attribute, const std::string &expression);
             };
 
-            class InPredicate : public MultiPredicate {
+            class in_predicate : public multi_predicate {
             public:
                 /**
                  * The type of Args should be able to be serialized.
@@ -228,26 +228,26 @@ namespace hazelcast {
                  * @tparam value The values to search for
                  */
                 template<typename ...Args>
-                InPredicate(hazelcast_client &client, const std::string &attribute_name, const Args &...values)
-                        : MultiPredicate(attribute_name, client, values...) {}
+                in_predicate(hazelcast_client &client, const std::string &attribute_name, const Args &...values)
+                        : multi_predicate(attribute_name, client, values...) {}
             };
 
-            class AndPredicate : public MultiPredicate {
+            class and_predicate : public multi_predicate {
             public:
                 template<typename ...Args>
-                AndPredicate(hazelcast_client &client, const Args &...values) : MultiPredicate(client, values...) {}
+                and_predicate(hazelcast_client &client, const Args &...values) : multi_predicate(client, values...) {}
             };
 
-            class OrPredicate : public MultiPredicate {
+            class or_predicate : public multi_predicate {
             public:
                 template<typename ...PredicateTypes>
-                OrPredicate(hazelcast_client &client, const PredicateTypes &...values) : MultiPredicate(client, values...) {}
+                or_predicate(hazelcast_client &client, const PredicateTypes &...values) : multi_predicate(client, values...) {}
             };
 
-            class NotPredicate : public BasePredicate {
+            class not_predicate : public base_predicate {
             public:
                 template<typename T>
-                NotPredicate(hazelcast_client &client, const T &predicate) : BasePredicate(client) {
+                not_predicate(hazelcast_client &client, const T &predicate) : base_predicate(client) {
                     out_stream.write_object(predicate);
                 }
             };
@@ -276,13 +276,13 @@ namespace hazelcast {
                  */
                 static T read_data(object_data_input &in) {
                     // Not need to read at the client side
-                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("readData",
-                                                                                     "Client should not need to use readdata method!!!"));
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization("readData",
+                                                                                       "Client should not need to use readdata method!!!"));
                 }
             };
 
             template<>
-            struct hz_serializer<query::BetweenPredicate> : public BasePredicateSerializer<query::BetweenPredicate> {
+            struct hz_serializer<query::between_predicate> : public BasePredicateSerializer<query::between_predicate> {
                 /**
                  * @return class id
                  */
@@ -292,7 +292,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::EqualPredicate> : public BasePredicateSerializer<query::EqualPredicate> {
+            struct hz_serializer<query::equal_predicate> : public BasePredicateSerializer<query::equal_predicate> {
                 /**
                  * @return class id
                  */
@@ -302,7 +302,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::NotEqualPredicate> : public BasePredicateSerializer<query::NotEqualPredicate> {
+            struct hz_serializer<query::not_equal_predicate> : public BasePredicateSerializer<query::not_equal_predicate> {
                 /**
                  * @return class id
                  */
@@ -312,8 +312,8 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::GreaterLessPredicate>
-                    : public BasePredicateSerializer<query::GreaterLessPredicate> {
+            struct hz_serializer<query::greater_less_predicate>
+                    : public BasePredicateSerializer<query::greater_less_predicate> {
                 /**
                  * @return class id
                  */
@@ -323,7 +323,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::FalsePredicate> : public BasePredicateSerializer<query::FalsePredicate> {
+            struct hz_serializer<query::false_predicate> : public BasePredicateSerializer<query::false_predicate> {
                 /**
                  * @return class id
                  */
@@ -333,7 +333,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::TruePredicate> : public BasePredicateSerializer<query::TruePredicate> {
+            struct hz_serializer<query::true_predicate> : public BasePredicateSerializer<query::true_predicate> {
                 /**
                  * @return class id
                  */
@@ -343,7 +343,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::LikePredicate> : public BasePredicateSerializer<query::LikePredicate> {
+            struct hz_serializer<query::like_predicate> : public BasePredicateSerializer<query::like_predicate> {
                 /**
                  * @return class id
                  */
@@ -353,8 +353,8 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::InstanceOfPredicate>
-                    : public BasePredicateSerializer<query::InstanceOfPredicate> {
+            struct hz_serializer<query::instance_of_predicate>
+                    : public BasePredicateSerializer<query::instance_of_predicate> {
                 /**
                  * @return class id
                  */
@@ -364,8 +364,8 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::SqlPredicate>
-                    : public BasePredicateSerializer<query::SqlPredicate> {
+            struct hz_serializer<query::sql_predicate>
+                    : public BasePredicateSerializer<query::sql_predicate> {
                 /**
                  * @return class id
                  */
@@ -375,7 +375,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::ILikePredicate> : public BasePredicateSerializer<query::ILikePredicate> {
+            struct hz_serializer<query::ilike_predicate> : public BasePredicateSerializer<query::ilike_predicate> {
                 /**
                  * @return class id
                  */
@@ -385,7 +385,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::RegexPredicate> : public BasePredicateSerializer<query::RegexPredicate> {
+            struct hz_serializer<query::regex_predicate> : public BasePredicateSerializer<query::regex_predicate> {
                 /**
                  * @return class id
                  */
@@ -395,7 +395,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::InPredicate> : public BasePredicateSerializer<query::InPredicate> {
+            struct hz_serializer<query::in_predicate> : public BasePredicateSerializer<query::in_predicate> {
                 /**
                  * @return class id
                  */
@@ -405,7 +405,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::AndPredicate> : public BasePredicateSerializer<query::AndPredicate> {
+            struct hz_serializer<query::and_predicate> : public BasePredicateSerializer<query::and_predicate> {
                 /**
                  * @return class id
                  */
@@ -415,7 +415,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::OrPredicate> : public BasePredicateSerializer<query::OrPredicate> {
+            struct hz_serializer<query::or_predicate> : public BasePredicateSerializer<query::or_predicate> {
                 /**
                  * @return class id
                  */
@@ -425,7 +425,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<query::NotPredicate> : public BasePredicateSerializer<query::NotPredicate> {
+            struct hz_serializer<query::not_predicate> : public BasePredicateSerializer<query::not_predicate> {
                 /**
                  * @return class id
                  */

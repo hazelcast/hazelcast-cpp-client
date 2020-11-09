@@ -103,7 +103,7 @@ namespace hazelcast {
                  * @param durations the desired ID validity or unlimited, if configured to 0.
                  * @return this instance for fluent API
                  *
-                 * @throws client::exception::IllegalArgumentException if duration is negative.
+                 * @throws client::exception::illegal_argument if duration is negative.
                  */
                 ClientFlakeIdGeneratorConfig &set_prefetch_validity_duration(std::chrono::milliseconds duration);
 

@@ -78,7 +78,7 @@ namespace hazelcast {
             *
             * @param timeoutInSeconds  the timeout value.
             * @return the updated TransactionOptions
-            * @throws IllegalArgumentException if timeout smaller or equal than 0, or timeUnit is null.
+            * @throws illegal_argument if timeout smaller or equal than 0, or timeUnit is null.
             * @see #getTimeout()
             */
             transaction_options& set_timeout(std::chrono::milliseconds duration);
@@ -98,7 +98,7 @@ namespace hazelcast {
             *
             * @param durability  the durability
             * @return the updated TransactionOptions.
-            * @throws IllegalArgumentException if durability smaller than 0.
+            * @throws illegal_argument if durability smaller than 0.
             */
             transaction_options& set_durability(int num_machines);
 

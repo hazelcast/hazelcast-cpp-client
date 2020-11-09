@@ -64,10 +64,10 @@ namespace hazelcast {
                         /**
                          * Generates the next unique call ID. When the implementation
                          * supports backpressure, it will not return unless the number of outstanding invocations is within the
-                         * configured limit. Instead it will block until the condition is met and eventually throw HazelcastOverloadException.
+                         * configured limit. Instead it will block until the condition is met and eventually throw hazelcast_overload_exception.
                          *
                          * @return the generated call ID
-                         * @throws HazelcastOverloadException if the outstanding invocation count hasn't dropped below the configured limit
+                         * @throws hazelcast_overload if the outstanding invocation count hasn't dropped below the configured limit
                          */
                         virtual int64_t next() = 0;
 

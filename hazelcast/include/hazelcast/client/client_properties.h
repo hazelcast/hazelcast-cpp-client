@@ -201,7 +201,7 @@ namespace hazelcast {
              * <p/>
              * To prevent the system from overloading, user can apply a constraint on the number of concurrent invocations.
              * If the maximum number of concurrent invocations has been exceeded and a new invocation comes in,
-             * then hazelcast will throw HazelcastOverloadException
+             * then hazelcast will throw hazelcast_overload_exception
              * <p/>
              * By default it is configured as INT32_MAX.
              */
@@ -213,10 +213,10 @@ namespace hazelcast {
              * <p/>
              * If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done
              * to give the system time to deal with the backlog of invocations. This property controls how long an invocation is
-             * allowed to wait before getting a {@link com.hazelcast.core.HazelcastOverloadException}.
+             * allowed to wait before getting a {@link com.hazelcast.core.hazelcast_overload}.
              * <p/>
              * <p>
-             * When set to -1 then <code>HazelcastOverloadException</code> is thrown immediately without any waiting.
+             * When set to -1 then <code>hazelcast_overload_exception</code> is thrown immediately without any waiting.
              * </p>
              */
             static const std::string BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS;
@@ -259,7 +259,7 @@ namespace hazelcast {
             /**
              * When this configuration is enabled, if an operation has sync backups and acks are not received from backup replicas
              * in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails
-             * with \IndeterminateOperationStateException. However, even if the invocation fails,
+             * with \indeterminate_operation_state. However, even if the invocation fails,
              * there will not be any rollback on other successful replicas.
              */
             static constexpr const char * FAIL_ON_INDETERMINATE_OPERATION_STATE = "hazelcast.client.operation.fail.on.indeterminate.state";

@@ -117,7 +117,7 @@ namespace hazelcast {
                                         near_cache_stats_->increment_misses();
                                         return std::shared_ptr<V>();
                                     }
-                                } catch (exception::IException &error) {
+                                } catch (exception::iexception &error) {
                                     on_get_error(key, value, record, error);
                                     throw;
                                 }
@@ -153,7 +153,7 @@ namespace hazelcast {
                                     near_cache_stats_->increment_invalidation_requests();
                                     on_remove(key, record, removed);
                                     return record.get() != NULL;
-                                } catch (exception::IException &error) {
+                                } catch (exception::iexception &error) {
                                     on_remove_error(key, record, removed, error);
                                     throw;
                                 }
@@ -263,7 +263,7 @@ namespace hazelcast {
 
                             void check_available() const {
                                 if (!is_available()) {
-                                    BOOST_THROW_EXCEPTION(exception::IllegalStateException(near_cache_config_.get_name() +
+                                    BOOST_THROW_EXCEPTION(exception::illegal_state(near_cache_config_.get_name() +
                                                                                            " named Near Cache record store is not available"));
                                 }
                             }
@@ -383,7 +383,7 @@ namespace hazelcast {
                             }
 
                             void on_get_error(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
-                                            const std::shared_ptr<R> &record, const exception::IException &error) {
+                                            const std::shared_ptr<R> &record, const exception::iexception &error) {
                             }
 
                             void on_put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
@@ -399,7 +399,7 @@ namespace hazelcast {
 
                             void on_put_error(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
                                             const std::shared_ptr<R> &record, const std::shared_ptr<R> &old_record,
-                                            const exception::IException &error) {
+                                            const exception::iexception &error) {
                             }
 
 /*
@@ -415,7 +415,7 @@ namespace hazelcast {
                             }
 
                             void on_remove_error(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
-                                               bool removed, const exception::IException &error) {
+                                               bool removed, const exception::iexception &error) {
                             }
 
                             void on_expire(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record) {
@@ -491,7 +491,7 @@ namespace hazelcast {
                                         near_cache_stats_->increment_owned_entry_count();
                                     }
                                     on_put(key, value, record, oldRecord);
-                                } catch (exception::IException &error) {
+                                } catch (exception::iexception &error) {
                                     on_put_error(key, value, record, oldRecord, error);
                                     throw;
                                 }

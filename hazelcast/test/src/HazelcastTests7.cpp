@@ -24,7 +24,7 @@
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/client_config.h>
-#include <hazelcast/client/exception/IllegalStateException.h>
+#include <hazelcast/client/exception/ProtocolExceptions.h>
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
@@ -41,7 +41,7 @@
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/client/serialization/pimpl/data_output.h>
 #include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/client/exception/IOException.h>
+#include <hazelcast/client/exception/ProtocolExceptions.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
 #include <ClientTestSupportBase.h>
@@ -1066,7 +1066,7 @@ namespace hazelcast {
 
                 ASSERT_TRUE(promise.cancel(true));
 
-                ASSERT_THROW(future.get(), exception::CancellationException);
+                ASSERT_THROW(future.get(), exception::cancellation);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException) {
@@ -1076,7 +1076,7 @@ namespace hazelcast {
 
                 auto future = service->submit<executor::tasks::FailingCallable, std::string>(task).get_future();
 
-                ASSERT_THROW(future.get(), exception::IllegalStateException);
+                ASSERT_THROW(future.get(), exception::illegal_state);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException_withExecutionCallback) {
@@ -1098,7 +1098,7 @@ namespace hazelcast {
                 auto failingFuture = service->submit<executor::tasks::FailingCallable, std::string>(
                         executor::tasks::FailingCallable()).get_future();
 
-                ASSERT_THROW(failingFuture.get(), exception::IllegalStateException);
+                ASSERT_THROW(failingFuture.get(), exception::illegal_state);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute_withNoMemberSelected) {
@@ -1111,7 +1111,7 @@ namespace hazelcast {
                 ASSERT_THROW(service->execute<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>>(
                         executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>{mapName, spi::ClientContext(
                                 *client).random_uuid()}, selector),
-                             exception::RejectedExecutionException);
+                             exception::rejected_execution);
             }
 
             TEST_F(ClientExecutorServiceTest, testCallableSerializedOnce) {
@@ -1154,7 +1154,7 @@ namespace hazelcast {
                 auto future = service->submit<executor::tasks::TaskWithUnserializableResponse, bool>(
                         taskWithUnserializableResponse).get_future();
 
-                ASSERT_THROW(future.get(), exception::HazelcastSerializationException);
+                ASSERT_THROW(future.get(), exception::hazelcast_serialization);
             }
 
             TEST_F(ClientExecutorServiceTest, testUnserializableResponse_exceptionPropagatesToClientCallback) {
@@ -1174,7 +1174,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(*latch1);
 
                 auto exception = callback->get_exception();
-                ASSERT_THROW(std::rethrow_exception(exception), exception::HazelcastSerializationException);
+                ASSERT_THROW(std::rethrow_exception(exception), exception::hazelcast_serialization);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMember) {
@@ -1665,10 +1665,10 @@ namespace hazelcast {
                 TEST_F (AwsConfigTest, testSetEmptyValues) {
                     client::config::client_aws_config awsConfig;
 
-                    ASSERT_THROW(awsConfig.set_access_key(""), exception::IllegalArgumentException);
-                    ASSERT_THROW(awsConfig.set_region(""), exception::IllegalArgumentException);
-                    ASSERT_THROW(awsConfig.set_host_header(""), exception::IllegalArgumentException);
-                    ASSERT_THROW(awsConfig.set_secret_key(""), exception::IllegalArgumentException);
+                    ASSERT_THROW(awsConfig.set_access_key(""), exception::illegal_argument);
+                    ASSERT_THROW(awsConfig.set_region(""), exception::illegal_argument);
+                    ASSERT_THROW(awsConfig.set_host_header(""), exception::illegal_argument);
+                    ASSERT_THROW(awsConfig.set_secret_key(""), exception::illegal_argument);
                 }
 
                 TEST_F (AwsConfigTest, testClientConfigUsage) {
@@ -1696,7 +1696,7 @@ namespace hazelcast {
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "-1");
 
                     ASSERT_THROW(hazelcast_client hazelcastClient(clientConfig),
-                                 exception::InvalidConfigurationException);
+                                 exception::invalid_configuration);
                 }
             }
         }

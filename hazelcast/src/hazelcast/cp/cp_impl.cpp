@@ -47,7 +47,7 @@ namespace hazelcast {
                     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
 
                     if (!running_) {
-                        BOOST_THROW_EXCEPTION(client::exception::HazelcastInstanceNotActiveException(
+                        BOOST_THROW_EXCEPTION(client::exception::hazelcast_instance_not_active(
                                                       "proxy_session_manager::get_or_create_session",
                                                               "Session manager is already shut down!"));
                     }
@@ -112,9 +112,9 @@ namespace hazelcast {
                                                                                  [=](boost::future<client::protocol::ClientMessage> f) {
                                                 try {
                                                     f.get();
-                                                } catch (client::exception::SessionExpiredException &) {
+                                                } catch (client::exception::session_expired &) {
                                                     invalidate_session(group_id, session_id);
-                                                } catch (client::exception::CPGroupDestroyedException &) {
+                                                } catch (client::exception::cp_group_destroyed &) {
                                                     invalidate_session(group_id, session_id);
                                                 }
                                             }));

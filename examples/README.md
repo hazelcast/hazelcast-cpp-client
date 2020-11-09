@@ -27,7 +27,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
   * **multimap**: Illustrates how to use multi_map which allows multiple values for a key.
   * **near-cache**: Illustrates how you can configure near-cache feature for imap with different eviction policies.
   * **partitionaware**: Illustrates how you can use partition aware keys for imap for putting the data into certain partitions.
-  * **query**: Illustrates how you can use different Predicate types for querying data from imap.
+  * **query**: Illustrates how you can use different predicate types for querying data from imap.
   * **remove_all**: Illustrates how you can use imap::remove_all with query predicate to remove certain entries based on the query matching.
 
 **distributed primitives** — Examples for basic distributed primitive structures.

@@ -381,7 +381,7 @@ namespace hazelcast {
                                 near_cache_->clear();
                                 break;
                             default:
-                                BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalArgumentException>(
+                                BOOST_THROW_EXCEPTION((exception::exception_builder<exception::illegal_argument>(
                                         "ReplicatedMapAddNearCacheEventHandler::handle_entry")
                                         << "Not a known event type " << event_type).build());
                         }
@@ -425,7 +425,7 @@ namespace hazelcast {
                     try {
                         invalidation_listener_id_ = register_listener(create_near_cache_invalidation_listener_codec(),
                                                                   std::shared_ptr<impl::BaseEventHandler>(new ReplicatedMapAddNearCacheEventHandler(near_cache_))).get();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         HZ_LOG(get_context().get_logger(), severe,
                             boost::str(boost::format("-----------------\n"
                                                      "Near Cache is not initialized!\n"

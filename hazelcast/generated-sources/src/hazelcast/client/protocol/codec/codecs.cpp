@@ -1333,7 +1333,7 @@ namespace hazelcast {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
-                    msg.set_operation_name("Map.KeySetWithPagingPredicate");
+                    msg.set_operation_name("Map.KeySetWithpaging_predicate");
 
                     msg.set_message_type(static_cast<int32_t>(78848));
                     msg.set_partition_id(-1);
@@ -1349,7 +1349,7 @@ namespace hazelcast {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
-                    msg.set_operation_name("Map.ValuesWithPagingPredicate");
+                    msg.set_operation_name("Map.ValuesWithpaging_predicate");
 
                     msg.set_message_type(static_cast<int32_t>(79104));
                     msg.set_partition_id(-1);
@@ -1365,7 +1365,7 @@ namespace hazelcast {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
-                    msg.set_operation_name("Map.EntriesWithPagingPredicate");
+                    msg.set_operation_name("Map.EntriesWithpaging_predicate");
 
                     msg.set_message_type(static_cast<int32_t>(79360));
                     msg.set_partition_id(-1);

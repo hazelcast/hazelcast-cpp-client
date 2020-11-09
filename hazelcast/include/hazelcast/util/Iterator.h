@@ -38,7 +38,7 @@ namespace hazelcast {
              * Returns the next element in the iteration.
              *
              * @return the next element in the iteration.
-             * @exception NoSuchElementException iteration has no more elements.
+             * @exception no_such_element iteration has no more elements.
              */
             virtual std::shared_ptr<E> next() {
                 assert(0);
@@ -53,10 +53,10 @@ namespace hazelcast {
              * the underlying collection is modified while the iteration is in
              * progress in any way other than by calling this method.
              *
-             * @exception UnsupportedOperationException if the <tt>remove</tt>
+             * @exception unsupported_operation if the <tt>remove</tt>
              *		  operation is not supported by this Iterator.
 
-             * @exception IllegalStateException if the <tt>next</tt> method has not
+             * @exception illegal_state if the <tt>next</tt> method has not
              *		  yet been called, or the <tt>remove</tt> method has already
              *		  been called after the last call to the <tt>next</tt>
              *		  method.

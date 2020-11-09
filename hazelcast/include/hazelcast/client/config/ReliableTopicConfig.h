@@ -64,7 +64,7 @@ namespace hazelcast {
                  *
                  * @param readBatchSize the maximum number of items to read in a batch.
                  * @return the updated reliable topic config.
-                 * @throws IllegalArgumentException if readBatchSize is smaller than 1.
+                 * @throws illegal_argument if readBatchSize is smaller than 1.
                  */
                 ReliableTopicConfig &set_read_batch_size(int batch_size);
             private:

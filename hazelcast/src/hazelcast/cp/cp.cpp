@@ -298,7 +298,7 @@ namespace hazelcast {
                     try {
                         count_down(round, invocation_uid);
                         return;
-                    } catch (exception::OperationTimeoutException &) {
+                    } catch (exception::operation_timeout &) {
                         // I can retry safely because my retry would be idempotent...
                     }
                 }
@@ -369,15 +369,15 @@ namespace hazelcast {
                             locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
                             return fence;
                         }
-                        BOOST_THROW_EXCEPTION(exception::LockAcquireLimitReachedException(
+                        BOOST_THROW_EXCEPTION(exception::lock_acquire_limit_reached(
                                                       "fenced_lock::lock_and_get_fence", (boost::format("Lock [%1%] reentrant lock limit is already reached!") %object_name_).str()));
-                    } catch(exception::SessionExpiredException &) {
+                    } catch(exception::session_expired &) {
                         invalidate_session(session_id);
                         verify_no_locked_session_id_present(thread_id);
                         return INVALID_FENCE;
-                    } catch(exception::WaitKeyCancelledException &) {
+                    } catch(exception::wait_key_cancelled &) {
                         release_session(session_id);
-                        BOOST_THROW_EXCEPTION(exception::LockAcquireLimitReachedException(
+                        BOOST_THROW_EXCEPTION(exception::lock_acquire_limit_reached(
                                                       "fenced_lock::lock_and_get_fence", (boost::format("Lock [%1%] not acquired because the lock call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %object_name_).str()));
                     } catch (...) {
                         release_session(session_id);
@@ -419,13 +419,13 @@ namespace hazelcast {
         }
 
         void fenced_lock::throw_lock_ownership_lost(int64_t session_id) const {
-            BOOST_THROW_EXCEPTION(client::exception::LockOwnershipLostException("fenced_lock", (boost::format(
+            BOOST_THROW_EXCEPTION(client::exception::lock_ownership_lost("fenced_lock", (boost::format(
                     "Current thread is not owner of the Lock[%1%] because its Session[%2%] is closed by server!") %
                                                                          get_name() % session_id).str()));
         }
 
         void fenced_lock::throw_illegal_monitor_state() const {
-            BOOST_THROW_EXCEPTION(client::exception::IllegalMonitorStateException("fenced_lock", (boost::format(
+            BOOST_THROW_EXCEPTION(client::exception::illegal_monitor_state("fenced_lock", (boost::format(
                     "Current thread is not owner of the Lock[%1%]") %get_name()).str()));
         }
 
@@ -504,7 +504,7 @@ namespace hazelcast {
                             release_session(session_id);
                         }
                         return std::make_pair(fence, false);
-                    } catch(exception::SessionExpiredException &) {
+                    } catch(exception::session_expired &) {
                         invalidate_session(session_id);
                         verify_no_locked_session_id_present(thread_id);
                         auto timeout_left = timeout -  (steady_clock::now() - start);
@@ -512,7 +512,7 @@ namespace hazelcast {
                             return std::make_pair(INVALID_FENCE, false);
                         }
                         return std::make_pair(INVALID_FENCE, false);
-                    } catch(exception::WaitKeyCancelledException &) {
+                    } catch(exception::wait_key_cancelled &) {
                         release_session(session_id);
                         return std::make_pair(INVALID_FENCE, false);
                     } catch (...) {
@@ -554,12 +554,12 @@ namespace hazelcast {
                     }
 
                     release_session(session_id);
-                } catch (exception::SessionExpiredException &) {
+                } catch (exception::session_expired &) {
                     invalidate_session(session_id);
                     locked_session_ids_.remove(thread_id);
 
                     throw_lock_ownership_lost(session_id);
-                } catch (exception::IllegalMonitorStateException &) {
+                } catch (exception::illegal_monitor_state &) {
                     locked_session_ids_.remove(thread_id);
                     throw;
                 }
@@ -750,8 +750,8 @@ namespace hazelcast {
             return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
                 try {
                     return f.get().get_first_fixed_sized_field<bool>();
-                } catch (exception::WaitKeyCancelledException &) {
-                    throw exception::IllegalStateException("sessionless_semaphore::acquire",
+                } catch (exception::wait_key_cancelled &) {
+                    throw exception::illegal_state("sessionless_semaphore::acquire",
                                                            (boost::format(
                                                                    "Semaphore[%1%] ] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
                                                             object_name_).str());
@@ -822,17 +822,17 @@ namespace hazelcast {
                                 }
                                 // first bool means acquired or not, second bool means if should try again
                                 return std::make_pair(acquired, false);
-                            } catch (exception::SessionExpiredException &) {
+                            } catch (exception::session_expired &) {
                                 session_manager_.invalidate_session(group_id_, session_id);
                                 if (use_timeout && (timeout - (std::chrono::steady_clock::now() - start) <= std::chrono::milliseconds::zero())) {
                                     return std::make_pair(false, false);
                                 }
                                 return std::make_pair(false, true);
-                            } catch (exception::WaitKeyCancelledException &) {
+                            } catch (exception::wait_key_cancelled &) {
                                 session_manager_.release_session(group_id_, session_id, permits);
                                 if (!use_timeout) {
                                     BOOST_THROW_EXCEPTION(
-                                            exception::IllegalStateException("session_semaphore::try_acquire_for_millis", (boost::format(
+                                            exception::illegal_state("session_semaphore::try_acquire_for_millis", (boost::format(
                                                     "Semaphore[%1%] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
                                                                                                             object_name_).str()));
                                 }
@@ -863,7 +863,7 @@ namespace hazelcast {
                 try {
                     f.get();
                     session_manager_.release_session(group_id_, session_id, permits);
-                } catch(exception::SessionExpiredException &) {
+                } catch(exception::session_expired &) {
                     session_manager_.invalidate_session(group_id_, session_id);
                     session_manager_.release_session(group_id_, session_id, permits);
                     throw_illegal_state_exception(std::current_exception());
@@ -873,7 +873,7 @@ namespace hazelcast {
 
         void session_semaphore::throw_illegal_state_exception(std::exception_ptr e) {
             auto ise = boost::enable_current_exception(
-                    exception::IllegalStateException("session_semaphore::illegal_state_exception",
+                    exception::illegal_state("session_semaphore::illegal_state",
                                                      "No valid session!"));
             if (!e) {
                 throw ise;
@@ -904,7 +904,7 @@ namespace hazelcast {
                                 auto count = f.get().get_first_fixed_sized_field<int32_t>();
                                 session_manager_.release_session(group_id_, session_id,DRAIN_SESSION_ACQ_COUNT - count);
                                 return count;
-                            } catch (exception::SessionExpiredException &) {
+                            } catch (exception::session_expired &) {
                                 session_manager_.invalidate_session(group_id_, session_id);
                                 return -1;
                             }
@@ -934,7 +934,7 @@ namespace hazelcast {
                         try {
                             f.get();
                             session_manager_.release_session(group_id_, session_id);
-                        } catch (exception::SessionExpiredException &) {
+                        } catch (exception::session_expired &) {
                             session_manager_.invalidate_session(group_id_, session_id);
                             throw_illegal_state_exception(std::current_exception());
                         }

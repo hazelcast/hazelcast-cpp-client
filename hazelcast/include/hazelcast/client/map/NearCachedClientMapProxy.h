@@ -92,7 +92,7 @@ namespace hazelcast {
                         spi::ClientProxy::get_context().get_near_cache_manager().destroy_near_cache(
                                 spi::ClientProxy::get_name());
                         spi::ClientProxy::post_destroy();
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         spi::ClientProxy::post_destroy();
                     }
                 }
@@ -138,7 +138,7 @@ namespace hazelcast {
                             });
                         }
                         return future;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         reset_to_unmarked_state(key);
                         throw;
                     }
@@ -150,7 +150,7 @@ namespace hazelcast {
                         auto response = imap::remove_internal(key, value);
                         invalidate_near_cache(key);
                         return response;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key);
                         throw;
                     }
@@ -162,7 +162,7 @@ namespace hazelcast {
                         invalidate_near_cache(key_data);
                         auto response = imap::remove_internal(key_data);
                         return response;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -174,7 +174,7 @@ namespace hazelcast {
                         auto response = imap::remove_all_internal(predicate_data);
                         near_cache_->clear();
                         return response;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         near_cache_->clear();
                         throw;
                     }
@@ -185,7 +185,7 @@ namespace hazelcast {
                         auto response = imap::delete_internal(key);
                         invalidate_near_cache(key);
                         return response;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key);
                         throw;
                     }
@@ -197,7 +197,7 @@ namespace hazelcast {
                         auto response = imap::try_remove_internal(key_data, timeout);
                         invalidate_near_cache(key_data);
                         return response;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -209,7 +209,7 @@ namespace hazelcast {
                         auto response = imap::try_put_internal(key_data, value_data, timeout);
                         invalidate_near_cache(key_data);
                         return response;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -221,7 +221,7 @@ namespace hazelcast {
                         auto previousValue = imap::put_internal(key_data, value_data, ttl);
                         invalidate_near_cache(key_data);
                         return previousValue;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -235,7 +235,7 @@ namespace hazelcast {
                         auto result = imap::try_put_transient_internal(key_data, value_data, ttl);
                         invalidate_near_cache(key_data);
                         return result;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -249,7 +249,7 @@ namespace hazelcast {
                         auto previousValue = imap::put_if_absent_data(key_data, value_data, ttl);
                         invalidate_near_cache(key_data);
                         return previousValue;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -262,7 +262,7 @@ namespace hazelcast {
                         auto result = proxy::IMapImpl::replace(key_data, value_data, new_value_data);
                         invalidate_near_cache(key_data);
                         return result;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -275,7 +275,7 @@ namespace hazelcast {
                         auto value = proxy::IMapImpl::replace_data(key_data, value_data);
                         invalidate_near_cache(key_data);
                         return value;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -288,7 +288,7 @@ namespace hazelcast {
                         auto result = proxy::IMapImpl::set(key_data, value_data, ttl);
                         invalidate_near_cache(key_data);
                         return result;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -299,7 +299,7 @@ namespace hazelcast {
                         auto evicted = proxy::IMapImpl::evict(key_data);
                         invalidate_near_cache(key_data);
                         return evicted;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -352,7 +352,7 @@ namespace hazelcast {
                             unmark_remaining_marked_keys(*markers);
                             return allEntries;
                         });
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         unmark_remaining_marked_keys(*markers);
                         throw;
                     }
@@ -365,7 +365,7 @@ namespace hazelcast {
                         auto response = imap::execute_on_key_data(key_data, processor);
                         invalidate_near_cache(key_data);
                         return response;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_near_cache(key_data);
                         throw;
                     }
@@ -377,7 +377,7 @@ namespace hazelcast {
                         auto result = imap::put_all_internal(partition_id, entries);
                         invalidate_entries(entries);
                         return result;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         invalidate_entries(entries);
                         throw;
                     }
@@ -400,7 +400,7 @@ namespace hazelcast {
                     try {
                         invalidation_listener_id_ = proxy::ProxyImpl::register_listener(create_near_cache_entry_listener_codec(),
                                                                                     handler).get();
-                    } catch (exception::IException &e) {
+                    } catch (exception::iexception &e) {
                         HZ_LOG(logger_, severe, 
                             boost::str(boost::format("Near Cache is not initialized!!! %1%") % e.what()) 
                         );
@@ -518,7 +518,7 @@ namespace hazelcast {
                     try {
                         near_cache_->put(key_data, response);
                         reset_to_unmarked_state(key_data);
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         reset_to_unmarked_state(key_data);
                         throw;
                     }

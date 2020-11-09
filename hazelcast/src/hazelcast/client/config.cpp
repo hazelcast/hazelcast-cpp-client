@@ -35,7 +35,7 @@
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/client/address.h"
 #include "hazelcast/client/config/client_network_config.h"
@@ -45,7 +45,7 @@
 #include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/client/config/index_config.h"
 #include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
-#include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/client/query/predicates.h"
 #include "hazelcast/client/lifecycle_listener.h"
 
 namespace hazelcast {
@@ -195,7 +195,7 @@ namespace hazelcast {
             client_network_config &client_network_config::set_connection_attempt_limit(int32_t connection_attempt_limit) {
                 if (connection_attempt_limit < 0) {
                     BOOST_THROW_EXCEPTION(
-                            exception::IllegalArgumentException("client_network_config::setConnectionAttemptLimit",
+                            exception::illegal_argument("client_network_config::setConnectionAttemptLimit",
                                                                 "connectionAttemptLimit cannot be negative"));
                 }
                 this->connection_attempt_limit_ = connection_attempt_limit;
@@ -282,7 +282,7 @@ namespace hazelcast {
 
             ReliableTopicConfig &ReliableTopicConfig::set_read_batch_size(int batch_size) {
                 if (batch_size <= 0) {
-                    BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
+                    BOOST_THROW_EXCEPTION(exception::illegal_argument("ReliableTopicConfig::setReadBatchSize",
                                                                               "readBatchSize should be positive"));
                 }
 
@@ -465,7 +465,7 @@ namespace hazelcast {
                         }
                     }
                     if (duplicate.get() != NULL) {
-                        throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
+                        throw (exception::exception_builder<exception::invalid_configuration>(
                                 "MatchingPointConfigPatternMatcher::matches") << "Configuration " << item_name
                                                                               << " has duplicate configuration. Candidate:"
                                                                               << *candidate << ", duplicate:"
@@ -495,7 +495,7 @@ namespace hazelcast {
                 }
             }
 
-            const std::string index_config::bitmap_index_options::DEFAULT_KEY = query::QueryConstants::KEY_ATTRIBUTE_NAME;
+            const std::string index_config::bitmap_index_options::DEFAULT_KEY = query::query_constants::KEY_ATTRIBUTE_NAME;
             const index_config::bitmap_index_options::unique_key_transformation index_config::bitmap_index_options::DEFAULT_TRANSFORMATION = index_config::bitmap_index_options::unique_key_transformation::OBJECT;
 
             index_config::bitmap_index_options::bitmap_index_options() : key(DEFAULT_KEY),

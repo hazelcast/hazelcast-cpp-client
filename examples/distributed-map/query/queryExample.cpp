@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/query/Predicates.h>
+#include <hazelcast/client/query/predicates.h>
 #include "employee.h"
 
 using namespace hazelcast::client;
@@ -63,18 +63,18 @@ namespace hazelcast {
 class PredicateMember {
 public:
     std::vector<Person> get_with_name(hazelcast_client &hz, const std::string &name, hazelcast::client::imap &person_map) {
-        return person_map.values<Person>(query::SqlPredicate(hz, std::string("name==") + name)).get();
+        return person_map.values<Person>(query::sql_predicate(hz, std::string("name==") + name)).get();
     }
 
     std::vector<Person>
     get_not_with_name(hazelcast_client &hz, const std::string &name, hazelcast::client::imap &person_map) {
-        return person_map.values<Person>(query::SqlPredicate(hz, std::string("name!=") + name)).get();
+        return person_map.values<Person>(query::sql_predicate(hz, std::string("name!=") + name)).get();
     }
 
     std::vector<Person> get_with_name_and_age(hazelcast_client &hz, const std::string &name, int32_t age,
                                           hazelcast::client::imap &person_map) {
         return person_map.values<Person>(
-                query::SqlPredicate(hz, (boost::format("name == %1% AND age == %2%") % name % age).str())).get();
+                query::sql_predicate(hz, (boost::format("name == %1% AND age == %2%") % name % age).str())).get();
     }
 
     void run() {
@@ -118,7 +118,7 @@ public:
 void query_map_using_paging_predicate() {
     hazelcast::client::hazelcast_client client;
 
-    auto intMap = client.get_map("testIntMapValuesWithPagingPredicate");
+    auto intMap = client.get_map("testIntMapValuesWithpaging_predicate");
 
     int predSize = 5;
     const int totalEntries = 25;
@@ -142,9 +142,9 @@ void query_map_using_paging_predicate() {
     predicate.previous_page();
     values = intMap->values<int>(predicate).get();
 
-    // PagingPredicate with inner predicate (value < 10)
+    // paging_predicate with inner predicate (value < 10)
     auto predicate2 = intMap->new_paging_predicate<int, int>(5,
-            query::GreaterLessPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true));
+            query::greater_less_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 9, false, true));
     values = intMap->values<int>(predicate2).get();
 
     predicate2.next_page();
@@ -155,7 +155,7 @@ void query_map_using_paging_predicate() {
     values = intMap->values<int>(predicate2).get();
 
     // test paging predicate with comparator
-    auto employees = client.get_map("testComplexObjectWithPagingPredicate");
+    auto employees = client.get_map("testComplexObjectWithpaging_predicate");
     employees->put_all<int32_t, employee>({
                                                  {3, employee("ahmet", 35)},
                                                  {4, employee("mehmet", 21)},
@@ -186,10 +186,10 @@ void query_map_using_different_predicates() {
 
     auto values = intMap->values<int>().get();
 
-    // EqualPredicate
+    // equal_predicate
     // key == 5
-    values = intMap->values<int, query::EqualPredicate>(
-            query::EqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5)).get();
+    values = intMap->values<int, query::equal_predicate>(
+            query::equal_predicate(client, query::query_constants::KEY_ATTRIBUTE_NAME, 5)).get();
 
     size_t numberOfValues = values.size();
     if (numberOfValues > 0) {
@@ -197,107 +197,107 @@ void query_map_using_different_predicates() {
     }
 
     // value == 8
-    values = intMap->values<int, query::EqualPredicate>(
-            query::EqualPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 8)).get();
+    values = intMap->values<int, query::equal_predicate>(
+            query::equal_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 8)).get();
 
     // key == numItems
-    values = intMap->values<int, query::EqualPredicate>(
-            query::EqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, numItems)).get();
+    values = intMap->values<int, query::equal_predicate>(
+            query::equal_predicate(client, query::query_constants::KEY_ATTRIBUTE_NAME, numItems)).get();
 
     // NotEqual Predicate
     // key != 5
-    values = intMap->values<int, query::NotEqualPredicate>(
-            query::NotEqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5)).get();
+    values = intMap->values<int, query::not_equal_predicate>(
+            query::not_equal_predicate(client, query::query_constants::KEY_ATTRIBUTE_NAME, 5)).get();
 
     // this(value) != 8
-    values = intMap->values<int, query::NotEqualPredicate>(
-            query::NotEqualPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 8)).get();
+    values = intMap->values<int, query::not_equal_predicate>(
+            query::not_equal_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 8)).get();
 
-    // TruePredicate
-    values = intMap->values<int, query::TruePredicate>(query::TruePredicate(client)).get();
+    // true_predicate
+    values = intMap->values<int, query::true_predicate>(query::true_predicate(client)).get();
 
-    // FalsePredicate
-    values = intMap->values<int, query::FalsePredicate>(query::FalsePredicate(client)).get();
+    // false_predicate
+    values = intMap->values<int, query::false_predicate>(query::false_predicate(client)).get();
 
-    // BetweenPredicate
+    // between_predicate
     // 5 <= key <= 10
-    values = intMap->values<int, query::BetweenPredicate>(
-            query::BetweenPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10)).get();
+    values = intMap->values<int, query::between_predicate>(
+            query::between_predicate(client, query::query_constants::KEY_ATTRIBUTE_NAME, 5, 10)).get();
 
-    // GreaterLessPredicate
+    // greater_less_predicate
     // value <= 10
-    values = intMap->values<int, query::GreaterLessPredicate>(
-            query::GreaterLessPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 10, true, true)).get();
+    values = intMap->values<int, query::greater_less_predicate>(
+            query::greater_less_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 10, true, true)).get();
 
     // key < 7
-    values = intMap->values<int, query::GreaterLessPredicate>(
-            query::GreaterLessPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, false, true)).get();
+    values = intMap->values<int, query::greater_less_predicate>(
+            query::greater_less_predicate(client, query::query_constants::KEY_ATTRIBUTE_NAME, 7, false, true)).get();
 
-    // InPredicate
+    // in_predicate
     // key in {4, 10, 19}
     std::vector<int> inVals{4, 10, 19};
-    values = intMap->values<int, query::InPredicate>(
-            query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals)).get();
+    values = intMap->values<int, query::in_predicate>(
+            query::in_predicate(client, query::query_constants::KEY_ATTRIBUTE_NAME, inVals)).get();
 
     // value in {4, 10, 19}
-    values = intMap->values<int, query::InPredicate>(
-            query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals)).get();
+    values = intMap->values<int, query::in_predicate>(
+            query::in_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, inVals)).get();
 
-    // InstanceOfPredicate
+    // instance_of_predicate
     // value instanceof Integer
-    values = intMap->values<int>(query::InstanceOfPredicate(client, "java.lang.Integer")).get();
+    values = intMap->values<int>(query::instance_of_predicate(client, "java.lang.Integer")).get();
 
-    // NotPredicate
+    // not_predicate
     // !(5 <= key <= 10)
-    values = intMap->values<int>(query::NotPredicate(client, query::BetweenPredicate(client,
-                                                                                     query::QueryConstants::KEY_ATTRIBUTE_NAME,
-                                                                                     5, 10))).get();
+    values = intMap->values<int>(query::not_predicate(client, query::between_predicate(client,
+                                                                                       query::query_constants::KEY_ATTRIBUTE_NAME,
+                                                                                       5, 10))).get();
 
-    // AndPredicate
+    // and_predicate
     // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
-    values = intMap->values<int>(query::AndPredicate(client,
-                                                     query::BetweenPredicate(client,
-                                                                             query::QueryConstants::KEY_ATTRIBUTE_NAME,
-                                                                             5, 10),
-                                                     query::InPredicate(client,
-                                                                        query::QueryConstants::THIS_ATTRIBUTE_NAME,
-                                                                        inVals))).get();
+    values = intMap->values<int>(query::and_predicate(client,
+                                                      query::between_predicate(client,
+                                                                              query::query_constants::KEY_ATTRIBUTE_NAME,
+                                                                              5, 10),
+                                                      query::in_predicate(client,
+                                                                         query::query_constants::THIS_ATTRIBUTE_NAME,
+                                                                         inVals))).get();
 
-    // OrPredicate
+    // or_predicate
     // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
-    values = intMap->values<int>(query::OrPredicate(client,
-                                                    query::BetweenPredicate(client,
-                                                                            query::QueryConstants::KEY_ATTRIBUTE_NAME,
-                                                                            5, 10),
-                                                    query::InPredicate(client,
-                                                                       query::QueryConstants::THIS_ATTRIBUTE_NAME,
-                                                                       inVals))).get();
+    values = intMap->values<int>(query::or_predicate(client,
+                                                     query::between_predicate(client,
+                                                                             query::query_constants::KEY_ATTRIBUTE_NAME,
+                                                                             5, 10),
+                                                     query::in_predicate(client,
+                                                                        query::query_constants::THIS_ATTRIBUTE_NAME,
+                                                                        inVals))).get();
 
     auto imap = client.get_map("StringMap");
 
-    // LikePredicate
+    // like_predicate
     // value LIKE "value1" : {"value1"}
     auto strValues = imap->values<std::string>(
-            query::LikePredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1")).get();
+            query::like_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, "value1")).get();
 
-    // ILikePredicate
+    // ilike_predicate
     // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
     strValues = imap->values<std::string>(
-            query::ILikePredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%")).get();
+            query::ilike_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, "%VALue%1%")).get();
 
     // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
     strValues = imap->values<std::string>(
-            query::ILikePredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VAL%2%")).get();
+            query::ilike_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, "%VAL%2%")).get();
 
-    // SqlPredicate
+    // sql_predicate
     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
-    auto sql = (boost::format("%1% BETWEEN 4 and 7") % query::QueryConstants::KEY_ATTRIBUTE_NAME).str();
-    values = intMap->values<int>(query::SqlPredicate(client, sql)).get();
+    auto sql = (boost::format("%1% BETWEEN 4 and 7") % query::query_constants::KEY_ATTRIBUTE_NAME).str();
+    values = intMap->values<int>(query::sql_predicate(client, sql)).get();
 
-    // RegexPredicate
+    // regex_predicate
     // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
     strValues = imap->values<std::string>(
-            query::RegexPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*")).get();
+            query::regex_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, ".*value.*2.*")).get();
 }
 
 int main() {

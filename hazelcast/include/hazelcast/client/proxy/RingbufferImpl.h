@@ -192,11 +192,11 @@ namespace hazelcast {
                                                    "maxCount should be equal or larger than minCount");
                     try {
                         capacity().get();
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         //in case of exception return the exception via future to behave consistently to member
                         try {
                             std::throw_with_nested(boost::enable_current_exception(
-                                    exception::ExecutionException("ClientRingbufferProxy::readManyData",
+                                    exception::execution("ClientRingbufferProxy::readManyData",
                                                                   "capacity() method failed")));
                         } catch (...) {
                             return boost::make_exceptional_future<protocol::ClientMessage>(std::current_exception());
@@ -222,7 +222,7 @@ namespace hazelcast {
 
                 static void check_sequence(int64_t sequence) {
                     if (sequence < 0) {
-                        throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
+                        throw (exception::exception_builder<exception::illegal_argument>(
                                 "ClientRingbufferProxy::checkSequence") << "sequence can't be smaller than 0, but was: "
                                                                         << sequence).build();
                     }

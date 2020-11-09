@@ -32,7 +32,7 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
         map->put<std::string, std::string>("2", "2").get();
         txCxt.commit_transaction().get();
-    } catch (hazelcast::client::exception::IException &e) {
+    } catch (hazelcast::client::exception::iexception &e) {
         txCxt.rollback_transaction().get();
         std::cerr << "Transaction failed !!! " << e.what() << std::endl;
         exit(-1);

@@ -47,11 +47,11 @@ namespace hazelcast {
                 /**
                  * Returns the current value of the counter.
                  *
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -62,11 +62,11 @@ namespace hazelcast {
                  *
                  * @param delta the value to add
                  * @return the previous value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -77,11 +77,11 @@ namespace hazelcast {
                  *
                  * @param delta the value to add
                  * @return the updated value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -92,11 +92,11 @@ namespace hazelcast {
                  *
                  * @param delta the value to add
                  * @return the previous value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -107,11 +107,11 @@ namespace hazelcast {
                  *
                  * @param delta the value to subtract
                  * @return the updated value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -121,11 +121,11 @@ namespace hazelcast {
                  * Decrements by one the current value.
                  *
                  * @return the updated value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -135,11 +135,11 @@ namespace hazelcast {
                  * Increments by one the current value.
                  *
                  * @return the updated value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -149,11 +149,11 @@ namespace hazelcast {
                  * Decrements by one the current value.
                  *
                  * @return the previous value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -163,11 +163,11 @@ namespace hazelcast {
                  * Increments by one the current value.
                  *
                  * @return the previous value
-                 * @throws NoDataMemberInClusterException if the cluster does not contain
+                 * @throws no_data_member_in_cluster if the cluster does not contain
                  *                                        any data members
-                 * @throws UnsupportedOperationException  if the cluster version is less
+                 * @throws unsupported_operation  if the cluster version is less
                  *                                        than 3.10
-                 * @throws ConsistencyLostException       if the session guarantees have
+                 * @throws consistency_lost       if the session guarantees have
                  *                                        beenlost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
@@ -175,7 +175,7 @@ namespace hazelcast {
 
                 /**
                  * Resets the observed state by this PN counter. This method may be used
-                 * after a method invocation has thrown a {@link ConsistencyLostException}
+                 * after a method invocation has thrown a {@link consistency_lost}
                  * to reset the proxy and to be able to start a new session.
                  */
                 boost::future<void> reset();
@@ -236,7 +236,7 @@ namespace hazelcast {
                 boost::shared_ptr<member>
                 try_choose_a_new_target(std::shared_ptr<std::unordered_set<member>> excluded_addresses,
                                     boost::shared_ptr<member> last_target,
-                                    const exception::HazelcastException &last_exception);
+                                    const exception::hazelcast_ &last_exception);
 
                 /**
                  * Returns the max configured replica count.
@@ -254,7 +254,7 @@ namespace hazelcast {
                  * Replicas with addresses contained in the {@code excludedAddresses} are
                  * skipped. If there are no viable replicas, this method will throw the
                  * {@code lastException} if not {@code null} or a
-                 * {@link NoDataMemberInClusterException} if the {@code lastException} is
+                 * {@link no_data_member_in_cluster} if the {@code lastException} is
                  * {@code null}.
                  *
                  * @param excludedAddresses the addresses to exclude when choosing a replica
@@ -262,12 +262,12 @@ namespace hazelcast {
                  * @param lastException     the exception thrown from the last invocation of
                  *                          the {@code request} on a replica, may be {@code null}
                  * @return the result of the request invocation on a replica
-                 * @throws NoDataMemberInClusterException if there are no replicas and the
+                 * @throws no_data_member_in_cluster if there are no replicas and the
                  *                                        {@code lastException} is false
                  */
                 boost::future<int64_t>
                 invoke_get_internal(std::shared_ptr<std::unordered_set<member> > excluded_addresses,
-                                  std::exception_ptr last_exception,
+                                  std::exception_ptr last ,
                                   const boost::shared_ptr<member> &target);
 
 
@@ -280,7 +280,7 @@ namespace hazelcast {
                  * Replicas with addresses contained in the {@code excludedAddresses} are
                  * skipped. If there are no viable replicas, this method will throw the
                  * {@code lastException} if not {@code null} or a
-                 * {@link NoDataMemberInClusterException} if the {@code lastException} is
+                 * {@link no_data_member_in_cluster} if the {@code lastException} is
                  * {@code null}.
                  *
                  * @param delta             the delta to add to the counter value, can be negative
@@ -292,13 +292,13 @@ namespace hazelcast {
                  * @param lastException     the exception thrown from the last invocation of
                  *                          the {@code request} on a replica, may be {@code null}
                  * @return the result of the request invocation on a replica
-                 * @throws NoDataMemberInClusterException if there are no replicas and the
+                 * @throws no_data_member_in_cluster if there are no replicas and the
                  *                                        {@code lastException} is {@code null}
                  */
                 boost::future<int64_t>
                 invoke_add_internal(int64_t delta, bool get_before_update,
                                   std::shared_ptr<std::unordered_set<member> > excluded_addresses,
-                                  std::exception_ptr last_exception, const boost::shared_ptr<member> &target);
+                                  std::exception_ptr last , const boost::shared_ptr<member> &target);
 
                 /**
                  * Updates the locally observed CRDT vector clock atomically. This method

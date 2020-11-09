@@ -519,8 +519,8 @@ namespace hazelcast {
                     ASSERT_EQ(-1, rb->tail_sequence().get());
                     ASSERT_EQ(0, rb->size().get());
                     ASSERT_EQ(CAPACITY, rb->remaining_capacity().get());
-                    ASSERT_THROW(rb->read_one<employee>(-1).get(), exception::IllegalArgumentException);
-                    ASSERT_THROW(rb->read_one<employee>(1).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(rb->read_one<employee>(-1).get(), exception::illegal_argument);
+                    ASSERT_THROW(rb->read_one<employee>(1).get(), exception::illegal_argument);
 
                     employee employee1("First", 10);
                     employee employee2("Second", 20);
@@ -532,7 +532,7 @@ namespace hazelcast {
                     ASSERT_EQ(0, rb->tail_sequence().get());
                     ASSERT_EQ(1, rb->size().get());
                     ASSERT_EQ(employee1, rb->read_one<employee>(0).get().value());
-                    ASSERT_THROW(rb->read_one<employee>(2).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(rb->read_one<employee>(2).get(), exception::illegal_argument);
 
                     ASSERT_EQ(1, rb->add<employee>(employee2).get());
                     ASSERT_EQ(CAPACITY, rb->capacity().get());
@@ -542,7 +542,7 @@ namespace hazelcast {
                     ASSERT_EQ(2, rb->size().get());
                     ASSERT_EQ(employee1, rb->read_one<employee>(0).get().value());
                     ASSERT_EQ(employee2, rb->read_one<employee>(1).get().value());
-                    ASSERT_THROW(rb->read_one<employee>(3).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(rb->read_one<employee>(3).get(), exception::illegal_argument);
 
                     // insert many employees to fill the ringbuffer capacity
                     for (int i = 0; i < CAPACITY - 2; ++i) {
@@ -582,7 +582,7 @@ namespace hazelcast {
                         try {
                             client_ringbuffer_->read_one<std::string>(0).get();
                             latch1->count_down();
-                        } catch (exception::StaleSequenceException &) {
+                        } catch (exception::stale_sequence &) {
                             latch1->count_down();
                         }
                     }).detach();
@@ -847,7 +847,7 @@ namespace hazelcast {
                 client_config config;
                 config.get_network_config().set_connection_attempt_period(std::chrono::seconds(1)).set_connection_timeout(std::chrono::seconds (2)).add_address(
                         address("8.8.8.8", 5701));
-                ASSERT_THROW(hazelcast_client client(config), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(config), exception::illegal_state);
             }
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -858,7 +858,7 @@ namespace hazelcast {
                 config.set_cluster_name(get_ssl_cluster_name()).get_network_config().
                         set_connection_attempt_period(std::chrono::seconds(1)).set_connection_timeout(std::chrono::seconds(2)).add_address(
                         address("8.8.8.8", 5701)).get_ssl_config().set_enabled(true).add_verify_file(get_ca_file_path());
-                ASSERT_THROW(hazelcast_client client(config), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(config), exception::illegal_state);
             }
 
             TEST_F(ClientConnectionTest, testSSLWrongCAFilePath) {
@@ -867,7 +867,7 @@ namespace hazelcast {
                 client_config config = get_config();
                 config.set_cluster_name(get_ssl_cluster_name());
                 config.get_network_config().get_ssl_config().set_enabled(true).add_verify_file("abc");
-                ASSERT_THROW(hazelcast_client client(config), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(config), exception::illegal_state);
             }
 
             TEST_F(ClientConnectionTest, testExcludedCipher) {
@@ -947,13 +947,13 @@ namespace hazelcast {
             };
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
-                ASSERT_THROW(hazelcast_client client(GetParam()), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(GetParam()), exception::illegal_state);
             }
 
             TEST_P(ClusterTest, testDummyClientBehaviourWhenClusterNotFound) {
                 auto clientConfig = GetParam();
                 clientConfig.get_network_config().set_smart_routing(false);
-                ASSERT_THROW(hazelcast_client client(clientConfig), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(clientConfig), exception::illegal_state);
             }
 
             TEST_P(ClusterTest, testAllClientStates) {
@@ -995,7 +995,7 @@ namespace hazelcast {
                 int64_t startTimeMillis = hazelcast::util::current_time_millis();
                 try {
                     hazelcast_client client(clientConfig);
-                } catch (exception::IllegalStateException &) {
+                } catch (exception::illegal_state &) {
                     // this is expected
                 }
                 ASSERT_GE(hazelcast::util::current_time_millis() - startTimeMillis, 2 * 900);
@@ -1157,7 +1157,7 @@ namespace hazelcast {
                 client_config config;
                 config.set_cluster_name("invalid cluster");
 
-                ASSERT_THROW((hazelcast_client(config)), exception::IllegalStateException);
+                ASSERT_THROW((hazelcast_client(config)), exception::illegal_state);
             }
         }
     }
@@ -1391,11 +1391,11 @@ namespace hazelcast {
                         auto pnCounter = client.get_pn_counter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
 
-                        ASSERT_THROW(pnCounter->add_and_get(5).get(), exception::NoDataMemberInClusterException);
+                        ASSERT_THROW(pnCounter->add_and_get(5).get(), exception::no_data_member_in_cluster);
                     }
 
                     /**
-                     * Client implementation for testing behaviour of {@link ConsistencyLostException}
+                     * Client implementation for testing behaviour of {@link consistency_lost}
                      */
                     class ClientPNCounterConsistencyLostTest : public ClientTestSupport {
                     protected:
@@ -1436,7 +1436,7 @@ namespace hazelcast {
 
                         terminate_member(*currentTarget, instance, instance2);
 
-                        ASSERT_THROW(pnCounter->add_and_get(5).get(), exception::ConsistencyLostException);
+                        ASSERT_THROW(pnCounter->add_and_get(5).get(), exception::consistency_lost);
                     }
 
                     TEST_F(ClientPNCounterConsistencyLostTest, driverCanContinueSessionByCallingReset) {
@@ -1966,7 +1966,7 @@ namespace hazelcast {
             }
 
 //            @Test MTODO
-//            public void testGetForUpdate() throws TransactionException {
+//            public void testGetForUpdate() throws transaction {
 //            final auto map = hz.getMap("testTxnGetForUpdate");
 //            final CountDownLatch latch1 = new CountDownLatch(1);
 //            final CountDownLatch latch2 = new CountDownLatch(1);
@@ -1986,7 +1986,7 @@ namespace hazelcast {
 //            }
 //            new Thread(incrementor).start();
 //            boolean b = hz.executeTransaction(new TransactionalTask<Boolean>() {
-//                public Boolean execute(TransactionalTaskContext context) throws TransactionException {
+//                public Boolean execute(TransactionalTaskContext context) throws transaction {
 //                    try {
 //                        final TransactionalMap<String, Integer> txMap = context.getMap("testTxnGetForUpdate");
 //                        txMap->getForUpdate("var");
@@ -2042,10 +2042,10 @@ namespace hazelcast {
 
                 ASSERT_EQ(2, (int) txMap->size().get());
                 ASSERT_EQ(2, (int) txMap->key_set<employee>().get().size());
-                query::SqlPredicate predicate(client_, "a = 10");
+                query::sql_predicate predicate(client_, "a = 10");
                 ASSERT_EQ(0, (int) txMap->key_set<employee>(predicate).get().size());
                 ASSERT_EQ(0, (int) txMap->values<employee>(predicate).get().size());
-                query::SqlPredicate predicate2(client_, "a >= 10");
+                query::sql_predicate predicate2(client_, "a >= 10");
                 ASSERT_EQ(2, (int) txMap->key_set<employee>(predicate2).get().size());
                 ASSERT_EQ(2, (int) txMap->values<employee>(predicate2).get().size());
 
@@ -2180,7 +2180,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
                 client_->shutdown();
-                ASSERT_THROW(client_->new_transaction_context(), exception::hazelcast_clientNotActiveException);
+                ASSERT_THROW(client_->new_transaction_context(), exception::hazelcast_client_not_active);
             }
 
             TEST_F(ClientTxnTest, testTxnCommitAfterClusterShutdown) {
@@ -2190,7 +2190,7 @@ namespace hazelcast {
                 server_->shutdown();
                 second_->shutdown();
 
-                ASSERT_THROW(context.commit_transaction().get(), exception::TransactionException);
+                ASSERT_THROW(context.commit_transaction().get(), exception::transaction);
             }
 
             TEST_F(ClientTxnTest, testTxnCommit) {
@@ -2263,7 +2263,7 @@ namespace hazelcast {
 
                 client_->shutdown();
 
-                ASSERT_THROW(context.commit_transaction().get(), exception::TransactionException);
+                ASSERT_THROW(context.commit_transaction().get(), exception::transaction);
             }
 
 
@@ -2285,7 +2285,7 @@ namespace hazelcast {
 
                     context.commit_transaction().get();
                     FAIL();
-                } catch (exception::TransactionException &) {
+                } catch (exception::transaction &) {
                     context.rollback_transaction().get();
                     txnRollbackLatch.count_down();
                 }
@@ -2315,7 +2315,7 @@ namespace hazelcast {
 
                 server_->shutdown();
 
-                ASSERT_THROW(context.commit_transaction().get(), exception::TransactionException);
+                ASSERT_THROW(context.commit_transaction().get(), exception::transaction);
 
                 context.rollback_transaction().get();
                 txnRollbackLatch.count_down();
@@ -2901,7 +2901,7 @@ namespace hazelcast {
 
             TEST_F(HttpsClientTest, testConnect) {
                 SyncHttpsClient httpsClient("localhost", "non_existentURL/no_page");
-                ASSERT_THROW(httpsClient.open_connection(), client::exception::IOException);
+                ASSERT_THROW(httpsClient.open_connection(), client::exception::io);
             }
 
             TEST_F(HttpsClientTest, testConnectToGithub) {
@@ -2909,11 +2909,11 @@ namespace hazelcast {
                                             "/?Action=DescribeInstances&Version=2014-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIU5IAVNR6X75ARYQ%2F20170413%2Fus-east-1%2Fec2%2Faws4_request&X-Amz-Date=20170413T083821Z&X-Amz-Expires=30&X-Amz-Signature=dff261333170c81ecb21f3a0d5820147233197a32c&X-Amz-SignedHeaders=host");
                 try {
                     httpsClient.open_connection();
-                } catch (exception::IException &e) {
+                } catch (exception::iexception &e) {
                     const std::string &msg = e.get_message();
                     ASSERT_NE(std::string::npos, msg.find("status: 401"));
                 }
-                ASSERT_THROW(httpsClient.open_connection(), exception::IOException);
+                ASSERT_THROW(httpsClient.open_connection(), exception::io);
             }
         }
     }

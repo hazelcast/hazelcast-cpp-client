@@ -32,7 +32,7 @@
 #include <boost/optional.hpp>
 #include <boost/uuid/nil_generator.hpp>
 
-#include <hazelcast/client/query/PagingPredicate.h>
+#include <hazelcast/client/query/paging_predicate.h>
 #include "hazelcast/client/address.h"
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
@@ -70,7 +70,7 @@ namespace hazelcast {
 
                         template<typename K, typename V>
                         static paging_predicate_holder
-                        of(const query::PagingPredicate <K, V> &p, serialization::pimpl::SerializationService &ss) {
+                        of(const query::paging_predicate <K, V> &p, serialization::pimpl::SerializationService &ss) {
                             return {static_cast<int32_t>(p.get_page_size()), static_cast<int32_t>(p.get_page()),
                                     static_cast<byte>(p.get_iteration_type()), p.anchor_data_list_,
                                     p.predicate_data_.get_ptr(), p.comparator_data_.get_ptr()
@@ -274,8 +274,8 @@ namespace hazelcast {
                     if (offset_ >= data_buffer_[buffer_index_].size()) {
                         ++buffer_index_;
                         if (buffer_index_ == data_buffer_.size()) {
-                            BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
-                                                                                                     (boost::format("Not enough bytes in client message to read. Requested %1% bytes but "
+                            BOOST_THROW_EXCEPTION(client::exception::hazelcast_serialization("peek",
+                                                                                                       (boost::format("Not enough bytes in client message to read. Requested %1% bytes but "
                                                                                                                     "there is no more bytes left to read. %2%") %requested_bytes %*this).str()));
                         }
 
@@ -283,8 +283,8 @@ namespace hazelcast {
                     }
 
                     if (offset_ + requested_bytes > data_buffer_[buffer_index_].size()) {
-                        BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
-                                                                                                 (boost::format("Not enough bytes in client message to read. Requested %1% bytes but there "
+                        BOOST_THROW_EXCEPTION(client::exception::hazelcast_serialization("peek",
+                                                                                                   (boost::format("Not enough bytes in client message to read. Requested %1% bytes but there "
                                                                                                                 "is not enough bytes left to read. %2%") %requested_bytes %*this).str()));
                     }
 

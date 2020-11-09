@@ -30,51 +30,51 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/client/query/predicates.h"
 #include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace query {
-            constexpr const char *QueryConstants::KEY_ATTRIBUTE_NAME;
-            constexpr const char *QueryConstants::THIS_ATTRIBUTE_NAME;
+            constexpr const char *query_constants::KEY_ATTRIBUTE_NAME;
+            constexpr const char *query_constants::THIS_ATTRIBUTE_NAME;
 
-            BasePredicate::BasePredicate(hazelcast_client &client) : out_stream(spi::ClientContext(
+            base_predicate::base_predicate(hazelcast_client &client) : out_stream(spi::ClientContext(
                     client).get_serialization_service().new_output_stream()) {}
 
-            NamedPredicate::NamedPredicate(hazelcast_client &client, const std::string &attribute_name) : BasePredicate(
+            named_predicate::named_predicate(hazelcast_client &client, const std::string &attribute_name) : base_predicate(
                     client) {
                 out_stream.write(attribute_name);
             }
 
-            InstanceOfPredicate::InstanceOfPredicate(hazelcast_client &client, const std::string &java_class_name)
-                    : BasePredicate(client) {
+            instance_of_predicate::instance_of_predicate(hazelcast_client &client, const std::string &java_class_name)
+                    : base_predicate(client) {
                 out_stream.write(java_class_name);
             }
 
-            SqlPredicate::SqlPredicate(hazelcast_client &client, const std::string &sql)
-                    : BasePredicate(client) {
+            sql_predicate::sql_predicate(hazelcast_client &client, const std::string &sql)
+                    : base_predicate(client) {
                 out_stream.write(sql);
             }
 
-            LikePredicate::LikePredicate(hazelcast_client &client, const std::string &attribute,
-                                         const std::string &expression) : NamedPredicate(client, attribute) {
+            like_predicate::like_predicate(hazelcast_client &client, const std::string &attribute,
+                                           const std::string &expression) : named_predicate(client, attribute) {
                 out_stream.write(expression);
             }
 
-            ILikePredicate::ILikePredicate(hazelcast_client &client, const std::string &attribute,
-                                           const std::string &expression) : NamedPredicate(client, attribute) {
+            ilike_predicate::ilike_predicate(hazelcast_client &client, const std::string &attribute,
+                                             const std::string &expression) : named_predicate(client, attribute) {
                 out_stream.write(expression);
             }
 
-            RegexPredicate::RegexPredicate(hazelcast_client &client, const std::string &attribute,
-                                           const std::string &expression) : NamedPredicate(client, attribute) {
+            regex_predicate::regex_predicate(hazelcast_client &client, const std::string &attribute,
+                                             const std::string &expression) : named_predicate(client, attribute) {
                 out_stream.write(expression);
             }
 
-            TruePredicate::TruePredicate(hazelcast_client &client) : BasePredicate(client) {}
+            true_predicate::true_predicate(hazelcast_client &client) : base_predicate(client) {}
 
-            FalsePredicate::FalsePredicate(hazelcast_client &client) : BasePredicate(client) {}
+            false_predicate::false_predicate(hazelcast_client &client) : base_predicate(client) {}
         }
     }
 }

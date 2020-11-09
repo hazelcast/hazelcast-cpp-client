@@ -4,7 +4,7 @@
 #include <signal.h>
 
 #include <hazelcast/client/Hazelcast.h>
-#include <hazelcast/client/query/Predicates.h>
+#include <hazelcast/client/query/predicates.h>
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/spi/ClientContext.h>
 
@@ -72,7 +72,7 @@ public:
                     map->put(key, out.str());
                     ++putCount;
                 } else if (operation < 80) {
-                    map->values(query::BetweenPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1, 10));
+                    map->values(query::between_predicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1, 10));
                     ++valuesCount;
                 } else {
                     UpdateEntryProcessor processor(out.str());

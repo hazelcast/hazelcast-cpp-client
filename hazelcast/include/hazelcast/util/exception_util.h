@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/exception/iexception.h"
 #include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -26,14 +26,14 @@
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API ExceptionUtil {
+        class HAZELCAST_API exception_util {
         public:
             /**
              * Interface used by rethrow/peel to wrap the peeled exception
              */
-            class RuntimeExceptionFactory {
+            class runtime_exception_factory {
             public:
-                virtual ~RuntimeExceptionFactory();
+                virtual ~runtime_exception_factory();
 
                 virtual void rethrow(std::exception_ptr throwable, const std::string &message) = 0;
             };
@@ -41,16 +41,16 @@ namespace hazelcast {
             static void rethrow(std::exception_ptr e);
 
             static void
-            rethrow(std::exception_ptr e, const std::shared_ptr<RuntimeExceptionFactory> &runtime_exception_factory);
+            rethrow(std::exception_ptr e, const std::shared_ptr<runtime_exception_factory> &runtime_exception_factory);
 
         private:
-            class HazelcastExceptionFactory : public RuntimeExceptionFactory {
+            class hazelcast_exception_factory : public runtime_exception_factory {
                 void rethrow(std::exception_ptr throwable, const std::string &message) override;
             };
 
-            static const std::shared_ptr<RuntimeExceptionFactory> &hazelcast_exception_factory();
+            static const std::shared_ptr<runtime_exception_factory> &hazelcast_exception_factory();
 
-            static const std::shared_ptr<RuntimeExceptionFactory> hazelcastExceptionFactory;
+            static const std::shared_ptr<runtime_exception_factory> hazelcastExceptionFactory;
         };
     }
 }

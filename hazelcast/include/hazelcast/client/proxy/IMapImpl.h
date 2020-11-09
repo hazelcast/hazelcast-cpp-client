@@ -16,8 +16,8 @@
 #pragma once
 
 #include <hazelcast/client/entry_event.h>
-#include "hazelcast/client/query/PagingPredicate.h"
-#include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/client/query/paging_predicate.h"
+#include "hazelcast/client/query/predicates.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/map/data_entry_view.h"
@@ -220,7 +220,7 @@ namespace hazelcast {
 
                 template<typename K, typename V>
                 std::pair<size_t, size_t> update_anchor(std::vector<std::pair<K, boost::optional<V>>> &entries,
-                                                       query::PagingPredicate<K, V> &predicate,
+                                                       query::paging_predicate<K, V> &predicate,
                                                        query::iteration_type iteration_type) {
                     if (0 == entries.size()) {
                         return std::pair<size_t, size_t>(0, 0);
@@ -247,7 +247,7 @@ namespace hazelcast {
 
                 template<typename K, typename V>
                 static void
-                set_anchor(std::vector<std::pair<K, boost::optional<V>>> &entries, query::PagingPredicate<K, V> &predicate, int nearest_page) {
+                set_anchor(std::vector<std::pair<K, boost::optional<V>>> &entries, query::paging_predicate<K, V> &predicate, int nearest_page) {
                     if (0 == entries.size()) {
                         return;
                     }
