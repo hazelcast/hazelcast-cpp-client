@@ -52,7 +52,7 @@ public:
             auto results = p->results();
             // and verification we got the appropriate number of results.
             if ((int) results.size() != getsPerIteration) {
-                throw hazelcast::client::exception::IllegalStateException("pipelined", "Incorrect number of results");
+                throw hazelcast::client::exception::illegal_state("pipelined", "Incorrect number of results");
             }
         }
         int64_t endMs = current_time_millis();

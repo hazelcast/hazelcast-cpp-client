@@ -33,12 +33,12 @@ namespace hazelcast {
         }
         namespace aws {
             namespace security {
-                class HAZELCAST_API EC2RequestSigner {
+                class HAZELCAST_API ec2_request_signer {
                 public:
-                    EC2RequestSigner(const config::client_aws_config &aws_config, const std::string &timestamp,
-                                     const std::string &endpoint);
+                    ec2_request_signer(const config::client_aws_config &aws_config, const std::string &timestamp,
+                                       const std::string &endpoint);
 
-                    virtual ~EC2RequestSigner();
+                    virtual ~ec2_request_signer();
 
                     std::string sign(const std::unordered_map<std::string, std::string> &attributes);
 

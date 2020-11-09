@@ -659,7 +659,7 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::trigger_cluster_reconnection() {
-                if (reconnect_mode_ == config::ClientConnectionStrategyConfig::reconnect_mode::OFF) {
+                if (reconnect_mode_ == config::client_connection_strategy_config::reconnect_mode::OFF) {
                     HZ_LOG(logger_, info, "RECONNECT MODE is off. Shutting down the client.");
                     shutdown_with_external_thread(client_.get_hazelcast_client_implementation());
                     return;
@@ -703,7 +703,7 @@ namespace hazelcast {
                     BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and async start is configured."));
-                } else if (reconnect_mode_ == config::ClientConnectionStrategyConfig::reconnect_mode::ASYNC) {
+                } else if (reconnect_mode_ == config::client_connection_strategy_config::reconnect_mode::ASYNC) {
                     BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and reconnect mode is async."));
@@ -1193,7 +1193,7 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
 
                 SSLSocket::SSLSocket(boost::asio::io_context &io_service, boost::asio::ssl::context &ssl_context,
-                                     const client::address &address, client::config::SocketOptions &socket_options,
+                                     const client::address &address, client::config::socket_options &socket_options,
                                      std::chrono::milliseconds &connect_timeout_in_millis,
                                      boost::asio::ip::tcp::resolver &resolver)
                         : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(resolver, address,
@@ -1233,7 +1233,7 @@ namespace hazelcast {
 #endif // HZ_BUILD_WITH_SSL
 
                 TcpSocket::TcpSocket(boost::asio::io_context &io, const address &address,
-                                     client::config::SocketOptions &socket_options,
+                                     client::config::socket_options &socket_options,
                                      std::chrono::milliseconds &connect_timeout_in_millis,
                                      boost::asio::ip::tcp::resolver &resolver)
                         : BaseSocket<boost::asio::ip::tcp::socket>(resolver, address, socket_options, io,

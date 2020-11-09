@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "hazelcast/client/aws/AWSClient.h"
+#include "hazelcast/client/aws/aws_client.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/connection/AddressTranslator.h"
 
@@ -56,7 +56,7 @@ namespace hazelcast {
                 private:
                     bool find_from_cache(const address &addr, address &translated_address);
 
-                    std::unique_ptr<AWSClient> aws_client_;
+                    std::unique_ptr<aws_client> aws_client_;
                     util::Sync<std::shared_ptr<std::unordered_map<std::string, std::string> > > private_to_public_;
                     logger &logger_;
                 };

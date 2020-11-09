@@ -30,7 +30,7 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class HAZELCAST_API LoggerConfig {
+            class HAZELCAST_API logger_config {
             public:
                 /**
                  * Minimum level of log messages to be printed.
@@ -46,7 +46,7 @@ namespace hazelcast {
                  * Log messages with a severity level below this level will be ignored.
                  * \return *this
                  */
-                LoggerConfig &level(logger::level level) {
+                logger_config &level(logger::level level) {
                     level_ = level;
                     return *this;
                 }
@@ -68,7 +68,7 @@ namespace hazelcast {
                  * \warning The handler function must be thread-safe.
                  * \return *this
                  */
-                LoggerConfig &handler(logger::handler_type handler) {
+                logger_config &handler(logger::handler_type handler) {
                     util::Preconditions::check_true(handler, "log handler may not be empty");
                     handler_ = std::move(handler);
                     return *this;

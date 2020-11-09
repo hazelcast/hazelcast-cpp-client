@@ -33,24 +33,24 @@ namespace hazelcast {
                  * See https://en.wikipedia.org/wiki/Vector_clock
                  * There is no guarantee for concurrent updates.
                  */
-                class VectorClock {
+                class vector_clock {
                 public:
-                    typedef std::vector<std::pair<boost::uuids::uuid, int64_t> > TimestampVector;
-                    typedef std::unordered_map<boost::uuids::uuid, int64_t, boost::hash<boost::uuids::uuid>> TimestampMap;
+                    typedef std::vector<std::pair<boost::uuids::uuid, int64_t> > timestamp_vector;
+                    typedef std::unordered_map<boost::uuids::uuid, int64_t, boost::hash<boost::uuids::uuid>> timestamp_map;
 
-                    VectorClock();
+                    vector_clock();
 
-                    VectorClock(const TimestampVector &replica_logical_timestamps);
+                    vector_clock(const timestamp_vector &replica_logical_timestamps);
 
                     /** Returns a set of replica logical timestamps for this vector clock. */
-                    TimestampVector entry_set();
+                    timestamp_vector entry_set();
 
                     /**
                      * Returns {@code true} if this vector clock is causally strictly after the
                      * provided vector clock. This means that it the provided clock is neither
                      * equal to, greater than or concurrent to this vector clock.
                      */
-                    bool is_after(VectorClock &other);
+                    bool is_after(vector_clock &other);
 
                 private:
                     /**
@@ -60,8 +60,8 @@ namespace hazelcast {
                      */
                     std::pair<bool, int64_t> get_timestamp_for_replica(boost::uuids::uuid replica_id);
 
-                    TimestampMap replica_timestamps_;
-                    VectorClock::TimestampVector replica_timestamp_entries_;
+                    timestamp_map replica_timestamps_;
+                    vector_clock::timestamp_vector replica_timestamp_entries_;
                 };
             }
         }

@@ -28,9 +28,9 @@ namespace hazelcast {
             /**
              * Client connection strategy configuration is used for setting custom strategies and configuring strategy parameters.
              */
-            class HAZELCAST_API ClientConnectionStrategyConfig {
+            class HAZELCAST_API client_connection_strategy_config {
             public:
-                ClientConnectionStrategyConfig();
+                client_connection_strategy_config();
 
                 /**
                  * Reconnect options.
@@ -68,7 +68,7 @@ namespace hazelcast {
                  * @param asyncStart true for async client creation
                  * @return the updated ClientConnectionStrategyConfig
                  */
-                ClientConnectionStrategyConfig &set_async_start(bool async_start);
+                client_connection_strategy_config &set_async_start(bool async_start);
 
                 /**
                  * @return reconnect mode
@@ -82,7 +82,7 @@ namespace hazelcast {
                  * @param reconnectMode
                  * @return the updated ClientConnectionStrategyConfig
                  */
-                ClientConnectionStrategyConfig &set_reconnect_mode(reconnect_mode reconnect_mode);
+                client_connection_strategy_config &set_reconnect_mode(reconnect_mode reconnect_mode);
 
             private:
                 bool async_start_;

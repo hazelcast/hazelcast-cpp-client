@@ -23,7 +23,7 @@
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
+#include "hazelcast/client/config/near_cache_config.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
@@ -45,7 +45,7 @@ namespace hazelcast {
                     class DefaultNearCache : public NearCache<KS, V> {
                     public:
                         DefaultNearCache(const std::string &cache_name,
-                                         const client::config::NearCacheConfig &config,
+                                         const client::config::near_cache_config &config,
                                          const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                          serialization::pimpl::SerializationService &ss, logger &lg)
                                 : name_(cache_name), near_cache_config_(config), execution_service_(es),
@@ -136,7 +136,7 @@ namespace hazelcast {
                     private:
                         std::unique_ptr<NearCacheRecordStore<KS, V> >
                         create_near_cache_record_store(const std::string &name,
-                                                   const client::config::NearCacheConfig &near_cache_config) {
+                                                   const client::config::near_cache_config &near_cache_config) {
                             client::config::in_memory_format inMemoryFormat = near_cache_config.get_in_memory_format();
                             switch (inMemoryFormat) {
                                 case client::config::BINARY:
@@ -185,7 +185,7 @@ namespace hazelcast {
                         }
 
                         const std::string &name_;
-                        const client::config::NearCacheConfig &near_cache_config_;
+                        const client::config::near_cache_config &near_cache_config_;
                         std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
                         serialization::pimpl::SerializationService &serialization_service_;
                         logger &logger_;

@@ -28,7 +28,7 @@ namespace hazelcast {
             /**
              * TCP Socket options
              */
-            class HAZELCAST_API SocketOptions {
+            class HAZELCAST_API socket_options {
             public:
                 /**
                  * constant for kilobyte
@@ -40,7 +40,7 @@ namespace hazelcast {
                  */
                 static const int DEFAULT_BUFFER_SIZE_BYTE = 128 * KILO_BYTE;
 
-                SocketOptions();
+                socket_options();
 
                 /**
                  * TCP_NODELAY socket option
@@ -54,7 +54,7 @@ namespace hazelcast {
                  *
                  * @param tcpNoDelay
                  */
-                SocketOptions &set_tcp_no_delay(bool tcp_no_delay);
+                socket_options &set_tcp_no_delay(bool tcp_no_delay);
 
                 /**
                  * SO_KEEPALIVE socket option
@@ -69,7 +69,7 @@ namespace hazelcast {
                  * @param keepAlive enabled if true
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_keep_alive(bool keep_alive);
+                socket_options &set_keep_alive(bool keep_alive);
 
                 /**
                  * SO_REUSEADDR socket option.
@@ -84,7 +84,7 @@ namespace hazelcast {
                  * @param reuseAddress enabled if true
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_reuse_address(bool reuse_address);
+                socket_options &set_reuse_address(bool reuse_address);
 
                 /**
                  * Gets SO_LINGER with the specified linger time in seconds
@@ -102,7 +102,7 @@ namespace hazelcast {
                  * @param lingerSeconds value in seconds
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_linger_seconds(int linger_seconds);
+                socket_options &set_linger_seconds(int linger_seconds);
 
                 /**
                  * If set to 0 or less, then it is not set on the socket.
@@ -124,7 +124,7 @@ namespace hazelcast {
                  * @param bufferSize Number of bytes
                  * @return SocketOptions configured
                  */
-                SocketOptions &set_buffer_size_in_bytes(int buffer_size);
+                socket_options &set_buffer_size_in_bytes(int buffer_size);
 
             private:
                 // socket options

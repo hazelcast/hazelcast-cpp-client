@@ -17,7 +17,7 @@
 #include <chrono>
 
 #include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
+#include <hazelcast/client/config/client_connection_strategy_config.h>
 #include <hazelcast/client/lifecycle_listener.h>
 #include "hazelcast/client/lifecycle_event.h"
 
@@ -32,7 +32,7 @@ int main() {
      *
      * This example forces client NOT to reconnect if it ever disconnects from the cluster.
      */
-    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::ClientConnectionStrategyConfig::OFF);
+    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::client_connection_strategy_config::OFF);
 
     hazelcast::client::hazelcast_client hz(config);
 

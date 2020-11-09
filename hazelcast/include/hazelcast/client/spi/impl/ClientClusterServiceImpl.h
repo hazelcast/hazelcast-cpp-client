@@ -42,7 +42,7 @@ namespace hazelcast {
         }
         namespace cluster {
             namespace memberselector {
-                class MemberSelector;
+                class member_selector;
             }
         }
         
@@ -67,7 +67,7 @@ namespace hazelcast {
                     std::vector<member> get_member_list() const;
 
                     std::vector<member> get_members(
-                            const cluster::memberselector::MemberSelector &selector) const;
+                            const cluster::memberselector::member_selector &selector) const;
 
                     hz_client get_local_client() const;
 

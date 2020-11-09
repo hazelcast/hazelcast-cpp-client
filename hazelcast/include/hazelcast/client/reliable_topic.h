@@ -133,7 +133,7 @@ namespace hazelcast {
             public:
                 MessageRunner(int id, Listener &&listener, const std::shared_ptr<ringbuffer> &rb,
                               const std::string &topic_name, serialization::pimpl::SerializationService &service,
-                              const config::ReliableTopicConfig &reliable_topic_config, logger &lg)
+                              const config::reliable_topic_config &reliable_topic_config, logger &lg)
                         : listener_(listener), id_(id), ringbuffer_(rb), cancelled_(false), logger_(lg),
                         name_(topic_name), executor_(rb, lg), serialization_service_(service),
                         config_(reliable_topic_config) {
@@ -325,7 +325,7 @@ namespace hazelcast {
                 const std::string &name_;
                 topic::impl::reliable::ReliableTopicExecutor executor_;
                 serialization::pimpl::SerializationService &serialization_service_;
-                const config::ReliableTopicConfig &config_;
+                const config::reliable_topic_config &config_;
             };
 
             util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;

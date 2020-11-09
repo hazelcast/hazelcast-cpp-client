@@ -34,7 +34,7 @@ namespace hazelcast {
                 public:
                     template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
-                            const address &addr, client::config::SocketOptions &socket_options,
+                            const address &addr, client::config::socket_options &socket_options,
                             boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis)
                             : socket_options_(socket_options), remote_endpoint_(addr), io_(io), socket_strand_(io),
                               connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver), socket_(socket_strand_) {
@@ -43,7 +43,7 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
-                            const address &addr, client::config::SocketOptions &socket_options,
+                            const address &addr, client::config::socket_options &socket_options,
                             boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis,
                             CONTEXT &context)
                             : socket_options_(socket_options), remote_endpoint_(addr), io_(io), socket_strand_(io),
@@ -182,7 +182,7 @@ namespace hazelcast {
                     }
 
                 protected:
-                    void set_socket_options(const client::config::SocketOptions &options) {
+                    void set_socket_options(const client::config::socket_options &options) {
                         auto &lowestLayer = socket_.lowest_layer();
 
                         lowestLayer.set_option(boost::asio::ip::tcp::no_delay(options.is_tcp_no_delay()));
@@ -247,7 +247,7 @@ namespace hazelcast {
                         return true;
                     }
 
-                    client::config::SocketOptions &socket_options_;
+                    client::config::socket_options &socket_options_;
                     address remote_endpoint_;
                     boost::asio::io_context &io_;
                     boost::asio::io_context::strand socket_strand_;

@@ -39,7 +39,7 @@ namespace hazelcast {
                             typedef AbstractNearCacheRecordStore<K, V, KS, R, HeapNearCacheRecordMap<K, V, KS, R> > ANCRS;
 
                             BaseHeapNearCacheRecordStore(const std::string &name,
-                                                         const client::config::NearCacheConfig &near_cache_config,
+                                                         const client::config::near_cache_config &near_cache_config,
                                                          serialization::pimpl::SerializationService &serialization_service
                             ) : ANCRS(near_cache_config, serialization_service) {
                             }
@@ -72,10 +72,10 @@ namespace hazelcast {
                             }
                         protected:
                             std::unique_ptr<eviction::MaxSizeChecker> create_near_cache_max_size_checker(
-                                    const client::config::EvictionConfig &eviction_config,
-                                    const client::config::NearCacheConfig &near_cache_config) override {
-                                typename client::config::EvictionConfig::max_size_policy maxSizePolicy = eviction_config.get_maximum_size_policy();
-                                if (maxSizePolicy == client::config::EvictionConfig::ENTRY_COUNT) {
+                                    const client::config::eviction_config &eviction_config,
+                                    const client::config::near_cache_config &near_cache_config) override {
+                                typename client::config::eviction_config::max_size_policy maxSizePolicy = eviction_config.get_maximum_size_policy();
+                                if (maxSizePolicy == client::config::eviction_config::ENTRY_COUNT) {
                                     return std::unique_ptr<eviction::MaxSizeChecker>(
                                             new maxsize::EntryCountNearCacheMaxSizeChecker<K, V, KS, R>(
                                                     eviction_config.get_size(),
@@ -84,12 +84,12 @@ namespace hazelcast {
                                 std::ostringstream out;
                                 out << "Invalid max-size policy " << '(' << (int) maxSizePolicy << ") for " <<
                                     near_cache_config.get_name() << "! Only " <<
-                                    (int) client::config::EvictionConfig::ENTRY_COUNT << " is supported.";
+                                    (int) client::config::eviction_config::ENTRY_COUNT << " is supported.";
                                 BOOST_THROW_EXCEPTION(exception::illegal_argument(out.str()));
                             }
 
                             std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > create_near_cache_record_map(
-                                    const client::config::NearCacheConfig &near_cache_config) override {
+                                    const client::config::near_cache_config &near_cache_config) override {
                                 return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
                                         new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serialization_service_,
                                                                                 DEFAULT_INITIAL_CAPACITY));

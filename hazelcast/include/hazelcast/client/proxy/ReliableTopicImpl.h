@@ -24,7 +24,7 @@
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
-#include "hazelcast/client/config/ReliableTopicConfig.h"
+#include "hazelcast/client/config/reliable_topic_config.h"
 #include "hazelcast/logger.h"
 
 #include <memory>
@@ -50,7 +50,7 @@ namespace hazelcast {
             protected:
                 std::shared_ptr<ringbuffer> ringbuffer_;
                 logger &logger_;
-                const config::ReliableTopicConfig config_;
+                const config::reliable_topic_config config_;
             };
         }
     }

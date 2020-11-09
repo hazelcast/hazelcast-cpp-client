@@ -20,7 +20,7 @@
 #include <memory>
 
 #include "hazelcast/util/hazelcast_dll.h"
-#include "hazelcast/client/aws/security/EC2RequestSigner.h"
+#include "hazelcast/client/aws/security/ec2_request_signer.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -73,7 +73,7 @@ namespace hazelcast {
                      */
                     void add_filters();
 
-                    std::unique_ptr<security::EC2RequestSigner> rs_;
+                    std::unique_ptr<security::ec2_request_signer> rs_;
                     config::client_aws_config &aws_config_;
                     const std::string &endpoint_;
                     std::unordered_map<std::string, std::string> attributes_;

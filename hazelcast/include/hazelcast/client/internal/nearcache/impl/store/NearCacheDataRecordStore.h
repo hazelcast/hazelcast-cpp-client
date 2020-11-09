@@ -42,7 +42,7 @@ namespace hazelcast {
                             static const int64_t REFERENCE_SIZE = sizeof(std::shared_ptr<serialization::pimpl::data>);
 
                             NearCacheDataRecordStore(const std::string &name,
-                                                     const client::config::NearCacheConfig &config,
+                                                     const client::config::near_cache_config &config,
                                                      serialization::pimpl::SerializationService &ss)
                                     : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::data, record::NearCacheDataRecord>(name, config, ss) {
                             }

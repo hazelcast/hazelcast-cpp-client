@@ -22,7 +22,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "hazelcast/util/hazelcast_dll.h"
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/cluster/memberselector/member_selectors.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/multi_execution_callback.h"
@@ -134,7 +134,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable>
             void execute(const HazelcastSerializable &command,
-                         const cluster::memberselector::MemberSelector &member_selector) {
+                         const cluster::memberselector::member_selector &member_selector) {
                 std::vector<member> members = select_members(member_selector);
                 int selectedMember = rand() % (int) members.size();
                 execute_on_member<HazelcastSerializable>(command, members[selectedMember]);
@@ -184,7 +184,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable>
             void execute_on_members(const HazelcastSerializable &command,
-                                  const cluster::memberselector::MemberSelector &member_selector) {
+                                  const cluster::memberselector::member_selector &member_selector) {
                 std::vector<member> members = select_members(member_selector);
                 execute_on_members<HazelcastSerializable>(command, members);
             }
@@ -266,7 +266,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             std::unordered_map<member, executor_promise<T>>
             submit_to_members(const HazelcastSerializable &task,
-                            const cluster::memberselector::MemberSelector &member_selector) {
+                            const cluster::memberselector::member_selector &member_selector) {
                 std::vector<member> members = select_members(member_selector);
                 return submit_to_members<HazelcastSerializable, T>(task, members);
             }
@@ -351,7 +351,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             executor_promise<T>
-            submit(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &member_selector) {
+            submit(const HazelcastSerializable &task, const cluster::memberselector::member_selector &member_selector) {
                 std::vector<member> members = select_members(member_selector);
                 int selectedMember = rand() % (int) members.size();
                 return submit_to_member<HazelcastSerializable, T>(task, members[selectedMember]);
@@ -369,7 +369,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             void
-            submit(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &member_selector,
+            submit(const HazelcastSerializable &task, const cluster::memberselector::member_selector &member_selector,
                    const std::shared_ptr<execution_callback<T> > &callback) {
                 std::vector<member> members = select_members(member_selector);
                 int selectedMember = rand() % (int) members.size();
@@ -440,7 +440,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             void submit_to_members(const HazelcastSerializable &task,
-                                 const cluster::memberselector::MemberSelector &member_selector,
+                                 const cluster::memberselector::member_selector &member_selector,
                                  const std::shared_ptr<multi_execution_callback<T> > &callback) {
                 std::vector<member> members = select_members(member_selector);
                 submit_to_members<HazelcastSerializable, T>(task, members, callback);
@@ -561,7 +561,7 @@ namespace hazelcast {
                 const member member_;
             };
 
-            std::vector<member> select_members(const cluster::memberselector::MemberSelector &member_selector);
+            std::vector<member> select_members(const cluster::memberselector::member_selector &member_selector);
 
             template<typename T>
             executor_promise<T>

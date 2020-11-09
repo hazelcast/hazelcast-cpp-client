@@ -102,7 +102,7 @@
 #include "hazelcast/client/ilist.h"
 #include "hazelcast/client/iqueue.h"
 #include "hazelcast/client/client_properties.h"
-#include "hazelcast/client/aws/utility/CloudUtility.h"
+#include "hazelcast/client/aws/utility/cloud_utility.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -1928,7 +1928,7 @@ namespace hazelcast {
                     std::istream responseStream(&fb);
 
                     config::client_aws_config awsConfig;
-                    std::unordered_map<std::string, std::string> results = hazelcast::client::aws::utility::CloudUtility::unmarshal_the_response(
+                    std::unordered_map<std::string, std::string> results = hazelcast::client::aws::utility::cloud_utility::unmarshal_the_response(
                             responseStream, get_logger());
                     ASSERT_EQ(4U, results.size());
                     ASSERT_NE(results.end(), results.find("10.0.16.13"));

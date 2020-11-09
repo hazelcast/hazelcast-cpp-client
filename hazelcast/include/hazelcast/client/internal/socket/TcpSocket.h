@@ -31,7 +31,7 @@ namespace hazelcast {
                 class HAZELCAST_API TcpSocket : public BaseSocket<boost::asio::ip::tcp::socket> {
                 public:
                     TcpSocket(boost::asio::io_context &io, const address &address,
-                              client::config::SocketOptions &socket_options,
+                              client::config::socket_options &socket_options,
                               std::chrono::milliseconds &connect_timeout_in_millis,
                               boost::asio::ip::tcp::resolver &resolver);
                 };

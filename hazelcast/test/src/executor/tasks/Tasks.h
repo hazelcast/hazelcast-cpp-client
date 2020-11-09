@@ -18,7 +18,7 @@
 #include <stdint.h>
 
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
+#include <hazelcast/client/cluster/memberselector/member_selectors.h>
 
 namespace hazelcast {
     namespace client {
@@ -70,13 +70,13 @@ namespace hazelcast {
                     struct NullCallable {
                     };
 
-                    struct SelectAllMembers : public cluster::memberselector::MemberSelector {
+                    struct SelectAllMembers : public cluster::memberselector::member_selector {
                         bool select(const member &member) const override;
 
                         void to_string(std::ostream &os) const override;
                     };
 
-                    struct SelectNoMembers : public cluster::memberselector::MemberSelector {
+                    struct SelectNoMembers : public cluster::memberselector::member_selector {
                         bool select(const member &member) const override;
 
                         void to_string(std::ostream &os) const override;

@@ -53,7 +53,7 @@ int main() {
      * <p/>
      * To prevent the system from overloading, user can apply a constraint on the number of concurrent invocations.
      * If the maximum number of concurrent invocations has been exceeded and a new invocation comes in,
-     * then hazelcast will throw HazelcastOverloadException
+     * then hazelcast will throw hazelcast_overload
      * <p/>
      * By default it is configured as INT32_MAX.
      *
@@ -66,10 +66,10 @@ int main() {
      * <p/>
      * If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done
      * to give the system time to deal with the backlog of invocations. This property controls how long an invocation is
-     * allowed to wait before getting a {@link com.hazelcast.core.HazelcastOverloadException}.
+     * allowed to wait before getting a {@link com.hazelcast.core.hazelcast_overload}.
      * <p/>
      * <p>
-     * When set to -1 then <code>HazelcastOverloadException</code> is thrown immediately without any waiting. This is
+     * When set to -1 then <code>hazelcast_overload</code> is thrown immediately without any waiting. This is
      * the default value.
      * </p>
      *
@@ -92,11 +92,11 @@ int main() {
     map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
     map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
 
-    // Now the 6th call should receive HazelcastOverloadException
+    // Now the 6th call should receive hazelcast_overload
     try {
         map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
         std::cout << "This line should not execute!!!" << std::endl;
-    } catch (hazelcast::client::exception::HazelcastOverloadException &) {
+    } catch (hazelcast::client::exception::hazelcast_overload &) {
         std::cout << "Received the expected overload exception." << std::endl;
     }
 

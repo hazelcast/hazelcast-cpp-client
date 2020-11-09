@@ -151,7 +151,7 @@ namespace hazelcast {
                             .set_property(client_properties::STATISTICS_PERIOD_SECONDS,
                                           std::to_string(STATS_PERIOD_SECONDS))
                                     // add IMap Near Cache config
-                            .add_near_cache_config(config::NearCacheConfig(get_test_name()));
+                            .add_near_cache_config(config::near_cache_config(get_test_name()));
 
                     clientConfig.get_network_config().set_connection_attempt_limit(20);
 
@@ -259,7 +259,7 @@ namespace hazelcast {
             TEST_F(ClientStatisticsTest, testClientStatisticsContent) {
                 client_config clientConfig;
                 std::string mapName = get_test_name();
-                clientConfig.add_near_cache_config(config::NearCacheConfig(mapName));
+                clientConfig.add_near_cache_config(config::near_cache_config(mapName));
                 clientConfig.set_property(client_properties::STATISTICS_ENABLED, "true").set_property(
                         client_properties::STATISTICS_PERIOD_SECONDS, "1");
 
@@ -1121,7 +1121,7 @@ namespace hazelcast {
 
                 hazelcast_client client(clientConfig);
 
-                config::SocketOptions &socketOptions = client.get_client_config().get_network_config().get_socket_options();
+                config::socket_options &socketOptions = client.get_client_config().get_network_config().get_socket_options();
                 ASSERT_FALSE(socketOptions.is_keep_alive());
                 ASSERT_FALSE(socketOptions.is_tcp_no_delay());
                 ASSERT_EQ(5, socketOptions.get_linger_seconds());
@@ -1672,7 +1672,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client_config clientConfig = get_config();
-                    config::ClientFlakeIdGeneratorConfig flakeIdConfig("test*");
+                    config::client_flake_id_generator_config flakeIdConfig("test*");
                     flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(std::chrono::seconds(20));
                     clientConfig.add_flake_id_generator_config(flakeIdConfig);
                     client = new hazelcast_client(clientConfig);

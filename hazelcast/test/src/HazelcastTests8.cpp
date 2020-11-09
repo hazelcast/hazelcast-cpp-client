@@ -99,7 +99,7 @@
 #include "hazelcast/client/iqueue.h"
 #include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/config/client_aws_config.h"
-#include "hazelcast/client/aws/utility/CloudUtility.h"
+#include "hazelcast/client/aws/utility/cloud_utility.h"
 #include "hazelcast/client/iset.h"
 #include "hazelcast/client/reliable_topic.h"
 
@@ -159,9 +159,9 @@ namespace hazelcast {
                      * @param inMemoryFormat the {@link InMemoryFormat} to set
                      * @return the {@link NearCacheConfig}
                      */
-                    static config::NearCacheConfig create_near_cache_config(
+                    static config::near_cache_config create_near_cache_config(
                             config::in_memory_format in_memory_format, const std::string &map_name) {
-                        config::NearCacheConfig nearCacheConfig;
+                        config::near_cache_config nearCacheConfig;
                         nearCacheConfig.set_name(map_name).set_in_memory_format(in_memory_format).set_invalidate_on_change(true);
 
                         return nearCacheConfig;
@@ -175,9 +175,9 @@ namespace hazelcast {
                      * @param maxSizePolicy   the {@link MaxSizePolicy} to set
                      * @param maxSize         the max size to set
                      */
-                    static void set_eviction_config(config::NearCacheConfig &near_cache_config,
+                    static void set_eviction_config(config::near_cache_config &near_cache_config,
                                                   config::eviction_policy eviction_policy,
-                                                  typename config::EvictionConfig::max_size_policy max_size_policy,
+                                                  typename config::eviction_config::max_size_policy max_size_policy,
                                                   int max_size) {
                         near_cache_config.get_eviction_config().set_eviction_policy(eviction_policy)
                                 .set_maximum_size_policy(max_size_policy)
@@ -335,7 +335,7 @@ namespace hazelcast {
 
                 int64_t get_expected_misses_with_local_update_policy() {
                     if (near_cache_config_.get_local_update_policy() ==
-                        config::NearCacheConfig::CACHE) {
+                        config::near_cache_config::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats_->get_misses();
                     }
@@ -345,7 +345,7 @@ namespace hazelcast {
 
                 int64_t get_expected_hits_with_local_update_policy() {
                     if (near_cache_config_.get_local_update_policy() ==
-                        config::NearCacheConfig::CACHE) {
+                        config::near_cache_config::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats_->get_hits() + 2;
                     }
@@ -396,7 +396,7 @@ namespace hazelcast {
 
                 client_config client_config_;
                 client_config near_cached_client_config_;
-                config::NearCacheConfig near_cache_config_;
+                config::near_cache_config near_cache_config_;
                 std::unique_ptr<hazelcast_client> client_;
                 std::unique_ptr<hazelcast_client> near_cached_client_;
                 std::shared_ptr<imap> no_near_cache_map_;
@@ -466,7 +466,7 @@ namespace hazelcast {
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnNearCacheAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
                 NearCacheTestUtils::set_eviction_config(near_cache_config_, config::NONE,
-                                                                                  config::EvictionConfig::ENTRY_COUNT,
+                                                                                  config::eviction_config::ENTRY_COUNT,
                                                                                   size);
                 create_no_near_cache_context();
 
@@ -513,7 +513,7 @@ namespace hazelcast {
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnDataAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
                 NearCacheTestUtils::set_eviction_config(near_cache_config_, config::NONE,
-                                                                                  config::EvictionConfig::ENTRY_COUNT,
+                                                                                  config::eviction_config::ENTRY_COUNT,
                                                                                   size);
                 near_cache_config_.set_invalidate_on_change(true);
 
@@ -595,7 +595,7 @@ namespace hazelcast {
 
             TEST_P(BasicClientNearCacheTest, testNearCacheEviction) {
                 NearCacheTestUtils::set_eviction_config(near_cache_config_, config::LRU,
-                                                                                  config::EvictionConfig::ENTRY_COUNT,
+                                                                                  config::eviction_config::ENTRY_COUNT,
                                                                                   DEFAULT_RECORD_COUNT);
                 create_no_near_cache_context();
 
@@ -668,16 +668,16 @@ namespace hazelcast {
                     }
                 }
 
-                static config::NearCacheConfig
+                static config::near_cache_config
                 new_no_invalidation_near_cache_config() {
-                    config::NearCacheConfig config(new_near_cache_config());
+                    config::near_cache_config config(new_near_cache_config());
                     config.set_in_memory_format(config::OBJECT);
                     config.set_invalidate_on_change(false);
                     return config;
                 }
 
-                static config::NearCacheConfig new_near_cache_config() {
-                    return config::NearCacheConfig();
+                static config::near_cache_config new_near_cache_config() {
+                    return config::near_cache_config();
                 }
 
                 static std::unique_ptr<client_config> new_client_config() {
@@ -685,7 +685,7 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<imap> get_near_cached_map_from_client(
-                        config::NearCacheConfig config) {
+                        config::near_cache_config config) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
                     config.set_name(mapName);
@@ -707,7 +707,7 @@ namespace hazelcast {
                 }
 
                 std::unique_ptr<client_config> client_config_;
-                config::NearCacheConfig near_cache_config_;
+                config::near_cache_config near_cache_config_;
                 std::unique_ptr<hazelcast_client> client_;
                 std::shared_ptr<imap> map_;
                 static HazelcastServer *instance;
@@ -1080,7 +1080,7 @@ namespace hazelcast {
             TEST_F(ReliableTopicTest, testConfig) {
                 client_config clientConfig;
                 clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
-                config::ReliableTopicConfig relConfig("testConfig");
+                config::reliable_topic_config relConfig("testConfig");
                 relConfig.set_read_batch_size(2);
                 clientConfig.add_reliable_topic_config(relConfig);
                 hazelcast_client configClient(clientConfig);

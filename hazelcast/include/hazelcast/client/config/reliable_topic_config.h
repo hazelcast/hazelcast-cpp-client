@@ -26,13 +26,13 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class HAZELCAST_API ReliableTopicConfig {
+            class HAZELCAST_API reliable_topic_config {
             public:
-                static const int DEFAULT_READ_BATCH_SIZE;
+                static constexpr int DEFAULT_READ_BATCH_SIZE = 10;
 
-                ReliableTopicConfig();
+                reliable_topic_config();
 
-                ReliableTopicConfig(const char *topic_name);
+                reliable_topic_config(const char *topic_name);
 
                 /**
                  * Gets the name of the reliable topic.
@@ -66,7 +66,7 @@ namespace hazelcast {
                  * @return the updated reliable topic config.
                  * @throws illegal_argument if readBatchSize is smaller than 1.
                  */
-                ReliableTopicConfig &set_read_batch_size(int batch_size);
+                reliable_topic_config &set_read_batch_size(int batch_size);
             private:
                 int read_batch_size_;
                 std::string name_;

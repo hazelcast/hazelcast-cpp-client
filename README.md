@@ -1153,7 +1153,7 @@ clientConfig.get_network_config().get_aws_config().set_enabled(true).
 
 You need to enable the discovery by calling the `set_enabled(true)`. You can set your access key and secret in the configuration as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances will be retrieved from, the default region is `us-east-1`.
  
-The C++ client works the same way as the Java client. For details, see [AWSClient Configuration] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#awsclient-configuration) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
+The C++ client works the same way as the Java client. For details, see [aws_client Configuration] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#awsclient-configuration) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
 
 ## 5.9. Authentication
 
@@ -1462,8 +1462,8 @@ To prevent the system from crashing, Hazelcast provides back pressure. Back pres
 
 Sometimes, e.g., when your servers are overloaded, you may want to slow down the client operations to the cluster. Then the client can be configured to wait until number of outstanding invocations whose responses are not received to become less than a certain number. This is called Client Back Pressure. By default, the backpressure is disabled. There are a few properties which control the back pressure. The following are these client configuration properties:
 
-- `hazelcast.client.max.concurrent.invocations`: The maximum number of concurrent invocations allowed. To prevent the system from overloading, you can apply a constraint on the number of concurrent invocations. If the maximum number of concurrent invocations has been exceeded and a new invocation comes in, then Hazelcast will throw `HazelcastOverloadException`. By default this property is configured as INT32_MAX.
-- `hazelcast.client.invocation.backoff.timeout.millis`: Controls the maximum timeout in milliseconds to wait for an invocation space to be available. If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done to give the system time to deal with the backlog of invocations. This property controls how long an invocation is allowed to wait before getting `HazelcastOverloadException`. When set to -1 then `HazelcastOverloadException` is thrown immediately without any waiting. This is the default value.
+- `hazelcast.client.max.concurrent.invocations`: The maximum number of concurrent invocations allowed. To prevent the system from overloading, you can apply a constraint on the number of concurrent invocations. If the maximum number of concurrent invocations has been exceeded and a new invocation comes in, then Hazelcast will throw `hazelcast_overload`. By default this property is configured as INT32_MAX.
+- `hazelcast.client.invocation.backoff.timeout.millis`: Controls the maximum timeout in milliseconds to wait for an invocation space to be available. If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done to give the system time to deal with the backlog of invocations. This property controls how long an invocation is allowed to wait before getting `hazelcast_overload`. When set to -1 then `hazelcast_overload` is thrown immediately without any waiting. This is the default value.
 
 For details of backpressure, see the [Back Pressure section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#back-pressure) in the Hazelcast IMDG Reference Manual.
 
@@ -1484,7 +1484,7 @@ If it is set to false (the default case), `hazelcast_client(const client_config)
 You can configure how the client should act when the client disconnects from the cluster for any reason. This is configured as follows:
 
 ```
-client_config::getConnectionStrategyConfig().setReconnectMode(const hazelcast::client::config::ClientConnectionStrategyConfig::ReconnectMode &);
+client_config::getConnectionStrategyConfig().setReconnectMode(const hazelcast::client::config::client_connection_strategy_config::ReconnectMode &);
 ```
 
 Possible values for `ReconnectMode` are:
@@ -2541,14 +2541,14 @@ public:
 #### 7.6.1.7 Selecting Members for Task Execution
 As previously mentioned, it is possible to indicate where in the Hazelcast cluster the task is executed. Usually you execute these in the cluster based on the location of a key or set of keys, or you allow Hazelcast to select a member.
 
-If you want more control over where your code runs, use the `MemberSelector` interface. For example, you may want certain tasks to run only on certain members, or you may wish to implement some form of custom load balancing regime.  The `MemberSelector` is an interface that you can implement and then provide to the `iexecutor_service` when you submit or execute.
+If you want more control over where your code runs, use the `member_selector` interface. For example, you may want certain tasks to run only on certain members, or you may wish to implement some form of custom load balancing regime.  The `member_selector` is an interface that you can implement and then provide to the `iexecutor_service` when you submit or execute.
 
 The `bool select(const Member &member)` method is called for every available member in the cluster. Implement this method to decide if the member is going to be used or not.
 
 In the simple example shown below, we select the cluster members based on the presence of an attribute.
 
 ```C++
-class MyMemberSelector : public hazelcast::client::cluster::memberselector::MemberSelector {
+class MyMemberSelector : public hazelcast::client::cluster::memberselector::member_selector {
 public:
     virtual bool select(const Member &member) const {
         const std::string *attribute = member.getAttribute("my.special.executor");
@@ -3107,10 +3107,10 @@ Hazelcast Map can be configured to work with near cache enabled. You can enable 
 ```C++
     client_config config;
     const char *mapName = "myMap";
-    config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
+    config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
     nearCacheConfig.setInvalidateOnChange(true);
     nearCacheConfig.getEvictionConfig()->setEvictionPolicy(config::LRU)
-            .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT).setSize(100);
+            .setMaximumSizePolicy(config::eviction_config::ENTRY_COUNT).setSize(100);
     nearCacheConfig.setTimeToLiveSeconds(1);
     nearCacheConfig.setMaxIdleSeconds(2);
     config.addNearCacheConfig(nearCacheConfig);
@@ -3140,7 +3140,7 @@ Following are the descriptions of all configuration elements:
 #### 7.8.2.2. Near Cache Example for Map
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 ```C++
-    config::NearCacheConfig nearCacheConfig("mostlyReadMap", config::OBJECT);
+    config::near_cache_config nearCacheConfig("mostlyReadMap", config::OBJECT);
     nearCacheConfig.setInvalidateOnChange(true);
     nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::LRU).setSize(5000);
     config.addNearCacheConfig(nearCacheConfig);
@@ -3149,7 +3149,7 @@ The following is an example configuration for a Near Cache defined in the `mostl
 #### 7.8.2.3. Near Cache Eviction
 In the scope of Near Cache, eviction means evicting (clearing) the entries selected according to the given `evictionPolicy` when the specified `size` has been reached.
 
-The `EvictionConfig::setSize` defines the entry count when the Near Cache is full and determines whether the eviction should be triggered. 
+The `eviction_config::setSize` defines the entry count when the Near Cache is full and determines whether the eviction should be triggered. 
 
 Once the eviction is triggered the configured `evictionPolicy` determines which, if any, entries must be evicted.
  
@@ -3239,7 +3239,7 @@ Hazelcast C++ client emits log messages to provide information about important e
 
 If no logging configuration is made by the user, the client prints log messages of level `INFO` or above to the standard output. 
 
-You can set the minimum level in which the log messages are printed using `LoggerConfig::level`:
+You can set the minimum level in which the log messages are printed using `logger_config::level`:
 ```c++
 clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
 ```
@@ -3250,7 +3250,7 @@ clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables
 clientConfig.getLoggerConfig().level(hazelcast::logger::level::all); // enables all log levels
 ```
 
-You can set a callback function to be called on each log message via `LoggerConfig::handler`:
+You can set a callback function to be called on each log message via `logger_config::handler`:
 ```c++
 clientConfig.getLoggerConfig().handler(my_log_handler);
 ```

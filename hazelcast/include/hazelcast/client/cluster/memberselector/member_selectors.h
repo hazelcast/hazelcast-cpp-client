@@ -42,7 +42,7 @@ namespace hazelcast {
                  * }</pre>
                  * </p>
                  */
-                class MemberSelector {
+                class member_selector {
                 public:
                     /**
                      * Decides if the given member will be part of an operation or not.
@@ -52,11 +52,11 @@ namespace hazelcast {
                      */
                     virtual bool select(const member &member) const = 0;
 
-                    virtual ~MemberSelector() = default;
+                    virtual ~member_selector() = default;
 
                     virtual void to_string(std::ostream &os) const = 0;
 
-                    friend std::ostream &operator<<(std::ostream &os, const MemberSelector &a_selector) {
+                    friend std::ostream &operator<<(std::ostream &os, const member_selector &a_selector) {
                         a_selector.to_string(os);
                         return os;
                     }
@@ -65,16 +65,16 @@ namespace hazelcast {
                 /**
                  * A utility class to get {@link MemberSelector} instances.
                  */
-                class MemberSelectors {
+                class member_selectors {
                 public:
-                    class DataMemberSelector : public MemberSelector {
+                    class data_member_selector : public member_selector {
                         bool select(const member &member) const override;
 
                     public:
                         void to_string(std::ostream &os) const override;
                     };
 
-                    static const std::unique_ptr<MemberSelector> DATA_MEMBER_SELECTOR;
+                    static const std::unique_ptr<member_selector> DATA_MEMBER_SELECTOR;
 
                 };
             }

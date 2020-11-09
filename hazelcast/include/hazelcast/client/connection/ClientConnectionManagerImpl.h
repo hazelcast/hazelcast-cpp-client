@@ -36,7 +36,7 @@
 #include "hazelcast/client/connection/AddressTranslator.h"
 #include "hazelcast/client/connection/ConnectionListenable.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/config/client_connection_strategy_config.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/logger.h"
 
@@ -206,7 +206,7 @@ namespace hazelcast {
                 std::unique_ptr<boost::asio::io_context::work> io_guard_;
                 std::atomic<int32_t> partition_count_;
                 const bool async_start_;
-                const config::ClientConnectionStrategyConfig::reconnect_mode reconnect_mode_;
+                const config::client_connection_strategy_config::reconnect_mode reconnect_mode_;
                 const bool smart_routing_enabled_;
                 boost::optional<boost::asio::steady_timer> connect_to_members_timer_;
                 std::atomic_bool connect_to_cluster_task_submitted_;

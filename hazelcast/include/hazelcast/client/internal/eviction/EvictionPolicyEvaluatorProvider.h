@@ -49,7 +49,7 @@ namespace hazelcast {
                      */
                     template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
                     static std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> > get_eviction_policy_evaluator(
-                            const client::config::EvictionConfig &eviction_config) {
+                            const client::config::eviction_config &eviction_config) {
 
                         std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
 

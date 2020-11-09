@@ -18,7 +18,7 @@
 #include <string>
 #include <ostream>
 
-#include "hazelcast/client/config/EvictionPolicy.h"
+#include "hazelcast/client/config/eviction_policy.h"
 #include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
 
@@ -34,9 +34,9 @@ namespace hazelcast {
              * Configuration for eviction.
              * You can set a limit for number of entries or total memory cost of entries.
              */
-            class HAZELCAST_API EvictionConfig {
+            class HAZELCAST_API eviction_config {
             public:
-                ~EvictionConfig()  = default;
+                ~eviction_config()  = default;
 
                 /**
                  * Maximum Size Policy
@@ -82,25 +82,25 @@ namespace hazelcast {
                  */
                 static constexpr eviction_policy DEFAULT_EVICTION_POLICY = eviction_policy::LRU;
 
-                EvictionConfig();
+                eviction_config();
 
                 int32_t get_size() const;
 
-                EvictionConfig &set_size(int32_t size);
+                eviction_config &set_size(int32_t size);
 
                 max_size_policy get_maximum_size_policy() const;
 
-                EvictionConfig &set_maximum_size_policy(const max_size_policy &max_size_policy);
+                eviction_config &set_maximum_size_policy(const max_size_policy &max_size_policy);
 
                 eviction_policy get_eviction_policy() const;
 
-                EvictionConfig &set_eviction_policy(eviction_policy policy);
+                eviction_config &set_eviction_policy(eviction_policy policy);
 
                 internal::eviction::EvictionStrategyType::type get_eviction_strategy_type() const;
 
                 internal::eviction::eviction_policy_type get_eviction_policy_type() const;
 
-                friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const EvictionConfig &config);
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const eviction_config &config);
 
             protected:
                 int32_t size_;

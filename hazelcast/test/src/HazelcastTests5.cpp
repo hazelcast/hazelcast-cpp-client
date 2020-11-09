@@ -670,26 +670,26 @@ namespace hazelcast {
             class NearCachedDataMapClientConfig : public MapClientConfig {
             public:
                 NearCachedDataMapClientConfig() {
-                    add_near_cache_config(config::NearCacheConfig(intMapName));
+                    add_near_cache_config(config::near_cache_config(intMapName));
 
-                    add_near_cache_config(config::NearCacheConfig(employeesMapName));
+                    add_near_cache_config(config::near_cache_config(employeesMapName));
 
-                    add_near_cache_config(config::NearCacheConfig(imapName));
+                    add_near_cache_config(config::near_cache_config(imapName));
 
-                    add_near_cache_config(config::NearCacheConfig(ONE_SECOND_MAP_NAME));
+                    add_near_cache_config(config::near_cache_config(ONE_SECOND_MAP_NAME));
                 }
             };
 
             class NearCachedObjectMapClientConfig : public MapClientConfig {
             public:
                 NearCachedObjectMapClientConfig() {
-                    add_near_cache_config(config::NearCacheConfig(intMapName, config::OBJECT));
+                    add_near_cache_config(config::near_cache_config(intMapName, config::OBJECT));
 
-                    add_near_cache_config(config::NearCacheConfig(employeesMapName, config::OBJECT));
+                    add_near_cache_config(config::near_cache_config(employeesMapName, config::OBJECT));
 
-                    add_near_cache_config(config::NearCacheConfig(imapName, config::OBJECT));
+                    add_near_cache_config(config::near_cache_config(imapName, config::OBJECT));
 
-                    add_near_cache_config(config::NearCacheConfig(ONE_SECOND_MAP_NAME, config::OBJECT));
+                    add_near_cache_config(config::near_cache_config(ONE_SECOND_MAP_NAME, config::OBJECT));
                 }
             };
 

@@ -41,7 +41,7 @@
 #include "hazelcast/client/hz_cluster.h"
 #include "hazelcast/client/spi/lifecycle_service.h"
 #include "hazelcast/client/lifecycle_listener.h"
-#include <hazelcast/client/cluster/impl/ClusterDataSerializerHook.h>
+#include <hazelcast/client/cluster/impl/cluster_data_serializer_hook.h>
 #include <hazelcast/client/exception/ProtocolExceptions.h>
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
@@ -465,7 +465,7 @@ namespace hazelcast {
         }
 
         std::vector<member>
-        iexecutor_service::select_members(const cluster::memberselector::MemberSelector &member_selector) {
+        iexecutor_service::select_members(const cluster::memberselector::member_selector &member_selector) {
             std::vector<member> selected;
             std::vector<member> members = get_context().get_client_cluster_service().get_member_list();
             for (const member &member : members) {

@@ -41,8 +41,8 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/membership_event.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/client/cluster/impl/VectorClock.h"
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/cluster/impl/vector_clock.h"
+#include "hazelcast/client/cluster/memberselector/member_selectors.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 
 namespace hazelcast {
@@ -235,35 +235,35 @@ namespace hazelcast {
 
         namespace cluster {
             namespace memberselector {
-                bool MemberSelectors::DataMemberSelector::select(const member &member) const {
+                bool member_selectors::data_member_selector::select(const member &member) const {
                     return !member.is_lite_member();
                 }
 
-                void MemberSelectors::DataMemberSelector::to_string(std::ostream &os) const {
+                void member_selectors::data_member_selector::to_string(std::ostream &os) const {
                     os << "Default DataMemberSelector";
                 }
 
-                const std::unique_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
-                        new MemberSelectors::DataMemberSelector());
+                const std::unique_ptr<member_selector> member_selectors::DATA_MEMBER_SELECTOR(
+                        new member_selectors::data_member_selector());
             }
 
             namespace impl {
-                VectorClock::VectorClock() = default;
+                vector_clock::vector_clock() = default;
 
-                VectorClock::VectorClock(const VectorClock::TimestampVector &replica_logical_timestamps)
+                vector_clock::vector_clock(const vector_clock::timestamp_vector &replica_logical_timestamps)
                         : replica_timestamp_entries_(replica_logical_timestamps) {
-                    for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replica_logical_timestamps) {
+                    for (const vector_clock::timestamp_vector::value_type &replicaTimestamp : replica_logical_timestamps) {
                         replica_timestamps_[replicaTimestamp.first] = replicaTimestamp.second;
                     }
                 }
 
-                VectorClock::TimestampVector VectorClock::entry_set() {
+                vector_clock::timestamp_vector vector_clock::entry_set() {
                     return replica_timestamp_entries_;
                 }
 
-                bool VectorClock::is_after(VectorClock &other) {
+                bool vector_clock::is_after(vector_clock &other) {
                     bool anyTimestampGreater = false;
-                    for (const VectorClock::TimestampMap::value_type &otherEntry : other.replica_timestamps_) {
+                    for (const vector_clock::timestamp_map::value_type &otherEntry : other.replica_timestamps_) {
                         const auto &replicaId = otherEntry.first;
                         int64_t otherReplicaTimestamp = otherEntry.second;
                         std::pair<bool, int64_t> localReplicaTimestamp = get_timestamp_for_replica(replicaId);
@@ -279,7 +279,7 @@ namespace hazelcast {
                     return anyTimestampGreater || other.replica_timestamps_.size() < replica_timestamps_.size();
                 }
 
-                std::pair<bool, int64_t> VectorClock::get_timestamp_for_replica(boost::uuids::uuid replica_id) {
+                std::pair<bool, int64_t> vector_clock::get_timestamp_for_replica(boost::uuids::uuid replica_id) {
                     if (replica_timestamps_.count(replica_id) == 0) {
                         return std::make_pair(false, -1);
                     }

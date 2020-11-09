@@ -18,7 +18,7 @@
 
 #include <unordered_map>
 
-#include "hazelcast/client/aws/AWSClient.h"
+#include "hazelcast/client/aws/aws_client.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/connection/AddressProvider.h"
@@ -47,7 +47,7 @@ namespace hazelcast {
                 private:
                     std::string aws_member_port_;
                     logger &logger_;
-                    aws::AWSClient aws_client_;
+                    aws::aws_client aws_client_;
                     util::Sync<std::unordered_map<std::string, std::string> > private_to_public_;
 
                     void update_lookup_table();

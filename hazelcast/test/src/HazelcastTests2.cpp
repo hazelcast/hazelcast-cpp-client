@@ -580,7 +580,7 @@ namespace hazelcast {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
-                            config::ClientConnectionStrategyConfig::OFF);
+                            config::client_connection_strategy_config::OFF);
                     hazelcast_client client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
@@ -607,7 +607,7 @@ namespace hazelcast {
                     HazelcastServer server2(*g_srvFactory);
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
-                            config::ClientConnectionStrategyConfig::OFF);
+                            config::client_connection_strategy_config::OFF);
                     hazelcast_client client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
@@ -634,7 +634,7 @@ namespace hazelcast {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
-                            config::ClientConnectionStrategyConfig::OFF);
+                            config::client_connection_strategy_config::OFF);
                     hazelcast_client client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
@@ -668,7 +668,7 @@ namespace hazelcast {
                             })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
-                            config::ClientConnectionStrategyConfig::ASYNC);
+                            config::client_connection_strategy_config::ASYNC);
                     hazelcast_client client(client_config_);
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
@@ -693,7 +693,7 @@ namespace hazelcast {
                             })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
-                            config::ClientConnectionStrategyConfig::ASYNC);
+                            config::client_connection_strategy_config::ASYNC);
                     hazelcast_client client(client_config_);
 
                     ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
@@ -732,7 +732,7 @@ namespace hazelcast {
                             })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
-                            config::ClientConnectionStrategyConfig::ASYNC);
+                            config::client_connection_strategy_config::ASYNC);
                     hazelcast_client client(client_config_);
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
@@ -1928,11 +1928,11 @@ namespace hazelcast {
                         }
 
                         void create_near_cache_with_max_size_policy(config::in_memory_format in_memory_format,
-                                                              config::EvictionConfig::max_size_policy max_size_policy,
+                                                              config::eviction_config::max_size_policy max_size_policy,
                                                               int32_t size) {
                             auto nearCacheConfig = create_near_cache_config(
                                     DEFAULT_NEAR_CACHE_NAME, in_memory_format);
-                            config::EvictionConfig evictionConfig;
+                            config::eviction_config evictionConfig;
                             evictionConfig.set_maximum_size_policy(max_size_policy);
                             evictionConfig.set_size(size);
                             nearCacheConfig.set_eviction_config(evictionConfig);
@@ -1947,8 +1947,8 @@ namespace hazelcast {
                             auto nearCacheConfig = create_near_cache_config(
                                     DEFAULT_NEAR_CACHE_NAME, in_memory_format);
 
-                            config::EvictionConfig evictionConfig;
-                            evictionConfig.set_maximum_size_policy(config::EvictionConfig::ENTRY_COUNT);
+                            config::eviction_config evictionConfig;
+                            evictionConfig.set_maximum_size_policy(config::eviction_config::ENTRY_COUNT);
                             evictionConfig.set_size(maxSize);
                             evictionConfig.set_eviction_policy(eviction_policy);
                             nearCacheConfig.set_eviction_config(evictionConfig);
@@ -1963,7 +1963,7 @@ namespace hazelcast {
                         }
 
                         std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::data, serialization::pimpl::data> > create_near_cache_record_store(
-                                config::NearCacheConfig &near_cache_config,
+                                config::near_cache_config &near_cache_config,
                                 config::in_memory_format in_memory_format) {
                             std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::data, serialization::pimpl::data> > recordStore;
                             switch (in_memory_format) {
@@ -1989,10 +1989,10 @@ namespace hazelcast {
                             return recordStore;
                         }
 
-                        config::NearCacheConfig
+                        config::near_cache_config
                         create_near_cache_config(const char *name,
                                               config::in_memory_format in_memory_format) {
-                            config::NearCacheConfig config;
+                            config::near_cache_config config;
                             config.set_name(name).set_in_memory_format(in_memory_format);
                             return config;
                         }
@@ -2052,7 +2052,7 @@ namespace hazelcast {
 
                     TEST_P(NearCacheRecordStoreTest, canCreateWithEntryCountMaxSizePolicy) {
                         create_near_cache_with_max_size_policy(GetParam(),
-                                                         config::EvictionConfig::ENTRY_COUNT,
+                                                         config::eviction_config::ENTRY_COUNT,
                                                          1000);
                     }
 

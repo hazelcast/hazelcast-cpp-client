@@ -15,8 +15,8 @@
  */
 #pragma once
 
-#include "hazelcast/client/config/InMemoryFormat.h"
-#include "hazelcast/client/config/EvictionConfig.h"
+#include "hazelcast/client/config/in_memory_format.h"
+#include "hazelcast/client/config/eviction_config.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,7 +30,7 @@ namespace hazelcast {
              * Contains the configuration for a Near Cache.
              * @BinaryInterface
              */
-            class HAZELCAST_API NearCacheConfig {
+            class HAZELCAST_API near_cache_config {
             public:
                 /**
                  * Default value of the time to live in seconds.
@@ -62,16 +62,16 @@ namespace hazelcast {
                             CACHE
                 };
 
-                NearCacheConfig();
+                near_cache_config();
 
-                NearCacheConfig(const std::string &cache_name);
+                near_cache_config(const std::string &cache_name);
 
-                NearCacheConfig(const std::string &cache_name, in_memory_format memory_format);
+                near_cache_config(const std::string &cache_name, in_memory_format memory_format);
 
-                NearCacheConfig(int32_t time_to_live_seconds, int32_t max_idle_seconds, bool invalidate_on_change,
-                                in_memory_format in_memory_format, const EvictionConfig &evict_config);
+                near_cache_config(int32_t time_to_live_seconds, int32_t max_idle_seconds, bool invalidate_on_change,
+                                in_memory_format in_memory_format, const eviction_config &evict_config);
 
-                virtual ~NearCacheConfig() = default;
+                virtual ~near_cache_config() = default;
 
                 /**
                  * Gets the name of the Near Cache.
@@ -86,7 +86,7 @@ namespace hazelcast {
                  * @param name The name of the Near Cache.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &set_name(const std::string &name);
+                near_cache_config &set_name(const std::string &name);
 
                 /**
                  * Gets the maximum number of seconds for each entry to stay in the Near Cache. Entries that are
@@ -104,7 +104,7 @@ namespace hazelcast {
                  * @param timeToLiveSeconds The maximum number of seconds for each entry to stay in the Near Cache.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &set_time_to_live_seconds(int32_t time_to_live_seconds);
+                near_cache_config &set_time_to_live_seconds(int32_t time_to_live_seconds);
 
                 /**
                  * Maximum number of seconds each entry can stay in the Near Cache as untouched (not-read).
@@ -126,7 +126,7 @@ namespace hazelcast {
                  *                       untouched (not-read).
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &set_max_idle_seconds(int32_t max_idle_seconds);
+                near_cache_config &set_max_idle_seconds(int32_t max_idle_seconds);
 
                 /**
                  * True to evict the cached entries if the entries are changed (updated or removed).
@@ -148,7 +148,7 @@ namespace hazelcast {
                  *                           changed (updated or removed), false otherwise.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &set_invalidate_on_change(bool invalidate_on_change);
+                near_cache_config &set_invalidate_on_change(bool invalidate_on_change);
 
                 /**
                  * Gets the data type used to store entries.
@@ -169,7 +169,7 @@ namespace hazelcast {
                  * @param inMemoryFormat The data type used to store entries.
                  * @return This Near Cache config instance.
                  */
-                virtual NearCacheConfig &set_in_memory_format(const in_memory_format &in_memory_format);
+                virtual near_cache_config &set_in_memory_format(const in_memory_format &in_memory_format);
 
                 /**
                  * If true, cache local entries also.
@@ -186,18 +186,18 @@ namespace hazelcast {
                  * @param cacheLocalEntries True to cache local entries also.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &set_cache_local_entries(bool cache_local_entries);
+                near_cache_config &set_cache_local_entries(bool cache_local_entries);
 
                 const local_update_policy &get_local_update_policy() const;
 
-                NearCacheConfig &set_local_update_policy(const local_update_policy &local_update_policy);
+                near_cache_config &set_local_update_policy(const local_update_policy &local_update_policy);
 
                 /**
                  * The eviction configuration.
                  *
                  * @return The eviction configuration.
                  */
-                EvictionConfig &get_eviction_config();
+                eviction_config &get_eviction_config();
 
                 /**
                  * Sets the eviction configuration.
@@ -205,9 +205,9 @@ namespace hazelcast {
                  * @param evictionConfig The eviction configuration.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &set_eviction_config(const EvictionConfig &eviction_config);
+                near_cache_config &set_eviction_config(const eviction_config &eviction_config);
 
-                friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const NearCacheConfig &cache_config);
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const near_cache_config &cache_config);
             private:
                 std::string name_;
 
@@ -229,7 +229,7 @@ namespace hazelcast {
                  * <li>LRU as eviction policy</li>
                  * </ul>
                  */
-                EvictionConfig eviction_config_;
+                eviction_config eviction_config_;
 
                 int32_t calculate_max_size(int32_t max_size);
             };

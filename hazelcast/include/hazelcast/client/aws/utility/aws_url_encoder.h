@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace aws {
             namespace utility {
-                class HAZELCAST_API AwsURLEncoder {
+                class HAZELCAST_API aws_url_encoder {
                 public:
                     static std::string url_encode(const std::string &value);
 

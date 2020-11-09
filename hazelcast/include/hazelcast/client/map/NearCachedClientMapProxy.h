@@ -19,7 +19,7 @@
 
 #include "hazelcast/client/imap.h"
 #include "hazelcast/client/client_config.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
+#include "hazelcast/client/config/near_cache_config.h"
 #include "hazelcast/client/map/impl/nearcache/InvalidationAwareWrapper.h"
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
@@ -539,7 +539,7 @@ namespace hazelcast {
                 bool cache_local_entries_;
                 bool invalidate_on_change_;
                 impl::nearcache::KeyStateMarker *key_state_marker_;
-                const config::NearCacheConfig &near_cache_config_;
+                const config::near_cache_config &near_cache_config_;
                 std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::data, V>> near_cache_;
                 boost::uuids::uuid invalidation_listener_id_;
                 logger &logger_;

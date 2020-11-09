@@ -28,14 +28,14 @@
 #include "hazelcast/client/load_balancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/config/ReliableTopicConfig.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
+#include "hazelcast/client/config/reliable_topic_config.h"
+#include "hazelcast/client/config/near_cache_config.h"
 #include "hazelcast/client/config/client_network_config.h"
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
-#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
+#include "hazelcast/client/config/client_connection_strategy_config.h"
+#include "hazelcast/client/config/client_flake_id_generator_config.h"
 #include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
-#include "hazelcast/client/config/LoggerConfig.h"
+#include "hazelcast/client/config/logger_config.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/lifecycle_listener.h"
 #include "hazelcast/client/membership_listener.h"
@@ -260,7 +260,7 @@ namespace hazelcast {
              * \param reliableTopicConfig the ReliableTopicConfig to add
              * \return configured {\link ClientConfig} for chaining
              */
-            client_config &add_reliable_topic_config(const config::ReliableTopicConfig &reliable_topic_config);
+            client_config &add_reliable_topic_config(const config::reliable_topic_config &reliable_topic_config);
 
             /**
              * Gets the ClientReliableTopicConfig for a given reliable topic name.
@@ -268,7 +268,7 @@ namespace hazelcast {
              * \param name the name of the reliable topic
              * \return the found config. If none is found, a default configured one is returned.
              */
-            const config::ReliableTopicConfig &get_reliable_topic_config(const std::string &name);
+            const config::reliable_topic_config &get_reliable_topic_config(const std::string &name);
 
             /**
              * Helper method to add a new NearCacheConfig
@@ -279,7 +279,7 @@ namespace hazelcast {
              * 
              * Memory ownership of the config is passed to the client config
              */
-            client_config &add_near_cache_config(const config::NearCacheConfig &near_cache_config);
+            client_config &add_near_cache_config(const config::near_cache_config &near_cache_config);
 
             /**
              * Gets the NearCacheConfig configured for the map / cache with name
@@ -288,7 +288,7 @@ namespace hazelcast {
              * \return Configured NearCacheConfig
              * @see NearCacheConfig
              */
-            const config::NearCacheConfig *get_near_cache_config(const std::string &name) const;
+            const config::near_cache_config *get_near_cache_config(const std::string &name) const;
 
             /**
              * Gets {\link com.hazelcast.client.config.client_network_config}
@@ -326,10 +326,10 @@ namespace hazelcast {
              */
             void set_executor_pool_size(int32_t executor_pool_size);
 
-            config::ClientConnectionStrategyConfig &get_connection_strategy_config();
+            config::client_connection_strategy_config &get_connection_strategy_config();
 
             client_config &
-            set_connection_strategy_config(const config::ClientConnectionStrategyConfig &connection_strategy_config);
+            set_connection_strategy_config(const config::client_connection_strategy_config &connection_strategy_config);
 
             /**
              * Returns a {\link ClientFlakeIdGeneratorConfig} configuration for the given flake ID generator name.
@@ -346,7 +346,7 @@ namespace hazelcast {
              * @see #setConfigPatternMatcher(ConfigPatternMatcher)
              * @see #getConfigPatternMatcher()
              */
-            const config::ClientFlakeIdGeneratorConfig *find_flake_id_generator_config(const std::string &name);
+            const config::client_flake_id_generator_config *find_flake_id_generator_config(const std::string &name);
 
             /**
              * Returns the {\link ClientFlakeIdGeneratorConfig} for the given name, creating
@@ -373,7 +373,7 @@ namespace hazelcast {
              * @throws ConfigurationException if ambiguous configurations are found
              * @see StringPartitioningStrategy#getBaseName(std::string)
              */
-            const config::ClientFlakeIdGeneratorConfig *get_flake_id_generator_config(const std::string &name);
+            const config::client_flake_id_generator_config *get_flake_id_generator_config(const std::string &name);
 
             /**
              * Adds a flake ID generator configuration. The configuration is saved under the config
@@ -383,13 +383,13 @@ namespace hazelcast {
              * \param config the flake ID configuration
              * \return this config instance
              */
-            client_config &add_flake_id_generator_config(const config::ClientFlakeIdGeneratorConfig &config);
+            client_config &add_flake_id_generator_config(const config::client_flake_id_generator_config &config);
 
             /**
              *
              * \return The logger configuration.
              */
-            config::LoggerConfig &get_logger_config();
+            config::logger_config &get_logger_config();
 
             const std::unordered_set<std::string> &get_labels() const;
 
@@ -439,9 +439,9 @@ namespace hazelcast {
 
             std::shared_ptr<security::credentials> credentials_;
 
-            std::unordered_map<std::string, config::ReliableTopicConfig> reliable_topic_config_map_;
+            std::unordered_map<std::string, config::reliable_topic_config> reliable_topic_config_map_;
 
-            std::unordered_map<std::string, config::NearCacheConfig> near_cache_config_map_;
+            std::unordered_map<std::string, config::near_cache_config> near_cache_config_map_;
 
             std::shared_ptr<std::string> instance_name_;
 
@@ -450,13 +450,13 @@ namespace hazelcast {
              */
             int32_t executor_pool_size_;
 
-            config::ClientConnectionStrategyConfig connection_strategy_config_;
+            config::client_connection_strategy_config connection_strategy_config_;
 
-            std::unordered_map<std::string, config::ClientFlakeIdGeneratorConfig> flake_id_generator_config_map_;
+            std::unordered_map<std::string, config::client_flake_id_generator_config> flake_id_generator_config_map_;
 
             config::matcher::matching_point_config_pattern_matcher config_pattern_matcher_;
 
-            config::LoggerConfig logger_config_;
+            config::logger_config logger_config_;
 
             std::unordered_set<std::string> labels_;
 

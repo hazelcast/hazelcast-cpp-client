@@ -37,7 +37,7 @@ namespace hazelcast {
                             typedef AbstractNearCacheRecordStore <K, V, KS, record::NearCacheObjectRecord<V>, HeapNearCacheRecordMap<K, V, KS, record::NearCacheObjectRecord<V> > > ANCRS;
 
                             NearCacheObjectRecordStore(const std::string &name,
-                                                       const client::config::NearCacheConfig &config,
+                                                       const client::config::near_cache_config &config,
                                                        serialization::pimpl::SerializationService &ss)
                                     : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::data, record::NearCacheObjectRecord<V> >(
                                     name, config, ss) {

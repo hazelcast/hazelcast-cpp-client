@@ -45,7 +45,7 @@
 #include "hazelcast/client/map/data_entry_view.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
-#include "hazelcast/client/cluster/impl/VectorClock.h"
+#include "hazelcast/client/cluster/impl/vector_clock.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/util/Util.h"
 
@@ -275,7 +275,7 @@ namespace hazelcast {
             PNCounterImpl::PNCounterImpl(const std::string &service_name, const std::string &object_name,
                                          spi::ClientContext *context)
                     : ProxyImpl(service_name, object_name, context), max_configured_replica_count_(0),
-                      observed_clock_(std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
+                      observed_clock_(std::shared_ptr<cluster::impl::vector_clock>(new cluster::impl::vector_clock())),
                       logger_(context->get_logger()) {
             }
 
@@ -373,7 +373,7 @@ namespace hazelcast {
             }
 
             boost::future<void> PNCounterImpl::reset() {
-                observed_clock_ = std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock());
+                observed_clock_ = std::shared_ptr<cluster::impl::vector_clock>(new cluster::impl::vector_clock());
                 return boost::make_ready_future();
             }
 
@@ -408,7 +408,7 @@ namespace hazelcast {
 
             std::vector<member> PNCounterImpl::get_replica_addresses(const std::unordered_set<member> &excluded_members) {
                 std::vector<member> dataMembers = get_context().get_client_cluster_service().get_members(
-                        *cluster::memberselector::MemberSelectors::DATA_MEMBER_SELECTOR);
+                        *cluster::memberselector::member_selectors::DATA_MEMBER_SELECTOR);
                 int32_t replicaCount = get_max_configured_replica_count();
                 int currentReplicaCount = util::min<int>(replicaCount, (int) dataMembers.size());
 
@@ -516,15 +516,15 @@ namespace hazelcast {
                 auto value = msg.get_first_fixed_sized_field<int64_t>();
                 // skip replica count
                 msg.get<int32_t>();
-                update_observed_replica_timestamps(msg.get<cluster::impl::VectorClock::TimestampVector>());
+                update_observed_replica_timestamps(msg.get<cluster::impl::vector_clock::timestamp_vector>());
                 return value;
             }
 
             void PNCounterImpl::update_observed_replica_timestamps(
-                    const cluster::impl::VectorClock::TimestampVector &received_logical_timestamps) {
-                std::shared_ptr<cluster::impl::VectorClock> received = to_vector_clock(received_logical_timestamps);
+                    const cluster::impl::vector_clock::timestamp_vector &received_logical_timestamps) {
+                std::shared_ptr<cluster::impl::vector_clock> received = to_vector_clock(received_logical_timestamps);
                 for (;;) {
-                    std::shared_ptr<cluster::impl::VectorClock> currentClock = this->observed_clock_;
+                    std::shared_ptr<cluster::impl::vector_clock> currentClock = this->observed_clock_;
                     if (currentClock->is_after(*received)) {
                         break;
                     }
@@ -534,10 +534,10 @@ namespace hazelcast {
                 }
             }
 
-            std::shared_ptr<cluster::impl::VectorClock> PNCounterImpl::to_vector_clock(
-                    const cluster::impl::VectorClock::TimestampVector &replica_logical_timestamps) {
-                return std::shared_ptr<cluster::impl::VectorClock>(
-                        new cluster::impl::VectorClock(replica_logical_timestamps));
+            std::shared_ptr<cluster::impl::vector_clock> PNCounterImpl::to_vector_clock(
+                    const cluster::impl::vector_clock::timestamp_vector &replica_logical_timestamps) {
+                return std::shared_ptr<cluster::impl::vector_clock>(
+                        new cluster::impl::vector_clock(replica_logical_timestamps));
             }
 
             boost::shared_ptr<member> PNCounterImpl::get_current_target_replica_address() {

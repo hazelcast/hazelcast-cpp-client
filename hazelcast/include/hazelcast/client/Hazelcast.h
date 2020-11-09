@@ -50,5 +50,5 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/partition_aware.h"
-#include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
+#include <hazelcast/client/cluster/memberselector/member_selectors.h>
 

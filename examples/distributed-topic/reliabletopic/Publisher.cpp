@@ -25,7 +25,7 @@ void publish_with_default_config() {
 void publish_with_non_default_config() {
     hazelcast::client::client_config clientConfig;
     std::string topicName("MyReliableTopic");
-    hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
+    hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
     reliableTopicConfig.set_read_batch_size(5);
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
     hazelcast::client::hazelcast_client client(clientConfig);

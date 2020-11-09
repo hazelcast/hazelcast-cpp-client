@@ -47,7 +47,7 @@
 #include <hazelcast/client/spi/impl/ClientClusterServiceImpl.h>
 #include <hazelcast/client/spi/impl/listener/cluster_view_listener.h>
 #include <hazelcast/client/spi/impl/listener/listener_service_impl.h>
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/cluster/memberselector/member_selectors.h"
 #include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/membership_event.h"
@@ -781,7 +781,7 @@ namespace hazelcast {
                 }
 
                 std::vector<member>
-                ClientClusterServiceImpl::get_members(const cluster::memberselector::MemberSelector &selector) const {
+                ClientClusterServiceImpl::get_members(const cluster::memberselector::member_selector &selector) const {
                     std::vector<member> result;
                     for (auto &&member : get_member_list()) {
                         if (selector.select(member)) {
@@ -1589,7 +1589,7 @@ namespace hazelcast {
                     auto &client_config = client_.get_client_config();
                     auto &connection_strategy_Config = client_config.get_connection_strategy_config();
                     auto reconnect_mode = connection_strategy_Config.get_reconnect_mode();
-                    if (reconnect_mode == config::ClientConnectionStrategyConfig::reconnect_mode::ASYNC) {
+                    if (reconnect_mode == config::client_connection_strategy_config::reconnect_mode::ASYNC) {
                         BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
                                 "ClientTransactionManagerServiceImpl::throw_exception", ""));
                     }

@@ -37,7 +37,7 @@ namespace hazelcast {
         }
         namespace aws {
             namespace utility {
-                class HAZELCAST_API CloudUtility {
+                class HAZELCAST_API cloud_utility {
                 public:
                     /**
                      * Unmarshal the response from {@link DescribeInstances} and return the discovered node map.

@@ -18,7 +18,7 @@
 #include <chrono>
 
 #include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
+#include <hazelcast/client/config/client_connection_strategy_config.h>
 #include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/lifecycle_event.h>
 
@@ -42,7 +42,7 @@ int main() {
      *
      * This example forces client to reconnect to the cluster in an async manner.
      */
-    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::ClientConnectionStrategyConfig::ASYNC);
+    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::client_connection_strategy_config::ASYNC);
 
     hazelcast::client::hazelcast_client hz(config);
 

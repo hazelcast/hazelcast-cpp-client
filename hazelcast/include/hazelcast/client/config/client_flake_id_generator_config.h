@@ -33,7 +33,7 @@ namespace hazelcast {
              * regarding {@link hazelcast_client#getFlakeIdGenerator(const std::string &)
              * Flake ID Generator}.
              */
-            class HAZELCAST_API ClientFlakeIdGeneratorConfig {
+            class HAZELCAST_API client_flake_id_generator_config {
             public:
                 /**
                  * Default value for {@link #getPrefetchCount()}.
@@ -55,7 +55,7 @@ namespace hazelcast {
                  */
                 static constexpr int32_t MAXIMUM_PREFETCH_COUNT = 100000;
 
-                explicit ClientFlakeIdGeneratorConfig(const std::string &name);
+                explicit client_flake_id_generator_config(const std::string &name);
 
                 /**
                  * Returns the configuration name. This can be actual object name or pattern.
@@ -68,7 +68,7 @@ namespace hazelcast {
                  *
                  * @return this instance for fluent API
                  */
-                ClientFlakeIdGeneratorConfig &set_name(const std::string &n);
+                client_flake_id_generator_config &set_name(const std::string &n);
 
                 /**
                  * @see #setPrefetchCount(int)
@@ -82,7 +82,7 @@ namespace hazelcast {
                  * @param count the desired prefetch count, in the range 1..MAXIMUM_PREFETCH_COUNT.
                  * @return this instance for fluent API
                  */
-                ClientFlakeIdGeneratorConfig &set_prefetch_count(int32_t count);
+                client_flake_id_generator_config &set_prefetch_count(int32_t count);
 
                 /**
                  * @see #setPrefetchValidityDuration(std::chrono::milliseconds)
@@ -105,7 +105,7 @@ namespace hazelcast {
                  *
                  * @throws client::exception::illegal_argument if duration is negative.
                  */
-                ClientFlakeIdGeneratorConfig &set_prefetch_validity_duration(std::chrono::milliseconds duration);
+                client_flake_id_generator_config &set_prefetch_validity_duration(std::chrono::milliseconds duration);
 
             private:
                 std::string name_;
