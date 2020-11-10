@@ -31,7 +31,7 @@
 
 namespace hazelcast {
     namespace client {
-        class hz_cluster;
+        class cluster;
 
         /**
          * A event that is sent when a MembershipListener is registered.
@@ -41,7 +41,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API initial_membership_event {
         public:
-            initial_membership_event(hz_cluster &cluster, std::unordered_set<member> members);
+            initial_membership_event(cluster &cluster, std::unordered_set<member> members);
 
             /**
              * Returns an immutable set of ordered members at the moment this MembershipListener is
@@ -56,10 +56,10 @@ namespace hazelcast {
              *
              * @return the cluster of the event.
              */
-            hz_cluster &get_cluster();
+            cluster &get_cluster();
 
         private:
-            hz_cluster &cluster_;
+            cluster &cluster_;
             std::unordered_set<member> members_;
         };
 

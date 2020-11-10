@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/Hazelcast.h>
+#include <hazelcast/client/hazelcast.h>
 
 int main() {
     hazelcast::client::client_config config;

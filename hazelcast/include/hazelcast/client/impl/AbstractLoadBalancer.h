@@ -28,7 +28,7 @@
 
 namespace hazelcast {
     namespace client {
-        class hz_cluster;
+        class cluster;
 
         namespace impl {
             class HAZELCAST_API AbstractLoadBalancer : public load_balancer {
@@ -43,14 +43,14 @@ namespace hazelcast {
 
                 std::vector<member> get_members();
 
-                void init(hz_cluster &cluster) override;
+                void init(cluster &cluster) override;
 
                 ~AbstractLoadBalancer() override;
 
             private:
                 mutable std::mutex members_lock_;
                 std::vector<member> members_ref_;
-                hz_cluster *cluster_;
+                cluster *cluster_;
             };
         }
     }

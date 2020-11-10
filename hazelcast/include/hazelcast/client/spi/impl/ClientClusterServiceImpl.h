@@ -28,7 +28,8 @@
 #include "hazelcast/client/member.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/hz_client.h"
+#include "hazelcast/client/local_endpoint.h"
+#include "hazelcast/client/member_selectors.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,11 +40,6 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             class Connection;
-        }
-        namespace cluster {
-            namespace memberselector {
-                class member_selector;
-            }
         }
         
         class initial_membership_event;
@@ -67,9 +63,9 @@ namespace hazelcast {
                     std::vector<member> get_member_list() const;
 
                     std::vector<member> get_members(
-                            const cluster::memberselector::member_selector &selector) const;
+                            const client::member_selector &selector) const;
 
-                    hz_client get_local_client() const;
+                    local_endpoint get_local_client() const;
 
                     boost::uuids::uuid add_membership_listener(membership_listener &&listener);
 

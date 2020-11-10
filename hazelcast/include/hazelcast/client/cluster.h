@@ -33,12 +33,12 @@ namespace hazelcast {
         /**
          * Hazelcast cluster interface.
          */
-        class HAZELCAST_API hz_cluster {
+        class HAZELCAST_API cluster {
         public:
             /**
              * Constructor
              */
-            hz_cluster(spi::impl::ClientClusterServiceImpl &cluster_service);
+            cluster(spi::impl::ClientClusterServiceImpl &cluster_service);
 
             /**
              * Adds membership_listener to listen for membership updates.

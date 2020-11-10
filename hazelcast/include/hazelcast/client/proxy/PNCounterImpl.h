@@ -21,9 +21,10 @@
 #include <atomic>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
-#include <hazelcast/client/cluster/impl/vector_clock.h>
+#include <hazelcast/client/impl/vector_clock.h>
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/util/Sync.h"
+#include "hazelcast/client/impl/vector_clock.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -34,11 +35,6 @@ namespace hazelcast {
     class logger;
 
     namespace client {
-        namespace cluster {
-            namespace impl {
-                class vector_clock;
-            }
-        }
         namespace proxy {
             class HAZELCAST_API PNCounterImpl : public ProxyImpl {
             public:
@@ -309,7 +305,7 @@ namespace hazelcast {
                  * @param receivedLogicalTimestamps logical timestamps received from a replica state read
                  */
                 void update_observed_replica_timestamps(
-                        const cluster::impl::vector_clock::timestamp_vector &received_logical_timestamps);
+                        const impl::vector_clock::timestamp_vector &received_logical_timestamps);
 
                 /**
                  * Transforms the list of replica logical timestamps to a vector clock instance.
@@ -317,8 +313,8 @@ namespace hazelcast {
                  * @param replicaLogicalTimestamps the logical timestamps
                  * @return a vector clock instance
                  */
-                static std::shared_ptr<cluster::impl::vector_clock>
-                to_vector_clock(const cluster::impl::vector_clock::timestamp_vector &replica_logical_timestamps);
+                static std::shared_ptr<impl::vector_clock>
+                to_vector_clock(const impl::vector_clock::timestamp_vector &replica_logical_timestamps);
 
                 boost::atomic_shared_ptr<member> current_target_replica_address_;
                 std::mutex target_selection_mutex_;
@@ -327,7 +323,7 @@ namespace hazelcast {
                  * The last vector clock observed by this proxy. It is used for maintaining
                  * session consistency guarantees when reading from different replicas.
                  */
-                util::Sync<std::shared_ptr<cluster::impl::vector_clock> > observed_clock_;
+                util::Sync<std::shared_ptr<impl::vector_clock> > observed_clock_;
                 logger &logger_;
 
                 int64_t get_and_update_timestamps(boost::future<protocol::ClientMessage> f);

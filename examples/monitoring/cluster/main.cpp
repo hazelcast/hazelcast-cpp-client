@@ -54,12 +54,12 @@ int main() {
     auto memberListener = make_membership_listener();
     auto initialMemberListener = make_initial_membership_listener();
 
-    hazelcast::client::hz_cluster *clusterPtr = nullptr;
+    hazelcast::client::cluster *clusterPtr = nullptr;
     boost::uuids::uuid listenerId, initialListenerId;
     try {
         hazelcast::client::hazelcast_client hz;
 
-        hazelcast::client::hz_cluster &cluster = hz.get_cluster();
+        hazelcast::client::cluster &cluster = hz.get_cluster();
         clusterPtr = &cluster;
         auto members = cluster.get_members();
         std::cout << "The following are members in the cluster:" << std::endl;

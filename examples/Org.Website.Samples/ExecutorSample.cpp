@@ -16,7 +16,8 @@
 
 #include <string>
 
-#include <hazelcast/client/Hazelcast.h>
+#include <hazelcast/client/hazelcast.h>
+#include <hazelcast/client/member_selectors.h>
 
 using namespace hazelcast::client;
 
@@ -105,7 +106,7 @@ public:
     }
 };
 
-class MyMemberSelector : public hazelcast::client::cluster::memberselector::member_selector {
+class MyMemberSelector : public member_selector {
 public:
     bool select(const member &member) const override {
         const std::string *attribute = member.get_attribute("my.special.executor");

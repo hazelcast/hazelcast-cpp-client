@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <hazelcast/client/Hazelcast.h>
+#include <hazelcast/client/hazelcast.h>
 
 class NearCacheSupport {
 public:

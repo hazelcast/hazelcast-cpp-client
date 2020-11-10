@@ -37,7 +37,7 @@ namespace hazelcast {
         }
     }
     namespace client {
-        class hz_cluster;
+        class cluster;
         class hazelcast_client;
         class client_config;
         class client_properties;
@@ -122,7 +122,7 @@ namespace hazelcast {
 
                 client_properties &get_client_properties();
 
-                hz_cluster &get_cluster();
+                cluster &get_cluster();
 
                 std::shared_ptr<impl::sequence::CallIdSequence> &get_call_id_sequence() const;
 

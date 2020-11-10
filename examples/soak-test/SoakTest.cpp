@@ -3,7 +3,7 @@
 #include <atomic>
 #include <signal.h>
 
-#include <hazelcast/client/Hazelcast.h>
+#include <hazelcast/client/hazelcast.h>
 #include <hazelcast/client/query/predicates.h>
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/spi/ClientContext.h>

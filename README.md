@@ -2548,18 +2548,18 @@ The `bool select(const Member &member)` method is called for every available mem
 In the simple example shown below, we select the cluster members based on the presence of an attribute.
 
 ```C++
-class MyMemberSelector : public hazelcast::client::cluster::memberselector::member_selector {
+class MyMemberSelector : public hazelcast::client::member_selector {
 public:
-    virtual bool select(const Member &member) const {
-        const std::string *attribute = member.getAttribute("my.special.executor");
-        if (attribute == NULL) {
+    bool select(const Member &member) const override {
+        auto attribute = member.get_attribute("my.special.executor");
+        if (!attribute) {
             return false;
         }
 
         return *attribute == "true";
     }
 
-    virtual void to_string(std::ostream &os) const {
+    void to_string(std::ostream &os) const override {
         os << "MyMemberSelector";
     }
 };

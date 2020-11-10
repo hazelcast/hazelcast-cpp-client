@@ -27,7 +27,7 @@
 namespace hazelcast {
     namespace client {
 
-        class hz_cluster;
+        class cluster;
 
         /**
          * Membership event fired when a new member is added
@@ -52,7 +52,7 @@ namespace hazelcast {
              * Internal API.
              * Constructor.
              */
-            membership_event(hz_cluster &cluster, const member &m, membership_event_type event_type,
+            membership_event(cluster &cluster, const member &m, membership_event_type event_type,
                              const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> &members_list);
 
             /**
@@ -80,7 +80,7 @@ namespace hazelcast {
              *
              * @return
              */
-            virtual const hz_cluster &get_cluster() const;
+            virtual const cluster &get_cluster() const;
 
             /**
              * Returns the membership event type; MembershipEvent#MEMBER_JOINED ,
@@ -98,7 +98,7 @@ namespace hazelcast {
             virtual const member &get_member() const;
 
         private:
-            hz_cluster &cluster_;
+            cluster &cluster_;
             member member_;
             membership_event_type event_type_;
             std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> members_;

@@ -38,7 +38,7 @@ namespace hazelcast {
         public:
             address(const std::string &hostname, int port, unsigned long scope_id);
 
-            static const int ID;
+            static constexpr int ID = 0;
 
             /**
              * Constructor
@@ -89,8 +89,8 @@ namespace hazelcast {
             byte type_;
             unsigned long scope_id_;
 
-            static const byte IPV4;
-            static const byte IPV6;
+            static constexpr byte IPV4 = 4;
+            static constexpr byte IPV6 = 6;
         };
 
         namespace serialization {

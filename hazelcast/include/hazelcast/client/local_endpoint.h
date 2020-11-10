@@ -15,6 +15,8 @@
  */
 #pragma once
 
+#include "hazelcast/client/endpoint.h"
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -22,15 +24,22 @@
 
 namespace hazelcast {
     namespace client {
-        namespace cluster {
-            namespace impl {
-                enum cluster_data_serializer_hook {
-                    F_ID = 0,
+        /**
+         * The Client interface allows to get information about
+         * a connected client's socket address, type and UUID.
+         *
+         */
+        class HAZELCAST_API local_endpoint : public endpoint {
+        public:
+            local_endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address, std::string name,
+                           std::unordered_set<std::string> labels);
 
-                    ADDRESS = 1
-                };
-            }
-        }
+            const std::string &get_name() const;
+
+        private:
+            std::string name_;
+            std::unordered_set<std::string> labels_;
+        };
     }
 }
 

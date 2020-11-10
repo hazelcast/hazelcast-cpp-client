@@ -29,7 +29,7 @@ namespace hazelcast {
 
         class member;
 
-        class hz_cluster;
+        class cluster;
 
         namespace impl {
 
@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 RoundRobinLB(const RoundRobinLB &rhs);
 
-                void init(hz_cluster &cluster) override;
+                void init(cluster &cluster) override;
 
                 boost::optional<member> next() override;
 

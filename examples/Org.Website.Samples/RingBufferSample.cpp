@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/Hazelcast.h>
+#include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
 int main() {

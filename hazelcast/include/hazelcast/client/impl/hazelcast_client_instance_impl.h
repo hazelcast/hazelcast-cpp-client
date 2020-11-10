@@ -36,7 +36,7 @@
 #include "hazelcast/client/pn_counter.h"
 #include "hazelcast/client/transaction_options.h"
 #include "hazelcast/client/transaction_context.h"
-#include "hazelcast/client/hz_cluster.h"
+#include "hazelcast/client/cluster.h"
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/spi/lifecycle_service.h"
@@ -51,7 +51,7 @@
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/flake_id_generator.h"
 #include "hazelcast/client/iexecutor_service.h"
-#include "hazelcast/client/hz_client.h"
+#include "hazelcast/client/local_endpoint.h"
 #include "hazelcast/cp/cp.h"
 #include "hazelcast/cp/cp_impl.h"
 #include "hazelcast/logger.h"
@@ -92,7 +92,7 @@ namespace hazelcast {
 
         class transaction_options;
 
-        class hz_cluster;
+        class cluster;
 
         namespace impl {
             class ClientLockReferenceIdGenerator;
@@ -161,9 +161,9 @@ namespace hazelcast {
                 *
                 * @return cluster
                 */
-                hz_cluster& get_cluster();
+                cluster& get_cluster();
 
-                hz_client get_local_endpoint() const;
+                local_endpoint get_local_endpoint() const;
 
                 /**
                 * Add listener to listen lifecycle events.
@@ -221,7 +221,7 @@ namespace hazelcast {
                 std::unique_ptr<spi::impl::ClientInvocationServiceImpl> invocation_service_;
                 std::shared_ptr<spi::impl::listener::listener_service_impl> listener_service_;
                 spi::impl::ClientTransactionManagerServiceImpl transaction_manager_;
-                hz_cluster cluster_;
+                cluster cluster_;
                 spi::lifecycle_service lifecycle_service_;
                 spi::ProxyManager proxy_manager_;
                 std::shared_ptr<spi::impl::sequence::CallIdSequence> call_id_sequence_;

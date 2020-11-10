@@ -55,7 +55,7 @@ namespace hazelcast {
          * \see Cluster::addMembershipListener
          */
         class HAZELCAST_API membership_listener final {
-            friend class hz_cluster;
+            friend class cluster;
             friend class spi::impl::ClientClusterServiceImpl;
         public:
             /**

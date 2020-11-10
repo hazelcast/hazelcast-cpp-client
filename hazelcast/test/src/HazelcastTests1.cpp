@@ -61,7 +61,7 @@
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/client/hz_socket.h"
-#include "hazelcast/client/hz_cluster.h"
+#include "hazelcast/client/cluster.h"
 #include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
@@ -1174,7 +1174,7 @@ namespace hazelcast {
 
                 hazelcast_client client;
                 ASSERT_EQ_EVENTUALLY(1, client.get_cluster().get_members().size());
-                const hz_client endpoint = client.get_local_endpoint();
+                const local_endpoint endpoint = client.get_local_endpoint();
                 spi::ClientContext context(client);
                 ASSERT_EQ(context.get_name(), endpoint.get_name());
 
@@ -1201,7 +1201,7 @@ namespace hazelcast {
             TEST_F(MemberAttributeTest, testInitialValues) {
                 HazelcastServer instance(*g_srvFactory);
                 hazelcast_client hazelcastClient(get_new_client());
-                hz_cluster cluster = hazelcastClient.get_cluster();
+                cluster cluster = hazelcastClient.get_cluster();
                 std::vector<member> members = cluster.get_members();
                 ASSERT_EQ(1U, members.size());
                 member &member = members[0];
@@ -1507,7 +1507,7 @@ namespace hazelcast {
             TEST_P(SimpleListenerTest, testSharedClusterListeners) {
                 HazelcastServer instance(*g_srvFactory);
                 hazelcast_client hazelcastClient(GetParam());
-                hz_cluster cluster = hazelcastClient.get_cluster();
+                cluster cluster = hazelcastClient.get_cluster();
                 boost::latch memberAdded(1);
                 boost::latch memberAddedInit(2);
                 boost::latch memberRemoved(1);
@@ -1538,7 +1538,7 @@ namespace hazelcast {
             TEST_P(SimpleListenerTest, testClusterListeners) {
                 HazelcastServer instance(*g_srvFactory);
                 hazelcast_client hazelcastClient(GetParam());
-                hz_cluster cluster = hazelcastClient.get_cluster();
+                cluster cluster = hazelcastClient.get_cluster();
                 boost::latch memberAdded(1);
                 boost::latch memberAddedInit(2);
                 boost::latch memberRemoved(1);

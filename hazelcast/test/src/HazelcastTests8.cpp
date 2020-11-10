@@ -67,7 +67,7 @@
 #include "hazelcast/client/lifecycle_listener.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/client/hz_socket.h"
-#include "hazelcast/client/hz_cluster.h"
+#include "hazelcast/client/cluster.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/imap.h"

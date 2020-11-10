@@ -21,7 +21,7 @@ namespace hazelcast {
     namespace client {
         class member;
 
-        class hz_cluster;
+        class cluster;
         /**
          *
          * LoadBalancer allows you to send operations to one of a number of endpoints(Members).
@@ -40,7 +40,7 @@ namespace hazelcast {
              * @param cluster Cluster contains current membership information for initialization. And one can
              * add membership through this class for future notifications.
              */
-            virtual void init(hz_cluster &cluster) = 0;
+            virtual void init(cluster &cluster) = 0;
 
             /**
              * Returns the next member to route to

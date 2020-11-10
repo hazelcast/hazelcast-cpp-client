@@ -38,10 +38,9 @@
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/hazelcast_client.h"
 #include "hazelcast/client/transaction_context.h"
-#include "hazelcast/client/hz_cluster.h"
+#include "hazelcast/client/cluster.h"
 #include "hazelcast/client/spi/lifecycle_service.h"
 #include "hazelcast/client/lifecycle_listener.h"
-#include <hazelcast/client/cluster/impl/cluster_data_serializer_hook.h>
 #include <hazelcast/client/exception/ProtocolExceptions.h>
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
@@ -58,6 +57,7 @@
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/proxy/flake_id_generator_impl.h"
 #include "hazelcast/logger.h"
+#include "hazelcast/client/member_selectors.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -90,7 +90,7 @@ namespace hazelcast {
             return client_impl_->new_transaction_context(options);
         }
 
-        hz_cluster &hazelcast_client::get_cluster() {
+        cluster &hazelcast_client::get_cluster() {
             return client_impl_->get_cluster();
         }
 
@@ -110,7 +110,7 @@ namespace hazelcast {
             return client_impl_->get_lifecycle_service();
         }
 
-        hz_client hazelcast_client::get_local_endpoint() const {
+        local_endpoint hazelcast_client::get_local_endpoint() const {
             return client_impl_->get_local_endpoint();
         }
 
@@ -200,7 +200,7 @@ namespace hazelcast {
                 return client_config_;
             }
 
-            hz_cluster &hazelcast_client_instance_impl::get_cluster() {
+            cluster &hazelcast_client_instance_impl::get_cluster() {
                 return cluster_;
             }
 
@@ -326,7 +326,7 @@ namespace hazelcast {
                         new internal::nearcache::NearCacheManager(execution_service_, serialization_service_, *logger_));
             }
 
-            hz_client hazelcast_client_instance_impl::get_local_endpoint() const {
+            local_endpoint hazelcast_client_instance_impl::get_local_endpoint() const {
                 return cluster_service_.get_local_client();
             }
 
@@ -370,10 +370,10 @@ namespace hazelcast {
 
         load_balancer::~load_balancer() = default;
 
-        const int address::ID = cluster::impl::ADDRESS;
+        constexpr int address::ID;
 
-        const byte address::IPV4 = 4;
-        const byte address::IPV6 = 6;
+        const byte address::IPV4;
+        const byte address::IPV6;
 
         address::address() : host_("localhost"), type_(IPV4), scope_id_(0) {
         }
@@ -465,7 +465,7 @@ namespace hazelcast {
         }
 
         std::vector<member>
-        iexecutor_service::select_members(const cluster::memberselector::member_selector &member_selector) {
+        iexecutor_service::select_members(const member_selector &member_selector) {
             std::vector<member> selected;
             std::vector<member> members = get_context().get_client_cluster_service().get_member_list();
             for (const member &member : members) {

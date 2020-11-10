@@ -33,7 +33,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/functional/hash.hpp>
 
-#include "hazelcast/client/hz_cluster.h"
+#include "hazelcast/client/cluster.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/membership_listener.h"
 #include "hazelcast/client/initial_membership_event.h"
@@ -41,25 +41,25 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/membership_event.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/client/cluster/impl/vector_clock.h"
-#include "hazelcast/client/cluster/memberselector/member_selectors.h"
+#include "hazelcast/client/impl/vector_clock.h"
+#include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 
 namespace hazelcast {
     namespace client {
-        hz_cluster::hz_cluster(spi::impl::ClientClusterServiceImpl &cluster_service)
+        cluster::cluster(spi::impl::ClientClusterServiceImpl &cluster_service)
                 : cluster_service_(cluster_service) {
         }
 
-        std::vector<member> hz_cluster::get_members() {
+        std::vector<member> cluster::get_members() {
             return cluster_service_.get_member_list();
         }
 
-        boost::uuids::uuid hz_cluster::add_membership_listener(membership_listener &&listener) {
+        boost::uuids::uuid cluster::add_membership_listener(membership_listener &&listener) {
             return cluster_service_.add_membership_listener(std::move(listener));
         }
 
-        bool hz_cluster::remove_membership_listener(boost::uuids::uuid registration_id) {
+        bool cluster::remove_membership_listener(boost::uuids::uuid registration_id) {
             return cluster_service_.remove_membership_listener(registration_id);
         }
 
@@ -135,7 +135,7 @@ namespace hazelcast {
             return socket_address_;
         }
 
-        membership_event::membership_event(hz_cluster &cluster, const member &m, membership_event_type event_type,
+        membership_event::membership_event(cluster &cluster, const member &m, membership_event_type event_type,
                                            const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> &members_list) :
                 cluster_(cluster), member_(m), event_type_(event_type), members_(members_list) {
         }
@@ -146,7 +146,7 @@ namespace hazelcast {
             return members_;
         }
 
-        const hz_cluster &membership_event::get_cluster() const {
+        const cluster &membership_event::get_cluster() const {
             return cluster_;
         }
 
@@ -158,18 +158,23 @@ namespace hazelcast {
             return member_;
         }
 
-        hz_client::hz_client(boost::uuids::uuid uuid, boost::optional<address> socket_address, std::string name,
-                             std::unordered_set<std::string> labels) : endpoint(uuid, std::move(socket_address)), name_(std::move(name)),
+        local_endpoint::local_endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address, std::string name,
+                                       std::unordered_set<std::string> labels) : endpoint(uuid, std::move(socket_address)), name_(std::move(name)),
                                                                        labels_(std::move(labels)) {}
 
-        const std::string &hz_client::get_name() const {
+        const std::string &local_endpoint::get_name() const {
             return name_;
+        }
+
+        std::ostream &operator<<(std::ostream &os, const member_selector &a_selector) {
+            a_selector.to_string(os);
+            return os;
         }
 
         namespace impl {
             RoundRobinLB::RoundRobinLB() = default;
 
-            void RoundRobinLB::init(hz_cluster &cluster) {
+            void RoundRobinLB::init(cluster &cluster) {
                 AbstractLoadBalancer::init(cluster);
             }
 
@@ -199,7 +204,7 @@ namespace hazelcast {
                 cluster_ = rhs.cluster_;
             }
 
-            void AbstractLoadBalancer::init(hz_cluster &cluster) {
+            void AbstractLoadBalancer::init(cluster &cluster) {
                 this->cluster_ = &cluster;
                 set_members_ref();
 
@@ -231,62 +236,56 @@ namespace hazelcast {
 
             AbstractLoadBalancer::AbstractLoadBalancer() : cluster_(NULL) {
             }
-        }
 
-        namespace cluster {
-            namespace memberselector {
-                bool member_selectors::data_member_selector::select(const member &member) const {
-                    return !member.is_lite_member();
-                }
+            vector_clock::vector_clock() = default;
 
-                void member_selectors::data_member_selector::to_string(std::ostream &os) const {
-                    os << "Default DataMemberSelector";
-                }
-
-                const std::unique_ptr<member_selector> member_selectors::DATA_MEMBER_SELECTOR(
-                        new member_selectors::data_member_selector());
-            }
-
-            namespace impl {
-                vector_clock::vector_clock() = default;
-
-                vector_clock::vector_clock(const vector_clock::timestamp_vector &replica_logical_timestamps)
-                        : replica_timestamp_entries_(replica_logical_timestamps) {
-                    for (const vector_clock::timestamp_vector::value_type &replicaTimestamp : replica_logical_timestamps) {
-                        replica_timestamps_[replicaTimestamp.first] = replicaTimestamp.second;
-                    }
-                }
-
-                vector_clock::timestamp_vector vector_clock::entry_set() {
-                    return replica_timestamp_entries_;
-                }
-
-                bool vector_clock::is_after(vector_clock &other) {
-                    bool anyTimestampGreater = false;
-                    for (const vector_clock::timestamp_map::value_type &otherEntry : other.replica_timestamps_) {
-                        const auto &replicaId = otherEntry.first;
-                        int64_t otherReplicaTimestamp = otherEntry.second;
-                        std::pair<bool, int64_t> localReplicaTimestamp = get_timestamp_for_replica(replicaId);
-
-                        if (!localReplicaTimestamp.first ||
-                            localReplicaTimestamp.second < otherReplicaTimestamp) {
-                            return false;
-                        } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
-                            anyTimestampGreater = true;
-                        }
-                    }
-                    // there is at least one local timestamp greater or local vector clock has additional timestamps
-                    return anyTimestampGreater || other.replica_timestamps_.size() < replica_timestamps_.size();
-                }
-
-                std::pair<bool, int64_t> vector_clock::get_timestamp_for_replica(boost::uuids::uuid replica_id) {
-                    if (replica_timestamps_.count(replica_id) == 0) {
-                        return std::make_pair(false, -1);
-                    }
-                    return std::make_pair(true, replica_timestamps_[replica_id]);
+            vector_clock::vector_clock(const vector_clock::timestamp_vector &replica_logical_timestamps)
+                    : replica_timestamp_entries_(replica_logical_timestamps) {
+                for (const vector_clock::timestamp_vector::value_type &replicaTimestamp : replica_logical_timestamps) {
+                    replica_timestamps_[replicaTimestamp.first] = replicaTimestamp.second;
                 }
             }
+
+            vector_clock::timestamp_vector vector_clock::entry_set() {
+                return replica_timestamp_entries_;
+            }
+
+            bool vector_clock::is_after(vector_clock &other) {
+                bool anyTimestampGreater = false;
+                for (const vector_clock::timestamp_map::value_type &otherEntry : other.replica_timestamps_) {
+                    const auto &replicaId = otherEntry.first;
+                    int64_t otherReplicaTimestamp = otherEntry.second;
+                    std::pair<bool, int64_t> localReplicaTimestamp = get_timestamp_for_replica(replicaId);
+
+                    if (!localReplicaTimestamp.first ||
+                        localReplicaTimestamp.second < otherReplicaTimestamp) {
+                        return false;
+                    } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
+                        anyTimestampGreater = true;
+                    }
+                }
+                // there is at least one local timestamp greater or local vector clock has additional timestamps
+                return anyTimestampGreater || other.replica_timestamps_.size() < replica_timestamps_.size();
+            }
+
+            std::pair<bool, int64_t> vector_clock::get_timestamp_for_replica(boost::uuids::uuid replica_id) {
+                if (replica_timestamps_.count(replica_id) == 0) {
+                    return std::make_pair(false, -1);
+                }
+                return std::make_pair(true, replica_timestamps_[replica_id]);
+            }
         }
+
+        bool member_selectors::data_member_selector::select(const member &member) const {
+            return !member.is_lite_member();
+        }
+
+        void member_selectors::data_member_selector::to_string(std::ostream &os) const {
+            os << "Default DataMemberSelector";
+        }
+
+        const std::unique_ptr<member_selector> member_selectors::DATA_MEMBER_SELECTOR(
+                new member_selectors::data_member_selector());
 
         namespace internal {
             namespace partition {

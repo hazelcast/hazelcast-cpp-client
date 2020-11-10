@@ -47,7 +47,7 @@
 #include <hazelcast/client/spi/impl/ClientClusterServiceImpl.h>
 #include <hazelcast/client/spi/impl/listener/cluster_view_listener.h>
 #include <hazelcast/client/spi/impl/listener/listener_service_impl.h>
-#include "hazelcast/client/cluster/memberselector/member_selectors.h"
+#include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/membership_event.h"
@@ -70,6 +70,7 @@
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
+#include "hazelcast/client/member_selectors.h"
 
 namespace hazelcast {
     namespace client {
@@ -77,11 +78,11 @@ namespace hazelcast {
             return members_;
         }
 
-        hz_cluster &initial_membership_event::get_cluster() {
+        cluster &initial_membership_event::get_cluster() {
             return cluster_;
         }
 
-        initial_membership_event::initial_membership_event(hz_cluster &cluster, std::unordered_set<member> members) : cluster_(
+        initial_membership_event::initial_membership_event(cluster &cluster, std::unordered_set<member> members) : cluster_(
                 cluster), members_(std::move(members)) {
         }
 
@@ -215,7 +216,7 @@ namespace hazelcast {
                 return hazelcast_client_.client_properties_;
             }
 
-            hz_cluster &ClientContext::get_cluster() {
+            cluster &ClientContext::get_cluster() {
                 return hazelcast_client_.cluster_;
             }
 
@@ -271,7 +272,7 @@ namespace hazelcast {
 
             lifecycle_service::lifecycle_service(ClientContext &client_context,
                                                  const std::vector<lifecycle_listener> &listeners,
-                                                 load_balancer *const load_balancer, hz_cluster &cluster) :
+                                                 load_balancer *const load_balancer, cluster &cluster) :
                     client_context_(client_context), listeners_(), load_balancer_(load_balancer),
                     cluster_(cluster), shutdown_completed_latch_(1) {
                 for (const auto &listener: listeners) {
@@ -781,7 +782,7 @@ namespace hazelcast {
                 }
 
                 std::vector<member>
-                ClientClusterServiceImpl::get_members(const cluster::memberselector::member_selector &selector) const {
+                ClientClusterServiceImpl::get_members(const member_selector &selector) const {
                     std::vector<member> result;
                     for (auto &&member : get_member_list()) {
                         if (selector.select(member)) {
@@ -792,12 +793,12 @@ namespace hazelcast {
                     return result;
                 }
 
-                hz_client ClientClusterServiceImpl::get_local_client() const {
+                local_endpoint ClientClusterServiceImpl::get_local_client() const {
                     connection::ClientConnectionManagerImpl &cm = client_.get_connection_manager();
                     auto connection = cm.get_random_connection();
                     auto inetSocketAddress = connection ? connection->get_local_socket_address() : boost::none;
                     auto uuid = cm.get_client_uuid();
-                    return hz_client(uuid, std::move(inetSocketAddress), client_.get_name(), labels_);
+                    return local_endpoint(uuid, std::move(inetSocketAddress), client_.get_name(), labels_);
                 }
 
                 void ClientClusterServiceImpl::clear_member_list_version() {

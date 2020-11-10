@@ -247,7 +247,7 @@ namespace hazelcast {
             *
             * @return cluster
             */
-            hz_cluster& get_cluster();
+            cluster& get_cluster();
 
             /**
              * Returns the local endpoint which this HazelcastInstance belongs to.
@@ -256,7 +256,7 @@ namespace hazelcast {
              * @return the local enpoint which this client belongs to
              * @see Client
              */
-            hz_client get_local_endpoint() const;
+            local_endpoint get_local_endpoint() const;
 
             /**
             * Add listener to listen lifecycle events.
