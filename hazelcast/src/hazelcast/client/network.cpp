@@ -1170,7 +1170,7 @@ namespace hazelcast {
 
                     }
 #else
-                    (void) clientContext;
+                    (void) client_context_;
 #endif
                     return true;
                 }
