@@ -18,7 +18,7 @@
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/topic/message.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/topic/Listener.h"
+#include "hazelcast/client/topic/listener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -33,7 +33,7 @@ namespace hazelcast {
                 public:
                     TopicEventHandlerImpl(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
                                           serialization::pimpl::SerializationService &serialization_service,
-                                          Listener &&message_listener)
+                                          listener &&message_listener)
                             :instance_name_(instance_name), cluster_service_(cluster_service),
                             serialization_service_(serialization_service), listener_(std::move(message_listener)) {}
 
@@ -45,7 +45,7 @@ namespace hazelcast {
                     std::string instance_name_;
                     spi::impl::ClientClusterServiceImpl &cluster_service_;
                     serialization::pimpl::SerializationService &serialization_service_;
-                    Listener listener_;
+                    listener listener_;
                 };
             }
         }

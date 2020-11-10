@@ -25,7 +25,7 @@
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h"
 #include "hazelcast/client/config/near_cache_config.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/monitor/near_cache_stats.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
@@ -125,7 +125,7 @@ namespace hazelcast {
                          *
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                          */
-                        std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const override {
+                        std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const override {
                             return near_cache_record_store_->get_near_cache_stats();
                         }
 

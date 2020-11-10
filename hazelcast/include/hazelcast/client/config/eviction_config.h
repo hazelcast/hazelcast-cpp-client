@@ -19,8 +19,8 @@
 #include <ostream>
 
 #include "hazelcast/client/config/eviction_policy.h"
-#include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
-#include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
+#include "eviction_strategy_type.h"
+#include "eviction_strategy_type.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -96,9 +96,7 @@ namespace hazelcast {
 
                 eviction_config &set_eviction_policy(eviction_policy policy);
 
-                internal::eviction::EvictionStrategyType::type get_eviction_strategy_type() const;
-
-                internal::eviction::eviction_policy_type get_eviction_policy_type() const;
+                eviction_strategy_type get_eviction_strategy_type() const;
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const eviction_config &config);
 

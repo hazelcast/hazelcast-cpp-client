@@ -22,7 +22,7 @@
 
 #include "hazelcast/client/hz_socket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/socket_interceptor.h"
 
 namespace hazelcast {

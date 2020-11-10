@@ -41,7 +41,7 @@
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/connection/Connection.h"

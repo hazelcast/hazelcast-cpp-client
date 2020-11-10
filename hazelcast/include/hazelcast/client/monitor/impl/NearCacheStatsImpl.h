@@ -19,7 +19,7 @@
 #include <string>
 #include <atomic>
 
-#include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/monitor/near_cache_stats.h"
 #include "hazelcast/util/Sync.h"
 
 #include "hazelcast/util/hazelcast_dll.h"
@@ -33,7 +33,7 @@ namespace hazelcast {
     namespace client {
         namespace monitor {
             namespace impl {
-                class HAZELCAST_API NearCacheStatsImpl : public NearCacheStats {
+                class HAZELCAST_API NearCacheStatsImpl : public near_cache_stats {
                 public:
                     NearCacheStatsImpl();
 

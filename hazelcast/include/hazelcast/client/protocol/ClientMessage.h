@@ -37,7 +37,7 @@
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/map/data_entry_view.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/config/index_config.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 

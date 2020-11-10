@@ -35,7 +35,7 @@
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/config/client_flake_id_generator_config.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/client/address.h"
 #include "hazelcast/client/config/client_network_config.h"
@@ -47,6 +47,7 @@
 #include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
 #include "hazelcast/client/query/predicates.h"
 #include "hazelcast/client/lifecycle_listener.h"
+#include "hazelcast/client/config/eviction_strategy_type.h"
 
 namespace hazelcast {
     namespace client {
@@ -539,24 +540,9 @@ namespace hazelcast {
                 return *this;
             }
 
-            internal::eviction::EvictionStrategyType::type eviction_config::get_eviction_strategy_type() const {
+            eviction_strategy_type eviction_config::get_eviction_strategy_type() const {
                 // TODO: add support for other/custom eviction strategies
-                return internal::eviction::EvictionStrategyType::DEFAULT_EVICTION_STRATEGY;
-            }
-
-            internal::eviction::eviction_policy_type eviction_config::get_eviction_policy_type() const {
-                if (eviction_policy_ == LFU) {
-                    return internal::eviction::LFU;
-                } else if (eviction_policy_ == LRU) {
-                    return internal::eviction::LRU;
-                } else if (eviction_policy_ == RANDOM) {
-                    return internal::eviction::RANDOM;
-                } else if (eviction_policy_ == NONE) {
-                    return internal::eviction::NONE;
-                } else {
-                    assert(0);
-                }
-                return internal::eviction::NONE;
+                return eviction_strategy_type::DEFAULT_EVICTION_STRATEGY;
             }
 
             std::ostream &operator<<(std::ostream &out, const eviction_config &config) {

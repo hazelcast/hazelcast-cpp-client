@@ -25,7 +25,6 @@
 #include "hazelcast/client/internal/eviction/MaxSizeChecker.h"
 #include "hazelcast/client/internal/eviction/EvictionChecker.h"
 #include "hazelcast/client/internal/eviction/EvictionStrategy.h"
-#include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyEvaluatorProvider.h"
 #include "hazelcast/client/internal/eviction/EvictionStrategyProvider.h"
@@ -56,7 +55,7 @@ namespace hazelcast {
                                       max_idle_millis_(cache_config.get_max_idle_seconds() * MILLI_SECONDS_IN_A_SECOND),
                                       serialization_service_(ss), near_cache_stats_(new monitor::impl::NearCacheStatsImpl) {
                                 auto &evictionConfig = const_cast<client::config::near_cache_config &>(cache_config).get_eviction_config();
-                                eviction_policy_type_ = evictionConfig.get_eviction_policy_type();
+                                eviction_policy_ = evictionConfig.get_eviction_policy();
                             }
 
                             void initialize() override {
@@ -66,7 +65,7 @@ namespace hazelcast {
                                 this->eviction_policy_evaluator_ = create_eviction_policy_evaluator(evictionConfig);
                                 this->eviction_checker_ = create_eviction_checker(near_cache_config_);
                                 this->eviction_strategy_ = create_eviction_strategy(evictionConfig);
-                                this->eviction_policy_type_ = evictionConfig.get_eviction_policy_type();
+                                this->eviction_policy_ = evictionConfig.get_eviction_policy();
                             }
 
 /*
@@ -180,7 +179,7 @@ namespace hazelcast {
                                 return (int) records_->size();
                             }
 
-                            std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const override {
+                            std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const override {
                                 check_available();
                                 return near_cache_stats_;
                             }
@@ -425,7 +424,7 @@ namespace hazelcast {
                             bool is_eviction_enabled() {
                                 return eviction_strategy_.get() != NULL
                                        && eviction_policy_evaluator_.get() != NULL
-                                       && eviction_policy_type_ != eviction::NONE;
+                                       && eviction_policy_ != hazelcast::client::config::eviction_policy::NONE;
                             }
 
                             void clear_records() {
@@ -449,7 +448,7 @@ namespace hazelcast {
                             std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > eviction_policy_evaluator_;
                             std::unique_ptr<eviction::EvictionChecker> eviction_checker_;
                             std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > eviction_strategy_;
-                            eviction::eviction_policy_type eviction_policy_type_;
+                            ::hazelcast::client::config::eviction_policy eviction_policy_;
                             std::unique_ptr<NCRM> records_;
 
 /*

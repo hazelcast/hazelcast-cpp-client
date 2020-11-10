@@ -24,7 +24,7 @@
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/client_config.h>
-#include <hazelcast/client/exception/ProtocolExceptions.h>
+#include <hazelcast/client/exception/protocol_exceptions.h>
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
@@ -41,7 +41,7 @@
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/client/serialization/pimpl/data_output.h>
 #include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/client/exception/ProtocolExceptions.h>
+#include <hazelcast/client/exception/protocol_exceptions.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
 #include <ClientTestSupportBase.h>
@@ -84,7 +84,7 @@
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/membership_listener.h"

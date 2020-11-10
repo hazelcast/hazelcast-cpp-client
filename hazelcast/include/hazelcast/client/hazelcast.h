@@ -47,8 +47,8 @@
 #include "hazelcast/client/transactional_set.h"
 #include "hazelcast/client/transaction_context.h"
 #include "hazelcast/client/transaction_options.h"
-#include "hazelcast/client/monitor/LocalMapStats.h"
-#include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/monitor/local_map_stats.h"
+#include "hazelcast/client/monitor/near_cache_stats.h"
 #include "hazelcast/client/partition_aware.h"
 #include <hazelcast/client/member_selectors.h>
 

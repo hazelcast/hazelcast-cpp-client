@@ -17,7 +17,7 @@
 
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/util/UTFUtil.h"
 
 #include <vector>

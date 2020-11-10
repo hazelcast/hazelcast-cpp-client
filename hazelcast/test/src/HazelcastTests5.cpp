@@ -49,7 +49,7 @@
 #include <openssl/crypto.h>
 #endif
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/socket_interceptor.h"

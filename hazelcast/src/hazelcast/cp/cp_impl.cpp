@@ -20,7 +20,7 @@
 
 #include "hazelcast/cp/cp_impl.h"
 #include "hazelcast/cp/cp.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"

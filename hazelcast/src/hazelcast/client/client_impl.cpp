@@ -41,7 +41,7 @@
 #include "hazelcast/client/cluster.h"
 #include "hazelcast/client/spi/lifecycle_service.h"
 #include "hazelcast/client/lifecycle_listener.h"
-#include <hazelcast/client/exception/ProtocolExceptions.h>
+#include <hazelcast/client/exception/protocol_exceptions.h>
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"

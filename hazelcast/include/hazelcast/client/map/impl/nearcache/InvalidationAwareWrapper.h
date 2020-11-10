@@ -102,7 +102,7 @@ namespace hazelcast {
                             return near_cache_->get_in_memory_format();
                         }
 
-                        std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const override {
+                        std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const override {
                             return near_cache_->get_near_cache_stats();
                         }
 

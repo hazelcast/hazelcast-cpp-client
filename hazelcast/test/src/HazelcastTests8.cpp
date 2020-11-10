@@ -59,7 +59,7 @@
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/membership_listener.h"
@@ -73,14 +73,14 @@
 #include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/pipelining.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -92,7 +92,7 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/item_listener.h"
 #include "hazelcast/client/multi_map.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/entry_event.h"
 #include "hazelcast/client/hazelcast_json_value.h"
 #include "hazelcast/client/ilist.h"
@@ -192,7 +192,7 @@ namespace hazelcast {
                      * @param expectedHits            the expected Near Cache hits
                      * @param expectedMisses          the expected Near Cache misses
                      */
-                    static void assert_near_cache_stats(monitor::NearCacheStats &stats,
+                    static void assert_near_cache_stats(monitor::near_cache_stats &stats,
                                                      int64_t expected_owned_entry_count, int64_t expected_hits,
                                                      int64_t expected_misses) {
                         assert_near_cache_stats(stats, expected_owned_entry_count, expected_hits, expected_misses, 0, 0);
@@ -208,7 +208,7 @@ namespace hazelcast {
                      * @param expectedEvictions       the expected Near Cache evictions
                      * @param expectedExpirations     the expected Near Cache expirations
                      */
-                    static void assert_near_cache_stats(monitor::NearCacheStats &stats,
+                    static void assert_near_cache_stats(monitor::near_cache_stats &stats,
                                                      int64_t expected_owned_entry_count, int64_t expected_hits,
                                                      int64_t expected_misses,
                                                      int64_t expected_evictions, int64_t expected_expirations) {
@@ -225,7 +225,7 @@ namespace hazelcast {
                     }
 
                     static void assert_equals_format(const char *message_format, int64_t expected, int64_t actual,
-                                                   monitor::NearCacheStats &stats) {
+                                                   monitor::near_cache_stats &stats) {
                         char buf[300];
                         hazelcast::util::hz_snprintf(buf, 300, message_format, expected, actual);
                         ASSERT_EQ(expected, actual) << buf << "(" << stats.to_string() << ")";
@@ -300,7 +300,7 @@ namespace hazelcast {
                 }
 
                 void
-                assert_near_cache_invalidation_requests(monitor::NearCacheStats &stat, int64_t invalidation_requests) {
+                assert_near_cache_invalidation_requests(monitor::near_cache_stats &stat, int64_t invalidation_requests) {
                     if (near_cache_config_.is_invalidate_on_change() && invalidation_requests > 0) {
                         monitor::impl::NearCacheStatsImpl &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stat;
                         ASSERT_EQ_EVENTUALLY(invalidation_requests, nearCacheStatsImpl.get_invalidation_requests());
@@ -403,7 +403,7 @@ namespace hazelcast {
                 std::shared_ptr<imap> near_cached_map_;
                 hazelcast::client::internal::nearcache::NearCacheManager *near_cache_manager_;
                 std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data> > near_cache_;
-                std::shared_ptr<monitor::NearCacheStats> stats_;
+                std::shared_ptr<monitor::near_cache_stats> stats_;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
             };
@@ -698,7 +698,7 @@ namespace hazelcast {
                     return map_;
                 }
 
-                static std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats(imap &m) {
+                static std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats(imap &m) {
                     return m.get_local_map_stats().get_near_cache_stats();
                 }
 

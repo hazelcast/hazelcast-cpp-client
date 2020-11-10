@@ -22,7 +22,7 @@
 
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

@@ -24,7 +24,7 @@ int main() {
     auto topic = hz.get_topic("my-distributed-topic");
     // Add a Listener to the Topic
     topic->add_message_listener(
-        topic::Listener().
+        topic::listener().
             on_received([](topic::message &&message) {
                 std::cout << "Got message " << message.get_message_object().get<std::string>().value_or("null") << std::endl;
             })

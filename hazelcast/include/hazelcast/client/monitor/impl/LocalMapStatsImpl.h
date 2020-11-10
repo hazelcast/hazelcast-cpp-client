@@ -20,7 +20,7 @@
 
 #include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/client/monitor/LocalMapStats.h"
+#include "hazelcast/client/monitor/local_map_stats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,15 +31,15 @@ namespace hazelcast {
     namespace client {
         namespace monitor {
             namespace impl {
-                class HAZELCAST_API LocalMapStatsImpl : public LocalMapStats {
+                class HAZELCAST_API LocalMapStatsImpl : public local_map_stats {
                 public:
                     LocalMapStatsImpl();
 
-                    LocalMapStatsImpl(const std::shared_ptr<monitor::NearCacheStats> &stats);
+                    LocalMapStatsImpl(const std::shared_ptr<monitor::near_cache_stats> &stats);
 
-                    std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const ;
+                    std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const ;
                 private:
-                    std::shared_ptr<monitor::NearCacheStats> near_cache_stats_;
+                    std::shared_ptr<monitor::near_cache_stats> near_cache_stats_;
                 };
             }
         }

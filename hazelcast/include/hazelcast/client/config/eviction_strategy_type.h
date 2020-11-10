@@ -24,32 +24,28 @@
 
 namespace hazelcast {
     namespace client {
-        namespace internal {
-            namespace eviction {
+        namespace config {
+            /**
+             * Interface for configuration information about eviction.
+             */
+            enum class HAZELCAST_API eviction_strategy_type {
                 /**
-                 * Interface for configuration information about eviction.
+                 * Sampling based eviction strategy type
                  */
-                class HAZELCAST_API EvictionStrategyType {
-                public:
-                    enum type {
-                        /**
-                         * Sampling based eviction strategy type
-                         */
-                                SAMPLING_BASED_EVICTION
-                    };
-                    /**
-                     * Default value of {@link com.hazelcast.internal.eviction.EvictionStrategyType}
-                     */
-                    static const type DEFAULT_EVICTION_STRATEGY = SAMPLING_BASED_EVICTION;
-                };
-            }
+                SAMPLING_BASED_EVICTION,
+
+                /**
+                 * Default value
+                 */
+                DEFAULT_EVICTION_STRATEGY = SAMPLING_BASED_EVICTION
+            };
         }
     }
-};
+}
 
 namespace std {
-    template<> struct hash<hazelcast::client::internal::eviction::EvictionStrategyType::type> {
-        std::size_t operator()(const hazelcast::client::internal::eviction::EvictionStrategyType::type &object) const noexcept {
+    template<> struct hash<hazelcast::client::config::eviction_strategy_type> {
+        std::size_t operator()(const hazelcast::client::config::eviction_strategy_type &object) const noexcept {
             return std::hash<int>{}(static_cast<int>(object));
         }
     };

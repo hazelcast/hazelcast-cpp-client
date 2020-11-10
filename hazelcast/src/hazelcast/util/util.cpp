@@ -62,7 +62,7 @@
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/exception_util.h"
 #include "hazelcast/logger.h"

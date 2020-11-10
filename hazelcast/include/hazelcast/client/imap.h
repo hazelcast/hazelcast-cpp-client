@@ -25,7 +25,7 @@
 
 #include <boost/container/vector.hpp>
 
-#include "hazelcast/client/monitor/LocalMapStats.h"
+#include "hazelcast/client/monitor/local_map_stats.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
@@ -971,7 +971,7 @@ namespace hazelcast {
              *
              * @return this map's local statistics.
              */
-            monitor::LocalMapStats &get_local_map_stats() {
+            monitor::local_map_stats &get_local_map_stats() {
                 return local_map_stats_;
             }
 

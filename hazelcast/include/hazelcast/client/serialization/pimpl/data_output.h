@@ -24,7 +24,7 @@
 #include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

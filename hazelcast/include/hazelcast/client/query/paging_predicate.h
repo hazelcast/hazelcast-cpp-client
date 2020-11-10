@@ -19,7 +19,7 @@
 #include <memory>
 #include <cassert>
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/query/predicates.h"

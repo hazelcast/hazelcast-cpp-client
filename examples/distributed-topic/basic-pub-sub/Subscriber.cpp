@@ -15,7 +15,7 @@
  */
 
 #include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/topic/Listener.h>
+#include <hazelcast/client/topic/listener.h>
 
 int main() {
     hazelcast::client::hazelcast_client hz;
@@ -23,7 +23,7 @@ int main() {
     auto topic = hz.get_topic("testtopic");
 
     topic->add_message_listener(
-        hazelcast::client::topic::Listener().
+        hazelcast::client::topic::listener().
             on_received([](hazelcast::client::topic::message &&msg) {
                 std::cout << "Message received:"
                     << msg.get_message_object().get<std::string>().value() << std::endl;

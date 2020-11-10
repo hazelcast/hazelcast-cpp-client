@@ -15,6 +15,7 @@
  */
 #pragma once
 
+#include <memory>
 #include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -24,41 +25,25 @@
 
 namespace hazelcast {
     namespace client {
-        namespace internal {
-            namespace eviction {
+        namespace monitor {
+            class near_cache_stats;
+
+            class HAZELCAST_API local_map_stats {
+            public:
+                virtual ~local_map_stats() = default;
+
                 /**
-                 * Enum for eviction policy types.
+                 * Returns statistics related to the Near Cache.
+                 *
+                 * @return statistics object for the Near Cache
                  */
-                enum HAZELCAST_API eviction_policy_type {
-                    /**
-                     * Least Recently Used
-                     */
-                            LRU,
-
-                    /**
-                     * Least Frequently Used
-                     */
-                            LFU,
-
-                    /**
-                     * Picks a random entry
-                     */
-                            RANDOM,
-
-                    /**
-                     * Doesn't evict entries (will not add new entries to the Near Cache when it's full)
-                     */
-                            NONE,
-
-                    // TODO: maybe another "CUSTOM" type for user defined eviction policies
-                };
-            }
+                virtual std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const = 0;
+            };
         }
     }
-};
+}
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
+#endif
 

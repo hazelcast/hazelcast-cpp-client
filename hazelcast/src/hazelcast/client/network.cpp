@@ -39,7 +39,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/connection/ConnectionListener.h"
 #include "hazelcast/client/connection/Connection.h"

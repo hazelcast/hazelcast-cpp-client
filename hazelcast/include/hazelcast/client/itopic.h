@@ -21,7 +21,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class Listener;
+            class listener;
         }
 
         /**
@@ -67,7 +67,7 @@ namespace hazelcast {
             *
             * \return registration id.
             */
-            boost::future<boost::uuids::uuid> add_message_listener(topic::Listener &&listener) {
+            boost::future<boost::uuids::uuid> add_message_listener(topic::listener &&listener) {
                 return proxy::ITopicImpl::add_message_listener(
                         std::shared_ptr<impl::BaseEventHandler>(new topic::impl::TopicEventHandlerImpl(get_name(),
                                                                                                       get_context().get_client_cluster_service(),

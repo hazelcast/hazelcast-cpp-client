@@ -18,8 +18,9 @@
 #include <assert.h>
 #include <memory>
 
-#include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
-#include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
+#include "hazelcast/client/config/eviction_strategy_type.h"
+#include "hazelcast/client/config/eviction_policy.h"
+#include "hazelcast/client/config/eviction_strategy_type.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -34,23 +35,23 @@ namespace hazelcast {
                  * Interface for configuration information about eviction.
                  */
                 template <typename K, typename V>
-                class EvictionConfiguration {
+                class eviction_configuration {
                 public:
-                    virtual ~EvictionConfiguration() = default;
+                    virtual ~eviction_configuration() = default;
 
                     /**
                      * Gets the type of eviction strategy.
                      *
                      * @return the type of eviction strategy
                      */
-                    virtual EvictionStrategyType::type get_eviction_strategy_type() const = 0;
+                    virtual client::config::eviction_strategy_type get_eviction_strategy_type() const = 0;
 
                     /**
                      * Gets the type of eviction policy.
                      *
                      * @return the type of eviction policy
                      */
-                    virtual eviction_policy_type get_eviction_policy_type() const = 0;
+                    virtual ::hazelcast::client::config::eviction_policy get_eviction_policy() const = 0;
 
                     /**
                      * Gets the class name of the configured {@link EvictionPolicyComparator} implementation.

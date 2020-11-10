@@ -18,7 +18,7 @@
 #include "hazelcast/client/transaction_options.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/transactional_map.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/transactional_queue.h"
 #include "hazelcast/client/transactional_multi_map.h"
 #include "hazelcast/client/transactional_list.h"

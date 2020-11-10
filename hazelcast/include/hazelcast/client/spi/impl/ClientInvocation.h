@@ -26,7 +26,7 @@
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"

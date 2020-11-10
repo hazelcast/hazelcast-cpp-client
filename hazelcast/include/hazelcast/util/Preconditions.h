@@ -20,7 +20,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "hazelcast/util/hazelcast_dll.h"
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 
 namespace hazelcast {
     namespace util {

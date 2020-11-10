@@ -28,9 +28,9 @@
 namespace hazelcast {
     namespace client {
         namespace monitor {
-            class HAZELCAST_API LocalInstanceStats {
+            class HAZELCAST_API local_instance_stats {
             public:
-                virtual ~LocalInstanceStats() = default;
+                virtual ~local_instance_stats() = default;
 
                 /**
                  * Fill a stat value with this if it is not available
@@ -40,7 +40,7 @@ namespace hazelcast {
                 virtual int64_t get_creation_time() = 0;
             };
 
-            class HAZELCAST_API NearCacheStats : public LocalInstanceStats {
+            class HAZELCAST_API near_cache_stats : public local_instance_stats {
             public:
                 /**
                  * Returns the creation time of this Near Cache on this member.

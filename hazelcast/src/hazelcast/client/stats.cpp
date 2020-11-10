@@ -231,14 +231,14 @@ namespace hazelcast {
         }
 
         namespace monitor {
-            const int64_t LocalInstanceStats::STAT_NOT_AVAILABLE = -99L;
+            const int64_t local_instance_stats::STAT_NOT_AVAILABLE = -99L;
 
             namespace impl {
                 LocalMapStatsImpl::LocalMapStatsImpl() = default;
 
-                LocalMapStatsImpl::LocalMapStatsImpl(const std::shared_ptr<monitor::NearCacheStats> &s) : near_cache_stats_(s) {}
+                LocalMapStatsImpl::LocalMapStatsImpl(const std::shared_ptr<monitor::near_cache_stats> &s) : near_cache_stats_(s) {}
 
-                std::shared_ptr<monitor::NearCacheStats> LocalMapStatsImpl::get_near_cache_stats() const {
+                std::shared_ptr<monitor::near_cache_stats> LocalMapStatsImpl::get_near_cache_stats() const {
                     return near_cache_stats_;
                 }
 
