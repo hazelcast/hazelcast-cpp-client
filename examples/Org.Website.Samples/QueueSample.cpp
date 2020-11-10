@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get a Blocking Queue called "my-distributed-queue"
-    auto queue = hz.getQueue("my-distributed-queue");
+    auto queue = hz.get_queue("my-distributed-queue");
     // Offer a String into the Distributed Queue
     queue->offer("item").get();
     // Poll the Distributed Queue and return the String

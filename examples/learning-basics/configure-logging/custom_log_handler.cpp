@@ -16,7 +16,7 @@
 
 #include <mutex>
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 void my_log_handler(const std::string &instance_name, 
                     const std::string &cluster_name,
@@ -43,12 +43,12 @@ void my_log_handler(const std::string &instance_name,
 }
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     // my_log_handler will be called for each log message.
-    config.getLoggerConfig().handler(my_log_handler);
+    config.get_logger_config().handler(my_log_handler);
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     return 0;
 }

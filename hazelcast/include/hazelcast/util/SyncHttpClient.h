@@ -18,7 +18,7 @@
 #include <string>
 #include <boost/asio.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,16 +30,16 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API SyncHttpClient {
         public:
-            SyncHttpClient(const std::string &serverIp, const std::string &uriPath);
+            SyncHttpClient(const std::string &server_ip, const std::string &uri_path);
 
-            std::istream &openConnection();
+            std::istream &open_connection();
         private:
-            std::string server;
-            std::string uriPath;
-            boost::asio::io_service ioService;
-            boost::asio::ip::tcp::socket socket;
-            boost::asio::streambuf response;
-            std::istream responseStream;
+            std::string server_;
+            std::string uri_path_;
+            boost::asio::io_service io_service_;
+            boost::asio::ip::tcp::socket socket_;
+            boost::asio::streambuf response_;
+            std::istream response_stream_;
         };
     }
 }

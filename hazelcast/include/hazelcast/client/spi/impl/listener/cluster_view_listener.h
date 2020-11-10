@@ -28,33 +28,33 @@ namespace hazelcast {
                             : public connection::ConnectionListener,
                               public std::enable_shared_from_this<cluster_view_listener> {
                     public:
-                        cluster_view_listener(ClientContext &clientContext);
+                        cluster_view_listener(ClientContext &client_context);
 
                         virtual ~cluster_view_listener();
 
                         void start();
 
-                        virtual void connectionAdded(const std::shared_ptr<connection::Connection> connection);
+                        virtual void connection_added(const std::shared_ptr<connection::Connection> connection);
 
-                        virtual void connectionRemoved(const std::shared_ptr<connection::Connection> connection);
+                        virtual void connection_removed(const std::shared_ptr<connection::Connection> connection);
 
                     private:
                         struct event_handler : public protocol::codec::client_addclusterviewlistener_handler {
                             event_handler(const std::shared_ptr <connection::Connection> &connection,
-                                          cluster_view_listener &viewListener);
+                                          cluster_view_listener &view_listener);
 
-                            virtual void beforeListenerRegister();
+                            virtual void before_listener_register();
 
-                            virtual void onListenerRegister();
+                            virtual void on_listener_register();
 
                             virtual void
-                            handle_membersview(int32_t version, const std::vector<Member> &memberInfos);
+                            handle_membersview(int32_t version, const std::vector<member> &member_infos);
 
                             virtual void handle_partitionsview(int32_t version,
                                                                const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
-                            std::shared_ptr<connection::Connection> connection_;
-                            cluster_view_listener &view_listener_;
+                            std::shared_ptr<connection::Connection> connection;
+                            cluster_view_listener &view_listener;
                         };
 
                         void try_register(std::shared_ptr<connection::Connection> connection);

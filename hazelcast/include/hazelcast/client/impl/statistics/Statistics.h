@@ -22,19 +22,19 @@
 
 #include <boost/asio/steady_timer.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/Sync.h"
 
 namespace hazelcast {
     class logger;
 
     namespace client {
-        class Address;
+        class address;
 
         namespace connection {
             class Connection;
         }
-        class ClientProperties;
+        class client_properties;
 
         namespace spi {
             class ClientContext;
@@ -43,7 +43,7 @@ namespace hazelcast {
             namespace statistics {
                 class Statistics {
                 public:
-                    explicit Statistics(spi::ClientContext &clientContext);
+                    explicit Statistics(spi::ClientContext &client_context);
 
                     /**
                      * Registers all client statistics and schedules periodic collection of stats.
@@ -61,53 +61,53 @@ namespace hazelcast {
                     public:
                         PeriodicStatistics(Statistics &statistics);
 
-                        void fillMetrics(std::ostringstream &stats,
+                        void fill_metrics(std::ostringstream &stats,
                                          const std::shared_ptr<connection::Connection> &connection);
 
-                        void addNearCacheStats(std::ostringstream &stats);
+                        void add_near_cache_stats(std::ostringstream &stats);
 
                     private:
                         template<typename T>
-                        void addStat(std::ostringstream &stats, const std::string &name, const T &value) {
-                            addStat(stats, "", name, value);
+                        void add_stat(std::ostringstream &stats, const std::string &name, const T &value) {
+                            add_stat(stats, "", name, value);
                         }
 
                         template<typename T>
-                        void addStat(std::ostringstream &stats, const std::string &keyPrefix, const std::string &name,
+                        void add_stat(std::ostringstream &stats, const std::string &key_prefix, const std::string &name,
                                      const T &value) {
                             stats << STAT_SEPARATOR;
-                            stats << keyPrefix;
+                            stats << key_prefix;
                             stats << name << KEY_VALUE_SEPARATOR << value;
                         }
 
                         /**
                          * @param name the string for which the special characters ',', '=', '\' are escaped properly
                          */
-                        void getNameWithPrefix(const std::string &name, std::ostringstream &out);
+                        void get_name_with_prefix(const std::string &name, std::ostringstream &out);
 
-                        Statistics &statistics;
+                        Statistics &statistics_;
                     };
 
-                    void schedulePeriodicStatisticsSendTask(int64_t periodSeconds);
+                    void schedule_periodic_statistics_send_task(int64_t period_seconds);
 
-                    std::shared_ptr<connection::Connection> getConnection();
+                    std::shared_ptr<connection::Connection> get_connection();
 
-                    void sendStats(int64_t timestamp, const std::string &newStats,
+                    void send_stats(int64_t timestamp, const std::string &new_stats,
                                    const std::shared_ptr<connection::Connection> &connection);
 
-                    static std::string escapeSpecialCharacters(const std::string &name);
+                    static std::string escape_special_characters(const std::string &name);
 
-                    spi::ClientContext &clientContext;
-                    ClientProperties &clientProperties;
+                    spi::ClientContext &client_context_;
+                    client_properties &client_properties_;
                     logger &logger_;
-                    bool enabled;
-                    PeriodicStatistics periodicStats;
-                    util::Sync<std::shared_ptr<Address> > cachedOwnerAddress;
-                    std::shared_ptr<boost::asio::steady_timer> sendTaskTimer;
+                    bool enabled_;
+                    PeriodicStatistics periodic_stats_;
+                    util::Sync<std::shared_ptr<address> > cached_owner_address_;
+                    std::shared_ptr<boost::asio::steady_timer> send_task_timer_;
                 };
 
                 template<>
-                void Statistics::PeriodicStatistics::addStat(std::ostringstream &stats, const std::string &name,
+                void Statistics::PeriodicStatistics::add_stat(std::ostringstream &stats, const std::string &name,
                                                              const bool &value);
             }
         }

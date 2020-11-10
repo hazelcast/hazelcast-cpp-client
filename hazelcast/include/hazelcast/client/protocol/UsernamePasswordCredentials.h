@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,13 +38,13 @@ namespace hazelcast {
             public:
                 UsernamePasswordCredentials(const std::string &principal, const std::string &password);
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
-                const std::string &getPassword() const;
+                const std::string &get_password() const;
 
             private:
-                std::string name;
-                std::string password;
+                std::string name_;
+                std::string password_;
             };
         }
     }

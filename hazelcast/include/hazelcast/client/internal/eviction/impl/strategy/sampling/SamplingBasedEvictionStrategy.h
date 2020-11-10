@@ -51,13 +51,13 @@ namespace hazelcast {
                                  *
                                  * @return evicted entry count
                                  */
-                                int evictInternal(S *sampleableEvictableStore,
-                                                  EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *evictionPolicyEvaluator,
-                                                  EvictionListener<A, E> *evictionListener) override {
-                                    std::unique_ptr<util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > samples = sampleableEvictableStore->sample(SAMPLE_COUNT);
+                                int evict_internal(S *sampleable_evictable_store,
+                                                  EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *eviction_policy_evaluator,
+                                                  EvictionListener<A, E> *eviction_listener) override {
+                                    std::unique_ptr<util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > samples = sampleable_evictable_store->sample(SAMPLE_COUNT);
                                     std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evictionCandidates =
-                                            evictionPolicyEvaluator->evaluate(*samples);
-                                    return sampleableEvictableStore->evict(evictionCandidates.get(), evictionListener);
+                                            eviction_policy_evaluator->evaluate(*samples);
+                                    return sampleable_evictable_store->evict(evictionCandidates.get(), eviction_listener);
                                 }
                             private:
                                 static const int SAMPLE_COUNT = 15;

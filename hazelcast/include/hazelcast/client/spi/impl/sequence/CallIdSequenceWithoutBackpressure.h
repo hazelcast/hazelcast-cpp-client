@@ -39,18 +39,18 @@ namespace hazelcast {
 
                         ~CallIdSequenceWithoutBackpressure() override;
 
-                        int32_t getMaxConcurrentInvocations() const override;
+                        int32_t get_max_concurrent_invocations() const override;
 
                         int64_t next() override;
 
-                        int64_t forceNext() override;
+                        int64_t force_next() override;
 
                         void complete() override;
 
-                        int64_t getLastCallId() override;
+                        int64_t get_last_call_id() override;
 
                     private:
-                        std::atomic<int64_t> head;
+                        std::atomic<int64_t> head_;
                     };
                 }
             }

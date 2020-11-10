@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/hazelcast.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    config.setSocketInterceptor(
-        SocketInterceptor()
-            .on_connect([](const hazelcast::client::Socket &connectedSocket) {
+    hazelcast::client::client_config config;
+    config.set_socket_interceptor(
+            socket_interceptor()
+            .on_connect([](const hazelcast::client::hz_socket &connected_socket) {
                 std::cout << "Connected to remote host " 
-                    << connectedSocket.getAddress() << std::endl;
+                    << connected_socket.get_address() << std::endl;
             })
     );
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     std::cout << "Finished" << std::endl;
 

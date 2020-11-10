@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -52,8 +52,8 @@ namespace hazelcast {
                      * associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    std::shared_ptr<NearCache<KS, V> > getNearCache(const std::string &name) {
-                        return std::static_pointer_cast<NearCache<KS, V> >(nearCacheMap.get(name));
+                    std::shared_ptr<NearCache<KS, V> > get_near_cache(const std::string &name) {
+                        return std::static_pointer_cast<NearCache<KS, V> >(near_cache_map_.get(name));
                     };
 
                     /**
@@ -69,18 +69,18 @@ namespace hazelcast {
                      * @return the created or existing {@link NearCache} instance associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    std::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
-                            const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
-                        std::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
+                    std::shared_ptr<NearCache<KS, V> > get_or_create_near_cache(
+                            const std::string &name, const client::config::near_cache_config &near_cache_config) {
+                        std::shared_ptr<BaseNearCache> nearCache = near_cache_map_.get(name);
                         if (NULL == nearCache.get()) {
                             {
-                                std::lock_guard<std::mutex> guard(mutex);
-                                nearCache = nearCacheMap.get(name);
+                                std::lock_guard<std::mutex> guard(mutex_);
+                                nearCache = near_cache_map_.get(name);
                                 if (NULL == nearCache.get()) {
-                                    nearCache = createNearCache<K, V, KS>(name, nearCacheConfig);
+                                    nearCache = create_near_cache<K, V, KS>(name, near_cache_config);
                                     nearCache->initialize();
 
-                                    nearCacheMap.put(name, nearCache);
+                                    near_cache_map_.put(name, nearCache);
                                 }
 
                             }
@@ -94,12 +94,12 @@ namespace hazelcast {
                      * @param name name of the {@link NearCache} to be cleared
                      * @return {@code true} if {@link NearCache} was found and cleared, {@code false} otherwise
                      */
-                    bool clearNearCache(const std::string &name);
+                    bool clear_near_cache(const std::string &name);
 
                     /**
                      * Clears all defined {@link NearCache} instances.
                      */
-                    void clearAllNearCaches();
+                    void clear_all_near_caches();
 
                     /**
                      * Destroys {@link NearCache} instance associated with given {@code name} and also removes it.
@@ -107,33 +107,33 @@ namespace hazelcast {
                      * @param name name of the {@link NearCache} to be destroyed
                      * @return {@code true} if {@link NearCache} was found and destroyed, {@code false} otherwise
                      */
-                    bool destroyNearCache(const std::string &name);
+                    bool destroy_near_cache(const std::string &name);
 
                     /**
                      * Destroys all defined {@link NearCache} instances.
                      */
-                    void destroyAllNearCaches();
+                    void destroy_all_near_caches();
 
                     /**
                      * Lists all existing {@link NearCache} instances.
                      *
                      * @return all existing {@link NearCache} instances
                      */
-                    std::vector<std::shared_ptr<BaseNearCache> > listAllNearCaches();
+                    std::vector<std::shared_ptr<BaseNearCache> > list_all_near_caches();
                 protected:
                     template<typename K, typename V, typename KS>
-                    std::unique_ptr<NearCache<KS, V> > createNearCache(
-                            const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
+                    std::unique_ptr<NearCache<KS, V> > create_near_cache(
+                            const std::string &name, const client::config::near_cache_config &near_cache_config) {
                         return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
-                                        name, nearCacheConfig, executionService, serializationService, logger_));
+                                        name, near_cache_config, execution_service_, serialization_service_, logger_));
                     }
                 private:
-                    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
-                    serialization::pimpl::SerializationService &serializationService;
+                    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
+                    serialization::pimpl::SerializationService &serialization_service_;
                     logger &logger_;
-                    util::SynchronizedMap<std::string, BaseNearCache> nearCacheMap;
-                    std::mutex mutex;
+                    util::SynchronizedMap<std::string, BaseNearCache> near_cache_map_;
+                    std::mutex mutex_;
                 };
             }
         }

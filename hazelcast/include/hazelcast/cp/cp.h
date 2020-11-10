@@ -22,7 +22,7 @@
 
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -52,8 +52,8 @@ namespace hazelcast {
 
         class HAZELCAST_API cp_proxy : public client::proxy::ProxyImpl {
         public:
-            cp_proxy(const std::string &serviceName, const std::string &proxyName, client::spi::ClientContext *context,
-                     const raft_group_id &groupId, const std::string &objectName);
+            cp_proxy(const std::string &service_name, const std::string &proxy_name, client::spi::ClientContext *context,
+                     const raft_group_id &group_id, const std::string &object_name);
 
             const raft_group_id &get_group_id() const;
 
@@ -61,7 +61,7 @@ namespace hazelcast {
             raft_group_id group_id_;
             std::string object_name_;
 
-            void onDestroy() override;
+            void on_destroy() ;
         };
 
         namespace internal {
@@ -71,10 +71,10 @@ namespace hazelcast {
         }
         class HAZELCAST_API session_aware_proxy : public cp_proxy {
         public:
-            session_aware_proxy(const std::string &serviceName, const std::string &proxyName,
-                                client::spi::ClientContext *context, const raft_group_id &groupId,
-                                const std::string &objectName,
-                                internal::session::proxy_session_manager &sessionManager);
+            session_aware_proxy(const std::string &service_name, const std::string &proxy_name,
+                                client::spi::ClientContext *context, const raft_group_id &group_id,
+                                const std::string &object_name,
+                                internal::session::proxy_session_manager &session_manager);
 
         protected:
             internal::session::proxy_session_manager &session_manager_;
@@ -92,7 +92,7 @@ namespace hazelcast {
         class HAZELCAST_API atomic_long : public cp_proxy {
         public:
             atomic_long(const std::string &name, client::spi::ClientContext &context,
-                        const raft_group_id &groupId, const std::string &objectName);
+                        const raft_group_id &group_id, const std::string &object_name);
 
             /**
              * Atomically adds the given value to the current value.
@@ -148,7 +148,7 @@ namespace hazelcast {
              * @param newValue the new value
              * @return the old value
              */
-            boost::future<int64_t> get_and_set(int64_t newValue);
+            boost::future<int64_t> get_and_set(int64_t new_value);
 
             /**
              * Atomically increments the current value by one.
@@ -169,7 +169,7 @@ namespace hazelcast {
              *
              * @param newValue the new value
              */
-            boost::future<void> set(int64_t newValue);
+            boost::future<void> set(int64_t new_value);
 
             /**
              * Alters the currently stored value by applying a function on it.
@@ -178,7 +178,7 @@ namespace hazelcast {
              */
             template<typename F>
             boost::future<void> alter(const F &function) {
-                return toVoidFuture(alter_and_get(function));
+                return to_void_future(alter_and_get(function));
             }
 
             /**
@@ -190,7 +190,7 @@ namespace hazelcast {
              */
             template<typename F>
             boost::future<int64_t> alter_and_get(const F &function) {
-                auto f = toData(function);
+                auto f = to_data(function);
                 return alter_data(f, alter_result_type::NEW_VALUE);
             }
 
@@ -204,7 +204,7 @@ namespace hazelcast {
              */
             template<typename F>
             boost::future<int64_t> get_and_alter(const F &function) {
-                auto f = toData(function);
+                auto f = to_data(function);
                 return alter_data(f, alter_result_type::OLD_VALUE);
             }
 
@@ -217,8 +217,8 @@ namespace hazelcast {
              */
             template<typename F, typename R>
             boost::future<boost::optional<R>> apply(const F &function) {
-                auto f = toData(function);
-                return toObject<R>(apply_data(f));
+                auto f = to_data(function);
+                return to_object<R>(apply_data(f));
             }
 
         private:
@@ -239,9 +239,9 @@ namespace hazelcast {
             };
 
             boost::future<int64_t>
-            alter_data(Data &function_data, alter_result_type result_type);
+            alter_data(data &function_data, alter_result_type result_type);
 
-            boost::future<boost::optional<Data>> apply_data(Data &function_data);
+            boost::future<boost::optional<data>> apply_data(data &function_data);
         };
 
         /**
@@ -250,29 +250,29 @@ namespace hazelcast {
         class HAZELCAST_API atomic_reference : public cp_proxy {
         public:
             atomic_reference(const std::string &name, client::spi::ClientContext &context,
-                             const raft_group_id &groupId, const std::string &objectName);
+                             const raft_group_id &group_id, const std::string &object_name);
 
             template<typename T>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> get() {
-                return toObject<typename std::remove_pointer<T>::type>(get_data());
+                return to_object<typename std::remove_pointer<T>::type>(get_data());
             }
 
             template<typename T>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> set(T new_value) {
-                return toObject<typename std::remove_pointer<T>::type>(
-                        set_data(toData<typename std::remove_pointer<T>::type>(new_value)));
+                return to_object<typename std::remove_pointer<T>::type>(
+                        set_data(to_data<typename std::remove_pointer<T>::type>(new_value)));
             }
 
             template<typename T>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> get_and_set(T new_value) {
-                return toObject<typename std::remove_pointer<T>::type>(
-                        get_and_set_data(toData<typename std::remove_pointer<T>::type>(new_value)));
+                return to_object<typename std::remove_pointer<T>::type>(
+                        get_and_set_data(to_data<typename std::remove_pointer<T>::type>(new_value)));
             }
 
             template<typename T, typename V>
             boost::future<bool> compare_and_set(T expect, V update) {
-                return compare_and_set_data(toData<typename std::remove_pointer<T>::type>(expect),
-                                            toData<typename std::remove_pointer<V>::type>(update));
+                return compare_and_set_data(to_data<typename std::remove_pointer<T>::type>(expect),
+                                            to_data<typename std::remove_pointer<V>::type>(update));
             }
 
             boost::future<bool> is_null();
@@ -281,27 +281,27 @@ namespace hazelcast {
 
             template<typename T>
             boost::future<bool> contains(T value) {
-                return contains_data(toData<typename std::remove_pointer<T>::type>(value));
+                return contains_data(to_data<typename std::remove_pointer<T>::type>(value));
             }
 
             template<typename F>
             boost::future<void> alter(const F &function) {
-                return alter_data(toData(function));
+                return alter_data(to_data(function));
             }
 
             template<typename T, typename F>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> alter_and_get(const F &function) {
-                return toObject<typename std::remove_pointer<T>::type>(alter_and_get_data(toData(function)));
+                return to_object<typename std::remove_pointer<T>::type>(alter_and_get_data(to_data(function)));
             }
 
             template<typename T, typename F>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> get_and_alter(const F &function) {
-                return toObject<typename std::remove_pointer<T>::type>(get_and_alter_data(toData(function)));
+                return to_object<typename std::remove_pointer<T>::type>(get_and_alter_data(to_data(function)));
             }
 
             template<typename R, typename F>
             boost::future<boost::optional<R>> apply(const F &function) {
-                return toObject<R>(apply_data(toData(function)));
+                return to_object<R>(apply_data(to_data(function)));
             }
 
         private:
@@ -313,32 +313,32 @@ namespace hazelcast {
                 NEW
             };
 
-            boost::future<boost::optional<Data>> get_data();
+            boost::future<boost::optional<data>> get_data();
 
-            boost::future<boost::optional<Data>> set_data(const Data &new_value_data);
+            boost::future<boost::optional<data>> set_data(const data &new_value_data);
 
-            boost::future<boost::optional<Data>> get_and_set_data(const Data &new_value_data);
+            boost::future<boost::optional<data>> get_and_set_data(const data &new_value_data);
 
-            boost::future<bool> compare_and_set_data(const Data &expect_data, const Data &update_data);
+            boost::future<bool> compare_and_set_data(const data &expect_data, const data &update_data);
 
-            boost::future<bool> contains_data(const Data &value_data);
+            boost::future<bool> contains_data(const data &value_data);
 
-            boost::future<void> alter_data(const Data &function_data);
+            boost::future<void> alter_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> alter_and_get_data(const Data &function_data);
+            boost::future<boost::optional<data>> alter_and_get_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> get_and_alter_data(const Data &function_data);
+            boost::future<boost::optional<data>> get_and_alter_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> apply_data(const Data &function_data);
+            boost::future<boost::optional<data>> apply_data(const data &function_data);
 
-            boost::future<boost::optional<Data>> invoke_apply(const Data function_data, return_value_type return_type,
+            boost::future<boost::optional<data>> invoke_apply(const data function_data, return_value_type return_type,
                                                               bool alter);
         };
 
         class HAZELCAST_API latch : public cp_proxy {
         public:
-            latch(const std::string &name, client::spi::ClientContext &context, const raft_group_id &groupId,
-                  const std::string &objectName);
+            latch(const std::string &name, client::spi::ClientContext &context, const raft_group_id &group_id,
+                  const std::string &object_name);
 
             /**
              * Sets the count to the given value if the current count is zero.
@@ -348,7 +348,7 @@ namespace hazelcast {
              * @param count the number of times \count_down must be invoked
              *              before threads can pass through \wait_for
              * @return \true if the new count was set, \false if the current count is not zero
-             * @throws IllegalArgumentException if \count is not positive number
+             * @throws illegal_argument if \count is not positive number
              */
             boost::future<bool> try_set_count(int32_t count);
 
@@ -418,7 +418,7 @@ namespace hazelcast {
              * @param rel_time the maximum time to wait
              * @return \no_timeout if the count reached zero, \timeout
              * if the waiting time elapsed before the count reached zero
-             * @throws IllegalStateException if the Hazelcast instance is shutdown while waiting
+             * @throws illegal_state if the Hazelcast instance is shutdown while waiting
              */
             boost::future<std::cv_status> wait_for(std::chrono::milliseconds timeout);
 
@@ -458,14 +458,14 @@ namespace hazelcast {
             static constexpr int64_t INVALID_FENCE = 0L;
 
             fenced_lock(const std::string &name, client::spi::ClientContext &context,
-                             const raft_group_id &groupId, const std::string &objectName);
+                             const raft_group_id &group_id, const std::string &object_name);
 
             /**
              * Acquires the lock.
              * <p>
              * When the caller already holds the lock and the current lock() call is
              * reentrant, the call can fail with
-             * \LockAcquireLimitReachedException if the lock acquire limit is
+             * \lock_acquire_limit_reached if the lock acquire limit is
              * already reached. Please see server side FencedLockConfig for more
              * information.
              * <p>
@@ -488,13 +488,13 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the user pause
              * wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException. If the caller wants to deal with
+             * \lock_ownership_lost. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
-             * @throws LockAcquireLimitReachedException if the lock call is reentrant
+             * @throws lock_acquire_limit_reached if the lock call is reentrant
              *         and the configured lock acquire limit is already reached.
              */
             boost::future<void> lock();
@@ -503,7 +503,7 @@ namespace hazelcast {
              * Acquires the lock and returns the fencing token assigned to the current
              * thread for this lock acquire. If the lock is acquired reentrantly,
              * the same fencing token is returned, or the lock() call can fail with
-             * \LockAcquireLimitReachedException if the lock acquire limit is
+             * \lock_acquire_limit_reached if the lock acquire limit is
              * already reached. Please see server FencedLockConfig for more
              * information.
              * <p>
@@ -533,9 +533,9 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the user pause
              * wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException. If the caller wants to deal with
+             * \lock_ownership_lost. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              *
              * Fencing tokens are monotonic numbers that are incremented each time
              * the lock switches from the free state to the acquired state. They are
@@ -564,9 +564,9 @@ namespace hazelcast {
              * is not reentrant, its fencing token is guaranteed to be larger than the
              * previous tokens, independent of the thread that has acquired the lock.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
-             * @throws LockAcquireLimitReachedException if the lock call is reentrant
+             * @throws lock_acquire_limit_reached if the lock call is reentrant
              *         and the configured lock acquire limit is already reached.
              */
             boost::future<int64_t> lock_and_get_fence();
@@ -600,7 +600,7 @@ namespace hazelcast {
              * @return \true if the lock was acquired and
              *         \false otherwise
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<bool> try_lock();
@@ -630,7 +630,7 @@ namespace hazelcast {
              * @return \true if the lock was acquired and \false
              *         if the waiting time elapsed before the lock was acquired
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<bool> try_lock(std::chrono::milliseconds timeout);
@@ -670,10 +670,10 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the JVM
              * instance wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException which extends
-             * \IllegalMonitorStateException. If the caller wants to deal with
+             * \lock_ownership_lost which extends
+             * \illegal_monitor_state_exception. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              * <p>
              * Fencing tokens are monotonic numbers that are incremented each time
              * the lock switches from the free state to the acquired state. They are
@@ -705,7 +705,7 @@ namespace hazelcast {
              * @return the fencing token if the lock was acquired and
              *         \INVALID_FENCE otherwise
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<int64_t> try_lock_and_get_fence();
@@ -753,10 +753,10 @@ namespace hazelcast {
              * it could not commit session heartbeats in the meantime. After the process
              * wakes up again, the same thread attempts to acquire the lock
              * reentrantly. In this case, the second lock() call fails by throwing
-             * \LockOwnershipLostException which extends
-             * {@link IllegalMonitorStateException}. If the caller wants to deal with
+             * \lock_ownership_lost which extends
+             * {@link illegal_monitor_state}. If the caller wants to deal with
              * its session loss by taking some custom actions, it can handle the thrown
-             * \LockOwnershipLostException instance.
+             * \lock_ownership_lost instance.
              * <p>
              * Fencing tokens are monotonic numbers that are incremented each time
              * the lock switches from the free state to the acquired state. They are
@@ -789,7 +789,7 @@ namespace hazelcast {
              * @return the fencing token if the lock was acquired and
              *         \INVALID_FENCE otherwise
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while locking reentrantly
              */
             boost::future<int64_t> try_lock_and_get_fence(std::chrono::milliseconds timeout);
@@ -797,9 +797,9 @@ namespace hazelcast {
             /**
              * Releases the lock if the lock is currently held by the current thread.
              *
-             * @throws IllegalMonitorStateException if the lock is not held by
+             * @throws illegal_monitor_state if the lock is not held by
              *         the current thread
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed before the current thread releases the lock
              */
             boost::future<void> unlock();
@@ -816,9 +816,9 @@ namespace hazelcast {
              *
              * @return the fencing token if the lock is held by the current thread
              *
-             * @throws IllegalMonitorStateException if the lock is not held by
+             * @throws illegal_monitor_state if the lock is not held by
              *         the current thread
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<int64_t> get_fence();
@@ -829,7 +829,7 @@ namespace hazelcast {
              * @return \true if this lock is locked by any thread
              *         in the cluster, \false otherwise.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<bool> is_locked();
@@ -840,7 +840,7 @@ namespace hazelcast {
              * @return \true if the lock is held by the current thread or not,
              *         \false otherwise.
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<bool> is_locked_by_current_thread();
@@ -852,7 +852,7 @@ namespace hazelcast {
              * @return the reentrant lock count if the lock is held by any thread
              *         in the cluster
              *
-             * @throws LockOwnershipLostException if the underlying CP session is
+             * @throws lock_ownership_lost if the underlying CP session is
              *         closed while the current thread is holding the lock
              */
             boost::future<int32_t> get_lock_count();
@@ -867,7 +867,7 @@ namespace hazelcast {
             friend bool operator==(const fenced_lock &lhs, const fenced_lock &rhs);
 
         protected:
-            void postDestroy() override;
+            void post_destroy() ;
 
         private:
             struct lock_ownership_state {
@@ -1016,12 +1016,12 @@ namespace hazelcast {
              * <li>has its interrupted status set on entry to this method; or</li>
              * <li>is interrupted while waiting for a permit,</li>
              * </ul>
-             * then \InterruptedException is thrown and the current thread's
+             * then \interrupted is thrown and the current thread's
              * interrupted status is cleared.
              *
              * @param permits the number of permits to acquire
-             * @throws IllegalArgumentException if \permits is negative or zero
-             * @throws IllegalStateException if hazelcast instance is shutdown while waiting
+             * @throws illegal_argument if \permits is negative or zero
+             * @throws illegal_state if hazelcast instance is shutdown while waiting
              */
             virtual boost::future<void> acquire(int32_t permits = 1) = 0;
 
@@ -1043,8 +1043,8 @@ namespace hazelcast {
              * of a semaphore is established by programming convention in the application.
              *
              * @param permits The number of permits to release.
-             * @throws IllegalArgumentException if \permits is negative or zero
-             * @throws IllegalStateException if the Semaphore is non-JDK-compatible
+             * @throws illegal_argument if \permits is negative or zero
+             * @throws illegal_state if the Semaphore is non-JDK-compatible
              *         and the caller does not have a permit
              */
             virtual boost::future<void> release(int32_t permits = 1 ) = 0;
@@ -1087,8 +1087,8 @@ namespace hazelcast {
              * @param rel_time the maximum time to wait for a permit. The supported resolution is milliseconds.
              * @return \true if a permit was acquired and {@code false}
              * if the waiting time elapsed before a permit was acquired
-             * @throws InterruptedException  if the current server thread is interrupted
-             * @throws IllegalStateException if hazelcast instance is shutdown while waiting
+             * @throws interrupted  if the current server thread is interrupted
+             * @throws illegal_state if hazelcast instance is shutdown while waiting
              */
             boost::future<bool> try_acquire_for(std::chrono::milliseconds rel_time, int32_t permits = 1);
 
@@ -1110,7 +1110,7 @@ namespace hazelcast {
              *
              * @param permits the given permit count
              * @return true if initialization success. false if already initialized
-             * @throws IllegalArgumentException if \permits is negative
+             * @throws illegal_argument if \permits is negative
              */
             boost::future<bool> init(int32_t permits);
 
@@ -1137,7 +1137,7 @@ namespace hazelcast {
              * they are not released with this call.
              *
              * @param reduction the number of permits to reduce
-             * @throws IllegalArgumentException if \reduction is negative
+             * @throws illegal_argument if \reduction is negative
              */
             boost::future<void> reduce_permits(int32_t reduction);
 
@@ -1148,16 +1148,16 @@ namespace hazelcast {
              * they are not released with this call.
              *
              * @param increase the number of permits to increase
-             * @throws IllegalArgumentException if \increase is negative
+             * @throws illegal_argument if \increase is negative
              */
             boost::future<void> increase_permits(int32_t increase);
 
         protected:
             static constexpr const char *SERVICE_NAME = "hz:raft:semaphoreService";
 
-            counting_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
-                               const raft_group_id &groupId, const std::string &objectName,
-                               internal::session::proxy_session_manager &sessionManager);
+            counting_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
+                               const raft_group_id &group_id, const std::string &object_name,
+                               internal::session::proxy_session_manager &session_manager);
 
             virtual boost::future<bool> try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) = 0;
 
@@ -1170,9 +1170,9 @@ namespace hazelcast {
 
         class HAZELCAST_API sessionless_semaphore : public counting_semaphore {
         public:
-            sessionless_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
-                                  const raft_group_id &groupId, const std::string &objectName,
-                                  internal::session::proxy_session_manager &sessionManager);
+            sessionless_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
+                                  const raft_group_id &group_id, const std::string &object_name,
+                                  internal::session::proxy_session_manager &session_manager);
 
             boost::future<void> acquire(int32_t permits) override;
 
@@ -1193,9 +1193,9 @@ namespace hazelcast {
 
         class HAZELCAST_API session_semaphore : public counting_semaphore {
         public:
-            session_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
-                                  const raft_group_id &groupId, const std::string &objectName,
-                                  internal::session::proxy_session_manager &sessionManager);
+            session_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
+                                  const raft_group_id &group_id, const std::string &object_name,
+                                  internal::session::proxy_session_manager &session_manager);
 
             boost::future<void> acquire(int32_t permits) override;
 
@@ -1285,7 +1285,7 @@ namespace hazelcast {
          * layer for a set of distributed data structures. Its APIs can be used for
          * implementing distributed coordination use cases, such as leader election,
          * distributed locking, synchronization, and metadata management.
-         * It is accessed via HazelcastClient::get_cp_subsystem. Its data
+         * It is accessed via hazelcast_client::get_cp_subsystem. Its data
          * structures are CP with respect to the CAP principle, i.e., they always
          * maintain linearizability and prefer consistency over availability during
          * network partitions. Besides network partitions, CP Subsystem withstands
@@ -1311,7 +1311,7 @@ namespace hazelcast {
              *
              * @param name name of the atomic_long proxy
              * @return atomic_long proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<atomic_long> get_atomic_long(const std::string &name);
 
@@ -1335,7 +1335,7 @@ namespace hazelcast {
              * @param name name of the atomic_reference proxy
              * @param <E>  the type of object referred to by the reference
              * @return atomic_reference proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
 
             std::shared_ptr<atomic_reference> get_atomic_reference(const std::string &name);
@@ -1359,7 +1359,7 @@ namespace hazelcast {
              *
              * @param name name of the count_down_latch proxy
              * @return count_down_latch proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<latch> get_latch(const std::string &name);
 
@@ -1381,7 +1381,7 @@ namespace hazelcast {
              *
              * @param name name of the fenced_lock proxy
              * @return fenced_lock proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<fenced_lock> get_lock(const std::string &name);
 
@@ -1403,12 +1403,12 @@ namespace hazelcast {
              *
              * @param name name of the semaphore proxy
              * @return semaphore proxy for the given name
-             * @throws HazelcastException if CP Subsystem is not enabled
+             * @throws hazelcast_ if CP Subsystem is not enabled
              */
             std::shared_ptr<counting_semaphore> get_semaphore(const std::string &name);
 
         private:
-            friend client::impl::HazelcastClientInstanceImpl;
+            friend client::impl::hazelcast_client_instance_impl;
             client::spi::ClientContext &context_;
             raft_proxy_factory proxy_factory_;
 

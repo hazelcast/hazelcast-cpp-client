@@ -13,33 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
-hazelcast::client::topic::ReliableListener makeListener(std::atomic<int> &nReceivedMessages, int64_t sequence_id = -1) {
+hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
     using namespace hazelcast::client::topic;
 
-    return ReliableListener(false, sequence_id)
-        .on_received([&nReceivedMessages](Message &&message){
-            ++nReceivedMessages;
+    return reliable_listener(false, sequence_id)
+        .on_received([&n_received_messages](message &&message){
+            ++n_received_messages;
 
-            auto object = message.getMessageObject().get<std::string>();
+            auto object = message.get_message_object().get<std::string>();
             if (object) {
-                std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.getName();
+                std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name();
             } else {
                 std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
-                message.getName();
+                message.get_name();
             }
         });
 }
 
-void listenWithDefaultConfig() {
-    hazelcast::client::HazelcastClient client;
+void listen_with_default_config() {
+    hazelcast::client::hazelcast_client client;
 
     std::string topicName("MyReliableTopic");
-    auto topic = client.getReliableTopic(topicName);
+    auto topic = client.get_reliable_topic(topicName);
 
     std::atomic<int> numberOfMessagesReceived{0};
-    auto listenerId = topic->addMessageListener(makeListener(numberOfMessagesReceived));
+    auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
@@ -47,25 +47,25 @@ void listenWithDefaultConfig() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
-    if (topic->removeMessageListener(listenerId)) {
+    if (topic->remove_message_listener(listenerId)) {
         std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
     } else {
         std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
     }
 }
 
-void listenWithConfig() {
-    hazelcast::client::ClientConfig clientConfig;
+void listen_with_config() {
+    hazelcast::client::client_config clientConfig;
     std::string topicName("MyReliableTopic");
-    hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
-    reliableTopicConfig.setReadBatchSize(5);
-    clientConfig.addReliableTopicConfig(reliableTopicConfig);
-    hazelcast::client::HazelcastClient client(clientConfig);
+    hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
+    reliableTopicConfig.set_read_batch_size(5);
+    clientConfig.add_reliable_topic_config(reliableTopicConfig);
+    hazelcast::client::hazelcast_client client(clientConfig);
 
-    auto topic = client.getReliableTopic(topicName);
+    auto topic = client.get_reliable_topic(topicName);
 
     std::atomic<int> numberOfMessagesReceived{0};
-    auto listenerId = topic->addMessageListener(makeListener(numberOfMessagesReceived));
+    auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
@@ -73,7 +73,7 @@ void listenWithConfig() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
-    if (topic->removeMessageListener(listenerId)) {
+    if (topic->remove_message_listener(listenerId)) {
         std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
     } else {
         std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
@@ -81,9 +81,9 @@ void listenWithConfig() {
 }
 
 int main() {
-    listenWithDefaultConfig();
+    listen_with_default_config();
     
-    listenWithConfig();
+    listen_with_config();
 
     std::cout << "Finished" << std::endl;
 

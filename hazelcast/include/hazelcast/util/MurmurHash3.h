@@ -41,9 +41,9 @@ namespace hazelcast{
     namespace util{
         //-----------------------------------------------------------------------------
 
-        int MurmurHash3_x86_32(const void * key, int len);
+        int murmur_hash3_x86_32(const void * key, int len);
 
-        void MurmurHash3_x86_32  ( const void * key, int len, uint32_t seed, void * out );
+        void murmur_hash3_x86_32  ( const void * key, int len, uint32_t seed, void * out );
 
         //-----------------------------------------------------------------------------
 

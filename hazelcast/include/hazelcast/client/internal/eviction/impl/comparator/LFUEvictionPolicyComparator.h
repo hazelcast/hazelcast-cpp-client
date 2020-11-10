@@ -37,15 +37,15 @@ namespace hazelcast {
                         class LFUEvictionPolicyComparator : public EvictionPolicyComparator<A, E> {
                         public:
                             int compare(const EvictableEntryView<A, E> *e1, const EvictableEntryView<A, E> *e2) const override {
-                                int64_t hits1 = e1->getAccessHit();
-                                int64_t hits2 = e2->getAccessHit();
+                                int64_t hits1 = e1->get_access_hit();
+                                int64_t hits2 = e2->get_access_hit();
                                 if (hits2 < hits1) {
                                     return EvictionPolicyComparator<A, E>::SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
                                 } else if (hits1 < hits2) {
                                     return EvictionPolicyComparator<A, E>::FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
                                 } else {
-                                    int64_t creationTime1 = e1->getCreationTime();
-                                    int64_t creationTime2 = e2->getCreationTime();
+                                    int64_t creationTime1 = e1->get_creation_time();
+                                    int64_t creationTime2 = e2->get_creation_time();
                                     // if hits are same, we select the oldest entry to evict
                                     if (creationTime2 < creationTime1) {
                                         return EvictionPolicyComparator<A, E>::SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;

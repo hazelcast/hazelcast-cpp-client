@@ -56,7 +56,7 @@ namespace hazelcast {
                      *
                      * @param value the value for this {@link NearCacheRecord}
                      */
-                    virtual void setValue(const std::shared_ptr<V> &value) {
+                    virtual void set_value(const std::shared_ptr<V> &value) {
                         assert(0);
                     }
 
@@ -65,31 +65,31 @@ namespace hazelcast {
                      *
                      * @param time the creation time for this {@link Evictable} in milliseconds
                      */
-                    virtual void setCreationTime(int64_t time) = 0;
+                    virtual void set_creation_time(int64_t time) = 0;
 
                     /**
                      * Sets the access time of this {@link Evictable} in milliseconds.
                      *
                      * @param time the latest access time of this {@link Evictable} in milliseconds
                      */
-                    virtual void setAccessTime(int64_t time) = 0;
+                    virtual void set_access_time(int64_t time) = 0;
 
                     /**
                      * Sets the access hit count of this {@link Evictable}.
                      *
                      * @param hit the access hit count for this {@link Evictable}
                      */
-                    virtual void setAccessHit(int32_t hit) = 0;
+                    virtual void set_access_hit(int32_t hit) = 0;
 
                     /**
                      * Increases the access hit count of this {@link Evictable} by {@code 1}.
                      */
-                    virtual void incrementAccessHit() = 0;
+                    virtual void increment_access_hit() = 0;
 
                     /**
                      * Resets the access hit count of this {@link Evictable} to {@code 0}.
                      */
-                    virtual void resetAccessHit() = 0;
+                    virtual void reset_access_hit() = 0;
 
                     /**
                      * Checks whether the maximum idle time is passed with respect to the provided time
@@ -99,28 +99,28 @@ namespace hazelcast {
                      * @param now                 current time in milliseconds
                      * @return {@code true} if exceeds max idle seconds, otherwise {@code false}
                      */
-                    virtual bool isIdleAt(int64_t maxIdleMilliSeconds, int64_t now) = 0;
+                    virtual bool is_idle_at(int64_t max_idle_milli_seconds, int64_t now) = 0;
 
                     /**
                      * @return last known invalidation sequence at time of this records' creation
                      */
-                    virtual int64_t getInvalidationSequence() const = 0;
+                    virtual int64_t get_invalidation_sequence() const = 0;
 
                     /**
                      * @param sequence last known invalidation sequence at time of this records' creation
                      */
-                    virtual void setInvalidationSequence(int64_t sequence) = 0;
+                    virtual void set_invalidation_sequence(int64_t sequence) = 0;
 
                     /**
                      * @param uuid last known uuid of invalidation source at time of this records' creation
                      */
-                    virtual void setUuid(boost::uuids::uuid uuid) = 0;
+                    virtual void set_uuid(boost::uuids::uuid uuid) = 0;
 
                     /**
                      * @return {@code true} if supplied uuid equals existing one, otherwise and when one of supplied
                      * or existing is null returns {@code false}
                      */
-                    virtual bool hasSameUuid(boost::uuids::uuid thatUuid) const = 0;
+                    virtual bool has_same_uuid(boost::uuids::uuid that_uuid) const = 0;
                 };
             }
         }

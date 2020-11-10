@@ -20,7 +20,7 @@
 
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/spi/EventHandler.h"
-#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/impl/Partition.h"
 #include "hazelcast/logger.h"
 
@@ -51,13 +51,13 @@ namespace hazelcast {
                     void handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
                                       const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
-                    boost::uuids::uuid getPartitionOwner(int partitionId);
+                    boost::uuids::uuid get_partition_owner(int partition_id);
 
-                    int32_t getPartitionId(const serialization::pimpl::Data &key);
+                    int32_t get_partition_id(const serialization::pimpl::data &key);
 
-                    int32_t getPartitionCount();
+                    int32_t get_partition_count();
 
-                    std::shared_ptr<client::impl::Partition> getPartition(int32_t partitionId);
+                    std::shared_ptr<client::impl::Partition> get_partition(int32_t partition_id);
 
                     bool check_and_set_partition_count(int32_t new_partition_count);
 
@@ -71,17 +71,17 @@ namespace hazelcast {
 
                     class PartitionImpl : public client::impl::Partition {
                     public:
-                        PartitionImpl(int partitionId, ClientContext &client,
-                                      ClientPartitionServiceImpl &partitionService);
+                        PartitionImpl(int partition_id, ClientContext &client,
+                                      ClientPartitionServiceImpl &partition_service);
 
-                        int getPartitionId() const override;
+                        int get_partition_id() const override;
 
-                        boost::optional<Member> getOwner() const override;
+                        boost::optional<member> get_owner() const override;
 
                     private:
-                        int partitionId;
-                        ClientContext &client;
-                        ClientPartitionServiceImpl &partitionService;
+                        int partition_id_;
+                        ClientContext &client_;
+                        ClientPartitionServiceImpl &partition_service_;
                     };
 
                     bool should_be_applied(const std::shared_ptr<connection::Connection>& connection, int32_t version,
@@ -94,9 +94,9 @@ namespace hazelcast {
                     std::unordered_map<int32_t, boost::uuids::uuid>
                     convert_to_map(const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
-                    ClientContext &client;
+                    ClientContext &client_;
                     logger &logger_;
-                    std::atomic<int32_t> partitionCount;
+                    std::atomic<int32_t> partition_count_;
                     boost::atomic_shared_ptr<partition_table> partition_table_;
                 };
             }

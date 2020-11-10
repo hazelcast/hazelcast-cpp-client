@@ -18,9 +18,9 @@
 
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/Address.h"
+#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
+#include "hazelcast/client/address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,7 +29,7 @@
 
 namespace hazelcast {
     namespace client {
-        class LoadBalancer;
+        class load_balancer;
 
         namespace connection {
             class Connection;
@@ -41,16 +41,16 @@ namespace hazelcast {
                 public:
                     ClientTransactionManagerServiceImpl(ClientContext &client);
 
-                    ClientContext &getClient() const;
+                    ClientContext &get_client() const;
 
                     std::shared_ptr<connection::Connection> connect();
 
                 private:
-                    ClientContext &client;
+                    ClientContext &client_;
 
                     std::exception_ptr
-                    newOperationTimeoutException(std::exception_ptr cause, std::chrono::milliseconds invocationTimeout,
-                                                 std::chrono::steady_clock::time_point startTime);
+                    new_operation_timeout_exception(std::exception_ptr cause, std::chrono::milliseconds invocation_timeout,
+                                                 std::chrono::steady_clock::time_point start_time);
 
                     void throw_exception(bool smart_routing);
                 };

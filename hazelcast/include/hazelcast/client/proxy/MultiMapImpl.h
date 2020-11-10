@@ -55,91 +55,91 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> removeEntryListener(boost::uuids::uuid registrationId);
+                boost::future<bool> remove_entry_listener(boost::uuids::uuid registration_id);
             protected:
-                MultiMapImpl(const std::string& instanceName, spi::ClientContext *context);
+                MultiMapImpl(const std::string& instance_name, spi::ClientContext *context);
 
-                boost::future<bool> put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                boost::future<bool> put(const serialization::pimpl::data& key, const serialization::pimpl::data& value);
 
-                boost::future<std::vector<serialization::pimpl::Data>> getData(const serialization::pimpl::Data &key);
+                boost::future<std::vector<serialization::pimpl::data>> get_data(const serialization::pimpl::data &key);
 
-                boost::future<bool> remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                boost::future<bool> remove(const serialization::pimpl::data& key, const serialization::pimpl::data& value);
 
-                boost::future<std::vector<serialization::pimpl::Data>> removeData(const serialization::pimpl::Data& key);
+                boost::future<std::vector<serialization::pimpl::data>> remove_data(const serialization::pimpl::data& key);
 
-                boost::future<std::vector<serialization::pimpl::Data>> keySetData();
+                boost::future<std::vector<serialization::pimpl::data>> key_set_data();
 
-                boost::future<std::vector<serialization::pimpl::Data>> valuesData();
+                boost::future<std::vector<serialization::pimpl::data>> values_data();
 
-                boost::future<EntryVector> entrySetData();
+                boost::future<EntryVector> entry_set_data();
 
-                boost::future<bool> containsKey(const serialization::pimpl::Data& key);
+                boost::future<bool> contains_key(const serialization::pimpl::data& key);
 
-                boost::future<bool> containsValue(const serialization::pimpl::Data& key);
+                boost::future<bool> contains_value(const serialization::pimpl::data& key);
 
-                boost::future<bool> containsEntry(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                boost::future<bool> contains_entry(const serialization::pimpl::data& key, const serialization::pimpl::data& value);
 
-                boost::future<int> valueCount(const serialization::pimpl::Data& key);
-
-                boost::future<boost::uuids::uuid>
-                addEntryListener(std::shared_ptr<impl::BaseEventHandler> entryEventHandler, bool includeValue);
+                boost::future<int> value_count(const serialization::pimpl::data& key);
 
                 boost::future<boost::uuids::uuid>
-                addEntryListener(std::shared_ptr<impl::BaseEventHandler> entryEventHandler, bool includeValue,
-                                 Data &&key);
+                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, bool include_value);
 
-                boost::future<void> lock(const serialization::pimpl::Data& key);
+                boost::future<boost::uuids::uuid>
+                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, bool include_value,
+                                 data &&key);
 
-                boost::future<void> lock(const serialization::pimpl::Data& key, std::chrono::milliseconds leaseTime);
+                boost::future<void> lock(const serialization::pimpl::data& key);
 
-                boost::future<bool> isLocked(const serialization::pimpl::Data& key);
+                boost::future<void> lock(const serialization::pimpl::data& key, std::chrono::milliseconds lease_time);
 
-                boost::future<bool> tryLock(const serialization::pimpl::Data& key);
+                boost::future<bool> is_locked(const serialization::pimpl::data& key);
 
-                boost::future<bool> tryLock(const serialization::pimpl::Data& key, std::chrono::milliseconds timeout);
+                boost::future<bool> try_lock(const serialization::pimpl::data& key);
+
+                boost::future<bool> try_lock(const serialization::pimpl::data& key, std::chrono::milliseconds timeout);
 
                 boost::future<bool>
-                tryLock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout,
-                        std::chrono::milliseconds leaseTime);
+                try_lock(const serialization::pimpl::data &key, std::chrono::milliseconds timeout,
+                        std::chrono::milliseconds lease_time);
 
-                boost::future<void> unlock(const serialization::pimpl::Data& key);
+                boost::future<void> unlock(const serialization::pimpl::data& key);
 
-                boost::future<void> forceUnlock(const serialization::pimpl::Data& key);
+                boost::future<void> force_unlock(const serialization::pimpl::data& key);
 
-                void onInitialize() override;
+                void on_initialize() override;
             private:
                 class MultiMapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    MultiMapEntryListenerMessageCodec(std::string name, bool includeValue);
+                    MultiMapEntryListenerMessageCodec(std::string name, bool include_value);
 
-                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool local_only) const override;
 
-                    protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid real_registration_id) const override;
                 private:
-                    std::string name;
-                    bool includeValue;
+                    std::string name_;
+                    bool include_value_;
                 };
 
                 class MultiMapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    MultiMapEntryListenerToKeyCodec(std::string name, bool includeValue,
-                                                    serialization::pimpl::Data &&key);
+                    MultiMapEntryListenerToKeyCodec(std::string name, bool include_value,
+                                                    serialization::pimpl::data &&key);
 
-                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool local_only) const override;
 
-                    protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid real_registration_id) const override;
                 private:
-                    std::string  name;
-                    bool includeValue;
-                    serialization::pimpl::Data key;
+                    std::string  name_;
+                    bool include_value_;
+                    serialization::pimpl::data key_;
                 };
 
-                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
+                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lock_reference_id_generator_;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> createMultiMapEntryListenerCodec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> create_multi_map_entry_listener_codec(bool include_value);
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec>
-                createMultiMapEntryListenerCodec(bool includeValue, serialization::pimpl::Data &&key);
+                create_multi_map_entry_listener_codec(bool include_value, serialization::pimpl::data &&key);
             };
         }
     }

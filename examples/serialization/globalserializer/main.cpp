@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 struct Person {
     friend std::ostream &operator<<(std::ostream &os, const Person &person);
@@ -30,26 +30,26 @@ std::ostream &operator<<(std::ostream &os, const Person &person) {
 
 class MyGlobalSerializer : public hazelcast::client::serialization::global_serializer {
 public:
-    void write(const boost::any &obj, hazelcast::client::serialization::ObjectDataOutput &out) override {
+    void write(const boost::any &obj, hazelcast::client::serialization::object_data_output &out) override {
         auto const &object = boost::any_cast<Person>(obj);
         out.write(object.name);
         out.write(object.male);
         out.write(object.age);
     }
 
-    boost::any read(hazelcast::client::serialization::ObjectDataInput &in) override {
+    boost::any read(hazelcast::client::serialization::object_data_input &in) override {
         return boost::any(Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()});
     }
 };
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::SerializationConfig serializationConfig;
-    serializationConfig.setGlobalSerializer(std::make_shared<MyGlobalSerializer>());
-    config.setSerializationConfig(serializationConfig);
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::client_config config;
+    hazelcast::client::serialization_config serializationConfig;
+    serializationConfig.set_global_serializer(std::make_shared<MyGlobalSerializer>());
+    config.set_serialization_config(serializationConfig);
+    hazelcast::client::hazelcast_client hz(config);
 
-    auto map = hz.getMap("map");
+    auto map = hz.get_map("map");
     map->put("foo", Person{"first last name", false, 19}).get();
     std::cout << "Got value \"" << *(map->get<std::string, Person>("foo").get()) << "\" from the map->" << std::endl;
     std::cout << "Finished" << std::endl;

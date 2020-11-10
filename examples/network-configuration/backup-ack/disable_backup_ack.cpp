@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
     // Disable the default backup ack feature
-    HazelcastClient hz(ClientConfig().backup_acks_enabled(false));
+    hazelcast_client hz(client_config().backup_acks_enabled(false));
 
     // perform operations
 

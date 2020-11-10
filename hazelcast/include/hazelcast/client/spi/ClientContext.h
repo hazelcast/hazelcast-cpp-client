@@ -19,7 +19,7 @@
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -37,10 +37,10 @@ namespace hazelcast {
         }
     }
     namespace client {
-        class Cluster;
-        class HazelcastClient;
-        class ClientConfig;
-        class ClientProperties;
+        class cluster;
+        class hazelcast_client;
+        class client_config;
+        class client_properties;
 
         namespace serialization {
             namespace pimpl {
@@ -49,7 +49,7 @@ namespace hazelcast {
         }
 
         namespace impl {
-            class HazelcastClientInstanceImpl;
+            class hazelcast_client_instance_impl;
             class ClientLockReferenceIdGenerator;
 
             namespace statistics {
@@ -75,7 +75,7 @@ namespace hazelcast {
         namespace spi {
             class ClientListenerService;
 
-            class LifecycleService;
+            class lifecycle_service;
 
             class ProxyManager;
 
@@ -98,49 +98,49 @@ namespace hazelcast {
             class HAZELCAST_API ClientContext {
             public:
                 // This constructor is used from tests
-                explicit ClientContext(const client::HazelcastClient &hazelcastClient);
+                explicit ClientContext(const client::hazelcast_client &hazelcast_client);
 
-                explicit ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
+                explicit ClientContext(client::impl::hazelcast_client_instance_impl &hazelcast_client);
 
-                serialization::pimpl::SerializationService &getSerializationService();
+                serialization::pimpl::SerializationService &get_serialization_service();
 
-                impl::ClientClusterServiceImpl & getClientClusterService();
+                impl::ClientClusterServiceImpl & get_client_cluster_service();
 
-                impl::ClientInvocationServiceImpl &getInvocationService();
+                impl::ClientInvocationServiceImpl &get_invocation_service();
 
-                ClientConfig &getClientConfig();
+                client_config &get_client_config();
 
-                impl::ClientPartitionServiceImpl & getPartitionService();
+                impl::ClientPartitionServiceImpl & get_partition_service();
 
-                LifecycleService &getLifecycleService();
+                lifecycle_service &get_lifecycle_service();
 
-                spi::impl::listener::listener_service_impl &getClientListenerService();
+                spi::impl::listener::listener_service_impl &get_client_listener_service();
 
-                connection::ClientConnectionManagerImpl &getConnectionManager();
+                connection::ClientConnectionManagerImpl &get_connection_manager();
 
-                internal::nearcache::NearCacheManager &getNearCacheManager();
+                internal::nearcache::NearCacheManager &get_near_cache_manager();
 
-                ClientProperties &getClientProperties();
+                client_properties &get_client_properties();
 
-                Cluster &getCluster();
+                cluster &get_cluster();
 
-                std::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
+                std::shared_ptr<impl::sequence::CallIdSequence> &get_call_id_sequence() const;
 
-                const protocol::ClientExceptionFactory &getClientExceptionFactory() const;
+                const protocol::ClientExceptionFactory &get_client_exception_factory() const;
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
-                impl::ClientExecutionServiceImpl &getClientExecutionService() const;
+                impl::ClientExecutionServiceImpl &get_client_execution_service() const;
 
-                const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
+                const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &get_lock_reference_id_generator();
 
-                std::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
+                std::shared_ptr<client::impl::hazelcast_client_instance_impl> get_hazelcast_client_implementation();
 
-                spi::ProxyManager &getProxyManager();
+                spi::ProxyManager &get_proxy_manager();
 
-                logger &getLogger();
+                logger &get_logger();
 
-                client::impl::statistics::Statistics &getClientstatistics();
+                client::impl::statistics::Statistics &get_clientstatistics();
 
                 spi::impl::listener::cluster_view_listener &get_cluster_view_listener();
 
@@ -148,7 +148,7 @@ namespace hazelcast {
 
                 cp::internal::session::proxy_session_manager &get_proxy_session_manager();
             private:
-                client::impl::HazelcastClientInstanceImpl &hazelcastClient;
+                client::impl::hazelcast_client_instance_impl &hazelcast_client_;
             };
         }
     }

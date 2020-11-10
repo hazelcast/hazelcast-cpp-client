@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <vector>
 #include <cstdlib>
 #include <memory>
@@ -37,48 +37,48 @@ namespace hazelcast {
 
             size_t remaining() const;
 
-            bool hasRemaining() const;
+            bool has_remaining() const;
 
             size_t position() const;
 
-            int readInt();
+            int read_int();
 
-            short readShort();
+            short read_short();
 
-            void writeInt(int v);
+            void write_int(int v);
 
-            void writeShort(short v);
+            void write_short(short v);
 
-            byte readByte();
+            byte read_byte();
 
             /**
             * returns the number of bytes put into target which shall be less or equal to len
             * @param len: requested maximum size to to read
             */
             template<typename T>
-            size_t readBytes(T &target, size_t len) {
-                size_t numBytesToCopy = std::min<size_t>(lim - pos, len);
-                target.insert(target.end(), buffer + pos, buffer + pos + numBytesToCopy);
-                pos += numBytesToCopy;
+            size_t read_bytes(T &target, size_t len) {
+                size_t numBytesToCopy = std::min<size_t>(lim_ - pos_, len);
+                target.insert(target.end(), buffer_ + pos_, buffer_ + pos_ + numBytesToCopy);
+                pos_ += numBytesToCopy;
                 return numBytesToCopy;
             }
 
             inline void read_bytes(byte *dest, size_t len) {
-                std::memcpy(dest, buffer + pos, len);
-                pos += len;
+                std::memcpy(dest, buffer_ + pos_, len);
+                pos_ += len;
             }
 
-            void writeByte(char c);
+            void write_byte(char c);
 
             void *ix() const;
 
-            void safeIncrementPosition(size_t);
+            void safe_increment_position(size_t);
 
         private:
-            size_t pos;
-            size_t lim;
-            size_t capacity;
-            char *buffer;
+            size_t pos_;
+            size_t lim_;
+            size_t capacity_;
+            char *buffer_;
         };
     }
 }

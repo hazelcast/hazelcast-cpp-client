@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto q1 = hz.getQueue("q");
-    auto q2 = hz.getQueue("q");
+    auto q1 = hz.get_queue("q");
+    auto q2 = hz.get_queue("q");
 
     q1->put("foo").get();
     std::cout << "q1->size:" << q1->size().get() << "  q2->size:" << q2->size().get() << std::endl;

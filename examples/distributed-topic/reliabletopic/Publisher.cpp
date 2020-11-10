@@ -13,33 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
-void publishWithDefaultConfig() {
-    hazelcast::client::HazelcastClient client;
+void publish_with_default_config() {
+    hazelcast::client::hazelcast_client client;
 
-    auto topic = client.getReliableTopic("MyReliableTopic");
+    auto topic = client.get_reliable_topic("MyReliableTopic");
     topic->publish(std::string("My first message")).get();
 }
 
-void publishWithNonDefaultConfig() {
-    hazelcast::client::ClientConfig clientConfig;
+void publish_with_non_default_config() {
+    hazelcast::client::client_config clientConfig;
     std::string topicName("MyReliableTopic");
-    hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
-    reliableTopicConfig.setReadBatchSize(5);
-    clientConfig.addReliableTopicConfig(reliableTopicConfig);
-    hazelcast::client::HazelcastClient client(clientConfig);
+    hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
+    reliableTopicConfig.set_read_batch_size(5);
+    clientConfig.add_reliable_topic_config(reliableTopicConfig);
+    hazelcast::client::hazelcast_client client(clientConfig);
 
-    auto topic = client.getReliableTopic(topicName);
+    auto topic = client.get_reliable_topic(topicName);
 
     topic->publish(std::string("My first message")).get();
 }
 
 
 int main() {
-    publishWithDefaultConfig();
+    publish_with_default_config();
 
-    publishWithNonDefaultConfig();
+    publish_with_non_default_config();
 
     std::cout << "Finished" << std::endl;
 

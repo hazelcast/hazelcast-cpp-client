@@ -54,16 +54,16 @@ namespace hazelcast {
                              *
                              * @return evicted entry count
                              */
-                            int evict(S *evictableStore, EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *evictionPolicyEvaluator,
-                                      EvictionChecker *evictionChecker, EvictionListener<A, E> *evictionListener) override {
-                                if (evictionChecker != NULL) {
-                                    if (evictionChecker->isEvictionRequired()) {
-                                        return evictInternal(evictableStore, evictionPolicyEvaluator, evictionListener);
+                            int evict(S *evictable_store, EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *eviction_policy_evaluator,
+                                      EvictionChecker *eviction_checker, EvictionListener<A, E> *eviction_listener) override {
+                                if (eviction_checker != NULL) {
+                                    if (eviction_checker->is_eviction_required()) {
+                                        return evict_internal(evictable_store, eviction_policy_evaluator, eviction_listener);
                                     } else {
                                         return 0;
                                     }
                                 } else {
-                                    return evictInternal(evictableStore, evictionPolicyEvaluator, evictionListener);
+                                    return evict_internal(evictable_store, eviction_policy_evaluator, eviction_listener);
                                 }
                             }
 
@@ -78,9 +78,9 @@ namespace hazelcast {
                              * @return evicted entry count
                              */
                         protected:
-                            virtual int evictInternal(S *evictableStore,
-                                                      EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *evictionPolicyEvaluator,
-                                                      EvictionListener<A, E> *evictionListener) {
+                            virtual int evict_internal(S *evictable_store,
+                                                      EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *eviction_policy_evaluator,
+                                                      EvictionListener<A, E> *eviction_listener) {
                                 assert(0);
                                 return 0;
                             }

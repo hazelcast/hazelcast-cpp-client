@@ -4,7 +4,7 @@
 #include <functional>
 #include <limits>
 
-#include <hazelcast/util/HazelcastDll.h>
+#include <hazelcast/util/hazelcast_dll.h>
 
 #ifndef HZ_LOGGING_DISABLED
     #define HZ_LOG(lg, lvl, msg) \

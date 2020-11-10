@@ -30,11 +30,11 @@ namespace hazelcast {
                 boost::future<int> size();
 
             public:
-                TransactionalQueueImpl(const std::string &name, txn::TransactionProxy &transactionProxy);
+                TransactionalQueueImpl(const std::string &name, txn::TransactionProxy &transaction_proxy);
 
-                boost::future<bool> offer(const serialization::pimpl::Data &e, std::chrono::milliseconds timeout);
+                boost::future<bool> offer(const serialization::pimpl::data &e, std::chrono::milliseconds timeout);
 
-                boost::future<boost::optional<serialization::pimpl::Data>>pollData(std::chrono::milliseconds timeout);
+                boost::future<boost::optional<serialization::pimpl::data>>poll_data(std::chrono::milliseconds timeout);
             };
         }
     }

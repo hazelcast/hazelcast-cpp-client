@@ -18,44 +18,44 @@
 using namespace hazelcast::client;
 
 int main() {
-    ClientConfig config;
+    client_config config;
     const char *mapName = "EvictionPolicyMap";
-    config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
-    nearCacheConfig.setInvalidateOnChange(false);
-    nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::LRU)
-            .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT).setSize(100);
-    config.addNearCacheConfig(nearCacheConfig);
-    HazelcastClient client(config);
+    config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
+    nearCacheConfig.set_invalidate_on_change(false);
+    nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
+            .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
+    config.add_near_cache_config(nearCacheConfig);
+    hazelcast_client client(config);
 
-    auto map = client.getMap(mapName);
+    auto map = client.get_map(mapName);
 
     for (int i = 1; i <= 100; i++) {
         map->put(i, std::string{"foo-"} + std::to_string(i)).get();
     }
-    NearCacheSupport::printNearCacheStats(map, "The put(1..100, article) calls have no effect on the empty Near Cache");
+    NearCacheSupport::print_near_cache_stats(map, "The put(1..100, article) calls have no effect on the empty Near Cache");
 
     for (int i = 1; i <= 100; i++) {
         map->get<int, std::string>(i).get();
     }
-    NearCacheSupport::printNearCacheStats(map, "The first get(1..100) calls populate the Near Cache");
+    NearCacheSupport::print_near_cache_stats(map, "The first get(1..100) calls populate the Near Cache");
 
     for (int i = 1; i <= 100; i++) {
         map->get<int, std::string>(i).get();
     }
-    NearCacheSupport::printNearCacheStats(map, "The second get(1..100) calls are served from the Near Cache");
+    NearCacheSupport::print_near_cache_stats(map, "The second get(1..100) calls are served from the Near Cache");
 
     map->put<int, std::string>(101, "bar").get();
-    NearCacheSupport::printNearCacheStats(map, "The put(101, \"bar\") call has no effect on the populated Near Cache");
+    NearCacheSupport::print_near_cache_stats(map, "The put(101, \"bar\") call has no effect on the populated Near Cache");
 
     map->get<int, std::string>(101).get();
-    NearCacheSupport::printNearCacheStats(map,
+    NearCacheSupport::print_near_cache_stats(map,
                                           "The first get(101) call triggers the eviction and population of the Near Cache");
 
-    NearCacheSupport::waitForNearCacheEvictionCount(map, 1);
-    NearCacheSupport::printNearCacheStats(map, "The Near Cache has been evicted");
+    NearCacheSupport::wait_for_near_cache_eviction_count(map, 1);
+    NearCacheSupport::print_near_cache_stats(map, "The Near Cache has been evicted");
 
     map->get<int, std::string>(101).get();
-    NearCacheSupport::printNearCacheStats(map, "The second get(101) call is served from the Near Cache");
+    NearCacheSupport::print_near_cache_stats(map, "The second get(101) call is served from the Near Cache");
 
 
     std::cout << "Finished" << std::endl;

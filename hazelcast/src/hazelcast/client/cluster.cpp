@@ -33,159 +33,164 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/functional/hash.hpp>
 
-#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/cluster.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/Member.h"
+#include "hazelcast/client/membership_listener.h"
+#include "hazelcast/client/initial_membership_event.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/membership_event.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/client/cluster/impl/VectorClock.h"
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/impl/vector_clock.h"
+#include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 
 namespace hazelcast {
     namespace client {
-        Cluster::Cluster(spi::impl::ClientClusterServiceImpl &clusterService)
-                : clusterService(clusterService) {
+        cluster::cluster(spi::impl::ClientClusterServiceImpl &cluster_service)
+                : cluster_service_(cluster_service) {
         }
 
-        std::vector<Member> Cluster::getMembers() {
-            return clusterService.getMemberList();
+        std::vector<member> cluster::get_members() {
+            return cluster_service_.get_member_list();
         }
 
-        boost::uuids::uuid Cluster::addMembershipListener(MembershipListener &&listener) {
-            return clusterService.addMembershipListener(std::move(listener));
+        boost::uuids::uuid cluster::add_membership_listener(membership_listener &&listener) {
+            return cluster_service_.add_membership_listener(std::move(listener));
         }
 
-        bool Cluster::removeMembershipListener(boost::uuids::uuid registrationId) {
-            return clusterService.removeMembershipListener(registrationId);
+        bool cluster::remove_membership_listener(boost::uuids::uuid registration_id) {
+            return cluster_service_.remove_membership_listener(registration_id);
         }
 
-        Member::Member() : liteMember(false) {
+        member::member() : lite_member_(false) {
         }
 
-        Member::Member(Address address, boost::uuids::uuid uuid, bool lite, std::unordered_map<std::string, std::string> attr) :
-                address(address), uuid(uuid), liteMember(lite), attributes(attr) {
+        member::member(address address, boost::uuids::uuid uuid, bool lite, std::unordered_map<std::string, std::string> attr) :
+                address_(address), uuid_(uuid), lite_member_(lite), attributes_(attr) {
         }
 
-        Member::Member(Address memberAddress) : address(memberAddress), liteMember(false) {
+        member::member(address member_address) : address_(member_address), lite_member_(false) {
         }
 
-        Member::Member(boost::uuids::uuid uuid) : uuid(uuid), liteMember(false) {
+        member::member(boost::uuids::uuid uuid) : uuid_(uuid), lite_member_(false) {
         }
 
-        bool Member::operator==(const Member &rhs) const {
-            return uuid == rhs.uuid;
+        bool member::operator==(const member &rhs) const {
+            return uuid_ == rhs.uuid_;
         }
 
-        const Address &Member::getAddress() const {
-            return address;
+        const address &member::get_address() const {
+            return address_;
         }
 
-        boost::uuids::uuid Member::getUuid() const {
-            return uuid;
+        boost::uuids::uuid member::get_uuid() const {
+            return uuid_;
         }
 
-        bool Member::isLiteMember() const {
-            return liteMember;
+        bool member::is_lite_member() const {
+            return lite_member_;
         }
 
-        const std::unordered_map<std::string, std::string> &Member::getAttributes() const {
-            return attributes;
+        const std::unordered_map<std::string, std::string> &member::get_attributes() const {
+            return attributes_;
         }
 
-        std::ostream &operator<<(std::ostream &out, const Member &member) {
-            const Address &address = member.getAddress();
+        std::ostream &operator<<(std::ostream &out, const member &member) {
+            const address &address = member.get_address();
             out << "Member[";
-            out << address.getHost();
+            out << address.get_host();
             out << "]";
             out << ":";
-            out << address.getPort();
-            out << " - " << boost::uuids::to_string(member.getUuid());
+            out << address.get_port();
+            out << " - " << boost::uuids::to_string(member.get_uuid());
             return out;
         }
 
-        const std::string *Member::getAttribute(const std::string &key) const {
-            std::unordered_map<std::string, std::string>::const_iterator it = attributes.find(key);
-            if (attributes.end() != it) {
+        const std::string *member::get_attribute(const std::string &key) const {
+            std::unordered_map<std::string, std::string>::const_iterator it = attributes_.find(key);
+            if (attributes_.end() != it) {
                 return &(it->second);
             } else {
                 return NULL;
             }
         }
 
-        bool Member::lookupAttribute(const std::string &key) const {
-            return attributes.find(key) != attributes.end();
+        bool member::lookup_attribute(const std::string &key) const {
+            return attributes_.find(key) != attributes_.end();
         }
 
-        bool Member::operator<(const Member &rhs) const {
-            return uuid < rhs.uuid;
+        bool member::operator<(const member &rhs) const {
+            return uuid_ < rhs.uuid_;
         }
 
-        Endpoint::Endpoint(boost::uuids::uuid uuid, boost::optional<Address> socketAddress)
-                : uuid(uuid), socketAddress(std::move(socketAddress)) {}
+        endpoint::endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address)
+                : uuid_(uuid), socket_address_(std::move(socket_address)) {}
 
-        boost::uuids::uuid Endpoint::getUuid() const {
-            return uuid;
+        boost::uuids::uuid endpoint::get_uuid() const {
+            return uuid_;
         }
 
-        const boost::optional<Address> &Endpoint::getSocketAddress() const {
-            return socketAddress;
+        const boost::optional<address> &endpoint::get_socket_address() const {
+            return socket_address_;
         }
 
-        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
-                                         const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &membersList) :
-                cluster(cluster), member(member), eventType(eventType), members(membersList) {
+        membership_event::membership_event(cluster &cluster, const member &m, membership_event_type event_type,
+                                           const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> &members_list) :
+                cluster_(cluster), member_(m), event_type_(event_type), members_(members_list) {
         }
 
-        MembershipEvent::~MembershipEvent() = default;
+        membership_event::~membership_event() = default;
 
-        std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> MembershipEvent::getMembers() const {
-            return members;
+        std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> membership_event::get_members() const {
+            return members_;
         }
 
-        const Cluster &MembershipEvent::getCluster() const {
-            return cluster;
+        const cluster &membership_event::get_cluster() const {
+            return cluster_;
         }
 
-        MembershipEvent::MembershipEventType MembershipEvent::getEventType() const {
-            return eventType;
+        membership_event::membership_event_type membership_event::get_event_type() const {
+            return event_type_;
         }
 
-        const Member &MembershipEvent::getMember() const {
-            return member;
+        const member &membership_event::get_member() const {
+            return member_;
         }
 
-        Client::Client(boost::uuids::uuid uuid, boost::optional<Address> socketAddress, std::string name,
-                       std::unordered_set<std::string> labels) : Endpoint(uuid, std::move(socketAddress)), name(std::move(name)),
-                                                                 labels_(std::move(labels)) {}
+        local_endpoint::local_endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address, std::string name,
+                                       std::unordered_set<std::string> labels) : endpoint(uuid, std::move(socket_address)), name_(std::move(name)),
+                                                                       labels_(std::move(labels)) {}
 
-        const std::string &Client::getName() const {
-            return name;
+        const std::string &local_endpoint::get_name() const {
+            return name_;
+        }
+
+        std::ostream &operator<<(std::ostream &os, const member_selector &a_selector) {
+            a_selector.to_string(os);
+            return os;
         }
 
         namespace impl {
             RoundRobinLB::RoundRobinLB() = default;
 
-            void RoundRobinLB::init(Cluster &cluster) {
+            void RoundRobinLB::init(cluster &cluster) {
                 AbstractLoadBalancer::init(cluster);
             }
 
-            boost::optional<Member> RoundRobinLB::next() {
-                auto members = getMembers();
+            boost::optional<member> RoundRobinLB::next() {
+                auto members = get_members();
                 if (members.empty()) {
                     return boost::none;
                 }
-                return members[++index % members.size()];
+                return members[++index_ % members.size()];
             }
 
-            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index(rhs.index.load()) {
+            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index_(rhs.index_.load()) {
             }
 
             void RoundRobinLB::operator=(const RoundRobinLB &rhs) {
-                index.store(rhs.index.load());
+                index_.store(rhs.index_.load());
             }
 
             AbstractLoadBalancer::AbstractLoadBalancer(const AbstractLoadBalancer &rhs) {
@@ -193,113 +198,107 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
-                std::lock_guard<std::mutex> lg(rhs.membersLock);
-                std::lock_guard<std::mutex> lg2(membersLock);
-                membersRef = rhs.membersRef;
-                cluster = rhs.cluster;
+                std::lock_guard<std::mutex> lg(rhs.members_lock_);
+                std::lock_guard<std::mutex> lg2(members_lock_);
+                members_ref_ = rhs.members_ref_;
+                cluster_ = rhs.cluster_;
             }
 
-            void AbstractLoadBalancer::init(Cluster &cluster) {
-                this->cluster = &cluster;
-                setMembersRef();
+            void AbstractLoadBalancer::init(cluster &cluster) {
+                this->cluster_ = &cluster;
+                set_members_ref();
 
-                cluster.addMembershipListener(
-                    MembershipListener()
-                        .on_init([this](const InitialMembershipEvent &){
-                            setMembersRef();
+                cluster.add_membership_listener(
+                        membership_listener()
+                        .on_init([this](const initial_membership_event &){
+                            set_members_ref();
                         })
-                        .on_joined([this](const MembershipEvent &){
-                            setMembersRef();
+                        .on_joined([this](const membership_event &){
+                            set_members_ref();
                         })
-                        .on_left([this](const MembershipEvent &){
-                            setMembersRef();
+                        .on_left([this](const membership_event &){
+                            set_members_ref();
                         })
                 );
             }
 
-            void AbstractLoadBalancer::setMembersRef() {
-                std::lock_guard<std::mutex> lg(membersLock);
-                membersRef = cluster->getMembers();
+            void AbstractLoadBalancer::set_members_ref() {
+                std::lock_guard<std::mutex> lg(members_lock_);
+                members_ref_ = cluster_->get_members();
             }
 
-            std::vector<Member> AbstractLoadBalancer::getMembers() {
-                std::lock_guard<std::mutex> lg(membersLock);
-                return membersRef;
+            std::vector<member> AbstractLoadBalancer::get_members() {
+                std::lock_guard<std::mutex> lg(members_lock_);
+                return members_ref_;
             }
 
             AbstractLoadBalancer::~AbstractLoadBalancer() = default;
 
-            AbstractLoadBalancer::AbstractLoadBalancer() : cluster(NULL) {
+            AbstractLoadBalancer::AbstractLoadBalancer() : cluster_(NULL) {
+            }
+
+            vector_clock::vector_clock() = default;
+
+            vector_clock::vector_clock(const vector_clock::timestamp_vector &replica_logical_timestamps)
+                    : replica_timestamp_entries_(replica_logical_timestamps) {
+                for (const vector_clock::timestamp_vector::value_type &replicaTimestamp : replica_logical_timestamps) {
+                    replica_timestamps_[replicaTimestamp.first] = replicaTimestamp.second;
+                }
+            }
+
+            vector_clock::timestamp_vector vector_clock::entry_set() {
+                return replica_timestamp_entries_;
+            }
+
+            bool vector_clock::is_after(vector_clock &other) {
+                bool anyTimestampGreater = false;
+                for (const vector_clock::timestamp_map::value_type &otherEntry : other.replica_timestamps_) {
+                    const auto &replicaId = otherEntry.first;
+                    int64_t otherReplicaTimestamp = otherEntry.second;
+                    std::pair<bool, int64_t> localReplicaTimestamp = get_timestamp_for_replica(replicaId);
+
+                    if (!localReplicaTimestamp.first ||
+                        localReplicaTimestamp.second < otherReplicaTimestamp) {
+                        return false;
+                    } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
+                        anyTimestampGreater = true;
+                    }
+                }
+                // there is at least one local timestamp greater or local vector clock has additional timestamps
+                return anyTimestampGreater || other.replica_timestamps_.size() < replica_timestamps_.size();
+            }
+
+            std::pair<bool, int64_t> vector_clock::get_timestamp_for_replica(boost::uuids::uuid replica_id) {
+                if (replica_timestamps_.count(replica_id) == 0) {
+                    return std::make_pair(false, -1);
+                }
+                return std::make_pair(true, replica_timestamps_[replica_id]);
             }
         }
 
-        namespace cluster {
-            namespace memberselector {
-                bool MemberSelectors::DataMemberSelector::select(const Member &member) const {
-                    return !member.isLiteMember();
-                }
-
-                void MemberSelectors::DataMemberSelector::toString(std::ostream &os) const {
-                    os << "Default DataMemberSelector";
-                }
-
-                const std::unique_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
-                        new MemberSelectors::DataMemberSelector());
-            }
-
-            namespace impl {
-                VectorClock::VectorClock() = default;
-
-                VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps)
-                        : replicaTimestampEntries(replicaLogicalTimestamps) {
-                    for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replicaLogicalTimestamps) {
-                        replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
-                    }
-                }
-
-                VectorClock::TimestampVector VectorClock::entrySet() {
-                    return replicaTimestampEntries;
-                }
-
-                bool VectorClock::isAfter(VectorClock &other) {
-                    bool anyTimestampGreater = false;
-                    for (const VectorClock::TimestampMap::value_type &otherEntry : other.replicaTimestamps) {
-                        const auto &replicaId = otherEntry.first;
-                        int64_t otherReplicaTimestamp = otherEntry.second;
-                        std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
-
-                        if (!localReplicaTimestamp.first ||
-                            localReplicaTimestamp.second < otherReplicaTimestamp) {
-                            return false;
-                        } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
-                            anyTimestampGreater = true;
-                        }
-                    }
-                    // there is at least one local timestamp greater or local vector clock has additional timestamps
-                    return anyTimestampGreater || other.replicaTimestamps.size() < replicaTimestamps.size();
-                }
-
-                std::pair<bool, int64_t> VectorClock::getTimestampForReplica(boost::uuids::uuid replicaId) {
-                    if (replicaTimestamps.count(replicaId) == 0) {
-                        return std::make_pair(false, -1);
-                    }
-                    return std::make_pair(true, replicaTimestamps[replicaId]);
-                }
-            }
+        bool member_selectors::data_member_selector::select(const member &member) const {
+            return !member.is_lite_member();
         }
+
+        void member_selectors::data_member_selector::to_string(std::ostream &os) const {
+            os << "Default DataMemberSelector";
+        }
+
+        const std::unique_ptr<member_selector> member_selectors::DATA_MEMBER_SELECTOR(
+                new member_selectors::data_member_selector());
 
         namespace internal {
             namespace partition {
                 namespace strategy {
-                    std::string StringPartitioningStrategy::getBaseName(const std::string &name) {
-                        size_t indexOf = name.find('@');
-                        if (indexOf == std::string::npos) {
+                    std::string StringPartitioningStrategy::get_base_name(const std::string &name) {
+                        size_t index_of = name.find('@');
+                        if (index_of == std::string::npos) {
                             return name;
                         }
-                        return name.substr(0, indexOf);
+                        return name.substr(0, index_of);
                     }
 
-                    std::string StringPartitioningStrategy::getPartitionKey(const std::string &key) {
+                    std::string StringPartitioningStrategy::get_partition_key(const std::string &key) {
                         size_t firstIndexOf = key.find('@');
                         if (firstIndexOf == std::string::npos) {
                             return key;
@@ -314,8 +313,8 @@ namespace hazelcast {
 }
 
 namespace std {
-    std::size_t hash<hazelcast::client::Member>::operator()(const hazelcast::client::Member &k) const noexcept {
-        return boost::hash<boost::uuids::uuid>()(k.getUuid());
+    std::size_t hash<hazelcast::client::member>::operator()(const hazelcast::client::member &k) const noexcept {
+        return boost::hash<boost::uuids::uuid>()(k.get_uuid());
     }
 }
 

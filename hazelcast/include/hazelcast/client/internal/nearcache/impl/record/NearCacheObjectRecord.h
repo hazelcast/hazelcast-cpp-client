@@ -42,8 +42,8 @@ namespace hazelcast {
                                 : public AbstractNearCacheRecord<V> {
                         public:
                             NearCacheObjectRecord(const std::shared_ptr<V> &value,
-                                                int64_t creationTime, int64_t expiryTime)
-                                    : AbstractNearCacheRecord<V>(value, creationTime, expiryTime) {
+                                                int64_t creation_time, int64_t expiry_time)
+                                    : AbstractNearCacheRecord<V>(value, creation_time, expiry_time) {
                             }
                         };
                     }

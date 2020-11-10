@@ -23,7 +23,7 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API ProxyImpl : public spi::ClientProxy, public SerializingProxy {
             protected:
-                ProxyImpl(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context);
+                ProxyImpl(const std::string &service_name, const std::string &object_name, spi::ClientContext *context);
 
                 ~ProxyImpl() override;
             };

@@ -20,9 +20,9 @@
 #include <stdint.h>
 #include <thread>
 
-#include "hazelcast/client/Ringbuffer.h"
+#include "hazelcast/client/ringbuffer.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -37,19 +37,19 @@ namespace hazelcast {
                 namespace reliable {
                     class HAZELCAST_API ReliableTopicExecutor {
                     public:
-                        enum MessageType {
+                        enum message_type {
                             GET_ONE_MESSAGE,
                             CANCEL
                         };
 
                         struct Message {
-                            MessageType type;
+                            message_type type;
                             int64_t sequence;
-                            int32_t maxCount;
-                            std::shared_ptr<ExecutionCallback<ringbuffer::ReadResultSet>> callback;
+                            int32_t max_count;
+                            std::shared_ptr<execution_callback<rb::read_result_set>> callback;
                         };
 
-                        ReliableTopicExecutor(std::shared_ptr<Ringbuffer> rb, logger &lg);
+                        ReliableTopicExecutor(std::shared_ptr<ringbuffer> rb, logger &lg);
 
                         virtual ~ReliableTopicExecutor();
 
@@ -65,23 +65,23 @@ namespace hazelcast {
                     private:
                         class Task {
                         public:
-                            Task(std::shared_ptr<Ringbuffer> rb, util::BlockingConcurrentQueue<Message> &q,
+                            Task(std::shared_ptr<ringbuffer> rb, util::BlockingConcurrentQueue<Message> &q,
                                  std::atomic<bool> &shutdown);
 
                             virtual void run();
 
-                            virtual std::string getName() const;
+                            virtual std::string get_name() const;
 
                         private:
-                            std::shared_ptr<Ringbuffer> rb;
-                            util::BlockingConcurrentQueue<Message> &q;
-                            std::atomic<bool> &shutdown;
+                            std::shared_ptr<ringbuffer> rb_;
+                            util::BlockingConcurrentQueue<Message> &q_;
+                            std::atomic<bool> &shutdown_;
                         };
 
-                        std::shared_ptr<Ringbuffer> ringbuffer;
-                        std::thread runnerThread;
-                        util::BlockingConcurrentQueue<Message> q;
-                        std::atomic<bool> shutdown;
+                        std::shared_ptr<ringbuffer> ringbuffer_;
+                        std::thread runner_thread_;
+                        util::BlockingConcurrentQueue<Message> q_;
+                        std::atomic<bool> shutdown_;
                     };
                 }
             }

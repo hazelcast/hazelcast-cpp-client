@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <boost/asio.hpp>
 
-#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/hz_socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Closeable.h"
@@ -41,7 +41,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class IException;
+            class iexception;
         }
         namespace spi {
             class ClientContext;
@@ -53,9 +53,9 @@ namespace hazelcast {
             }
         }
 
-        class Address;
+        class address;
 
-        class SocketInterceptor;
+        class socket_interceptor;
 
         namespace connection {
             class ConnectionFuture;
@@ -64,10 +64,10 @@ namespace hazelcast {
 
             class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {
             public:
-                Connection(const Address &address, spi::ClientContext &clientContext, int32_t connectionId,
-                           internal::socket::SocketFactory &socketFactory,
-                           ClientConnectionManagerImpl &clientConnectionManager,
-                           std::chrono::milliseconds &connectTimeoutInMillis);
+                Connection(const address &address, spi::ClientContext &client_context, int32_t connection_id,
+                           internal::socket::SocketFactory &socket_factory,
+                           ClientConnectionManagerImpl &client_connection_manager,
+                           std::chrono::milliseconds &connect_timeout_in_millis);
 
                 ~Connection() override;
 
@@ -79,25 +79,25 @@ namespace hazelcast {
 
                 void close(const std::string &reason, std::exception_ptr cause);
 
-                void write(const std::shared_ptr<spi::impl::ClientInvocation> &clientInvocation);
+                void write(const std::shared_ptr<spi::impl::ClientInvocation> &client_invocation);
 
-                const boost::optional<Address> &getRemoteAddress() const;
+                const boost::optional<address> &get_remote_address() const;
 
-                void setRemoteAddress(boost::optional<Address> endpoint);
+                void set_remote_address(boost::optional<address> endpoint);
 
-                boost::uuids::uuid getRemoteUuid() const;
+                boost::uuids::uuid get_remote_uuid() const;
 
-                void setRemoteUuid(boost::uuids::uuid remoteUuid);
+                void set_remote_uuid(boost::uuids::uuid remote_uuid);
 
-                void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message);
+                void handle_client_message(const std::shared_ptr<protocol::ClientMessage> &message);
 
-                int getConnectionId() const;
+                int get_connection_id() const;
 
-                bool isAlive() const;
+                bool is_alive() const;
 
-                std::chrono::steady_clock::time_point lastReadTime() const;
+                std::chrono::steady_clock::time_point last_read_time() const;
 
-                const std::string &getCloseReason() const;
+                const std::string &get_close_reason() const;
 
                 bool operator==(const Connection &rhs) const;
 
@@ -105,44 +105,44 @@ namespace hazelcast {
 
                 bool operator<(const Connection &rhs) const;
 
-                const std::string &getConnectedServerVersionString() const;
+                const std::string &get_connected_server_version_string() const;
 
-                void setConnectedServerVersion(const std::string &connectedServer);
+                void set_connected_server_version(const std::string &connected_server);
 
-                boost::optional<Address> getLocalSocketAddress() const;
+                boost::optional<address> get_local_socket_address() const;
 
-                std::chrono::system_clock::time_point getStartTime() const;
+                std::chrono::system_clock::time_point get_start_time() const;
 
-                Socket &getSocket();
+                hz_socket &get_socket();
 
-                void deregisterInvocation(int64_t callId);
+                void deregister_invocation(int64_t call_id);
 
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
-                ReadHandler readHandler;
+                ReadHandler read_handler;
                 std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>> invocations;
             private:
-                void logClose();
+                void log_close();
 
-                void innerClose();
+                void inner_close();
 
-                std::chrono::system_clock::time_point startTime;
-                std::atomic<std::chrono::milliseconds> closedTimeDuration;
-                spi::ClientContext &clientContext;
-                protocol::IMessageHandler &invocationService;
-                std::unique_ptr<Socket> socket;
-                int32_t connectionId;
-                std::string closeReason;
-                std::exception_ptr closeCause;
-                std::string connectedServerVersionString;
+                std::chrono::system_clock::time_point start_time_;
+                std::atomic<std::chrono::milliseconds> closed_time_duration_;
+                spi::ClientContext &client_context_;
+                protocol::IMessageHandler &invocation_service_;
+                std::unique_ptr<hz_socket> socket_;
+                int32_t connection_id_;
+                std::string close_reason_;
+                std::exception_ptr close_cause_;
+                std::string connected_server_version_string_;
                 // TODO: check if they need to be atomic
-                boost::optional<Address> remote_address_;
+                boost::optional<address> remote_address_;
                 boost::uuids::uuid remote_uuid_;
                 logger &logger_;
-                std::atomic_bool alive;
+                std::atomic_bool alive_;
                 std::unique_ptr<boost::asio::steady_timer> backup_timer_;
 
-                void schedule_periodic_backup_cleanup(std::chrono::milliseconds backupTimeout,
+                void schedule_periodic_backup_cleanup(std::chrono::milliseconds backup_timeout,
                                                       std::shared_ptr<Connection> this_connection);
             };
         }

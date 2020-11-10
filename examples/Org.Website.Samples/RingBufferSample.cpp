@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
-    auto rb = hz.getRingbuffer("rb");
+    hazelcast_client hz;
+    auto rb = hz.get_ringbuffer("rb");
     // add two items into ring buffer
     rb->add(100).get();
     rb->add(200).get();
     // we start from the oldest item.
     // if you want to start from the next item, call rb.tailSequence()+1
-    int64_t sequence = rb->headSequence().get();
-    std::cout << *rb->readOne<int>(sequence).get() << std::endl;
+    int64_t sequence = rb->head_sequence().get();
+    std::cout << *rb->read_one<int>(sequence).get() << std::endl;
     sequence++;
-    std::cout << *rb->readOne<int>(sequence).get() << std::endl;
+    std::cout << *rb->read_one<int>(sequence).get() << std::endl;
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

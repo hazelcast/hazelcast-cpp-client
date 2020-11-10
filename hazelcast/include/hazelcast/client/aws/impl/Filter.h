@@ -18,7 +18,7 @@
 #include <unordered_map>
 #include <string>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -44,12 +44,12 @@ namespace hazelcast {
                      * @param value Filter value
                      *
                      */
-                    void addFilter(const std::string &name, const std::string &value);
+                    void add_filter(const std::string &name, const std::string &value);
 
-                    const std::unordered_map<std::string, std::string> &getFilters();
+                    const std::unordered_map<std::string, std::string> &get_filters();
 
                 private:
-                    std::unordered_map<std::string, std::string> filters;
+                    std::unordered_map<std::string, std::string> filters_;
                 };
             };
         }

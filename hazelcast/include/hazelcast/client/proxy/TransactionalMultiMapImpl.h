@@ -21,7 +21,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class Data;
+                class data;
             }
         }
         namespace proxy {
@@ -35,20 +35,20 @@ namespace hazelcast {
                 boost::future<int> size();
 
             protected:
-                TransactionalMultiMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy);
+                TransactionalMultiMapImpl(const std::string &name, txn::TransactionProxy &transaction_proxy);
 
                 boost::future<bool>
-                putData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                put_data(const serialization::pimpl::data &key, const serialization::pimpl::data &value);
 
-                boost::future<std::vector<serialization::pimpl::Data>> getData(const serialization::pimpl::Data &key);
+                boost::future<std::vector<serialization::pimpl::data>> get_data(const serialization::pimpl::data &key);
 
                 boost::future<bool>
-                remove(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                remove(const serialization::pimpl::data &key, const serialization::pimpl::data &value);
 
-                boost::future<std::vector<serialization::pimpl::Data>>
-                removeData(const serialization::pimpl::Data &key);
+                boost::future<std::vector<serialization::pimpl::data>>
+                remove_data(const serialization::pimpl::data &key);
 
-                boost::future<int> valueCount(const serialization::pimpl::Data &key);
+                boost::future<int> value_count(const serialization::pimpl::data &key);
             };
         }
     }

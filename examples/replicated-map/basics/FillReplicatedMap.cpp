@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.getReplicatedMap("map");
+    auto map = hz.get_replicated_map("map");
 
     map->put<std::string, std::string>("1", "Tokyo").get();
     map->put<std::string, std::string>("2", "Paris").get();

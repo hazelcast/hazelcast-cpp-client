@@ -18,7 +18,7 @@
 
 #include <boost/optional.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -27,7 +27,7 @@
 
 namespace hazelcast {
     namespace client {
-        class Member;
+        class member;
 
         namespace impl {
             class HAZELCAST_API Partition {
@@ -38,7 +38,7 @@ namespace hazelcast {
                  *
                  * @return the ID of the partition
                  */
-                virtual int getPartitionId() const = 0;
+                virtual int get_partition_id() const = 0;
 
                 /**
                  * Returns the current member that owns this partition.
@@ -49,7 +49,7 @@ namespace hazelcast {
                  *
                  * @return the owner member of the partition
                  */
-                virtual boost::optional<Member> getOwner() const = 0;
+                virtual boost::optional<member> get_owner() const = 0;
 
                 virtual ~Partition() = default;
             };

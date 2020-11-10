@@ -33,7 +33,7 @@ namespace hazelcast {
         namespace connection {
             class Connection;
         }
-        class TransactionOptions;
+        class transaction_options;
 
         namespace spi {
             class ClientContext;
@@ -52,7 +52,7 @@ namespace hazelcast {
         namespace txn {
             class HAZELCAST_API TxnState {
             public:
-                enum State {
+                enum state {
                     NO_TXN,
                     ACTIVE,
                     PREPARING,
@@ -64,26 +64,26 @@ namespace hazelcast {
                     ROLLED_BACK
                 } value;
 
-                TxnState(State value);
+                TxnState(state value);
 
                 operator int() const;
 
                 void operator=(int i);
 
-                std::vector<State> values;
+                std::vector<state> values;
             };
 
             class HAZELCAST_API TransactionProxy {
             public:
-                TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, std::shared_ptr<connection::Connection> connection);
+                TransactionProxy(transaction_options&, spi::ClientContext& client_context, std::shared_ptr<connection::Connection> connection);
 
                 TransactionProxy(const TransactionProxy &rhs);
 
-                boost::uuids::uuid getTxnId() const;
+                boost::uuids::uuid get_txn_id() const;
 
-                TxnState getState() const;
+                TxnState get_state() const;
 
-                std::chrono::milliseconds getTimeout() const;
+                std::chrono::milliseconds get_timeout() const;
 
                 boost::future<void> begin();
 
@@ -91,28 +91,28 @@ namespace hazelcast {
 
                 boost::future<void> rollback();
 
-                serialization::pimpl::SerializationService& getSerializationService();
+                serialization::pimpl::SerializationService& get_serialization_service();
 
-                std::shared_ptr<connection::Connection> getConnection();
+                std::shared_ptr<connection::Connection> get_connection();
 
-                spi::ClientContext &getClientContext() const;
+                spi::ClientContext &get_client_context() const;
 
             private:
-                TransactionOptions& options;
-                spi::ClientContext& clientContext;
-                std::shared_ptr<connection::Connection> connection;
+                transaction_options& options_;
+                spi::ClientContext& client_context_;
+                std::shared_ptr<connection::Connection> connection_;
 
-                std::atomic<bool> TRANSACTION_EXISTS{ false };
+                std::atomic<bool> transaction_exists_{ false };
 
-                int64_t threadId;
-                boost::uuids::uuid txnId;
+                int64_t thread_id_;
+                boost::uuids::uuid txn_id_;
 
-                TxnState state;
-                std::chrono::steady_clock::time_point startTime;
+                TxnState state_;
+                std::chrono::steady_clock::time_point start_time_;
 
-                void checkThread();
+                void check_thread();
 
-                void checkTimeout();
+                void check_timeout();
 
                 boost::future<protocol::ClientMessage> invoke(protocol::ClientMessage &request);
             };

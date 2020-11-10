@@ -30,430 +30,431 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/SerializationConfig.h"
-#include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/client/client_config.h"
+#include "hazelcast/client/serialization_config.h"
+#include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/Preconditions.h"
-#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/config/client_flake_id_generator_config.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/client/config/ReliableTopicConfig.h"
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
-#include "hazelcast/client/config/LoggerConfig.h"
+#include "hazelcast/client/address.h"
+#include "hazelcast/client/config/client_network_config.h"
+#include "hazelcast/client/config/client_aws_config.h"
+#include "hazelcast/client/config/reliable_topic_config.h"
+#include "hazelcast/client/config/client_connection_strategy_config.h"
+#include "hazelcast/client/config/logger_config.h"
 #include "hazelcast/client/config/index_config.h"
-#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
-#include "hazelcast/client/query/Predicates.h"
-#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
+#include "hazelcast/client/query/predicates.h"
+#include "hazelcast/client/lifecycle_listener.h"
+#include "hazelcast/client/config/eviction_strategy_type.h"
 
 namespace hazelcast {
     namespace client {
-        SerializationConfig::SerializationConfig() : version(0) {
+        serialization_config::serialization_config() : version_(0) {
         }
 
-        int SerializationConfig::getPortableVersion() const {
-            return version;
+        int serialization_config::get_portable_version() const {
+            return version_;
         }
 
-        SerializationConfig &SerializationConfig::setPortableVersion(int v) {
-            this->version = v;
+        serialization_config &serialization_config::set_portable_version(int v) {
+            this->version_ = v;
             return *this;
         }
 
-        std::shared_ptr<serialization::global_serializer> SerializationConfig::getGlobalSerializer() const {
-            return globalSerializer_;
+        std::shared_ptr<serialization::global_serializer> serialization_config::get_global_serializer() const {
+            return global_serializer_;
         }
 
-        void SerializationConfig::setGlobalSerializer(
-                const std::shared_ptr<serialization::global_serializer> &globalSerializer) {
-            globalSerializer_ = globalSerializer;
+        void serialization_config::set_global_serializer(
+                const std::shared_ptr<serialization::global_serializer> &global_serializer) {
+            global_serializer_ = global_serializer;
         }
 
         namespace config {
-            SSLConfig::SSLConfig() : enabled(false), sslProtocol(tlsv12) {
+            ssl_config::ssl_config() : enabled_(false), ssl_protocol_(tlsv12) {
             }
 
-            bool SSLConfig::isEnabled() const {
-                return enabled;
+            bool ssl_config::is_enabled() const {
+                return enabled_;
             }
 
-            SSLConfig &SSLConfig::setEnabled(bool isEnabled) {
-                util::Preconditions::checkSSL("getAwsConfig");
-                this->enabled = isEnabled;
+            ssl_config &ssl_config::set_enabled(bool is_enabled) {
+                util::Preconditions::check_ssl("get_aws_config");
+                this->enabled_ = is_enabled;
                 return *this;
             }
 
-            SSLConfig &SSLConfig::setProtocol(SSLProtocol protocol) {
-                this->sslProtocol = protocol;
+            ssl_config &ssl_config::set_protocol(ssl_protocol protocol) {
+                this->ssl_protocol_ = protocol;
                 return *this;
             }
 
-            SSLProtocol SSLConfig::getProtocol() const {
-                return sslProtocol;
+            ssl_protocol ssl_config::get_protocol() const {
+                return ssl_protocol_;
             }
 
-            const std::vector<std::string> &SSLConfig::getVerifyFiles() const {
-                return clientVerifyFiles;
+            const std::vector<std::string> &ssl_config::get_verify_files() const {
+                return client_verify_files_;
             }
 
-            SSLConfig &SSLConfig::addVerifyFile(const std::string &filename) {
-                this->clientVerifyFiles.push_back(filename);
+            ssl_config &ssl_config::add_verify_file(const std::string &filename) {
+                this->client_verify_files_.push_back(filename);
                 return *this;
             }
 
-            const std::string &SSLConfig::getCipherList() const {
-                return cipherList;
+            const std::string &ssl_config::get_cipher_list() const {
+                return cipher_list_;
             }
 
-            SSLConfig &SSLConfig::setCipherList(const std::string &ciphers) {
-                this->cipherList = ciphers;
+            ssl_config &ssl_config::set_cipher_list(const std::string &ciphers) {
+                this->cipher_list_ = ciphers;
                 return *this;
             }
 
-            constexpr int64_t ClientFlakeIdGeneratorConfig::DEFAULT_PREFETCH_VALIDITY_MILLIS;
+            constexpr int64_t client_flake_id_generator_config::DEFAULT_PREFETCH_VALIDITY_MILLIS;
 
-            ClientFlakeIdGeneratorConfig::ClientFlakeIdGeneratorConfig(const std::string &name)
-                    : name(name), prefetchCount(ClientFlakeIdGeneratorConfig::DEFAULT_PREFETCH_COUNT),
-                      prefetchValidityDuration(ClientFlakeIdGeneratorConfig::DEFAULT_PREFETCH_VALIDITY_MILLIS) {}
+            client_flake_id_generator_config::client_flake_id_generator_config(const std::string &name)
+                    : name_(name), prefetch_count_(client_flake_id_generator_config::DEFAULT_PREFETCH_COUNT),
+                      prefetch_validity_duration_(client_flake_id_generator_config::DEFAULT_PREFETCH_VALIDITY_MILLIS) {}
 
-            const std::string &ClientFlakeIdGeneratorConfig::getName() const {
-                return name;
+            const std::string &client_flake_id_generator_config::get_name() const {
+                return name_;
             }
 
-            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setName(const std::string &n) {
-                ClientFlakeIdGeneratorConfig::name = n;
+            client_flake_id_generator_config &client_flake_id_generator_config::set_name(const std::string &n) {
+                client_flake_id_generator_config::name_ = n;
                 return *this;
             }
 
-            int32_t ClientFlakeIdGeneratorConfig::getPrefetchCount() const {
-                return prefetchCount;
+            int32_t client_flake_id_generator_config::get_prefetch_count() const {
+                return prefetch_count_;
             }
 
-            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setPrefetchCount(int32_t count) {
+            client_flake_id_generator_config &client_flake_id_generator_config::set_prefetch_count(int32_t count) {
                 std::ostringstream out;
                 out << "prefetch-count must be 1.." << MAXIMUM_PREFETCH_COUNT << ", not " << count;
-                util::Preconditions::checkTrue(count > 0 && count <= MAXIMUM_PREFETCH_COUNT, out.str());
-                prefetchCount = count;
+                util::Preconditions::check_true(count > 0 && count <= MAXIMUM_PREFETCH_COUNT, out.str());
+                prefetch_count_ = count;
                 return *this;
             }
 
-            std::chrono::milliseconds ClientFlakeIdGeneratorConfig::getPrefetchValidityDuration() const {
-                return prefetchValidityDuration;
+            std::chrono::milliseconds client_flake_id_generator_config::get_prefetch_validity_duration() const {
+                return prefetch_validity_duration_;
             }
 
-            ClientFlakeIdGeneratorConfig &
-            ClientFlakeIdGeneratorConfig::setPrefetchValidityDuration(std::chrono::milliseconds duration) {
-                util::Preconditions::checkNotNegative(duration.count(),
+            client_flake_id_generator_config &
+            client_flake_id_generator_config::set_prefetch_validity_duration(std::chrono::milliseconds duration) {
+                util::Preconditions::check_not_negative(duration.count(),
                                                       "prefetchValidityMs must be non negative");
-                prefetchValidityDuration = duration;
+                prefetch_validity_duration_ = duration;
                 return *this;
             }
 
-            int32_t ClientNetworkConfig::CONNECTION_ATTEMPT_PERIOD = 3000;
+            int32_t client_network_config::CONNECTION_ATTEMPT_PERIOD = 3000;
 
-            ClientNetworkConfig::ClientNetworkConfig()
-                    : connectionTimeout(5000), smartRouting(true), connectionAttemptLimit(-1),
-                      connectionAttemptPeriod(CONNECTION_ATTEMPT_PERIOD) {}
+            client_network_config::client_network_config()
+                    : connection_timeout_(5000), smart_routing_(true), connection_attempt_limit_(-1),
+                      connection_attempt_period_(CONNECTION_ATTEMPT_PERIOD) {}
 
-            SSLConfig &ClientNetworkConfig::getSSLConfig() {
-                return sslConfig;
+            ssl_config &client_network_config::get_ssl_config() {
+                return ssl_config_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &config) {
-                sslConfig = config;
+            client_network_config &client_network_config::set_ssl_config(const config::ssl_config &config) {
+                ssl_config_ = config;
                 return *this;
             }
 
-            std::chrono::milliseconds ClientNetworkConfig::getConnectionTimeout() const {
-                return connectionTimeout;
+            std::chrono::milliseconds client_network_config::get_connection_timeout() const {
+                return connection_timeout_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
-                this->clientAwsConfig = clientAwsConfig;
+            client_network_config &client_network_config::set_aws_config(const client_aws_config &client_aws_config) {
+                this->client_aws_config_ = client_aws_config;
                 return *this;
             }
 
-            ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
-                return clientAwsConfig;
+            client_aws_config &client_network_config::get_aws_config() {
+                return client_aws_config_;
             }
 
-            bool ClientNetworkConfig::isSmartRouting() const {
-                return smartRouting;
+            bool client_network_config::is_smart_routing() const {
+                return smart_routing_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setSmartRouting(bool smartRouting) {
-                ClientNetworkConfig::smartRouting = smartRouting;
+            client_network_config &client_network_config::set_smart_routing(bool smart_routing) {
+                client_network_config::smart_routing_ = smart_routing;
                 return *this;
             }
 
-            int32_t ClientNetworkConfig::getConnectionAttemptLimit() const {
-                return connectionAttemptLimit;
+            int32_t client_network_config::get_connection_attempt_limit() const {
+                return connection_attempt_limit_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptLimit(int32_t connectionAttemptLimit) {
-                if (connectionAttemptLimit < 0) {
+            client_network_config &client_network_config::set_connection_attempt_limit(int32_t connection_attempt_limit) {
+                if (connection_attempt_limit < 0) {
                     BOOST_THROW_EXCEPTION(
-                            exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptLimit",
+                            exception::illegal_argument("client_network_config::setConnectionAttemptLimit",
                                                                 "connectionAttemptLimit cannot be negative"));
                 }
-                this->connectionAttemptLimit = connectionAttemptLimit;
+                this->connection_attempt_limit_ = connection_attempt_limit;
                 return *this;
             }
 
-            std::chrono::milliseconds ClientNetworkConfig::getConnectionAttemptPeriod() const {
-                return connectionAttemptPeriod;
+            std::chrono::milliseconds client_network_config::get_connection_attempt_period() const {
+                return connection_attempt_period_;
             }
 
-            std::vector<Address> ClientNetworkConfig::getAddresses() const {
-                return addressList;
+            std::vector<address> client_network_config::get_addresses() const {
+                return address_list_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::addAddresses(const std::vector<Address> &addresses) {
-                addressList.insert(addressList.end(), addresses.begin(), addresses.end());
+            client_network_config &client_network_config::add_addresses(const std::vector<address> &addresses) {
+                address_list_.insert(address_list_.end(), addresses.begin(), addresses.end());
                 return *this;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setAddresses(const std::vector<Address> &addresses) {
-                addressList = addresses;
+            client_network_config &client_network_config::set_addresses(const std::vector<address> &addresses) {
+                address_list_ = addresses;
                 return *this;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::addAddress(const Address &address) {
-                addressList.push_back(address);
+            client_network_config &client_network_config::add_address(const address &address) {
+                address_list_.push_back(address);
                 return *this;
             }
 
-            SocketOptions &ClientNetworkConfig::getSocketOptions() {
-                return socketOptions;
+            socket_options &client_network_config::get_socket_options() {
+                return socket_options_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionTimeout(const std::chrono::milliseconds &timeout) {
-                connectionTimeout = timeout;
+            client_network_config &client_network_config::set_connection_timeout(const std::chrono::milliseconds &timeout) {
+                connection_timeout_ = timeout;
                 return *this;
             }
 
-            ClientNetworkConfig &
-            ClientNetworkConfig::setConnectionAttemptPeriod(const std::chrono::milliseconds &interval) {
-                util::Preconditions::checkNotNegative(interval.count(), (boost::format(
+            client_network_config &
+            client_network_config::set_connection_attempt_period(const std::chrono::milliseconds &interval) {
+                util::Preconditions::check_not_negative(interval.count(), (boost::format(
                         "Provided connectionAttemptPeriod(%1% msecs) cannot be negative") % interval.count()).str());
-                connectionAttemptPeriod = interval;
+                connection_attempt_period_ = interval;
                 return *this;
             }
 
-            ClientConnectionStrategyConfig::ClientConnectionStrategyConfig() : asyncStart(false), reconnectMode(ON) {
+            client_connection_strategy_config::client_connection_strategy_config() : async_start_(false), reconnect_mode_(ON) {
             }
 
-            ClientConnectionStrategyConfig::ReconnectMode ClientConnectionStrategyConfig::getReconnectMode() const {
-                return reconnectMode;
+            client_connection_strategy_config::reconnect_mode client_connection_strategy_config::get_reconnect_mode() const {
+                return reconnect_mode_;
             }
 
-            bool ClientConnectionStrategyConfig::isAsyncStart() const {
-                return asyncStart;
+            bool client_connection_strategy_config::is_async_start() const {
+                return async_start_;
             }
 
-            ClientConnectionStrategyConfig &ClientConnectionStrategyConfig::setAsyncStart(bool asyncStart) {
-                this->asyncStart = asyncStart;
+            client_connection_strategy_config &client_connection_strategy_config::set_async_start(bool async_start) {
+                this->async_start_ = async_start;
                 return *this;
             }
 
-            ClientConnectionStrategyConfig &
-            ClientConnectionStrategyConfig::setReconnectMode(ReconnectMode reconnectMode) {
-                this->reconnectMode = reconnectMode;
+            client_connection_strategy_config &
+            client_connection_strategy_config::set_reconnect_mode(reconnect_mode reconnect_mode) {
+                this->reconnect_mode_ = reconnect_mode;
                 return *this;
             }
 
-            const int ReliableTopicConfig::DEFAULT_READ_BATCH_SIZE = 10;
+            constexpr int reliable_topic_config::DEFAULT_READ_BATCH_SIZE;
 
-            ReliableTopicConfig::ReliableTopicConfig() = default;
+            reliable_topic_config::reliable_topic_config() = default;
 
-            ReliableTopicConfig::ReliableTopicConfig(const char *topicName) : readBatchSize(DEFAULT_READ_BATCH_SIZE),
-                                                                              name(topicName) {
+            reliable_topic_config::reliable_topic_config(const char *topic_name) : read_batch_size_(DEFAULT_READ_BATCH_SIZE),
+                                                                                   name_(topic_name) {
             }
 
-            const std::string &ReliableTopicConfig::getName() const {
-                return name;
+            const std::string &reliable_topic_config::get_name() const {
+                return name_;
             }
 
-            int ReliableTopicConfig::getReadBatchSize() const {
-                return readBatchSize;
+            int reliable_topic_config::get_read_batch_size() const {
+                return read_batch_size_;
             }
 
-            ReliableTopicConfig &ReliableTopicConfig::setReadBatchSize(int batchSize) {
-                if (batchSize <= 0) {
-                    BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
+            reliable_topic_config &reliable_topic_config::set_read_batch_size(int batch_size) {
+                if (batch_size <= 0) {
+                    BOOST_THROW_EXCEPTION(exception::illegal_argument("ReliableTopicConfig::setReadBatchSize",
                                                                               "readBatchSize should be positive"));
                 }
 
-                this->readBatchSize = batchSize;
+                this->read_batch_size_ = batch_size;
 
                 return *this;
             }
 
-            SocketOptions::SocketOptions() : tcpNoDelay(true), keepAlive(true), reuseAddress(true), lingerSeconds(3),
-                                             bufferSize(DEFAULT_BUFFER_SIZE_BYTE) {}
+            socket_options::socket_options() : tcp_no_delay_(true), keep_alive_(true), reuse_address_(true), linger_seconds_(3),
+                                               buffer_size_(DEFAULT_BUFFER_SIZE_BYTE) {}
 
-            bool SocketOptions::isTcpNoDelay() const {
-                return tcpNoDelay;
+            bool socket_options::is_tcp_no_delay() const {
+                return tcp_no_delay_;
             }
 
-            SocketOptions &SocketOptions::setTcpNoDelay(bool tcpNoDelay) {
-                SocketOptions::tcpNoDelay = tcpNoDelay;
+            socket_options &socket_options::set_tcp_no_delay(bool tcp_no_delay) {
+                socket_options::tcp_no_delay_ = tcp_no_delay;
                 return *this;
             }
 
-            bool SocketOptions::isKeepAlive() const {
-                return keepAlive;
+            bool socket_options::is_keep_alive() const {
+                return keep_alive_;
             }
 
-            SocketOptions &SocketOptions::setKeepAlive(bool keepAlive) {
-                SocketOptions::keepAlive = keepAlive;
+            socket_options &socket_options::set_keep_alive(bool keep_alive) {
+                socket_options::keep_alive_ = keep_alive;
                 return *this;
             }
 
-            bool SocketOptions::isReuseAddress() const {
-                return reuseAddress;
+            bool socket_options::is_reuse_address() const {
+                return reuse_address_;
             }
 
-            SocketOptions &SocketOptions::setReuseAddress(bool reuseAddress) {
-                SocketOptions::reuseAddress = reuseAddress;
+            socket_options &socket_options::set_reuse_address(bool reuse_address) {
+                socket_options::reuse_address_ = reuse_address;
                 return *this;
             }
 
-            int SocketOptions::getLingerSeconds() const {
-                return lingerSeconds;
+            int socket_options::get_linger_seconds() const {
+                return linger_seconds_;
             }
 
-            SocketOptions &SocketOptions::setLingerSeconds(int lingerSeconds) {
-                SocketOptions::lingerSeconds = lingerSeconds;
+            socket_options &socket_options::set_linger_seconds(int linger_seconds) {
+                socket_options::linger_seconds_ = linger_seconds;
                 return *this;
             }
 
-            int SocketOptions::getBufferSizeInBytes() const {
-                return bufferSize;
+            int socket_options::get_buffer_size_in_bytes() const {
+                return buffer_size_;
             }
 
-            SocketOptions &SocketOptions::setBufferSizeInBytes(int bufferSize) {
-                SocketOptions::bufferSize = bufferSize;
+            socket_options &socket_options::set_buffer_size_in_bytes(int buffer_size) {
+                socket_options::buffer_size_ = buffer_size;
                 return *this;
             }
 
-            ClientAwsConfig::ClientAwsConfig() : enabled(false), region("us-east-1"), hostHeader("ec2.amazonaws.com"),
-                                                 insideAws(false) {
+            client_aws_config::client_aws_config() : enabled_(false), region_("us-east-1"), host_header_("ec2.amazonaws.com"),
+                                                     inside_aws_(false) {
             }
 
-            const std::string &ClientAwsConfig::getAccessKey() const {
-                return accessKey;
+            const std::string &client_aws_config::get_access_key() const {
+                return access_key_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setAccessKey(const std::string &accessKey) {
-                this->accessKey = util::Preconditions::checkHasText(accessKey, "accessKey must contain text");
+            client_aws_config &client_aws_config::set_access_key(const std::string &access_key) {
+                this->access_key_ = util::Preconditions::check_has_text(access_key, "accessKey must contain text");
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::getSecretKey() const {
-                return secretKey;
+            const std::string &client_aws_config::get_secret_key() const {
+                return secret_key_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setSecretKey(const std::string &secretKey) {
-                this->secretKey = util::Preconditions::checkHasText(secretKey, "secretKey must contain text");
+            client_aws_config &client_aws_config::set_secret_key(const std::string &secret_key) {
+                this->secret_key_ = util::Preconditions::check_has_text(secret_key, "secretKey must contain text");
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::getRegion() const {
-                return region;
+            const std::string &client_aws_config::get_region() const {
+                return region_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setRegion(const std::string &region) {
-                this->region = util::Preconditions::checkHasText(region, "region must contain text");
+            client_aws_config &client_aws_config::set_region(const std::string &region) {
+                this->region_ = util::Preconditions::check_has_text(region, "region must contain text");
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::getHostHeader() const {
-                return hostHeader;
+            const std::string &client_aws_config::get_host_header() const {
+                return host_header_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setHostHeader(const std::string &hostHeader) {
-                this->hostHeader = util::Preconditions::checkHasText(hostHeader, "hostHeader must contain text");
+            client_aws_config &client_aws_config::set_host_header(const std::string &host_header) {
+                this->host_header_ = util::Preconditions::check_has_text(host_header, "hostHeader must contain text");
                 return *this;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setEnabled(bool enabled) {
-                util::Preconditions::checkSSL("getAwsConfig");
-                this->enabled = enabled;
+            client_aws_config &client_aws_config::set_enabled(bool enabled) {
+                util::Preconditions::check_ssl("get_aws_config");
+                this->enabled_ = enabled;
                 return *this;
             }
 
-            bool ClientAwsConfig::isEnabled() const {
-                return enabled;
+            bool client_aws_config::is_enabled() const {
+                return enabled_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setSecurityGroupName(const std::string &securityGroupName) {
-                this->securityGroupName = securityGroupName;
+            client_aws_config &client_aws_config::set_security_group_name(const std::string &security_group_name) {
+                this->security_group_name_ = security_group_name;
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::getSecurityGroupName() const {
-                return securityGroupName;
+            const std::string &client_aws_config::get_security_group_name() const {
+                return security_group_name_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setTagKey(const std::string &tagKey) {
-                this->tagKey = tagKey;
+            client_aws_config &client_aws_config::set_tag_key(const std::string &tag_key) {
+                this->tag_key_ = tag_key;
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::getTagKey() const {
-                return tagKey;
+            const std::string &client_aws_config::get_tag_key() const {
+                return tag_key_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setTagValue(const std::string &tagValue) {
-                this->tagValue = tagValue;
+            client_aws_config &client_aws_config::set_tag_value(const std::string &tag_value) {
+                this->tag_value_ = tag_value;
                 return *this;
             }
 
-            const std::string &ClientAwsConfig::getTagValue() const {
-                return tagValue;
+            const std::string &client_aws_config::get_tag_value() const {
+                return tag_value_;
             }
 
-            const std::string &ClientAwsConfig::getIamRole() const {
-                return iamRole;
+            const std::string &client_aws_config::get_iam_role() const {
+                return iam_role_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setIamRole(const std::string &iamRole) {
-                this->iamRole = iamRole;
+            client_aws_config &client_aws_config::set_iam_role(const std::string &iam_role) {
+                this->iam_role_ = iam_role;
                 return *this;
             }
 
-            bool ClientAwsConfig::isInsideAws() const {
-                return insideAws;
+            bool client_aws_config::is_inside_aws() const {
+                return inside_aws_;
             }
 
-            ClientAwsConfig &ClientAwsConfig::setInsideAws(bool insideAws) {
-                this->insideAws = insideAws;
+            client_aws_config &client_aws_config::set_inside_aws(bool inside_aws) {
+                this->inside_aws_ = inside_aws;
                 return *this;
             }
 
-            std::ostream &operator<<(std::ostream &out, const ClientAwsConfig &config) {
-                return out << "ClientAwsConfig{"
-                           << "enabled=" << config.isEnabled()
-                           << ", region='" << config.getRegion() << '\''
-                           << ", securityGroupName='" << config.getSecurityGroupName() << '\''
-                           << ", tagKey='" << config.getTagKey() << '\''
-                           << ", tagValue='" << config.getTagValue() << '\''
-                           << ", hostHeader='" << config.getHostHeader() << '\''
-                           << ", iamRole='" << config.getIamRole() << "\'}";
+            std::ostream &operator<<(std::ostream &out, const client_aws_config &config) {
+                return out << "client_aws_config{"
+                           << "enabled=" << config.is_enabled()
+                           << ", region='" << config.get_region() << '\''
+                           << ", securityGroupName='" << config.get_security_group_name() << '\''
+                           << ", tagKey='" << config.get_tag_key() << '\''
+                           << ", tagValue='" << config.get_tag_value() << '\''
+                           << ", hostHeader='" << config.get_host_header() << '\''
+                           << ", iamRole='" << config.get_iam_role() << "\'}";
             }
 
             namespace matcher {
                 std::shared_ptr<std::string>
-                MatchingPointConfigPatternMatcher::matches(const std::vector<std::string> &configPatterns,
-                                                           const std::string &itemName) const {
+                matching_point_config_pattern_matcher::matches(const std::vector<std::string> &config_patterns,
+                                                               const std::string &item_name) const {
                     std::shared_ptr<std::string> candidate;
                     std::shared_ptr<std::string> duplicate;
                     int lastMatchingPoint = -1;
-                    for (const std::string &pattern  : configPatterns) {
-                        int matchingPoint = getMatchingPoint(pattern, itemName);
+                    for (const std::string &pattern  : config_patterns) {
+                        int matchingPoint = get_matching_point(pattern, item_name);
                         if (matchingPoint > -1 && matchingPoint >= lastMatchingPoint) {
                             if (matchingPoint == lastMatchingPoint) {
                                 duplicate = candidate;
@@ -465,8 +466,8 @@ namespace hazelcast {
                         }
                     }
                     if (duplicate.get() != NULL) {
-                        throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
-                                "MatchingPointConfigPatternMatcher::matches") << "Configuration " << itemName
+                        throw (exception::exception_builder<exception::invalid_configuration>(
+                                "MatchingPointConfigPatternMatcher::matches") << "Configuration " << item_name
                                                                               << " has duplicate configuration. Candidate:"
                                                                               << *candidate << ", duplicate:"
                                                                               << *duplicate).build();
@@ -474,20 +475,20 @@ namespace hazelcast {
                     return candidate;
                 }
 
-                int MatchingPointConfigPatternMatcher::getMatchingPoint(const std::string &pattern,
-                                                                        const std::string &itemName) const {
+                int matching_point_config_pattern_matcher::get_matching_point(const std::string &pattern,
+                                                                              const std::string &item_name) const {
                     size_t index = pattern.find('*');
                     if (index == std::string::npos) {
                         return -1;
                     }
 
                     std::string firstPart = pattern.substr(0, index);
-                    if (itemName.find(firstPart) != 0) {
+                    if (item_name.find(firstPart) != 0) {
                         return -1;
                     }
 
                     std::string secondPart = pattern.substr(index + 1);
-                    if (itemName.rfind(secondPart) != (itemName.length() - secondPart.length())) {
+                    if (item_name.rfind(secondPart) != (item_name.length() - secondPart.length())) {
                         return -1;
                     }
 
@@ -495,7 +496,7 @@ namespace hazelcast {
                 }
             }
 
-            const std::string index_config::bitmap_index_options::DEFAULT_KEY = query::QueryConstants::KEY_ATTRIBUTE_NAME;
+            const std::string index_config::bitmap_index_options::DEFAULT_KEY = query::query_constants::KEY_ATTRIBUTE_NAME;
             const index_config::bitmap_index_options::unique_key_transformation index_config::bitmap_index_options::DEFAULT_TRANSFORMATION = index_config::bitmap_index_options::unique_key_transformation::OBJECT;
 
             index_config::bitmap_index_options::bitmap_index_options() : key(DEFAULT_KEY),
@@ -509,291 +510,275 @@ namespace hazelcast {
 
             void index_config::add_attributes() {}
 
-            EvictionConfig::EvictionConfig() : size(DEFAULT_MAX_ENTRY_COUNT), maxSizePolicy(DEFAULT_MAX_SIZE_POLICY),
-                               evictionPolicy(DEFAULT_EVICTION_POLICY) {}
+            eviction_config::eviction_config() : size_(DEFAULT_MAX_ENTRY_COUNT), max_size_policy_(DEFAULT_MAX_SIZE_POLICY),
+                                                 eviction_policy_(DEFAULT_EVICTION_POLICY) {}
 
-            int32_t EvictionConfig::getSize() const {
-                return size;
+            int32_t eviction_config::get_size() const {
+                return size_;
             }
 
-            EvictionConfig &EvictionConfig::setSize(int32_t size) {
-                this->size = util::Preconditions::checkPositive(size, "Size must be positive number!");
+            eviction_config &eviction_config::set_size(int32_t size) {
+                this->size_ = util::Preconditions::check_positive(size, "Size must be positive number!");
                 return *this;
             }
 
-            EvictionConfig::MaxSizePolicy EvictionConfig::getMaximumSizePolicy() const {
-                return maxSizePolicy;
+            eviction_config::max_size_policy eviction_config::get_maximum_size_policy() const {
+                return max_size_policy_;
             }
 
-            EvictionConfig &EvictionConfig::setMaximumSizePolicy(const EvictionConfig::MaxSizePolicy &maxSizePolicy) {
-                this->maxSizePolicy = maxSizePolicy;
+            eviction_config &eviction_config::set_maximum_size_policy(const eviction_config::max_size_policy &max_size_policy) {
+                this->max_size_policy_ = max_size_policy;
                 return *this;
             }
 
-            EvictionPolicy EvictionConfig::getEvictionPolicy() const {
-                return evictionPolicy;
+            eviction_policy eviction_config::get_eviction_policy() const {
+                return eviction_policy_;
             }
 
-            EvictionConfig &EvictionConfig::setEvictionPolicy(EvictionPolicy policy) {
-                this->evictionPolicy = policy;
+            eviction_config &eviction_config::set_eviction_policy(eviction_policy policy) {
+                this->eviction_policy_ = policy;
                 return *this;
             }
 
-            internal::eviction::EvictionStrategyType::Type EvictionConfig::getEvictionStrategyType() const {
+            eviction_strategy_type eviction_config::get_eviction_strategy_type() const {
                 // TODO: add support for other/custom eviction strategies
-                return internal::eviction::EvictionStrategyType::DEFAULT_EVICTION_STRATEGY;
+                return eviction_strategy_type::DEFAULT_EVICTION_STRATEGY;
             }
 
-            internal::eviction::EvictionPolicyType EvictionConfig::getEvictionPolicyType() const {
-                if (evictionPolicy == LFU) {
-                    return internal::eviction::LFU;
-                } else if (evictionPolicy == LRU) {
-                    return internal::eviction::LRU;
-                } else if (evictionPolicy == RANDOM) {
-                    return internal::eviction::RANDOM;
-                } else if (evictionPolicy == NONE) {
-                    return internal::eviction::NONE;
-                } else {
-                    assert(0);
-                }
-                return internal::eviction::NONE;
-            }
-
-            std::ostream &operator<<(std::ostream &out, const EvictionConfig &config) {
+            std::ostream &operator<<(std::ostream &out, const eviction_config &config) {
                 out << "EvictionConfig{"
-                    << "size=" << config.getSize()
-                    << ", maxSizePolicy=" << config.getMaximumSizePolicy()
-                    << ", evictionPolicy=" << config.getEvictionPolicy()
+                    << "size=" << config.get_size()
+                    << ", maxSizePolicy=" << config.get_maximum_size_policy()
+                    << ", evictionPolicy=" << config.get_eviction_policy()
                     << '}';
 
                 return out;
             }
 
-            NearCacheConfig::NearCacheConfig() : name("default"), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
-                                                 maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
-                                                 inMemoryFormat(DEFAULT_MEMORY_FORMAT),
-                                                 localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
-                                                 cacheLocalEntries(false) {
+            near_cache_config::near_cache_config() : name_("default"), time_to_live_seconds_(DEFAULT_TTL_SECONDS),
+                                                 max_idle_seconds_(DEFAULT_MAX_IDLE_SECONDS),
+                                                 in_memory_format_(DEFAULT_MEMORY_FORMAT),
+                                                 local_update_policy_(INVALIDATE), invalidate_on_change_(true),
+                                                 cache_local_entries_(false) {
             }
 
-            NearCacheConfig::NearCacheConfig(const std::string &cacheName) : NearCacheConfig() {
-                name = cacheName;
+            near_cache_config::near_cache_config(const std::string &cache_name) : near_cache_config() {
+                name_ = cache_name;
             }
 
-            NearCacheConfig::NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat)
-                    : NearCacheConfig(name) {
-                this->inMemoryFormat = memoryFormat;
+            near_cache_config::near_cache_config(const std::string &cache_name, in_memory_format memory_format)
+                    : near_cache_config(name_) {
+                this->in_memory_format_ = memory_format;
             }
 
-            NearCacheConfig::NearCacheConfig(int32_t timeToLiveSeconds, int32_t maxIdleSeconds, bool invalidateOnChange,
-                                             InMemoryFormat inMemoryFormat, const EvictionConfig &evictConfig)
-                    : NearCacheConfig(name, inMemoryFormat) {
-                this->timeToLiveSeconds = timeToLiveSeconds;
-                this->maxIdleSeconds = maxIdleSeconds;
-                this->invalidateOnChange = invalidateOnChange;
-                this->evictionConfig = evictConfig;
+            near_cache_config::near_cache_config(int32_t time_to_live_seconds, int32_t max_idle_seconds, bool invalidate_on_change,
+                                             in_memory_format in_memory_format, const eviction_config &evict_config)
+                    : near_cache_config(name_, in_memory_format) {
+                this->time_to_live_seconds_ = time_to_live_seconds;
+                this->max_idle_seconds_ = max_idle_seconds;
+                this->invalidate_on_change_ = invalidate_on_change;
+                this->eviction_config_ = evict_config;
             }
 
-            const std::string &NearCacheConfig::getName() const {
-                return name;
+            const std::string &near_cache_config::get_name() const {
+                return name_;
             }
 
-            NearCacheConfig &NearCacheConfig::setName(const std::string &name) {
-                this->name = name;
+            near_cache_config &near_cache_config::set_name(const std::string &name) {
+                this->name_ = name;
                 return *this;
             }
 
-            int32_t NearCacheConfig::getTimeToLiveSeconds() const {
-                return timeToLiveSeconds;
+            int32_t near_cache_config::get_time_to_live_seconds() const {
+                return time_to_live_seconds_;
             }
 
-            NearCacheConfig &NearCacheConfig::setTimeToLiveSeconds(int32_t timeToLiveSeconds) {
-                this->timeToLiveSeconds = util::Preconditions::checkNotNegative(timeToLiveSeconds,
+            near_cache_config &near_cache_config::set_time_to_live_seconds(int32_t time_to_live_seconds) {
+                this->time_to_live_seconds_ = util::Preconditions::check_not_negative(time_to_live_seconds,
                                                                                 "TTL seconds cannot be negative!");
                 return *this;
             }
 
-            int32_t NearCacheConfig::getMaxIdleSeconds() const {
-                return maxIdleSeconds;
+            int32_t near_cache_config::get_max_idle_seconds() const {
+                return max_idle_seconds_;
             }
 
-            NearCacheConfig &NearCacheConfig::setMaxIdleSeconds(int32_t maxIdleSeconds) {
-                this->maxIdleSeconds = util::Preconditions::checkNotNegative(maxIdleSeconds,
+            near_cache_config &near_cache_config::set_max_idle_seconds(int32_t max_idle_seconds) {
+                this->max_idle_seconds_ = util::Preconditions::check_not_negative(max_idle_seconds,
                                                                              "Max-Idle seconds cannot be negative!");
                 return *this;
             }
 
-            bool NearCacheConfig::isInvalidateOnChange() const {
-                return invalidateOnChange;
+            bool near_cache_config::is_invalidate_on_change() const {
+                return invalidate_on_change_;
             }
 
-            NearCacheConfig &NearCacheConfig::setInvalidateOnChange(bool invalidateOnChange) {
-                this->invalidateOnChange = invalidateOnChange;
+            near_cache_config &near_cache_config::set_invalidate_on_change(bool invalidate_on_change) {
+                this->invalidate_on_change_ = invalidate_on_change;
                 return *this;
             }
 
-            const InMemoryFormat &NearCacheConfig::getInMemoryFormat() const {
-                return inMemoryFormat;
+            const in_memory_format &near_cache_config::get_in_memory_format() const {
+                return in_memory_format_;
             }
 
-            NearCacheConfig &NearCacheConfig::setInMemoryFormat(const InMemoryFormat &inMemoryFormat) {
-                this->inMemoryFormat = inMemoryFormat;
+            near_cache_config &near_cache_config::set_in_memory_format(const in_memory_format &in_memory_format) {
+                this->in_memory_format_ = in_memory_format;
                 return *this;
             }
 
-            bool NearCacheConfig::isCacheLocalEntries() const {
-                return cacheLocalEntries;
+            bool near_cache_config::is_cache_local_entries() const {
+                return cache_local_entries_;
             }
 
-            NearCacheConfig &NearCacheConfig::setCacheLocalEntries(bool cacheLocalEntries) {
-                this->cacheLocalEntries = cacheLocalEntries;
+            near_cache_config &near_cache_config::set_cache_local_entries(bool cache_local_entries) {
+                this->cache_local_entries_ = cache_local_entries;
                 return *this;
             }
 
-            const NearCacheConfig::LocalUpdatePolicy &NearCacheConfig::getLocalUpdatePolicy() const {
-                return localUpdatePolicy;
+            const near_cache_config::local_update_policy &near_cache_config::get_local_update_policy() const {
+                return local_update_policy_;
             }
 
-            NearCacheConfig &NearCacheConfig::setLocalUpdatePolicy(const LocalUpdatePolicy &localUpdatePolicy) {
-                this->localUpdatePolicy = localUpdatePolicy;
+            near_cache_config &near_cache_config::set_local_update_policy(const local_update_policy &local_update_policy) {
+                this->local_update_policy_ = local_update_policy;
                 return *this;
             }
 
-            EvictionConfig &NearCacheConfig::getEvictionConfig() {
-                return evictionConfig;
+            eviction_config &near_cache_config::get_eviction_config() {
+                return eviction_config_;
             }
 
-            NearCacheConfig &NearCacheConfig::setEvictionConfig(const EvictionConfig &evictionConfig) {
-                this->evictionConfig = evictionConfig;
+            near_cache_config &near_cache_config::set_eviction_config(const eviction_config &eviction_config) {
+                this->eviction_config_ = eviction_config;
                 return *this;
             }
 
-            int32_t NearCacheConfig::calculateMaxSize(int32_t maxSize) {
-                return (maxSize == 0) ? INT32_MAX : util::Preconditions::checkNotNegative(maxSize,
+            int32_t near_cache_config::calculate_max_size(int32_t max_size) {
+                return (max_size == 0) ? INT32_MAX : util::Preconditions::check_not_negative(max_size,
                                                                                           "Max-size cannot be negative!");
             }
 
-            std::ostream &operator<<(std::ostream &out, const NearCacheConfig &config) {
+            std::ostream &operator<<(std::ostream &out, const near_cache_config &config) {
                 out << "NearCacheConfig{"
-                    << "timeToLiveSeconds=" << config.timeToLiveSeconds
-                    << ", maxIdleSeconds=" << config.maxIdleSeconds
-                    << ", invalidateOnChange=" << config.invalidateOnChange
-                    << ", inMemoryFormat=" << config.inMemoryFormat
-                    << ", cacheLocalEntries=" << config.cacheLocalEntries
-                    << ", localUpdatePolicy=" << config.localUpdatePolicy
-                    << config.evictionConfig;
+                    << "timeToLiveSeconds=" << config.time_to_live_seconds_
+                    << ", maxIdleSeconds=" << config.max_idle_seconds_
+                    << ", invalidateOnChange=" << config.invalidate_on_change_
+                    << ", inMemoryFormat=" << config.in_memory_format_
+                    << ", cacheLocalEntries=" << config.cache_local_entries_
+                    << ", localUpdatePolicy=" << config.local_update_policy_
+                    << config.eviction_config_;
                 out << '}';
 
                 return out;
             }
         }
 
-        ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
-                                       socketInterceptor(), executorPoolSize(-1) {}
+        client_config::client_config() : cluster_name_("dev"), load_balancer_(NULL), redo_operation_(false),
+                                       socket_interceptor_(), executor_pool_size_(-1) {}
 
-        ClientConfig &ClientConfig::setRedoOperation(bool redoOperation) {
-            this->redoOperation = redoOperation;
+        client_config &client_config::set_redo_operation(bool redo_operation) {
+            this->redo_operation_ = redo_operation;
             return *this;
         }
 
-        bool ClientConfig::isRedoOperation() const {
-            return redoOperation;
+        bool client_config::is_redo_operation() const {
+            return redo_operation_;
         }
 
-        LoadBalancer *const ClientConfig::getLoadBalancer() {
-            if (!loadBalancer)
-                return &defaultLoadBalancer;
-            return loadBalancer;
+        load_balancer *const client_config::get_load_balancer() {
+            if (!load_balancer_)
+                return &default_load_balancer_;
+            return load_balancer_;
         }
 
-        ClientConfig &ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
-            this->loadBalancer = loadBalancer;
+        client_config &client_config::set_load_balancer(load_balancer *load_balancer) {
+            this->load_balancer_ = load_balancer;
             return *this;
         }
 
-        config::LoggerConfig &ClientConfig::getLoggerConfig() {
-            return loggerConfig;
+        config::logger_config &client_config::get_logger_config() {
+            return logger_config_;
         }
 
-        ClientConfig &ClientConfig::addListener(LifecycleListener &&listener) {
-            lifecycleListeners.emplace_back(std::move(listener));
+        client_config &client_config::add_listener(lifecycle_listener &&listener) {
+            lifecycle_listeners_.emplace_back(std::move(listener));
             return *this;
         }
 
-        ClientConfig &ClientConfig::addListener(MembershipListener &&listener) {
-            membershipListeners.emplace_back(std::move(listener));
+        client_config &client_config::add_listener(membership_listener &&listener) {
+            membership_listeners_.emplace_back(std::move(listener));
             return *this;
         }
 
-        const std::vector<LifecycleListener> &ClientConfig::getLifecycleListeners() const {
-            return lifecycleListeners;
+        const std::vector<lifecycle_listener> &client_config::get_lifecycle_listeners() const {
+            return lifecycle_listeners_;
         }
 
-        const std::vector<MembershipListener> &ClientConfig::getMembershipListeners() const {
-            return membershipListeners;
+        const std::vector<membership_listener> &client_config::get_membership_listeners() const {
+            return membership_listeners_;
         }
 
-        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor &&interceptor) {
-            this->socketInterceptor = std::move(interceptor);
+        client_config &client_config::set_socket_interceptor(socket_interceptor &&interceptor) {
+            this->socket_interceptor_ = std::move(interceptor);
             return *this;
         }
 
-        const SocketInterceptor &ClientConfig::getSocketInterceptor() const {
-            return socketInterceptor;
+        const socket_interceptor &client_config::get_socket_interceptor() const {
+            return socket_interceptor_;
         }
 
-        SerializationConfig &ClientConfig::getSerializationConfig() {
-            return serializationConfig;
+        serialization_config &client_config::get_serialization_config() {
+            return serialization_config_;
         }
 
-        ClientConfig &ClientConfig::setSerializationConfig(SerializationConfig const &serializationConfig) {
-            this->serializationConfig = serializationConfig;
+        client_config &client_config::set_serialization_config(serialization_config const &serialization_config) {
+            this->serialization_config_ = serialization_config;
             return *this;
         }
 
-        const std::unordered_map<std::string, std::string> &ClientConfig::getProperties() const {
-            return properties;
+        const std::unordered_map<std::string, std::string> &client_config::get_properties() const {
+            return properties_;
         }
 
-        ClientConfig &ClientConfig::setProperty(const std::string &name, const std::string &value) {
-            properties[name] = value;
+        client_config &client_config::set_property(const std::string &name, const std::string &value) {
+            properties_[name] = value;
             return *this;
         }
 
-        ClientConfig &ClientConfig::addReliableTopicConfig(const config::ReliableTopicConfig &reliableTopicConfig) {
-            reliableTopicConfigMap[reliableTopicConfig.getName()] = reliableTopicConfig;
+        client_config &client_config::add_reliable_topic_config(const config::reliable_topic_config &reliable_topic_config) {
+            reliable_topic_config_map_[reliable_topic_config.get_name()] = reliable_topic_config;
             return *this;
         }
 
-        const config::ReliableTopicConfig &ClientConfig::getReliableTopicConfig(const std::string &name) {
-            auto it = reliableTopicConfigMap.find(name);
-            
-            if (reliableTopicConfigMap.end() == it) {
-                reliableTopicConfigMap[name] = config::ReliableTopicConfig(name.c_str());
+        const config::reliable_topic_config &client_config::get_reliable_topic_config(const std::string &name) {
+            auto it = reliable_topic_config_map_.find(name);
+            if (reliable_topic_config_map_.end() == it) {
+                reliable_topic_config_map_[name] = config::reliable_topic_config(name.c_str());
             }
-            
-            return reliableTopicConfigMap[name];
+
+            return reliable_topic_config_map_[name];
         }
 
-        config::ClientNetworkConfig &ClientConfig::getNetworkConfig() {
-            return networkConfig;
+        config::client_network_config &client_config::get_network_config() {
+            return network_config_;
         }
 
-        ClientConfig &ClientConfig::addNearCacheConfig(const config::NearCacheConfig &nearCacheConfig) {
-            nearCacheConfigMap.emplace(nearCacheConfig.getName(), nearCacheConfig);
+        client_config &client_config::add_near_cache_config(const config::near_cache_config &near_cache_config) {
+            near_cache_config_map_.emplace(near_cache_config.get_name(), near_cache_config);
             return *this;
         }
 
-        const config::NearCacheConfig *ClientConfig::getNearCacheConfig(const std::string &name) const {
-            auto nearCacheConfig = internal::config::ConfigUtils::lookupByPattern(
-                    configPatternMatcher, nearCacheConfigMap, name);
+        const config::near_cache_config *client_config::get_near_cache_config(const std::string &name) const {
+            auto nearCacheConfig = internal::config::ConfigUtils::lookup_by_pattern(
+                    config_pattern_matcher_, near_cache_config_map_, name);
             if (nearCacheConfig) {
                 return nearCacheConfig;
             }
 
-            auto config_it = nearCacheConfigMap.find("default");
-            if (config_it != nearCacheConfigMap.end()) {
-                return &nearCacheConfigMap.find("default")->second;
+            auto config_it = near_cache_config_map_.find("default");
+            if (config_it != near_cache_config_map_.end()) {
+                return &near_cache_config_map_.find("default")->second;
             }
 
             // not needed for c++ client since it is always native memory
@@ -801,111 +786,111 @@ namespace hazelcast {
             return nullptr;
         }
 
-        ClientConfig &ClientConfig::setNetworkConfig(const config::ClientNetworkConfig &networkConfig) {
-            this->networkConfig = networkConfig;
+        client_config &client_config::set_network_config(const config::client_network_config &network_config) {
+            this->network_config_ = network_config;
             return *this;
         }
 
-        const std::shared_ptr<std::string> &ClientConfig::getInstanceName() const {
-            return instanceName;
+        const std::shared_ptr<std::string> &client_config::get_instance_name() const {
+            return instance_name_;
         }
 
-        void ClientConfig::setInstanceName(const std::shared_ptr<std::string> &instanceName) {
-            ClientConfig::instanceName = instanceName;
+        void client_config::set_instance_name(const std::shared_ptr<std::string> &instance_name) {
+            client_config::instance_name_ = instance_name;
         }
 
-        int32_t ClientConfig::getExecutorPoolSize() const {
-            return executorPoolSize;
+        int32_t client_config::get_executor_pool_size() const {
+            return executor_pool_size_;
         }
 
-        void ClientConfig::setExecutorPoolSize(int32_t executorPoolSize) {
-            ClientConfig::executorPoolSize = executorPoolSize;
+        void client_config::set_executor_pool_size(int32_t executor_pool_size) {
+            client_config::executor_pool_size_ = executor_pool_size;
         }
 
-        config::ClientConnectionStrategyConfig &ClientConfig::getConnectionStrategyConfig() {
-            return connectionStrategyConfig;
+        config::client_connection_strategy_config &client_config::get_connection_strategy_config() {
+            return connection_strategy_config_;
         }
 
-        ClientConfig &ClientConfig::setConnectionStrategyConfig(
-                const config::ClientConnectionStrategyConfig &connectionStrategyConfig) {
-            ClientConfig::connectionStrategyConfig = connectionStrategyConfig;
+        client_config &client_config::set_connection_strategy_config(
+                const config::client_connection_strategy_config &connection_strategy_config) {
+            client_config::connection_strategy_config_ = connection_strategy_config;
             return *this;
         }
 
-        const config::ClientFlakeIdGeneratorConfig *
-        ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
-            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            auto config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
-                    configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
+        const config::client_flake_id_generator_config *
+        client_config::find_flake_id_generator_config(const std::string &name) {
+            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::get_base_name(name);
+            auto config = internal::config::ConfigUtils::lookup_by_pattern<config::client_flake_id_generator_config>(
+                    config_pattern_matcher_, flake_id_generator_config_map_, baseName);
             if (config) {
                 return config;
             }
-            return getFlakeIdGeneratorConfig("default");
+            return get_flake_id_generator_config("default");
         }
 
 
-        const config::ClientFlakeIdGeneratorConfig *
-        ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
-            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            auto config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
-                    configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
+        const config::client_flake_id_generator_config *
+        client_config::get_flake_id_generator_config(const std::string &name) {
+            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::get_base_name(name);
+            auto config = internal::config::ConfigUtils::lookup_by_pattern<config::client_flake_id_generator_config>(
+                    config_pattern_matcher_, flake_id_generator_config_map_, baseName);
             if (config) {
                 return config;
             }
-            auto defConfig = flakeIdGeneratorConfigMap.find("default");
-            if (defConfig == flakeIdGeneratorConfigMap.end()) {
-                flakeIdGeneratorConfigMap.emplace("default", config::ClientFlakeIdGeneratorConfig("default"));
+            auto defConfig = flake_id_generator_config_map_.find("default");
+            if (defConfig == flake_id_generator_config_map_.end()) {
+                flake_id_generator_config_map_.emplace("default", config::client_flake_id_generator_config("default"));
             }
-            defConfig = flakeIdGeneratorConfigMap.find("default");
-            config::ClientFlakeIdGeneratorConfig new_config = defConfig->second;
-            new_config.setName(name);
-            flakeIdGeneratorConfigMap.emplace(name, std::move(new_config));
-            return &flakeIdGeneratorConfigMap.find(name)->second;
+            defConfig = flake_id_generator_config_map_.find("default");
+            config::client_flake_id_generator_config new_config = defConfig->second;
+            new_config.set_name(name);
+            flake_id_generator_config_map_.emplace(name, std::move(new_config));
+            return &flake_id_generator_config_map_.find(name)->second;
         }
 
-        ClientConfig &
-        ClientConfig::addFlakeIdGeneratorConfig(const config::ClientFlakeIdGeneratorConfig &config) {
-            flakeIdGeneratorConfigMap.emplace(config.getName(), config);
+        client_config &
+        client_config::add_flake_id_generator_config(const config::client_flake_id_generator_config &config) {
+            flake_id_generator_config_map_.emplace(config.get_name(), config);
             return *this;
         }
 
-        const std::string &ClientConfig::getClusterName() const {
+        const std::string &client_config::get_cluster_name() const {
             return cluster_name_;
         }
 
-        ClientConfig &ClientConfig::setClusterName(const std::string &clusterName) {
-            cluster_name_ = clusterName;
+        client_config &client_config::set_cluster_name(const std::string &cluster_name) {
+            cluster_name_ = cluster_name;
             return *this;
         }
 
-        const std::unordered_set<std::string> &ClientConfig::getLabels() const {
+        const std::unordered_set<std::string> &client_config::get_labels() const {
             return labels_;
         }
 
-        ClientConfig &ClientConfig::setLabels(const std::unordered_set<std::string> &labels) {
+        client_config &client_config::set_labels(const std::unordered_set<std::string> &labels) {
             labels_ = labels;
             return *this;
         }
 
-        ClientConfig &ClientConfig::addLabel(const std::string &label) {
+        client_config &client_config::add_label(const std::string &label) {
             labels_.insert(label);
             return *this;
         }
 
-        ClientConfig &ClientConfig::backup_acks_enabled(bool enabled) {
+        client_config &client_config::backup_acks_enabled(bool enabled) {
             backup_acks_enabled_ = enabled;
             return *this;
         }
 
-        bool ClientConfig::backup_acks_enabled() {
+        bool client_config::backup_acks_enabled() {
             return backup_acks_enabled_;
         }
 
-        const std::shared_ptr<security::credentials> &ClientConfig::getCredentials() const {
+        const std::shared_ptr<security::credentials> &client_config::get_credentials() const {
             return credentials_;
         }
 
-        ClientConfig &ClientConfig::setCredentials(const std::shared_ptr<security::credentials> &credential) {
+        client_config &client_config::set_credentials(const std::shared_ptr<security::credentials> &credential) {
             credentials_ = credential;
             return *this;
         }

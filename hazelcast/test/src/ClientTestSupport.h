@@ -31,9 +31,9 @@
 
 namespace hazelcast {
     namespace client {
-        class ClientConfig;
+        class client_config;
 
-        class HazelcastClient;
+        class hazelcast_client;
 
         namespace test {
             class HazelcastServerFactory;
@@ -45,13 +45,13 @@ namespace hazelcast {
                 ClientTestSupport();
 
             protected:
-                logger &getLogger();
+                logger &get_logger();
 
-                const std::string &getTestName() const;
+                const std::string &get_test_name() const;
 
             private:
                 std::shared_ptr<logger> logger_;
-                std::string testName;
+                std::string test_name_;
             };
 
             class CountDownLatchWaiter {
@@ -63,7 +63,7 @@ namespace hazelcast {
                 void reset();
 
             private:
-                std::vector<boost::latch *> latches;
+                std::vector<boost::latch *> latches_;
             };
         }
     }

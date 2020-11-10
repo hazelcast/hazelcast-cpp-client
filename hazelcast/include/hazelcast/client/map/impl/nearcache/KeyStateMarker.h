@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class Data;
+                class data;
             }
         }
 
@@ -46,17 +46,17 @@ namespace hazelcast {
                     public:
                         virtual ~KeyStateMarker() = default;
 
-                        virtual bool tryMark(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_mark(const serialization::pimpl::data &key) = 0;
 
-                        virtual bool tryUnmark(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_unmark(const serialization::pimpl::data &key) = 0;
 
-                        virtual bool tryRemove(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_remove(const serialization::pimpl::data &key) = 0;
 
-                        virtual void forceUnmark(const serialization::pimpl::Data &key) = 0;
+                        virtual void force_unmark(const serialization::pimpl::data &key) = 0;
 
                         virtual void init() = 0;
 
-                        enum STATE {
+                        enum state {
                             UNMARKED,
                             MARKED,
                             REMOVED
@@ -67,13 +67,13 @@ namespace hazelcast {
 
                     class HAZELCAST_API TrueMarkerImpl : public KeyStateMarker {
                     public:
-                        bool tryMark(const serialization::pimpl::Data &key) override;
+                        bool try_mark(const serialization::pimpl::data &key) override;
 
-                        bool tryUnmark(const serialization::pimpl::Data &key) override;
+                        bool try_unmark(const serialization::pimpl::data &key) override;
 
-                        bool tryRemove(const serialization::pimpl::Data &key) override;
+                        bool try_remove(const serialization::pimpl::data &key) override;
 
-                        void forceUnmark(const serialization::pimpl::Data &key) override;
+                        void force_unmark(const serialization::pimpl::data &key) override;
 
                         void init() override;
                     };

@@ -19,7 +19,7 @@
  * DO NOT FORGET to make sure that openssl is installed.
  *
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -27,21 +27,21 @@
 #endif
 
 int main() {
-    hazelcast::client::ClientConfig clientConfig;
+    hazelcast::client::client_config clientConfig;
 
     // The default is to use port 5701 if this is not explicitely set. You can enable the below line if your hazelcast
     // server is running on another port.
     //clientConfig.setProperty(hazelcast::client::ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
 
     // The following assumes that you provide the environment parameters AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
-            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
-            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setSecurityGroupName("MySecureGroup").
-            setRegion("us-east-1");
+    clientConfig.get_network_config().get_aws_config().set_enabled(true).
+            set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
+            set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1").set_security_group_name("MySecureGroup").
+            set_region("us-east-1");
     
-    hazelcast::client::HazelcastClient hz(clientConfig);
+    hazelcast::client::hazelcast_client hz(clientConfig);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
     
     map->put(1, 100).get();
     map->put(2, 200).get();

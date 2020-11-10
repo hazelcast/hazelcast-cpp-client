@@ -22,7 +22,7 @@
 
 #include <boost/any.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/spi/DefaultObjectNamespace.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -43,19 +43,19 @@ namespace hazelcast {
                 explicit ProxyManager(ClientContext &context);
 
                 template<typename T>
-                std::shared_ptr<T> getOrCreateProxy(const std::string &service, const std::string &id) {
+                std::shared_ptr<T> get_or_create_proxy(const std::string &service, const std::string &id) {
                     DefaultObjectNamespace ns(service, id);
 
                     std::shared_future<std::shared_ptr<ClientProxy>> proxyFuture;
                     std::promise<std::shared_ptr<ClientProxy>> promise;
                     bool insertedEntry = false;
                     {
-                        std::lock_guard<std::mutex> guard(lock);
-                        auto it = proxies.find(ns);
-                        if (it != proxies.end()) {
+                        std::lock_guard<std::mutex> guard(lock_);
+                        auto it = proxies_.find(ns);
+                        if (it != proxies_.end()) {
                             proxyFuture = it->second;
                         } else {
-                            proxies.insert({ns, promise.get_future().share()});
+                            proxies_.insert({ns, promise.get_future().share()});
                             insertedEntry = true;
                         }
                     }
@@ -65,15 +65,15 @@ namespace hazelcast {
                     }
 
                     try {
-                        auto clientProxy = std::shared_ptr<T>(new T(id, &client));
+                        auto clientProxy = std::shared_ptr<T>(new T(id, &client_));
                         initialize(std::static_pointer_cast<ClientProxy>(clientProxy));
                         promise.set_value(std::static_pointer_cast<ClientProxy>(clientProxy));
                         return clientProxy;
-                    } catch (exception::IException &) {
+                    } catch (exception::iexception &) {
                         promise.set_exception(std::current_exception());
-                        std::lock_guard<std::mutex> guard(lock);
+                        std::lock_guard<std::mutex> guard(lock_);
                         if (insertedEntry) {
-                            proxies.erase(ns);
+                            proxies_.erase(ns);
                         }
                         throw;
                     }
@@ -93,18 +93,18 @@ namespace hazelcast {
                  *
                  * @param proxy the proxy to destroy.
                  */
-                boost::future<void> destroyProxy(ClientProxy &proxy);
+                boost::future<void> destroy_proxy(ClientProxy &proxy);
 
                 void init();
 
                 void destroy();
 
             private:
-                void initialize(const std::shared_ptr<ClientProxy> &clientProxy);
+                void initialize(const std::shared_ptr<ClientProxy> &client_proxy);
 
-                proxy_map proxies;
-                std::mutex lock;
-                ClientContext &client;
+                proxy_map proxies_;
+                std::mutex lock_;
+                ClientContext &client_;
             };
         }
     }

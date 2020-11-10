@@ -18,7 +18,7 @@
 
 #include <string>
 #include <memory>
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -43,7 +43,7 @@ namespace hazelcast {
                  *  Note that this method will also be called while first registered node is dead
                  *  and re-registering to a second node.
                  */
-                virtual void beforeListenerRegister() = 0;
+                virtual void before_listener_register() = 0;
 
                 /**
                  *  This method is called when registration request response is successfully returned from node.
@@ -51,7 +51,7 @@ namespace hazelcast {
                  *  Note that this method will also be called while first registered node is dead
                  *  and re-registering to a second node.
                  */
-                virtual void onListenerRegister() = 0;
+                virtual void on_listener_register() = 0;
 
                 virtual ~EventHandler() = default;
             };

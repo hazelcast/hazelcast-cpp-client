@@ -22,8 +22,8 @@
 #include <utility>
 #include <vector>
 #include "ClientTestSupportBase.h"
-#include <hazelcast/client/ClientConfig.h>
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/client_config.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
@@ -35,7 +35,7 @@
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/client/LifecycleListener.h>
+#include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
 #include <unordered_set>
 #include <cmath>
@@ -52,56 +52,56 @@
 
 #endif
 
-#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/client_config.h"
+#include "hazelcast/client/hazelcast_client.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/membership_listener.h"
+#include "hazelcast/client/initial_membership_event.h"
+#include "hazelcast/client/lifecycle_listener.h"
+#include "hazelcast/client/socket_interceptor.h"
+#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/cluster.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/client/ExecutionCallback.h"
-#include "hazelcast/client/Pipelining.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/execution_callback.h"
+#include "hazelcast/client/pipelining.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/client/serialization_config.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ITopic.h"
+#include "hazelcast/client/itopic.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/IList.h"
-#include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/client/aws/utility/CloudUtility.h"
-#include "hazelcast/client/ISet.h"
-#include "hazelcast/client/ReliableTopic.h"
+#include "hazelcast/client/item_listener.h"
+#include "hazelcast/client/multi_map.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
+#include "hazelcast/client/entry_event.h"
+#include "hazelcast/client/hazelcast_json_value.h"
+#include "hazelcast/client/ilist.h"
+#include "hazelcast/client/iqueue.h"
+#include "hazelcast/client/client_properties.h"
+#include "hazelcast/client/config/client_aws_config.h"
+#include "hazelcast/client/aws/utility/cloud_utility.h"
+#include "hazelcast/client/iset.h"
+#include "hazelcast/client/reliable_topic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -112,7 +112,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class BasicClientNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<config::InMemoryFormat> {
+                    : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
@@ -127,23 +127,23 @@ namespace hazelcast {
                 }
 
                 void SetUp() override {
-                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig(
+                    near_cache_config_ = NearCacheTestUtils::create_near_cache_config(
                             GetParam(),
-                            getTestName());
+                            get_test_name());
                 }
 
                 void TearDown() override {
-                    if (nearCachedMap) {
-                        nearCachedMap->destroy().get();
+                    if (near_cached_map_) {
+                        near_cached_map_->destroy().get();
                     }
-                    if (noNearCacheMap) {
-                        noNearCacheMap->destroy().get();
+                    if (no_near_cache_map_) {
+                        no_near_cache_map_->destroy().get();
                     }
-                    if (client) {
-                        client->shutdown();
+                    if (client_) {
+                        client_->shutdown();
                     }
-                    if (nearCachedClient) {
-                        nearCachedClient->shutdown();
+                    if (near_cached_client_) {
+                        near_cached_client_->shutdown();
                     }
                 }
 
@@ -159,10 +159,10 @@ namespace hazelcast {
                      * @param inMemoryFormat the {@link InMemoryFormat} to set
                      * @return the {@link NearCacheConfig}
                      */
-                    static config::NearCacheConfig createNearCacheConfig(
-                            config::InMemoryFormat inMemoryFormat, const std::string &mapName) {
-                        config::NearCacheConfig nearCacheConfig;
-                        nearCacheConfig.setName(mapName).setInMemoryFormat(inMemoryFormat).setInvalidateOnChange(true);
+                    static config::near_cache_config create_near_cache_config(
+                            config::in_memory_format in_memory_format, const std::string &map_name) {
+                        config::near_cache_config nearCacheConfig;
+                        nearCacheConfig.set_name(map_name).set_in_memory_format(in_memory_format).set_invalidate_on_change(true);
 
                         return nearCacheConfig;
                     }
@@ -175,13 +175,13 @@ namespace hazelcast {
                      * @param maxSizePolicy   the {@link MaxSizePolicy} to set
                      * @param maxSize         the max size to set
                      */
-                    static void setEvictionConfig(config::NearCacheConfig &nearCacheConfig,
-                                                  config::EvictionPolicy evictionPolicy,
-                                                  typename config::EvictionConfig::MaxSizePolicy maxSizePolicy,
-                                                  int maxSize) {
-                        nearCacheConfig.getEvictionConfig().setEvictionPolicy(evictionPolicy)
-                                .setMaximumSizePolicy(maxSizePolicy)
-                                .setSize(maxSize);
+                    static void set_eviction_config(config::near_cache_config &near_cache_config,
+                                                  config::eviction_policy eviction_policy,
+                                                  typename config::eviction_config::max_size_policy max_size_policy,
+                                                  int max_size) {
+                        near_cache_config.get_eviction_config().set_eviction_policy(eviction_policy)
+                                .set_maximum_size_policy(max_size_policy)
+                                .set_size(max_size);
                     }
 
                     /**
@@ -192,10 +192,10 @@ namespace hazelcast {
                      * @param expectedHits            the expected Near Cache hits
                      * @param expectedMisses          the expected Near Cache misses
                      */
-                    static void assertNearCacheStats(monitor::NearCacheStats &stats,
-                                                     int64_t expectedOwnedEntryCount, int64_t expectedHits,
-                                                     int64_t expectedMisses) {
-                        assertNearCacheStats(stats, expectedOwnedEntryCount, expectedHits, expectedMisses, 0, 0);
+                    static void assert_near_cache_stats(monitor::near_cache_stats &stats,
+                                                     int64_t expected_owned_entry_count, int64_t expected_hits,
+                                                     int64_t expected_misses) {
+                        assert_near_cache_stats(stats, expected_owned_entry_count, expected_hits, expected_misses, 0, 0);
                     }
 
                     /**
@@ -208,27 +208,27 @@ namespace hazelcast {
                      * @param expectedEvictions       the expected Near Cache evictions
                      * @param expectedExpirations     the expected Near Cache expirations
                      */
-                    static void assertNearCacheStats(monitor::NearCacheStats &stats,
-                                                     int64_t expectedOwnedEntryCount, int64_t expectedHits,
-                                                     int64_t expectedMisses,
-                                                     int64_t expectedEvictions, int64_t expectedExpirations) {
-                        assertEqualsFormat("Near Cache entry count should be %ld, but was %ld ",
-                                           expectedOwnedEntryCount, stats.getOwnedEntryCount(), stats);
-                        assertEqualsFormat("Near Cache hits should be %ld, but were %ld ",
-                                           expectedHits, stats.getHits(), stats);
-                        assertEqualsFormat("Near Cache misses should be %ld, but were %ld ",
-                                           expectedMisses, stats.getMisses(), stats);
-                        assertEqualsFormat("Near Cache evictions should be %ld, but were %ld ",
-                                           expectedEvictions, stats.getEvictions(), stats);
-                        assertEqualsFormat("Near Cache expirations should be %ld, but were %ld ",
-                                           expectedExpirations, stats.getExpirations(), stats);
+                    static void assert_near_cache_stats(monitor::near_cache_stats &stats,
+                                                     int64_t expected_owned_entry_count, int64_t expected_hits,
+                                                     int64_t expected_misses,
+                                                     int64_t expected_evictions, int64_t expected_expirations) {
+                        assert_equals_format("Near Cache entry count should be %ld, but was %ld ",
+                                           expected_owned_entry_count, stats.get_owned_entry_count(), stats);
+                        assert_equals_format("Near Cache hits should be %ld, but were %ld ",
+                                           expected_hits, stats.get_hits(), stats);
+                        assert_equals_format("Near Cache misses should be %ld, but were %ld ",
+                                           expected_misses, stats.get_misses(), stats);
+                        assert_equals_format("Near Cache evictions should be %ld, but were %ld ",
+                                           expected_evictions, stats.get_evictions(), stats);
+                        assert_equals_format("Near Cache expirations should be %ld, but were %ld ",
+                                           expected_expirations, stats.get_expirations(), stats);
                     }
 
-                    static void assertEqualsFormat(const char *messageFormat, int64_t expected, int64_t actual,
-                                                   monitor::NearCacheStats &stats) {
+                    static void assert_equals_format(const char *message_format, int64_t expected, int64_t actual,
+                                                   monitor::near_cache_stats &stats) {
                         char buf[300];
-                        hazelcast::util::hz_snprintf(buf, 300, messageFormat, expected, actual);
-                        ASSERT_EQ(expected, actual) << buf << "(" << stats.toString() << ")";
+                        hazelcast::util::hz_snprintf(buf, 300, message_format, expected, actual);
+                        ASSERT_EQ(expected, actual) << buf << "(" << stats.to_string() << ")";
                     }
 
                     NearCacheTestUtils() = delete;
@@ -241,143 +241,143 @@ namespace hazelcast {
                  */
                 static const int DEFAULT_RECORD_COUNT;
 
-                void createContext() {
-                    createNoNearCacheContext();
-                    createNearCacheContext();
+                void create_context() {
+                    create_no_near_cache_context();
+                    create_near_cache_context();
                 }
 
-                void createNoNearCacheContext() {
-                    client = std::unique_ptr<HazelcastClient>(new HazelcastClient(getConfig()));
-                    noNearCacheMap = client->getMap(getTestName());
+                void create_no_near_cache_context() {
+                    client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(get_config()));
+                    no_near_cache_map_ = client_->get_map(get_test_name());
                 }
 
-                void createNearCacheContext() {
-                    nearCachedClientConfig = getConfig();
-                    nearCachedClientConfig.addNearCacheConfig(nearCacheConfig);
-                    nearCachedClient = std::unique_ptr<HazelcastClient>(new HazelcastClient(nearCachedClientConfig));
-                    nearCachedMap = nearCachedClient->getMap(getTestName());
-                    spi::ClientContext clientContext(*nearCachedClient);
-                    nearCacheManager = &clientContext.getNearCacheManager();
-                    nearCache = nearCacheManager->
-                            getNearCache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(getTestName());
-                    this->stats = nearCache ? nearCache->getNearCacheStats() : nullptr;
+                void create_near_cache_context() {
+                    near_cached_client_config_ = get_config();
+                    near_cached_client_config_.add_near_cache_config(near_cache_config_);
+                    near_cached_client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(near_cached_client_config_));
+                    near_cached_map_ = near_cached_client_->get_map(get_test_name());
+                    spi::ClientContext clientContext(*near_cached_client_);
+                    near_cache_manager_ = &clientContext.get_near_cache_manager();
+                    near_cache_ = near_cache_manager_->
+                            get_near_cache<serialization::pimpl::data, serialization::pimpl::data, serialization::pimpl::data>(get_test_name());
+                    this->stats_ = near_cache_ ? near_cache_->get_near_cache_stats() : nullptr;
                 }
 
-                void testContainsKey(bool useNearCachedMapForRemoval) {
-                    createNoNearCacheContext();
+                void test_contains_key(bool use_near_cached_map_for_removal) {
+                    create_no_near_cache_context();
 
                     // populate map
-                    noNearCacheMap->put<int, std::string>(1, "value1").get();
-                    noNearCacheMap->put<int, std::string>(2, "value2").get();
-                    noNearCacheMap->put<int, std::string>(3, "value3").get();
+                    no_near_cache_map_->put<int, std::string>(1, "value1").get();
+                    no_near_cache_map_->put<int, std::string>(2, "value2").get();
+                    no_near_cache_map_->put<int, std::string>(3, "value3").get();
 
-                    createNearCacheContext();
+                    create_near_cache_context();
 
                     // populate Near Cache
-                    nearCachedMap->get<int, std::string>(1).get();
-                    nearCachedMap->get<int, std::string>(2).get();
-                    nearCachedMap->get<int, std::string>(3).get();
+                    near_cached_map_->get<int, std::string>(1).get();
+                    near_cached_map_->get<int, std::string>(2).get();
+                    near_cached_map_->get<int, std::string>(3).get();
 
-                    ASSERT_TRUE(nearCachedMap->containsKey(1).get());
-                    ASSERT_TRUE(nearCachedMap->containsKey(2).get());
-                    ASSERT_TRUE(nearCachedMap->containsKey(3).get());
-                    ASSERT_FALSE(nearCachedMap->containsKey(5).get());
+                    ASSERT_TRUE(near_cached_map_->contains_key(1).get());
+                    ASSERT_TRUE(near_cached_map_->contains_key(2).get());
+                    ASSERT_TRUE(near_cached_map_->contains_key(3).get());
+                    ASSERT_FALSE(near_cached_map_->contains_key(5).get());
 
                     // remove a key which is in the Near Cache
-                    auto adapter = useNearCachedMapForRemoval ? nearCachedMap : noNearCacheMap;
+                    auto adapter = use_near_cached_map_for_removal ? near_cached_map_ : no_near_cache_map_;
                     adapter->remove<int, std::string>(1).get();
 
-                    WAIT_TRUE_EVENTUALLY(checkContainKeys());
-                    ASSERT_FALSE(nearCachedMap->containsKey(1).get());
-                    ASSERT_TRUE(nearCachedMap->containsKey(2).get());
-                    ASSERT_TRUE(nearCachedMap->containsKey(3).get());
-                    ASSERT_FALSE(nearCachedMap->containsKey(5).get());
+                    WAIT_TRUE_EVENTUALLY(check_contain_keys());
+                    ASSERT_FALSE(near_cached_map_->contains_key(1).get());
+                    ASSERT_TRUE(near_cached_map_->contains_key(2).get());
+                    ASSERT_TRUE(near_cached_map_->contains_key(3).get());
+                    ASSERT_FALSE(near_cached_map_->contains_key(5).get());
                 }
 
-                bool checkContainKeys() {
-                    return !nearCachedMap->containsKey(1).get() && nearCachedMap->containsKey(2).get() &&
-                           nearCachedMap->containsKey(3).get() && !nearCachedMap->containsKey(5).get();
+                bool check_contain_keys() {
+                    return !near_cached_map_->contains_key(1).get() && near_cached_map_->contains_key(2).get() &&
+                           near_cached_map_->contains_key(3).get() && !near_cached_map_->contains_key(5).get();
                 }
 
                 void
-                assertNearCacheInvalidationRequests(monitor::NearCacheStats &stat, int64_t invalidationRequests) {
-                    if (nearCacheConfig.isInvalidateOnChange() && invalidationRequests > 0) {
+                assert_near_cache_invalidation_requests(monitor::near_cache_stats &stat, int64_t invalidation_requests) {
+                    if (near_cache_config_.is_invalidate_on_change() && invalidation_requests > 0) {
                         monitor::impl::NearCacheStatsImpl &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stat;
-                        ASSERT_EQ_EVENTUALLY(invalidationRequests, nearCacheStatsImpl.getInvalidationRequests());
-                        nearCacheStatsImpl.resetInvalidationEvents();
+                        ASSERT_EQ_EVENTUALLY(invalidation_requests, nearCacheStatsImpl.get_invalidation_requests());
+                        nearCacheStatsImpl.reset_invalidation_events();
                     }
                 }
 
-                void populateMap() {
+                void populate_map() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                         hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
-                        noNearCacheMap->put<int, std::string>(i, buf).get();
+                        no_near_cache_map_->put<int, std::string>(i, buf).get();
                     }
 
-                    assertNearCacheInvalidationRequests(*stats, DEFAULT_RECORD_COUNT);
+                    assert_near_cache_invalidation_requests(*stats_, DEFAULT_RECORD_COUNT);
                 }
 
-                void populateNearCache() {
+                void populate_near_cache() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        auto value = nearCachedMap->get<int, std::string>(i).get();
+                        auto value = near_cached_map_->get<int, std::string>(i).get();
                         ASSERT_TRUE(value.has_value());
                         hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
                         ASSERT_EQ(buf, value.value());
                     }
                 }
 
-                std::shared_ptr<serialization::pimpl::Data> getNearCacheKey(int key) {
-                    spi::ClientContext clientContext(*client);
-                    return clientContext.getSerializationService().toSharedData<int>(&key);
+                std::shared_ptr<serialization::pimpl::data> get_near_cache_key(int key) {
+                    spi::ClientContext clientContext(*client_);
+                    return clientContext.get_serialization_service().to_shared_data<int>(&key);
                 }
 
-                int64_t getExpectedMissesWithLocalUpdatePolicy() {
-                    if (nearCacheConfig.getLocalUpdatePolicy() ==
-                        config::NearCacheConfig::CACHE) {
+                int64_t get_expected_misses_with_local_update_policy() {
+                    if (near_cache_config_.get_local_update_policy() ==
+                        config::near_cache_config::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
-                        return stats->getMisses();
+                        return stats_->get_misses();
                     }
                     // we expect the first get() to be a miss, due to the replaced / invalidated value
-                    return stats->getMisses() + 1;
+                    return stats_->get_misses() + 1;
                 }
 
-                int64_t getExpectedHitsWithLocalUpdatePolicy() {
-                    if (nearCacheConfig.getLocalUpdatePolicy() ==
-                        config::NearCacheConfig::CACHE) {
+                int64_t get_expected_hits_with_local_update_policy() {
+                    if (near_cache_config_.get_local_update_policy() ==
+                        config::near_cache_config::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
-                        return stats->getHits() + 2;
+                        return stats_->get_hits() + 2;
                     }
                     // we expect the second get() to be a hit, since it should be served from the Near Cache
-                    return stats->getHits() + 1;
+                    return stats_->get_hits() + 1;
                 }
 
-                bool checkMissesAndHits(int64_t &expectedMisses, int64_t &expectedHits,
+                bool check_misses_and_hits(int64_t &expected_misses, int64_t &expected_hits,
                                         boost::optional<std::string> &value) {
-                    expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
-                    expectedHits = getExpectedHitsWithLocalUpdatePolicy();
+                    expected_misses = get_expected_misses_with_local_update_policy();
+                    expected_hits = get_expected_hits_with_local_update_policy();
 
-                    value = nearCachedMap->get<int, std::string>(1).get();
+                    value = near_cached_map_->get<int, std::string>(1).get();
                     if (!value.has_value() || value.value() != "newValue") {
                         return false;
                     }
-                    value = nearCachedMap->get<int, std::string>(1).get();
+                    value = near_cached_map_->get<int, std::string>(1).get();
                     if (!value.has_value() || value.value() != "newValue") {
                         return false;
                     }
 
-                    return expectedHits == stats->getHits() && expectedMisses == stats->getMisses();
+                    return expected_hits == stats_->get_hits() && expected_misses == stats_->get_misses();
                 }
 
-                void whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(bool useNearCacheAdapter) {
-                    createNoNearCacheContext();
+                void when_put_all_is_used_then_near_cache_should_be_invalidated(bool use_near_cache_adapter) {
+                    create_no_near_cache_context();
 
-                    createNearCacheContext();
+                    create_near_cache_context();
 
-                    populateMap();
+                    populate_map();
 
-                    populateNearCache();
+                    populate_near_cache();
 
                     std::unordered_map<int, std::string> invalidationMap;
                     char buf[30];
@@ -387,23 +387,23 @@ namespace hazelcast {
                     }
 
                     // this should invalidate the Near Cache
-                    auto adapter = useNearCacheAdapter ? nearCachedMap : noNearCacheMap;
-                    adapter->putAll<int, std::string>(invalidationMap).get();
+                    auto adapter = use_near_cache_adapter ? near_cached_map_ : no_near_cache_map_;
+                    adapter->put_all<int, std::string>(invalidationMap).get();
 
-                    WAIT_EQ_EVENTUALLY(0, nearCache->size());
-                    ASSERT_EQ(0, nearCache->size()) << "Invalidation is not working on putAll()";
+                    WAIT_EQ_EVENTUALLY(0, near_cache_->size());
+                    ASSERT_EQ(0, near_cache_->size()) << "Invalidation is not working on putAll()";
                 }
 
-                ClientConfig clientConfig;
-                ClientConfig nearCachedClientConfig;
-                config::NearCacheConfig nearCacheConfig;
-                std::unique_ptr<HazelcastClient> client;
-                std::unique_ptr<HazelcastClient> nearCachedClient;
-                std::shared_ptr<IMap> noNearCacheMap;
-                std::shared_ptr<IMap> nearCachedMap;
-                hazelcast::client::internal::nearcache::NearCacheManager *nearCacheManager;
-                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data> > nearCache;
-                std::shared_ptr<monitor::NearCacheStats> stats;
+                client_config client_config_;
+                client_config near_cached_client_config_;
+                config::near_cache_config near_cache_config_;
+                std::unique_ptr<hazelcast_client> client_;
+                std::unique_ptr<hazelcast_client> near_cached_client_;
+                std::shared_ptr<imap> no_near_cache_map_;
+                std::shared_ptr<imap> near_cached_map_;
+                hazelcast::client::internal::nearcache::NearCacheManager *near_cache_manager_;
+                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data> > near_cache_;
+                std::shared_ptr<monitor::near_cache_stats> stats_;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
             };
@@ -413,12 +413,12 @@ namespace hazelcast {
             HazelcastServer *BasicClientNearCacheTest::instance2 = nullptr;
 
             /**
-             * Checks that the Near Cache keys are correctly checked when {@link DataStructureAdapter#containsKey(Object)} is used.
+             * Checks that the Near Cache keys are correctly checked when {@link DataStructureAdapter#contains_key(Object)} is used.
              *
              * This variant uses the {@link NearCacheTestContext#nearCacheAdapter}, so there is no Near Cache invalidation necessary.
              */
             TEST_P(BasicClientNearCacheTest, testContainsKey_withUpdateOnNearCacheAdapter) {
-                testContainsKey(true);
+                test_contains_key(true);
             }
 
             /**
@@ -428,30 +428,30 @@ namespace hazelcast {
              * invalidation.
              */
             TEST_P(BasicClientNearCacheTest, testContainsKey_withUpdateOnDataAdapter) {
-                nearCacheConfig.setInvalidateOnChange(true);
-                testContainsKey(false);
+                near_cache_config_.set_invalidate_on_change(true);
+                test_contains_key(false);
             }
 
             /**
              * Checks that the Near Cache never returns its internal {@link NearCache#NULL_OBJECT} to the public API.
              */
             TEST_P(BasicClientNearCacheTest, whenEmptyMap_thenPopulatedNearCacheShouldReturnNull_neverNULLOBJECT) {
-                 createContext();
+                 create_context();
 
                 for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                     // populate Near Cache
-                    ASSERT_FALSE((nearCachedMap->get<int, std::string>(i).get().has_value()))
+                    ASSERT_FALSE((near_cached_map_->get<int, std::string>(i).get().has_value()))
                                                 << "Expected null from original data structure for key " << i;
                     // fetch value from Near Cache
-                    ASSERT_FALSE((nearCachedMap->get<int, std::string>(i).get().has_value()))
+                    ASSERT_FALSE((near_cached_map_->get<int, std::string>(i).get().has_value()))
                                                 << "Expected null from Near cached data structure for key " << i;
 
                     // fetch internal value directly from Near Cache
-                    std::shared_ptr<serialization::pimpl::Data> key = getNearCacheKey(i);
-                    auto value = nearCache->get(key);
+                    std::shared_ptr<serialization::pimpl::data> key = get_near_cache_key(i);
+                    auto value = near_cache_->get(key);
                     if (value) {
                         // the internal value should either be `null` or `NULL_OBJECT`
-                        ASSERT_EQ(nearCache->NULL_OBJECT, nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
+                        ASSERT_EQ(near_cache_->NULL_OBJECT, near_cache_->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
                     }
                 }
             }
@@ -465,42 +465,42 @@ namespace hazelcast {
             TEST_P(BasicClientNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnNearCacheAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig(nearCacheConfig, config::NONE,
-                                                                                  config::EvictionConfig::ENTRY_COUNT,
+                NearCacheTestUtils::set_eviction_config(near_cache_config_, config::NONE,
+                                                                                  config::eviction_config::ENTRY_COUNT,
                                                                                   size);
-                createNoNearCacheContext();
+                create_no_near_cache_context();
 
-                createNearCacheContext();
+                create_near_cache_context();
 
-                populateMap();
+                populate_map();
 
-                populateNearCache();
+                populate_near_cache();
 
-                ASSERT_EQ(size, nearCache->size());
-                auto value = nearCachedMap->get<int, std::string>(1).get();
+                ASSERT_EQ(size, near_cache_->size());
+                auto value = near_cached_map_->get<int, std::string>(1).get();
                 ASSERT_TRUE(value.has_value());
                 ASSERT_EQ("value-1", value.value());
 
-                nearCachedMap->put<int, std::string>(1, "newValue").get();
+                near_cached_map_->put<int, std::string>(1, "newValue").get();
 
                 // wait for the invalidation to be processed
-                ASSERT_EQ(size - 1, nearCache->size());
-                ASSERT_EQ(1, stats->getInvalidations());
-                auto stats_impl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(stats);
+                ASSERT_EQ(size - 1, near_cache_->size());
+                ASSERT_EQ(1, stats_->get_invalidations());
+                auto stats_impl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(stats_);
                 // one from local and one from remote
-                ASSERT_EQ_EVENTUALLY(2, stats_impl->getInvalidationRequests());
+                ASSERT_EQ_EVENTUALLY(2, stats_impl->get_invalidation_requests());
 
-                int64_t expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
-                int64_t expectedHits = getExpectedHitsWithLocalUpdatePolicy();
+                int64_t expectedMisses = get_expected_misses_with_local_update_policy();
+                int64_t expectedHits = get_expected_hits_with_local_update_policy();
 
-                value = nearCachedMap->get<int, std::string>(1).get();
+                value = near_cached_map_->get<int, std::string>(1).get();
                 ASSERT_TRUE(value.has_value());
                 ASSERT_EQ("newValue", value.value());
-                value = nearCachedMap->get<int, std::string>(1).get();
+                value = near_cached_map_->get<int, std::string>(1).get();
                 ASSERT_TRUE(value.has_value());
                 ASSERT_EQ("newValue", value.value());
 
-                NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
+                NearCacheTestUtils::assert_near_cache_stats(*stats_, size, expectedHits, expectedMisses);
             }
 
             /**
@@ -512,32 +512,32 @@ namespace hazelcast {
             TEST_P(BasicClientNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnDataAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig(nearCacheConfig, config::NONE,
-                                                                                  config::EvictionConfig::ENTRY_COUNT,
+                NearCacheTestUtils::set_eviction_config(near_cache_config_, config::NONE,
+                                                                                  config::eviction_config::ENTRY_COUNT,
                                                                                   size);
-                nearCacheConfig.setInvalidateOnChange(true);
+                near_cache_config_.set_invalidate_on_change(true);
 
-                createNoNearCacheContext();
+                create_no_near_cache_context();
 
-                createNearCacheContext();
+                create_near_cache_context();
 
-                populateMap();
+                populate_map();
 
-                populateNearCache();
+                populate_near_cache();
 
-                ASSERT_EQ(size, nearCache->size());
-                auto value = nearCachedMap->get<int, std::string>(1).get();
+                ASSERT_EQ(size, near_cache_->size());
+                auto value = near_cached_map_->get<int, std::string>(1).get();
                 ASSERT_TRUE(value.has_value());
                 ASSERT_EQ("value-1", value.value());
 
-                noNearCacheMap->put<int, std::string>(1, "newValue").get();
+                no_near_cache_map_->put<int, std::string>(1, "newValue").get();
 
                 // we have to use assertTrueEventually since the invalidation is done asynchronously
                 int64_t expectedMisses = 0;
                 int64_t expectedHits = 0;
-                WAIT_TRUE_EVENTUALLY(checkMissesAndHits(expectedMisses, expectedHits, value));
+                WAIT_TRUE_EVENTUALLY(check_misses_and_hits(expectedMisses, expectedHits, value));
                 SCOPED_TRACE("whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnDataAdapter");
-                NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
+                NearCacheTestUtils::assert_near_cache_stats(*stats_, size, expectedHits, expectedMisses);
             }
 
             /**
@@ -547,7 +547,7 @@ namespace hazelcast {
              */
             TEST_P(BasicClientNearCacheTest,
                    whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnNearCacheAdapter) {
-                whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(true);
+                when_put_all_is_used_then_near_cache_should_be_invalidated(true);
             }
 
             /**
@@ -557,79 +557,79 @@ namespace hazelcast {
              */
             TEST_P(BasicClientNearCacheTest,
                    whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnDataAdapter) {
-                nearCacheConfig.setInvalidateOnChange(true);
-                whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(false);
+                near_cache_config_.set_invalidate_on_change(true);
+                when_put_all_is_used_then_near_cache_should_be_invalidated(false);
             }
 
             /**
              * Checks that the {@link com.hazelcast.monitor.NearCacheStats} are calculated correctly.
              */
             TEST_P(BasicClientNearCacheTest, testNearCacheStats) {
-                createNoNearCacheContext();
+                create_no_near_cache_context();
 
-                createNearCacheContext();
+                create_near_cache_context();
 
                 // populate map
-                populateMap();
+                populate_map();
 
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is empty");
-                    NearCacheTestUtils::assertNearCacheStats(*stats, 0, 0, 0);
+                    NearCacheTestUtils::assert_near_cache_stats(*stats_, 0, 0, 0);
                 }
 
                 // populate Near Cache. Will cause misses and will increment the owned entry count
-                populateNearCache();
+                populate_near_cache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is initially populated");
-                    NearCacheTestUtils::assertNearCacheStats(*stats, DEFAULT_RECORD_COUNT, 0, DEFAULT_RECORD_COUNT);
+                    NearCacheTestUtils::assert_near_cache_stats(*stats_, DEFAULT_RECORD_COUNT, 0, DEFAULT_RECORD_COUNT);
                 }
 
                 // make some hits
-                populateNearCache();
+                populate_near_cache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is hit after being populated.");
-                    NearCacheTestUtils::assertNearCacheStats(*stats, DEFAULT_RECORD_COUNT, DEFAULT_RECORD_COUNT,
+                    NearCacheTestUtils::assert_near_cache_stats(*stats_, DEFAULT_RECORD_COUNT, DEFAULT_RECORD_COUNT,
                                                              DEFAULT_RECORD_COUNT);
                 }
             }
 
             TEST_P(BasicClientNearCacheTest, testNearCacheEviction) {
-                NearCacheTestUtils::setEvictionConfig(nearCacheConfig, config::LRU,
-                                                                                  config::EvictionConfig::ENTRY_COUNT,
+                NearCacheTestUtils::set_eviction_config(near_cache_config_, config::LRU,
+                                                                                  config::eviction_config::ENTRY_COUNT,
                                                                                   DEFAULT_RECORD_COUNT);
-                createNoNearCacheContext();
+                create_no_near_cache_context();
 
-                createNearCacheContext();
+                create_near_cache_context();
 
                 // all Near Cache implementations use the same eviction algorithm, which evicts a single entry
                 int64_t expectedEvictions = 1;
 
                 // populate map with an extra entry
-                populateMap();
+                populate_map();
                 char buf[20];
                 hazelcast::util::hz_snprintf(buf, 20, "value-%d", DEFAULT_RECORD_COUNT);
-                noNearCacheMap->put<int, std::string>(DEFAULT_RECORD_COUNT, buf).get();
+                no_near_cache_map_->put<int, std::string>(DEFAULT_RECORD_COUNT, buf).get();
 
                 // populate Near Caches
-                populateNearCache();
+                populate_near_cache();
 
                 // we expect (size + the extra entry - the expectedEvictions) entries in the Near Cache
                 int64_t expectedOwnedEntryCount = DEFAULT_RECORD_COUNT + 1 - expectedEvictions;
-                int64_t expectedHits = stats->getHits();
-                int64_t expectedMisses = stats->getMisses() + 1;
+                int64_t expectedHits = stats_->get_hits();
+                int64_t expectedMisses = stats_->get_misses() + 1;
 
                 // trigger eviction via fetching the extra entry
-                nearCachedMap->get<int, std::string>(DEFAULT_RECORD_COUNT).get();
+                near_cached_map_->get<int, std::string>(DEFAULT_RECORD_COUNT).get();
 
-                int64_t evictions = stats->getEvictions();
+                int64_t evictions = stats_->get_evictions();
                 ASSERT_GE(evictions, expectedEvictions)
                                             << "Near Cache eviction count didn't reach the desired value ("
                                             << expectedEvictions << " vs. " << evictions << ") ("
-                                            << stats->toString();
+                                            << stats_->to_string();
 
                 SCOPED_TRACE("testNearCacheEviction");
 
-                NearCacheTestUtils::assertNearCacheStats(*stats, expectedOwnedEntryCount, expectedHits, expectedMisses,
+                NearCacheTestUtils::assert_near_cache_stats(*stats_, expectedOwnedEntryCount, expectedHits, expectedMisses,
                                                          expectedEvictions, 0);
             }
 
@@ -663,53 +663,53 @@ namespace hazelcast {
 
 
                 void TearDown() override {
-                    if (map) {
-                        map->destroy().get();
+                    if (map_) {
+                        map_->destroy().get();
                     }
                 }
 
-                static config::NearCacheConfig
-                newNoInvalidationNearCacheConfig() {
-                    config::NearCacheConfig config(newNearCacheConfig());
-                    config.setInMemoryFormat(config::OBJECT);
-                    config.setInvalidateOnChange(false);
+                static config::near_cache_config
+                new_no_invalidation_near_cache_config() {
+                    config::near_cache_config config(new_near_cache_config());
+                    config.set_in_memory_format(config::OBJECT);
+                    config.set_invalidate_on_change(false);
                     return config;
                 }
 
-                static config::NearCacheConfig newNearCacheConfig() {
-                    return config::NearCacheConfig();
+                static config::near_cache_config new_near_cache_config() {
+                    return config::near_cache_config();
                 }
 
-                static std::unique_ptr<ClientConfig> newClientConfig() {
-                    return std::unique_ptr<ClientConfig>(new ClientConfig(getConfig()));
+                static std::unique_ptr<client_config> new_client_config() {
+                    return std::unique_ptr<client_config>(new client_config(get_config()));
                 }
 
-                std::shared_ptr<IMap> getNearCachedMapFromClient(
-                        config::NearCacheConfig config) {
+                std::shared_ptr<imap> get_near_cached_map_from_client(
+                        config::near_cache_config config) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
-                    config.setName(mapName);
+                    config.set_name(mapName);
 
-                    clientConfig = newClientConfig();
-                    clientConfig->addNearCacheConfig(config);
+                    client_config_ = new_client_config();
+                    client_config_->add_near_cache_config(config);
 
-                    client.reset(new HazelcastClient(*clientConfig));
-                    map = client->getMap(mapName);
-                    return map;
+                    client_.reset(new hazelcast_client(*client_config_));
+                    map_ = client_->get_map(mapName);
+                    return map_;
                 }
 
-                static std::shared_ptr<monitor::NearCacheStats> getNearCacheStats(IMap &m) {
-                    return m.getLocalMapStats().getNearCacheStats();
+                static std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats(imap &m) {
+                    return m.get_local_map_stats().get_near_cache_stats();
                 }
 
-                static void assertThatOwnedEntryCountEquals(IMap &clientMap, int64_t expected) {
-                    ASSERT_EQ(expected, getNearCacheStats(clientMap)->getOwnedEntryCount());
+                static void assert_that_owned_entry_count_equals(imap &client_map, int64_t expected) {
+                    ASSERT_EQ(expected, get_near_cache_stats(client_map)->get_owned_entry_count());
                 }
 
-                std::unique_ptr<ClientConfig> clientConfig;
-                config::NearCacheConfig nearCacheConfig;
-                std::unique_ptr<HazelcastClient> client;
-                std::shared_ptr<IMap> map;
+                std::unique_ptr<client_config> client_config_;
+                config::near_cache_config near_cache_config_;
+                std::unique_ptr<hazelcast_client> client_;
+                std::shared_ptr<imap> map_;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
             };
@@ -718,7 +718,7 @@ namespace hazelcast {
             HazelcastServer *ClientMapNearCacheTest::instance2 = nullptr;
 
             TEST_F(ClientMapNearCacheTest, testGetAllChecksNearCacheFirst) {
-                auto map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+                auto map = get_near_cached_map_from_client(new_no_invalidation_near_cache_config());
 
                 std::unordered_set<int> keys;
                 int size = 1003;
@@ -731,15 +731,15 @@ namespace hazelcast {
                     map->get<int, int>(i).get();
                 }
                 // getAll() generates the Near Cache hits
-                map->getAll<int, int>(keys).get();
+                map->get_all<int, int>(keys).get();
 
-                auto stats = getNearCacheStats(*map);
-                ASSERT_EQ(size, stats->getOwnedEntryCount());
-                ASSERT_EQ(size, stats->getHits());
+                auto stats = get_near_cache_stats(*map);
+                ASSERT_EQ(size, stats->get_owned_entry_count());
+                ASSERT_EQ(size, stats->get_hits());
             }
 
             TEST_F(ClientMapNearCacheTest, testGetAllPopulatesNearCache) {
-                auto map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+                auto map = get_near_cached_map_from_client(new_no_invalidation_near_cache_config());
 
                 std::unordered_set<int> keys;
                 int size = 1214;
@@ -752,13 +752,13 @@ namespace hazelcast {
                     map->get<int, int>(i).get();
                 }
                 // getAll() generates the Near Cache hits
-                map->getAll<int, int>(keys).get();
+                map->get_all<int, int>(keys).get();
 
-                assertThatOwnedEntryCountEquals(*map, size);
+                assert_that_owned_entry_count_equals(*map, size);
             }
 
             TEST_F(ClientMapNearCacheTest, testRemoveAllNearCache) {
-                auto map = getNearCachedMapFromClient(newNearCacheConfig());
+                auto map = get_near_cached_map_from_client(new_near_cache_config());
 
                 std::unordered_set<int> keys;
                 int size = 1214;
@@ -771,9 +771,9 @@ namespace hazelcast {
                     map->get<int, int>(i).get();
                 }
 
-                map->removeAll(query::EqualPredicate(*client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 20)).get();
+                map->remove_all(query::equal_predicate(*client_, query::query_constants::KEY_ATTRIBUTE_NAME, 20)).get();
 
-                assertThatOwnedEntryCountEquals(*map, 0);
+                assert_that_owned_entry_count_equals(*map, 0);
             }
         }
     }
@@ -785,7 +785,7 @@ namespace hazelcast {
 
             class ClientSetTest : public ClientTestSupport {
             protected:
-                void addItems(int count) {
+                void add_items(int count) {
                     for (int i = 1; i <= count; ++i) {
                         ASSERT_TRUE(set->add(std::string("item") + std::to_string(i)).get());
                     }
@@ -797,8 +797,8 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(getConfig());
-                    set = client->getSet("MySet");
+                    client = new hazelcast_client(get_config());
+                    set = client->get_set("MySet");
                 }
 
                 static void TearDownTestCase() {
@@ -810,7 +810,7 @@ namespace hazelcast {
                     instance = nullptr;
                 }
 
-                bool itemExists(const std::vector<std::string> &items, const std::string &item) const {
+                bool item_exists(const std::vector<std::string> &items, const std::string &item) const {
                     bool found = false;
                     for (std::vector<std::string>::const_iterator it = items.begin(); it != items.end(); ++it) {
                         if (item == *it) {
@@ -822,28 +822,28 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static HazelcastClient *client;
-                static std::shared_ptr<ISet> set;
+                static hazelcast_client *client;
+                static std::shared_ptr<iset> set;
             };
 
             HazelcastServer *ClientSetTest::instance = nullptr;
-            HazelcastClient *ClientSetTest::client = nullptr;
-            std::shared_ptr<ISet> ClientSetTest::set;
+            hazelcast_client *ClientSetTest::client = nullptr;
+            std::shared_ptr<iset> ClientSetTest::set;
 
             TEST_F(ClientSetTest, testAddAll) {
                 std::vector<std::string> l;
                 l.emplace_back("item1");
                 l.emplace_back("item2");
 
-                ASSERT_TRUE(set->addAll(l).get());
+                ASSERT_TRUE(set->add_all(l).get());
                 ASSERT_EQ(2, set->size().get());
 
-                ASSERT_FALSE(set->addAll(l).get());
+                ASSERT_FALSE(set->add_all(l).get());
                 ASSERT_EQ(2, set->size().get());
             }
 
             TEST_F(ClientSetTest, testAddRemove) {
-                addItems(3);
+                add_items(3);
                 ASSERT_EQ(3, set->size().get());
 
                 ASSERT_FALSE(set->add("item3").get());
@@ -855,7 +855,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSetTest, testContains) {
-                addItems(4);
+                add_items(4);
 
                 ASSERT_FALSE(set->contains("item5").get());
                 ASSERT_TRUE(set->contains("item2").get());
@@ -863,42 +863,42 @@ namespace hazelcast {
                 std::vector<std::string> l;
                 l.emplace_back("item6");
                 l.emplace_back("item3");
-                ASSERT_FALSE(set->containsAll(l).get());
+                ASSERT_FALSE(set->contains_all(l).get());
                 ASSERT_TRUE(set->add("item6").get());
-                ASSERT_TRUE(set->containsAll(l).get());
+                ASSERT_TRUE(set->contains_all(l).get());
             }
 
             TEST_F(ClientSetTest, testToArray) {
-                addItems(4);
+                add_items(4);
                 ASSERT_FALSE(set->add("item4").get());
 
-                std::vector<std::string> items = set->toArray<std::string>().get();
+                std::vector<std::string> items = set->to_array<std::string>().get();
 
                 ASSERT_EQ((size_t) 4, items.size());
-                ASSERT_TRUE(itemExists(items, "item1"));
-                ASSERT_TRUE(itemExists(items, "item2"));
-                ASSERT_TRUE(itemExists(items, "item3"));
-                ASSERT_TRUE(itemExists(items, "item4"));
+                ASSERT_TRUE(item_exists(items, "item1"));
+                ASSERT_TRUE(item_exists(items, "item2"));
+                ASSERT_TRUE(item_exists(items, "item3"));
+                ASSERT_TRUE(item_exists(items, "item4"));
             }
 
             TEST_F(ClientSetTest, testRemoveRetainAll) {
-                addItems(4);
+                add_items(4);
                 std::vector<std::string> l;
                 l.emplace_back("item4");
                 l.emplace_back("item3");
-                ASSERT_TRUE(set->removeAll(l).get());
+                ASSERT_TRUE(set->remove_all(l).get());
                 ASSERT_EQ(2, set->size().get());
-                ASSERT_FALSE(set->removeAll(l).get());
+                ASSERT_FALSE(set->remove_all(l).get());
                 ASSERT_EQ(2, set->size().get());
 
                 l.clear();
                 l.emplace_back("item1");
                 l.emplace_back("item2");
-                ASSERT_FALSE(set->retainAll(l).get());
+                ASSERT_FALSE(set->retain_all(l).get());
                 ASSERT_EQ(2, set->size().get());
 
                 l.clear();
-                ASSERT_TRUE(set->retainAll(l).get());
+                ASSERT_TRUE(set->retain_all(l).get());
                 ASSERT_EQ(0, set->size().get());
 
             }
@@ -906,24 +906,24 @@ namespace hazelcast {
             TEST_F(ClientSetTest, testListener) {
                 boost::latch latch1(6);
 
-                auto registrationId = set->addItemListener(
-                    ItemListener()
-                        .on_added([&latch1](ItemEvent &&itemEvent) {
+                auto registrationId = set->add_item_listener(
+                        item_listener()
+                        .on_added([&latch1](item_event &&item_event) {
                             latch1.count_down();
                         })
                     , true).get();
 
-                addItems(5);
+                add_items(5);
                 set->add("done").get();
                 ASSERT_OPEN_EVENTUALLY(latch1);
 
-                ASSERT_TRUE(set->removeItemListener(registrationId).get());
+                ASSERT_TRUE(set->remove_item_listener(registrationId).get());
             }
 
             TEST_F(ClientSetTest, testIsEmpty) {
-                ASSERT_TRUE(set->isEmpty().get());
+                ASSERT_TRUE(set->is_empty().get());
                 ASSERT_TRUE(set->add("item1").get());
-                ASSERT_FALSE(set->isEmpty().get());
+                ASSERT_FALSE(set->is_empty().get());
             }
         }
     }
@@ -935,37 +935,37 @@ namespace hazelcast {
             class ReliableTopicTest : public ClientTestSupport {
             protected:
                 struct ListenerState {
-                    ListenerState(int latchCount, int64_t startSequence) : latch1(latchCount),
-                                                                           startSequence(startSequence),
-                                                                           numberOfMessagesReceived(0) {}
+                    ListenerState(int latch_count, int64_t start_sequence) : latch1(latch_count),
+                                                                           start_sequence(start_sequence),
+                                                                           number_of_messages_received(0) {}
 
-                    explicit ListenerState(int latchCount) : ListenerState(latchCount, -1) {}
+                    explicit ListenerState(int latch_count) : ListenerState(latch_count, -1) {}
 
                     boost::latch latch1;
-                    int64_t startSequence;
-                    std::atomic<int> numberOfMessagesReceived;
-                    hazelcast::util::ConcurrentQueue<topic::Message> messages;
+                    int64_t start_sequence;
+                    std::atomic<int> number_of_messages_received;
+                    hazelcast::util::ConcurrentQueue<topic::message> messages;
                 };
 
-                topic::ReliableListener makeListener(std::shared_ptr<ListenerState> state) {
-                    return topic::ReliableListener(false, state->startSequence)
-                        .on_received([state](topic::Message &&message){
-                            ++state->numberOfMessagesReceived;
-                            state->messages.offer(new topic::Message(std::move(message)));
+                topic::reliable_listener make_listener(std::shared_ptr<ListenerState> state) {
+                    return topic::reliable_listener(false, state->start_sequence)
+                        .on_received([state](topic::message &&message){
+                            ++state->number_of_messages_received;
+                            state->messages.offer(new topic::message(std::move(message)));
                             state->latch1.count_down();
                         });
                 }
 
             protected:
                 void TearDown() override {
-                    if (topic) {
-                        topic->destroy().get();
+                    if (topic_) {
+                        topic_->destroy().get();
                     }
                 }
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(getConfig());
+                    client = new hazelcast_client(get_config());
                 }
 
                 static void TearDownTestCase() {
@@ -977,191 +977,191 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static HazelcastClient *client;
-                std::shared_ptr<ReliableTopic> topic;
-                std::string listenerId;
+                static hazelcast_client *client;
+                std::shared_ptr<reliable_topic> topic_;
+                std::string listener_id_;
             };
 
             HazelcastServer *ReliableTopicTest::instance = nullptr;
-            HazelcastClient *ReliableTopicTest::client = nullptr;
+            hazelcast_client *ReliableTopicTest::client = nullptr;
 
             TEST_F(ReliableTopicTest, testBasics) {
-                ASSERT_NO_THROW(topic = client->getReliableTopic("testBasics"));
-                ASSERT_EQ("testBasics", topic->getName());
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testBasics"));
+                ASSERT_EQ("testBasics", topic_->get_name());
 
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
+                ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
-                Employee empl1("first", 20);
-                ASSERT_NO_THROW(topic->publish(empl1).get());
+                employee empl1("first", 20);
+                ASSERT_NO_THROW(topic_->publish(empl1).get());
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(1, state->numberOfMessagesReceived);
-                auto employee = state->messages.poll()->getMessageObject().template get<Employee>();
-                ASSERT_TRUE(employee.has_value());
-                ASSERT_EQ(empl1, employee.value());
+                ASSERT_EQ(1, state->number_of_messages_received);
+                auto e = state->messages.poll()->get_message_object().template get<employee>();
+                ASSERT_TRUE(e.has_value());
+                ASSERT_EQ(empl1, e.value());
 
                 // remove listener
-                ASSERT_TRUE(topic->removeMessageListener(listenerId));
-                ASSERT_FALSE(topic->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+                ASSERT_FALSE(topic_->remove_message_listener(listener_id_));
             }
 
             TEST_F(ReliableTopicTest, testListenerSequence) {
-                ASSERT_NO_THROW(topic = client->getReliableTopic("testListenerSequence"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testListenerSequence"));
 
-                Employee empl1("first", 10);
-                Employee empl2("second", 20);
+                employee empl1("first", 10);
+                employee empl2("second", 20);
 
-                ASSERT_NO_THROW(topic->publish(empl1).get());
-                ASSERT_NO_THROW(topic->publish(empl2).get());
+                ASSERT_NO_THROW(topic_->publish(empl1).get());
+                ASSERT_NO_THROW(topic_->publish(empl2).get());
 
                 auto state = std::make_shared<ListenerState>(1, 1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
+                ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(1, state->numberOfMessagesReceived);
-                auto employee = state->messages.poll()->getMessageObject().template get<Employee>();
-                ASSERT_TRUE(employee.has_value());
-                ASSERT_EQ(empl2, employee.value());
+                ASSERT_EQ(1, state->number_of_messages_received);
+                auto e = state->messages.poll()->get_message_object().template get<employee>();
+                ASSERT_TRUE(e.has_value());
+                ASSERT_EQ(empl2, e.value());
 
                 // remove listener
-                ASSERT_TRUE(topic->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenExisting) {
-                ASSERT_NO_THROW(topic = client->getReliableTopic("removeMessageListener_whenExisting"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("removeMessageListener_whenExisting"));
 
-                Employee empl1("first", 10);
+                employee empl1("first", 10);
 
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
+                ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
                 // remove listener
-                ASSERT_TRUE(topic->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
 
-                ASSERT_NO_THROW(topic->publish(empl1).get());
+                ASSERT_NO_THROW(topic_->publish(empl1).get());
 
                 ASSERT_EQ(boost::cv_status::timeout, state->latch1.wait_for(boost::chrono::seconds(2)));
-                ASSERT_EQ(0, state->numberOfMessagesReceived);
+                ASSERT_EQ(0, state->number_of_messages_received);
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenNonExisting) {
-                ASSERT_NO_THROW(topic = client->getReliableTopic("removeMessageListener_whenNonExisting"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("removeMessageListener_whenNonExisting"));
 
                 // remove listener
-                ASSERT_FALSE(topic->removeMessageListener("abc"));
+                ASSERT_FALSE(topic_->remove_message_listener("abc"));
             }
 
             TEST_F(ReliableTopicTest, publishMultiple) {
-                ASSERT_NO_THROW(topic = client->getReliableTopic("publishMultiple"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("publishMultiple"));
 
                 auto state = std::make_shared<ListenerState>(5);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
+                ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
                 std::vector<std::string> items;
                 for (int k = 0; k < 5; k++) {
                     std::string item = std::to_string(k);
-                    topic->publish(item).get();
+                    topic_->publish(item).get();
                     items.push_back(item);
                 }
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(5, state->numberOfMessagesReceived);
-                hazelcast::util::ConcurrentQueue<topic::Message> &queue = state->messages;
+                ASSERT_EQ(5, state->number_of_messages_received);
+                hazelcast::util::ConcurrentQueue<topic::message> &queue = state->messages;
                 for (int k = 0; k < 5; k++) {
-                    auto val = queue.poll()->getMessageObject().get<std::string>();
+                    auto val = queue.poll()->get_message_object().get<std::string>();
                     ASSERT_TRUE(val.has_value());
                     ASSERT_EQ(items[k], val.value());
                 }
 
-                ASSERT_TRUE(topic->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
             }
 
             TEST_F(ReliableTopicTest, testConfig) {
-                ClientConfig clientConfig;
-                clientConfig.getNetworkConfig().addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                config::ReliableTopicConfig relConfig("testConfig");
-                relConfig.setReadBatchSize(2);
-                clientConfig.addReliableTopicConfig(relConfig);
-                HazelcastClient configClient(clientConfig);
+                client_config clientConfig;
+                clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
+                config::reliable_topic_config relConfig("testConfig");
+                relConfig.set_read_batch_size(2);
+                clientConfig.add_reliable_topic_config(relConfig);
+                hazelcast_client configClient(clientConfig);
 
-                ASSERT_NO_THROW(topic = configClient.getReliableTopic("testConfig"));
+                ASSERT_NO_THROW(topic_ = configClient.get_reliable_topic("testConfig"));
 
                 auto state = std::make_shared<ListenerState>(5);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
+                ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
                 std::vector<std::string> items;
                 for (int k = 0; k < 5; k++) {
                     std::string item = std::to_string(k);
-                    topic->publish(item).get();
+                    topic_->publish(item).get();
                     items.push_back(item);
                 }
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(5, state->numberOfMessagesReceived);
-                hazelcast::util::ConcurrentQueue<topic::Message> &queue = state->messages;
+                ASSERT_EQ(5, state->number_of_messages_received);
+                hazelcast::util::ConcurrentQueue<topic::message> &queue = state->messages;
                 for (int k = 0; k < 5; k++) {
-                    auto val = queue.poll()->getMessageObject().get<std::string>();
+                    auto val = queue.poll()->get_message_object().get<std::string>();
                     ASSERT_TRUE(val.has_value());
                     ASSERT_EQ(items[k], val.value());
                 }
-                ASSERT_TRUE(topic->removeMessageListener(listenerId));
-                topic.reset();
+                ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+                topic_.reset();
             }
 
             TEST_F(ReliableTopicTest, testMessageFieldSetCorrectly) {
-                ASSERT_NO_THROW(topic = client->getReliableTopic("testMessageFieldSetCorrectly"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testMessageFieldSetCorrectly"));
 
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
+                ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
                 auto timeBeforePublish = std::chrono::system_clock::now();
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                topic->publish<int>(3).get();
+                topic_->publish<int>(3).get();
                 auto timeAfterPublish = std::chrono::system_clock::now();
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(1, state->numberOfMessagesReceived);
+                ASSERT_EQ(1, state->number_of_messages_received);
                 auto message = state->messages.poll();
-                auto val = message->getMessageObject().get<int>();
+                auto val = message->get_message_object().get<int>();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ(3, val.value());
 
-                ASSERT_LE(timeBeforePublish, message->getPublishTime());
-                ASSERT_GE(timeAfterPublish, message->getPublishTime());
-                ASSERT_EQ(topic->getName(), message->getSource());
-                ASSERT_EQ(nullptr, message->getPublishingMember());
+                ASSERT_LE(timeBeforePublish, message->get_publish_time());
+                ASSERT_GE(timeAfterPublish, message->get_publish_time());
+                ASSERT_EQ(topic_->get_name(), message->get_source());
+                ASSERT_EQ(nullptr, message->get_publishing_member());
 
-                ASSERT_TRUE(topic->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
             }
 
             TEST_F(ReliableTopicTest, testAlwaysStartAfterTail) {
-                ASSERT_NO_THROW(topic = client->getReliableTopic("testAlwaysStartAfterTail"));
-                ASSERT_NO_THROW(topic->publish(1).get());
-                ASSERT_NO_THROW(topic->publish(2).get());
-                ASSERT_NO_THROW(topic->publish(3).get());
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testAlwaysStartAfterTail"));
+                ASSERT_NO_THROW(topic_->publish(1).get());
+                ASSERT_NO_THROW(topic_->publish(2).get());
+                ASSERT_NO_THROW(topic_->publish(3).get());
 
                 auto state = std::make_shared<ListenerState>(3);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
+                ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
                 std::vector<int> expectedValues = {4, 5, 6};
                 // spawn a thread for publishing new data
                 std::thread([=]() {
                     for (auto val : expectedValues) {
-                        topic->publish(val).get();
+                        topic_->publish(val).get();
                     }
                 }).detach();
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ((int) expectedValues.size(), state->numberOfMessagesReceived);
+                ASSERT_EQ((int) expectedValues.size(), state->number_of_messages_received);
                 auto &objects = state->messages;
 
                 for (auto &val : expectedValues) {
-                    auto receivedValue = objects.poll()->getMessageObject().get<int>();
+                    auto receivedValue = objects.poll()->get_message_object().get<int>();
                     ASSERT_TRUE(receivedValue.has_value());
                     ASSERT_EQ(val, receivedValue.value());
                 }
 
-                ASSERT_TRUE(topic->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
             }
         }
     }
@@ -1184,46 +1184,46 @@ namespace hazelcast {
 
                     class Stats {
                     public:
-                        Stats() : getCount(0), putCount(0), removeCount(0) {
+                        Stats() : get_count(0), put_count(0), remove_count(0) {
                         }
 
-                        Stats(const Stats &rhs) : getCount(const_cast<Stats &>(rhs).getCount.load()),
-                                                  putCount(const_cast<Stats &>(rhs).putCount.load()),
-                                                  removeCount(const_cast<Stats &>(rhs).removeCount.load()) {
+                        Stats(const Stats &rhs) : get_count(const_cast<Stats &>(rhs).get_count.load()),
+                                                  put_count(const_cast<Stats &>(rhs).put_count.load()),
+                                                  remove_count(const_cast<Stats &>(rhs).remove_count.load()) {
                         }
 
-                        Stats getAndReset() {
+                        Stats get_and_reset() {
                             Stats newOne(*this);
-                            getCount = 0;
-                            putCount = 0;
-                            removeCount = 0;
+                            get_count = 0;
+                            put_count = 0;
+                            remove_count = 0;
                             return newOne;
                         }
 
-                        mutable std::atomic<int64_t> getCount;
-                        mutable std::atomic<int64_t> putCount;
-                        mutable std::atomic<int64_t> removeCount;
+                        mutable std::atomic<int64_t> get_count;
+                        mutable std::atomic<int64_t> put_count;
+                        mutable std::atomic<int64_t> remove_count;
 
                         void print() const {
-                            std::cerr << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount
+                            std::cerr << "Total = " << total() << ", puts = " << put_count << " , gets = " << get_count
                                       << " , removes = "
-                                      << removeCount << std::endl;
+                                      << remove_count << std::endl;
                         }
 
                         int total() const {
-                            return (int) getCount + (int) putCount + (int) removeCount;
+                            return (int) get_count + (int) put_count + (int) remove_count;
                         }
                     };
 
                     class StatsPrinterTask {
                     public:
-                        explicit StatsPrinterTask(Stats &stats) : stats(stats) {}
+                        explicit StatsPrinterTask(Stats &stats) : stats_(stats) {}
 
                         void run()  {
                             while (true) {
                                 try {
                                     hazelcast::util::sleep((unsigned int) STATS_SECONDS);
-                                    const Stats statsNow = stats.getAndReset();
+                                    const Stats statsNow = stats_.get_and_reset();
                                     statsNow.print();
                                     std::cerr << "Operations per Second : " << statsNow.total() / STATS_SECONDS
                                               << std::endl;
@@ -1233,18 +1233,18 @@ namespace hazelcast {
                             }
                         }
 
-                        const std::string getName() const {
+                        const std::string get_name() const {
                             return "StatPrinterTask";
                         }
 
                     private:
-                        Stats &stats;
+                        Stats &stats_;
                     };
 
                     class Task {
                     public:
-                        Task(Stats &stats, std::shared_ptr<IMap> map,
-                             std::shared_ptr<logger> lg) : stats(stats), map(map),
+                        Task(Stats &stats, std::shared_ptr<imap> map,
+                             std::shared_ptr<logger> lg) : stats_(stats), map_(map),
                                                            logger_(std::move(lg)) {
                         }
 
@@ -1261,21 +1261,21 @@ namespace hazelcast {
                                 int operation = (rand() % 100);
                                 try {
                                     if (operation < GET_PERCENTAGE) {
-                                        map->get<int, std::vector<char>>(key).get();
+                                        map_->get<int, std::vector<char>>(key).get();
                                         ++getCount;
                                     } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                                        map->put<int, std::vector<char>>(key, value).get();
+                                        map_->put<int, std::vector<char>>(key, value).get();
                                         ++putCount;
                                     } else {
-                                        map->remove<int, std::string>(key).get();
+                                        map_->remove<int, std::string>(key).get();
                                         ++removeCount;
                                     }
-                                    updateStats(updateIntervalCount, getCount, putCount, removeCount);
-                                } catch (hazelcast::client::exception::IOException &e) {
-                                    HZ_LOG(*logger_, warning, std::string("[SimpleMapTest IOException] ") + e.what());
-                                } catch (hazelcast::client::exception::HazelcastClientNotActiveException &e) {
+                                    update_stats(updateIntervalCount, getCount, putCount, removeCount);
+                                } catch (hazelcast::client::exception::io &e) {
+                                    HZ_LOG(*logger_, warning, std::string("[SimpleMapTest io_exception] ") + e.what());
+                                } catch (hazelcast::client::exception::hazelcast_client_not_active &e) {
                                     HZ_LOG(*logger_, warning, std::string("[SimpleMapTest::run] ") + e.what());
-                                } catch (hazelcast::client::exception::IException &e) {
+                                } catch (hazelcast::client::exception::iexception &e) {
                                     HZ_LOG(*logger_, warning, std::string("[SimpleMapTest::run] ") + e.what());
                                 } catch (...) {
                                     HZ_LOG(*logger_, warning, "[SimpleMapTest:run] unknown exception!");
@@ -1285,30 +1285,30 @@ namespace hazelcast {
                             }
                         }
 
-                        const std::string getName() {
+                        const std::string get_name() {
                             return "SimpleMapTest Task";
                         }
 
                     private:
                         void
-                        updateStats(int updateIntervalCount, int &getCount, int &putCount, int &removeCount) const {
-                            if ((getCount + putCount + removeCount) % updateIntervalCount == 0) {
-                                int64_t current = stats.getCount;
-                                stats.getCount = current + getCount;
-                                getCount = 0;
+                        update_stats(int update_interval_count, int &get_count, int &put_count, int &remove_count) const {
+                            if ((get_count + put_count + remove_count) % update_interval_count == 0) {
+                                int64_t current = stats_.get_count;
+                                stats_.get_count = current + get_count;
+                                get_count = 0;
 
-                                current = stats.putCount;
-                                stats.putCount = current + putCount;
-                                putCount = 0;
+                                current = stats_.put_count;
+                                stats_.put_count = current + put_count;
+                                put_count = 0;
 
-                                current = stats.removeCount;
-                                stats.removeCount = current + removeCount;
-                                removeCount = 0;
+                                current = stats_.remove_count;
+                                stats_.remove_count = current + remove_count;
+                                remove_count = 0;
                             }
                         }
 
-                        Stats &stats;
-                        std::shared_ptr<IMap> map;
+                        Stats &stats_;
+                        std::shared_ptr<imap> map_;
                         std::shared_ptr<logger> logger_;
                     };
 
@@ -1321,10 +1321,10 @@ namespace hazelcast {
                         std::cerr << "    Get Percentage: " << GET_PERCENTAGE << std::endl;
                         std::cerr << "    Put Percentage: " << PUT_PERCENTAGE << std::endl;
                         std::cerr << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
-                        ClientConfig clientConfig;
-                        clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
-                        auto member = server.getMember();
-                        clientConfig.getNetworkConfig().addAddress(Address(member.host, member.port)).setConnectionAttemptPeriod(std::chrono::seconds(10));
+                        client_config clientConfig;
+                        clientConfig.set_property(client_properties::PROP_HEARTBEAT_TIMEOUT, "10");
+                        auto member = server.get_member();
+                        clientConfig.get_network_config().add_address(address(member.host, member.port)).set_connection_attempt_period(std::chrono::seconds(10));
 
                         Stats stats;
                         auto lg = std::make_shared<logger>("SimpleMapTest", "SimpleMapTest",
@@ -1334,9 +1334,9 @@ namespace hazelcast {
                             StatsPrinterTask(stats).run();
                         });
 
-                        HazelcastClient hazelcastClient(clientConfig);
+                        hazelcast_client hazelcastClient(clientConfig);
 
-                        auto map = hazelcastClient.getMap("cppDefault");
+                        auto map = hazelcastClient.get_map("cppDefault");
 
                         std::vector<std::future<void>> futures;
                         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -1366,30 +1366,30 @@ namespace hazelcast {
                 IssueTest();
             protected:
 
-                boost::latch latch1;
-                boost::latch latch2;
-                EntryListener issue864MapListener;
+                boost::latch latch1_;
+                boost::latch latch2_;
+                entry_listener issue864_map_listener_;
             };
 
-            IssueTest::IssueTest() : latch1(1), latch2(1), issue864MapListener() {
-                issue864MapListener.
-                    on_added([this](EntryEvent &&event) {
-                        auto key = event.getKey().get<int>().value();
+            IssueTest::IssueTest() : latch1_(1), latch2_(1), issue864_map_listener_() {
+                issue864_map_listener_.
+                    on_added([this](entry_event &&event) {
+                        auto key = event.get_key().get<int>().value();
                         ASSERT_TRUE(1 == key || 2 == key);
                         if (key == 1) {
                             // The received event should be the addition of key value: 1, 10
-                            ASSERT_EQ(10, event.getValue().get<int>().value());
-                            this->latch1.count_down();
+                            ASSERT_EQ(10, event.get_value().get<int>().value());
+                            this->latch1_.count_down();
                         } else {
                             // The received event should be the addition of key value: 2, 20
-                            ASSERT_EQ(20, event.getValue().get<int>().value());
-                            this->latch2.count_down();
+                            ASSERT_EQ(20, event.get_value().get<int>().value());
+                            this->latch2_.count_down();
                         }
                     }).
-                    on_updated([this](EntryEvent &&event) {
-                        ASSERT_EQ(2, event.getKey().get<int>().value());
-                        ASSERT_EQ(20, event.getValue().get<int>().value());
-                        this->latch1.count_down();
+                    on_updated([this](entry_event &&event) {
+                        ASSERT_EQ(2, event.get_key().get<int>().value());
+                        ASSERT_EQ(20, event.get_value().get<int>().value());
+                        this->latch1_.count_down();
                     });
             }
 
@@ -1397,13 +1397,13 @@ namespace hazelcast {
                 HazelcastServer hz1(*g_srvFactory);
                 HazelcastServer hz2(*g_srvFactory);
 
-                ClientConfig clientConfig(getConfig());
-                clientConfig.setRedoOperation(true);
-                clientConfig.getNetworkConfig().setSmartRouting(false);
+                client_config clientConfig(get_config());
+                clientConfig.set_redo_operation(true);
+                clientConfig.get_network_config().set_smart_routing(false);
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
-                auto map = client.getMap("m");
+                auto map = client.get_map("m");
                 int expected = 1000;
                 std::thread t;
                 for (int i = 0; i < expected; i++) {
@@ -1422,21 +1422,21 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // 2. Start a client
-                ClientConfig clientConfig = getConfig();
-                clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
+                client_config clientConfig = get_config();
+                clientConfig.get_network_config().set_connection_attempt_limit(10);
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 // 3. Get a map
-                auto map = client.getMap("IssueTest_map");
+                auto map = client.get_map("IssueTest_map");
 
                 // 4. Subscribe client to entry added event
-                map->addEntryListener(std::move(issue864MapListener), true).get();
+                map->add_entry_listener(std::move(issue864_map_listener_), true).get();
 
                 // Put a key, value to the map
                 ASSERT_FALSE(map->put(1, 10).get().has_value());
 
-                ASSERT_OPEN_EVENTUALLY(latch1);
+                ASSERT_OPEN_EVENTUALLY(latch1_);
 
                 // 5. Restart the server
                 ASSERT_TRUE(server.shutdown());
@@ -1448,7 +1448,7 @@ namespace hazelcast {
                 }).detach();
 
                 // 6. Verify that the 2nd entry is received by the listener
-                ASSERT_OPEN_EVENTUALLY(latch2);
+                ASSERT_OPEN_EVENTUALLY(latch2_);
 
                 // 7. Shut down the server
                 ASSERT_TRUE(server2.shutdown());
@@ -1459,13 +1459,13 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // start a client
-                HazelcastClient client(getConfig());
+                hazelcast_client client(get_config());
 
-                auto map = client.getMap("Issue221_test_map");
+                auto map = client.get_map("Issue221_test_map");
 
                 server.shutdown();
 
-                ASSERT_THROW((map->get<int, int>(1).get()), exception::HazelcastClientNotActiveException);
+                ASSERT_THROW((map->get<int, int>(1).get()), exception::hazelcast_client_not_active);
             }
         }
     }
@@ -1475,9 +1475,9 @@ namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) 
-                : factory(factory)
-                , isStarted(false)
-                , isShutdown(false)
+                : factory_(factory)
+                , is_started_(false)
+                , is_shutdown_(false)
                 , logger_(std::make_shared<logger>("HazelcastServer", "HazelcastServer", 
                                                    logger::level::info, logger::default_handler)) {
                 start();
@@ -1485,56 +1485,56 @@ namespace hazelcast {
 
             bool HazelcastServer::start() {
                 bool expected = false;
-                if (!isStarted.compare_exchange_strong(expected, true)) {
+                if (!is_started_.compare_exchange_strong(expected, true)) {
                     return true;
                 }
 
                 try {
-                    member = factory.startServer();
-                    isStarted = true;
+                    member_ = factory_.start_server();
+                    is_started_ = true;
                     return true;
-                } catch (exception::IllegalStateException &e) {
+                } catch (exception::illegal_state &e) {
                     HZ_LOG(*logger_, severe,
                         boost::str(boost::format("Could not start new member!!! %1%") % e.what())
                     );
-                    isStarted = false;
+                    is_started_ = false;
                     return false;
                 }
             }
 
             bool HazelcastServer::shutdown() {
                 bool expected = false;
-                if (!isShutdown.compare_exchange_strong(expected, true)) {
+                if (!is_shutdown_.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
-                if (!isStarted) {
+                if (!is_started_) {
                     return true;
                 }
 
-                if (!factory.shutdownServer(member)) {
+                if (!factory_.shutdown_server(member_)) {
                     return false;
                 }
 
-                isStarted = false;
+                is_started_ = false;
                 return true;
             }
 
             bool HazelcastServer::terminate() {
                 bool expected = false;
-                if (!isShutdown.compare_exchange_strong(expected, true)) {
+                if (!is_shutdown_.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
-                if (!isStarted) {
+                if (!is_started_) {
                     return true;
                 }
 
-                if (!factory.terminateServer(member)) {
+                if (!factory_.terminate_server(member_)) {
                     return false;
                 }
 
-                isStarted = false;
+                is_started_ = false;
                 return true;
             }
 
@@ -1542,8 +1542,8 @@ namespace hazelcast {
                 shutdown();
             }
 
-            const remote::Member &HazelcastServer::getMember() const {
-                return member;
+            const remote::Member &HazelcastServer::get_member() const {
+                return member_;
             }
 
         }
@@ -1557,30 +1557,30 @@ namespace hazelcast {
                 const testing::TestInfo *testInfo = testing::UnitTest::GetInstance()->current_test_info();
                 std::ostringstream out;
                 out << testInfo->test_case_name() << "_" << testInfo->name();
-                testName = out.str();
-                logger_ = std::make_shared<logger>("Test", testName, logger::level::info, logger::default_handler);
+                test_name_ = out.str();
+                logger_ = std::make_shared<logger>("Test", test_name_, logger::level::info, logger::default_handler);
             }
 
-            logger &ClientTestSupport::getLogger() {
+            logger &ClientTestSupport::get_logger() {
                 return *logger_;
             }
 
-            const std::string &ClientTestSupport::getTestName() const {
-                return testName;
+            const std::string &ClientTestSupport::get_test_name() const {
+                return test_name_;
             }
 
             CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {
-                latches.push_back(&latch1);
+                latches_.push_back(&latch1);
                 return *this;
             }
 
             boost::cv_status CountDownLatchWaiter::wait_for(boost::chrono::steady_clock::duration duration) {
-                if (latches.empty()) {
+                if (latches_.empty()) {
                     return boost::cv_status::no_timeout;
                 }
 
                 auto end = boost::chrono::steady_clock::now() + duration;
-                for (auto &l : latches) {
+                for (auto &l : latches_) {
                     auto waitDuration = end - boost::chrono::steady_clock::now();
                     auto status = l->wait_for(waitDuration);
                     if (boost::cv_status::timeout == status) {
@@ -1591,7 +1591,7 @@ namespace hazelcast {
             }
 
             void CountDownLatchWaiter::reset() {
-                latches.clear();
+                latches_.clear();
             }
 
         }
@@ -1611,7 +1611,7 @@ namespace hazelcast {
                 struct BufferedMessageHandler {
                     std::shared_ptr<ClientMessage> msg;
 
-                    void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message) {
+                    void handle_client_message(const std::shared_ptr<protocol::ClientMessage> &message) {
                         msg = message;
                     }
                 };
@@ -1619,49 +1619,47 @@ namespace hazelcast {
             TEST_F(ClientMessageTest, testOperationNameGetSet) {
                 protocol::ClientMessage message(8);
                 constexpr const char* operation_name = "OPERATION_NAME";
-                message.setOperationName(operation_name);
-                ASSERT_EQ(message.getOperationName(), operation_name);
+                message.set_operation_name(operation_name);
+                ASSERT_EQ(message.get_operation_name(), operation_name);
             }
 
             TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
                 auto request = protocol::codec::map_size_encode("map_name");
-                ASSERT_EQ(request.getOperationName(), "Map.Size");
+                ASSERT_EQ(request.get_operation_name(), "Map.Size");
             }
 
             TEST_F(ClientMessageTest, testFragmentedMessageHandling) {
                 std::ifstream file ("hazelcast/test/resources/fragments_bytes.bin", std::ios::in|std::ios::binary|std::ios::ate);
-                if (file.is_open())
-                {
-                    auto size = file.tellg();
-                    auto memblock = std::vector<char>(size);
-                    file.seekg (0, std::ios::beg);
-                    file.read (&memblock[0], size);
-                    file.close();
+                ASSERT_TRUE(file.is_open());
+                auto size = file.tellg();
+                auto memblock = std::vector<char>(size);
+                file.seekg (0, std::ios::beg);
+                file.read (&memblock[0], size);
+                file.close();
 
-                    util::ByteBuffer buffer(&memblock[0], size);
+                util::ByteBuffer buffer(&memblock[0], size);
 
-                    BufferedMessageHandler handler;
-                    protocol::ClientMessageBuilder<BufferedMessageHandler> builder(handler);
-                    // it is important to check the onData return value since there may be left data less than a message
-                    // header size, and this may cause an infinite loop.
-                    while (buffer.hasRemaining() && builder.onData(buffer)) {
-                    }
+                BufferedMessageHandler handler;
+                protocol::ClientMessageBuilder<BufferedMessageHandler> builder(handler);
+                // it is important to check the ondata return value since there may be left data less than a message
+                // header size, and this may cause an infinite loop.
+                while (buffer.has_remaining() && builder.on_data(buffer)) {
+                }
 
-                    // the client message should be ready at this point
-                    // the expected message is
-                    ASSERT_TRUE(handler.msg);
+                // the client message should be ready at this point
+                // the expected message is
+                ASSERT_TRUE(handler.msg);
 
-                    auto datas_opt = handler.msg->get_first_var_sized_field<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data>>>();
-                    ASSERT_TRUE(datas_opt);
-                    auto &datas = datas_opt.value();
-                    ASSERT_EQ(10, datas.size());
+                auto datas_opt = handler.msg->get_first_var_sized_field<std::vector<std::pair<serialization::pimpl::data, serialization::pimpl::data>>>();
+                ASSERT_TRUE(datas_opt);
+                auto &datas = datas_opt.value();
+                ASSERT_EQ(10, datas.size());
 
-                    SerializationConfig serializationConfig;
-                    serialization::pimpl::SerializationService ss{serializationConfig};
-                    for (int32_t i = 0;i < 10; ++i) {
-                        ASSERT_EQ(i, ss.toObject<int32_t>(&datas[i].first));
-                        ASSERT_EQ(i, ss.toObject<int32_t>(&datas[i].second));
-                    }
+                serialization_config serializationConfig;
+                serialization::pimpl::SerializationService ss{serializationConfig};
+                for (int32_t i = 0;i < 10; ++i) {
+                    ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].first));
+                    ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].second));
                 }
             }
 

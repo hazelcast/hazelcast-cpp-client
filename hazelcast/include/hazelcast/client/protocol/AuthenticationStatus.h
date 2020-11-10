@@ -15,12 +15,12 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            enum HAZELCAST_API AuthenticationStatus {
+            enum HAZELCAST_API authentication_status {
                 AUTHENTICATED = 0,
                 CREDENTIALS_FAILED = 1,
                 SERIALIZATION_VERSION_MISMATCH = 2

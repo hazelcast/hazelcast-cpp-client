@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 struct Person {
     std::string name;
@@ -26,21 +26,21 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 3;
                 }
 
-                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Person &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read_data(hazelcast::client::serialization::object_data_input &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -49,11 +49,11 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.getMap("personsWithIndex");
+    auto map = hz.get_map("personsWithIndex");
 
-    map->addIndex(config::index_config::index_type::SORTED, "name").get();
+    map->add_index(config::index_config::index_type::SORTED, "name").get();
 
     const int mapSize = 200000;
 
@@ -67,8 +67,8 @@ int main() {
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " milliseconds" << '\n';
 
     start = std::chrono::steady_clock::now();
-    auto entries = map->entrySet<std::string, Person>(
-            hazelcast::client::query::SqlPredicate(hz, "name == 'myname-30'")).get();
+    auto entries = map->entry_set<std::string, Person>(
+            hazelcast::client::query::sql_predicate(hz, "name == 'myname-30'")).get();
     end = std::chrono::steady_clock::now();
     std::cout << "The query resulted in " << entries.size() << " entries in "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " milliseconds" << '\n';

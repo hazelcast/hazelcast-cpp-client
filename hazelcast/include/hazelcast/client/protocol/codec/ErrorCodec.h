@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 #include <boost/optional.hpp>
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,19 +32,19 @@ namespace hazelcast {
 
             namespace codec {
                 struct HAZELCAST_API StackTraceElement {
-                    std::string declaringClass;
-                    std::string methodName;
-                    boost::optional<std::string> fileName;
-                    int lineNumber;
+                    std::string declaring_class;
+                    std::string method_name;
+                    boost::optional<std::string> file_name;
+                    int line_number;
                 };
 
                 struct HAZELCAST_API ErrorHolder {
-                    int32_t errorCode;
-                    std::string className;
+                    int32_t error_code;
+                    std::string class_name;
                     boost::optional<std::string> message;
-                    std::vector<codec::StackTraceElement> stackTrace;
+                    std::vector<codec::StackTraceElement> stack_trace;
 
-                    std::string toString() const;
+                    std::string to_string() const;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const StackTraceElement &trace);
@@ -52,7 +52,7 @@ namespace hazelcast {
                 struct HAZELCAST_API ErrorCodec {
                     static constexpr int32_t EXCEPTION_MESSAGE_TYPE = 0;
 
-                    static std::vector<ErrorHolder> decode(ClientMessage &clientMessage);
+                    static std::vector<ErrorHolder> decode(ClientMessage &client_message);
                 };
             }
         }

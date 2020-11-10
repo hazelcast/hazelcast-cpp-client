@@ -42,20 +42,20 @@ namespace hazelcast {
 
             class HAZELCAST_API ReadHandler {
             public:
-                ReadHandler(Connection &connection, size_t bufferSize);
+                ReadHandler(Connection &connection, size_t buffer_size);
 
                 ~ReadHandler();
 
                 void handle();
 
-                std::chrono::steady_clock::time_point getLastReadTime() const;
+                std::chrono::steady_clock::time_point get_last_read_time() const;
 
                 char *buffer;
-                util::ByteBuffer byteBuffer;
+                util::ByteBuffer byte_buffer;
             private:
 
-                protocol::ClientMessageBuilder<Connection> builder;
-                std::atomic<std::chrono::milliseconds> lastReadTimeDuration;
+                protocol::ClientMessageBuilder<Connection> builder_;
+                std::atomic<std::chrono::milliseconds> last_read_time_duration_;
             };
         }
     }

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.getMultiMap("map");
+    auto map = hz.get_multi_map("map");
 
-    for (auto &key : map->keySet<std::string>().get()) {
+    for (auto &key : map->key_set<std::string>().get()) {
         std::cout << key << " -> (";
         for (auto &value : map->get<std::string, std::string>(key).get()) {
             std::cout << value << ", \n";

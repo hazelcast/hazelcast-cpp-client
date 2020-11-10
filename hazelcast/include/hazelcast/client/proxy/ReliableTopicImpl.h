@@ -19,12 +19,12 @@
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
-#include "hazelcast/client/Ringbuffer.h"
-#include "hazelcast/client/topic/ReliableListener.h"
+#include "hazelcast/client/ringbuffer.h"
+#include "hazelcast/client/topic/reliable_listener.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
-#include "hazelcast/client/config/ReliableTopicConfig.h"
+#include "hazelcast/client/config/reliable_topic_config.h"
 #include "hazelcast/logger.h"
 
 #include <memory>
@@ -44,13 +44,13 @@ namespace hazelcast {
             protected:
                 static constexpr const char * TOPIC_RB_PREFIX = "_hz_rb_";
 
-                ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context);
+                ReliableTopicImpl(const std::string &instance_name, spi::ClientContext *context);
 
-                boost::future<void> publish(serialization::pimpl::Data &&data);
+                boost::future<void> publish(serialization::pimpl::data &&data);
             protected:
-                std::shared_ptr<Ringbuffer> ringbuffer;
+                std::shared_ptr<ringbuffer> ringbuffer_;
                 logger &logger_;
-                const config::ReliableTopicConfig &config;
+                const config::reliable_topic_config config_;
             };
         }
     }

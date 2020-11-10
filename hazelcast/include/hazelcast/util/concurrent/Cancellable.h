@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,7 +48,7 @@ namespace hazelcast {
                  *
                  * @return {@code true} if this task was cancelled before it completed
                  */
-                virtual bool isCancelled() = 0;
+                virtual bool is_cancelled() = 0;
             };
         }
     }

@@ -18,25 +18,25 @@
 using namespace hazelcast::client;
 
 int main() {
-    ClientConfig config;
+    client_config config;
     const char *mapName = "ObjectMap";
-    Address serverAddr("127.0.0.1", 5701);
-    config.getNetworkConfig().addAddress(serverAddr);
-    config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
-    nearCacheConfig.setInvalidateOnChange(false);
-    nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::NONE)
-            .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
-    config.addNearCacheConfig(nearCacheConfig);
-    HazelcastClient client(config);
+    address serverAddr("127.0.0.1", 5701);
+    config.get_network_config().add_address(serverAddr);
+    config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
+    nearCacheConfig.set_invalidate_on_change(false);
+    nearCacheConfig.get_eviction_config().set_eviction_policy(config::NONE)
+            .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT);
+    config.add_near_cache_config(nearCacheConfig);
+    hazelcast_client client(config);
 
-    auto map = client.getMap(mapName);
+    auto map = client.get_map(mapName);
 
     auto firstGet = map->get<int, std::string>(1).get();
     // the second and third get() will be served from the Near Cache
     auto secondGet = map->get<int, std::string>(1).get();
     auto thirdGet = map->get<int, std::string>(1).get();
 
-    NearCacheSupport::printNearCacheStats(map);
+    NearCacheSupport::print_near_cache_stats(map);
 
     printf("Since we use in-memory format OBJECT, the instances from the Near Cache will be identical.\n");
     printf("Compare first and second instance: %d\n", (firstGet == secondGet));

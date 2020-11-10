@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
 
     // Get a latch called 'my-latch'
     auto latch = hz.get_cp_subsystem().get_latch("my-latch'");

@@ -44,13 +44,13 @@ namespace hazelcast {
                      */
                     class HAZELCAST_API CallIdSequenceWithBackpressure : public AbstractCallIdSequence {
                     public:
-                        CallIdSequenceWithBackpressure(int32_t maxConcurrentInvocations, int64_t backoffTimeoutMs);
+                        CallIdSequenceWithBackpressure(int32_t max_concurrent_invocations, int64_t backoff_timeout_ms);
 
                     protected:
-                        void handleNoSpaceLeft() override;
+                        void handle_no_space_left() override;
 
                     private:
-                        int64_t backoffTimeoutNanos;
+                        int64_t backoff_timeout_nanos_;
                         static const int MAX_DELAY_MS = 500;
                         static const std::unique_ptr<util::concurrent::IdleStrategy> IDLER;
                     };

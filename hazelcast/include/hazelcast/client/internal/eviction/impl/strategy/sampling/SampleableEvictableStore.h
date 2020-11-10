@@ -48,7 +48,7 @@ namespace hazelcast {
                                  *
                                  * @return Multiple {@link EvictionCandidate} to be evicted
                                  */
-                                std::unique_ptr<util::Iterable<EvictionCandidate<K, V, A, E> > > sample(int32_t sampleCount) const {
+                                std::unique_ptr<util::Iterable<EvictionCandidate<K, V, A, E> > > sample(int32_t sample_count) const {
                                     assert(0);
                                     return std::unique_ptr<util::Iterable<EvictionCandidate<K, V, A, E> > >();
                                 }

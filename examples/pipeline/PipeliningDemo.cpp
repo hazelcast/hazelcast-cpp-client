@@ -15,8 +15,8 @@
  */
 #include <random>
 
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/Pipelining.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/pipelining.h>
 
 using namespace std;
 using namespace hazelcast::client;
@@ -30,58 +30,58 @@ using namespace hazelcast::util;
 
 class PipeliningDemo {
 public:
-    PipeliningDemo() : client(clientConfig), map(client.getMap("map")), gen(rd()) {}
+    PipeliningDemo() : client_(client_config_), map_(client_.get_map("map")), gen_(rd_()) {}
 
     void init() {
         for (int l = 0; l < keyDomain; l++) {
-            map->put(l, std::to_string(l)).get();
+            map_->put(l, std::to_string(l)).get();
         }
     }
 
     void pipelined(int depth) {
         cout << "Starting pipelined with depth:" << depth << endl;
-        int64_t startMs = currentTimeMillis();
+        int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
-            std::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(depth);
+            std::shared_ptr<pipelining<string> > p = pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
-                int key = dist(gen) % keyDomain;
-                pipelining->add(map->get<int, std::string>(key));
+                int key = dist_(gen_) % keyDomain;
+                p->add(map_->get<int, std::string>(key));
             }
 
             // wait for completion
-            auto results = pipelining->results();
+            auto results = p->results();
             // and verification we got the appropriate number of results.
             if ((int) results.size() != getsPerIteration) {
-                throw hazelcast::client::exception::IllegalStateException("pipelined", "Incorrect number of results");
+                throw hazelcast::client::exception::illegal_state("pipelined", "Incorrect number of results");
             }
         }
-        int64_t endMs = currentTimeMillis();
+        int64_t endMs = current_time_millis();
         cout << "Pipelined with depth:" << depth << ", duration:" << (endMs - startMs) << " ms" << endl;
     }
 
-    void nonPipelined() {
+    void non_pipelined() {
         cout << "Starting non pipelined" << endl;
-        int64_t startMs = currentTimeMillis();
+        int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
             for (long k = 0; k < getsPerIteration; k++) {
-                int key = dist(gen) % keyDomain;
-                map->get<int, std::string>(key).get();
+                int key = dist_(gen_) % keyDomain;
+                map_->get<int, std::string>(key).get();
             }
         }
-        int64_t endMs = currentTimeMillis();
+        int64_t endMs = current_time_millis();
         cout << "Non pipelined duration:" << (endMs - startMs) << " ms" << endl;
     }
 
 private:
-    HazelcastClient client;
-    std::shared_ptr<IMap> map;
-    ClientConfig clientConfig;
+    hazelcast_client client_;
+    std::shared_ptr<imap> map_;
+    client_config client_config_;
     static const int keyDomain = 100000;
     static const int iterations = 500;
     static const int getsPerIteration = 1000;
-    std::random_device rd;
-    std::mt19937 gen;
-    std::uniform_int_distribution<int> dist;
+    std::random_device rd_;
+    std::mt19937 gen_;
+    std::uniform_int_distribution<int> dist_;
 };
 
 int main() {
@@ -90,7 +90,7 @@ int main() {
     main.pipelined(5);
     main.pipelined(10);
     main.pipelined(100);
-    main.nonPipelined();
+    main.non_pipelined();
 
     cout << "Finished" << endl;
 
