@@ -371,7 +371,7 @@ namespace hazelcast {
 #else
                     ClientConfig clientConfig = getConfig();
 #endif // HZ_BUILD_WITH_SSL
-                    client = new HazelcastClient(clientConfig);
+                    client = new HazelcastClient(std::move(clientConfig));
                     list = client->getList("MyList");
                 }
 
@@ -571,7 +571,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(getConfig().backup_acks_enabled(false));
+                    client = new HazelcastClient(std::move(getConfig().backup_acks_enabled(false)));
                     q = client->getQueue("MyQueue");
                 }
 
@@ -852,7 +852,7 @@ namespace hazelcast {
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
-                    client = new HazelcastClient(ClientConfig().setClusterName("executor-test"));
+                    client = new HazelcastClient(std::move(ClientConfig().setClusterName("executor-test")));
                 }
 
                 static void TearDownTestCase() {
@@ -1695,7 +1695,7 @@ namespace hazelcast {
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "-1");
 
-                    ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig),
+                    ASSERT_THROW(HazelcastClient hazelcastClient(std::move(clientConfig)),
                                  exception::InvalidConfigurationException);
                 }
             }
@@ -1728,7 +1728,7 @@ namespace hazelcast {
 #else
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
 #endif
-                    HazelcastClient hazelcastClient(clientConfig);
+                    HazelcastClient hazelcastClient(std::move(clientConfig));
                     auto map = hazelcastClient.getMap("myMap");
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
@@ -1750,7 +1750,7 @@ namespace hazelcast {
                             setSecretKey(std::getenv("AWS_SECRET_ACCESS_KEY"));
 #endif
 
-                    HazelcastClient hazelcastClient(clientConfig);
+                    HazelcastClient hazelcastClient(std::move(clientConfig));
                     auto map = hazelcastClient.getMap("myMap");
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();

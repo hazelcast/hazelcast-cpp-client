@@ -688,8 +688,12 @@ namespace hazelcast {
             }
         }
 
-        ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
+        ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(nullptr), redoOperation(false),
                                        socketInterceptor(), executorPoolSize(-1) {}
+
+        ClientConfig::ClientConfig(ClientConfig &&rhs) noexcept = default;
+
+        ClientConfig &ClientConfig::operator=(ClientConfig &&rhs) noexcept = default;
 
         ClientConfig &ClientConfig::setRedoOperation(bool redoOperation) {
             this->redoOperation = redoOperation;
@@ -700,11 +704,11 @@ namespace hazelcast {
             return redoOperation;
         }
 
-        std::shared_ptr<LoadBalancer> ClientConfig::getLoadBalancer() {
-            return loadBalancer;
+        std::unique_ptr<LoadBalancer> ClientConfig::getLoadBalancer() {
+            return std::move(loadBalancer);
         }
 
-        ClientConfig &ClientConfig::setLoadBalancer(std::shared_ptr<LoadBalancer> loadBalancer) {
+        ClientConfig &ClientConfig::setLoadBalancer(std::unique_ptr<LoadBalancer> loadBalancer) {
             this->loadBalancer = std::move(loadBalancer);
             return *this;
         }

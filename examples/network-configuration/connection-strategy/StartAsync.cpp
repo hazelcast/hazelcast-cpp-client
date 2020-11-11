@@ -43,7 +43,7 @@ int main() {
             })
     );
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz(std::move(config));
 
     auto connection_future = connected.get_future();
     if (connection_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {

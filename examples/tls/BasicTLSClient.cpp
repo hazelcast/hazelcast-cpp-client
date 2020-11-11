@@ -29,7 +29,7 @@ int main() {
             setCipherList("HIGH");     // optional setting (values for string are described at
                                        // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html)
     
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz(std::move(config));
 
     auto map = hz.getMap("MyMap");
     

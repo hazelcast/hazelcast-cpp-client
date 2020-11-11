@@ -29,7 +29,7 @@ int main() {
     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey("aws-test-tag").
         setTagValue("aws-tag-value-1").setInsideAws(true);
     
-    hazelcast::client::HazelcastClient hz(clientConfig);
+    hazelcast::client::HazelcastClient hz(std::move(clientConfig));
 
     auto map = hz.getMap("MyMap");
     

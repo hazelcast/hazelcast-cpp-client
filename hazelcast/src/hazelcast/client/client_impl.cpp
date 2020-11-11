@@ -69,8 +69,8 @@ namespace hazelcast {
             clientImpl->start();
         }
 
-        HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl(
-                new impl::HazelcastClientInstanceImpl(config)) {
+        HazelcastClient::HazelcastClient(ClientConfig config) : clientImpl(
+                new impl::HazelcastClientInstanceImpl(std::move(config))) {
             clientImpl->start();
         }
 
@@ -125,8 +125,8 @@ namespace hazelcast {
         namespace impl {
             std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
-            HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
-                    : clientConfig(config), clientProperties(config.getProperties()),
+            HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(ClientConfig config)
+                    : clientConfig(std::move(config)), clientProperties(config.getProperties()),
                       clientContext(*this),
                       serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
                       transactionManager(clientContext), cluster(clusterService),

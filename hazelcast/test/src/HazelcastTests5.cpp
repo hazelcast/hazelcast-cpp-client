@@ -394,7 +394,7 @@ namespace hazelcast {
                     ClientConfig clientConfig = getConfig();
                     clientConfig.getSerializationConfig().setGlobalSerializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
-                    client = new HazelcastClient(clientConfig);
+                    client = new HazelcastClient(std::move(clientConfig));
                     imap = client->getMap("UnknownObject");
                 }
 
@@ -509,7 +509,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig(getConfig());
                     clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "20");
-                    client = new HazelcastClient(clientConfig);
+                    client = new HazelcastClient(std::move(clientConfig));
                     map = client->getMap("map");
                 }
 
@@ -653,52 +653,46 @@ namespace hazelcast {
                 int actualKey;
             };
 
-            class MapClientConfig : public ClientConfig {
+            class ClientMapTest : public ClientTestSupport,
+                                  public ::testing::WithParamInterface<std::function<ClientConfig()>> {
             public:
                 static constexpr const char *intMapName = "IntMap";
                 static constexpr const char *employeesMapName = "EmployeesMap";
                 static constexpr const char *imapName = "clientMapTest";
                 static constexpr const char *ONE_SECOND_MAP_NAME = "OneSecondTtlMap";
 
-                MapClientConfig() {
-                    getNetworkConfig().addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                static ClientConfig createMapClientConfig() {
+                    ClientConfig config;
+                    config.getNetworkConfig().addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    return config;
                 }
 
-                virtual ~MapClientConfig() = default;
-            };
+                static ClientConfig createNearCachedDataMapClientConfig() {
+                    ClientConfig config = createMapClientConfig();
 
-            class NearCachedDataMapClientConfig : public MapClientConfig {
-            public:
-                NearCachedDataMapClientConfig() {
-                    addNearCacheConfig(config::NearCacheConfig(intMapName));
+                    config.addNearCacheConfig(config::NearCacheConfig(intMapName));
+                    config.addNearCacheConfig(config::NearCacheConfig(employeesMapName));
+                    config.addNearCacheConfig(config::NearCacheConfig(imapName));
+                    config.addNearCacheConfig(config::NearCacheConfig(ONE_SECOND_MAP_NAME));
 
-                    addNearCacheConfig(config::NearCacheConfig(employeesMapName));
-
-                    addNearCacheConfig(config::NearCacheConfig(imapName));
-
-                    addNearCacheConfig(config::NearCacheConfig(ONE_SECOND_MAP_NAME));
+                    return config;
                 }
-            };
 
-            class NearCachedObjectMapClientConfig : public MapClientConfig {
-            public:
-                NearCachedObjectMapClientConfig() {
-                    addNearCacheConfig(config::NearCacheConfig(intMapName, config::OBJECT));
+                static ClientConfig createNearCachedObjectMapClientConfig() {
+                    ClientConfig config = createMapClientConfig();
 
-                    addNearCacheConfig(config::NearCacheConfig(employeesMapName, config::OBJECT));
+                    config.addNearCacheConfig(config::NearCacheConfig(intMapName, config::OBJECT));
+                    config.addNearCacheConfig(config::NearCacheConfig(employeesMapName, config::OBJECT));
+                    config.addNearCacheConfig(config::NearCacheConfig(imapName, config::OBJECT));
+                    config.addNearCacheConfig(config::NearCacheConfig(ONE_SECOND_MAP_NAME, config::OBJECT));
 
-                    addNearCacheConfig(config::NearCacheConfig(imapName, config::OBJECT));
-
-                    addNearCacheConfig(config::NearCacheConfig(ONE_SECOND_MAP_NAME, config::OBJECT));
+                    return config;
                 }
-            };
 
-            class ClientMapTest : public ClientTestSupport, public ::testing::WithParamInterface<ClientConfig> {
-            public:
-                ClientMapTest() : client(HazelcastClient(GetParam())),
-                                  imap(client.getMap(MapClientConfig::imapName)),
-                                  intMap(client.getMap(MapClientConfig::intMapName)),
-                                  employees(client.getMap(MapClientConfig::employeesMapName)) {
+                ClientMapTest() : client(HazelcastClient(GetParam()())),
+                                  imap(client.getMap(imapName)),
+                                  intMap(client.getMap(intMapName)),
+                                  employees(client.getMap(employeesMapName)) {
                 }
 
                 static void SetUpTestCase() {
@@ -743,7 +737,7 @@ namespace hazelcast {
                     employees->destroy().get();
                     intMap->destroy().get();
                     imap->destroy().get();
-                    client.getMap(MapClientConfig::ONE_SECOND_MAP_NAME)->destroy().get();
+                    client.getMap(ONE_SECOND_MAP_NAME)->destroy().get();
                     client.getMap("tradeMap")->destroy().get();
                 }
 
@@ -892,8 +886,9 @@ namespace hazelcast {
             HazelcastServer *ClientMapTest::instance2 = nullptr;
 
             INSTANTIATE_TEST_SUITE_P(ClientMapTestWithDifferentConfigs, ClientMapTest,
-                                     ::testing::Values(MapClientConfig(), NearCachedDataMapClientConfig(),
-                                                       NearCachedObjectMapClientConfig()));
+                                     ::testing::Values(ClientMapTest::createMapClientConfig,
+                                                       ClientMapTest::createNearCachedDataMapClientConfig,
+                                                       ClientMapTest::createNearCachedObjectMapClientConfig));
 
             TEST_P(ClientMapTest, testIssue537) {
                 boost::latch latch1(2);
@@ -952,7 +947,7 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testPartitionAwareKey) {
                 int partitionKey = 5;
                 int value = 25;
-                std::shared_ptr<IMap> map = client.getMap(MapClientConfig::intMapName);
+                std::shared_ptr<IMap> map = client.getMap(intMapName);
                 PartitionAwareInt partitionAwareInt(partitionKey, 7);
                 map->put(partitionAwareInt, value).get();
                 boost::optional<int> val = map->get<PartitionAwareInt, int>(partitionAwareInt).get();
@@ -1054,7 +1049,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testPutConfigTtl) {
-                std::shared_ptr<IMap> map = client.getMap(MapClientConfig::ONE_SECOND_MAP_NAME);
+                std::shared_ptr<IMap> map = client.getMap(ONE_SECOND_MAP_NAME);
                 validate_expiry_invalidations(map, [=] () { map->put<std::string, std::string>("key1", "value1").get(); });
             }
 
@@ -1085,7 +1080,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testSetConfigTtl) {
-                std::shared_ptr<IMap> map = client.getMap(MapClientConfig::ONE_SECOND_MAP_NAME);
+                std::shared_ptr<IMap> map = client.getMap(ONE_SECOND_MAP_NAME);
                 validate_expiry_invalidations(map, [=] () { map->set("key1", "value1").get(); });
             }
 

@@ -27,9 +27,7 @@ int main() {
     nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::NONE)
             .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
     config.addNearCacheConfig(nearCacheConfig);
-    HazelcastClient client(config);
-
-    auto map = client.getMap(mapName);
+    HazelcastClient client(std::move(config));auto map = client.getMap(mapName);
 
     auto firstGet = map->get<int, std::string>(1).get();
     // the second and third get() will be served from the Near Cache

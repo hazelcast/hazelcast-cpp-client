@@ -88,10 +88,10 @@ namespace hazelcast {
 
                 auto configured_load_balancer = client.getClientConfig().getLoadBalancer();
                 if (configured_load_balancer) {
-                    load_balancer_= configured_load_balancer;
+                    load_balancer_= std::move(configured_load_balancer);
                 }
                 else {
-                    load_balancer_ = std::make_shared<impl::RoundRobinLB>();
+                    load_balancer_.reset(new impl::RoundRobinLB{});
                 }
 
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();

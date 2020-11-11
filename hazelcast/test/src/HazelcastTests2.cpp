@@ -530,7 +530,7 @@ namespace hazelcast {
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster) {
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
 
                     ASSERT_THROW((client.getMap(randomMapName())),
                                  exception::HazelcastClientOfflineException);
@@ -540,7 +540,7 @@ namespace hazelcast {
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
                     client.shutdown();
                     ASSERT_THROW((client.getMap(randomMapName())), exception::HazelcastClientNotActiveException);
 
@@ -562,7 +562,7 @@ namespace hazelcast {
                     );
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
 
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
 
                     ASSERT_TRUE(client.getLifecycleService().isRunning());
 
@@ -581,7 +581,7 @@ namespace hazelcast {
 
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
                     boost::latch shutdownLatch(1);
                     client.addLifecycleListener(
                         LifecycleListener()
@@ -608,7 +608,7 @@ namespace hazelcast {
 
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
                     boost::latch shutdownLatch(1);
                     client.addLifecycleListener(
                         LifecycleListener()
@@ -635,7 +635,7 @@ namespace hazelcast {
 
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
                     boost::latch shutdownLatch(1);
                     client.addLifecycleListener(
                         LifecycleListener()
@@ -669,7 +669,7 @@ namespace hazelcast {
                     );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
                     ASSERT_TRUE(client.getLifecycleService().isRunning());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -694,7 +694,7 @@ namespace hazelcast {
                     );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
 
                     ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
 
@@ -733,7 +733,7 @@ namespace hazelcast {
                     );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(std::move(clientConfig));
 
                     ASSERT_TRUE(client.getLifecycleService().isRunning());
 

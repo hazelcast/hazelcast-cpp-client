@@ -17,7 +17,7 @@
 
 int main() {
     // Disable the default backup ack feature
-    HazelcastClient hz(ClientConfig().backup_acks_enabled(false));
+    HazelcastClient hz(std::move(ClientConfig().backup_acks_enabled(false)));
 
     // perform operations
 

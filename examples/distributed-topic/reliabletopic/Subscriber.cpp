@@ -60,7 +60,7 @@ void listenWithConfig() {
     hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
     reliableTopicConfig.setReadBatchSize(5);
     clientConfig.addReliableTopicConfig(reliableTopicConfig);
-    hazelcast::client::HazelcastClient client(clientConfig);
+    hazelcast::client::HazelcastClient client(std::move(clientConfig));
 
     auto topic = client.getReliableTopic(topicName);
 

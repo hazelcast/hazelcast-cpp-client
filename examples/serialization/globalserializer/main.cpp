@@ -47,7 +47,7 @@ int main() {
     hazelcast::client::SerializationConfig serializationConfig;
     serializationConfig.setGlobalSerializer(std::make_shared<MyGlobalSerializer>());
     config.setSerializationConfig(serializationConfig);
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz(std::move(config));
 
     auto map = hz.getMap("map");
     map->put("foo", Person{"first last name", false, 19}).get();

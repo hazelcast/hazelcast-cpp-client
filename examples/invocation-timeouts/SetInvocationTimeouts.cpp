@@ -39,7 +39,7 @@ int main() {
      */
     config.setProperty("hazelcast.client.invocation.timeout.seconds", "30");
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz(std::move(config));
 
     auto map = hz.getMap("MyMap");
     

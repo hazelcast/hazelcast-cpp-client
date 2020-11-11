@@ -22,7 +22,7 @@ int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::Address addr(serverIp, port);
     config.getNetworkConfig().addAddress(addr);
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz(std::move(config));
 
     auto map = hz.getMap("test map");
 

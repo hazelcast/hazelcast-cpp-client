@@ -44,7 +44,7 @@ int main() {
      */
     config.getConnectionStrategyConfig().setReconnectMode(hazelcast::client::config::ClientConnectionStrategyConfig::ASYNC);
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz(std::move(config));
 
     auto map = hz.getMap("MyMap");
 
