@@ -20,6 +20,8 @@ fi
 
 HZ_BIT_VERSION=$1
 
+echo "Building for ${HZ_BIT_VERSION}-bit"
+
 rm -rf ./cpp
 
 mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/hazelcast/include/hazelcast/
