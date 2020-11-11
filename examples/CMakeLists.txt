@@ -22,6 +22,7 @@ project (HazelcastExamples
 
 INCLUDE(TestBigEndian)
 INCLUDE(FindOpenSSL)
+include(FindBoost)
 
 # if HAZELCAST_INSTALL_DIR option is provided, the examples shall compile with the released library
 if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
@@ -72,7 +73,30 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
     ADD_LIBRARY(${HZ_LIB_NAME} ${HZ_LIB_TYPE} IMPORTED)
 
-    message(STATUS "${CMAKE_SYSTEM}")
+    message(STATUS "Operating System: ${CMAKE_SYSTEM}")
+
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+            set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+            set(Boost_USE_MULTITHREADED      ON)
+            set(Boost_USE_STATIC_RUNTIME     OFF)
+            set(Boost_USE_DEBUG_RUNTIME      OFF)
+
+            set(Boost_USE_DEBUG_LIBS         OFF)  # ignore debug libs and
+            set(Boost_USE_RELEASE_LIBS       ON)   # only find release libs
+        else()
+            set(Boost_USE_DEBUG_LIBS         ON)   # only find debug libs
+            set(Boost_USE_RELEASE_LIBS       OFF)  # ignore release libs
+        endif()
+        message(STATUS "Using Boost_USE_DEBUG_LIBS: ${Boost_USE_DEBUG_LIBS}")
+        message(STATUS "Using Boost_USE_RELEASE_LIBS: ${Boost_USE_RELEASE_LIBS}")
+    endif()
+    find_package(Boost REQUIRED COMPONENTS thread chrono)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_libraries(Boost::thread Boost::chrono)
+    add_definitions("-DBOOST_THREAD_VERSION=5")
+    message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+    message(STATUS "Using Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 
     if (HZ_COMPILE_WITH_SSL)
         message(STATUS "Building the with SSL support.")

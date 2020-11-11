@@ -302,12 +302,9 @@ namespace hazelcast {
         };
 
         /**
-         *
          * @return the version of the client
          */
-        constexpr boost::string_view version() {
-            return HAZELCAST_VERSION;
-        }
+        const boost::string_view version();
 
     }
 }

@@ -15,10 +15,10 @@ mkdir .\cpp\Windows_64\hazelcast\lib\tls\shared
 mkdir .\cpp\Windows_64\hazelcast\include\hazelcast
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_32\hazelcast\include\hazelcast\
-xcopy /S /Q hazelcast\generated-sources\include\hazelcast\* cpp\Windows_32\hazelcast\include\hazelcast\
+xcopy /S /Q hazelcast\generated-sources\src\hazelcast\client\protocol\codec\*.h cpp\Windows_32\hazelcast\include\hazelcast\client\protocol\codec\
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
-xcopy /S /Q hazelcast\generated-sources\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
+xcopy /S /Q hazelcast\generated-sources\src\hazelcast\client\protocol\codec\*.h cpp\Windows_64\hazelcast\include\hazelcast\client\protocol\codec\
 
 call scripts\build-windows.bat 32 STATIC Release COMPILE_WITHOUT_SSL || exit /b 1
 copy buildSTATIC32Release\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\static\

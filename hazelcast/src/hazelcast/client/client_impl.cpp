@@ -122,6 +122,10 @@ namespace hazelcast {
             return client_impl_->get_cp_subsystem();
         }
 
+        const boost::string_view version() {
+            return HAZELCAST_VERSION;
+        }
+
         namespace impl {
             std::atomic<int32_t> hazelcast_client_instance_impl::CLIENT_ID(0);
 
