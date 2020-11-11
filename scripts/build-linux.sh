@@ -49,7 +49,7 @@ fi
 
 
 echo "Running make. Building the project."
-make -j 4 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
+make -j 8 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
 if [ $? -ne 0 ]; then
     echo "Build failed !"
     exit 1
