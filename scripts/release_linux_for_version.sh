@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+function removeBuildFolders {
+    rm -rf buildSHARED${HZ_BIT_VERSION}Release
+    rm -rf buildSTATIC${HZ_BIT_VERSION}Release
+    rm -rf buildSHARED${HZ_BIT_VERSION}Release_SSL
+    rm -rf buildSTATIC${HZ_BIT_VERSION}Release_SSL
+}
+
+function cleanup {
+    removeBuildFolders
+}
+
+trap cleanup EXIT
+
+if [ $# -lt 1 ]
+  then
+    echo "No arguments supplied. Usage: release_linux_for_version.sh <HZ_BIT_VERSION[32 or 64]>"
+fi
+
+HZ_BIT_VERSION=$1
+
+rm -rf ./cpp
+
+mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/hazelcast/include/hazelcast/
+mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls
+
+cp -R hazelcast/include/hazelcast/* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/include/hazelcast/
+cp -R hazelcast/generated-sources/src/hazelcast/client/protocol/codec/*.h cpp/Linux_${HZ_BIT_VERSION}/hazelcast/include/hazelcast/client/protocol/codec/
+
+echo "Building ${HZ_BIT_VERSION}-bit STATIC library without SSL. See the output at STATIC_${HZ_BIT_VERSION}_linux.txt."
+scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release COMPILE_WITHOUT_SSL &> STATIC_${HZ_BIT_VERSION}_linux.txt &
+STATIC_pid=$!
+
+echo "Building ${HZ_BIT_VERSION}-bit SHARED library without SSL. See the output at SHARED_${HZ_BIT_VERSION}_linux.txt."
+scripts/build-linux.sh ${HZ_BIT_VERSION} SHARED Release COMPILE_WITHOUT_SSL &> SHARED_${HZ_BIT_VERSION}_linux.txt &
+SHARED_pid=$!
+
+echo "Building ${HZ_BIT_VERSION}-bit STATIC library with SSL. See the output at STATIC_${HZ_BIT_VERSION}_SSL_linux.txt."
+scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release &> STATIC_${HZ_BIT_VERSION}_SSL_linux.txt &
+STATIC_SSL_pid=$!
+
+echo "Building ${HZ_BIT_VERSION}-bit SHARED library with SSL. See the output at SHARED_${HZ_BIT_VERSION}_SSL_linux.txt."
+scripts/build-linux.sh ${HZ_BIT_VERSION} SHARED Release &> SHARED_${HZ_BIT_VERSION}_SSL_linux.txt &
+SHARED_SSL_pid=$!
+
+tail -f *_linux.txt &
+
+FAIL=0
+wait ${STATIC_pid} || let "FAIL+=1"
+wait ${STATIC_SSL_pid} || let "FAIL+=1"
+wait ${SHARED_pid} || let "FAIL+=1"
+wait ${SHARED_SSL_pid} || let "FAIL+=1"
+
+if [ $FAIL -ne 0 ]; then
+    echo "$FAIL builds FAILED!!!"
+    exit $FAIL
+fi
+
+cp buildSTATIC${HZ_BIT_VERSION}Release/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/
+
+cp buildSHARED${HZ_BIT_VERSION}Release/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/
+
+cp buildSTATIC${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls/
+
+cp buildSHARED${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls/
+
+echo "Copying the examples"
+mkdir -p cpp/examples
+cp -r examples cpp/examples/src
+
+echo "Linking to examples for ${HZ_BIT_VERSION}-bit release"
+cd cpp/Linux_${HZ_BIT_VERSION}
+ln -s ../examples .
+cd -
+
+${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} STATIC &> verify_${HZ_BIT_VERSION}_STATIC.txt &
+STATIC_pid=$!
+
+${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} SHARED &> verify_${HZ_BIT_VERSION}_SHARED.txt &
+SHARED_pid=$!
+
+FAIL=0
+wait ${STATIC_pid} || let "FAIL+=1"
+wait ${SHARED_pid} || let "FAIL+=1"
+
+if [ $FAIL -ne 0 ]; then
+    echo "$FAIL verifications FAILED !!!"
+else
+    echo "All verifications PASSED"
+fi
+
+exit $FAIL
+
+
