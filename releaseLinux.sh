@@ -1,5 +1,27 @@
 #!/usr/bin/env bash
 
+function cleanup {
+    echo "cleanup is being performed."
+    echo "32-bit build logs:"
+    docker logs linux_32_bit_release_build
+
+    echo "64-bit build logs:"
+    docker logs linux_64_bit_release_build
+
+    echo "Removing docker container linux_32_bit_release_build"
+    docker rm linux_32_bit_release_build
+
+    echo "Removing docker container linux_64_bit_release_build"
+    docker rm linux_64_bit_release_build
+
+    exit
+}
+
+# Disables printing security sensitive data to the logs
+set +x
+
+trap cleanup EXIT
+
 docker build -t fedora_32 -f docker/hazelcast-fedora-i386.dockerfile docker
 docker build -t fedora_64 -f docker/hazelcast-fedora-x86_64.dockerfile docker
 
@@ -7,13 +29,7 @@ echo "Starting the docker build for 32-bit"
 docker run -d --rm --name linux_32_bit_release_build -v `pwd`:/hazelcast-cpp-client fedora_32 /bin/bash -l -c "cd hazelcast-cpp-client; scripts/release_linux_for_version.sh 32"
 
 echo "Starting the docker build for 64-bit"
-docker run -d --rm --name linux_64_bit_release_build -v `pwd`:/hazelcast-cpp-client fedora_64 /bin/bash -l -c "cd hazelcast-cpp-client; scripts/release_linux_for_version.sh 64"
-
-echo "Following the logs of 32-bit build. The output will be at 32_bit_build_linux.txt"
-docker logs --follow linux_32_bit_release_build 2>&1 | tee 32_bit_build_linux.txt &
-
-echo "Following the logs of 64-bit build. The output will be at 64_bit_build_linux.txt"
-docker logs --follow linux_64_bit_release_build 2>&1 | tee 64_bit_build_linux.txt &
+docker run -d --name linux_64_bit_release_build -v `pwd`:/hazelcast-cpp-client fedora_64 /bin/bash -l -c "cd hazelcast-cpp-client; scripts/release_linux_for_version.sh 64"
 
 echo "Waiting for 32-bit docker build to finish"
 docker wait linux_32_bit_release_build
