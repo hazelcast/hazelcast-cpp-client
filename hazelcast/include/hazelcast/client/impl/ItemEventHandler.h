@@ -17,8 +17,8 @@
 
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/ItemEvent.h"
+#include "hazelcast/client/item_listener.h"
+#include "hazelcast/client/item_event.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 
@@ -26,36 +26,36 @@ namespace hazelcast {
     namespace client {
         namespace impl {
             template<typename BaseType>
-            class ItemEventHandler : public BaseType {
+            class item_event_handler : public BaseType {
             public:
-                ItemEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
-                                 serialization::pimpl::SerializationService &serializationService,
-                                 ItemListener &&listener, bool includeValue)
-                        : instanceName(instanceName), clusterService(clusterService),
-                          serializationService(serializationService), listener(std::move(listener)), includeValue(includeValue) {};
+                item_event_handler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                                   serialization::pimpl::SerializationService &serialization_service,
+                                   item_listener &&listener, bool include_value)
+                        : instance_name_(instance_name), cluster_service_(cluster_service),
+                          serialization_service_(serialization_service), listener_(std::move(listener)), include_value_(include_value) {};
 
-                void handle_item(const boost::optional<serialization::pimpl::Data> &item, boost::uuids::uuid uuid,
-                                        int32_t eventType) override {
-                    TypedData val;
-                    if (includeValue) {
-                        val = TypedData(std::move(*item), serializationService);
+                void handle_item(const boost::optional<serialization::pimpl::data> &item, boost::uuids::uuid uuid,
+                                        int32_t event_type) override {
+                    typed_data val;
+                    if (include_value_) {
+                        val = typed_data(std::move(*item), serialization_service_);
                     }
-                    auto member = clusterService.getMember(uuid);
-                    ItemEventType type(static_cast<ItemEventType>(eventType));
-                    ItemEvent itemEvent(instanceName, type, std::move(val), std::move(member).value());
-                    if (type == ItemEventType::ADDED) {
-                        listener.added(std::move(itemEvent));
-                    } else if (type == ItemEventType::REMOVED) {
-                        listener.removed(std::move(itemEvent));
+                    auto member = cluster_service_.get_member(uuid);
+                    item_event_type type(static_cast<item_event_type>(event_type));
+                    item_event itemEvent(instance_name_, type, std::move(val), std::move(member).value());
+                    if (type == item_event_type::ADDED) {
+                        listener_.added_(std::move(itemEvent));
+                    } else if (type == item_event_type::REMOVED) {
+                        listener_.removed_(std::move(itemEvent));
                     }
                 }
 
             private:
-                const std::string &instanceName;
-                spi::impl::ClientClusterServiceImpl &clusterService;
-                serialization::pimpl::SerializationService &serializationService;
-                ItemListener listener;
-                bool includeValue;
+                const std::string &instance_name_;
+                spi::impl::ClientClusterServiceImpl &cluster_service_;
+                serialization::pimpl::SerializationService &serialization_service_;
+                item_listener listener_;
+                bool include_value_;
             };
         }
     }

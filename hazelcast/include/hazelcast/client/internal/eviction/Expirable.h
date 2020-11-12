@@ -17,7 +17,7 @@
 
 #include <stdint.h>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,7 +29,7 @@ namespace hazelcast {
         namespace internal {
             namespace eviction {
                 /**
-                 * Expiring Data model interface.
+                 * Expiring data model interface.
                  * <p>This interface provides a time variable to be compared against other time values
                  * to decide on "future" or "past".</p>
                  */
@@ -42,14 +42,14 @@ namespace hazelcast {
                      * @return expiration time.
                      * @see System#currentTimeMillis()
                      */
-                    virtual int64_t getExpirationTime() const = 0;
+                    virtual int64_t get_expiration_time() const = 0;
 
                     /**
                      * Sets the expiration time in milliseconds.
                      * @param expirationTime
                      * @see System#currentTimeMillis()
                      */
-                    virtual void setExpirationTime(int64_t expirationTime) = 0;
+                    virtual void set_expiration_time(int64_t expiration_time) = 0;
 
                     /**
                      * Checks whether the expiration time is passed with respect to the provided time.
@@ -57,7 +57,7 @@ namespace hazelcast {
                      * @param now time in milliseconds.
                      * @return true if expired.
                      */
-                    virtual bool isExpiredAt(int64_t now) const = 0;
+                    virtual bool is_expired_at(int64_t now) const = 0;
                 };
             }
         }

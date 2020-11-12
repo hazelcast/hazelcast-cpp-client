@@ -263,7 +263,7 @@ Member& Member::operator=(const Member& other3) {
 }
 void Member::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "Member(";
+  out << "member(";
   out << "uuid=" << to_string(uuid);
   out << ", " << "host=" << to_string(host);
   out << ", " << "port=" << to_string(port);

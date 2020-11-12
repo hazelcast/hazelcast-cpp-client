@@ -39,80 +39,80 @@ namespace hazelcast {
                             typedef AbstractNearCacheRecordStore<K, V, KS, R, HeapNearCacheRecordMap<K, V, KS, R> > ANCRS;
 
                             BaseHeapNearCacheRecordStore(const std::string &name,
-                                                         const client::config::NearCacheConfig &nearCacheConfig,
-                                                         serialization::pimpl::SerializationService &serializationService
-                            ) : ANCRS(nearCacheConfig, serializationService) {
+                                                         const client::config::near_cache_config &near_cache_config,
+                                                         serialization::pimpl::SerializationService &serialization_service
+                            ) : ANCRS(near_cache_config, serialization_service) {
                             }
 
-                            const std::shared_ptr<R> getRecord(const std::shared_ptr<KS> &key) override {
-                                return ANCRS::records->get(key);
+                            const std::shared_ptr<R> get_record(const std::shared_ptr<KS> &key) override {
+                                return ANCRS::records_->get(key);
                             }
 
-                            void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
-                                         bool wasExpired) override {
-                                ANCRS::onEvict(key,
+                            void on_evict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
+                                         bool was_expired) override {
+                                ANCRS::on_evict(key,
                                                record,
-                                               wasExpired);
-                                ANCRS::nearCacheStats->decrementOwnedEntryMemoryCost(
-                                        ANCRS::getTotalStorageMemoryCost(key, record));
+                                               was_expired);
+                                ANCRS::near_cache_stats_->decrement_owned_entry_memory_cost(
+                                        ANCRS::get_total_storage_memory_cost(key, record));
                             }
 
-                            void doExpiration() override {
-                                std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > > entries = ANCRS::records->entrySet();
+                            void do_expiration() override {
+                                std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > > entries = ANCRS::records_->entry_set();
                                 for (typename std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > >::const_iterator it = entries.begin();
                                      it != entries.end(); ++it) {
                                     const std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > &entry = (*it);
                                     const std::shared_ptr<KS> &key = entry.first;
                                     const std::shared_ptr<R> &value = entry.second;
-                                    if (ANCRS::isRecordExpired(value)) {
+                                    if (ANCRS::is_record_expired(value)) {
                                         ANCRS::invalidate(key);
-                                        ANCRS::onExpire(key, value);
+                                        ANCRS::on_expire(key, value);
                                     }
                                 }
                             }
                         protected:
-                            std::unique_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const client::config::EvictionConfig &evictionConfig,
-                                    const client::config::NearCacheConfig &nearCacheConfig) override {
-                                typename client::config::EvictionConfig::MaxSizePolicy maxSizePolicy = evictionConfig.getMaximumSizePolicy();
-                                if (maxSizePolicy == client::config::EvictionConfig::ENTRY_COUNT) {
+                            std::unique_ptr<eviction::MaxSizeChecker> create_near_cache_max_size_checker(
+                                    const client::config::eviction_config &eviction_config,
+                                    const client::config::near_cache_config &near_cache_config) override {
+                                typename client::config::eviction_config::max_size_policy maxSizePolicy = eviction_config.get_maximum_size_policy();
+                                if (maxSizePolicy == client::config::eviction_config::ENTRY_COUNT) {
                                     return std::unique_ptr<eviction::MaxSizeChecker>(
                                             new maxsize::EntryCountNearCacheMaxSizeChecker<K, V, KS, R>(
-                                                    evictionConfig.getSize(),
-                                                    *ANCRS::records));
+                                                    eviction_config.get_size(),
+                                                    *ANCRS::records_));
                                 }
                                 std::ostringstream out;
                                 out << "Invalid max-size policy " << '(' << (int) maxSizePolicy << ") for " <<
-                                    nearCacheConfig.getName() << "! Only " <<
-                                    (int) client::config::EvictionConfig::ENTRY_COUNT << " is supported.";
-                                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
+                                    near_cache_config.get_name() << "! Only " <<
+                                    (int) client::config::eviction_config::ENTRY_COUNT << " is supported.";
+                                BOOST_THROW_EXCEPTION(exception::illegal_argument(out.str()));
                             }
 
-                            std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > createNearCacheRecordMap(
-                                    const client::config::NearCacheConfig &nearCacheConfig) override {
+                            std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > create_near_cache_record_map(
+                                    const client::config::near_cache_config &near_cache_config) override {
                                 return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
-                                        new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService,
+                                        new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serialization_service_,
                                                                                 DEFAULT_INITIAL_CAPACITY));
                             }
 
-                            std::shared_ptr<R> putRecord(const std::shared_ptr<KS> &key,
+                            std::shared_ptr<R> put_record(const std::shared_ptr<KS> &key,
                                                            const std::shared_ptr<R> &record) override {
-                                std::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
-                                ANCRS::nearCacheStats->incrementOwnedEntryMemoryCost(
-                                        ANCRS::getTotalStorageMemoryCost(key, record));
+                                std::shared_ptr<R> oldRecord = ANCRS::records_->put(key, record);
+                                ANCRS::near_cache_stats_->increment_owned_entry_memory_cost(
+                                        ANCRS::get_total_storage_memory_cost(key, record));
                                 if (oldRecord.get() != NULL) {
-                                    ANCRS::nearCacheStats->decrementOwnedEntryMemoryCost(
-                                            ANCRS::getTotalStorageMemoryCost(key, oldRecord));
+                                    ANCRS::near_cache_stats_->decrement_owned_entry_memory_cost(
+                                            ANCRS::get_total_storage_memory_cost(key, oldRecord));
                                 }
                                 return oldRecord;
                             }
 
-                            std::shared_ptr<R> removeRecord(const std::shared_ptr<KS> &key) override {
-                                return ANCRS::records->remove(key);
+                            std::shared_ptr<R> remove_record(const std::shared_ptr<KS> &key) override {
+                                return ANCRS::records_->remove(key);
                             }
 
-                            bool containsRecordKey(const std::shared_ptr<KS> &key) const override {
-                                return ANCRS::records->containsKey(key);
+                            bool contains_record_key(const std::shared_ptr<KS> &key) const override {
+                                return ANCRS::records_->contains_key(key);
                             }
 
                             static const int32_t DEFAULT_INITIAL_CAPACITY = 1000;

@@ -37,22 +37,22 @@ namespace hazelcast {
 
                         ~KeyStateMarkerImpl() override;
 
-                        bool tryMark(const serialization::pimpl::Data &key) override;
+                        bool try_mark(const serialization::pimpl::data &key) override;
 
-                        bool tryUnmark(const serialization::pimpl::Data &key) override;
+                        bool try_unmark(const serialization::pimpl::data &key) override;
 
-                        bool tryRemove(const serialization::pimpl::Data &key) override;
+                        bool try_remove(const serialization::pimpl::data &key) override;
 
-                        void forceUnmark(const serialization::pimpl::Data &key) override;
+                        void force_unmark(const serialization::pimpl::data &key) override;
 
                         void init() override;
                     private:
-                        bool casState(const serialization::pimpl::Data &key, STATE expect, STATE update);
+                        bool cas_state(const serialization::pimpl::data &key, state expect, state update);
 
-                        int getSlot(const serialization::pimpl::Data &key);
+                        int get_slot(const serialization::pimpl::data &key);
 
-                        const int markCount;
-                        std::atomic<int32_t> *marks;
+                        const int mark_count_;
+                        std::atomic<int32_t> *marks_;
                     };
                 }
             }

@@ -26,7 +26,7 @@
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
@@ -40,14 +40,14 @@ namespace hazelcast {
     class logger;
 
     namespace client {
-        class Address;
+        class address;
 
         namespace connection {
             class Connection;
         }
 
         namespace spi {
-            class LifecycleService;
+            class lifecycle_service;
 
             class ClientContext;
 
@@ -72,91 +72,91 @@ namespace hazelcast {
                 public:
                     virtual ~ClientInvocation();
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    std::shared_ptr<protocol::ClientMessage> &&clientMessage,
-                                                                    const std::string &objectName, int partitionId);
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    std::shared_ptr<protocol::ClientMessage> &&client_message,
+                                                                    const std::string &object_name, int partition_id);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    std::shared_ptr<protocol::ClientMessage> &&clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    std::shared_ptr<protocol::ClientMessage> &&client_message,
+                                                                    const std::string &object_name,
                                                                     const std::shared_ptr<connection::Connection> &connection = nullptr);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    std::shared_ptr<protocol::ClientMessage> &&clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    std::shared_ptr<protocol::ClientMessage> &&client_message,
+                                                                    const std::string &object_name,
                                                                     boost::uuids::uuid uuid);
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    protocol::ClientMessage &clientMessage,
-                                                                    const std::string &objectName, int partitionId);
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    protocol::ClientMessage &client_message,
+                                                                    const std::string &object_name, int partition_id);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    protocol::ClientMessage &clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    protocol::ClientMessage &client_message,
+                                                                    const std::string &object_name,
                                                                     const std::shared_ptr<connection::Connection> &connection = nullptr);
 
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                    protocol::ClientMessage &clientMessage,
-                                                                    const std::string &objectName,
+                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
+                                                                    protocol::ClientMessage &client_message,
+                                                                    const std::string &object_name,
                                                                     boost::uuids::uuid uuid);
 
                     boost::future<protocol::ClientMessage> invoke();
 
-                    boost::future<protocol::ClientMessage> invokeUrgent();
+                    boost::future<protocol::ClientMessage> invoke_urgent();
 
                     void run();
 
-                    virtual const std::string getName() const;
+                    virtual const std::string get_name() const;
 
-                    void notify(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
+                    void notify(const std::shared_ptr<protocol::ClientMessage> &client_message);
 
-                    void notifyException(std::exception_ptr exception);
+                    void notify_exception(std::exception_ptr exception);
 
                     void notify_backup();
 
-                    std::shared_ptr<connection::Connection> getSendConnection() const;
+                    std::shared_ptr<connection::Connection> get_send_connection() const;
 
-                    std::shared_ptr<connection::Connection> getSendConnectionOrWait() const;
+                    std::shared_ptr<connection::Connection> get_send_connection_or_wait() const;
 
                     void
-                    setSendConnection(const std::shared_ptr<connection::Connection> &sendConnection);
+                    set_send_connection(const std::shared_ptr<connection::Connection> &send_connection);
 
-                    std::shared_ptr<protocol::ClientMessage> getClientMessage() const;
+                    std::shared_ptr<protocol::ClientMessage> get_client_message() const;
 
-                    const std::shared_ptr<EventHandler < protocol::ClientMessage> > &getEventHandler() const;
+                    const std::shared_ptr<EventHandler < protocol::ClientMessage> > &get_event_handler() const;
 
-                    void setEventHandler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &eventHandler);
+                    void set_event_handler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &event_handler);
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
-                    boost::promise<protocol::ClientMessage> &getPromise();
+                    boost::promise<protocol::ClientMessage> &get_promise();
 
-                    void detect_and_handle_backup_timeout(const std::chrono::milliseconds &backupTimeout);
+                    void detect_and_handle_backup_timeout(const std::chrono::milliseconds &backup_timeout);
                 private:
                     static constexpr int MAX_FAST_INVOCATION_COUNT = 5;
                     static constexpr int UNASSIGNED_PARTITION = -1;
 
                     logger &logger_;
-                    LifecycleService &lifecycleService;
-                    ClientClusterServiceImpl &clientClusterService;
-                    ClientInvocationServiceImpl &invocationService;
-                    std::shared_ptr<ClientExecutionServiceImpl> executionService;
-                    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>> clientMessage;
-                    std::shared_ptr<sequence::CallIdSequence> callIdSequence;
+                    lifecycle_service &lifecycle_service_;
+                    ClientClusterServiceImpl &client_cluster_service_;
+                    ClientInvocationServiceImpl &invocation_service_;
+                    std::shared_ptr<ClientExecutionServiceImpl> execution_service_;
+                    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>> client_message_;
+                    std::shared_ptr<sequence::CallIdSequence> call_id_sequence_;
                     boost::uuids::uuid uuid_;
-                    int partitionId;
-                    std::chrono::steady_clock::time_point startTime;
-                    std::chrono::milliseconds retryPause;
-                    std::string objectName;
-                    std::shared_ptr<connection::Connection> connection;
-                    boost::atomic_shared_ptr<std::shared_ptr<connection::Connection>> sendConnection;
-                    std::shared_ptr<EventHandler < protocol::ClientMessage>> eventHandler;
-                    std::atomic<int64_t> invokeCount;
-                    boost::promise<protocol::ClientMessage> invocationPromise;
+                    int partition_id_;
+                    std::chrono::steady_clock::time_point start_time_;
+                    std::chrono::milliseconds retry_pause_;
+                    std::string object_name_;
+                    std::shared_ptr<connection::Connection> connection_;
+                    boost::atomic_shared_ptr<std::shared_ptr<connection::Connection>> send_connection_;
+                    std::shared_ptr<EventHandler < protocol::ClientMessage>> event_handler_;
+                    std::atomic<int64_t> invoke_count_;
+                    boost::promise<protocol::ClientMessage> invocation_promise_;
                     bool urgent_;
                     bool smart_routing_;
 
@@ -179,20 +179,20 @@ namespace hazelcast {
                      */
                     std::chrono::steady_clock::time_point pending_response_received_time_;
 
-                    ClientInvocation(spi::ClientContext &clientContext,
+                    ClientInvocation(spi::ClientContext &client_context,
                                      std::shared_ptr<protocol::ClientMessage> &&message,
                                      const std::string &name, int partition = UNASSIGNED_PARTITION,
                                      const std::shared_ptr<connection::Connection> &conn = nullptr,
                                      boost::uuids::uuid uuid = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                                                                 0x0, 0x0, 0x0, 0x0, 0x0});
 
-                    void invokeOnSelection();
+                    void invoke_on_selection();
 
-                    bool isBindToSingleConnection() const;
+                    bool is_bind_to_single_connection() const;
 
                     void retry();
 
-                    bool should_retry(exception::IException &exception);
+                    bool should_retry(exception::iexception &exception);
 
                     void execute();
 
@@ -200,11 +200,11 @@ namespace hazelcast {
 
                     void operator=(const ClientInvocation &rhs) = delete;
 
-                    std::shared_ptr<protocol::ClientMessage> copyMessage();
+                    std::shared_ptr<protocol::ClientMessage> copy_message();
 
-                    void setException(const exception::IException &e, boost::exception_ptr exceptionPtr);
+                    void set_exception(const exception::iexception &e, boost::exception_ptr exception_ptr);
 
-                    void log_exception(exception::IException &e);
+                    void log_exception(exception::iexception &e);
 
                     void erase_invocation() const;
 

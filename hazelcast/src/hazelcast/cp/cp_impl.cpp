@@ -20,7 +20,7 @@
 
 #include "hazelcast/cp/cp_impl.h"
 #include "hazelcast/cp/cp.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
@@ -47,7 +47,7 @@ namespace hazelcast {
                     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
 
                     if (!running_) {
-                        BOOST_THROW_EXCEPTION(client::exception::HazelcastInstanceNotActiveException(
+                        BOOST_THROW_EXCEPTION(client::exception::hazelcast_instance_not_active(
                                                       "proxy_session_manager::get_or_create_session",
                                                               "Session manager is already shut down!"));
                     }
@@ -77,7 +77,7 @@ namespace hazelcast {
 
                 proxy_session_manager::session_response
                 proxy_session_manager::request_new_session(const raft_group_id &group_id) {
-                    auto request = client::protocol::codec::cpsession_createsession_encode(group_id, client_.getName());
+                    auto request = client::protocol::codec::cpsession_createsession_encode(group_id, client_.get_name());
                     auto response = spi::impl::ClientInvocation::create(client_, request,
                                                                         "sessionManager")->invoke().get();
                     auto session_id = response.get_first_fixed_sized_field<int64_t>();
@@ -91,7 +91,7 @@ namespace hazelcast {
                     if (scheduled_heartbeat_.compare_exchange_strong(current, true)) {
                         auto prev_heartbeats = std::make_shared<std::vector<boost::future<void>>>();
                         auto duration = std::chrono::milliseconds(hearbeat_millis);
-                        heartbeat_timer_ = client_.getClientExecutionService().scheduleWithRepetition([=]() {
+                        heartbeat_timer_ = client_.get_client_execution_service().schedule_with_repetition([=]() {
                             // we can not cancel a future
                             prev_heartbeats->clear();
                             std::vector<std::tuple<raft_group_id, int64_t, bool>> sessions;
@@ -112,9 +112,9 @@ namespace hazelcast {
                                                                                  [=](boost::future<client::protocol::ClientMessage> f) {
                                                 try {
                                                     f.get();
-                                                } catch (client::exception::SessionExpiredException &) {
+                                                } catch (client::exception::session_expired &) {
                                                     invalidate_session(group_id, session_id);
-                                                } catch (client::exception::CPGroupDestroyedException &) {
+                                                } catch (client::exception::cp_group_destroyed &) {
                                                     invalidate_session(group_id, session_id);
                                                 }
                                             }));
@@ -162,7 +162,7 @@ namespace hazelcast {
 
                 int64_t proxy_session_manager::get_or_create_unique_thread_id(const raft_group_id &group_id) {
                     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
-                    auto key = std::make_pair(group_id, util::getCurrentThreadId());
+                    auto key = std::make_pair(group_id, util::get_current_thread_id());
                     auto global_thread_id_it = thread_ids_.find(key);
                     if (global_thread_id_it != thread_ids_.end()) {
                         return global_thread_id_it->second;
@@ -227,8 +227,8 @@ namespace hazelcast {
                     return std::chrono::steady_clock::now() > expirationTime;
                 }
 
-                proxy_session_manager::session_state::session_state(int64_t id, int64_t ttlMillis)
-                        : id(id), ttl(ttlMillis), creation_time(std::chrono::steady_clock::now()) {}
+                proxy_session_manager::session_state::session_state(int64_t id, int64_t ttl_millis)
+                        : id(id), ttl(ttl_millis), creation_time(std::chrono::steady_clock::now()) {}
 
                 proxy_session_manager::session_state::session_state(const session_state &rhs)
                         : id(rhs.id), ttl(rhs.ttl), creation_time(rhs.creation_time),

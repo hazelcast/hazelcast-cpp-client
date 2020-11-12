@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -32,9 +32,9 @@ namespace hazelcast {
 
                 DistributedObjectInfo(const std::string &serviceName, const std::string &name);
 
-                const std::string &getServiceName() const;
+                const std::string &get_service_name() const;
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
             private:
                 std::string serviceName;

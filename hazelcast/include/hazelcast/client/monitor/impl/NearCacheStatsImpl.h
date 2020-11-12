@@ -19,10 +19,10 @@
 #include <string>
 #include <atomic>
 
-#include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/monitor/near_cache_stats.h"
 #include "hazelcast/util/Sync.h"
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -33,95 +33,95 @@ namespace hazelcast {
     namespace client {
         namespace monitor {
             namespace impl {
-                class HAZELCAST_API NearCacheStatsImpl : public NearCacheStats {
+                class HAZELCAST_API NearCacheStatsImpl : public near_cache_stats {
                 public:
                     NearCacheStatsImpl();
 
-                    int64_t getCreationTime() override;
+                    int64_t get_creation_time() override;
 
-                    int64_t getOwnedEntryCount() override;
+                    int64_t get_owned_entry_count() override;
 
-                    void setOwnedEntryCount(int64_t ownedEntryCount);
+                    void set_owned_entry_count(int64_t owned_entry_count);
 
-                    void incrementOwnedEntryCount();
-                    void decrementOwnedEntryCount();
+                    void increment_owned_entry_count();
+                    void decrement_owned_entry_count();
 
-                    int64_t getOwnedEntryMemoryCost() override;
+                    int64_t get_owned_entry_memory_cost() override;
 
-                    void setOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
+                    void set_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    void incrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
+                    void increment_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    void decrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
+                    void decrement_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    int64_t getHits() override;
-
-                    // just for testing
-                    void setHits(int64_t hits);
-
-                    void incrementHits();
-
-                    int64_t getMisses() override;
+                    int64_t get_hits() override;
 
                     // just for testing
-                    void setMisses(int64_t misses);
+                    void set_hits(int64_t hits);
 
-                    void incrementMisses();
+                    void increment_hits();
 
-                    double getRatio() override;
+                    int64_t get_misses() override;
 
-                    int64_t getEvictions() override;
+                    // just for testing
+                    void set_misses(int64_t misses);
 
-                    void incrementEvictions();
+                    void increment_misses();
 
-                    int64_t getExpirations() override;
+                    double get_ratio() override;
 
-                    void incrementExpirations();
+                    int64_t get_evictions() override;
 
-                    int64_t getInvalidations() override;
+                    void increment_evictions();
 
-                    void incrementInvalidations();
+                    int64_t get_expirations() override;
 
-                    int64_t getInvalidationRequests();
+                    void increment_expirations();
 
-                    void incrementInvalidationRequests();
+                    int64_t get_invalidations() override;
 
-                    void resetInvalidationEvents();
+                    void increment_invalidations();
 
-                    int64_t getPersistenceCount() override;
+                    int64_t get_invalidation_requests();
 
-                    void addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount);
+                    void increment_invalidation_requests();
 
-                    int64_t getLastPersistenceTime() override;
+                    void reset_invalidation_events();
 
-                    int64_t getLastPersistenceDuration() override;
+                    int64_t get_persistence_count() override;
 
-                    int64_t getLastPersistenceWrittenBytes() override;
+                    void add_persistence(int64_t duration, int32_t written_bytes, int32_t key_count);
 
-                    int64_t getLastPersistenceKeyCount() override;
+                    int64_t get_last_persistence_time() override;
 
-                    std::string getLastPersistenceFailure() override;
+                    int64_t get_last_persistence_duration() override;
 
-                    std::string toString() override;
+                    int64_t get_last_persistence_written_bytes() override;
+
+                    int64_t get_last_persistence_key_count() override;
+
+                    std::string get_last_persistence_failure() override;
+
+                    std::string to_string() override;
 
                 private:
-                    std::atomic<int64_t> creationTime;
-                    std::atomic<int64_t> ownedEntryCount;
-                    std::atomic<int64_t> ownedEntryMemoryCost;
-                    std::atomic<int64_t> hits;
-                    std::atomic<int64_t> misses;
-                    std::atomic<int64_t> evictions;
-                    std::atomic<int64_t> expirations;
+                    std::atomic<int64_t> creation_time_;
+                    std::atomic<int64_t> owned_entry_count_;
+                    std::atomic<int64_t> owned_entry_memory_cost_;
+                    std::atomic<int64_t> hits_;
+                    std::atomic<int64_t> misses_;
+                    std::atomic<int64_t> evictions_;
+                    std::atomic<int64_t> expirations_;
 
-                    std::atomic<int64_t> invalidations;
-                    std::atomic<int64_t> invalidationRequests;
+                    std::atomic<int64_t> invalidations_;
+                    std::atomic<int64_t> invalidation_requests_;
 
-                    std::atomic<int64_t> persistenceCount;
-                    std::atomic<int64_t> lastPersistenceTime;
-                    std::atomic<int64_t> lastPersistenceDuration;
-                    std::atomic<int64_t> lastPersistenceWrittenBytes;
-                    std::atomic<int64_t> lastPersistenceKeyCount;
-                    util::Sync<std::string> lastPersistenceFailure;
+                    std::atomic<int64_t> persistence_count_;
+                    std::atomic<int64_t> last_persistence_time_;
+                    std::atomic<int64_t> last_persistence_duration_;
+                    std::atomic<int64_t> last_persistence_written_bytes_;
+                    std::atomic<int64_t> last_persistence_key_count_;
+                    util::Sync<std::string> last_persistence_failure_;
 
                     static const double PERCENTAGE;
                 };

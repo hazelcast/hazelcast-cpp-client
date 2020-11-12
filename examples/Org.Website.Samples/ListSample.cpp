@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get the Distributed List from Cluster.
-    auto list = hz.getList("my-distributed-list");
+    auto list = hz.get_list("my-distributed-list");
     // Add elements to the list
     list->add("item1").get();
     // Using future continuation here so that the calls are not blocking

@@ -17,7 +17,7 @@
 
 #include <boost/asio/thread_pool.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API hz_thread_pool {
         public:
-            hz_thread_pool(size_t numThreads);
+            hz_thread_pool(size_t num_threads);
 
             void shutdown_gracefully();
 

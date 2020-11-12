@@ -25,7 +25,7 @@
 #include <memory>
 #include <ostream>
 
-#include <hazelcast/client/Address.h>
+#include <hazelcast/client/address.h>
 #include <hazelcast/logger.h>
 
 using namespace apache::thrift;
@@ -39,28 +39,28 @@ namespace hazelcast {
 
             class HazelcastServerFactory {
             public:
-                HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
+                HazelcastServerFactory(const std::string &server_xml_config_file_path);
 
-                HazelcastServerFactory(const std::string &serverAddress, const std::string &serverXmlConfigFilePath);
+                HazelcastServerFactory(const std::string &server_address, const std::string &server_xml_config_file_path);
 
-                const std::string& getServerAddress();
+                const std::string& get_server_address();
 
-                remote::Member startServer();
+                remote::Member start_server();
 
-                bool shutdownServer(const remote::Member &member);
+                bool shutdown_server(const remote::Member &member);
 
-                bool terminateServer(const remote::Member &member);
+                bool terminate_server(const remote::Member &member);
 
-                const std::string &getClusterId() const;
+                const std::string &get_cluster_id() const;
 
                 ~HazelcastServerFactory();
 
             private:
                 std::shared_ptr<logger> logger_;
-                std::string serverAddress;
-                std::string clusterId;
+                std::string server_address_;
+                std::string cluster_id_;
 
-                std::string readFromXmlFile(const std::string &xmlFilePath);
+                std::string read_from_xml_file(const std::string &xml_file_path);
             };
         }
     }

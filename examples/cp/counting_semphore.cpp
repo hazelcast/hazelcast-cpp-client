@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
 
     // Get counting_semaphore named 'my-semaphore'
     auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore");

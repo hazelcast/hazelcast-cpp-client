@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
 
     // Get an AtomicLong called 'my-atomic-long'
     auto atomic_counter = hz.get_cp_subsystem().get_atomic_long("my-atomic-long");

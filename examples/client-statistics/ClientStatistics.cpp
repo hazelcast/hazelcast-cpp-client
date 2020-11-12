@@ -15,7 +15,7 @@
  */
 #include <stdint.h>
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 using namespace hazelcast::client;
 
@@ -26,19 +26,19 @@ using namespace hazelcast::client;
  *
  */
 int main() {
-    ClientConfig config;
+    client_config config;
 
-    config.setProperty("hazelcast.client.statistics.enabled", "true");
+    config.set_property("hazelcast.client.statistics.enabled", "true");
 
     /**
      * Collect and send statistics every 5 seconds
      */
-    config.setProperty("hazelcast.client.statistics.period.seconds", "5");
+    config.set_property("hazelcast.client.statistics.period.seconds", "5");
 
-    config.addNearCacheConfig(config::NearCacheConfig("MyMap"));
-    hazelcast::client::HazelcastClient hz(std::move(config));
+    config.add_near_cache_config(config::near_cache_config("MyMap"));
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
     
     map->put(2, 500).get();
 

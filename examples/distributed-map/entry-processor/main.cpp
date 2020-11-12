@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
-#include "Employee.h"
+#include "employee.h"
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto employees = hz.getMap("employees");
+    auto employees = hz.get_map("employees");
 
-    employees->put("John", Employee{1000}).get();
-    employees->put("Mark", Employee{1000}).get();
-    employees->put("Spencer", Employee{1000}).get();
+    employees->put("John", employee{1000}).get();
+    employees->put("Mark", employee{1000}).get();
+    employees->put("Spencer", employee{1000}).get();
 
-    EmployeeRaiseEntryProcessor processor;
-    auto result = employees->executeOnEntries<std::string, int, EmployeeRaiseEntryProcessor>(
-            EmployeeRaiseEntryProcessor{}).get();
+    employee_raise_entry_processor processor;
+    auto result = employees->execute_on_entries<std::string, int, employee_raise_entry_processor>(
+            employee_raise_entry_processor{}).get();
 
-    std::cout << "The result after employees.executeOnEntries call is:" << std::endl;
+    std::cout << "The result after employees.execute_on_entries call is:" << std::endl;
     for (auto &entry : result) {
         std::cout << entry.first << " salary: " << *entry.second << std::endl;
     }
 
-    result = employees->executeOnKeys<std::string, int, EmployeeRaiseEntryProcessor>({"John", "Spencer"},
-                                                                                     EmployeeRaiseEntryProcessor{}).get();
+    result = employees->execute_on_keys<std::string, int, employee_raise_entry_processor>({"John", "Spencer"},
+                                                                                     employee_raise_entry_processor{}).get();
 
     std::cout << "The result after employees.executeOnKeys call is:" << std::endl;
     for (auto &entry : result) {
@@ -44,7 +44,7 @@ int main() {
     }
 
     // use submitToKey api
-    auto future = employees->submitToKey<std::string, int, EmployeeRaiseEntryProcessor>("Mark", EmployeeRaiseEntryProcessor{});
+    auto future = employees->submit_to_key<std::string, int, employee_raise_entry_processor>("Mark", employee_raise_entry_processor{});
     // wait for 1 second
     if (future.wait_for(boost::chrono::seconds(1)) == boost::future_status::ready) {
         std::cout << "Got the result of submitToKey in 1 second for Mark" << " new salary: " << *future.get() << std::endl;
@@ -56,12 +56,12 @@ int main() {
     std::vector<boost::future<boost::optional<int>>> allFutures;
 
     // test putting into a vector of futures
-    future = employees->submitToKey<std::string, int, EmployeeRaiseEntryProcessor>(
+    future = employees->submit_to_key<std::string, int, employee_raise_entry_processor>(
             "Mark", processor);
     allFutures.push_back(std::move(future));
 
-    allFutures.push_back(employees->submitToKey<std::string, int, EmployeeRaiseEntryProcessor>(
-            "John", EmployeeRaiseEntryProcessor{}));
+    allFutures.push_back(employees->submit_to_key<std::string, int, employee_raise_entry_processor>(
+            "John", employee_raise_entry_processor{}));
 
     boost::wait_for_all(allFutures.begin(), allFutures.end());
 

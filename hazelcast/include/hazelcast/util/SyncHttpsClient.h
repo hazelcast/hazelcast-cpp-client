@@ -24,7 +24,7 @@
 #include <boost/asio/ssl/stream.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -36,22 +36,22 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API SyncHttpsClient {
         public:
-            SyncHttpsClient(const std::string &serverIp, const std::string &uriPath);
+            SyncHttpsClient(const std::string &server_ip, const std::string &uri_path);
 
-            std::istream &openConnection();
+            std::istream &open_connection();
         private:
-            std::string server;
-            std::string uriPath;
+            std::string server_;
+            std::string uri_path_;
 
-            boost::asio::io_service ioService;
+            boost::asio::io_service io_service_;
 
             #ifdef HZ_BUILD_WITH_SSL
-            boost::asio::ssl::context sslContext;
-            std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > socket;
+            boost::asio::ssl::context ssl_context_;
+            std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > socket_;
             #endif // HZ_BUILD_WITH_SSL
 
-            boost::asio::streambuf response;
-            std::istream responseStream;
+            boost::asio::streambuf response_;
+            std::istream response_stream_;
         };
     }
 }

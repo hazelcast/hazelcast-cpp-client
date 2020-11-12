@@ -13,73 +13,73 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/MembershipListener.h>
-#include <hazelcast/client/InitialMembershipEvent.h>
-#include <hazelcast/client/MembershipEvent.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/membership_listener.h>
+#include <hazelcast/client/initial_membership_event.h>
+#include <hazelcast/client/membership_event.h>
 
 
-MembershipListener makeMembershipListener() {
-    return MembershipListener()
-        .on_joined([](const hazelcast::client::MembershipEvent &membershipEvent) {
+membership_listener make_membership_listener() {
+    return membership_listener()
+        .on_joined([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "New member joined: "
-                << membershipEvent.getMember().getAddress() << std::endl;
+                << membership_event.get_member().get_address() << std::endl;
         })
-        .on_left([](const hazelcast::client::MembershipEvent &membershipEvent) {
+        .on_left([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "Member left: " 
-                << membershipEvent.getMember().getAddress() << std::endl;
+                << membership_event.get_member().get_address() << std::endl;
         });
 }
 
-MembershipListener makeInitialMembershipListener() {
-    return MembershipListener()
-        .on_init([](const hazelcast::client::InitialMembershipEvent &event){
-            auto members = event.getMembers();
+membership_listener make_initial_membership_listener() {
+    return membership_listener()
+        .on_init([](const hazelcast::client::initial_membership_event &event){
+            auto members = event.get_members();
             std::cout << "The following are the initial members in the cluster:" << std::endl;
             for (const auto &member : members) {
-                std::cout << member.getAddress() << std::endl;
+                std::cout << member.get_address() << std::endl;
             }
         })
-        .on_joined([](const hazelcast::client::MembershipEvent &membershipEvent) {
+        .on_joined([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "New member joined: " <<
-            membershipEvent.getMember().getAddress() << std::endl;
+            membership_event.get_member().get_address() << std::endl;
         })
-        .on_left([](const hazelcast::client::MembershipEvent &membershipEvent) {
+        .on_left([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "Member left: " <<
-            membershipEvent.getMember().getAddress() << std::endl;
+            membership_event.get_member().get_address() << std::endl;
         });
 }
 
 int main() {
-    auto memberListener = makeMembershipListener();
-    auto initialMemberListener = makeInitialMembershipListener();
+    auto memberListener = make_membership_listener();
+    auto initialMemberListener = make_initial_membership_listener();
 
-    hazelcast::client::Cluster *clusterPtr = nullptr;
+    hazelcast::client::cluster *clusterPtr = nullptr;
     boost::uuids::uuid listenerId, initialListenerId;
     try {
-        hazelcast::client::HazelcastClient hz;
+        hazelcast::client::hazelcast_client hz;
 
-        hazelcast::client::Cluster &cluster = hz.getCluster();
+        hazelcast::client::cluster &cluster = hz.get_cluster();
         clusterPtr = &cluster;
-        auto members = cluster.getMembers();
+        auto members = cluster.get_members();
         std::cout << "The following are members in the cluster:" << std::endl;
         for (const auto &member: members) {
-            std::cout << member.getAddress() << std::endl;
+            std::cout << member.get_address() << std::endl;
         }
 
-        listenerId = cluster.addMembershipListener(std::move(memberListener));
-        initialListenerId = cluster.addMembershipListener(std::move(initialMemberListener));
+        listenerId = cluster.add_membership_listener(std::move(memberListener));
+        initialListenerId = cluster.add_membership_listener(std::move(initialMemberListener));
 
         // sleep some time for the events to be delivered before exiting
         std::this_thread::sleep_for(std::chrono::seconds(3));
 
-        cluster.removeMembershipListener(listenerId);
-        cluster.removeMembershipListener(initialListenerId);
-    } catch (hazelcast::client::exception::IException &e) {
+        cluster.remove_membership_listener(listenerId);
+        cluster.remove_membership_listener(initialListenerId);
+    } catch (hazelcast::client::exception::iexception &e) {
         std::cerr << "Test failed !!! " << e.what() << std::endl;
         if (nullptr != clusterPtr) {
-            clusterPtr->removeMembershipListener(listenerId);
-            clusterPtr->removeMembershipListener(initialListenerId);
+            clusterPtr->remove_membership_listener(listenerId);
+            clusterPtr->remove_membership_listener(initialListenerId);
         }
         exit(-1);
     }

@@ -19,7 +19,7 @@
 #include <memory>
 #include <atomic>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #include "hazelcast/client/internal/nearcache/NearCacheRecord.h"
 #include <boost/uuid/uuid.hpp>
@@ -45,106 +45,106 @@ namespace hazelcast {
                         class AbstractNearCacheRecord : public NearCacheRecord<V> {
                         public:
                             typedef V RECORD_TYPE;
-                            AbstractNearCacheRecord(const std::shared_ptr<V> &v, int64_t createTime,
-                                                    int64_t expiryTime)
-                                    : value(v), creationTime(createTime), sequence(0), expirationTime(expiryTime),
-                                      accessTime(NearCacheRecord<V>::TIME_NOT_SET), accessHit(0) {
+                            AbstractNearCacheRecord(const std::shared_ptr<V> &v, int64_t create_time,
+                                                    int64_t expiry_time)
+                                    : value_(v), creation_time_(create_time), sequence_(0), expiration_time_(expiry_time),
+                                      access_time_(NearCacheRecord<V>::TIME_NOT_SET), access_hit_(0) {
                             }
 
-                            std::shared_ptr<V> getValue() const override {
-                                return value;
+                            std::shared_ptr<V> get_value() const override {
+                                return value_;
                             }
 
-                            void setValue(const std::shared_ptr<V> &value) override {
-                                AbstractNearCacheRecord::value = value;
+                            void set_value(const std::shared_ptr<V> &value) override {
+                                AbstractNearCacheRecord::value_ = value;
                             }
 
-                            int64_t getCreationTime() const override {
-                                return creationTime;
+                            int64_t get_creation_time() const override {
+                                return creation_time_;
                             }
 
-                            void setCreationTime(int64_t creationTime) override {
-                                AbstractNearCacheRecord::creationTime = creationTime;
+                            void set_creation_time(int64_t creation_time) override {
+                                AbstractNearCacheRecord::creation_time_ = creation_time;
                             }
 
-                            boost::uuids::uuid getUuid() const {
-                                return uuid;
+                            boost::uuids::uuid get_uuid() const {
+                                return uuid_;
                             }
 
-                            void setUuid(boost::uuids::uuid uuid) override {
-                                AbstractNearCacheRecord::uuid = uuid;
+                            void set_uuid(boost::uuids::uuid uuid) override {
+                                AbstractNearCacheRecord::uuid_ = uuid;
                             }
 
-                            int64_t getExpirationTime() const override {
-                                return expirationTime;
+                            int64_t get_expiration_time() const override {
+                                return expiration_time_;
                             }
 
-                            void setExpirationTime(int64_t expirationTime) override {
-                                AbstractNearCacheRecord::expirationTime = expirationTime;
+                            void set_expiration_time(int64_t expiration_time) override {
+                                AbstractNearCacheRecord::expiration_time_ = expiration_time;
                             }
 
-                            int64_t getLastAccessTime() override {
-                                return accessTime;
+                            int64_t get_last_access_time() override {
+                                return access_time_;
                             }
 
-                            void setAccessTime(int64_t accessTime) override {
-                                AbstractNearCacheRecord::accessTime = accessTime;
+                            void set_access_time(int64_t access_time) override {
+                                AbstractNearCacheRecord::access_time_ = access_time;
                             }
 
-                            int32_t getAccessHit() override {
-                                return accessHit;
+                            int32_t get_access_hit() override {
+                                return access_hit_;
                             }
 
-                            void setAccessHit(int32_t accessHit) override {
-                                AbstractNearCacheRecord::accessHit = accessHit;
+                            void set_access_hit(int32_t access_hit) override {
+                                AbstractNearCacheRecord::access_hit_ = access_hit;
                             }
 
-                            bool isExpiredAt(int64_t now) const override {
-                                int64_t expiration = expirationTime;
+                            bool is_expired_at(int64_t now) const override {
+                                int64_t expiration = expiration_time_;
                                 return (expiration > NearCacheRecord<V>::TIME_NOT_SET) && (expiration <= now);
                             }
 
-                            void incrementAccessHit() override {
-                                ++accessHit;
+                            void increment_access_hit() override {
+                                ++access_hit_;
                             }
 
-                            void resetAccessHit() override {
-                                accessHit = 0;
+                            void reset_access_hit() override {
+                                access_hit_ = 0;
                             }
 
-                            bool isIdleAt(int64_t maxIdleMilliSeconds, int64_t now) override {
-                                if (maxIdleMilliSeconds > 0) {
-                                    if (accessTime > NearCacheRecord<V>::TIME_NOT_SET) {
-                                        return accessTime + maxIdleMilliSeconds < now;
+                            bool is_idle_at(int64_t max_idle_milli_seconds, int64_t now) override {
+                                if (max_idle_milli_seconds > 0) {
+                                    if (access_time_ > NearCacheRecord<V>::TIME_NOT_SET) {
+                                        return access_time_ + max_idle_milli_seconds < now;
                                     } else {
-                                        return creationTime + maxIdleMilliSeconds < now;
+                                        return creation_time_ + max_idle_milli_seconds < now;
                                     }
                                 } else {
                                     return false;
                                 }
                             }
 
-                            int64_t getInvalidationSequence() const override {
-                                return sequence;
+                            int64_t get_invalidation_sequence() const override {
+                                return sequence_;
                             }
 
-                            void setInvalidationSequence(int64_t seq) override {
-                                this->sequence = seq;
+                            void set_invalidation_sequence(int64_t seq) override {
+                                this->sequence_ = seq;
                             }
 
-                            bool hasSameUuid(boost::uuids::uuid thatUuid) const override {
-                                return uuid == thatUuid;
+                            bool has_same_uuid(boost::uuids::uuid that_uuid) const override {
+                                return uuid_ == that_uuid;
                             }
 
                         protected:
-                            std::shared_ptr<V> value;
-                            int64_t creationTime;
-                            int64_t sequence;
-                            boost::uuids::uuid uuid;
+                            std::shared_ptr<V> value_;
+                            int64_t creation_time_;
+                            int64_t sequence_;
+                            boost::uuids::uuid uuid_;
 
-                            std::atomic<int64_t> expirationTime;
-                            std::atomic<int64_t> accessTime;
-                            std::atomic<int32_t> accessHit;
+                            std::atomic<int64_t> expiration_time_;
+                            std::atomic<int64_t> access_time_;
+                            std::atomic<int32_t> access_hit_;
                         };
                     }
                 }

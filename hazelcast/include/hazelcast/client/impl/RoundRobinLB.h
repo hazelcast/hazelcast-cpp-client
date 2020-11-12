@@ -27,9 +27,9 @@
 namespace hazelcast {
     namespace client {
 
-        class Member;
+        class member;
 
-        class Cluster;
+        class cluster;
 
         namespace impl {
 
@@ -41,12 +41,12 @@ namespace hazelcast {
 
                 RoundRobinLB(const RoundRobinLB &rhs);
 
-                void init(Cluster &cluster) override;
+                void init(cluster &cluster) override;
 
-                boost::optional<Member> next() override;
+                boost::optional<member> next() override;
 
             private:
-                std::atomic<int> index{ 0 };
+                std::atomic<int> index_{ 0 };
             };
         }
     }

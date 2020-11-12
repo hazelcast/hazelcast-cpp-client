@@ -32,12 +32,12 @@
 #include <boost/optional.hpp>
 #include <boost/uuid/nil_generator.hpp>
 
-#include <hazelcast/client/query/PagingPredicate.h>
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/Member.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/map/DataEntryView.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include <hazelcast/client/query/paging_predicate.h>
+#include "hazelcast/client/address.h"
+#include "hazelcast/client/member.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
+#include "hazelcast/client/map/data_entry_view.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/config/index_config.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 
@@ -65,14 +65,14 @@ namespace hazelcast {
                         byte iteration_type;
 
                         const query::anchor_data_list &anchor_list;
-                        const serialization::pimpl::Data *predicate_data;
-                        const serialization::pimpl::Data *comparator_data;
+                        const serialization::pimpl::data *predicate_data;
+                        const serialization::pimpl::data *comparator_data;
 
                         template<typename K, typename V>
                         static paging_predicate_holder
-                        of(const query::PagingPredicate <K, V> &p, serialization::pimpl::SerializationService &ss) {
-                            return {static_cast<int32_t>(p.getPageSize()), static_cast<int32_t>(p.getPage()),
-                                    static_cast<byte>(p.getIterationType()), p.anchor_data_list_,
+                        of(const query::paging_predicate <K, V> &p, serialization::pimpl::SerializationService &ss) {
+                            return {static_cast<int32_t>(p.get_page_size()), static_cast<int32_t>(p.get_page()),
+                                    static_cast<byte>(p.get_iteration_type()), p.anchor_data_list_,
                                     p.predicate_data_.get_ptr(), p.comparator_data_.get_ptr()
                             };
                         }
@@ -89,11 +89,11 @@ namespace hazelcast {
             { };
 
             template <>
-            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, boost::optional<hazelcast::client::serialization::pimpl::Data>>>> : std::false_type
+            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::data, boost::optional<hazelcast::client::serialization::pimpl::data>>>> : std::false_type
             { };
 
             template <>
-            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, hazelcast::client::serialization::pimpl::Data>>> : std::false_type
+            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::data, hazelcast::client::serialization::pimpl::data>>> : std::false_type
             { };
 
             /**
@@ -172,7 +172,7 @@ namespace hazelcast {
             public:
                 static constexpr size_t EXPECTED_DATA_BLOCK_SIZE = 1024;
 
-                enum TypeSizes {
+                enum type_sizes {
                     INT8_SIZE = 1,
                     UINT8_SIZE = 1,
                     INT16_SIZE = 2,
@@ -228,67 +228,67 @@ namespace hazelcast {
 
                 explicit ClientMessage(size_t initial_frame_size, bool is_fingle_frame = false);
 
-                const std::vector<std::vector<byte>> &getBuffer() const {
-                    return data_buffer;
+                const std::vector<std::vector<byte>> &get_buffer() const {
+                    return data_buffer_;
                 }
 
                 void wrap_for_read();
 
-                inline byte *wr_ptr(size_t requestedBytes) {
-                    return wr_ptr(requestedBytes, requestedBytes);
+                inline byte *wr_ptr(size_t requested_bytes) {
+                    return wr_ptr(requested_bytes, requested_bytes);
                 }
 
                 inline byte *wr_ptr(size_t bytes_to_reserve, size_t actual_number_of_bytes) {
                     assert(bytes_to_reserve >= actual_number_of_bytes);
                     size_t max_available_bytes = 0;
-                    auto b = data_buffer.rbegin();
-                    if (b != data_buffer.rend()) {
+                    auto b = data_buffer_.rbegin();
+                    if (b != data_buffer_.rend()) {
                         max_available_bytes = b->capacity() - b->size();
                     }
                     if (max_available_bytes < bytes_to_reserve) {
                         // add a new buffer enough size to hold the minimum requested bytes
-                        data_buffer.emplace_back();
-                        b = data_buffer.rbegin();
+                        data_buffer_.emplace_back();
+                        b = data_buffer_.rbegin();
                         b->reserve((std::max)(EXPECTED_DATA_BLOCK_SIZE, bytes_to_reserve));
                     }
 
                     return b->insert(b->end(), actual_number_of_bytes, 0).operator->();
                 }
 
-                inline byte *rd_ptr(size_t requestedBytes) {
-                    byte *result = peek(requestedBytes);
-                    offset += requestedBytes;
+                inline byte *rd_ptr(size_t requested_bytes) {
+                    byte *result = peek(requested_bytes);
+                    offset_ += requested_bytes;
                     return result;
                 }
 
                 inline void seek(size_t position) {
-                    assert(buffer_index == 0 && position >= offset && position < data_buffer[buffer_index].size());
-                    offset = position;
+                    assert(buffer_index_ == 0 && position >= offset_ && position < data_buffer_[buffer_index_].size());
+                    offset_ = position;
                 }
 
-                inline byte *peek(size_t requestedBytes) {
-                    if(requestedBytes <= 0) {
+                inline byte *peek(size_t requested_bytes) {
+                    if(requested_bytes <= 0) {
                         return nullptr;
                     }
 
-                    if (offset >= data_buffer[buffer_index].size()) {
-                        ++buffer_index;
-                        if (buffer_index == data_buffer.size()) {
-                            BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
-                                                                                                     (boost::format("Not enough bytes in client message to read. Requested %1% bytes but "
-                                                                                                                    "there is no more bytes left to read. %2%") %requestedBytes %*this).str()));
+                    if (offset_ >= data_buffer_[buffer_index_].size()) {
+                        ++buffer_index_;
+                        if (buffer_index_ == data_buffer_.size()) {
+                            BOOST_THROW_EXCEPTION(client::exception::hazelcast_serialization("peek",
+                                                                                                       (boost::format("Not enough bytes in client message to read. Requested %1% bytes but "
+                                                                                                                    "there is no more bytes left to read. %2%") %requested_bytes %*this).str()));
                         }
 
-                        offset = 0;
+                        offset_ = 0;
                     }
 
-                    if (offset + requestedBytes > data_buffer[buffer_index].size()) {
-                        BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
-                                                                                                 (boost::format("Not enough bytes in client message to read. Requested %1% bytes but there "
-                                                                                                                "is not enough bytes left to read. %2%") %requestedBytes %*this).str()));
+                    if (offset_ + requested_bytes > data_buffer_[buffer_index_].size()) {
+                        BOOST_THROW_EXCEPTION(client::exception::hazelcast_serialization("peek",
+                                                                                                   (boost::format("Not enough bytes in client message to read. Requested %1% bytes but there "
+                                                                                                                "is not enough bytes left to read. %2%") %requested_bytes %*this).str()));
                     }
 
-                    return &data_buffer[buffer_index][offset];
+                    return &data_buffer_[buffer_index_][offset_];
                 }
 
                 //---------------------- Getters -------------------------------
@@ -322,7 +322,7 @@ namespace hazelcast {
                     return boost::endian::load_little_s16(rd_ptr(INT16_SIZE));
                 }
 
-                inline uint32_t getUint32() {
+                inline uint32_t get_uint32() {
                     return boost::endian::load_little_u32(rd_ptr(UINT32_SIZE));
                 }
 
@@ -446,7 +446,7 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, Address>::value, T>::type
+                typename std::enable_if<std::is_same<T, address>::value, T>::type
                 inline get() {
                     // skip begin frame
                     rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -460,11 +460,11 @@ namespace hazelcast {
 
                     fast_forward_to_end_frame();
 
-                    return Address(host, port);
+                    return address(host, port);
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, Member>::value, T>::type
+                typename std::enable_if<std::is_same<T, member>::value, T>::type
                 inline get() {
                     // skip begin frame
                     rd_ptr(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -476,12 +476,12 @@ namespace hazelcast {
                     // skip rest of the bytes in initial frame
                     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS - UUID_SIZE - UINT8_SIZE);
 
-                    auto address = get<Address>();
+                    auto addr = get<address>();
                     auto attributes = get<std::unordered_map<std::string, std::string>>();
 
                     fast_forward_to_end_frame();
 
-                    return Member(std::move(address), uuid, lite_member, std::move(attributes));
+                    return member(std::move(addr), uuid, lite_member, std::move(attributes));
                 }
 
                 template<typename T>
@@ -496,14 +496,14 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, serialization::pimpl::Data>::value, T>::type
+                typename std::enable_if<std::is_same<T, serialization::pimpl::data>::value, T>::type
                 inline get() {
                     auto f = reinterpret_cast<frame_header_t *>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
                     auto data_size = static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
                     auto mem_ptr = rd_ptr(data_size);
                     std::vector<byte> bytes(data_size);
                     std::memcpy(&bytes[0], mem_ptr, data_size);
-                    return serialization::pimpl::Data(std::move(bytes));
+                    return serialization::pimpl::data(std::move(bytes));
                 }
 
                 template<typename T>
@@ -519,7 +519,7 @@ namespace hazelcast {
 
                     auto class_name = get<std::string>();
                     auto method_name = get<std::string>();
-                    auto file_name = getNullable<std::string>();
+                    auto file_name = get_nullable<std::string>();
 
                     fast_forward_to_end_frame();
 
@@ -541,7 +541,7 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                typename std::enable_if<std::is_same<T, map::DataEntryView>::value, T>::type
+                typename std::enable_if<std::is_same<T, map::data_entry_view>::value, T>::type
                 inline get() {
                     // skip begin frame
                     rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -561,8 +561,8 @@ namespace hazelcast {
                     // skip bytes in initial frame
                     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS - 10 * INT64_SIZE);
 
-                    auto key = get<serialization::pimpl::Data>();
-                    auto value = get<serialization::pimpl::Data>();
+                    auto key = get<serialization::pimpl::data>();
+                    auto value = get<serialization::pimpl::data>();
 
                     fast_forward_to_end_frame();
 
@@ -586,7 +586,7 @@ namespace hazelcast {
                 typename std::enable_if<std::is_same<T, typename boost::optional<typename std::remove_reference<typename std::remove_cv<typename T::value_type>::type>::type>>::value, T>::type
                 inline get() {
                     typedef typename std::remove_reference<typename std::remove_cv<typename T::value_type>::type>::type type;
-                    return getNullable<type>();
+                    return get_nullable<type>();
                 }
 
                 template<typename T>
@@ -601,7 +601,7 @@ namespace hazelcast {
                     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS - INT32_SIZE);
 
                     auto class_name = get<std::string>();
-                    auto message = getNullable<std::string>();
+                    auto message = get_nullable<std::string>();
                     auto stack_traces = get<std::vector<codec::StackTraceElement>>();
                     codec::ErrorHolder h = {error_code, std::move(class_name), std::move(message),
                                             std::move(stack_traces)};
@@ -612,7 +612,7 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                boost::optional<T> getNullable() {
+                boost::optional<T> get_nullable() {
                     if (next_frame_is_null_frame()) {
                         // skip next frame with null flag
                         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -623,14 +623,14 @@ namespace hazelcast {
 
                 template<typename T>
                 T get_first_fixed_sized_field() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     // skip header
                     rd_ptr(RESPONSE_HEADER_LEN);
                     return get<T>();
                 }
 
                 inline boost::uuids::uuid get_first_uuid() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     // skip header
                     rd_ptr(RESPONSE_HEADER_LEN);
                     return get<boost::uuids::uuid>();
@@ -638,16 +638,16 @@ namespace hazelcast {
 
                 template<typename T>
                 boost::optional<T> get_first_var_sized_field() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     skip_frame();
                     return get<T>();
                 }
 
                 template<typename T>
                 boost::optional<T> get_first_optional_var_sized_field() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     skip_frame();
-                    return getNullable<T>();
+                    return get_nullable<T>();
                 }
                 //----- Getter methods end --------------------------
 
@@ -692,19 +692,19 @@ namespace hazelcast {
                     boost::endian::store_little_s64(wr_ptr(INT64_SIZE), value);
                 }
 
-                void setMessageType(int32_t type);
+                void set_message_type(int32_t type);
 
-                void setCorrelationId(int64_t id);
+                void set_correlation_id(int64_t id);
 
                 /**
                  * @return the number of acks will be send for a request
                  */
                 int8_t get_number_of_backups() const;
 
-                void setPartitionId(int32_t partitionId);
+                void set_partition_id(int32_t partition_id);
 
                 template<typename T>
-                void setNullable(const T *value, bool is_final = false) {
+                void set_nullable(const T *value, bool is_final = false) {
                     bool isNull = (NULL == value);
                     if (isNull) {
                         auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
@@ -729,18 +729,18 @@ namespace hazelcast {
                 }
 
                 inline void set(const std::string *value) {
-                    setNullable<std::string>(value);
+                    set_nullable<std::string>(value);
                 }
 
-                inline void set(const Address &a, bool is_final = false) {
+                inline void set(const address &a, bool is_final = false) {
                     add_begin_frame();
 
                     auto f = reinterpret_cast<frame_header_t *>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
                     f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
                     f->flags = DEFAULT_FLAGS;
-                    set(static_cast<int32_t>(a.getPort()));
+                    set(static_cast<int32_t>(a.get_port()));
 
-                    set(a.getHost());
+                    set(a.get_host());
 
                     add_end_frame(is_final);
                 }
@@ -788,8 +788,8 @@ namespace hazelcast {
                     }
                 }
 
-                inline void set(const serialization::pimpl::Data &value, bool is_final = false) {
-                    if (value.dataSize() == 0) {
+                inline void set(const serialization::pimpl::data &value, bool is_final = false) {
+                    if (value.data_size() == 0) {
                         auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
                         *h = null_frame();
                         if (is_final) {
@@ -797,7 +797,7 @@ namespace hazelcast {
                         }
                         return;
                     }
-                    auto &bytes = value.toByteArray();
+                    auto &bytes = value.to_byte_array();
                     auto frame_length = sizeof(frame_header_t) + bytes.size();
                     auto fp = wr_ptr(frame_length);
                     auto *header = reinterpret_cast<frame_header_t *>(fp);
@@ -806,8 +806,8 @@ namespace hazelcast {
                     std::memcpy(fp + SIZE_OF_FRAME_LENGTH_AND_FLAGS, &bytes[0], bytes.size());
                 }
 
-                inline void set(const serialization::pimpl::Data *value, bool is_final = false) {
-                    setNullable<serialization::pimpl::Data>(value, is_final);
+                inline void set(const serialization::pimpl::data *value, bool is_final = false) {
+                    set_nullable<serialization::pimpl::data>(value, is_final);
                 }
 
                 void set(const cp::raft_group_id &o, bool is_final = false);
@@ -816,7 +816,7 @@ namespace hazelcast {
                 typename std::enable_if<std::is_same<T, typename boost::optional<typename std::remove_reference<typename std::remove_cv<typename T::value_type>::type>::type>>::value, void>::type
                 inline set(const T &value, bool is_final = false) {
                     typedef typename std::remove_reference<typename std::remove_cv<typename T::value_type>::type>::type type;
-                    return setNullable<type>(value.get_ptr(), is_final);
+                    return set_nullable<type>(value.get_ptr(), is_final);
                 }
 
                 void set(unsigned char *memory, boost::uuids::uuid uuid);
@@ -848,26 +848,26 @@ namespace hazelcast {
                 /**
                 * Tries to read enough bytes to fill the message from the provided ByteBuffer
                 */
-                void fillMessageFrom(util::ByteBuffer &buffer, bool &is_final, size_t &remaining_bytes_in_frame);
+                void fill_message_from(util::ByteBuffer &buffer, bool &is_final, size_t &remaining_bytes_in_frame);
 
                 size_t size() const;
 
-                int32_t getMessageType() const;
+                int32_t get_message_type() const;
 
-                uint16_t getHeaderFlags() const;
+                uint16_t get_header_flags() const;
 
-                void setHeaderFlags(uint16_t new_flags);
+                void set_header_flags(uint16_t new_flags);
 
                 void inline add_flag(uint16_t flag) {
-                    setHeaderFlags(getHeaderFlags() | flag);
+                    set_header_flags(get_header_flags() | flag);
                 }
 
-                int64_t getCorrelationId() const;
+                int64_t get_correlation_id() const;
 
-                int32_t getPartitionId() const;
+                int32_t get_partition_id() const;
 
                 inline bool is_flag_set(uint16_t flag_mask) const {
-                    return flag_mask == (getHeaderFlags() & flag_mask);
+                    return flag_mask == (get_header_flags() & flag_mask);
                 }
 
                 static inline bool is_flag_set(uint16_t flags, uint16_t flag_mask) {
@@ -877,13 +877,13 @@ namespace hazelcast {
                 //Builder function
                 void append(std::shared_ptr<ClientMessage> msg);
 
-                bool isRetryable() const;
+                bool is_retryable() const;
 
-                void setRetryable(bool shouldRetry);
+                void set_retryable(bool should_retry);
 
-                std::string getOperationName() const;
+                std::string get_operation_name() const;
 
-                void setOperationName(const std::string &name);
+                void set_operation_name(const std::string &name);
 
                 inline void skip_frame() {
                     auto *f = reinterpret_cast<frame_header_t *>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
@@ -965,12 +965,12 @@ namespace hazelcast {
                     return 17;
                 }
 
-                bool retryable;
-                std::string operationName;
+                bool retryable_;
+                std::string operation_name_;
 
-                std::vector<std::vector<byte>> data_buffer;
-                size_t buffer_index;
-                size_t offset;
+                std::vector<std::vector<byte>> data_buffer_;
+                size_t buffer_index_;
+                size_t offset_;
             };
 
             template<>

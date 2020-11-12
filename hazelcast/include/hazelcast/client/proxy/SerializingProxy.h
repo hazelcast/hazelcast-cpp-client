@@ -37,7 +37,7 @@ namespace hazelcast {
                 class ClientPartitionServiceImpl;
             }
         }
-        typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data>> EntryVector;
+        typedef std::vector<std::pair<serialization::pimpl::data, serialization::pimpl::data>> EntryVector;
 
         namespace proxy {
             /**
@@ -46,131 +46,131 @@ namespace hazelcast {
             class HAZELCAST_API SerializingProxy {
             public:
                 template<typename T>
-                static boost::future<void> toVoidFuture(boost::future<T> messageFuture) {
-                    return messageFuture.then(boost::launch::deferred, [](boost::future<T> f) {
+                static boost::future<void> to_void_future(boost::future<T> message_future) {
+                    return message_future.then(boost::launch::deferred, [](boost::future<T> f) {
                         f.get(); }
                     );
                 }
 
             protected:
-                SerializingProxy(spi::ClientContext &context, const std::string &objectName);
+                SerializingProxy(spi::ClientContext &context, const std::string &object_name);
                 
                 boost::future<protocol::ClientMessage> invoke(protocol::ClientMessage &request);
 
-                boost::future<protocol::ClientMessage> invokeOnConnection(protocol::ClientMessage &request,
+                boost::future<protocol::ClientMessage> invoke_on_connection(protocol::ClientMessage &request,
                                                                           std::shared_ptr<connection::Connection> connection);
 
                 boost::future<protocol::ClientMessage>
-                invokeOnPartition(protocol::ClientMessage &request, int partitionId);
+                invoke_on_partition(protocol::ClientMessage &request, int partition_id);
 
                 boost::future<protocol::ClientMessage>
-                invokeOnKeyOwner(protocol::ClientMessage &request,
-                                 const serialization::pimpl::Data &keyData);
+                invoke_on_key_owner(protocol::ClientMessage &request,
+                                 const serialization::pimpl::data &key_data);
 
-                boost::future<protocol::ClientMessage> invokeOnMember(protocol::ClientMessage &request,
+                boost::future<protocol::ClientMessage> invoke_on_member(protocol::ClientMessage &request,
                                                                       boost::uuids::uuid uuid);
 
-                int getPartitionId(const serialization::pimpl::Data &key);
+                int get_partition_id(const serialization::pimpl::data &key);
 
                 template<typename T>
-                serialization::pimpl::Data toData(const T *object) {
-                    return serializationService_.template toData<T>(object);
+                serialization::pimpl::data to_data(const T *object) {
+                    return serialization_service_.template to_data<T>(object);
                 }
 
                 template<typename T>
-                serialization::pimpl::Data toData(const T &object) {
-                    return toData<T>(&object);
+                serialization::pimpl::data to_data(const T &object) {
+                    return to_data<T>(&object);
                 }
 
                 template<typename T>
-                inline boost::optional<T> toObject(const serialization::pimpl::Data &data) {
-                    return serializationService_.template toObject<T>(data);
+                inline boost::optional<T> to_object(const serialization::pimpl::data &data) {
+                    return serialization_service_.template to_object<T>(data);
                 }
 
                 template<typename T>
-                inline boost::optional<T> toObject(const serialization::pimpl::Data *data) {
+                inline boost::optional<T> to_object(const serialization::pimpl::data *data) {
                     if (!data) {
                         return boost::none;
                     } else {
-                        return toObject<T>(*data);
+                        return to_object<T>(*data);
                     }
                 }
 
                 template<typename T>
-                inline boost::optional<T> toObject(std::unique_ptr<serialization::pimpl::Data> &&data) {
-                    return toObject<T>(data.get());
+                inline boost::optional<T> to_object(std::unique_ptr<serialization::pimpl::data> &&data) {
+                    return to_object<T>(data.get());
                 }
 
                 template<typename T>
-                inline boost::optional<T> toObject(std::unique_ptr<serialization::pimpl::Data> &data) {
-                    return toObject<T>(data.get());
+                inline boost::optional<T> to_object(std::unique_ptr<serialization::pimpl::data> &data) {
+                    return to_object<T>(data.get());
                 }
 
                 template<typename T>
-                inline boost::optional<T> toObject(const boost::optional<serialization::pimpl::Data> &data) {
-                    return toObject<T>(data.get_ptr());
+                inline boost::optional<T> to_object(const boost::optional<serialization::pimpl::data> &data) {
+                    return to_object<T>(data.get_ptr());
                 }
 
 
                 template<typename T>
-                inline boost::future<boost::optional<T>> toObject(boost::future<boost::optional<serialization::pimpl::Data>> f) {
-                    return f.then([=] (boost::future<boost::optional<serialization::pimpl::Data>> f) {
-                        return toObject<T>(f.get().get_ptr());
+                inline boost::future<boost::optional<T>> to_object(boost::future<boost::optional<serialization::pimpl::data>> f) {
+                    return f.then([=] (boost::future<boost::optional<serialization::pimpl::data>> f) {
+                        return to_object<T>(f.get().get_ptr());
                     });
                 }
 
                 template<typename T>
                 typename std::enable_if<std::is_same<char *, typename std::remove_cv<T>::type>::value, boost::optional<std::string>>::type
-                inline toObject(const serialization::pimpl::Data &data) {
-                    return toObject<std::string>(data);
+                inline to_object(const serialization::pimpl::data &data) {
+                    return to_object<std::string>(data);
                 }
 
                 template<typename T>
                 typename std::enable_if<std::is_array<T>::value &&
                                         std::is_same<typename std::remove_all_extents<T>::type, char>::value, boost::optional<std::string>>::type
-                inline toObject(const serialization::pimpl::Data &data) {
-                    return toObject<std::string>(data);
+                inline to_object(const serialization::pimpl::data &data) {
+                    return to_object<std::string>(data);
                 }
 
                 template<typename T>
-                boost::future<boost::optional<T>> toObject(boost::future<serialization::pimpl::Data> f) {
-                    return f.then(boost::launch::deferred, [=] (boost::future<serialization::pimpl::Data> f) {
-                        return toObject<T>(f.get());
+                boost::future<boost::optional<T>> to_object(boost::future<serialization::pimpl::data> f) {
+                    return f.then(boost::launch::deferred, [=] (boost::future<serialization::pimpl::data> f) {
+                        return to_object<T>(f.get());
                     });
                 }
 
                 template<typename T>
-                boost::future<boost::optional<T>> toObject(boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
-                    return f.then(boost::launch::deferred, [=] (boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
-                        return toObject<T>(f.get());
+                boost::future<boost::optional<T>> to_object(boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
+                    return f.then(boost::launch::deferred, [=] (boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
+                        return to_object<T>(f.get());
                     });
                 }
 
                 template<typename T>
                 inline boost::future<std::vector<T>>
-                toObjectVector(boost::future<std::vector<serialization::pimpl::Data>> dataFuture) {
-                    return dataFuture.then(boost::launch::deferred,
-                                           [=](boost::future<std::vector<serialization::pimpl::Data>> f) {
+                to_object_vector(boost::future<std::vector<serialization::pimpl::data>> data_future) {
+                    return data_future.then(boost::launch::deferred,
+                                           [=](boost::future<std::vector<serialization::pimpl::data>> f) {
                                                auto dataResult = f.get();
                                                std::vector<T> result;
                                                result.reserve(dataResult.size());
                                                std::for_each(dataResult.begin(), dataResult.end(),
-                                                             [&](const serialization::pimpl::Data &keyData) {
+                                                             [&](const serialization::pimpl::data &key_data) {
                                                                  // The object is guaranteed to exist (non-null)
-                                                                 result.push_back(std::move(toObject<T>(keyData).value()));
+                                                                 result.push_back(std::move(to_object<T>(key_data).value()));
                                                              });
                                                return result;
                                            });
                 }
 
                 template<typename K, typename V>
-                boost::future<std::unordered_map<K, boost::optional<V>>> toObjectMap(boost::future<EntryVector> entriesData) {
-                    return entriesData.then(boost::launch::deferred, [=](boost::future<EntryVector> f) {
+                boost::future<std::unordered_map<K, boost::optional<V>>> to_object_map(boost::future<EntryVector> entries_data) {
+                    return entries_data.then(boost::launch::deferred, [=](boost::future<EntryVector> f) {
                         auto entries = f.get();
                         std::unordered_map<K, boost::optional<V>> result;
                         result.reserve(entries.size());
-                        std::for_each(entries.begin(), entries.end(), [&](std::pair<serialization::pimpl::Data, serialization::pimpl::Data> entry) {
-                            result.insert({std::move(toObject<K>(entry.first)).value(), toObject<V>(entry.second)});
+                        std::for_each(entries.begin(), entries.end(), [&](std::pair<serialization::pimpl::data, serialization::pimpl::data> entry) {
+                            result.insert({std::move(to_object<K>(entry.first)).value(), to_object<V>(entry.second)});
                         });
                         return result;
                     });
@@ -178,54 +178,54 @@ namespace hazelcast {
 
                 template<typename K, typename V>
                 inline boost::future<std::vector<std::pair<K, V>>>
-                toEntryObjectVector(boost::future<EntryVector> dataFuture) {
-                    return dataFuture.then(boost::launch::deferred, [=](boost::future<EntryVector> f) {
+                to_entry_object_vector(boost::future<EntryVector> data_future) {
+                    return data_future.then(boost::launch::deferred, [=](boost::future<EntryVector> f) {
                         auto dataEntryVector = f.get();
                         std::vector<std::pair<K, V>> result;
                         result.reserve(dataEntryVector.size());
                         std::for_each(dataEntryVector.begin(), dataEntryVector.end(),
-                                      [&](const std::pair<serialization::pimpl::Data, serialization::pimpl::Data> &entryData) {
+                                      [&](const std::pair<serialization::pimpl::data, serialization::pimpl::data> &entry_data) {
                                           // please note that the key and value will never be null
-                                          result.emplace_back(std::move(toObject<K>(entryData.first)).value(),
-                                                                 std::move(toObject<V>(entryData.second)).value());
+                                          result.emplace_back(std::move(to_object<K>(entry_data.first)).value(),
+                                                                 std::move(to_object<V>(entry_data.second)).value());
                                       });
                         return result;
                     });
                 }
 
                 template<typename T>
-                std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T> &elements) {
-                    std::vector<serialization::pimpl::Data> dataCollection;
+                std::vector<serialization::pimpl::data> to_data_collection(const std::vector<T> &elements) {
+                    std::vector<serialization::pimpl::data> dataCollection;
                     dataCollection.reserve(elements.size());
                     std::for_each(elements.begin(), elements.end(),
-                                  [&](const T &item) { dataCollection.push_back(toData(item)); });
+                                  [&](const T &item) { dataCollection.push_back(to_data(item)); });
                     return dataCollection;
                 }
 
                 template<typename K, typename V>
-                EntryVector toDataEntries(const std::unordered_map<K, V> &m) {
+                EntryVector to_data_entries(const std::unordered_map<K, V> &m) {
                     EntryVector entries;
                     entries.reserve(m.size());
                     std::for_each(m.begin(), m.end(), [&] (const typename std::unordered_map<K, V>::value_type &entry) {
-                        entries.emplace_back(toData<K>(entry.first), toData<V>(entry.second));
+                        entries.emplace_back(to_data<K>(entry.first), to_data<V>(entry.second));
                     });
                     return entries;
                 }
 
                 template<typename T>
-                boost::future<T> invokeAndGetFuture(protocol::ClientMessage &request) {
+                boost::future<T> invoke_and_get_future(protocol::ClientMessage &request) {
                     return decode<T>(invoke(request));
                 }
 
                 template<typename T>
-                boost::future<T> invokeAndGetFuture(protocol::ClientMessage &request, int partitionId) {
-                    return decode<T>(invokeOnPartition(request, partitionId));
+                boost::future<T> invoke_and_get_future(protocol::ClientMessage &request, int partition_id) {
+                    return decode<T>(invoke_on_partition(request, partition_id));
                 }
 
                 template<typename T>
-                boost::future<T> invokeAndGetFuture(protocol::ClientMessage &request,
-                                     const serialization::pimpl::Data &key) {
-                    return decode<T>(invokeOnKeyOwner(request, key));
+                boost::future<T> invoke_and_get_future(protocol::ClientMessage &request,
+                                     const serialization::pimpl::data &key) {
+                    return decode<T>(invoke_on_key_owner(request, key));
                 }
 
             protected:
@@ -256,30 +256,30 @@ namespace hazelcast {
                     });
                 }
 
-                serialization::pimpl::SerializationService &serializationService_;
-                spi::impl::ClientPartitionServiceImpl &partitionService_;
-                std::string name_;
-                spi::ClientContext &context_;
+                serialization::pimpl::SerializationService &serialization_service_;
+                spi::impl::ClientPartitionServiceImpl &partition_service_;
+                std::string object_name_;
+                spi::ClientContext &client_context_;
             };
 
             template<>
-            boost::future<boost::optional<serialization::pimpl::Data>>
-            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request);
+            boost::future<boost::optional<serialization::pimpl::data>>
+            HAZELCAST_API SerializingProxy::invoke_and_get_future(protocol::ClientMessage &request);
 
             template<>
-            boost::future<boost::optional<map::DataEntryView>>
-            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request,
-                                                 const serialization::pimpl::Data &key);
+            boost::future<boost::optional<map::data_entry_view>>
+            HAZELCAST_API SerializingProxy::invoke_and_get_future(protocol::ClientMessage &request,
+                                                 const serialization::pimpl::data &key);
 
             template<>
-            boost::future<boost::optional<serialization::pimpl::Data>>
-            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request, int partitionId);
+            boost::future<boost::optional<serialization::pimpl::data>>
+            HAZELCAST_API SerializingProxy::invoke_and_get_future(protocol::ClientMessage &request, int partition_id);
 
 
             template<>
-            boost::future<boost::optional<serialization::pimpl::Data>>
-            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request,
-                                                 const serialization::pimpl::Data &key);
+            boost::future<boost::optional<serialization::pimpl::data>>
+            HAZELCAST_API SerializingProxy::invoke_and_get_future(protocol::ClientMessage &request,
+                                                 const serialization::pimpl::data &key);
 
         }
     }

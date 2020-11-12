@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(queryMap queryExample.cpp Employee.h Employee.cpp)
+add_executable(queryMap queryExample.cpp employee.h employee.cpp)
 

@@ -46,9 +46,9 @@ namespace hazelcast {
                             typedef eviction::EvictionCandidate<K, V, KS, R> C;
 
                             HeapNearCacheRecordMap(serialization::pimpl::SerializationService &ss,
-                                                   int32_t initialCapacity)
-                                    : util::SampleableConcurrentHashMap<K, V, KS, R>(initialCapacity),
-                                      serializationService(ss) {
+                                                   int32_t initial_capacity)
+                                    : util::SampleableConcurrentHashMap<K, V, KS, R>(initial_capacity),
+                                      serialization_service_(ss) {
                             }
 
                             ~HeapNearCacheRecordMap() override = default;
@@ -62,60 +62,60 @@ namespace hazelcast {
                                                                 serialization::pimpl::SerializationService &ss)
                                         : util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry(key,
                                                                                                         value),
-                                          serializationService(ss) {
+                                          serialization_service_(ss) {
                                 }
 
                                 ~NearCacheEvictableSamplingEntry() override = default;
 
-                                std::shared_ptr<KS> getAccessor() const override {
-                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key;
+                                std::shared_ptr<KS> get_accessor() const override {
+                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key_;
                                 }
 
-                                std::shared_ptr<R> getEvictable() const override {
-                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value;
+                                std::shared_ptr<R> get_evictable() const override {
+                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value_;
                                 }
 
-                                std::shared_ptr<K> getKey() const override {
-                                    return serializationService.toSharedObject<K>(
-                                            util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key);
+                                std::shared_ptr<K> get_key() const override {
+                                    return serialization_service_.to_shared_object<K>(
+                                            util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key_);
                                 }
 
-                                std::shared_ptr<V> getValue() const override {
-                                    return std::shared_ptr<V>(serializationService.toSharedObject<V>(
-                                            util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value->getValue()));
+                                std::shared_ptr<V> get_value() const override {
+                                    return std::shared_ptr<V>(serialization_service_.to_shared_object<V>(
+                                            util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value_->get_value()));
                                 }
 
-                                int64_t getCreationTime() const override {
-                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value->getCreationTime();
+                                int64_t get_creation_time() const override {
+                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value_->get_creation_time();
                                 }
 
-                                int64_t getLastAccessTime() const override {
-                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value->getLastAccessTime();
+                                int64_t get_last_access_time() const override {
+                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value_->get_last_access_time();
                                 }
 
-                                int64_t getAccessHit() const override {
-                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value->getAccessHit();
+                                int64_t get_access_hit() const override {
+                                    return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value_->get_access_hit();
                                 }
 
                             private:
-                                serialization::pimpl::SerializationService &serializationService;
+                                serialization::pimpl::SerializationService &serialization_service_;
                             };
 
-                            int evict(std::vector<std::shared_ptr<C> > *evictionCandidates,
-                                      eviction::EvictionListener<KS, R> *evictionListener) override {
-                                if (evictionCandidates == NULL) {
+                            int evict(std::vector<std::shared_ptr<C> > *eviction_candidates,
+                                      eviction::EvictionListener<KS, R> *eviction_listener) override {
+                                if (eviction_candidates == NULL) {
                                     return 0;
                                 }
                                 int actualEvictedCount = 0;
-                                for (typename std::vector<std::shared_ptr<C> >::const_iterator it = evictionCandidates->begin();
-                                     it != evictionCandidates->end(); ++it) {
+                                for (typename std::vector<std::shared_ptr<C> >::const_iterator it = eviction_candidates->begin();
+                                     it != eviction_candidates->end(); ++it) {
                                     const std::shared_ptr<C> &evictionCandidate = *it;
                                     if (util::SynchronizedMap<std::shared_ptr<KS>, R>::remove(
-                                            evictionCandidate->getAccessor()).get() != NULL) {
+                                            evictionCandidate->get_accessor()).get() != NULL) {
                                         actualEvictedCount++;
-                                        if (evictionListener != NULL) {
-                                            evictionListener->onEvict(evictionCandidate->getAccessor(),
-                                                                      evictionCandidate->getEvictable(), false);
+                                        if (eviction_listener != NULL) {
+                                            eviction_listener->on_evict(evictionCandidate->get_accessor(),
+                                                                      evictionCandidate->get_evictable(), false);
                                         }
                                     }
                                 }
@@ -123,9 +123,9 @@ namespace hazelcast {
                             }
 
                             std::unique_ptr<util::Iterable<eviction::EvictionCandidate<K, V, KS, R> > > sample(
-                                    int32_t sampleCount) const {
-                                std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > samples = util::SampleableConcurrentHashMap<K, V, KS, R>::getRandomSamples(
-                                        sampleCount);
+                                    int32_t sample_count) const {
+                                std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > samples = util::SampleableConcurrentHashMap<K, V, KS, R>::get_random_samples(
+                                        sample_count);
                                 if (NULL == samples.get()) {
                                     return std::unique_ptr<util::Iterable<eviction::EvictionCandidate<K, V, KS, R> > >();
                                 }
@@ -137,26 +137,26 @@ namespace hazelcast {
                                     : public util::Iterable<eviction::EvictionCandidate<K, V, KS, R> > {
                             public:
                                 EvictionCandidateAdapter(
-                                        std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > &samplesIterable)
-                                        : adaptedIterable(std::move(samplesIterable)) {
-                                    adaptedIterator = std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > >(
-                                            new EvictionCandidateIterator(*adaptedIterable->iterator()));
+                                        std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > &samples_iterable)
+                                        : adapted_iterable_(std::move(samples_iterable)) {
+                                    adapted_iterator_ = std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > >(
+                                            new EvictionCandidateIterator(*adapted_iterable_->iterator()));
                                 }
 
                                 class EvictionCandidateIterator
                                         : public util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > {
                                 public:
                                     EvictionCandidateIterator(
-                                            util::Iterator<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> &adaptedIterator)
-                                            : it(adaptedIterator) {
+                                            util::Iterator<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> &adapted_iterator)
+                                            : it_(adapted_iterator) {
                                     }
 
-                                    bool hasNext() override {
-                                        return it.hasNext();
+                                    bool has_next() override {
+                                        return it_.has_next();
                                     }
 
                                     std::shared_ptr<eviction::EvictionCandidate<K, V, KS, R> > next() override {
-                                        std::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> obj = it.next();
+                                        std::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> obj = it_.next();
                                         std::shared_ptr<NearCacheEvictableSamplingEntry> heapObj = std::static_pointer_cast<NearCacheEvictableSamplingEntry>(
                                                 obj);
                                         return std::static_pointer_cast<eviction::EvictionCandidate<K, V, KS, R> >(
@@ -164,32 +164,32 @@ namespace hazelcast {
                                     }
 
                                     void remove() override {
-                                        it.remove();
+                                        it_.remove();
                                     }
 
                                 private:
-                                    util::Iterator<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> &it;
+                                    util::Iterator<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> &it_;
                                 };
 
                                 util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > *iterator() override {
-                                    return adaptedIterator.get();
+                                    return adapted_iterator_.get();
                                 }
 
                             private:
-                                std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > adaptedIterable;
-                                std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > > adaptedIterator;
+                                std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > adapted_iterable_;
+                                std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > > adapted_iterator_;
                             };
 
                         protected:
-                            std::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry> createSamplingEntry(
+                            std::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry> create_sampling_entry(
                                     std::shared_ptr<KS> &key,
                                     std::shared_ptr<R> &value) const override {
                                 return std::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry>(
-                                        new NearCacheEvictableSamplingEntry(key, value, serializationService));
+                                        new NearCacheEvictableSamplingEntry(key, value, serialization_service_));
                             }
 
                         private:
-                            serialization::pimpl::SerializationService &serializationService;
+                            serialization::pimpl::SerializationService &serialization_service_;
                         };
                     }
                 }

@@ -19,8 +19,8 @@
 #include <unordered_map>
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/aws/security/EC2RequestSigner.h"
+#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/client/aws/security/ec2_request_signer.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -33,7 +33,7 @@ namespace hazelcast {
 
     namespace client {
         namespace config {
-            class ClientAwsConfig;
+            class client_aws_config;
         }
         namespace aws {
             namespace impl {
@@ -43,7 +43,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API DescribeInstances {
                 public:
-                    DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
+                    DescribeInstances(config::client_aws_config &aws_config, const std::string &endpoint,
                                       logger &lg);
 
                     virtual ~DescribeInstances();
@@ -51,33 +51,33 @@ namespace hazelcast {
                     /**
                      * Invoke the service to describe the instances, unmarshal the response and return the discovered node map.
                      * The map contains mappings from private to public IP and all contained nodes match the filtering rules defined by
-                     * the {@link #ClientAwsConfig}.
+                     * the {@link #client_aws_config}.
                      *
                      * @return map from private to public IP or empty map in case of failed response unmarshalling
                      * @throws IException if there is an exception invoking the service
                      */
                     std::unordered_map<std::string, std::string> execute();
                 private:
-                    static std::string getFormattedTimestamp();
+                    static std::string get_formatted_timestamp();
 
-                    std::istream &callService();
+                    std::istream &call_service();
 
-                    void checkKeysFromIamRoles();
-                    void tryGetDefaultIamRole();
-                    void getKeysFromIamTaskRole();
-                    void getKeysFromIamRole();
-                    void parseAndStoreRoleCreds(std::istream &in);
+                    void check_keys_from_iam_roles();
+                    void try_get_default_iam_role();
+                    void get_keys_from_iam_task_role();
+                    void get_keys_from_iam_role();
+                    void parse_and_store_role_creds(std::istream &in);
 
                     /**
                      * Add available filters to narrow down the scope of the query
                      */
-                    void addFilters();
+                    void add_filters();
 
-                    std::unique_ptr<security::EC2RequestSigner> rs;
-                    config::ClientAwsConfig &awsConfig;
-                    const std::string &endpoint;
-                    std::unordered_map<std::string, std::string> attributes;
-                    std::unique_ptr<util::SyncHttpsClient> httpsClient;
+                    std::unique_ptr<security::ec2_request_signer> rs_;
+                    config::client_aws_config &aws_config_;
+                    const std::string &endpoint_;
+                    std::unordered_map<std::string, std::string> attributes_;
+                    std::unique_ptr<util::SyncHttpsClient> https_client_;
                     logger &logger_;
 
                     static const std::string QUERY_PREFIX;

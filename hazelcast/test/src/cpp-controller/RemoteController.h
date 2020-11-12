@@ -1817,7 +1817,7 @@ class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
  private:
   typedef  void (RemoteControllerProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
-  ProcessMap processMap_;
+  ProcessMap process_map_;
   void process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_clean(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_exit(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -1836,21 +1836,21 @@ class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
  public:
   RemoteControllerProcessor(::std::shared_ptr<RemoteControllerIf> iface) :
     iface_(iface) {
-    processMap_["ping"] = &RemoteControllerProcessor::process_ping;
-    processMap_["clean"] = &RemoteControllerProcessor::process_clean;
-    processMap_["exit"] = &RemoteControllerProcessor::process_exit;
-    processMap_["createCluster"] = &RemoteControllerProcessor::process_createCluster;
-    processMap_["createClusterKeepClusterName"] = &RemoteControllerProcessor::process_createClusterKeepClusterName;
-    processMap_["startMember"] = &RemoteControllerProcessor::process_startMember;
-    processMap_["shutdownMember"] = &RemoteControllerProcessor::process_shutdownMember;
-    processMap_["terminateMember"] = &RemoteControllerProcessor::process_terminateMember;
-    processMap_["suspendMember"] = &RemoteControllerProcessor::process_suspendMember;
-    processMap_["resumeMember"] = &RemoteControllerProcessor::process_resumeMember;
-    processMap_["shutdownCluster"] = &RemoteControllerProcessor::process_shutdownCluster;
-    processMap_["terminateCluster"] = &RemoteControllerProcessor::process_terminateCluster;
-    processMap_["splitMemberFromCluster"] = &RemoteControllerProcessor::process_splitMemberFromCluster;
-    processMap_["mergeMemberToCluster"] = &RemoteControllerProcessor::process_mergeMemberToCluster;
-    processMap_["executeOnController"] = &RemoteControllerProcessor::process_executeOnController;
+    process_map_["ping"] = &RemoteControllerProcessor::process_ping;
+    process_map_["clean"] = &RemoteControllerProcessor::process_clean;
+    process_map_["exit"] = &RemoteControllerProcessor::process_exit;
+    process_map_["createCluster"] = &RemoteControllerProcessor::process_createCluster;
+    process_map_["createClusterKeepClusterName"] = &RemoteControllerProcessor::process_createClusterKeepClusterName;
+    process_map_["startMember"] = &RemoteControllerProcessor::process_startMember;
+    process_map_["shutdownMember"] = &RemoteControllerProcessor::process_shutdownMember;
+    process_map_["terminateMember"] = &RemoteControllerProcessor::process_terminateMember;
+    process_map_["suspendMember"] = &RemoteControllerProcessor::process_suspendMember;
+    process_map_["resumeMember"] = &RemoteControllerProcessor::process_resumeMember;
+    process_map_["shutdownCluster"] = &RemoteControllerProcessor::process_shutdownCluster;
+    process_map_["terminateCluster"] = &RemoteControllerProcessor::process_terminateCluster;
+    process_map_["splitMemberFromCluster"] = &RemoteControllerProcessor::process_splitMemberFromCluster;
+    process_map_["mergeMemberToCluster"] = &RemoteControllerProcessor::process_mergeMemberToCluster;
+    process_map_["executeOnController"] = &RemoteControllerProcessor::process_executeOnController;
   }
 
   virtual ~RemoteControllerProcessor() {}

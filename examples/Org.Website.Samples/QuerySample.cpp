@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
-#include <hazelcast/client/query/Predicates.h>
+#include <hazelcast/client/hazelcast.h>
+#include <hazelcast/client/query/predicates.h>
 
 using namespace hazelcast::client;
 
@@ -34,21 +34,21 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<User> : portable_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 3;
                 }
 
-                static void writePortable(const User &object, hazelcast::client::serialization::PortableWriter &out) {
+                static void write_portable(const User &object, hazelcast::client::serialization::portable_writer &out) {
                     out.write("username", object.username);
                     out.write("age", object.age);
                     out.write("active", object.active);
                 }
 
-                static User readPortable(hazelcast::client::serialization::PortableReader &in) {
+                static User read_portable(hazelcast::client::serialization::portable_reader &in) {
                     return User{in.read<std::string>("username"), in.read<int32_t>("age"), in.read<bool>("active")};
                 }
             };
@@ -57,25 +57,25 @@ namespace hazelcast {
 }
 
 
-void generateUsers(std::shared_ptr<IMap> users) {
+void generate_users(std::shared_ptr<imap> users) {
     users->put<std::string, User>("Rod", User{"Rod", 19, true}).get();
     users->put<std::string, User>("Jane", User{"Jane", 20, true}).get();
     users->put<std::string, User>("Freddy", User{"Freddy", 23, true}).get();
 }
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get a Distributed Map called "users"
-    auto users = hz.getMap("users");
+    auto users = hz.get_map("users");
     // Add some users to the Distributed Map
-    generateUsers(users);
+    generate_users(users);
     // Create a Predicate from a String (a SQL like Where clause)
-    // Creating the same Predicate as above but with AndPredicate builder
-    query::AndPredicate criteriaQuery(hz, query::EqualPredicate(hz, "active", true),
-            query::BetweenPredicate(hz, "age", 18, 21));
+    // Creating the same Predicate as above but with and_predicate builder
+    query::and_predicate criteriaQuery(hz, query::equal_predicate(hz, "active", true),
+                                       query::between_predicate(hz, "age", 18, 21));
     // Get result collections using the two different Predicates
     // Use SQL Query
-    auto result1 = users->values<User>(query::SqlPredicate(hz, "active AND age BETWEEN 18 AND 21)")).get();
+    auto result1 = users->values<User>(query::sql_predicate(hz, "active AND age BETWEEN 18 AND 21)")).get();
     auto result2 = users->values<User>(criteriaQuery).get();
     // Print out the results
     std::cout << "Result 1:" << std::endl;

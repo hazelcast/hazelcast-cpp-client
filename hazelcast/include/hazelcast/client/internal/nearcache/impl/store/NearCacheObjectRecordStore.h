@@ -37,18 +37,18 @@ namespace hazelcast {
                             typedef AbstractNearCacheRecordStore <K, V, KS, record::NearCacheObjectRecord<V>, HeapNearCacheRecordMap<K, V, KS, record::NearCacheObjectRecord<V> > > ANCRS;
 
                             NearCacheObjectRecordStore(const std::string &name,
-                                                       const client::config::NearCacheConfig &config,
+                                                       const client::config::near_cache_config &config,
                                                        serialization::pimpl::SerializationService &ss)
-                                    : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheObjectRecord<V> >(
+                                    : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::data, record::NearCacheObjectRecord<V> >(
                                     name, config, ss) {
                             }
                         protected:
-                            int64_t getKeyStorageMemoryCost(KS *key) const override {
+                            int64_t get_key_storage_memory_cost(KS *key) const override {
                                 // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
                                 return 0L;
                             }
 
-                            int64_t getRecordStorageMemoryCost(record::NearCacheObjectRecord<V> *record) const override {
+                            int64_t get_record_storage_memory_cost(record::NearCacheObjectRecord<V> *record) const override {
                                 // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
                                 return 0L;
                             }
@@ -56,41 +56,41 @@ namespace hazelcast {
                             //@Override
 /*
                             std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
-                                    const std::shared_ptr<serialization::pimpl::Data> &valueData) {
-                                std::shared_ptr<serialization::pimpl::Data> data = std::const_pointer_cast<serialization::pimpl::Data>(
-                                        valueData);
+                                    const std::shared_ptr<serialization::pimpl::data> &value_data) {
+                                std::shared_ptr<serialization::pimpl::data> data = std::const_pointer_cast<serialization::pimpl::data>(
+                                        value_data);
                                 const std::shared_ptr<V> value = ANCRS::toValue(data);
                                 return valueToRecordInternal(value);
                             }
 */
 
-                            std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
+                            std::unique_ptr<record::NearCacheObjectRecord<V> > value_to_record(
                                     const std::shared_ptr<V> &value) override {
-                                return valueToRecordInternal(value);
+                                return value_to_record_internal(value);
                             }
 
-                            std::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) override {
-                                const std::shared_ptr<V> value = record->getValue();
+                            std::shared_ptr<V> record_to_value(const record::NearCacheObjectRecord<V> *record) override {
+                                const std::shared_ptr<V> value = record->get_value();
                                 if (value.get() == NULL) {
                                     return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return value;
                             }
 
-                            void putToRecord(std::shared_ptr<record::NearCacheObjectRecord<V> > &record,
+                            void put_to_record(std::shared_ptr<record::NearCacheObjectRecord<V> > &record,
                                              const std::shared_ptr<V> &value) override {
-                                record->setValue(value);
+                                record->set_value(value);
                             }
 
                         private:
-                            std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecordInternal(
+                            std::unique_ptr<record::NearCacheObjectRecord<V> > value_to_record_internal(
                                     const std::shared_ptr<V> &value) {
-                                int64_t creationTime = util::currentTimeMillis();
-                                if (ANCRS::timeToLiveMillis > 0) {
+                                int64_t creationTime = util::current_time_millis();
+                                if (ANCRS::time_to_live_millis_ > 0) {
                                     return std::unique_ptr<record::NearCacheObjectRecord<V> >(
                                             new record::NearCacheObjectRecord<V>(value, creationTime,
                                                                                  creationTime +
-                                                                                 ANCRS::timeToLiveMillis));
+                                                                                 ANCRS::time_to_live_millis_));
                                 } else {
                                     return std::unique_ptr<record::NearCacheObjectRecord<V> >(
                                             new record::NearCacheObjectRecord<V>(value, creationTime,

@@ -62,9 +62,9 @@
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/util/ExceptionUtil.h"
+#include "hazelcast/util/exception_util.h"
 #include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -75,13 +75,13 @@
 namespace hazelcast {
     namespace util {
 
-        AddressHolder AddressUtil::getAddressHolder(const std::string &address, int defaultPort) {
+        AddressHolder AddressUtil::get_address_holder(const std::string &address, int default_port) {
             int indexBracketStart = static_cast<int>(address.find('['));
             int indexBracketEnd = static_cast<int>(address.find(']', indexBracketStart));
             int indexColon = static_cast<int>(address.find(':'));
             int lastIndexColon = static_cast<int>(address.rfind(':'));
             std::string host;
-            int port = defaultPort;
+            int port = default_port;
             std::string scopeId;
             if (indexColon > -1 && lastIndexColon > indexColon) {
                 // IPv6
@@ -107,15 +107,15 @@ namespace hazelcast {
             return AddressHolder(host, scopeId, port);
         }
 
-        AddressHolder AddressUtil::getAddressHolder(const std::string &address) {
-            return getAddressHolder(address, -1);
+        AddressHolder AddressUtil::get_address_holder(const std::string &address) {
+            return get_address_holder(address, -1);
         }
 
-        boost::asio::ip::address AddressUtil::getByName(const std::string &host) {
-            return getByName(host, "");
+        boost::asio::ip::address AddressUtil::get_by_name(const std::string &host) {
+            return get_by_name(host, "");
         }
 
-        boost::asio::ip::address AddressUtil::getByName(const std::string &host, const std::string &service) {
+        boost::asio::ip::address AddressUtil::get_by_name(const std::string &host, const std::string &service) {
             try {
                 boost::asio::io_service ioService;
                 boost::asio::ip::tcp::resolver res(ioService);
@@ -125,7 +125,7 @@ namespace hazelcast {
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
                 out << "Address " << host << " ip number is not available. " << e.what();
-                throw client::exception::UnknownHostException("AddressUtil::getByName", out.str());
+                throw client::exception::unknown_host("AddressUtil::getByName", out.str());
             }
         }
 
@@ -134,90 +134,90 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        SyncHttpsClient::SyncHttpsClient(const std::string &serverIp, const std::string &uriPath) : server(serverIp),
-                                                                                                    uriPath(uriPath),
+        SyncHttpsClient::SyncHttpsClient(const std::string &server_ip, const std::string &uri_path) : server_(server_ip),
+                                                                                                    uri_path_(uri_path),
 #ifdef HZ_BUILD_WITH_SSL
-                                                                                                    sslContext(
+                                                                                                    ssl_context_(
                                                                                                             boost::asio::ssl::context::sslv23),
 #endif
-                                                                                                    responseStream(
-                                                                                                            &response) {
-            util::Preconditions::checkSSL("SyncHttpsClient::SyncHttpsClient");
+                                                                                                    response_stream_(
+                                                                                                            &response_) {
+            util::Preconditions::check_ssl("SyncHttpsClient::SyncHttpsClient");
 
 #ifdef HZ_BUILD_WITH_SSL
-            sslContext.set_default_verify_paths();
-            sslContext.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
+            ssl_context_.set_default_verify_paths();
+            ssl_context_.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
                                    boost::asio::ssl::context::single_dh_use);
 
-            socket = std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >(
-                    new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(ioService, sslContext));
+            socket_ = std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >(
+                    new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(io_service_, ssl_context_));
 #endif // HZ_BUILD_WITH_SSL
         }
 
-        std::istream &SyncHttpsClient::openConnection() {
-            util::Preconditions::checkSSL("SyncHttpsClient::openConnection");
+        std::istream &SyncHttpsClient::open_connection() {
+            util::Preconditions::check_ssl("SyncHttpsClient::openConnection");
 
 #ifdef HZ_BUILD_WITH_SSL
             try {
                 // Get a list of endpoints corresponding to the server name.
-                boost::asio::ip::tcp::resolver resolver(ioService);
-                boost::asio::ip::tcp::resolver::query query(server, "https");
+                boost::asio::ip::tcp::resolver resolver(io_service_);
+                boost::asio::ip::tcp::resolver::query query(server_, "https");
                 boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-                boost::asio::connect(socket->lowest_layer(), endpoint_iterator);
+                boost::asio::connect(socket_->lowest_layer(), endpoint_iterator);
 
-                socket->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
+                socket_->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
 
-                socket->set_verify_callback(boost::asio::ssl::rfc2818_verification(server));
-                socket->handshake(boost::asio::ssl::stream_base::client);
+                socket_->set_verify_callback(boost::asio::ssl::rfc2818_verification(server_));
+                socket_->handshake(boost::asio::ssl::stream_base::client);
 
                 // Form the request. We specify the "Connection: close" header so that the
                 // server will close the socket after transmitting the response. This will
                 // allow us to treat all data up until the EOF as the content.
                 boost::asio::streambuf request;
                 std::ostream request_stream(&request);
-                request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
-                request_stream << "Host: " << server << "\r\n";
+                request_stream << "GET " << uri_path_ << " HTTP/1.0\r\n";
+                request_stream << "Host: " << server_ << "\r\n";
                 request_stream << "Accept: */*\r\n";
                 request_stream << "Connection: close\r\n\r\n";
 
                 // Send the request.
-                boost::asio::write(*socket, request.data());
+                boost::asio::write(*socket_, request.data());
 
                 // Read the response status line. The response streambuf will automatically
                 // grow to accommodate the entire line. The growth may be limited by passing
                 // a maximum size to the streambuf constructor.
-                boost::asio::read_until(*socket, response, "\r\n");
+                boost::asio::read_until(*socket_, response_, "\r\n");
 
                 // Check that response is OK.
                 std::string httpVersion;
-                responseStream >> httpVersion;
+                response_stream_ >> httpVersion;
                 unsigned int statusCode;
-                responseStream >> statusCode;
+                response_stream_ >> statusCode;
                 std::string statusMessage;
-                std::getline(responseStream, statusMessage);
-                if (!responseStream || httpVersion.substr(0, 5) != "HTTP/") {
-                    throw client::exception::IOException("openConnection", "Invalid response");
+                std::getline(response_stream_, statusMessage);
+                if (!response_stream_ || httpVersion.substr(0, 5) != "HTTP/") {
+                    throw client::exception::io("openConnection", "Invalid response");
                 }
                 if (statusCode != 200) {
                     std::stringstream out;
                     out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
-                    throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());;
+                    throw client::exception::io("SyncHttpsClient::openConnection", out.str());;
                 }
 
                 // Read the response headers, which are terminated by a blank line.
-                boost::asio::read_until(*socket, response, "\r\n\r\n");
+                boost::asio::read_until(*socket_, response_, "\r\n\r\n");
 
                 // Process the response headers.
                 std::string header;
-                while (std::getline(responseStream, header) && header != "\r");
+                while (std::getline(response_stream_, header) && header != "\r");
 
                 // Read until EOF
                 boost::system::error_code error;
                 size_t bytesRead;
-                while ((bytesRead = boost::asio::read(*socket, response.prepare(1024),
+                while ((bytesRead = boost::asio::read(*socket_, response_.prepare(1024),
                                                boost::asio::transfer_at_least(1), error))) {
-                    response.commit(bytesRead);
+                    response_.commit(bytesRead);
                 }
 
                 if (error != boost::asio::error::eof) {
@@ -225,12 +225,12 @@ namespace hazelcast {
                 }
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
-                out << "Could not retrieve response from https://" << server << uriPath << " Error:" << e.what();
-                throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
+                out << "Could not retrieve response from https://" << server_ << uri_path_ << " Error:" << e.what();
+                throw client::exception::io("SyncHttpsClient::openConnection", out.str());
             }
 #endif // HZ_BUILD_WITH_SSL
 
-            return responseStream;
+            return response_stream_;
         }
     }
 }
@@ -245,8 +245,8 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        int HashUtil::hashToIndex(int hash, int length) {
-            Preconditions::checkPositive(length, "mod must be larger than 0");
+        int HashUtil::hash_to_index(int hash, int length) {
+            Preconditions::check_positive(length, "mod must be larger than 0");
 
             if (hash == INT_MIN) {
                 hash = 0;
@@ -273,7 +273,7 @@ namespace hazelcast {
         
 namespace hazelcast {
     namespace util {
-        int32_t UTFUtil::isValidUTF8(const std::string &str) {
+        int32_t UTFUtil::is_valid_ut_f8(const std::string &str) {
             int32_t numberOfUtf8Chars = 0;
             for (size_t i = 0, len = str.length(); i < len; ++i) {
                 unsigned char c = (unsigned char) str[i];
@@ -309,7 +309,7 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        int64_t getCurrentThreadId() {
+        int64_t get_current_thread_id() {
             return std::hash<std::thread::id>{}(std::this_thread::get_id());
         }
 
@@ -352,7 +352,7 @@ namespace hazelcast {
 #endif
         }
 
-        void gitDateToHazelcastLogDate(std::string &date) {
+        void git_date_to_hazelcast_log_date(std::string &date) {
             // convert the date string from "2016-04-20" to 20160420
             date.erase(std::remove(date.begin(), date.end(), '"'), date.end());
             if (date != "NOT_FOUND") {
@@ -360,20 +360,20 @@ namespace hazelcast {
             }
         }
 
-        int64_t currentTimeMillis() {
+        int64_t current_time_millis() {
             return std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count();
         }
 
-        int64_t currentTimeNanos() {
+        int64_t current_time_nanos() {
             return std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count();
         }
 
-        int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
+        int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msg_prefix) {
             int numChars = 0;
-            if ((const char *) NULL != msgPrefix) {
-                numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msgPrefix);
+            if ((const char *) NULL != msg_prefix) {
+                numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msg_prefix);
                 if (numChars < 0) {
                     return numChars;
                 }
@@ -408,11 +408,11 @@ namespace hazelcast {
 #endif
         }
 
-        int32_t getAvailableCoreCount() {
+        int32_t get_available_core_count() {
             return (int32_t) std::thread::hardware_concurrency();
         }
 
-        std::string StringUtil::timeToString(std::chrono::steady_clock::time_point t) {
+        std::string StringUtil::time_to_string(std::chrono::steady_clock::time_point t) {
             using namespace std::chrono;
 
             if (!t.time_since_epoch().count()) {
@@ -433,14 +433,14 @@ namespace hazelcast {
             return oss.str();
         }
 
-        std::vector<std::string> StringUtil::tokenizeVersionString(const std::string &version) {
+        std::vector<std::string> StringUtil::tokenize_version_string(const std::string &version) {
             // passing -1 as the submatch index parameter performs splitting
             std::regex re(".");
             std::sregex_token_iterator first{version.begin(), version.end(), re, -1}, last;
             return {first, last};
         }
 
-        int Int64Util::numberOfLeadingZeros(int64_t i) {
+        int Int64Util::number_of_leading_zeros(int64_t i) {
             // HD, Figure 5-6
             if (i == 0)
                 return 64;
@@ -475,79 +475,79 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        SyncHttpClient::SyncHttpClient(const std::string &serverIp, const std::string &uriPath)
-                : server(serverIp), uriPath(uriPath), socket(ioService), responseStream(&response) {
+        SyncHttpClient::SyncHttpClient(const std::string &server_ip, const std::string &uri_path)
+                : server_(server_ip), uri_path_(uri_path), socket_(io_service_), response_stream_(&response_) {
         }
 
-        std::istream &SyncHttpClient::openConnection() {
+        std::istream &SyncHttpClient::open_connection() {
             try {
                 // Get a list of endpoints corresponding to the server name.
-                boost::asio::ip::tcp::resolver resolver(ioService);
-                boost::asio::ip::tcp::resolver::query query(server, "http");
+                boost::asio::ip::tcp::resolver resolver(io_service_);
+                boost::asio::ip::tcp::resolver::query query(server_, "http");
                 boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-                boost::asio::connect(socket, endpoint_iterator);
+                boost::asio::connect(socket_, endpoint_iterator);
 
-                socket.lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
+                socket_.lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
 
                 // Form the request. We specify the "Connection: close" header so that the
                 // server will close the socket after transmitting the response. This will
                 // allow us to treat all data up until the EOF as the content.
                 boost::asio::streambuf request;
                 std::ostream request_stream(&request);
-                request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
-                request_stream << "Host: " << server << "\r\n";
+                request_stream << "GET " << uri_path_ << " HTTP/1.0\r\n";
+                request_stream << "Host: " << server_ << "\r\n";
                 request_stream << "Accept: */*\r\n";
                 request_stream << "Connection: close\r\n\r\n";
 
                 // Send the request.
-                boost::asio::write(socket, request.data());
+                boost::asio::write(socket_, request.data());
 
                 // Read the response status line. The response streambuf will automatically
                 // grow to accommodate the entire line. The growth may be limited by passing
                 // a maximum size to the streambuf constructor.
-                boost::asio::read_until(socket, response, "\r\n");
+                boost::asio::read_until(socket_, response_, "\r\n");
 
                 // Check that response is OK.
                 std::string httpVersion;
-                responseStream >> httpVersion;
+                response_stream_ >> httpVersion;
                 unsigned int statusCode;
-                responseStream >> statusCode;
+                response_stream_ >> statusCode;
                 std::string statusMessage;
-                std::getline(responseStream, statusMessage);
-                if (!responseStream || httpVersion.substr(0, 5) != "HTTP/") {
-                    throw client::exception::IOException("openConnection", "Invalid response");
+                std::getline(response_stream_, statusMessage);
+                if (!response_stream_ || httpVersion.substr(0, 5) != "HTTP/") {
+                    throw client::exception::io("openConnection", "Invalid response");
                 }
                 if (statusCode != 200) {
                     std::stringstream out;
                     out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
-                    throw client::exception::IOException("SyncHttpClient::openConnection", out.str());;
+                    throw client::exception::io("SyncHttpClient::openConnection", out.str());;
                 }
 
                 // Read the response headers, which are terminated by a blank line.
-                boost::asio::read_until(socket, response, "\r\n\r\n");
+                boost::asio::read_until(socket_, response_, "\r\n\r\n");
 
                 // Process the response headers.
                 std::string header;
-                while (std::getline(responseStream, header) && header != "\r");
+                while (std::getline(response_stream_, header) && header != "\r");
 
                 // Read until EOF
                 boost::system::error_code error;
                 size_t bytesRead;
-                while ((bytesRead = boost::asio::read(socket, response.prepare(1024),
+                while ((bytesRead = boost::asio::read(socket_, response_.prepare(1024),
                                                boost::asio::transfer_at_least(1), error))) {
-                    response.commit(bytesRead);
+                    response_.commit(bytesRead);
                 }
 
                 if (error != boost::asio::error::eof) {
                     throw boost::system::system_error(error);
                 }
 
-                return responseStream;
+                return response_stream_;
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
-                out << "Could not retrieve response from http://" << server << uriPath << " Error:" << e.what();
-                throw client::exception::IOException("SyncHttpClient::openConnection", out.str());
+                out << "Could not retrieve response from http://" << server_ << uri_path_ << " Error:" << e.what();
+                throw client::exception::io("SyncHttpClient::openConnection", out.str());
             }
         }
     }
@@ -556,11 +556,11 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        void IOUtil::closeResource(Closeable *closable, const char *closeReason) {
+        void IOUtil::close_resource(Closeable *closable, const char *close_reason) {
             if (closable != NULL) {
                 try {
-                    closable->close(closeReason);
-                } catch (client::exception::IException &) {
+                    closable->close(close_reason);
+                } catch (client::exception::iexception &) {
                     // suppress
                 }
 
@@ -579,7 +579,7 @@ namespace hazelcast {
         namespace concurrent {
             namespace locks {
 
-                void LockSupport::parkNanos(int64_t nanos) {
+                void LockSupport::park_nanos(int64_t nanos) {
                     if (nanos <= 0) {
                         return;
                     }
@@ -597,42 +597,42 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         namespace concurrent {
-            BackoffIdleStrategy::BackoffIdleStrategy(int64_t maxSpins, int64_t maxYields, int64_t minParkPeriodNs,
-                                                     int64_t maxParkPeriodNs) {
-                Preconditions::checkNotNegative(maxSpins, "maxSpins must be positive or zero");
-                Preconditions::checkNotNegative(maxYields, "maxYields must be positive or zero");
-                Preconditions::checkNotNegative(minParkPeriodNs, "minParkPeriodNs must be positive or zero");
-                Preconditions::checkNotNegative(maxParkPeriodNs - minParkPeriodNs,
+            BackoffIdleStrategy::BackoffIdleStrategy(int64_t max_spins, int64_t max_yields, int64_t min_park_period_ns,
+                                                     int64_t max_park_period_ns) {
+                Preconditions::check_not_negative(max_spins, "maxSpins must be positive or zero");
+                Preconditions::check_not_negative(max_yields, "maxYields must be positive or zero");
+                Preconditions::check_not_negative(min_park_period_ns, "minParkPeriodNs must be positive or zero");
+                Preconditions::check_not_negative(max_park_period_ns - min_park_period_ns,
                                                 "maxParkPeriodNs must be greater than or equal to minParkPeriodNs");
-                this->yieldThreshold = maxSpins;
-                this->parkThreshold = maxSpins + maxYields;
-                this->minParkPeriodNs = minParkPeriodNs;
-                this->maxParkPeriodNs = maxParkPeriodNs;
-                this->maxShift = Int64Util::numberOfLeadingZeros(minParkPeriodNs) -
-                                 Int64Util::numberOfLeadingZeros(maxParkPeriodNs);
+                this->yield_threshold_ = max_spins;
+                this->park_threshold_ = max_spins + max_yields;
+                this->min_park_period_ns_ = min_park_period_ns;
+                this->max_park_period_ns_ = max_park_period_ns;
+                this->max_shift_ = Int64Util::number_of_leading_zeros(min_park_period_ns) -
+                                 Int64Util::number_of_leading_zeros(max_park_period_ns);
 
             }
 
             bool BackoffIdleStrategy::idle(int64_t n) {
-                if (n < yieldThreshold) {
+                if (n < yield_threshold_) {
                     return false;
                 }
-                if (n < parkThreshold) {
+                if (n < park_threshold_) {
                     std::this_thread::yield();
                     return false;
                 }
-                int64_t time = parkTime(n);
-                locks::LockSupport::parkNanos(time);
-                return time == maxParkPeriodNs;
+                int64_t time = park_time(n);
+                locks::LockSupport::park_nanos(time);
+                return time == max_park_period_ns_;
             }
 
-            int64_t BackoffIdleStrategy::parkTime(int64_t n) const {
-                const int64_t proposedShift = n - parkThreshold;
-                const int64_t allowedShift = min<int64_t>(maxShift, proposedShift);
-                return proposedShift > maxShift ? maxParkPeriodNs
-                                                : proposedShift < maxShift ? minParkPeriodNs << allowedShift
-                                                                           : min(minParkPeriodNs << allowedShift,
-                                                                                 maxParkPeriodNs);
+            int64_t BackoffIdleStrategy::park_time(int64_t n) const {
+                const int64_t proposedShift = n - park_threshold_;
+                const int64_t allowedShift = min<int64_t>(max_shift_, proposedShift);
+                return proposedShift > max_shift_ ? max_park_period_ns_
+                                                : proposedShift < max_shift_ ? min_park_period_ns_ << allowedShift
+                                                                           : min(min_park_period_ns_ << allowedShift,
+                                                                                 max_park_period_ns_);
             }
         }
     }
@@ -640,26 +640,26 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        const std::string &Preconditions::checkHasText(const std::string &argument,
-                                                       const std::string &errorMessage) {
+        const std::string &Preconditions::check_has_text(const std::string &argument,
+                                                       const std::string &error_message) {
             if (argument.empty()) {
-                throw client::exception::IllegalArgumentException("", errorMessage);
+                throw client::exception::illegal_argument("", error_message);
             }
 
             return argument;
         }
 
-        void Preconditions::checkSSL(const std::string &sourceMethod) {
+        void Preconditions::check_ssl(const std::string &source_method) {
 #ifndef HZ_BUILD_WITH_SSL
-            throw client::exception::InvalidConfigurationException(sourceMethod, "You should compile with "
+            throw client::exception::invalid_configuration(source_method, "You should compile with "
                     "HZ_BUILD_WITH_SSL flag. You should also have the openssl installed on your machine and you need "
                     "to link with the openssl library.");
 #endif
         }
 
-        void Preconditions::checkTrue(bool expression, const std::string &errorMessage) {
+        void Preconditions::check_true(bool expression, const std::string &error_message) {
             if (!expression) {
-                throw client::exception::IllegalArgumentException(errorMessage);
+                throw client::exception::illegal_argument(error_message);
             }
         }
     }
@@ -670,30 +670,30 @@ namespace hazelcast {
         const int AddressHelper::MAX_PORT_TRIES = 3;
         const int AddressHelper::INITIAL_FIRST_PORT = 5701;
 
-        std::vector<client::Address> AddressHelper::getSocketAddresses(const std::string &address, logger &lg) {
-            const AddressHolder addressHolder = AddressUtil::getAddressHolder(address, -1);
-            const std::string scopedAddress = !addressHolder.getScopeId().empty()
-                                              ? addressHolder.getAddress() + '%' + addressHolder.getScopeId()
-                                              : addressHolder.getAddress();
+        std::vector<client::address> AddressHelper::get_socket_addresses(const std::string &address, logger &lg) {
+            const AddressHolder addressHolder = AddressUtil::get_address_holder(address, -1);
+            const std::string scopedAddress = !addressHolder.get_scope_id().empty()
+                                              ? addressHolder.get_address() + '%' + addressHolder.get_scope_id()
+                                              : addressHolder.get_address();
 
-            int port = addressHolder.getPort();
+            int port = addressHolder.get_port();
             int maxPortTryCount = 1;
             if (port == -1) {
                 maxPortTryCount = MAX_PORT_TRIES;
             }
-            return getPossibleSocketAddresses(port, scopedAddress, maxPortTryCount, lg);
+            return get_possible_socket_addresses(port, scopedAddress, maxPortTryCount, lg);
         }
 
-        std::vector<client::Address>
-        AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount,
+        std::vector<client::address>
+        AddressHelper::get_possible_socket_addresses(int port, const std::string &scoped_address, int port_try_count,
                                                   logger &lg) {
             std::unique_ptr<boost::asio::ip::address> inetAddress;
             try {
-                inetAddress.reset(new boost::asio::ip::address(AddressUtil::getByName(scopedAddress)));
-            } catch (client::exception::UnknownHostException &ignored) {
+                inetAddress.reset(new boost::asio::ip::address(AddressUtil::get_by_name(scoped_address)));
+            } catch (client::exception::unknown_host &ignored) {
                 HZ_LOG(lg, finest,
                     boost::str(boost::format("Address %1% ip number is not available %2%")
-                                             % scopedAddress % ignored.what())
+                                             % scoped_address % ignored.what())
                 );
             }
 
@@ -701,26 +701,26 @@ namespace hazelcast {
             if (possiblePort == -1) {
                 possiblePort = INITIAL_FIRST_PORT;
             }
-            std::vector<client::Address> addresses;
+            std::vector<client::address> addresses;
 
             if (!inetAddress.get()) {
-                for (int i = 0; i < portTryCount; i++) {
+                for (int i = 0; i < port_try_count; i++) {
                     try {
-                        addresses.push_back(client::Address(scopedAddress, possiblePort + i));
-                    } catch (client::exception::UnknownHostException &ignored) {
+                        addresses.push_back(client::address(scoped_address, possiblePort + i));
+                    } catch (client::exception::unknown_host &ignored) {
                         HZ_LOG(lg, finest,
                             boost::str(boost::format("Address [%1%] ip number is not available. %2%")
-                                                     % scopedAddress % ignored.what())
+                                                     % scoped_address % ignored.what())
                         );
                     }
                 }
             } else if (inetAddress->is_v4() || inetAddress->is_v6()) {
-                for (int i = 0; i < portTryCount; i++) {
+                for (int i = 0; i < port_try_count; i++) {
                     if (inetAddress->is_v4()) {
-                        addresses.push_back(client::Address(scopedAddress, possiblePort + i));
+                        addresses.push_back(client::address(scoped_address, possiblePort + i));
                     } else {
                         addresses.push_back(
-                                client::Address(scopedAddress, possiblePort + i, inetAddress->to_v6().scope_id()));
+                                client::address(scoped_address, possiblePort + i, inetAddress->to_v6().scope_id()));
                     }
                 }
             }
@@ -729,24 +729,24 @@ namespace hazelcast {
             return addresses;
         }
 
-        AddressHolder::AddressHolder(const std::string &address, const std::string &scopeId, int port) : address(
-                address), scopeId(scopeId), port(port) {}
+        AddressHolder::AddressHolder(const std::string &address, const std::string &scope_id, int port) : address_(
+                address), scope_id_(scope_id), port_(port) {}
 
         std::ostream &operator<<(std::ostream &os, const AddressHolder &holder) {
-            os << "AddressHolder [" << holder.address + "]:" << holder.port;
+            os << "AddressHolder [" << holder.address_ + "]:" << holder.port_;
             return os;
         }
 
-        const std::string &AddressHolder::getAddress() const {
-            return address;
+        const std::string &AddressHolder::get_address() const {
+            return address_;
         }
 
-        const std::string &AddressHolder::getScopeId() const {
-            return scopeId;
+        const std::string &AddressHolder::get_scope_id() const {
+            return scope_id_;
         }
 
-        int AddressHolder::getPort() const {
-            return port;
+        int AddressHolder::get_port() const {
+            return port_;
         }
     }
 }
@@ -837,15 +837,15 @@ namespace hazelcast {
         }
 
 //-----------------------------------------------------------------------------
-        int MurmurHash3_x86_32(const void *key, int len) {
+        int murmur_hash3_x86_32(const void *key, int len) {
             uint32_t DEFAULT_MURMUR_SEED = 0x01000193;
             uint32_t hash = 0;
-            MurmurHash3_x86_32(key, len, DEFAULT_MURMUR_SEED, (void *) &hash);
+            murmur_hash3_x86_32(key, len, DEFAULT_MURMUR_SEED, (void *) &hash);
             return hash;
         }
 
 
-        void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out) {
+        void murmur_hash3_x86_32(const void *key, int len, uint32_t seed, void *out) {
             const uint8_t *data = (const uint8_t *) key;
             const int nblocks = len / 4;
 
@@ -914,48 +914,48 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> ExceptionUtil::hazelcastExceptionFactory(
-                new HazelcastExceptionFactory());
+        const std::shared_ptr<exception_util::runtime_exception_factory> exception_util::hazelcastExceptionFactory(
+                new class hazelcast_exception_factory());
 
-        void ExceptionUtil::rethrow(std::exception_ptr e) {
-            return rethrow(e, HAZELCAST_EXCEPTION_FACTORY());
+        void exception_util::rethrow(std::exception_ptr e) {
+            return rethrow(e, hazelcast_exception_factory());
         }
 
-        void ExceptionUtil::rethrow(std::exception_ptr e,
-                                    const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &runtimeExceptionFactory) {
+        void exception_util::rethrow(std::exception_ptr e,
+                                     const std::shared_ptr<exception_util::runtime_exception_factory> &runtime_exception_factory) {
             try {
                 std::rethrow_exception(e);
-            } catch (client::exception::IException &ie) {
-                if (ie.isRuntimeException()) {
+            } catch (client::exception::iexception &ie) {
+                if (ie.is_runtime()) {
                     std::rethrow_exception(e);
                 }
 
-                int32_t errorCode = ie.getErrorCode();
+                int32_t errorCode = ie.get_error_code();
                 if (errorCode == client::protocol::EXECUTION) {
                     try {
                         std::rethrow_if_nested(std::current_exception());
                     } catch (...) {
-                        rethrow(std::current_exception(), runtimeExceptionFactory);
+                        rethrow(std::current_exception(), runtime_exception_factory);
                     }
                 }
 
-                runtimeExceptionFactory->rethrow(e, "");
+                runtime_exception_factory->rethrow(e, "");
             }
         }
 
-        const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &ExceptionUtil::HAZELCAST_EXCEPTION_FACTORY() {
+        const std::shared_ptr<exception_util::runtime_exception_factory> &exception_util::hazelcast_exception_factory() {
             return hazelcastExceptionFactory;
         }
 
-        ExceptionUtil::RuntimeExceptionFactory::~RuntimeExceptionFactory() = default;
+        exception_util::runtime_exception_factory::~runtime_exception_factory() = default;
 
-        void ExceptionUtil::HazelcastExceptionFactory::rethrow(
+        void exception_util::hazelcast_exception_factory::rethrow(
                 std::exception_ptr throwable, const std::string &message) {
             try {
                 std::rethrow_exception(throwable);
             } catch (...) {
                 std::throw_with_nested(boost::enable_current_exception(
-                        client::exception::HazelcastException("HazelcastExceptionFactory::create", message)));
+                        client::exception::hazelcast_("hazelcast_Factory::create", message)));
             }
         }
     }
@@ -965,94 +965,94 @@ namespace hazelcast {
     namespace util {
 
         ByteBuffer::ByteBuffer(char *buffer, size_t capacity)
-                : pos(0), lim(capacity), capacity(capacity), buffer(buffer) {
+                : pos_(0), lim_(capacity), capacity_(capacity), buffer_(buffer) {
 
         }
 
         ByteBuffer &ByteBuffer::flip() {
-            lim = pos;
-            pos = 0;
+            lim_ = pos_;
+            pos_ = 0;
             return *this;
         }
 
 
         ByteBuffer &ByteBuffer::compact() {
-            memcpy(buffer, ix(), (size_t) remaining());
-            pos = remaining();
-            lim = capacity;
+            memcpy(buffer_, ix(), (size_t) remaining());
+            pos_ = remaining();
+            lim_ = capacity_;
             return *this;
         }
 
         ByteBuffer &ByteBuffer::clear() {
-            pos = 0;
-            lim = capacity;
+            pos_ = 0;
+            lim_ = capacity_;
             return *this;
         }
 
         size_t ByteBuffer::remaining() const {
-            return lim - pos;
+            return lim_ - pos_;
         }
 
-        bool ByteBuffer::hasRemaining() const {
-            return pos < lim;
+        bool ByteBuffer::has_remaining() const {
+            return pos_ < lim_;
         }
 
         size_t ByteBuffer::position() const {
-            return pos;
+            return pos_;
         }
 
-        int ByteBuffer::readInt() {
-            char a = readByte();
-            char b = readByte();
-            char c = readByte();
-            char d = readByte();
+        int ByteBuffer::read_int() {
+            char a = read_byte();
+            char b = read_byte();
+            char c = read_byte();
+            char d = read_byte();
             return (0xff000000 & (a << 24)) |
                    (0x00ff0000 & (b << 16)) |
                    (0x0000ff00 & (c << 8)) |
                    (0x000000ff & d);
         }
 
-        void ByteBuffer::writeInt(int v) {
-            writeByte(char(v >> 24));
-            writeByte(char(v >> 16));
-            writeByte(char(v >> 8));
-            writeByte(char(v));
+        void ByteBuffer::write_int(int v) {
+            write_byte(char(v >> 24));
+            write_byte(char(v >> 16));
+            write_byte(char(v >> 8));
+            write_byte(char(v));
         }
 
 
-        short ByteBuffer::readShort() {
-            byte a = readByte();
-            byte b = readByte();
+        short ByteBuffer::read_short() {
+            byte a = read_byte();
+            byte b = read_byte();
             return (short) ((0xff00 & (a << 8)) |
                             (0x00ff & b));
         }
 
-        void ByteBuffer::writeShort(short v) {
-            writeByte(char(v >> 8));
-            writeByte(char(v));
+        void ByteBuffer::write_short(short v) {
+            write_byte(char(v >> 8));
+            write_byte(char(v));
         }
 
-        byte ByteBuffer::readByte() {
-            byte b = (byte) buffer[pos];
-            safeIncrementPosition(1);
+        byte ByteBuffer::read_byte() {
+            byte b = (byte) buffer_[pos_];
+            safe_increment_position(1);
             return b;
         }
 
-        void ByteBuffer::writeByte(char c) {
-            buffer[pos] = c;
-            safeIncrementPosition(1);
+        void ByteBuffer::write_byte(char c) {
+            buffer_[pos_] = c;
+            safe_increment_position(1);
         }
 
         void *ByteBuffer::ix() const {
-            return (void *) (buffer + pos);
+            return (void *) (buffer_ + pos_);
         }
 
-        void ByteBuffer::safeIncrementPosition(size_t t) {
-            assert(pos + t <= capacity);
-            pos += t;
+        void ByteBuffer::safe_increment_position(size_t t) {
+            assert(pos_ + t <= capacity_);
+            pos_ += t;
         }
 
-        hz_thread_pool::hz_thread_pool(size_t numThreads) : pool_(new boost::asio::thread_pool(numThreads)) {}
+        hz_thread_pool::hz_thread_pool(size_t num_threads) : pool_(new boost::asio::thread_pool(num_threads)) {}
 
         void hz_thread_pool::shutdown_gracefully() {
             pool_->join();

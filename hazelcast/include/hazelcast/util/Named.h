@@ -18,7 +18,7 @@
 
 #include <string>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 namespace hazelcast {
     namespace util {
@@ -27,7 +27,7 @@ namespace hazelcast {
             virtual ~Named() {
             }
 
-            virtual const std::string getName() const = 0;
+            virtual const std::string get_name() const = 0;
         };
     }
 }

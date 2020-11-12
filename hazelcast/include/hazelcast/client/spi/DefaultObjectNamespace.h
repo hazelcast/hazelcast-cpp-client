@@ -16,7 +16,7 @@
 #pragma once
 
 #include <string>
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,20 +38,20 @@ namespace hazelcast {
                  *
                  * @return the service name
                  */
-                const std::string &getServiceName() const;
+                const std::string &get_service_name() const;
 
                 /**
                  * Gets the object name within the service.
                  *
                  * @return the object name within the service
                  */
-                const std::string &getObjectName() const;
+                const std::string &get_object_name() const;
 
                 bool operator==(const DefaultObjectNamespace &rhs) const;
 
             private:
-                std::string serviceName;
-                std::string objectName;
+                std::string service_name_;
+                std::string object_name_;
             };
         }
     }

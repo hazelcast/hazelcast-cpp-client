@@ -20,8 +20,8 @@
 
 #include <memory>
 
-#include "hazelcast/client/config/InMemoryFormat.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/config/in_memory_format.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/Clearable.h"
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/client/spi/InitializingObject.h"
@@ -35,12 +35,12 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class Data;
+                class data;
             }
         }
 
         namespace monitor {
-            class NearCacheStats;
+            class near_cache_stats;
         }
 
         namespace internal {
@@ -58,14 +58,14 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                      */
-                    virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
+                    virtual std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const = 0;
 
                     /**
                      * Gets the name of this {@link NearCache} instance.
                      *
                      * @return the name of this {@link NearCache} instance
                      */
-                    virtual const std::string &getName() const = 0;
+                    virtual const std::string &get_name() const = 0;
                 };
 
                 /**
@@ -126,11 +126,11 @@ namespace hazelcast {
                      * Puts (associates) a value with the given <code>key</code>.
                      *
                      * @param key   the key of the value will be stored
-                     * @param value the value as Data which will be stored
+                     * @param value the value as data which will be stored
                      */
 /*
                     virtual void put(const std::shared_ptr<K> &key,
-                                     const std::shared_ptr<serialization::pimpl::Data> &value) {
+                                     const std::shared_ptr<serialization::pimpl::data> &value) {
                         assert(0);
                     }
 */
@@ -149,7 +149,7 @@ namespace hazelcast {
                     /**
                      * @return
                      */
-                    virtual bool isInvalidatedOnChange() const {
+                    virtual bool is_invalidated_on_change() const {
                         assert(0);
                         return false;
                     }
@@ -159,7 +159,7 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.config.InMemoryFormat} of the storage for internal records
                      */
-                    virtual const client::config::InMemoryFormat getInMemoryFormat() const {
+                    virtual const client::config::in_memory_format get_in_memory_format() const {
                         assert(0);
                         return client::config::BINARY;
                     }
@@ -175,7 +175,7 @@ namespace hazelcast {
                     }
                 };
 
-                template class HAZELCAST_API NearCache<serialization::pimpl::Data, serialization::pimpl::Data>;
+                template class HAZELCAST_API NearCache<serialization::pimpl::data, serialization::pimpl::data>;
 
                 template<typename K, typename V>
                 std::shared_ptr<V> NearCache<K, V>::NULL_OBJECT(new V);

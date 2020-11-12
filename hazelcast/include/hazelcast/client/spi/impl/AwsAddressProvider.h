@@ -18,9 +18,9 @@
 
 #include <unordered_map>
 
-#include "hazelcast/client/aws/AWSClient.h"
+#include "hazelcast/client/aws/aws_client.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 #include "hazelcast/logger.h"
 
@@ -32,27 +32,27 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class ClientNetworkConfig;
+            class client_network_config;
         }
         namespace spi {
             namespace impl {
                 class HAZELCAST_API AwsAddressProvider : public connection::AddressProvider {
                 public:
-                    AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort, logger &lg);
+                    AwsAddressProvider(config::client_aws_config &aws_config, int aws_member_port, logger &lg);
 
                     ~AwsAddressProvider() override;
 
-                    std::vector<Address> loadAddresses() override;
+                    std::vector<address> load_addresses() override;
 
                 private:
-                    std::string awsMemberPort;
+                    std::string aws_member_port_;
                     logger &logger_;
-                    aws::AWSClient awsClient;
-                    util::Sync<std::unordered_map<std::string, std::string> > privateToPublic;
+                    aws::aws_client aws_client_;
+                    util::Sync<std::unordered_map<std::string, std::string> > private_to_public_;
 
-                    void updateLookupTable();
+                    void update_lookup_table();
 
-                    std::unordered_map<std::string, std::string> getLookupTable();
+                    std::unordered_map<std::string, std::string> get_lookup_table();
                 };
             }
         }

@@ -29,7 +29,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API DefaultAddressTranslator : public connection::AddressTranslator {
                 public:
-                    Address translate(const Address &address) override;
+                    address translate(const address &address) override;
 
                     void refresh() override;
                 };

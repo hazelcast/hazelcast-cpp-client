@@ -31,7 +31,7 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> removeItemListener(boost::uuids::uuid registrationId);
+                boost::future<bool> remove_item_listener(boost::uuids::uuid registration_id);
 
                 /**
                 *
@@ -43,7 +43,7 @@ namespace hazelcast {
                 *
                 * @returns true if empty
                 */
-                boost::future<bool> isEmpty();
+                boost::future<bool> is_empty();
 
                 /**
                 *
@@ -51,47 +51,47 @@ namespace hazelcast {
                 */
                 boost::future<void> clear();
             protected:
-                ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext);
+                ISetImpl(const std::string& instance_name, spi::ClientContext *client_context);
 
                 boost::future<boost::uuids::uuid>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::set_addlistener_handler>> &&itemEventHandler, bool includeValue) {
-                    return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
+                add_item_listener(std::unique_ptr<impl::item_event_handler<protocol::codec::set_addlistener_handler>> &&item_event_handler, bool include_value) {
+                    return register_listener(create_item_listener_codec(include_value), std::move(item_event_handler));
                 }
 
-                boost::future<bool> contains(const serialization::pimpl::Data& element);
+                boost::future<bool> contains(const serialization::pimpl::data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> toArrayData();
+                boost::future<std::vector<serialization::pimpl::data>> to_array_data();
 
-                boost::future<bool> add(const serialization::pimpl::Data& element);
+                boost::future<bool> add(const serialization::pimpl::data& element);
 
-                boost::future<bool> remove(const serialization::pimpl::Data& element);
+                boost::future<bool> remove(const serialization::pimpl::data& element);
 
-                boost::future<bool> containsAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> contains_all(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> addAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> removeAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> remove_all(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> retainAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> retain_all(const std::vector<serialization::pimpl::data>& elements);
 
             private:
                 class SetListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    SetListenerMessageCodec(std::string name, bool includeValue);
+                    SetListenerMessageCodec(std::string name, bool include_value);
 
-                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool local_only) const override;
 
                     protocol::ClientMessage
-                    encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                    encode_remove_request(boost::uuids::uuid real_registration_id) const override;
 
                 private:
-                    std::string  name;
-                    bool includeValue;
+                    std::string  name_;
+                    bool include_value_;
                 };
 
-                int partitionId;
+                int partition_id_;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> create_item_listener_codec(bool include_value);
             };
         }
     }

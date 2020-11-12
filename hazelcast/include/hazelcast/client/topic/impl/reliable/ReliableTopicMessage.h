@@ -18,10 +18,10 @@
 
 #include <memory>
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/topic/Message.h"
-#include "hazelcast/client/Member.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
+#include "hazelcast/client/topic/message.h"
+#include "hazelcast/client/member.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,17 +38,17 @@ namespace hazelcast {
                     public:
                         ReliableTopicMessage();
 
-                        ReliableTopicMessage(serialization::pimpl::Data &&payloadData, std::unique_ptr<Address> address);
+                        ReliableTopicMessage(serialization::pimpl::data &&payload_data, std::unique_ptr<address> address);
 
-                        std::chrono::system_clock::time_point getPublishTime() const;
+                        std::chrono::system_clock::time_point get_publish_time() const;
 
-                        const boost::optional<Address> &getPublisherAddress() const;
+                        const boost::optional<address> &get_publisher_address() const;
 
-                        serialization::pimpl::Data &getPayload();
+                        serialization::pimpl::data &get_payload();
                     private:
-                        std::chrono::system_clock::time_point publishTime;
-                        boost::optional<Address> publisherAddress;
-                        serialization::pimpl::Data payload;
+                        std::chrono::system_clock::time_point publish_time_;
+                        boost::optional<address> publisher_address_;
+                        serialization::pimpl::data payload_;
                     };
                 }
             }
@@ -59,13 +59,13 @@ namespace hazelcast {
                 static constexpr int32_t F_ID = -18;
                 static constexpr int32_t RELIABLE_TOPIC_MESSAGE = 2;
 
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out);
+                static void write_data(const topic::impl::reliable::ReliableTopicMessage &object, object_data_output &out);
 
-                static topic::impl::reliable::ReliableTopicMessage readData(ObjectDataInput &in);
+                static topic::impl::reliable::ReliableTopicMessage read_data(object_data_input &in);
             };
         }
     }

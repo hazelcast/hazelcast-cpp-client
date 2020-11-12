@@ -17,13 +17,13 @@
 #include <future>
 #include <chrono>
 
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
-#include <hazelcast/client/LifecycleListener.h>
-#include <hazelcast/client/LifecycleEvent.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/config/client_connection_strategy_config.h>
+#include <hazelcast/client/lifecycle_listener.h>
+#include <hazelcast/client/lifecycle_event.h>
 
-hazelcast::client::LifecycleListener makeConnectionListener(std::promise<void> &connected, std::promise<void> &disconnected) {
-    return hazelcast::client::LifecycleListener()
+hazelcast::client::lifecycle_listener make_connection_listener(std::promise<void> &connected, std::promise<void> &disconnected) {
+    return hazelcast::client::lifecycle_listener()
         .on_connected([&connected](){
             connected.set_value();
         })
@@ -33,7 +33,7 @@ hazelcast::client::LifecycleListener makeConnectionListener(std::promise<void> &
 }
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     /**
      * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
@@ -42,16 +42,16 @@ int main() {
      *
      * This example forces client to reconnect to the cluster in an async manner.
      */
-    config.getConnectionStrategyConfig().setReconnectMode(hazelcast::client::config::ClientConnectionStrategyConfig::ASYNC);
+    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::client_connection_strategy_config::ASYNC);
 
-    hazelcast::client::HazelcastClient hz(std::move(config));
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
 
     map->put(1, 100);
 
     std::promise<void> connected, disconnected;
-    hz.addLifecycleListener(makeConnectionListener(connected, disconnected));
+    hz.add_lifecycle_listener(make_connection_listener(connected, disconnected));
 
     // Please shut down the cluster at this point.
     disconnected.get_future().wait();

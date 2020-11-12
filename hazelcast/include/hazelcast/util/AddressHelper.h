@@ -19,8 +19,8 @@
 #include <ostream>
 #include <vector>
 
-#include "hazelcast/client/Address.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/address.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -36,20 +36,20 @@ namespace hazelcast {
          */
         class HAZELCAST_API AddressHolder {
         public:
-            AddressHolder(const std::string &address, const std::string &scopeId, int port);
+            AddressHolder(const std::string &address, const std::string &scope_id, int port);
 
-            const std::string &getAddress() const;
+            const std::string &get_address() const;
 
-            const std::string &getScopeId() const;
+            const std::string &get_scope_id() const;
 
-            int getPort() const;
+            int get_port() const;
 
             friend std::ostream &operator<<(std::ostream &os, const AddressHolder &holder);
 
         private:
-            std::string address;
-            std::string scopeId;
-            int port;
+            std::string address_;
+            std::string scope_id_;
+            int port_;
         };
 
 
@@ -58,13 +58,13 @@ namespace hazelcast {
          */
         class HAZELCAST_API AddressHelper {
         public:
-            static std::vector<client::Address> getSocketAddresses(const std::string &address, logger &lg);
+            static std::vector<client::address> get_socket_addresses(const std::string &address, logger &lg);
         private:
             static const int MAX_PORT_TRIES;
             static const int INITIAL_FIRST_PORT;
 
-            static std::vector<client::Address>
-            getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount, logger &lg);
+            static std::vector<client::address>
+            get_possible_socket_addresses(int port, const std::string &scoped_address, int port_try_count, logger &lg);
         };
     }
 }

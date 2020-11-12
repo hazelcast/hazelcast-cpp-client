@@ -20,8 +20,8 @@
 #include <memory>
 #include <boost/thread/future.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/client/distributed_object.h"
 #include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -47,9 +47,9 @@ namespace hazelcast {
              * Base Interface for client proxies.
              *
              */
-            class HAZELCAST_API ClientProxy : public DistributedObject {
+            class HAZELCAST_API ClientProxy : public distributed_object {
             public:
-                ClientProxy(const std::string &name, const std::string &serviceName, ClientContext &context);
+                ClientProxy(const std::string &name, const std::string &service_name, ClientContext &context);
 
                 ~ClientProxy() override;
 
@@ -59,24 +59,24 @@ namespace hazelcast {
                  * Overriding implementations can add initialization specific logic into this method
                  * like registering a listener, creating a cleanup task etc.
                  */
-                virtual void onInitialize();
+                virtual void on_initialize();
 
                 /**
                  * Internal API.
                  * Called before client shutdown.
                  * Overriding implementations can add shutdown specific logic here.
                  */
-                virtual void onShutdown();
+                virtual void on_shutdown();
 
-                const std::string &getName() const override;
+                const std::string &get_name() const override;
 
-                const std::string &getServiceName() const override;
+                const std::string &get_service_name() const override;
 
                 /**
                  * Internal API.
                  * @return context
                  */
-                ClientContext &getContext();
+                ClientContext &get_context();
 
                 /**
                 * Destroys this object cluster-wide.
@@ -93,7 +93,7 @@ namespace hazelcast {
                  * The local destruction operation still may perform some communication
                  * with the cluster; for example, to unregister remote event subscriptions.
                  */
-                void destroyLocally();
+                void destroy_locally();
 
 
                 /**
@@ -101,7 +101,7 @@ namespace hazelcast {
                  * Destroys the remote distributed object counterpart of this proxy by
                  * issuing the destruction request to the cluster.
                  */
-                boost::future<void> destroyRemotely();
+                boost::future<void> destroy_remotely();
 
                 /**
                 * Internal API.
@@ -109,8 +109,8 @@ namespace hazelcast {
                 * @param listenerMessageCodec The codec used for listener register/deregister
                 * @param handler Event handler for the listener
                 */
-                boost::future<boost::uuids::uuid> registerListener(
-                        std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
+                boost::future<boost::uuids::uuid> register_listener(
+                        std::shared_ptr<impl::ListenerMessageCodec> listener_message_codec,
                         std::shared_ptr<client::impl::BaseEventHandler> handler);
 
                 /**
@@ -118,32 +118,32 @@ namespace hazelcast {
                 *
                 * @param registrationId The registration id for the listener to be unregistered.
                 */
-                boost::future<bool> deregisterListener(boost::uuids::uuid registrationId);
+                boost::future<bool> deregister_listener(boost::uuids::uuid registration_id);
             protected:
                 /**
                  * Called before proxy is destroyed and determines whether destroy should be done.
                  *
                  * @return <code>true</code> if destroy should be done, otherwise <code>false</code>
                  */
-                 bool preDestroy();
+                 bool pre_destroy();
 
                  /**
                  * Called before proxy is destroyed.
                  * Overriding implementations should clean/release resources created during initialization.
                  */
-                 virtual void onDestroy();
+                 virtual void on_destroy();
 
                 /**
                  * Called after proxy is destroyed.
                  */
-                virtual void postDestroy();
+                virtual void post_destroy();
 
-                const std::string name;
+                serialization::pimpl::SerializationService &get_serialization_service();
 
-                serialization::pimpl::SerializationService &getSerializationService();
-            private:
-                const std::string serviceName;
-                spi::ClientContext &context;
+                const std::string name_;
+
+                const std::string service_name_;
+                spi::ClientContext &context_;
             };
         }
     }

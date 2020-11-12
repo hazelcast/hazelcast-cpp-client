@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
 
@@ -35,17 +35,17 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : custom_serializer {
-                static constexpr int32_t getTypeId() noexcept {
+                static constexpr int32_t get_type_id() noexcept {
                     return 3;
                 }
 
-                static void write(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write(const Person &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person read(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read(hazelcast::client::serialization::object_data_input &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -54,9 +54,9 @@ namespace hazelcast {
 }
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
 
-    auto map = hz.getMap("customMap");
+    auto map = hz.get_map("customMap");
     map->put(1L, Person{"My Person", false, 57}).get();
 
     return 0;

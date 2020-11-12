@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
     const char *serverIp = "127.0.0.1";
     const int port = 5701;
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::Address addr(serverIp, port);
-    config.getNetworkConfig().addAddress(addr);
-    hazelcast::client::HazelcastClient hz(std::move(config));
+    hazelcast::client::client_config config;
+    hazelcast::client::address addr(serverIp, port);
+    config.get_network_config().add_address(addr);
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
-    auto map = hz.getMap("test map");
+    auto map = hz.get_map("test map");
 
     std::cout << "Finished" << std::endl;
 

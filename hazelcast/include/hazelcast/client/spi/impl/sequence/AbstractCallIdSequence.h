@@ -46,34 +46,34 @@ namespace hazelcast {
                     public:
                         ~AbstractCallIdSequence() override;
 
-                        AbstractCallIdSequence(int32_t maxConcurrentInvocations);
+                        AbstractCallIdSequence(int32_t max_concurrent_invocations);
 
-                        int32_t getMaxConcurrentInvocations() const override;
+                        int32_t get_max_concurrent_invocations() const override;
 
                         int64_t next() override;
 
-                        int64_t forceNext() override;
+                        int64_t force_next() override;
 
                         void complete() override;
 
-                        int64_t getLastCallId() override;
+                        int64_t get_last_call_id() override;
 
-                        int64_t getTail();
+                        int64_t get_tail();
 
                     protected:
-                        virtual void handleNoSpaceLeft() = 0;
+                        virtual void handle_no_space_left() = 0;
 
-                        bool hasSpace();
+                        bool has_space();
 
                     private:
                         static constexpr size_t INDEX_HEAD = 7;
                         static constexpr size_t INDEX_TAIL = 15;
 
-                        int32_t maxConcurrentInvocations;
+                        int32_t max_concurrent_invocations_;
 
                         // instead of using 2 AtomicLongs, we use an array if width of 3 cache lines to prevent any false sharing.
                         std::array<std::atomic<int64_t>,
-                                3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES> longs;
+                                3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES> longs_;
                     };
                 }
             }

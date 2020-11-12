@@ -44,13 +44,13 @@ namespace hazelcast {
                  * @param minParkPeriodNs to use when initiating parking
                  * @param maxParkPeriodNs to use when parking
                  */
-                BackoffIdleStrategy(int64_t maxSpins, int64_t maxYields, int64_t minParkPeriodNs,
-                                    int64_t maxParkPeriodNs);
+                BackoffIdleStrategy(int64_t max_spins, int64_t max_yields, int64_t min_park_period_ns,
+                                    int64_t max_park_period_ns);
 
                 bool idle(int64_t n) override;
 
             private:
-                int64_t parkTime(int64_t n) const;
+                int64_t park_time(int64_t n) const;
 
                 static const int ARG_COUNT = 5;
                 static const int ARG_MAX_SPINS = 1;
@@ -58,11 +58,11 @@ namespace hazelcast {
                 static const int ARG_MIN_PARK_PERIOD = 3;
                 static const int ARG_MAX_PARK_PERIOD = 4;
 
-                int64_t yieldThreshold;
-                int64_t parkThreshold;
-                int64_t minParkPeriodNs;
-                int64_t maxParkPeriodNs;
-                int maxShift;
+                int64_t yield_threshold_;
+                int64_t park_threshold_;
+                int64_t min_park_period_ns_;
+                int64_t max_park_period_ns_;
+                int max_shift_;
 
             };
         }

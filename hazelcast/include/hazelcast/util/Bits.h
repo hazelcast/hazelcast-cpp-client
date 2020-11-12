@@ -62,7 +62,7 @@
 
 #endif
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <vector>
 #include <memory>
 
@@ -122,7 +122,7 @@ namespace hazelcast {
             * Fills the target with 2 bytes in native bytes order
             * given the source bytes as Little Endian.
             */
-            inline static void littleEndianToNative2(const void *source, void *target) {
+            inline static void little_endian_to_native2(const void *source, void *target) {
                 #ifdef HZ_BIG_ENDIAN
                     swap_2(source, target);
                 #else
@@ -134,7 +134,7 @@ namespace hazelcast {
             * Fills the target with 4 bytes in native bytes order
             * given the source bytes as Little Endian.
             */
-            inline static void littleEndianToNative4(const void *source, void *target) {
+            inline static void little_endian_to_native4(const void *source, void *target) {
                 #ifdef HZ_BIG_ENDIAN
                     swap_4(source, target);
                 #else
@@ -146,7 +146,7 @@ namespace hazelcast {
             * Fills the target with 8 bytes in native bytes order
             * given the source bytes as Little Endian.
             */
-            inline static void littleEndianToNative8(const void *source, void *target) {
+            inline static void little_endian_to_native8(const void *source, void *target) {
                 #ifdef HZ_BIG_ENDIAN
                     swap_8(source, target);
                 #else
@@ -155,7 +155,7 @@ namespace hazelcast {
             }
 
 
-            inline static void littleEndianToNativeArray4(int32_t len, int32_t *buffer) {
+            inline static void little_endian_to_native_array4(int32_t len, int32_t *buffer) {
                 #ifdef HZ_BIG_ENDIAN
                 for (int i = 0; i < len; ++i) {
                     swapInplace4(buffer);
@@ -168,7 +168,7 @@ namespace hazelcast {
             * Fills the target with 2 bytes in order Little Endian
             * given the source bytes as native bytes.
             */
-            inline static void nativeToLittleEndian2(void *source, void *target) {
+            inline static void native_to_little_endian2(void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                    swap_2(source, target);
             #else
@@ -180,7 +180,7 @@ namespace hazelcast {
             * Fills the target with 4 bytes in Little Endian byte order
             * given the source bytes as native byte order.
             */
-            inline static void nativeToLittleEndian4(const void *source, void *target) {
+            inline static void native_to_little_endian4(const void *source, void *target) {
                 #ifdef HZ_BIG_ENDIAN
                     swap_4(source, target);
                 #else
@@ -192,7 +192,7 @@ namespace hazelcast {
             * Fills the target with 8 bytes in order Little Endian
             * given the source bytes as native bytes.
             */
-            inline static void nativeToLittleEndian8(void *source, void *target) {
+            inline static void native_to_little_endian8(void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                    swap_8(source, target);
             #else
@@ -200,7 +200,7 @@ namespace hazelcast {
             #endif
             }
 
-            inline static int32_t readIntB(const std::vector<byte> &buffer, unsigned long pos) {
+            inline static int32_t read_int_b(const std::vector<byte> &buffer, unsigned long pos) {
                 #ifdef HZ_BIG_ENDIAN
                     return *((int32_t *) (&buffer[0] + pos));
                 #else
@@ -215,7 +215,7 @@ namespace hazelcast {
             * Fills the target with 2 bytes in native bytes order
             * given the source bytes as Big Endian.
             */
-            inline static void bigEndianToNative2(const void *source, void *target) {
+            inline static void big_endian_to_native2(const void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                    *(static_cast<uint16_t *>(target)) = *(static_cast<const uint16_t *>(source));
             #else
@@ -227,7 +227,7 @@ namespace hazelcast {
             * Fills the target with 4 bytes in native bytes order
             * given the source bytes as Big Endian.
             */
-            inline static void bigEndianToNative4(const void *source, void *target) {
+            inline static void big_endian_to_native4(const void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                 *(static_cast<uint32_t *>(target)) = *(static_cast<const uint32_t *>(source));
             #else
@@ -239,7 +239,7 @@ namespace hazelcast {
             * Fills the target with 8 bytes in native bytes order
             * given the source bytes as Big Endian.
             */
-            inline static void bigEndianToNative8(const void *source, void *target) {
+            inline static void big_endian_to_native8(const void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                 *(static_cast<uint64_t *>(target)) = *(static_cast<const uint64_t *>(source));
             #else
@@ -251,7 +251,7 @@ namespace hazelcast {
             * Fills the target with 2 bytes in order Big Endian
             * given the source bytes as native bytes.
             */
-            inline static void nativeToBigEndian2(void *source, void *target) {
+            inline static void native_to_big_endian2(void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                 *(static_cast<uint16_t *>(target)) = *(static_cast<const uint16_t *>(source));
             #else
@@ -264,7 +264,7 @@ namespace hazelcast {
             * Fills the target with 4 bytes in Big Endian byte order
             * given the source bytes as native byte order.
             */
-            inline static void nativeToBigEndian4(const void *source, void *target) {
+            inline static void native_to_big_endian4(const void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                 *(static_cast<uint32_t *>(target)) = *(static_cast<const uint32_t *>(source));
             #else
@@ -276,7 +276,7 @@ namespace hazelcast {
             * Fills the target with 8 bytes in order Big Endian
             * given the source bytes as native bytes.
             */
-            inline static void nativeToBigEndian8(void *source, void *target) {
+            inline static void native_to_big_endian8(void *source, void *target) {
             #ifdef HZ_BIG_ENDIAN
                 *(static_cast<uint64_t *>(target)) = *(static_cast<const uint64_t *>(source));
             #else
@@ -292,7 +292,7 @@ namespace hazelcast {
                         bswap16 (*reinterpret_cast<uint16_t const *> (orig));
             }
 
-            inline static void swapInplace4(void *orig) {
+            inline static void swap_inplace4(void *orig) {
                 uint32_t value = * reinterpret_cast<const uint32_t*> (orig);
                 swap_4(&value, orig);
             }

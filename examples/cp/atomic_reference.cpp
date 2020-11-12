@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
 
     // Get an atomic_reference named 'my-ref'
     auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref");

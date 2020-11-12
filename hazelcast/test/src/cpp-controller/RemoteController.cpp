@@ -3843,8 +3843,8 @@ void RemoteControllerClient::recv_executeOnController(Response& _return)
 
 bool RemoteControllerProcessor::dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) {
   ProcessMap::iterator pfn;
-  pfn = processMap_.find(fname);
-  if (pfn == processMap_.end()) {
+  pfn = process_map_.find(fname);
+  if (pfn == process_map_.end()) {
     iprot->skip(::apache::thrift::protocol::T_STRUCT);
     iprot->readMessageEnd();
     iprot->getTransport()->readEnd();

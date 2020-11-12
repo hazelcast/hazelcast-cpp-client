@@ -40,28 +40,28 @@ namespace hazelcast {
                      *
                      * @return the creation time of this {@link Evictable} in milliseconds
                      */
-                    virtual int64_t getCreationTime() const = 0;
+                    virtual int64_t get_creation_time() const = 0;
 
                     /**
                      * Gets the latest access time difference of this {@link Evictable} in milliseconds.
                      *
                      * @return the latest access time of this {@link Evictable} in milliseconds
                      */
-                    virtual int64_t getLastAccessTime() = 0;
+                    virtual int64_t get_last_access_time() = 0;
 
                     /**
                      * Gets the access hit count of this {@link Evictable}.
                      *
                      * @return the access hit count of this {@link Evictable}
                      */
-                    virtual int32_t getAccessHit() = 0;
+                    virtual int32_t get_access_hit() = 0;
 
                     /**
                      * Gets the value of this {@link Evictable}.
                      *
                      * @return the value of this {@link Evictable}
                      */
-                    virtual std::shared_ptr<V> getValue() const {
+                    virtual std::shared_ptr<V> get_value() const {
                         assert(0);
                         return std::shared_ptr<V>();
                     }

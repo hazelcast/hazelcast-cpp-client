@@ -33,7 +33,7 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> removeItemListener(boost::uuids::uuid registrationId);
+                boost::future<bool> remove_item_listener(boost::uuids::uuid registration_id);
 
                 /**
                 *
@@ -45,68 +45,68 @@ namespace hazelcast {
                 *
                 * @return true if empty
                 */
-                boost::future<bool> isEmpty();
+                boost::future<bool> is_empty();
 
                 /**
                 * Removes all elements from list.
                 */
                 boost::future<void> clear();
             protected:
-                IListImpl(const std::string& instanceName, spi::ClientContext *context);
+                IListImpl(const std::string& instance_name, spi::ClientContext *context);
 
                 boost::future<boost::uuids::uuid>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::list_addlistener_handler>> &&itemEventHandler, bool includeValue) {
-                    return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
+                add_item_listener(std::unique_ptr<impl::item_event_handler<protocol::codec::list_addlistener_handler>> &&item_event_handler, bool include_value) {
+                    return register_listener(create_item_listener_codec(include_value), std::move(item_event_handler));
                 }
 
-                boost::future<bool> contains(const serialization::pimpl::Data& element);
+                boost::future<bool> contains(const serialization::pimpl::data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> toArrayData();
+                boost::future<std::vector<serialization::pimpl::data>> to_array_data();
 
-                boost::future<bool> add(const serialization::pimpl::Data& element);
+                boost::future<bool> add(const serialization::pimpl::data& element);
 
-                boost::future<bool> remove(const serialization::pimpl::Data& element);
+                boost::future<bool> remove(const serialization::pimpl::data& element);
 
-                boost::future<bool> containsAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> contains_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> addAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> addAllData(int32_t index, const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all_data(int32_t index, const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> removeAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> remove_all_data(const std::vector<serialization::pimpl::data>& elements);
 
-                boost::future<bool> retainAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> retain_all_data(const std::vector<serialization::pimpl::data>& elements);
                 
-                 boost::future<boost::optional<serialization::pimpl::Data>> getData(int32_t index);
+                 boost::future<boost::optional<serialization::pimpl::data>> get_data(int32_t index);
 
-                 boost::future<boost::optional<serialization::pimpl::Data>> setData(int32_t index, const serialization::pimpl::Data& element);
+                 boost::future<boost::optional<serialization::pimpl::data>> set_data(int32_t index, const serialization::pimpl::data& element);
 
-                boost::future<void> add(int32_t index, const serialization::pimpl::Data& element);
+                boost::future<void> add(int32_t index, const serialization::pimpl::data& element);
 
-                 boost::future<boost::optional<serialization::pimpl::Data>> removeData(int32_t index);
+                 boost::future<boost::optional<serialization::pimpl::data>> remove_data(int32_t index);
 
-                boost::future<int32_t> indexOf(const serialization::pimpl::Data& element);
+                boost::future<int32_t> index_of(const serialization::pimpl::data& element);
 
-                boost::future<int32_t> lastIndexOf(const serialization::pimpl::Data& element);
+                boost::future<int32_t> last_index_of(const serialization::pimpl::data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> subListData(int32_t fromIndex, int32_t toIndex);
+                boost::future<std::vector<serialization::pimpl::data>> sub_list_data(int32_t from_index, int32_t to_index);
             private:
                 class ListListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    ListListenerMessageCodec(std::string name, bool includeValue);
+                    ListListenerMessageCodec(std::string name, bool include_value);
 
-                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool local_only) const override;
 
                     protocol::ClientMessage
-                    encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                    encode_remove_request(boost::uuids::uuid real_registration_id) const override;
                 private:
-                    std::string name;
-                    bool includeValue;
+                    std::string name_;
+                    bool include_value_;
                 };
 
-                int partitionId;
+                int partition_id_;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> create_item_listener_codec(bool include_value);
             };
         }
     }

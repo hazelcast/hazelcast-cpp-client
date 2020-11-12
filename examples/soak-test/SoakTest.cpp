@@ -3,8 +3,8 @@
 #include <atomic>
 #include <signal.h>
 
-#include <hazelcast/client/HazelcastAll.h>
-#include <hazelcast/client/query/Predicates.h>
+#include <hazelcast/client/hazelcast.h>
+#include <hazelcast/client/query/predicates.h>
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/spi/ClientContext.h>
 
@@ -24,11 +24,11 @@ public:
         return 1;
     }
 
-    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+    virtual void writeData(serialization::object_data_output &writer) const {
         writer.writeUTF(value.get());
     }
 
-    virtual void readData(serialization::ObjectDataInput &reader) {
+    virtual void readData(serialization::object_data_input &reader) {
         throw hazelcast::client::exception::IllegalStateException(
                 "UpdateEntryProcessor readData should not be called at client side");
     }
@@ -43,7 +43,7 @@ class SoakTestTask : public Runnable {
 public:
     SoakTestTask(const IMap<string, string> &map, ILogger &logger) : map(map), logger(logger) {}
 
-    virtual const string getName() const {
+    virtual const string get_name() const {
         return "SoakTestTask";
     }
 
@@ -72,7 +72,7 @@ public:
                     map->put(key, out.str());
                     ++putCount;
                 } else if (operation < 80) {
-                    map->values(query::BetweenPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1, 10));
+                    map->values(query::between_predicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1, 10));
                     ++valuesCount;
                 } else {
                     UpdateEntryProcessor processor(out.str());
@@ -126,10 +126,10 @@ int main(int argc, char *args[]) {
     const int threadCount = atoi(args[1]);
     const string address = args[2];
 
-    ClientConfig config;
+    client_config config;
     config.getNetworkConfig().addAddress(Address(address, 5701));
 
-    HazelcastClient hazelcastInstance(config);
+    hazelcast_client hazelcastInstance(config);
     spi::ClientContext context(hazelcastInstance);
     ILogger &logger = context.getLogger();
     IMap<string, string> map = hazelcastInstance.getMap<string, string>("test");

@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,7 +39,7 @@ namespace hazelcast {
                      *
                      * @return <code>true</code> if maximum size has been reached, <code>false</code> otherwise
                      */
-                    virtual bool isReachedToMaxSize() const = 0;
+                    virtual bool is_reached_to_max_size() const = 0;
                 };
             }
         }

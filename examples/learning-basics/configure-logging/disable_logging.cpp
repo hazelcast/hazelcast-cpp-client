@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     // Setting the log level to hazelcast::logger::level::off
     // will disable the logs completely.
-    config.getLoggerConfig().level(hazelcast::logger::level::off);
+    config.get_logger_config().level(hazelcast::logger::level::off);
 
-    hazelcast::client::HazelcastClient hz(std::move(config));
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
     return 0;
 }

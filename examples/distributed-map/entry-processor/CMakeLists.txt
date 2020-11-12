@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(mapentryprocessor ./main.cpp Employee.h)
+add_executable(mapentryprocessor ./main.cpp employee.h)
 

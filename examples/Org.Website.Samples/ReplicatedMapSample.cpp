@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get a Replicated Map called "my-replicated-map"
-    auto map = hz.getReplicatedMap("my-replicated-map");
+    auto map = hz.get_replicated_map("my-replicated-map");
     // Add items to the set with duplicates
     // Put and Get a value from the Replicated Map
     auto replacedValue = map->put<std::string, std::string>("key", "value").get();

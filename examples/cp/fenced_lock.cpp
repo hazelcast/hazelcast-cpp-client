@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
 
     // Get an fenced_lock named 'my-lock'
     auto lock = hz.get_cp_subsystem().get_lock("my-lock");

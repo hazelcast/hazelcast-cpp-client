@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/topic/Listener.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/topic/listener.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto topic = hz.getTopic("testtopic");
+    auto topic = hz.get_topic("testtopic");
 
-    topic->addMessageListener(
-        hazelcast::client::topic::Listener().
-            on_received([](hazelcast::client::topic::Message &&msg) {
+    topic->add_message_listener(
+        hazelcast::client::topic::listener().
+            on_received([](hazelcast::client::topic::message &&msg) {
                 std::cout << "Message received:"
-                    << msg.getMessageObject().get<std::string>().value() << std::endl;
+                    << msg.get_message_object().get<std::string>().value() << std::endl;
             })
     ).get();
 

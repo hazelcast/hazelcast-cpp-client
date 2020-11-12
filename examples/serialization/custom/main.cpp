@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <ostream>
 
 struct Person {
@@ -34,17 +34,17 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : custom_serializer {
-                static constexpr int32_t getTypeId() noexcept {
+                static constexpr int32_t get_type_id() noexcept {
                     return 3;
                 }
 
-                static void write(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write(const Person &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person read(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read(hazelcast::client::serialization::object_data_input &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -53,9 +53,9 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.getMap("map");
+    auto map = hz.get_map("map");
     map->put("foo", Person{"bar", true, 40}).get();
     std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
     std::cout << "Finished" << std::endl;

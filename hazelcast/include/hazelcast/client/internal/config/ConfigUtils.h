@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "hazelcast/client/config/ConfigPatternMatcher.h"
+#include "hazelcast/client/config/config_pattern_matcher.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
@@ -31,23 +31,23 @@ namespace hazelcast {
                 public:
                     template<typename T>
                     static const T *
-                    lookupByPattern(const client::config::ConfigPatternMatcher &configPatternMatcher,
-                                    const std::unordered_map<std::string, T> &configPatterns, const std::string &itemName) {
-                        auto candidate = configPatterns.find(itemName);
-                        if (candidate != configPatterns.end()) {
+                    lookup_by_pattern(const client::config::config_pattern_matcher &config_pattern_matcher,
+                                    const std::unordered_map<std::string, T> &config_patterns, const std::string &item_name) {
+                        auto candidate = config_patterns.find(item_name);
+                        if (candidate != config_patterns.end()) {
                             return &candidate->second;
                         }
-                        auto size = configPatterns.size();
+                        auto size = config_patterns.size();
                         std::vector<std::string> keys(size);
                         size_t index = 0;
-                        for (const auto &e : configPatterns) {
+                        for (const auto &e : config_patterns) {
                             keys[index] = e.first;
                         }
-                        std::shared_ptr<std::string> configPatternKey = configPatternMatcher.matches(
-                                keys, itemName);
+                        std::shared_ptr<std::string> configPatternKey = config_pattern_matcher.matches(
+                                keys, item_name);
                         if (configPatternKey) {
-                            candidate = configPatterns.find(*configPatternKey);
-                            if (candidate != configPatterns.end()) {
+                            candidate = config_patterns.find(*configPatternKey);
+                            if (candidate != config_patterns.end()) {
                                 return &candidate->second;
                             }
                         }

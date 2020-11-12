@@ -18,12 +18,12 @@
 
 #include <stdint.h>
 
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/distributed_object.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class HAZELCAST_API AtomicLongInterface : public virtual DistributedObject {
+            class HAZELCAST_API AtomicLongInterface : public virtual distributed_object {
             public:
                 /**
                 * adds the given value to the current value.
@@ -112,7 +112,7 @@ namespace hazelcast {
                  * int64_t result = future.get();
                  * </code></pre>
                  * <pre><code>
-                 *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+                 *   future->andThen(std::shared_ptr<execution_callback<V> >(new  MyExecutionCallback()));
                  * </code></pre>
                  *
                  * @param delta the value to add

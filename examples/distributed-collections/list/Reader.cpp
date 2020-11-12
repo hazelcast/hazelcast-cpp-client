@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto list = hz.getList("list");
+    auto list = hz.get_list("list");
 
-    for (auto &item : list->toArray<std::string>().get()) {
+    for (auto &item : list->to_array<std::string>().get()) {
         std::cout << item << std::endl;
     }
 

@@ -42,16 +42,16 @@ namespace hazelcast {
                         class EntryCountNearCacheMaxSizeChecker : public eviction::MaxSizeChecker {
                         public:
                             EntryCountNearCacheMaxSizeChecker(int size,
-                                                              const store::HeapNearCacheRecordMap<K, V, KS, R> &recordMap) :
-                                    nearCacheRecordMap(recordMap), maxSize(size) {
+                                                              const store::HeapNearCacheRecordMap<K, V, KS, R> &record_map) :
+                                    near_cache_record_map_(record_map), max_size_(size) {
                             }
 
-                            bool isReachedToMaxSize() const override {
-                                return (int32_t) nearCacheRecordMap.size() >= maxSize;
+                            bool is_reached_to_max_size() const override {
+                                return (int32_t) near_cache_record_map_.size() >= max_size_;
                             }
                         private:
-                            const store::HeapNearCacheRecordMap<K, V, KS, R> &nearCacheRecordMap;
-                            int32_t maxSize;
+                            const store::HeapNearCacheRecordMap<K, V, KS, R> &near_cache_record_map_;
+                            int32_t max_size_;
                         };
                     }
                 }

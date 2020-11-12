@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "hazelcast/client/Address.h"
+#include "hazelcast/client/address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,7 +38,7 @@ namespace hazelcast {
                  * @param address
                  * @return new address if given address is known, otherwise return null
                  */
-                virtual Address translate(const Address &address) = 0;
+                virtual address translate(const address &address) = 0;
 
                 /**
                  * Refreshes the internal lookup table if necessary.

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto queue = hz.getQueue("queue");
+    auto queue = hz.get_queue("queue");
 
     queue->put("foo").then([=] (boost::future<void> f) {
        f.get();

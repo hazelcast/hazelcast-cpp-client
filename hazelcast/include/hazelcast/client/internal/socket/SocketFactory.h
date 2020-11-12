@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #ifdef HZ_BUILD_WITH_SSL
 
@@ -33,9 +33,9 @@
 
 namespace hazelcast {
     namespace client {
-        class Socket;
+        class hz_socket;
 
-        class Address;
+        class address;
 
         namespace spi {
             class ClientContext;
@@ -44,20 +44,20 @@ namespace hazelcast {
             namespace socket {
                 class HAZELCAST_API SocketFactory {
                 public:
-                    SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io,
+                    SocketFactory(spi::ClientContext &client_context, boost::asio::io_context &io,
                             boost::asio::ip::tcp::resolver &resolver);
 
                     bool start();
 
-                    std::unique_ptr<Socket>
-                    create(const Address &address, std::chrono::milliseconds &connectTimeoutInMillis);
+                    std::unique_ptr<hz_socket>
+                    create(const address &address, std::chrono::milliseconds &connect_timeout_in_millis);
 
                 private:
-                    spi::ClientContext &clientContext;
-                    boost::asio::io_context &io;
-                    boost::asio::ip::tcp::resolver &ioResolver;
+                    spi::ClientContext &client_context_;
+                    boost::asio::io_context &io_;
+                    boost::asio::ip::tcp::resolver &io_resolver_;
 #ifdef HZ_BUILD_WITH_SSL
-                    std::unique_ptr<boost::asio::ssl::context> sslContext;
+                    std::unique_ptr<boost::asio::ssl::context> ssl_context_;
 #endif
                 };
             }

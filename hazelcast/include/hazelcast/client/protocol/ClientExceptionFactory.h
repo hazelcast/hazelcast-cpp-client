@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -28,7 +28,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class IException;
+            class iexception;
         }
 
         namespace protocol {
@@ -48,12 +48,12 @@ namespace hazelcast {
                 std::exception_ptr create_exception(const std::vector<codec::ErrorHolder> &errors) const;
 
             private:
-                void registerException(int32_t errorCode, ExceptionFactory *factory);
+                void register_exception(int32_t error_code, ExceptionFactory *factory);
 
                 std::exception_ptr create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,
                                                     std::vector<codec::ErrorHolder>::const_iterator end) const;
 
-                std::unordered_map<int32_t, ExceptionFactory *> errorCodeToFactory;
+                std::unordered_map<int32_t, ExceptionFactory *> error_code_to_factory_;
             };
 
             class HAZELCAST_API ExceptionFactory {

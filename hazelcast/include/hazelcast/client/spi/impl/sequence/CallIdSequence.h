@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 namespace hazelcast {
     namespace client {
@@ -59,15 +59,15 @@ namespace hazelcast {
                          *
                          * @return the maximum concurrent invocation.
                          */
-                        virtual int32_t getMaxConcurrentInvocations() const = 0;
+                        virtual int32_t get_max_concurrent_invocations() const = 0;
 
                         /**
                          * Generates the next unique call ID. When the implementation
                          * supports backpressure, it will not return unless the number of outstanding invocations is within the
-                         * configured limit. Instead it will block until the condition is met and eventually throw HazelcastOverloadException.
+                         * configured limit. Instead it will block until the condition is met and eventually throw hazelcast_overload_exception.
                          *
                          * @return the generated call ID
-                         * @throws HazelcastOverloadException if the outstanding invocation count hasn't dropped below the configured limit
+                         * @throws hazelcast_overload if the outstanding invocation count hasn't dropped below the configured limit
                          */
                         virtual int64_t next() = 0;
 
@@ -77,7 +77,7 @@ namespace hazelcast {
                          *
                          * @return the generated call ID
                          */
-                        virtual int64_t forceNext() = 0;
+                        virtual int64_t force_next() = 0;
 
                         /** Not idempotent: must be called exactly once per invocation. */
                         virtual void complete() = 0;
@@ -85,7 +85,7 @@ namespace hazelcast {
                         /** Returns the last issued call ID.
                          * <strong>ONLY FOR TESTING. Must not be used for production code.</strong>
                          */
-                        virtual int64_t getLastCallId() = 0;
+                        virtual int64_t get_last_call_id() = 0;
                     };
                 }
             }

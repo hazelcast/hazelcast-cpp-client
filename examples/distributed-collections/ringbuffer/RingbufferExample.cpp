@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto rb = hz.getRingbuffer("myringbuffer");
+    auto rb = hz.get_ringbuffer("myringbuffer");
 
     std::cout << "Capacity of the ringbuffer is:" << rb->capacity().get() << std::endl;
 
@@ -30,7 +30,7 @@ int main() {
 
     std::cout << "There are " << rb->size().get() << " items in the ring buffer " << std::endl;
 
-    auto val = rb->readOne<std::string>(sequenceNumber).get();
+    auto val = rb->read_one<std::string>(sequenceNumber).get();
 
     if (val) {
         std::cout << "The item at read at sequence " << sequenceNumber << " is " << *val << std::endl;

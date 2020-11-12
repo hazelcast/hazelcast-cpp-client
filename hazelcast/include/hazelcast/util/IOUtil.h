@@ -22,7 +22,7 @@
 #include <sstream>
 
 #include "hazelcast/util/Closeable.h"
-#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/exception/iexception.h"
 
 
 namespace hazelcast {
@@ -44,7 +44,7 @@ namespace hazelcast {
                 return value;
             }
 
-            static void closeResource(Closeable *closable, const char *closeReason = nullptr);
+            static void close_resource(Closeable *closable, const char *close_reason = nullptr);
         };
 
         template<>

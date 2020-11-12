@@ -16,14 +16,14 @@
 #include <future>
 #include <chrono>
 
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
-#include <hazelcast/client/LifecycleListener.h>
-#include "hazelcast/client/LifecycleEvent.h"
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/config/client_connection_strategy_config.h>
+#include <hazelcast/client/lifecycle_listener.h>
+#include "hazelcast/client/lifecycle_event.h"
 
 
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::client_config config;
 
     /**
      * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
@@ -32,18 +32,18 @@ int main() {
      *
      * This example forces client NOT to reconnect if it ever disconnects from the cluster.
      */
-    config.getConnectionStrategyConfig().setReconnectMode(hazelcast::client::config::ClientConnectionStrategyConfig::OFF);
+    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::client_connection_strategy_config::OFF);
 
-    hazelcast::client::HazelcastClient hz(std::move(config));
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
 
     map->put(1, 100);
 
     std::promise<void> disconnected, connected;
 
-    hz.addLifecycleListener(
-        hazelcast::client::LifecycleListener()
+    hz.add_lifecycle_listener(
+        hazelcast::client::lifecycle_listener()
             .on_connected([&connected](){
                 connected.set_value();
             })

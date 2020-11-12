@@ -37,20 +37,20 @@ namespace hazelcast {
                 public:
                     struct CipherInfo {
                         std::string name;
-                        int numberOfBits;
+                        int number_of_bits;
                         std::string version;
                         std::string description;
                     };
 
-                    SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &context,
-                              const client::Address &address, client::config::SocketOptions &socketOptions,
-                              std::chrono::milliseconds &connectTimeoutInMillis,
+                    SSLSocket(boost::asio::io_context &io_service, boost::asio::ssl::context &context,
+                              const client::address &address, client::config::socket_options &socket_options,
+                              std::chrono::milliseconds &connect_timeout_in_millis,
                               boost::asio::ip::tcp::resolver &resolver);
 
                     /**
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
-                    std::vector<SSLSocket::CipherInfo> getCiphers();
+                    std::vector<SSLSocket::CipherInfo> get_ciphers();
 
                     void post_connect() override;
                 };

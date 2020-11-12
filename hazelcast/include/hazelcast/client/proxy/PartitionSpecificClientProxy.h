@@ -16,7 +16,7 @@
 #pragma once
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/util/ExceptionUtil.h"
+#include "hazelcast/util/exception_util.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,12 +26,12 @@ namespace hazelcast {
              */
             class HAZELCAST_API PartitionSpecificClientProxy : public proxy::ProxyImpl {
             protected:
-                PartitionSpecificClientProxy(const std::string &serviceName, const std::string &objectName,
+                PartitionSpecificClientProxy(const std::string &service_name, const std::string &object_name,
                                              spi::ClientContext *context);
 
-                void onInitialize() override;
+                void on_initialize() override;
 
-                int partitionId;
+                int partition_id_;
             };
         }
     }

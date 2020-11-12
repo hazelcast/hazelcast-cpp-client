@@ -32,27 +32,27 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API TransactionalObject : public proxy::SerializingProxy {
             public:
-                TransactionalObject(const std::string &serviceName, const std::string &objectName,
+                TransactionalObject(const std::string &service_name, const std::string &object_name,
                                     txn::TransactionProxy &context);
 
                 virtual ~TransactionalObject();
 
-                const std::string &getServiceName();
+                const std::string &get_service_name();
 
-                const std::string &getName();
+                const std::string &get_name();
 
                 boost::future<void> destroy();
 
             protected:
-                virtual void onDestroy();
+                virtual void on_destroy();
 
-                boost::uuids::uuid getTransactionId() const;
+                boost::uuids::uuid get_transaction_id() const;
 
-                std::chrono::milliseconds getTimeout() const;
+                std::chrono::milliseconds get_timeout() const;
 
-                const std::string serviceName;
-                const std::string name;
-                txn::TransactionProxy &context;
+                const std::string service_name_;
+                const std::string name_;
+                txn::TransactionProxy &context_;
             };
         }
     }

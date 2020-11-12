@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 
 struct Person {
@@ -34,21 +34,21 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : portable_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 3;
                 }
 
-                static void writePortable(const Person &object, hazelcast::client::serialization::PortableWriter &out) {
+                static void write_portable(const Person &object, hazelcast::client::serialization::portable_writer &out) {
                     out.write("name", object.name);
                     out.write("gender", object.male);
                     out.write("age", object.age);
                 }
 
-                static Person readPortable(hazelcast::client::serialization::PortableReader &in) {
+                static Person read_portable(hazelcast::client::serialization::portable_reader &in) {
                     return Person{in.read<std::string>("name"), in.read<bool>("gender"), in.read<int32_t>("age")};
                 }
             };
@@ -57,9 +57,9 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.getMap("map");
+    auto map = hz.get_map("map");
     map->put("foo", Person{"bar", true, 40}).get();
     std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
 

@@ -45,28 +45,28 @@ namespace hazelcast {
                      *
                      * @return the creation time of this {@link EvictableEntryView} in milliseconds
                      */
-                    virtual int64_t getCreationTime() const = 0;
+                    virtual int64_t get_creation_time() const = 0;
 
                     /**
                      * Gets the latest access time difference of this {@link EvictableEntryView} in milliseconds.
                      *
                      * @return the latest access time of this {@link EvictableEntryView} in milliseconds
                      */
-                    virtual int64_t getLastAccessTime() const = 0;
+                    virtual int64_t get_last_access_time() const = 0;
 
                     /**
                      * Gets the access hit count of this {@link EvictableEntryView}.
                      *
                      * @return the access hit count of this {@link EvictableEntryView}
                      */
-                    virtual int64_t getAccessHit() const = 0;
+                    virtual int64_t get_access_hit() const = 0;
 
                     /**
                      * Gets the key of the entry.
                      *
                      * @return the key of the entry
                      */
-                    virtual std::shared_ptr<K> getKey() const {
+                    virtual std::shared_ptr<K> get_key() const {
                         assert(0);
                         return std::shared_ptr<K>();
                     }
@@ -76,7 +76,7 @@ namespace hazelcast {
                      *
                      * @return the value of the entry
                      */
-                    virtual std::shared_ptr<V> getValue() const {
+                    virtual std::shared_ptr<V> get_value() const {
                         assert(0);
                         return std::shared_ptr<V>();
                     }
