@@ -107,6 +107,8 @@ namespace hazelcast {
                         int64_t heartbeat_millis;
                     };
 
+                    static constexpr int64_t SHUTDOWN_TIMEOUT_SECONDS = 60;
+
                     client::spi::ClientContext &client_;
                     boost::shared_mutex lock_;
                     bool running_ = true;
@@ -127,7 +129,7 @@ namespace hazelcast {
 
                     boost::future<client::protocol::ClientMessage> heartbeat(const raft_group_id &group_id, int64_t session_id);
 
-                    void close_session(const raft_group_id &group_id, int64_t session_id);
+                    boost::future<client::protocol::ClientMessage> close_session(const raft_group_id &group_id, int64_t session_id);
 
                     int64_t generate_thread_id(const raft_group_id &group_id);
                 };

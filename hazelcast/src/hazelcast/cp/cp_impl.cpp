@@ -31,6 +31,7 @@ namespace hazelcast {
         namespace internal {
             namespace session {
                 constexpr int64_t proxy_session_manager::NO_SESSION_ID;
+                constexpr int64_t proxy_session_manager::SHUTDOWN_TIMEOUT_SECONDS;
                 proxy_session_manager::proxy_session_manager(
                         hazelcast::client::spi::ClientContext &client) : client_(client) {}
 
@@ -187,16 +188,23 @@ namespace hazelcast {
                         heartbeat_timer_->cancel();
                     }
 
+                    std::vector<boost::future<protocol::ClientMessage>> invocations;
                     for (const auto &s : sessions_) {
-                        close_session(s.first, s.second.id);
+                        invocations.emplace_back(close_session(s.first, s.second.id));
                     }
+
+                    auto waiting_future = boost::when_all(invocations.begin(), invocations.end());
+
+                    waiting_future.wait_for(boost::chrono::seconds(SHUTDOWN_TIMEOUT_SECONDS));
+
                     sessions_.clear();
                     running_ = false;
                 }
 
-                void proxy_session_manager::close_session(const raft_group_id &group_id, int64_t session_id) {
+                boost::future<protocol::ClientMessage>
+                proxy_session_manager::close_session(const raft_group_id &group_id, int64_t session_id) {
                     auto request = client::protocol::codec::cpsession_closesession_encode(group_id, session_id);
-                    spi::impl::ClientInvocation::create(client_, request,"sessionManager")->invoke();
+                    return spi::impl::ClientInvocation::create(client_, request, "sessionManager")->invoke();
                 }
 
                 int64_t proxy_session_manager::get_session_acquire_count(const raft_group_id &group_id, int64_t session_id) {
