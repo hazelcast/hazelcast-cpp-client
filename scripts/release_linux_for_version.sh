@@ -5,6 +5,7 @@ function removeBuildFolders {
     rm -rf buildSTATIC${HZ_BIT_VERSION}Release
     rm -rf buildSHARED${HZ_BIT_VERSION}Release_SSL
     rm -rf buildSTATIC${HZ_BIT_VERSION}Release_SSL
+    pkill tail
 }
 
 function cleanup {
@@ -55,7 +56,7 @@ wait ${SHARED_pid} || let "FAIL+=1"
 wait ${SHARED_SSL_pid} || let "FAIL+=1"
 
 if [ $FAIL -ne 0 ]; then
-    echo "$FAIL builds FAILED!!!"
+    echo "$FAIL builds FAILED for ${HZ_BIT_VERSION}-bit build!!!"
     exit $FAIL
 fi
 
@@ -76,20 +77,23 @@ cd cpp/Linux_${HZ_BIT_VERSION}
 ln -s ../examples .
 cd -
 
+CURRENT_DIRECTORY=`pwd`
 ${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} STATIC &> verify_${HZ_BIT_VERSION}_STATIC.txt &
 STATIC_pid=$!
 
 ${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} SHARED &> verify_${HZ_BIT_VERSION}_SHARED.txt &
 SHARED_pid=$!
 
+tail -f verify*.txt &
+
 FAIL=0
 wait ${STATIC_pid} || let "FAIL+=1"
 wait ${SHARED_pid} || let "FAIL+=1"
 
 if [ $FAIL -ne 0 ]; then
-    echo "$FAIL verifications FAILED !!!"
+    echo "$FAIL verifications FAILED for ${HZ_BIT_VERSION}-bit build !!!"
 else
-    echo "All verifications PASSED"
+    echo "All verifications PASSED for for ${HZ_BIT_VERSION}-bit build :)"
 fi
 
 exit $FAIL
