@@ -17,6 +17,7 @@ trap cleanup EXIT
 if [ $# -lt 1 ]
   then
     echo "No arguments supplied. Usage: release_linux_for_version.sh <HZ_BIT_VERSION[32 or 64]>"
+    exit 1
 fi
 
 HZ_BIT_VERSION=$1
