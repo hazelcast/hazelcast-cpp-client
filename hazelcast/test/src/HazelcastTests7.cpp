@@ -1797,7 +1797,7 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).set_iam_role("cloudbees-role").set_tag_key(
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                 }
 
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
@@ -1807,7 +1807,7 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).set_tag_key(
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                 }
 #endif
             }

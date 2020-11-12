@@ -120,9 +120,9 @@ namespace hazelcast {
 
             client_config &operator=(const client_config &rhs) = delete;
 
-            client_config(client_config &&rhs) noexcept;
+            client_config(client_config &&rhs);
 
-            client_config &operator=(client_config &&rhs) noexcept;
+            client_config &operator=(client_config &&rhs);
 
             /**
              * Returns the configured cluster name. The name is sent as part of client authentication message and may be verified on the
