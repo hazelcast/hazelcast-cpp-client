@@ -1777,7 +1777,7 @@ namespace hazelcast {
                     // Turn Fips mode on
                     FIPS_mode_set(1);
 
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                     auto map = hazelcastClient.get_map("myMap");
                     map->put(5, 20);
                     auto val = map->get<int, int>(5).get();
