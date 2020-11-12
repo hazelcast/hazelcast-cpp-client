@@ -20,6 +20,9 @@ project (HazelcastExamples
         HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
         LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+
 INCLUDE(TestBigEndian)
 INCLUDE(FindOpenSSL)
 include(FindBoost)

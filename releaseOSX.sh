@@ -5,6 +5,7 @@ function removeBuildFolders {
     rm -rf buildSHARED64Release
     rm -rf buildSTATIC64Release_SSL
     rm -rf buildSHARED64Release_SSL
+    pkill tail
 }
 
 function cleanup {
@@ -36,6 +37,8 @@ STATIC_64_SSL_pid=$!
 echo "Building 64-bit SHARED library with SSL. See the output at STATIC_64_SSL_macos.txt."
 scripts/build-linux.sh 64 SHARED Release &> SHARED_64_SSL_macos.txt &
 SHARED_64_SSL_pid=$!
+
+tail -f *_macos.txt &
 
 FAIL=0
 wait ${STATIC_64_pid} || let "FAIL+=1"
