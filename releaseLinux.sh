@@ -9,9 +9,11 @@ function cleanup {
     docker logs linux_64_bit_release_build
 
     echo "Removing docker container linux_32_bit_release_build"
+    docker stop linux_32_bit_release_build
     docker rm linux_32_bit_release_build
 
     echo "Removing docker container linux_64_bit_release_build"
+    docker stop linux_64_bit_release_build
     docker rm linux_64_bit_release_build
 
     exit
