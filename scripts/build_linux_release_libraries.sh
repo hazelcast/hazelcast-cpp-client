@@ -24,13 +24,18 @@ HZ_BIT_VERSION=$1
 
 echo "Building for ${HZ_BIT_VERSION}-bit"
 
-rm -rf ./cpp
+echo "Linking the include directory to the root include directory for ${HZ_BIT_VERSION}-bit release."
+mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/
+cd ./cpp/Linux_${HZ_BIT_VERSION}
+ln -s ../include/hazelcast
+cd -
 
-mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/hazelcast/include/hazelcast/
 mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls
 
-cp -R hazelcast/include/hazelcast/* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/include/hazelcast/
-cp -R hazelcast/generated-sources/src/hazelcast/client/protocol/codec/*.h cpp/Linux_${HZ_BIT_VERSION}/hazelcast/include/hazelcast/client/protocol/codec/
+echo "Linking to examples to the root examples directory for ${HZ_BIT_VERSION}-bit release"
+cd cpp/Linux_${HZ_BIT_VERSION}
+ln -s ../examples .
+cd -
 
 echo "Building ${HZ_BIT_VERSION}-bit STATIC library without SSL. See the output at STATIC_${HZ_BIT_VERSION}_linux.txt."
 scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release COMPILE_WITHOUT_SSL &> STATIC_${HZ_BIT_VERSION}_linux.txt &
@@ -68,15 +73,6 @@ cp buildSHARED${HZ_BIT_VERSION}Release/libHazelcastClient* cpp/Linux_${HZ_BIT_VE
 cp buildSTATIC${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls/
 
 cp buildSHARED${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls/
-
-echo "Copying the examples"
-mkdir -p cpp/examples
-cp -r examples cpp/examples/src
-
-echo "Linking to examples for ${HZ_BIT_VERSION}-bit release"
-cd cpp/Linux_${HZ_BIT_VERSION}
-ln -s ../examples .
-cd -
 
 CURRENT_DIRECTORY=`pwd`
 ${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} STATIC &> verify_${HZ_BIT_VERSION}_STATIC.txt &
