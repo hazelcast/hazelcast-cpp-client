@@ -30,7 +30,7 @@ using namespace hazelcast::util;
 
 class PipeliningDemo {
 public:
-    PipeliningDemo() : client_(client_config_), map_(client_.get_map("map")), gen_(rd_()) {}
+    PipeliningDemo() : client_(), map_(client_.get_map("map")), gen_(rd_()) {}
 
     void init() {
         for (int l = 0; l < keyDomain; l++) {
@@ -75,7 +75,6 @@ public:
 private:
     hazelcast_client client_;
     std::shared_ptr<imap> map_;
-    client_config client_config_;
     static const int keyDomain = 100000;
     static const int iterations = 500;
     static const int getsPerIteration = 1000;

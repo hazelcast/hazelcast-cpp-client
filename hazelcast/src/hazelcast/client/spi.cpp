@@ -271,10 +271,9 @@ namespace hazelcast {
             }
 
             lifecycle_service::lifecycle_service(ClientContext &client_context,
-                                                 const std::vector<lifecycle_listener> &listeners,
-                                                 load_balancer *const load_balancer, cluster &cluster) :
-                    client_context_(client_context), listeners_(), load_balancer_(load_balancer),
-                    cluster_(cluster), shutdown_completed_latch_(1) {
+                                                 const std::vector<lifecycle_listener> &listeners) :
+                    client_context_(client_context), listeners_(),
+                    shutdown_completed_latch_(1) {
                 for (const auto &listener: listeners) {
                     add_listener(lifecycle_listener(listener));
                 }
@@ -310,8 +309,6 @@ namespace hazelcast {
                 }
 
                 client_context_.get_invocation_service().add_backup_listener();
-
-                load_balancer_->init(cluster_);
 
                 client_context_.get_clientstatistics().start();
 
@@ -2112,7 +2109,7 @@ namespace hazelcast {
                                         boost::str(boost::format("ClientListenerService::deregisterListenerInternal "
                                                                  "Deregistration of listener with ID %1% "
                                                                  "has failed to address %2% %3%")
-                                                                 % user_registration_id 
+                                                                 % user_registration_id
                                                                  % subscriber->get_remote_address() % e)
                                     );
                                 }

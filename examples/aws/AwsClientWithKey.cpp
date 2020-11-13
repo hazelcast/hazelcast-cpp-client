@@ -39,10 +39,10 @@ int main() {
             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1").set_security_group_name("MySecureGroup").
             set_region("us-east-1");
     
-    hazelcast::client::hazelcast_client hz(clientConfig);
+    hazelcast::client::hazelcast_client hz(std::move(clientConfig));
 
     auto map = hz.get_map("MyMap");
-    
+
     map->put(1, 100).get();
     map->put(2, 200).get();
 

@@ -232,7 +232,7 @@ namespace hazelcast {
                     int32_t len = (int32_t) value.size();
                     write<int32_t>(len);
                     if (len > 0) {
-                        for (auto const &item : value) {
+                        for (typename T::const_reference item : value) {
                             write<typename T::value_type>(item);
                         }
                     }

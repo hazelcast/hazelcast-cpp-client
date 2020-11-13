@@ -57,7 +57,7 @@ namespace hazelcast {
             * Note: client_config will be copied.
             * @param config client configuration to start the client with
             */
-            explicit hazelcast_client(const client_config &config);
+            explicit hazelcast_client(client_config config);
 
             virtual ~hazelcast_client();
 

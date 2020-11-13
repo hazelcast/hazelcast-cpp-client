@@ -35,7 +35,7 @@ int main() {
     // cluster. Please examine the client logs to observe this. For example, it will write:
     // "Trying to connect to 127.0.0.1:5702 as owner member" but this will fail since no such member exist.
 
-    hazelcast::client::hazelcast_client hz(config);
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
     std::cout << "Finished" << std::endl;
 

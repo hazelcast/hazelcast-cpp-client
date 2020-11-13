@@ -371,7 +371,7 @@ namespace hazelcast {
 #else
                     client_config clientConfig = get_config();
 #endif // HZ_BUILD_WITH_SSL
-                    client = new hazelcast_client(clientConfig);
+                    client = new hazelcast_client(std::move(clientConfig));
                     list = client->get_list("MyList");
                 }
 
@@ -571,7 +571,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    client = new hazelcast_client(get_config().backup_acks_enabled(false));
+                    client = new hazelcast_client(std::move(get_config().backup_acks_enabled(false)));
                     q = client->get_queue("MyQueue");
                 }
 
@@ -852,7 +852,7 @@ namespace hazelcast {
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
-                    client = new hazelcast_client(client_config().set_cluster_name("executor-test"));
+                    client = new hazelcast_client(std::move(client_config().set_cluster_name("executor-test")));
                 }
 
                 static void TearDownTestCase() {
@@ -1695,7 +1695,7 @@ namespace hazelcast {
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "-1");
 
-                    ASSERT_THROW(hazelcast_client hazelcastClient(clientConfig),
+                    ASSERT_THROW(hazelcast_client hazelcastClient(std::move(clientConfig)),
                                  exception::invalid_configuration);
                 }
             }
@@ -1728,7 +1728,7 @@ namespace hazelcast {
 #else
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
 #endif
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                     auto map = hazelcastClient.get_map("myMap");
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
@@ -1750,7 +1750,7 @@ namespace hazelcast {
                             set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY"));
 #endif
 
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                     auto map = hazelcastClient.get_map("myMap");
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
@@ -1777,7 +1777,7 @@ namespace hazelcast {
                     // Turn Fips mode on
                     FIPS_mode_set(1);
 
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                     auto map = hazelcastClient.get_map("myMap");
                     map->put(5, 20);
                     auto val = map->get<int, int>(5).get();
@@ -1797,7 +1797,7 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).set_iam_role("cloudbees-role").set_tag_key(
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                 }
 
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
@@ -1807,7 +1807,7 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).set_tag_key(
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
-                    hazelcast_client hazelcastClient(clientConfig);
+                    hazelcast_client hazelcastClient(std::move(clientConfig));
                 }
 #endif
             }
