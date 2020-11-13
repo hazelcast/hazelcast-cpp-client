@@ -217,7 +217,7 @@ namespace hazelcast {
             *
             * \return loadBalancer
             */
-            std::unique_ptr<load_balancer> get_load_balancer();
+            load_balancer &get_load_balancer();
 
             /**
             * Used to distribute the operations to multiple Endpoints.

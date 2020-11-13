@@ -48,6 +48,7 @@
 #include "hazelcast/client/query/predicates.h"
 #include "hazelcast/client/lifecycle_listener.h"
 #include "hazelcast/client/config/eviction_strategy_type.h"
+#include "hazelcast/client/impl/RoundRobinLB.h"
 
 namespace hazelcast {
     namespace client {
@@ -690,8 +691,11 @@ namespace hazelcast {
             return redo_operation_;
         }
 
-        std::unique_ptr<load_balancer> client_config::get_load_balancer() {
-            return std::move(load_balancer_);
+        load_balancer &client_config::get_load_balancer() {
+            if (!load_balancer_) {
+                load_balancer_.reset(new impl::RoundRobinLB{});
+            }
+            return *load_balancer_;
         }
 
         client_config &client_config::set_load_balancer(std::unique_ptr<load_balancer> load_balancer) {

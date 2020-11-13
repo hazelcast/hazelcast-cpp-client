@@ -84,15 +84,8 @@ namespace hazelcast {
                       connect_to_cluster_task_submitted_(false),
                       client_uuid_(client.random_uuid()),
                       authentication_timeout_(boost::chrono::milliseconds(heartbeat_.get_heartbeat_timeout().count())),
-                      cluster_id_(boost::uuids::nil_uuid()) {
-
-                auto configured_load_balancer = client.get_client_config().get_load_balancer();
-                if (configured_load_balancer) {
-                    load_balancer_= std::move(configured_load_balancer);
-                }
-                else {
-                    load_balancer_.reset(new impl::RoundRobinLB{});
-                }
+                      cluster_id_(boost::uuids::nil_uuid()),
+                      load_balancer_(client.get_client_config().get_load_balancer()) {
 
                 config::client_network_config &networkConfig = client.get_client_config().get_network_config();
                 auto connTimeout = networkConfig.get_connection_timeout();
@@ -151,7 +144,7 @@ namespace hazelcast {
                     schedule_connect_to_all_members();
                 }
 
-                load_balancer_->init(client_.get_cluster());
+                load_balancer_.init(client_.get_cluster());
 
                 return true;
             }
@@ -682,7 +675,7 @@ namespace hazelcast {
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::get_random_connection() {
                 if (smart_routing_enabled_) {
-                    auto member = load_balancer_->next();
+                    auto member = load_balancer_.next();
                     if (!member) {
                         return nullptr;
                     }

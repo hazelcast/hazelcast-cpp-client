@@ -126,8 +126,6 @@ namespace hazelcast {
 
                 void notify_backup(int64_t call_id);
 
-                std::unique_ptr<load_balancer> get_load_balancer();
-
             private:
                 static constexpr size_t EXECUTOR_CORE_POOL_SIZE = 10;
                 static constexpr int32_t DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC = 2;
@@ -221,7 +219,7 @@ namespace hazelcast {
                 std::atomic<boost::uuids::uuid> cluster_id_;
 #endif
                 std::vector<std::string> labels_;
-                std::unique_ptr<load_balancer> load_balancer_;
+                load_balancer &load_balancer_;
 
                 void schedule_connect_to_all_members();
 
