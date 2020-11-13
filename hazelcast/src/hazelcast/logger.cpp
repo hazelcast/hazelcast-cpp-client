@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "hazelcast/logger.h"
+#include "hazelcast/client/hazelcast_client.h"
 
 namespace hazelcast {
 
@@ -74,7 +75,7 @@ void logger::default_handler(const std::string &instance_name,
           << std::setfill('0') << std::setw(3) << ms << ' '
           << lvl << ": [" << std::this_thread::get_id() << "] "
           << instance_name << '[' << cluster_name << "] ["
-          << HAZELCAST_VERSION << "] [" // TODO once we have an API for the library version, use that instead
+          << client::version() << "] ["
           << file_name << ':' << line << "] "
           << msg
           << '\n';
