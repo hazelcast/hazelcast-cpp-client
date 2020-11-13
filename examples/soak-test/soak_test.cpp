@@ -103,7 +103,7 @@ int main(int argc, char *args[]) {
                         map->values<std::string>(query::between_predicate(hz, query::query_constants::THIS_ATTRIBUTE_NAME, std::string("1"), std::string("10"))).get();
                         ++values_count;
                     } else {
-                        map->execute_on_key<std::string, std::string, identified_entry_processor>(key, identified_entry_processor{std::to_string(rand())});
+                        map->execute_on_key<std::string, std::string, identified_entry_processor>(key, identified_entry_processor{std::to_string(rand())}).get();
                         ++execute_on_key_count;
                     }
 
