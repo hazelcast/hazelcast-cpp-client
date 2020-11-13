@@ -133,14 +133,9 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
     IF( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
         message(STATUS "LINUX ENVIRONMENT DETECTED")
 
-        SET(HZ_BIT_FLAG " ")
-        IF(${HZ_BIT} MATCHES "32")
-            SET(HZ_BIT_FLAG " -m32 ")
-        ENDIF(${HZ_BIT} MATCHES "32")
-
         message(STATUS "${HZ_BIT} Bit")
 
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall")
 
         set(HZ_LIB_PATH "")
         IF (${HZ_LIB_TYPE} MATCHES "STATIC")

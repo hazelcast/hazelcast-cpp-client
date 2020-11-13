@@ -85,7 +85,7 @@ STATIC_pid=$!
 ${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} SHARED &> verify_${HZ_BIT_VERSION}_SHARED.txt &
 SHARED_pid=$!
 
-tail -f verify*.txt &
+tail -f verify_${HZ_BIT_VERSION}_*.txt &
 
 FAIL=0
 wait ${STATIC_pid} || let "FAIL+=1"
