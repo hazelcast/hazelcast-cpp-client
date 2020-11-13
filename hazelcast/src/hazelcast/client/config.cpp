@@ -677,9 +677,9 @@ namespace hazelcast {
         client_config::client_config() : cluster_name_("dev"), load_balancer_(nullptr), redo_operation_(false),
                                        socket_interceptor_(), executor_pool_size_(-1) {}
 
-        client_config::client_config(client_config &&rhs) noexcept = default;
+        client_config::client_config(client_config &&rhs) = default;
 
-        client_config &client_config::operator=(client_config &&rhs) noexcept = default;
+        client_config &client_config::operator=(client_config &&rhs) = default;
 
         client_config &client_config::set_redo_operation(bool redo_operation) {
             this->redo_operation_ = redo_operation;
