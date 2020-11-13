@@ -219,7 +219,7 @@ namespace hazelcast {
                 std::atomic<boost::uuids::uuid> cluster_id_;
 #endif
                 std::vector<std::string> labels_;
-                load_balancer *load_balancer_;
+                load_balancer &load_balancer_;
 
                 void schedule_connect_to_all_members();
 

@@ -25,7 +25,7 @@ int main() {
     nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
             .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
     config.add_near_cache_config(nearCacheConfig);
-    hazelcast_client client(config);
+    hazelcast_client client(std::move(config));
 
     auto map = client.get_map(mapName);
 

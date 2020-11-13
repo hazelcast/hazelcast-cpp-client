@@ -39,8 +39,6 @@ namespace hazelcast {
 
         class client_config;
 
-        class load_balancer;
-
         class cluster;
 
         namespace spi {
@@ -51,8 +49,7 @@ namespace hazelcast {
             public:
 
                 lifecycle_service(ClientContext &client_context,
-                                  const std::vector<lifecycle_listener> &lifecycle_listeners,
-                                  load_balancer *const load_balancer, cluster &cluster);
+                                  const std::vector<lifecycle_listener> &lifecycle_listeners);
 
                 virtual ~lifecycle_service();
 
@@ -73,8 +70,6 @@ namespace hazelcast {
                 std::unordered_map<boost::uuids::uuid, lifecycle_listener, boost::hash<boost::uuids::uuid>> listeners_;
                 std::mutex listener_lock_;
                 std::atomic<bool> active_{ false };
-                load_balancer *load_balancer_;
-                cluster &cluster_;
                 boost::latch shutdown_completed_latch_;
                 std::mt19937 random_generator_{std::random_device{}()};
                 boost::uuids::basic_random_generator<std::mt19937> uuid_generator_{random_generator_};

@@ -530,7 +530,7 @@ namespace hazelcast {
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster) {
                     client_config_.get_connection_strategy_config().set_async_start(true);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
 
                     ASSERT_THROW((client.get_map(random_map_name())),
                                  exception::hazelcast_client_offline);
@@ -540,7 +540,7 @@ namespace hazelcast {
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
                     client_config_.get_connection_strategy_config().set_async_start(true);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
                     client.shutdown();
                     ASSERT_THROW((client.get_map(random_map_name())), exception::hazelcast_client_not_active);
 
@@ -562,7 +562,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_async_start(true);
 
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
@@ -581,7 +581,7 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         lifecycle_listener()
@@ -608,7 +608,7 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         lifecycle_listener()
@@ -635,7 +635,7 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         lifecycle_listener()
@@ -669,7 +669,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -694,7 +694,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
 
                     ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
 
@@ -733,7 +733,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
-                    hazelcast_client client(client_config_);
+                    hazelcast_client client(std::move(client_config_));
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 

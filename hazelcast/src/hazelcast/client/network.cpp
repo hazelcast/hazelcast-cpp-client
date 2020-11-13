@@ -86,6 +86,7 @@ namespace hazelcast {
                       authentication_timeout_(boost::chrono::milliseconds(heartbeat_.get_heartbeat_timeout().count())),
                       cluster_id_(boost::uuids::nil_uuid()),
                       load_balancer_(client.get_client_config().get_load_balancer()) {
+
                 config::client_network_config &networkConfig = client.get_client_config().get_network_config();
                 auto connTimeout = networkConfig.get_connection_timeout();
                 if (connTimeout.count() > 0) {
@@ -142,6 +143,8 @@ namespace hazelcast {
                 if (smart_routing_enabled_) {
                     schedule_connect_to_all_members();
                 }
+
+                load_balancer_.init(client_.get_cluster());
 
                 return true;
             }
@@ -355,7 +358,7 @@ namespace hazelcast {
                     try {
                         clientInstance->get_lifecycle_service().shutdown();
                     } catch (exception::iexception &e) {
-                        HZ_LOG(*clientInstance->get_logger(), severe, 
+                        HZ_LOG(*clientInstance->get_logger(), severe,
                             boost::str(boost::format("Exception during client shutdown "
                                                      "%1%.clientShutdown-:%2%")
                                                      % clientInstance->get_name()
@@ -672,7 +675,7 @@ namespace hazelcast {
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::get_random_connection() {
                 if (smart_routing_enabled_) {
-                    auto member = load_balancer_->next();
+                    auto member = load_balancer_.next();
                     if (!member) {
                         return nullptr;
                     }

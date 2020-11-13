@@ -26,7 +26,7 @@ int main() {
             })
     );
 
-    hazelcast::client::hazelcast_client hz(config);
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
     std::cout << "Finished" << std::endl;
 

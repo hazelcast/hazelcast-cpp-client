@@ -34,7 +34,7 @@ int main() {
      */
     config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::client_connection_strategy_config::OFF);
 
-    hazelcast::client::hazelcast_client hz(config);
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
     auto map = hz.get_map("MyMap");
 

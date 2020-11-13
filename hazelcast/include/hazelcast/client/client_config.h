@@ -116,6 +116,14 @@ namespace hazelcast {
             */
             client_config();
 
+            client_config(const client_config &rhs) = delete;
+
+            client_config &operator=(const client_config &rhs) = delete;
+
+            client_config(client_config &&rhs);
+
+            client_config &operator=(client_config &&rhs);
+
             /**
              * Returns the configured cluster name. The name is sent as part of client authentication message and may be verified on the
              * member.
@@ -209,7 +217,7 @@ namespace hazelcast {
             *
             * \return loadBalancer
             */
-            load_balancer *const get_load_balancer();
+            load_balancer &get_load_balancer();
 
             /**
             * Used to distribute the operations to multiple Endpoints.
@@ -219,7 +227,7 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            client_config &set_load_balancer(load_balancer *load_balancer);
+            client_config &set_load_balancer(std::unique_ptr<load_balancer> load_balancer);
 
             /**
             *
@@ -423,9 +431,7 @@ namespace hazelcast {
 
             serialization_config serialization_config_;
 
-            load_balancer *load_balancer_;
-
-            impl::RoundRobinLB default_load_balancer_;
+            std::unique_ptr<load_balancer> load_balancer_;
 
             std::vector<membership_listener> membership_listeners_;
 

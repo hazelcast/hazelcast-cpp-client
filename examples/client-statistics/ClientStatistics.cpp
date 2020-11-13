@@ -36,7 +36,7 @@ int main() {
     config.set_property("hazelcast.client.statistics.period.seconds", "5");
 
     config.add_near_cache_config(config::near_cache_config("MyMap"));
-    hazelcast::client::hazelcast_client hz(config);
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
     auto map = hz.get_map("MyMap");
     

@@ -254,7 +254,8 @@ namespace hazelcast {
                 void create_near_cache_context() {
                     near_cached_client_config_ = get_config();
                     near_cached_client_config_.add_near_cache_config(near_cache_config_);
-                    near_cached_client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(near_cached_client_config_));
+                    near_cached_client_ = std::unique_ptr<hazelcast_client>(
+                            new hazelcast_client(std::move(near_cached_client_config_)));
                     near_cached_map_ = near_cached_client_->get_map(get_test_name());
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
@@ -693,7 +694,7 @@ namespace hazelcast {
                     client_config_ = new_client_config();
                     client_config_->add_near_cache_config(config);
 
-                    client_.reset(new hazelcast_client(*client_config_));
+                    client_.reset(new hazelcast_client(std::move(*client_config_)));
                     map_ = client_->get_map(mapName);
                     return map_;
                 }
@@ -1083,7 +1084,7 @@ namespace hazelcast {
                 config::reliable_topic_config relConfig("testConfig");
                 relConfig.set_read_batch_size(2);
                 clientConfig.add_reliable_topic_config(relConfig);
-                hazelcast_client configClient(clientConfig);
+                hazelcast_client configClient(std::move(clientConfig));
 
                 ASSERT_NO_THROW(topic_ = configClient.get_reliable_topic("testConfig"));
 
@@ -1334,7 +1335,7 @@ namespace hazelcast {
                             StatsPrinterTask(stats).run();
                         });
 
-                        hazelcast_client hazelcastClient(clientConfig);
+                        hazelcast_client hazelcastClient(std::move(clientConfig));
 
                         auto map = hazelcastClient.get_map("cppDefault");
 
@@ -1401,7 +1402,7 @@ namespace hazelcast {
                 clientConfig.set_redo_operation(true);
                 clientConfig.get_network_config().set_smart_routing(false);
 
-                hazelcast_client client(clientConfig);
+                hazelcast_client client(std::move(clientConfig));
 
                 auto map = client.get_map("m");
                 int expected = 1000;
@@ -1425,7 +1426,7 @@ namespace hazelcast {
                 client_config clientConfig = get_config();
                 clientConfig.get_network_config().set_connection_attempt_limit(10);
 
-                hazelcast_client client(clientConfig);
+                hazelcast_client client(std::move(clientConfig));
 
                 // 3. Get a map
                 auto map = client.get_map("IssueTest_map");

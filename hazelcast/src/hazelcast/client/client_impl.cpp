@@ -69,8 +69,8 @@ namespace hazelcast {
             client_impl_->start();
         }
 
-        hazelcast_client::hazelcast_client(const client_config &config) : client_impl_(
-                new impl::hazelcast_client_instance_impl(config)) {
+        hazelcast_client::hazelcast_client(client_config config) : client_impl_(
+                new impl::hazelcast_client_instance_impl(std::move(config))) {
             client_impl_->start();
         }
 
@@ -125,13 +125,13 @@ namespace hazelcast {
         namespace impl {
             std::atomic<int32_t> hazelcast_client_instance_impl::CLIENT_ID(0);
 
-            hazelcast_client_instance_impl::hazelcast_client_instance_impl(const client_config &config)
-                    : client_config_(config), client_properties_(config.get_properties()),
+            hazelcast_client_instance_impl::hazelcast_client_instance_impl(client_config config)
+                    : client_config_(std::move(config)), client_properties_(client_config_.get_properties()),
                       client_context_(*this),
                       serialization_service_(client_config_.get_serialization_config()), cluster_service_(client_context_),
                       transaction_manager_(client_context_), cluster_(cluster_service_),
-                      lifecycle_service_(client_context_, client_config_.get_lifecycle_listeners(),
-                                       client_config_.get_load_balancer(), cluster_), proxy_manager_(client_context_),
+                      lifecycle_service_(client_context_, client_config_.get_lifecycle_listeners()),
+                      proxy_manager_(client_context_),
                       id_(++CLIENT_ID), random_generator_(id_), uuid_generator_{random_generator_},
                       cp_subsystem_(client_context_), proxy_session_manager_(client_context_) {
                 const std::shared_ptr<std::string> &name = client_config_.get_instance_name();

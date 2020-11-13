@@ -106,7 +106,7 @@ namespace hazelcast {
                 * Note: client_config will be copied.
                 * @param config client configuration to start the client with
                 */
-                explicit hazelcast_client_instance_impl(const client_config &config);
+                explicit hazelcast_client_instance_impl(client_config config);
 
                 /**
                 * Destructor
