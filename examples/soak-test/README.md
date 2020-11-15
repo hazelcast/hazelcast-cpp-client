@@ -8,7 +8,7 @@
 The test setup at Hazelcast lab environment is:
 
 1. Use 4 member cluster with 1 JVM per VM 
-2. The client test program exercises the following API calls from 32 threads in a random manner in a busy loop (See [SoakTest.cpp](./SoakTest.cpp)):
+2. The client test program exercises the following API calls from 32 threads in a random manner in a busy loop (See [SoakTest.cpp](soak_test.cpp)):
     + Put/Gets (number of keys: 1000, value size of 1 byte)
     + Predicates
     + MapListeners

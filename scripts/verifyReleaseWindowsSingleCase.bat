@@ -11,17 +11,18 @@ mkdir build
 cd build
 
 SET HZ_BUILD_TYPE=Release
+set VCPKG_ROOT=C:\\vcpkg
+
+set SOLUTIONTYPE="Visual Studio 16 2019"
 
 if %HZ_BIT_VERSION% == 32 (
     set BUILDFORPLATFORM="win32"
-    set SOLUTIONTYPE="Visual Studio 12"
 ) else (
     set BUILDFORPLATFORM="x64"
-    set SOLUTIONTYPE="Visual Studio 12 Win64"
 )
 
 echo "Generating the solution files for compilation without TLS"
-cmake .. -G %SOLUTIONTYPE% -DHAZELCAST_INSTALL_DIR=%HZ_INSTALL_DIR% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_VERSION=%HZ_VERSION% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% || exit /b 1
+cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake -DHAZELCAST_INSTALL_DIR=%HZ_INSTALL_DIR% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_VERSION=%HZ_VERSION% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% || exit /b 1
 
 echo "Building for platform %BUILDFORPLATFORM%"
 
@@ -34,7 +35,7 @@ mkdir build
 cd build
 
 echo "Generating the solution files for compilation with TLS support"
-cmake .. -G %SOLUTIONTYPE% -DHAZELCAST_INSTALL_DIR=%HZ_INSTALL_DIR% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_VERSION=%HZ_VERSION% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_COMPILE_WITH_SSL=ON || exit /b 1
+cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake -DHAZELCAST_INSTALL_DIR=%HZ_INSTALL_DIR% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_VERSION=%HZ_VERSION% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_COMPILE_WITH_SSL=ON || exit /b 1
 
 echo "Building for platform %BUILDFORPLATFORM%"
 

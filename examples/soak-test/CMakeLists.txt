@@ -1,9 +1,10 @@
-cmake_minimum_required (VERSION 2.6.4)
-project(performance_test)
+cmake_minimum_required (VERSION 3.12.4)
+project(soak_test)
 
-set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS")
+include(FindBoost)
 
 if (NOT HAZELCAST_INSTALL_DIR)
     message(FATAL_ERROR "You have to specify HAZELCAST_INSTALL_DIR variable!")
@@ -21,16 +22,22 @@ else ()
     set(PLATFORM ${CMAKE_SYSTEM_NAME})
 endif()
 
+find_package(Boost REQUIRED COMPONENTS thread chrono)
+include_directories(${Boost_INCLUDE_DIRS})
+link_libraries(Boost::thread Boost::chrono)
+add_definitions("-DBOOST_THREAD_VERSION=5")
+message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Using Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 
 message (STATUS "Using Hazelcast installation at ${HAZELCAST_INSTALL_DIR}. PLATFORM:${PLATFORM}, HZ_VERSION:${HZ_VERSION}, HZ_BIT=${HZ_BIT}")
 
 link_libraries(pthread)
 set(LIBRARY_DIRECTORY ${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/lib)
-include_directories(${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/external/include ${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/include)
+include_directories(${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/include)
 
-add_executable(soakTest SoakTest.cpp)
+add_executable(soak_test soak_test.cpp)
 
 ADD_LIBRARY(${HZ_LIBRARY_NAME} STATIC IMPORTED)
 SET_TARGET_PROPERTIES(${HZ_LIBRARY_NAME} PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIRECTORY}/lib${HZ_LIBRARY_NAME}.a)
-target_link_libraries(soakTest ${HZ_LIBRARY_NAME})
+target_link_libraries(soak_test ${HZ_LIBRARY_NAME})
 
