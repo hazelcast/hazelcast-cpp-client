@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "hazelcast/logger.h"
+#include "hazelcast/client/hazelcast_client.h"
 
 namespace hazelcast {
 
@@ -53,6 +54,22 @@ void logger::log(const char *file_name, int line,
     handler_(instance_name_, cluster_name_, file_name, line, lvl, msg);
 }
 
+namespace {
+
+std::tm time_t_to_localtime(const std::time_t &t) {
+    std::tm lt;
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    ::localtime_s(&lt, &t);
+#else
+    ::localtime_r(&t, &lt);
+#endif
+
+    return lt;
+}
+
+}
+
 void logger::default_handler(const std::string &instance_name,
                              const std::string &cluster_name, 
                              const char* file_name,
@@ -62,7 +79,8 @@ void logger::default_handler(const std::string &instance_name,
                              
     auto tp = std::chrono::system_clock::now();
     auto t = std::chrono::system_clock::to_time_t(tp);
-    
+    auto local_t = time_t_to_localtime(t);
+
     auto dur = tp.time_since_epoch();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(dur);
     
@@ -70,11 +88,11 @@ void logger::default_handler(const std::string &instance_name,
 
     std::ostringstream sstrm;
 
-    sstrm << std::put_time(std::localtime(&t), "%d/%m/%Y %H:%M:%S.")
+    sstrm << std::put_time(&local_t, "%d/%m/%Y %H:%M:%S.")
           << std::setfill('0') << std::setw(3) << ms << ' '
           << lvl << ": [" << std::this_thread::get_id() << "] "
           << instance_name << '[' << cluster_name << "] ["
-          << HAZELCAST_VERSION << "] [" // TODO once we have an API for the library version, use that instead
+          << client::version() << "] ["
           << file_name << ':' << line << "] "
           << msg
           << '\n';
