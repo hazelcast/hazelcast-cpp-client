@@ -66,7 +66,7 @@ int main(int argc, char *args[]) {
 
     client_config config;
     config.get_network_config().add_address(address(server_address, 5701));
-    hazelcast_client hz(config);
+    hazelcast_client hz(std::move(config));
     spi::ClientContext context(hz);
     auto &logger_ = context.get_logger();
     auto map = hz.get_map("test");
@@ -89,21 +89,25 @@ int main(int argc, char *args[]) {
             int64_t execute_on_key_count = 0;
             int entry_count = 10000;
 
+            std::random_device rd;  //Will be used to obtain a seed for the random number engine
+            std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+            std::uniform_int_distribution<> distrib(0, entry_count);
+
             while (!is_cancelled) {
-                int operation = rand() % 100;
-                auto key = std::to_string(rand() % entry_count);
+                int operation = distrib(gen) % 100;
+                auto key = std::to_string(distrib(gen) % entry_count);
                 try {
                     if (operation < 30) {
                         map->get<std::string, std::string>(key).get();
                         ++get_count;
                     } else if (operation < 60) {
-                        map->put(key, std::to_string(rand())).get();
+                        map->put(key, std::to_string(distrib(gen))).get();
                         ++put_count;
                     } else if (operation < 80) {
                         map->values<std::string>(query::between_predicate(hz, query::query_constants::THIS_ATTRIBUTE_NAME, std::string("1"), std::string("10"))).get();
                         ++values_count;
                     } else {
-                        map->execute_on_key<std::string, std::string, identified_entry_processor>(key, identified_entry_processor{std::to_string(rand())}).get();
+                        map->execute_on_key<std::string, std::string, identified_entry_processor>(key, identified_entry_processor{std::to_string(distrib(gen))}).get();
                         ++execute_on_key_count;
                     }
 
@@ -111,19 +115,19 @@ int main(int argc, char *args[]) {
                     if (total_count % 10000 == 0) {
                         HZ_LOG(logger_, info, (boost::format(
                                 "Thread %1% --> Total: %2% {get count: %3% , put count: %4% , values count: %5% , execute_on_key count: %6%") %
-                                               std::this_thread::get_id() % total_count % put_count % values_count %
-                                               execute_on_key_count).str());
+                                               std::this_thread::get_id() % total_count % get_count % put_count
+                                               %values_count %execute_on_key_count).str());
                     }
                 } catch (std::exception &e) {
-                    HZ_LOG(logger_, warning, (boost::format("Exception occured: %1%") %e.what()).str());
+                    HZ_LOG(logger_, warning, (boost::format("Exception occured: %1%") % e.what()).str());
                 }
             }
 
             int64_t total_count = put_count + get_count + values_count + execute_on_key_count;
             HZ_LOG(logger_, info, (boost::format(
                     "Thread %1% is finished. --> Total: %2% {get count: %3% , put count: %4% , values count: %5% , execute_on_key count: %6%") %
-                                   std::this_thread::get_id() % total_count % put_count % values_count %
-                                   execute_on_key_count).str());
+                                   std::this_thread::get_id() % total_count % get_count % put_count % values_count
+                                   %execute_on_key_count).str());
         }));
     }
 

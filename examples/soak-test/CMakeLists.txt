@@ -35,6 +35,8 @@ link_libraries(pthread)
 set(LIBRARY_DIRECTORY ${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/lib)
 include_directories(${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/include)
 
+set(CMAKE_CXX_FLAGS_RELEASE -O3)
+
 add_executable(soak_test soak_test.cpp)
 
 ADD_LIBRARY(${HZ_LIBRARY_NAME} STATIC IMPORTED)
