@@ -4,10 +4,6 @@
 
 #include <hazelcast/client/hazelcast.h>
 
-using namespace hazelcast::util;
-using namespace hazelcast::client;
-using namespace std;
-
 struct identified_entry_processor {
     std::string value;
 };
@@ -41,7 +37,7 @@ namespace hazelcast {
 std::atomic<bool> is_cancelled{false};
 
 void signalHandler(int s) {
-    cerr << "Caught signal: " << s << endl;
+    std::cerr << "Caught signal: " << s << std::endl;
     is_cancelled = true;
 }
 
@@ -56,15 +52,19 @@ void register_signal_handler() {
 }
 
 int main(int argc, char *args[]) {
-    if (argc != 3) {
-        cerr << "USAGE: soak_test thread_count server_address" << endl;
+    if (argc > 4 || argc < 3) {
+        std::cerr << "USAGE: soak_test thread_count server_address [client_name] " << std::endl;
         return -1;
     }
 
     const int thread_count = atoi(args[1]);
-    const string server_address = args[2];
-
+    const std::string server_address = args[2];
     client_config config;
+
+    if (argc > 3) {
+        config.set_instance_name(std::make_shared<std::string>(args[3]));
+    }
+
     config.get_network_config().add_address(address(server_address, 5701));
     hazelcast_client hz(std::move(config));
     spi::ClientContext context(hz);
@@ -77,7 +77,7 @@ int main(int argc, char *args[]) {
 
     register_signal_handler();
 
-    vector<boost::future<void>> tasks;
+    std::vector<boost::future<void>> tasks;
 
     for (int i = 0; i < thread_count; i++) {
         tasks.emplace_back(boost::async([&]() {

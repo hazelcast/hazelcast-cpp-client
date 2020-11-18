@@ -6,21 +6,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 include(FindBoost)
 
-if (NOT HAZELCAST_INSTALL_DIR)
-    message(FATAL_ERROR "You have to specify HAZELCAST_INSTALL_DIR variable!")
-endif()
+if ("x${HAZELCAST_INSTALL_DIR}" STREQUAL "x")
+    add_executable(soak_test soak_test.cpp)
+else()
+    if (NOT HZ_VERSION)
+        message(FATAL_ERROR "You have to specify HZ_VERSION variable!")
+    endif ()
 
-if (NOT HZ_VERSION)
-    message(FATAL_ERROR "You have to specify HZ_VERSION variable!")
-endif()
-
-set(HZ_BIT 64)
-set(HZ_LIBRARY_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(PLATFORM Mac)
-else ()
-    set(PLATFORM ${CMAKE_SYSTEM_NAME})
-endif()
+    set(HZ_BIT 64)
+    set(HZ_LIBRARY_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(PLATFORM Mac)
+    else ()
+        set(PLATFORM ${CMAKE_SYSTEM_NAME})
+    endif()
 
 find_package(Boost REQUIRED COMPONENTS thread chrono)
 include_directories(${Boost_INCLUDE_DIRS})
@@ -31,15 +30,15 @@ message(STATUS "Using Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 
 message (STATUS "Using Hazelcast installation at ${HAZELCAST_INSTALL_DIR}. PLATFORM:${PLATFORM}, HZ_VERSION:${HZ_VERSION}, HZ_BIT=${HZ_BIT}")
 
-link_libraries(pthread)
-set(LIBRARY_DIRECTORY ${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/lib)
-include_directories(${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/include)
+    set(LIBRARY_DIRECTORY ${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/lib)
+    include_directories(${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/include)
 
-set(CMAKE_CXX_FLAGS_RELEASE -O3)
+    set(CMAKE_CXX_FLAGS_RELEASE -O3)
 
-add_executable(soak_test soak_test.cpp)
+    add_executable(soak_test soak_test.cpp)
 
-ADD_LIBRARY(${HZ_LIBRARY_NAME} STATIC IMPORTED)
-SET_TARGET_PROPERTIES(${HZ_LIBRARY_NAME} PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIRECTORY}/lib${HZ_LIBRARY_NAME}.a)
-target_link_libraries(soak_test ${HZ_LIBRARY_NAME})
+    ADD_LIBRARY(${HZ_LIBRARY_NAME} STATIC IMPORTED)
+    SET_TARGET_PROPERTIES(${HZ_LIBRARY_NAME} PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIRECTORY}/lib${HZ_LIBRARY_NAME}.a)
+    target_link_libraries(soak_test ${HZ_LIBRARY_NAME})
+endif ()
 

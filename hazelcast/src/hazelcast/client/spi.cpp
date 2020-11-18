@@ -369,6 +369,10 @@ namespace hazelcast {
                         util::git_date_to_hazelcast_log_date(date);
                         std::string commitId(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
                         commitId.erase(std::remove(commitId.begin(), commitId.end(), '"'), commitId.end());
+
+                        HZ_LOG(lg, info,
+                               (boost::format("(%1%:%2%) LifecycleService::LifecycleEvent Client (%3%) is STARTING") %
+                                date % commitId % client_context_.get_connection_manager().get_client_uuid()).str());
                         char msg[100];
                         util::hz_snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
                                           commitId.c_str());
@@ -1287,6 +1291,13 @@ namespace hazelcast {
                     } else {
                         os << "nullptr";
                     }
+                    os << ", backup_acks_expected_ = " << static_cast<int>(invocation.backup_acks_expected_)
+                       << ", backup_acks_received = " << invocation.backup_acks_received_;
+
+                    if (invocation.pending_response_) {
+                        os << ", pending_response: " << *invocation.pending_response_;
+                    }
+
                     os << '}';
 
                     return os;

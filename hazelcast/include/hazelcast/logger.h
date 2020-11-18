@@ -13,8 +13,8 @@
 
 #ifndef HZ_LOGGING_DISABLED
     #define HZ_LOG(lg, lvl, msg) \
-        if ((lg).enabled( logger::level::lvl )) { \
-            (lg).log(__FILE__, __LINE__, logger::level::lvl, ( msg )); \
+        if ((lg).enabled( ::hazelcast::logger::level::lvl )) { \
+            (lg).log(__FILE__, __LINE__, ::hazelcast::logger::level::lvl, ( msg )); \
         }
 #else
     #define HZ_LOG(lg, lvl, msg) 
