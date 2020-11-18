@@ -136,7 +136,8 @@ namespace hazelcast {
                       transaction_manager_(client_context_), cluster_(cluster_service_),
                       lifecycle_service_(client_context_, client_config_.get_lifecycle_listeners()),
                       proxy_manager_(client_context_),
-                      id_(++CLIENT_ID), random_generator_(id_), uuid_generator_{random_generator_},
+                      id_(++CLIENT_ID), random_generator_(std::chrono::system_clock::now().time_since_epoch().count()),
+                      uuid_generator_{random_generator_},
                       cp_subsystem_(client_context_), proxy_session_manager_(client_context_) {
                 const std::shared_ptr<std::string> &name = client_config_.get_instance_name();
                 if (name.get() != NULL) {

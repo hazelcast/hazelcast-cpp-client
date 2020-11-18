@@ -243,20 +243,26 @@ namespace hazelcast {
                 // print correlation id, and message type only if it is unfragmented message or
                 // the first message of a fragmented message
                 if (unfragmented) {
-                    os << ", correlationId=" << msg.get_correlation_id()
-                       << ", messageType=0x" << std::hex << msg.get_message_type() << std::dec
-                       << ", isEvent=" << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::IS_EVENT_FLAG)
+                    os << ", correlationId = " << msg.get_correlation_id()
+                       << ", messageType = 0x" << std::hex << msg.get_message_type() << std::dec
+                       << ", flags = 0x" << std::hex << msg.get_header_flags() << std::dec
+                       << ", is backup aware = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::BACKUP_AWARE_FLAG)
+                       << ", is backup event = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::BACKUP_EVENT_FLAG)
+                       << ", isEvent = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::IS_EVENT_FLAG)
                        << "}";
                 } else if (begin_fragment) {
-                    os << ", fragmentationId=" << boost::endian::load_little_s64(&msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET])
-                       << ", correlationId=" << msg.get_correlation_id()
-                       << ", messageType=0x" << std::hex << msg.get_message_type() << std::dec
-                       << ", isEvent=" << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::IS_EVENT_FLAG)
+                    os << ", fragmentationId = " << boost::endian::load_little_s64(&msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET])
+                       << ", correlationId = " << msg.get_correlation_id()
+                       << ", messageType = 0x" << std::hex << msg.get_message_type() << std::dec
+                       << ", flags = 0x" << std::hex << msg.get_header_flags() << std::dec
+                       << ", is backup aware = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::BACKUP_AWARE_FLAG)
+                       << ", is backup event = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::BACKUP_EVENT_FLAG)
+                       << ", isEvent = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::IS_EVENT_FLAG)
                        << "}";
                 } else {
-                    os << ", fragmentationId=" << boost::endian::load_little_s64(&msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET]);
+                    os << ", fragmentationId = " << boost::endian::load_little_s64(&msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET]);
                 }
-                os << ", is_fragmented=" << (unfragmented ? "no" : "yes");
+                os << ", is_fragmented = " << (unfragmented ? "no" : "yes");
 
                 return os;
             }
