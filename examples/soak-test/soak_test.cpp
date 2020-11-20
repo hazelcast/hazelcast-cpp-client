@@ -42,13 +42,7 @@ void signalHandler(int s) {
 }
 
 void register_signal_handler() {
-    struct sigaction sigIntHandler;
-
-    sigIntHandler.sa_handler = signalHandler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-
-    sigaction(SIGINT, &sigIntHandler, NULL);
+    signal(SIGINT, signalHandler);
 }
 
 int main(int argc, char *args[]) {
@@ -62,7 +56,7 @@ int main(int argc, char *args[]) {
     client_config config;
 
     if (argc > 3) {
-        config.set_instance_name(std::make_shared<std::string>(args[3]));
+        config.set_instance_name(args[3]);
     }
 
     config.get_network_config().add_address(address(server_address, 5701));

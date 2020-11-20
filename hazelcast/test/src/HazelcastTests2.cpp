@@ -552,6 +552,14 @@ namespace hazelcast {
 
                 ASSERT_EQ(logger::level::fine, logger_config.level());
             }
+
+            TEST_F(ClientConfigTest, test_set_instance_name) {
+                HazelcastServer instance(*g_srvFactory);
+                auto test_name = get_test_name();
+                hazelcast_client client(std::move(client_config().set_instance_name(test_name)));
+                ASSERT_EQ(test_name, client.get_name());
+            }
+
         }
     }
 }
