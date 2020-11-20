@@ -797,12 +797,13 @@ namespace hazelcast {
             return *this;
         }
 
-        const std::shared_ptr<std::string> &client_config::get_instance_name() const {
+        const boost::optional<std::string> &client_config::get_instance_name() const {
             return instance_name_;
         }
 
-        void client_config::set_instance_name(const std::shared_ptr<std::string> &instance_name) {
+        client_config &client_config::set_instance_name(const std::string &instance_name) {
             client_config::instance_name_ = instance_name;
+            return *this;
         }
 
         int32_t client_config::get_executor_pool_size() const {
