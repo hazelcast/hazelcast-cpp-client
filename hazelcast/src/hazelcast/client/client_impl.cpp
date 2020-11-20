@@ -377,8 +377,8 @@ namespace hazelcast {
 
         constexpr int address::ID;
 
-        const byte address::IPV4;
-        const byte address::IPV6;
+        constexpr byte address::IPV4;
+        constexpr byte address::IPV6;
 
         address::address() : host_("localhost"), type_(IPV4), scope_id_(0) {
         }

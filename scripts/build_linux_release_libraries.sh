@@ -14,28 +14,18 @@ function cleanup {
 
 trap cleanup EXIT
 
-if [ $# -lt 1 ]
+if [ $# -lt 2 ]
   then
-    echo "No arguments supplied. Usage: release_linux_for_version.sh <HZ_BIT_VERSION[32 or 64]>"
+    echo "No arguments supplied. Usage: release_linux_for_version.sh <HZ_BIT_VERSION[32 or 64] <relative_install_dir> >"
     exit 1
 fi
 
 HZ_BIT_VERSION=$1
+relative_install_dir=$2
 
 echo "Building for ${HZ_BIT_VERSION}-bit"
 
-echo "Linking the include directory to the root include directory for ${HZ_BIT_VERSION}-bit release."
-mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/
-cd ./cpp/Linux_${HZ_BIT_VERSION}
-ln -s ../include/hazelcast
-cd -
-
-mkdir -p ./cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls
-
-echo "Linking to examples to the root examples directory for ${HZ_BIT_VERSION}-bit release"
-cd cpp/Linux_${HZ_BIT_VERSION}
-ln -s ../examples .
-cd -
+mkdir -p ${relative_install_dir}/Linux_${HZ_BIT_VERSION}/lib/tls
 
 echo "Building ${HZ_BIT_VERSION}-bit STATIC library without SSL. See the output at STATIC_${HZ_BIT_VERSION}_linux.txt."
 scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release COMPILE_WITHOUT_SSL &> STATIC_${HZ_BIT_VERSION}_linux.txt &
@@ -66,19 +56,17 @@ if [ $FAIL -ne 0 ]; then
     exit $FAIL
 fi
 
-cp buildSTATIC${HZ_BIT_VERSION}Release/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/
-
-cp buildSHARED${HZ_BIT_VERSION}Release/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/
-
-cp buildSTATIC${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls/
-
-cp buildSHARED${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* cpp/Linux_${HZ_BIT_VERSION}/hazelcast/lib/tls/
+echo "Copying the binary libraries to release folder"
+cp buildSTATIC${HZ_BIT_VERSION}Release/libHazelcastClient* ${relative_install_dir}/Linux_${HZ_BIT_VERSION}/lib/
+cp buildSHARED${HZ_BIT_VERSION}Release/libHazelcastClient* ${relative_install_dir}/Linux_${HZ_BIT_VERSION}/lib/
+cp buildSTATIC${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* ${relative_install_dir}/Linux_${HZ_BIT_VERSION}/lib/tls/
+cp buildSHARED${HZ_BIT_VERSION}Release_SSL/libHazelcastClient* ${relative_install_dir}/Linux_${HZ_BIT_VERSION}/lib/tls/
 
 CURRENT_DIRECTORY=`pwd`
-${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} STATIC &> verify_${HZ_BIT_VERSION}_STATIC.txt &
+${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/${relative_install_dir} ${HZ_BIT_VERSION} STATIC &> verify_${HZ_BIT_VERSION}_STATIC.txt &
 STATIC_pid=$!
 
-${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/cpp ${HZ_BIT_VERSION} SHARED &> verify_${HZ_BIT_VERSION}_SHARED.txt &
+${CURRENT_DIRECTORY}/scripts/verifyReleaseLinuxSingleCase.sh ${CURRENT_DIRECTORY}/${relative_install_dir} ${HZ_BIT_VERSION} SHARED &> verify_${HZ_BIT_VERSION}_SHARED.txt &
 SHARED_pid=$!
 
 tail -f verify_${HZ_BIT_VERSION}_*.txt &
