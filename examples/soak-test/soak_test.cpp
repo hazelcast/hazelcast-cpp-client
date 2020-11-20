@@ -42,13 +42,7 @@ void signalHandler(int s) {
 }
 
 void register_signal_handler() {
-    struct sigaction sigIntHandler;
-
-    sigIntHandler.sa_handler = signalHandler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-
-    sigaction(SIGINT, &sigIntHandler, NULL);
+    signal(SIGINT, signalHandler);
 }
 
 int main(int argc, char *args[]) {
