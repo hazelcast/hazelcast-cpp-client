@@ -315,9 +315,9 @@ namespace hazelcast {
              */
             client_config &set_network_config(const config::client_network_config &network_config);
 
-            const std::shared_ptr<std::string> &get_instance_name() const;
+            const boost::optional<std::string> &get_instance_name() const;
 
-            void set_instance_name(const std::shared_ptr<std::string> &instance_name);
+            client_config &set_instance_name(const std::string &instance_name);
 
             /**
              * Pool size for internal ExecutorService which handles responses etc.
@@ -449,7 +449,7 @@ namespace hazelcast {
 
             std::unordered_map<std::string, config::near_cache_config> near_cache_config_map_;
 
-            std::shared_ptr<std::string> instance_name_;
+            boost::optional<std::string> instance_name_;
 
             /**
              * pool-size for internal ExecutorService which handles responses etc.

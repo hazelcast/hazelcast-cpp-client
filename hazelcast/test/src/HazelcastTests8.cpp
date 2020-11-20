@@ -1617,6 +1617,7 @@ namespace hazelcast {
                     }
                 };
             };
+
             TEST_F(ClientMessageTest, testOperationNameGetSet) {
                 protocol::ClientMessage message(8);
                 constexpr const char* operation_name = "OPERATION_NAME";

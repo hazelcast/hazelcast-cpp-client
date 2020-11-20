@@ -139,8 +139,8 @@ namespace hazelcast {
                       id_(++CLIENT_ID), random_generator_(std::random_device{}()),
                       uuid_generator_{random_generator_},
                       cp_subsystem_(client_context_), proxy_session_manager_(client_context_) {
-                const std::shared_ptr<std::string> &name = client_config_.get_instance_name();
-                if (name.get() != NULL) {
+                auto &name = client_config_.get_instance_name();
+                if (name) {
                     instance_name_ = *name;
                 } else {
                     std::ostringstream out;
