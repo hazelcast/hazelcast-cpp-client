@@ -13,8 +13,8 @@
 
 #ifndef HZ_LOGGING_DISABLED
     #define HZ_LOG(lg, lvl, msg) \
-        if ((lg).enabled( logger::level::lvl )) { \
-            (lg).log(__FILE__, __LINE__, logger::level::lvl, ( msg )); \
+        if ((lg).enabled( ::hazelcast::logger::level::lvl )) { \
+            (lg).log(__FILE__, __LINE__, ::hazelcast::logger::level::lvl, ( msg )); \
         }
 #else
     #define HZ_LOG(lg, lvl, msg) 
@@ -77,3 +77,4 @@ HAZELCAST_API std::ostream& operator<<(std::ostream&, logger::level level);
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+

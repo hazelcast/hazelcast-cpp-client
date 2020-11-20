@@ -122,6 +122,10 @@ namespace hazelcast {
             return client_impl_->get_cp_subsystem();
         }
 
+        const boost::string_view version() {
+            return HAZELCAST_VERSION;
+        }
+
         namespace impl {
             std::atomic<int32_t> hazelcast_client_instance_impl::CLIENT_ID(0);
 
@@ -132,7 +136,8 @@ namespace hazelcast {
                       transaction_manager_(client_context_), cluster_(cluster_service_),
                       lifecycle_service_(client_context_, client_config_.get_lifecycle_listeners()),
                       proxy_manager_(client_context_),
-                      id_(++CLIENT_ID), random_generator_(id_), uuid_generator_{random_generator_},
+                      id_(++CLIENT_ID), random_generator_(std::random_device{}()),
+                      uuid_generator_{random_generator_},
                       cp_subsystem_(client_context_), proxy_session_manager_(client_context_) {
                 const std::shared_ptr<std::string> &name = client_config_.get_instance_name();
                 if (name.get() != NULL) {

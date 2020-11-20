@@ -20,8 +20,12 @@ project (HazelcastExamples
         HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
         LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+
 INCLUDE(TestBigEndian)
 INCLUDE(FindOpenSSL)
+include(FindBoost)
 
 # if HAZELCAST_INSTALL_DIR option is provided, the examples shall compile with the released library
 if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
@@ -72,7 +76,30 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
     ADD_LIBRARY(${HZ_LIB_NAME} ${HZ_LIB_TYPE} IMPORTED)
 
-    message(STATUS "${CMAKE_SYSTEM}")
+    message(STATUS "Operating System: ${CMAKE_SYSTEM}")
+
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+            set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+            set(Boost_USE_MULTITHREADED      ON)
+            set(Boost_USE_STATIC_RUNTIME     OFF)
+            set(Boost_USE_DEBUG_RUNTIME      OFF)
+
+            set(Boost_USE_DEBUG_LIBS         OFF)  # ignore debug libs and
+            set(Boost_USE_RELEASE_LIBS       ON)   # only find release libs
+        else()
+            set(Boost_USE_DEBUG_LIBS         ON)   # only find debug libs
+            set(Boost_USE_RELEASE_LIBS       OFF)  # ignore release libs
+        endif()
+        message(STATUS "Using Boost_USE_DEBUG_LIBS: ${Boost_USE_DEBUG_LIBS}")
+        message(STATUS "Using Boost_USE_RELEASE_LIBS: ${Boost_USE_RELEASE_LIBS}")
+    endif()
+    find_package(Boost REQUIRED COMPONENTS thread chrono)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_libraries(Boost::thread Boost::chrono)
+    add_definitions("-DBOOST_THREAD_VERSION=5")
+    message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+    message(STATUS "Using Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 
     if (HZ_COMPILE_WITH_SSL)
         message(STATUS "Building the with SSL support.")
@@ -106,14 +133,9 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
     IF( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
         message(STATUS "LINUX ENVIRONMENT DETECTED")
 
-        SET(HZ_BIT_FLAG " ")
-        IF(${HZ_BIT} MATCHES "32")
-            SET(HZ_BIT_FLAG " -m32 ")
-        ENDIF(${HZ_BIT} MATCHES "32")
-
         message(STATUS "${HZ_BIT} Bit")
 
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall")
 
         set(HZ_LIB_PATH "")
         IF (${HZ_LIB_TYPE} MATCHES "STATIC")
@@ -180,6 +202,7 @@ add_subdirectory(client-statistics)
 add_subdirectory(pipeline)
 add_subdirectory(authentication)
 add_subdirectory(cp)
+add_subdirectory(soak-test)
 if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
     add_subdirectory(tls)
     add_subdirectory(aws)

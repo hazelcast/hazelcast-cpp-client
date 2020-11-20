@@ -508,6 +508,50 @@ namespace hazelcast {
                 ASSERT_EQ(name, user_pass_credential->name());
                 ASSERT_EQ(password, user_pass_credential->password());
             }
+
+            TEST_F(ClientConfigTest, testSetNullLogHandlerThrows) {
+                client_config config;
+                auto logger_config = config.get_logger_config();
+
+                ASSERT_THROW(config.get_logger_config().handler(nullptr), exception::illegal_argument);
+            }
+
+            TEST_F(ClientConfigTest, testSetGetLoadHandler) {
+                client_config config;
+                auto logger_config = config.get_logger_config();
+
+                bool called = false;
+
+                auto h = [&called](const std::string &,
+                                   const std::string &,
+                                   const char*,
+                                   int,
+                                   logger::level,
+                                   const std::string &) {
+                    called = true;
+                };
+
+                logger_config.handler(h);
+                logger_config.handler()("", "", "", 0, logger::level::fine, "");
+
+                ASSERT_TRUE(called);
+            }
+
+            TEST_F(ClientConfigTest, testDefaultLogLevel) {
+                client_config config;
+                auto logger_config = config.get_logger_config();
+
+                ASSERT_EQ(logger::level::info, logger_config.level());
+            }
+
+            TEST_F(ClientConfigTest, testSetGetLogLevel) {
+                client_config config;
+                auto logger_config = config.get_logger_config();
+
+                logger_config.level(logger::level::fine);
+
+                ASSERT_EQ(logger::level::fine, logger_config.level());
+            }
         }
     }
 }
