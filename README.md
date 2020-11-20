@@ -253,7 +253,7 @@ Unzip the file. Following is the directory structure for Linux 64-bit zip. The s
     
 ### 1.3.1 Compiling Your Project
 
-For compilation, you need to include the `hazelcast/include` directory in your in your distribution. You also need to link your application to the appropriate static or shared Hazelcast library. e.g. cmake lines needed to include and link to Hazelcast 64-bit library:
+For compilation, you need to include the `hazelcast/include` directory in your distribution. You also need to link your application to the appropriate static or shared Hazelcast library. e.g. cmake lines needed to include and link to Hazelcast 64-bit library:
 ```Cmake
 	include_directories(hazelcast/include)
     link_directories(hazelcast/Linux_64/lib)
@@ -333,7 +333,7 @@ The project depends on OpenSSL only if you compile the project enabled with the 
 ### 1.3.3 Building Hazelcast Tests Source Code
 The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
 
-The test sources depends on the Boost development libraries (thread and chrono), OpenSSL (only needed if compiling with SSL support) and [apache thrift](https://github.com/apache/thrift) (needed for communications to remote controller).
+The test sources depend on the Boost development libraries (thread and chrono), OpenSSL (only needed if compiling with SSL support) and [apache thrift](https://github.com/apache/thrift) (needed for communications to remote controller).
 
 The easiest way to compile and run the tests is to use the test scripts. The scripts are :
 - `testLinuxSingleCase.sh` for linux and MAC OS.
@@ -453,7 +453,7 @@ names as explained in the previous section. If you did, then you need to make ce
 
 ### 1.4.2.1 Cluster Name
 
-You only need to provide the name of the cluster if it is explcitely configured at the server side (otherwise the default value of `dev` is used).
+You need to provide the name of the cluster only if it is explicitly configured on the server-side (otherwise the default value of `dev` is used).
 
 ```C++
     hazelcast::client::client_config config;
