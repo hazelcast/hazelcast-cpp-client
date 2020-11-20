@@ -22,17 +22,18 @@ function cleanup {
 # Disables printing security sensitive data to the logs
 set +x
 
-rm -rf ./cpp
+relative_install_dir=cpp
+rm -rf ${relative_install_dir}
 
-mkdir -p ./cpp/include/hazelcast/include/hazelcast/
-mkdir -p ./cpp/include/hazelcast/lib/tls
+mkdir -p ./${relative_install_dir}/include
 
-cp -R hazelcast/include/hazelcast/* cpp/include/hazelcast/include/hazelcast/
-cp -R hazelcast/generated-sources/src/hazelcast/client/protocol/codec/*.h cpp/include/hazelcast/include/hazelcast/client/protocol/codec/
+echo "Copying the include files"
+cp -R hazelcast/include/hazelcast ${relative_install_dir}/include/
+cp -R hazelcast/generated-sources/src/hazelcast/client/protocol/codec/*.h ${relative_install_dir}/include/hazelcast/client/protocol/codec/
 
 echo "Copying the examples"
-mkdir -p cpp/examples
-cp -r examples cpp/examples/src
+mkdir -p ${relative_install_dir}/examples
+cp -r examples ${relative_install_dir}/
 
 trap cleanup EXIT
 
@@ -46,10 +47,10 @@ docker stop linux_64_bit_release_build
 docker rm linux_64_bit_release_build
 
 echo "Starting the docker build for 32-bit"
-docker run -d --name linux_32_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora_32 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 32"
+docker run -d --name linux_32_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora_32 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 32 ${relative_install_dir}"
 
 echo "Starting the docker build for 64-bit"
-docker run -d --name linux_64_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora_64 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 64"
+docker run -d --name linux_64_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora_64 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 64 ${relative_install_dir}"
 
 echo "Waiting for 32-bit docker build to finish"
 result=`docker wait linux_32_bit_release_build`
