@@ -65,14 +65,14 @@
   * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
     * [7.4.1. Using Map](#741-using-map)
     * [7.4.2. Using multi_map](#742-using-multimap)
-    * [7.4.3. Using Replicated Map](#743-using-replicated-map)
+    * [7.4.3. Using replicated_map](#743-using-replicated-map)
     * [7.4.4. Using Queue](#744-using-queue)
     * [7.4.5. Using Set](#745-using-set)
     * [7.4.6. Using List](#746-using-list)
     * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
-    * [7.4.8. Using Reliable Topic](#748-using-reliable-topic) 
-    * [7.4.9. Using PN Counter](#7412-using-pn-counter)
-    * [7.4.10. Using Flake ID Generator](#7413-using-flake-id-generator)
+    * [7.4.8. Using reliable_topic](#748-using-reliable-topic) 
+    * [7.4.9. Using pn_counter](#7412-using-pn-counter)
+    * [7.4.10. Using flake_id_generator](#7413-using-flake-id-generator)
     * [7.4.11. CP Subsystem](#7411-cp-subsystem)
       * [7.4.11.1. Using atomic_long](#74111-using-atomic-long)
       * [7.4.11.2. Using fenced_lock](#74112-using-fenced-lock)
@@ -447,7 +447,7 @@ names as explained in the previous section. If you did, then you need to make ce
 
 ### 1.4.2.1 Cluster Name
 
-You only need to provide the name of the cluster if it is explicitely configured at the server side (otherwise the default value of `dev` is used).
+You only need to provide the name of the cluster if it is explicitly configured at the server side (otherwise the default value of `dev` is used).
 
 ```C++
     hazelcast::client::client_config config;
@@ -469,7 +469,7 @@ The value of this property will be:
 
 * the programmatically configured value, if programmatically set,
 * the environment variable value, if the environment variable is set,
-* the default value, if none of the above is set->
+* the default value, if none of the above is set.
 
 See the following for an example client system property configuration:
 
@@ -656,16 +656,16 @@ See the Hazelcast C++ [code samples](https://github.com/hazelcast/hazelcast-cpp-
 
 Hazelcast C++ client supports the following data structures and features:
 
-* Map
-* Queue
-* Set
-* List
+* imap
+* iqueue
+* iset
+* ilist
 * multi_map
-* Replicated Map
+* replicated_map
 * Ringbuffer
-* Reliable Topic
-* CRDT PN Counter
-* Flake ID Generator
+* reliable_topic
+* CRDT pn_counter
+* flake_id_generator
 * fenced_lock (CP Subsystem)
 * counting_semaphore (CP Subsystem)
 * atomic_long (CP Subsystem)
@@ -674,13 +674,13 @@ Hazelcast C++ client supports the following data structures and features:
 * Event Listeners
 * Distributed Executor Service
 * Entry Processor
-* Transactional Map
-* Transactional multi_map
-* Transactional Queue
-* Transactional List
-* Transactional Set
+* transactional_map
+* transactional_multi_map
+* transactional_queue
+* transactional_list
+* transactional_set
 * Query (Predicates)
-* Paging predicate
+* paging_predicate
 * Built-in Predicates
 * Listener with predicate
 * Near Cache Support
@@ -691,9 +691,9 @@ Hazelcast C++ client supports the following data structures and features:
 * Smart Client
 * Unisocket Client
 * Lifecycle Service
-* IdentifiedDataSerializable Serialization
-* Portable Serialization
-* Custom Serialization
+* identified_data_serializer Serialization
+* portable_serializer Serialization
+* custom_serializer Serialization
 * JSON Serialization
 * Global Serialization
 
@@ -1362,7 +1362,7 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 * Connection between the client and member is closed.
 * Client’s heartbeat requests are timed out.
 
-When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redo_operation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue->offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redo_operation`, it means this operation may run again, which may cause two instances of the same object in the queue->
+When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redo_operation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue->offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redo_operation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
 When invocation is being retried, the client may wait some time before it retries again. This duration can be configured using the following property:
 
@@ -1425,7 +1425,7 @@ Most of the distributed data structures are supported by the C++ client. In this
 
 ### 7.4.1. Using Map
 
-Hazelcast Map (`imap`) is a distributed map-> Through the C++ client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
+Hazelcast Map (`imap`) is a distributed map. Through the C++ client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
 
 A Map usage example is shown below.
 
@@ -1461,11 +1461,11 @@ A multi_map usage example is shown below.
     multiMap->remove<std::string, std::string>("my-key", "value2").get();    // Shutdown this Hazelcast Client
 ```
 
-### 7.4.3. Using Replicated Map
+### 7.4.3. Using replicated_map
 
-Hazelcast `replicated_map` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [Replicated Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
+Hazelcast `replicated_map` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [replicated_map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
 
-A Replicated Map usage example is shown below.
+A replicated_map usage example is shown below.
 
 ```C++
     auto replicatedMap = hz.get_replicated_map("myReplicatedMap");
@@ -1557,11 +1557,11 @@ A ringbuffer usage example is shown below.
     std::cout << *rb->read_one<int>(sequence).get() << std::endl;
 ```
 
-### 7.4.8. Using Reliable Topic
+### 7.4.8. Using reliable_topic
 
-Hazelcast `reliable_topic` is a distributed topic implementation backed up by the `ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
+Hazelcast `reliable_topic` is a distributed topic implementation backed up by the `ringbuffer` data structure. For details, see the [reliable_topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
 
-A Reliable Topic usage example is shown below.
+A reliable_topic usage example is shown below.
 
 ```C++
 hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
@@ -1630,11 +1630,11 @@ void listen_with_config() {
 }
 ```
 
-### 7.4.9 Using PN Counter
+### 7.4.9 Using pn_counter
 
-Hazelcast `pn_counter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
+Hazelcast `pn_counter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [pn_counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
-A PN Counter usage example is shown below.
+A pn_counter usage example is shown below.
 
 ```C++
     hazelcast::client::hazelcast_client hz;
@@ -1652,11 +1652,11 @@ A PN Counter usage example is shown below.
     std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get().get() << std::endl;
 ```
 
-### 7.4.10 Using Flake ID Generator
+### 7.4.10 Using flake_id_generator
 
 Hazelcast `flake_id_generator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [flake_id_generator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
-A Flake ID Generator usage example is shown below.
+A flake_id_generator usage example is shown below.
 
 ```C++
     auto generator = hz.get_flake_id_generator("flakeIdGenerator");
@@ -2549,7 +2549,7 @@ Hazelcast partitions your data and spreads it across cluster of members. You can
 
 1. The requested predicate is sent to each member in the cluster.
 2. Each member looks at its own local entries and filters them according to the predicate. At this stage, key-value pairs of the entries are deserialized and then passed to the predicate.
-3. The predicate requester merges all the results coming from each member into a single set->
+3. The predicate requester merges all the results coming from each member into a single set.
 
 Distributed query is highly scalable. If you add new members to the cluster, the partition count for each member is reduced and thus the time spent by each member on iterating its entries is reduced. In addition, the pool of partition threads evaluates the entries concurrently in each member, and the network traffic is also reduced since only filtered data is sent to the requester.
 
@@ -3147,8 +3147,8 @@ typed_data does late deserialization of the data only when the get method is cal
 This typed_data allows you to retrieve the data type of the underlying binary to be used when being deserialized. This class represents the type of a Hazelcast serializable object. The fields can take the following values:
 1. <b>Primitive types</b>: `factory_id=-1`, `class_id=-1`, `type_id` is the type ID for that primitive as listed in `serialization_constants`
 2. <b>Array of primitives</b>: `factory_id=-1`, `class_id=-1`, `type_id` is the type ID for that array as listed in `serialization_constants`
-3. <b>IdentifiedDataSerializable</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
-4. <b>Portable</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
+3. <b>identified_data_serializer serialized objects</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
+4. <b>Portable serialized objects</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
 5. <b>Custom serialized objects</b>: `factory_id=-1`, `class_id=-1`, `type_id` is the non-negative type ID. 
 
 # 8. Development and Testing
