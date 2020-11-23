@@ -438,7 +438,7 @@ pass this object to the client when starting it, as shown below.
     hazelcast::client::client_config config;
     config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
     config.get_network_config().add_address(address("192.168.1.10", 5701));    
-    hazelcast::client::hazelcast_client hz(std::move(std::move(config))); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
+    hazelcast::client::hazelcast_client hz(std::move(config)); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
 ```
 
 If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
