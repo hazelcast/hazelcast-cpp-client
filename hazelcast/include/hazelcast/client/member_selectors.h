@@ -30,8 +30,7 @@ namespace hazelcast {
          * member in the cluster and it is up to the implementation to decide
          * if the member is going to be used or not.</p>
          * <p>For example, a basic implementation could select members on the
-         * existence of a special attribute in the members, like the following
-         * example:<br/>
+         * existence of a special attribute in the members, like the following:<br/>
          * <pre>class MyMemberSelector : public member_selector {
          *     public:
          *          bool select(const member &member) override {

@@ -158,7 +158,7 @@ This chapter provides information on how to get started with your Hazelcast C++ 
 - Hazelcast IMDG 4.0 or newer (for server side)
 - Latest Hazelcast C++ Client
 - Latest [Boost](https://www.boost.org/) Library (C++ client dependency)
-- Feature complete C++11 compiler (feature completenes for compiler C++11 and standard library C++11 is required. The minimum complete compiler for gcc is gcc 5.0)
+- Feature complete C++11 compiler (feature completeness for C++11 compiler and standard library are required. The minimum complete compiler for gcc is gcc 5.0)
 
 ## 1.2. Working with Hazelcast IMDG Clusters
 
@@ -253,7 +253,7 @@ For compilation, you need to include the `hazelcast/include` directory in your d
 	link_libraries(HazelcastClient4.0_64)
 ``` 
  
-If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `hazelcast/lib/tls`. If you are using TLS, then you also need to link to OpenSSL and link to the OpenSSL libraries. E.g. if you are using cmake, we do the following:
+If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `hazelcast/lib/tls`. If you are using TLS, then you also need to link to OpenSSL libraries. E.g. if you are using cmake, we do the following:
 ```Cmake
     include(FindOpenSSL)
 	find_package(OpenSSL REQUIRED)
@@ -446,7 +446,7 @@ names as explained in the previous section. If you did, then you need to make ce
 
 ### 1.4.2.1 Cluster Name
 
-You only need to provide the name of the cluster if it is explicitly configured at the server side (otherwise the default value of `dev` is used).
+You only need to provide the name of the cluster if it is explicitly configured on the server side (otherwise the default value of `dev` is used).
 
 ```C++
     hazelcast::client::client_config config;
@@ -645,7 +645,7 @@ Bob is in IT department
 ```
 
 You will see this time we add only the sales employees but we get the list all known employees including the ones in IT.
-That is because our map lives in the cluster and no matter which client we use, we can access the whole map->
+That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
 
 ## 1.6. Code Samples
 
@@ -2143,7 +2143,7 @@ For more information on the server side configuration, see the [Executor Service
 
 #### 7.6.1.1 Implementing a Callable Task
 
-You implement a C++ class which is hazelcast serializable. This is the task class to be run on the server side. The client side implementation does not need to have any logic, it is purely for initiating the server side task.
+You implement a C++ class which is Hazelcast serializable. This is the task class to be run on the server side. The client side implementation does not need to have any logic, it is purely for initiating the server side task.
 
 On the server side, when you implement the task as `java.util.concurrent.Callable` (a task that returns a value), implement one of the Hazelcast serialization methods for the new class. The serialization type needs to match with that of the client side task class.
 
@@ -2312,7 +2312,7 @@ void printOnMembers(const std::string input, const std::vector<Member> &members)
 #### 7.6.1.5 Canceling an Executing Task
 A task in the code that you execute in a cluster might take longer than expected. If you cannot stop/cancel that task, it will keep eating your resources.
 
-To cancel a task, you can use the `executor_promise<T>::cancel()` API. This API lets you to code and design for cancellations, a highly ignored part of software development. Please keep in mind that if the execution already started or finished, the API may not be able to cancel the task. 
+To cancel a task, you can use the `executor_promise<T>::cancel()` API. This API lets you to code and design for cancellations, a highly ignored part of software development. Please keep in mind that if the execution is already started or finished, the API may not be able to cancel the task. 
 
 #### 7.6.1.5.1 Example Task to Cancel
 The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `timeout` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
@@ -2580,7 +2580,7 @@ Hazelcast offers the following ways for distributed query purposes:
 
 #### 7.7.1.1. person Map Query Example
 
-Assume that you have an `person` map containing the values of `person` objects, as coded below. 
+Assume that you have a `person` map containing the values of `person` objects, as coded below. 
 
 ```C++
 struct person {
@@ -2631,7 +2631,7 @@ In this case before starting the server, you need to compile the `person` and re
 
 > **NOTE: Querying with `portable_serializer` is faster as compared to `identified_data_serializer` .**
 
-#### 7.7.1.2. Querying by Combining Predicates with AND, OR
+#### 7.7.1.2. Querying by Combining Predicates with AND, OR, NOT
 
 You can combine predicates by using the `and_predicate`, `or_predicate` and `not_predicate` operators, as shown in the below example.
 
@@ -2655,6 +2655,12 @@ You can combine predicates by using the `and_predicate`, `or_predicate` and `not
                                                      query::in_predicate(client,
                                                                         query::query_constants::THIS_ATTRIBUTE_NAME,
                                                                         inVals))).get();
+
+    // not_predicate
+    // !(5 <= key <= 10)
+    values = intMap->values<int>(query::not_predicate(client, query::between_predicate(client,
+                                                                                       query::query_constants::KEY_ATTRIBUTE_NAME,
+                                                                                       5, 10))).get();
 ```
 See examples/distributed-map/query folder for more examples.
 
@@ -3177,7 +3183,7 @@ Following command builds and runs the tests:
 
 Sometimes you may want to reproduce the released library for your own compiler environment. You need to run the release script and it will produce a release folder named "cpp".
 
-Note: The default release scripts for Windows and Mac OS require that you have OpenSSL and Boost installed in your development environment. The linux build script uses docker for compiling, hence you need docker installed.
+Note: The default release scripts for Windows and macOS require that you have OpenSSL and Boost installed in your development environment. The Linux build script uses docker for compiling, hence you need docker installed.
 
 ## Mac
 
