@@ -24,8 +24,7 @@ cp -R hazelcast/include/hazelcast cpp/include/
 cp -R hazelcast/generated-sources/src/hazelcast/client/protocol/codec/*.h cpp/include/hazelcast/client/protocol/codec/
 
 echo "Copying the examples"
-mkdir -p cpp/examples
-cp -r examples cpp/examples/src
+cp -r examples cpp/
 
 echo "Building 64-bit STATIC library without SSL. See the output at STATIC_64_macos.txt."
 scripts/build-linux.sh 64 STATIC Release COMPILE_WITHOUT_SSL &> STATIC_64_macos.txt &
@@ -67,7 +66,7 @@ cd cpp/Mac_64/lib/
 export HAZELCAST_SHARED_LIB_NAME=$(echo *dylib)
 install_name_tool -id ${HAZELCAST_SHARED_LIB_NAME} ${HAZELCAST_SHARED_LIB_NAME}
 
-cd ../../../../
+cd -
 
 # Uncomment below if you want to generate doxygen docs
 
@@ -79,3 +78,4 @@ mv  docs cpp/
 
 # Verify release
 scripts/verifyReleaseOSX.sh
+ls

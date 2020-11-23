@@ -1666,7 +1666,7 @@ A flake_id_generator usage example is shown below.
 
 Hazelcast IMDG 4.0 introduced CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency over availability during network partitions and client or server failures.
 
-All data structures within CP Subsystem are available through the `hazelcast_client::getCPSubsystem()` API.
+All data structures within CP Subsystem are available through the `hazelcast_client::get_cp_subsystem()` API.
 
 Before using the CP structures, CP Subsystem has to be enabled on the cluster-side. Refer to the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
 
