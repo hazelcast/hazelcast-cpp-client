@@ -166,11 +166,6 @@ namespace hazelcast {
             return name_;
         }
 
-        std::ostream &operator<<(std::ostream &os, const member_selector &a_selector) {
-            a_selector.to_string(os);
-            return os;
-        }
-
         namespace impl {
             RoundRobinLB::RoundRobinLB() = default;
 
@@ -278,10 +273,6 @@ namespace hazelcast {
 
         bool member_selectors::data_member_selector::select(const member &member) const {
             return !member.is_lite_member();
-        }
-
-        void member_selectors::data_member_selector::to_string(std::ostream &os) const {
-            os << "Default DataMemberSelector";
         }
 
         const std::unique_ptr<member_selector> member_selectors::DATA_MEMBER_SELECTOR(

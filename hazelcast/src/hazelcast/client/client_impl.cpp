@@ -477,9 +477,8 @@ namespace hazelcast {
                 }
             }
             if (selected.empty()) {
-                throw (exception::exception_builder<exception::rejected_execution>(
-                        "IExecutorService::selectMembers") << "No member selected with memberSelector["
-                                                           << member_selector << "]").build();
+                BOOST_THROW_EXCEPTION(exception::rejected_execution("IExecutorService::selectMembers",
+                                                                    "No member could be selected with member selector"));
             }
             return selected;
         }

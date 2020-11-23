@@ -73,14 +73,10 @@ namespace hazelcast {
 
                     struct SelectAllMembers : public member_selector {
                         bool select(const member &member) const override;
-
-                        void to_string(std::ostream &os) const override;
                     };
 
                     struct SelectNoMembers : public member_selector {
                         bool select(const member &member) const override;
-
-                        void to_string(std::ostream &os) const override;
                     };
 
                     struct SerializedCounterCallable {
