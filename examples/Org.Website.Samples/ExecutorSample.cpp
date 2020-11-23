@@ -116,10 +116,6 @@ public:
 
         return *attribute == "true";
     }
-
-    void to_string(std::ostream &os) const override {
-        os << "MyMemberSelector";
-    }
 };
 
 int main() {
@@ -128,9 +124,9 @@ int main() {
     // Get the Distributed Executor Service
     std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    auto promise = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
+    auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
     // Wait for the result of the submitted task and print the result
-    auto result = promise.get_future().get();
+    auto result = result_future.get_future().get();
     std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
     member firstMember = hz.get_cluster().get_members()[0];

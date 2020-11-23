@@ -44,9 +44,7 @@ public:
 
 int main() {
     hazelcast::client::client_config config;
-    hazelcast::client::serialization_config serializationConfig;
-    serializationConfig.set_global_serializer(std::make_shared<MyGlobalSerializer>());
-    config.set_serialization_config(serializationConfig);
+    config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
     hazelcast::client::hazelcast_client hz(std::move(config));
 
     auto map = hz.get_map("map");

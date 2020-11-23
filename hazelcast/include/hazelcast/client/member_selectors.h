@@ -24,27 +24,23 @@ namespace hazelcast {
         class member;
 
         /**
- * <p>Implementations of this interface select members
- * that are capable of executing a special kind of task.<br/>
- * The {@link #select(Member)} method is called for every available
- * member in the cluster and it is up to the implementation to decide
- * if the member is going to be used or not.</p>
- * <p>For example, a basic implementation could select members on the
- * existence of a special attribute in the members, like the following
- * example:<br/>
- * <pre>class MyMemberSelector : public member_selector {
- *     public:
- *          bool select(const member &member) override {
- *              auto attribute = member.get_attribute("my.special.executor")
- *              return attribute != nullptr && *attribute == "my.special.executor";
- *          }
- *
- *          void to_string(std::ostream &os) override {
- *              os << "My member selector";
- *          }
- * }</pre>
- * </p>
- */
+         * <p>Implementations of this interface select members
+         * that are capable of executing a special kind of task.<br/>
+         * The {@link #select(Member)} method is called for every available
+         * member in the cluster and it is up to the implementation to decide
+         * if the member is going to be used or not.</p>
+         * <p>For example, a basic implementation could select members on the
+         * existence of a special attribute in the members, like the following
+         * example:<br/>
+         * <pre>class MyMemberSelector : public member_selector {
+         *     public:
+         *          bool select(const member &member) override {
+         *              auto attribute = member.get_attribute("my.special.executor")
+         *              return attribute != nullptr && *attribute == "my.special.executor";
+         *          }
+         * }</pre>
+         * </p>
+         */
         class member_selector {
         public:
             /**
@@ -56,10 +52,6 @@ namespace hazelcast {
             virtual bool select(const member &member) const = 0;
 
             virtual ~member_selector() = default;
-
-            virtual void to_string(std::ostream &os) const = 0;
-
-            friend std::ostream &operator<<(std::ostream &os, const member_selector &a_selector);
         };
 
         /**
@@ -69,8 +61,6 @@ namespace hazelcast {
         public:
             class data_member_selector : public member_selector {
                 bool select(const member &member) const override;
-
-                void to_string(std::ostream &os) const override;
             };
 
             static const std::unique_ptr<member_selector> DATA_MEMBER_SELECTOR;
