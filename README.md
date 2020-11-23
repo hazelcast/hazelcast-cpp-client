@@ -799,7 +799,7 @@ namespace hazelcast {
 }
 ```
 
-`hz_serializer<Person>` specialization of `hz_serializer` should implement the above four methods, namely `get_factory_id`, `get_class_id`, `write_data`, `read_data`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as friend to your object class. You use the `object_data_output` class methods when serializing the object into binary bytes and you use the `object_data_input` class methods when de-serializing the bytes into the concrete object instance. The factory and class id returned from the associated methods should match the id's defined at the server side (Yes, you need to have the corresponding Java classes at the server side).
+`hz_serializer<Person>` specialization of `hz_serializer` should implement the above four methods, namely `get_factory_id`, `get_class_id`, `write_data`, `read_data`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as a friend to your object class. You use the `object_data_output` class methods when serializing the object into binary bytes and the `object_data_input` class methods when de-serializing the bytes into the concrete object instance. The factory and class ID returned from the associated methods should match the IDs defined at the server side (you need to have the corresponding Java classes at the server side).
 
 ## 4.2. portable_serializer Serialization
 
