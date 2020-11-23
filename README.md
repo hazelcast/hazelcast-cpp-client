@@ -63,13 +63,13 @@
     * [7.3.4. Client Connection Strategy](#734-client-connection-strategy)
         * [7.3.4.1. Configuring Client Reconnect Strategy](#7341-configuring-client-reconnect-strategy)
   * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
-    * [7.4.1. Using Map](#741-using-map)
+    * [7.4.1. Using imap](#741-using-map)
     * [7.4.2. Using multi_map](#742-using-multimap)
     * [7.4.3. Using replicated_map](#743-using-replicated-map)
-    * [7.4.4. Using Queue](#744-using-queue)
-    * [7.4.5. Using Set](#745-using-set)
-    * [7.4.6. Using List](#746-using-list)
-    * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
+    * [7.4.4. Using iqueue](#744-using-queue)
+    * [7.4.5. Using iset](#745-using-set)
+    * [7.4.6. Using ilist](#746-using-list)
+    * [7.4.7. Using ringbuffer](#747-using-ringbuffer)
     * [7.4.8. Using reliable_topic](#748-using-reliable-topic) 
     * [7.4.9. Using pn_counter](#7412-using-pn-counter)
     * [7.4.10. Using flake_id_generator](#7413-using-flake-id-generator)
@@ -128,7 +128,6 @@
 * [10. Contributing](#10-contributing)
 * [11. License](#11-license)
 * [12. Copyright](#12-copyright)
-
 
 # Introduction
 
@@ -1423,7 +1422,7 @@ Possible values for `reconnect_mode` are:
 
 Most of the distributed data structures are supported by the C++ client. In this chapter, you will learn how to use these distributed data structures.
 
-### 7.4.1. Using Map
+### 7.4.1. Using imap
 
 Hazelcast Map (`imap`) is a distributed map. Through the C++ client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
 
@@ -1474,7 +1473,7 @@ A replicated_map usage example is shown below.
     std::cout << "Replicated map value for key 2 is " << *replicatedMap->get<int, std::string>(2).get() << std::endl; // Replicated map value for key 2 is Ahmet
 ```
 
-### 7.4.4. Using Queue
+### 7.4.4. Using iqueue
 
 Hazelcast Queue (`iqueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the [Queue section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#queue) in the Hazelcast IMDG Reference Manual.
 
@@ -1495,7 +1494,7 @@ A Queue usage example is shown below.
     std::cout << *queue->take<std::string>().get() << std::endl; // Will print yetanotheritem
 ```
 
-### 7.4.5. Using Set
+### 7.4.5. Using iset
 
 Hazelcast Set (`iset`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
 
@@ -1517,7 +1516,7 @@ A Set usage example is shown below.
     }
 ```
 
-### 7.4.6. Using List
+### 7.4.6. Using ilist
 
 Hazelcast List (`ilist`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
 
@@ -2914,9 +2913,9 @@ Notice that `OrderKey` implements `partition_aware` interface and that `get_part
     mapCustomers->put(OrderKey::customer_id_string, customer).get();
 
     // now create the orders for this customer
-    mapOrders>put<OrderKey, Order>(OrderKey{"1"}, order1).get();
-    mapOrders>put<OrderKey, Order>(OrderKey{"2"}, order2).get();
-    mapOrders>put<OrderKey, Order>(OrderKey{"3"}, order3).get();
+    mapOrders->put<OrderKey, Order>(OrderKey{"1"}, order1).get();
+    mapOrders->put<OrderKey, Order>(OrderKey{"2"}, order2).get();
+    mapOrders->put<OrderKey, Order>(OrderKey{"3"}, order3).get();
 ```  
 
 For more details, see the [partition_aware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
