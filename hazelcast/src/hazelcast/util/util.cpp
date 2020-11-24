@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <thread>
-#include <regex>
+#include <boost/regex.hpp>
 #include <iomanip>
 #include <mutex>
 #include <stdlib.h>
@@ -427,7 +427,9 @@ namespace hazelcast {
             boost::ignore_unused_variable_warning(result);
 
             std::ostringstream oss;
-            oss << std::put_time(&localBrokenTime, "%Y-%m-%d %H:%M:%S");
+            char time_buffer[80];
+            std::strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &localBrokenTime);
+            oss << time_buffer;
             oss << '.' << std::setfill('0') << std::setw(3) << duration_cast<milliseconds>(systemDuration).count() % 1000;
 
             return oss.str();
@@ -435,8 +437,8 @@ namespace hazelcast {
 
         std::vector<std::string> StringUtil::tokenize_version_string(const std::string &version) {
             // passing -1 as the submatch index parameter performs splitting
-            std::regex re(".");
-            std::sregex_token_iterator first{version.begin(), version.end(), re, -1}, last;
+            boost::regex re(".");
+            boost::sregex_token_iterator first{version.begin(), version.end(), re, -1}, last;
             return {first, last};
         }
 
@@ -933,7 +935,7 @@ namespace hazelcast {
                 int32_t errorCode = ie.get_error_code();
                 if (errorCode == client::protocol::EXECUTION) {
                     try {
-                        std::rethrow_if_nested(std::current_exception());
+                        std::rethrow_if_nested(e);
                     } catch (...) {
                         rethrow(std::current_exception(), runtime_exception_factory);
                     }

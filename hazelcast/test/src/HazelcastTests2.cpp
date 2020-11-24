@@ -440,7 +440,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testStringUtilTimeToString) {
                 std::string timeString = hazelcast::util::StringUtil::time_to_string(
                         std::chrono::steady_clock::now());
-//expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
+                //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
                 ASSERT_EQ((size_t) 23, timeString.length());
                 ASSERT_EQ(timeString[0], '2');
                 ASSERT_EQ(timeString[1], '0');

@@ -124,11 +124,9 @@ namespace hazelcast {
         private:
             using handler_t = std::function<void(const membership_event &)>;
             using init_handler_t = std::function<void(const initial_membership_event &)>;
-            
-            static constexpr auto noop_handler = util::noop<const membership_event &>;
 
-            handler_t left_{ noop_handler },
-                      joined_{ noop_handler };
+            handler_t left_{ util::noop<const membership_event &> },
+                      joined_{ util::noop<const membership_event &> };
             init_handler_t init_{};
         };
     }

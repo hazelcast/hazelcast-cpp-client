@@ -1101,7 +1101,9 @@ namespace hazelcast {
                     return boost::make_ready_future(EntryVector());
                 }
                 std::vector<serialization::pimpl::data> keysData;
-                std::for_each(keys.begin(), keys.end(), [&](const K &key) { keysData.push_back(to_data<K>(key)); });
+                for (const auto &k : keys) {
+                    keysData.push_back(to_data<K>(k));
+                }
                 return proxy::IMapImpl::execute_on_keys_data(keysData, to_data<EntryProcessor>(entry_processor));
             }
 

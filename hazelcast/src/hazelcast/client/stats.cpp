@@ -30,7 +30,7 @@
  * limitations under the License.
  */
 
-#include <regex>
+#include <boost/regex.hpp>
 #include <iomanip>
 
 #include "hazelcast/client/impl/statistics/Statistics.h"
@@ -206,12 +206,12 @@ namespace hazelcast {
                 Statistics::PeriodicStatistics::PeriodicStatistics(Statistics &statistics) : statistics_(statistics) {}
 
                 std::string Statistics::escape_special_characters(const std::string &name) {
-                    std::regex reComma(",");
-                    std::string escapedName = std::regex_replace(name, reComma, std::string("\\,"));
-                    std::regex reEqual("=");
-                    escapedName = std::regex_replace(escapedName, reEqual, std::string("\\="));
-                    std::regex reBackslash("\\\\");
-                    escapedName = std::regex_replace(escapedName, reBackslash, std::string("\\\\"));
+                    boost::regex reComma(",");
+                    std::string escapedName = boost::regex_replace(name, reComma, std::string("\\,"));
+                    boost::regex reEqual("=");
+                    escapedName = boost::regex_replace(escapedName, reEqual, std::string("\\="));
+                    boost::regex reBackslash("\\\\");
+                    escapedName = boost::regex_replace(escapedName, reBackslash, std::string("\\\\"));
 
                     return name[0] == '/' ? escapedName.substr(1) : escapedName;
                 }

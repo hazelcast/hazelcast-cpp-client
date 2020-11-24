@@ -154,11 +154,10 @@ namespace hazelcast {
                                                auto dataResult = f.get();
                                                std::vector<T> result;
                                                result.reserve(dataResult.size());
-                                               std::for_each(dataResult.begin(), dataResult.end(),
-                                                             [&](const serialization::pimpl::data &key_data) {
-                                                                 // The object is guaranteed to exist (non-null)
-                                                                 result.push_back(std::move(to_object<T>(key_data).value()));
-                                                             });
+                                               for (const auto &d : dataResult) {
+                                                   // The object is guaranteed to exist (non-null)
+                                                   result.push_back(std::move(to_object<T>(d).value()));
+                                               }
                                                return result;
                                            });
                 }
@@ -169,9 +168,9 @@ namespace hazelcast {
                         auto entries = f.get();
                         std::unordered_map<K, boost::optional<V>> result;
                         result.reserve(entries.size());
-                        std::for_each(entries.begin(), entries.end(), [&](std::pair<serialization::pimpl::data, serialization::pimpl::data> entry) {
-                            result.insert({std::move(to_object<K>(entry.first)).value(), to_object<V>(entry.second)});
-                        });
+                        for (const auto &e : entries) {
+                            result.insert({std::move(to_object<K>(e.first)).value(), to_object<V>(e.second)});
+                        }
                         return result;
                     });
                 }
@@ -183,12 +182,11 @@ namespace hazelcast {
                         auto dataEntryVector = f.get();
                         std::vector<std::pair<K, V>> result;
                         result.reserve(dataEntryVector.size());
-                        std::for_each(dataEntryVector.begin(), dataEntryVector.end(),
-                                      [&](const std::pair<serialization::pimpl::data, serialization::pimpl::data> &entry_data) {
-                                          // please note that the key and value will never be null
-                                          result.emplace_back(std::move(to_object<K>(entry_data.first)).value(),
-                                                                 std::move(to_object<V>(entry_data.second)).value());
-                                      });
+                        for (const auto &e : dataEntryVector) {
+                            // please note that the key and value will never be null
+                            result.emplace_back(std::move(to_object<K>(e.first)).value(),
+                                                std::move(to_object<V>(e.second)).value());
+                        }
                         return result;
                     });
                 }
@@ -197,8 +195,9 @@ namespace hazelcast {
                 std::vector<serialization::pimpl::data> to_data_collection(const std::vector<T> &elements) {
                     std::vector<serialization::pimpl::data> dataCollection;
                     dataCollection.reserve(elements.size());
-                    std::for_each(elements.begin(), elements.end(),
-                                  [&](const T &item) { dataCollection.push_back(to_data(item)); });
+                    for (const auto &e : elements) {
+                        dataCollection.push_back(to_data(e));
+                    }
                     return dataCollection;
                 }
 
@@ -206,9 +205,9 @@ namespace hazelcast {
                 EntryVector to_data_entries(const std::unordered_map<K, V> &m) {
                     EntryVector entries;
                     entries.reserve(m.size());
-                    std::for_each(m.begin(), m.end(), [&] (const typename std::unordered_map<K, V>::value_type &entry) {
-                        entries.emplace_back(to_data<K>(entry.first), to_data<V>(entry.second));
-                    });
+                    for (const auto &e : m) {
+                        entries.emplace_back(to_data<K>(e.first), to_data<V>(e.second));
+                    }
                     return entries;
                 }
 
