@@ -266,9 +266,9 @@ Hazelcast also depends on Boost library. We specifically use the chrono and thre
     include(FindBoost)
     find_package(Boost REQUIRED COMPONENTS thread chrono)
     include_directories(${Boost_INCLUDE_DIRS})
-    link_libraries(Boost::thread Boost::chrono)
+    link_libraries(Boost::thread Boost::chrono Boost::regex)
     add_definitions("-DBOOST_THREAD_VERSION=5")
-``` 
+```
 
 #### 1.3.1.1 Mac Client
 
@@ -276,11 +276,11 @@ For Mac, there is only 64-bit binary distribution.
 
 Here is an example script to build with the static library with boost dependencies (assume that ${Boost_INCLUDE_DIR} is the boost include folder path and ${Boost_LIBRARY_DIR} is the path of the folder with the boost libraries):
 
-`c++ main.cpp -Ihazelcast/include -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lboost_thread -lboost_chrono hazelcast/Mac_64/lib/libHazelcast4.0_64.a`
+`c++ main.cpp -Ihazelcast/include -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lboost_thread -lboost_chrono -lboost_regex hazelcast/Mac_64/lib/libHazelcast4.0_64.a`
 
 Here is an example script to build with the shared library:
 
-`c++ main.cpp -Ihazelcast/include -Lhazelcast/Mac_64/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
+`c++ main.cpp -Ihazelcast/include -Lhazelcast/Mac_64/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono -lboost_regex`
 
 #### 1.3.1.2 Linux Client
 
@@ -288,11 +288,11 @@ For Linux, there are 32- and 64-bit distributions.
 
 Here is an example script to build with the static library with boost dependencies (assume that ${Boost_INCLUDE_DIR} is the boost include folder path and ${Boost_LIBRARY_DIR} is the path of the folder with the boost libraries):
 
-`g++ main.cpp -o my_app -Ihazelcast/include -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lboost_thread -lboost_chrono hazelcast/lib/libHazelcast4.0_64.a`
+`g++ main.cpp -o my_app -Ihazelcast/include -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lboost_thread -lboost_chrono -lboost_regex hazelcast/lib/libHazelcast4.0_64.a`
 
 Here is an example script to build with the shared library:
 
-`c++ main.cpp -o my_app -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
+`c++ main.cpp -o my_app -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono -lboost_regex`
 
 #### 1.3.1.3 Windows Client
 
@@ -533,7 +533,7 @@ Let's manipulate a distributed map on a cluster using the client.
 Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
 
 ```C++
-`g++ IT.cpp -o IT  -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
+`g++ IT.cpp -o IT  -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono -lboost_regex`
 ```
 Then, you can run the application using the following command:
  
@@ -588,7 +588,7 @@ Now create a `Sales.cpp` file, compile and run it as shown below.
 **Compile:**
 
 ```C++
-`g++ Sales.cpp -o Sales -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
+`g++ Sales.cpp -o Sales -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono -lboost_regex`
 
 ```
 **Run**
