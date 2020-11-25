@@ -252,7 +252,9 @@ namespace hazelcast {
                         b->reserve((std::max)(EXPECTED_DATA_BLOCK_SIZE, bytes_to_reserve));
                     }
 
-                    return b->insert(b->end(), actual_number_of_bytes, 0).operator->();
+                    auto position = b->size();
+                    b->insert(b->end(), actual_number_of_bytes, 0);
+                    return &(*b)[position];
                 }
 
                 inline byte *rd_ptr(size_t requested_bytes) {

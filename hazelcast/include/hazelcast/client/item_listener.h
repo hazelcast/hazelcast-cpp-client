@@ -93,9 +93,8 @@ namespace hazelcast {
 
         private:
             using HandlerType = std::function<void(item_event &&)>;
-            static constexpr auto noop_handler = util::noop<item_event &&>;
-            HandlerType added_ = noop_handler,
-                        removed_ = noop_handler;
+            HandlerType added_ = util::noop<item_event &&>,
+                        removed_ = util::noop<item_event &&>;
 
             template<typename>
             friend class impl::item_event_handler;

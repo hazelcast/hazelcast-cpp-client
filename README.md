@@ -268,7 +268,7 @@ Hazelcast also depends on Boost library. We specifically use the chrono and thre
     include_directories(${Boost_INCLUDE_DIRS})
     link_libraries(Boost::thread Boost::chrono)
     add_definitions("-DBOOST_THREAD_VERSION=5")
-``` 
+```
 
 #### 1.3.1.1 Mac Client
 

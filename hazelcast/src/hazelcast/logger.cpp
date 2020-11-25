@@ -88,7 +88,9 @@ void logger::default_handler(const std::string &instance_name,
 
     std::ostringstream sstrm;
 
-    sstrm << std::put_time(&local_t, "%d/%m/%Y %H:%M:%S.")
+    char time_buffer[80];
+    std::strftime(time_buffer, sizeof(time_buffer), "%d/%m/%Y %H:%M:%S.", &local_t);
+    sstrm << time_buffer
           << std::setfill('0') << std::setw(3) << ms << ' '
           << lvl << ": [" << std::this_thread::get_id() << "] "
           << instance_name << '[' << cluster_name << "] ["

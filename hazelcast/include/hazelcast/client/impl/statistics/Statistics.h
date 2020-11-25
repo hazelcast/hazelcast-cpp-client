@@ -83,7 +83,7 @@ namespace hazelcast {
                         /**
                          * @param name the string for which the special characters ',', '=', '\' are escaped properly
                          */
-                        void get_name_with_prefix(const std::string &name, std::ostringstream &out);
+                        void get_name_with_prefix(std::string &name, std::ostringstream &out);
 
                         Statistics &statistics_;
                     };
@@ -95,7 +95,7 @@ namespace hazelcast {
                     void send_stats(int64_t timestamp, const std::string &new_stats,
                                    const std::shared_ptr<connection::Connection> &connection);
 
-                    static std::string escape_special_characters(const std::string &name);
+                    static std::string escape_special_characters(std::string &name);
 
                     spi::ClientContext &client_context_;
                     client_properties &client_properties_;

@@ -188,7 +188,9 @@ namespace hazelcast {
                 io_guard_.reset();
                 io_context_->stop();
                 boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(*io_context_).shutdown();
-                std::for_each(io_threads_.begin(), io_threads_.end(), [](std::thread &t) { t.join(); });
+                for (auto &t : io_threads_) {
+                    t.join();
+                }
 
                 connection_listeners_.clear();
                 active_connections_.clear();

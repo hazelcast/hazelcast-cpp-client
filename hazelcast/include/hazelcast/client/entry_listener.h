@@ -234,18 +234,16 @@ namespace hazelcast {
 
         private: 
             using EntryHandlerType = std::function<void(entry_event &&)>;
-            static constexpr auto noop_entry_handler = util::noop<entry_event &&>;
-            EntryHandlerType added_ = noop_entry_handler,
-                             removed_ = noop_entry_handler,
-                             updated_ = noop_entry_handler,
-                             evicted_ = noop_entry_handler,
-                             expired_ = noop_entry_handler,
-                             merged_ = noop_entry_handler;
+            EntryHandlerType added_ = util::noop<entry_event &&>,
+                             removed_ = util::noop<entry_event &&>,
+                             updated_ = util::noop<entry_event &&>,
+                             evicted_ = util::noop<entry_event &&>,
+                             expired_ = util::noop<entry_event &&>,
+                             merged_ = util::noop<entry_event &&>;
 
             using MapHandlerType = std::function<void(map_event &&)>;
-            static constexpr auto noop_map_handler = util::noop<map_event &&>;
-            MapHandlerType map_evicted_ = noop_map_handler,
-                           map_cleared_ = noop_map_handler;
+            MapHandlerType map_evicted_ = util::noop<map_event &&>,
+                           map_cleared_ = util::noop<map_event &&>;
 
             int32_t flags_ = 0;
 

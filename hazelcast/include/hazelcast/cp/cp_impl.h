@@ -88,7 +88,7 @@ namespace hazelcast {
                         int64_t id;
                         std::chrono::milliseconds ttl;
                         std::chrono::steady_clock::time_point creation_time;
-                        std::atomic_int32_t acquire_count = {0};
+                        std::atomic<int32_t> acquire_count = {0};
 
                         bool is_valid() const;
 
