@@ -29,13 +29,14 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <thread>
-#include <boost/regex.hpp>
 #include <iomanip>
 #include <mutex>
 #include <stdlib.h>
 #include <time.h>
 
 #include <boost/concept_check.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <boost/asio/io_service.hpp>
@@ -43,6 +44,7 @@
 #include <boost/asio/ssl/rfc2818_verification.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/system_error.hpp>
+
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/IOUtil.h"
@@ -437,9 +439,9 @@ namespace hazelcast {
 
         std::vector<std::string> StringUtil::tokenize_version_string(const std::string &version) {
             // passing -1 as the submatch index parameter performs splitting
-            boost::regex re(".");
-            boost::sregex_token_iterator first{version.begin(), version.end(), re, -1}, last;
-            return {first, last};
+            std::vector<std::string> result;
+            boost::split(result, version, boost::is_any_of("."));
+            return result;
         }
 
         int Int64Util::number_of_leading_zeros(int64_t i) {

@@ -29,9 +29,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include <boost/regex.hpp>
 #include <iomanip>
+
+#include <boost/algorithm/string/replace.hpp>
 
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -205,19 +205,16 @@ namespace hazelcast {
 
                 Statistics::PeriodicStatistics::PeriodicStatistics(Statistics &statistics) : statistics_(statistics) {}
 
-                std::string Statistics::escape_special_characters(const std::string &name) {
-                    boost::regex reComma(",");
-                    std::string escapedName = boost::regex_replace(name, reComma, std::string("\\,"));
-                    boost::regex reEqual("=");
-                    escapedName = boost::regex_replace(escapedName, reEqual, std::string("\\="));
-                    boost::regex reBackslash("\\\\");
-                    escapedName = boost::regex_replace(escapedName, reBackslash, std::string("\\\\"));
+                std::string Statistics::escape_special_characters(std::string &name) {
+                    boost::replace_all(name, ",", "\\,");
+                    boost::replace_all(name, "=", "\\=");
+                    boost::replace_all(name, "\\", "\\\\");
 
-                    return name[0] == '/' ? escapedName.substr(1) : escapedName;
+                    return name[0] == '/' ? name.substr(1) : name;
                 }
 
                 void
-                Statistics::PeriodicStatistics::get_name_with_prefix(const std::string &name, std::ostringstream &out) {
+                Statistics::PeriodicStatistics::get_name_with_prefix(std::string &name, std::ostringstream &out) {
                     out << NEAR_CACHE_CATEGORY_PREFIX << Statistics::escape_special_characters(name);
                 }
 

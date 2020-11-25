@@ -12,7 +12,7 @@ RUN tar -xzf boost_1_72_0.tar.gz && \
     rm boost_1_72_0.tar.gz && \
     cd boost_1_72_0 && \
     ./bootstrap.sh && \
-    ./b2 --with-thread --with-chrono --with-regex install && \
+    ./b2 --with-thread --with-chrono install && \
     cd .. && \
     rm -rf boost_1_72_0
 
