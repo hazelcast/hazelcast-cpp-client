@@ -937,7 +937,7 @@ namespace hazelcast {
                 int32_t errorCode = ie.get_error_code();
                 if (errorCode == client::protocol::EXECUTION) {
                     try {
-                        std::rethrow_if_nested(e);
+                        std::rethrow_if_nested(ie);
                     } catch (...) {
                         rethrow(std::current_exception(), runtime_exception_factory);
                     }

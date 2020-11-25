@@ -123,7 +123,7 @@
 * [8. Development and Testing](#8-development-and-testing)
   * [8.1. Testing](#81-testing)
     * [8.1.1 Tested Platforms](#811-tested-platforms)
-  * [8.2. Reproducing Released Libraries](#82-reproducing-released-libraries)
+  * [8.2. Reproducing Released Libraries From Source](#82-reproducing-released-libraries)
 * [9. Getting Help](#9-getting-help)
 * [10. Contributing](#10-contributing)
 * [11. License](#11-license)
@@ -233,6 +233,8 @@ If you want to add a `Portable` class, you should use `<portable-factories>` ins
 See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
 
 ## 1.3. Downloading and Installing
+
+Note: If you want to compile the library for your specific environment rather than using the release binary, see section [Reproducing Released Libraries From Source](#82-reproducing-released-libraries).
 
 Download the latest Hazelcast C++ client library from [Hazelcast C++ Client Website](https://hazelcast.org/clients/cplusplus/). You need to download the zip file for your platform. For Linux and Windows, 32- and 64-bit libraries exist. For MacOS, there is only 64-bit version. 
 
@@ -3179,11 +3181,24 @@ Following command builds and runs the tests:
 * MacOS: `./testLinuxSingleCase.sh 64 SHARED Debug`
 * Windows: `./testWindowsSingleCase.bat 64 SHARED Debug`
 
-## 8.2 Reproducing Released Libraries
+## 8.2 Reproducing Released Libraries From Source
 
-Sometimes you may want to reproduce the released library for your own compiler environment. You need to run the release script and it will produce a release folder named "cpp".
+Sometimes you may want to reproduce the released library for your own compiler environment. The downloaded zip file contains binary library built using the latest gcc version and it may not be able to compile with your compiler (especially with your libstdc++ version), hence you may want to recompile the project source and build a binary library in your build environment.
 
-Note: The default release scripts for Windows and macOS require that you have OpenSSL and Boost installed in your development environment. The Linux build script uses docker for compiling, hence you need docker installed.
+You need to run the release script and it will produce a release folder named "cpp".
+
+If you just want to reproduce a shared library or static library, annd copy the library, then you can do the following:
+```shell script
+git clone https://github.com/hazelcast/hazelcast-cpp-client.git
+cd hazelcast-cpp-client
+mkdir build
+cd build
+cmake .. -DHZ_BUILD_EXAMPLES=OFF -DHZ_BUILD_TESTS=OFF -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_COMPILE_WITH_SSL=OFF
+cmake --build . --parallel -v --config Release
+```
+The above code snippet will produce non-SSL 64-bit shared library in folder hazelcast-cpp-client/build. You can link to this directory for your application.
+
+Note: The default release scripts for Windows and macOS require that you have OpenSSL and Boost installed in your development environment. 
 
 ## Mac
 
@@ -3192,6 +3207,8 @@ Run releaseOSX.sh.
 ## Linux
 
 Run releaseLinux.sh
+
+The Linux build script uses docker for compiling, hence you need docker installed.
 
 ## Windows
 
