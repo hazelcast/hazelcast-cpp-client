@@ -28,19 +28,19 @@ echo "Building for ${HZ_BIT_VERSION}-bit"
 mkdir -p ${relative_install_dir}/Linux_${HZ_BIT_VERSION}/lib/tls
 
 echo "Building ${HZ_BIT_VERSION}-bit STATIC library without SSL. See the output at STATIC_${HZ_BIT_VERSION}_linux.txt."
-scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release COMPILE_WITHOUT_SSL &> STATIC_${HZ_BIT_VERSION}_linux.txt &
+scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release COMPILE_WITHOUT_SSL WITHOUT_TESTS &> STATIC_${HZ_BIT_VERSION}_linux.txt &
 STATIC_pid=$!
 
 echo "Building ${HZ_BIT_VERSION}-bit SHARED library without SSL. See the output at SHARED_${HZ_BIT_VERSION}_linux.txt."
-scripts/build-linux.sh ${HZ_BIT_VERSION} SHARED Release COMPILE_WITHOUT_SSL &> SHARED_${HZ_BIT_VERSION}_linux.txt &
+scripts/build-linux.sh ${HZ_BIT_VERSION} SHARED Release COMPILE_WITHOUT_SSL WITHOUT_TESTS &> SHARED_${HZ_BIT_VERSION}_linux.txt &
 SHARED_pid=$!
 
 echo "Building ${HZ_BIT_VERSION}-bit STATIC library with SSL. See the output at STATIC_${HZ_BIT_VERSION}_SSL_linux.txt."
-scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release &> STATIC_${HZ_BIT_VERSION}_SSL_linux.txt &
+scripts/build-linux.sh ${HZ_BIT_VERSION} STATIC Release WITHOUT_TESTS &> STATIC_${HZ_BIT_VERSION}_SSL_linux.txt &
 STATIC_SSL_pid=$!
 
 echo "Building ${HZ_BIT_VERSION}-bit SHARED library with SSL. See the output at SHARED_${HZ_BIT_VERSION}_SSL_linux.txt."
-scripts/build-linux.sh ${HZ_BIT_VERSION} SHARED Release &> SHARED_${HZ_BIT_VERSION}_SSL_linux.txt &
+scripts/build-linux.sh ${HZ_BIT_VERSION} SHARED Release WITHOUT_TESTS &> SHARED_${HZ_BIT_VERSION}_SSL_linux.txt &
 SHARED_SSL_pid=$!
 
 tail -f *_linux.txt &
