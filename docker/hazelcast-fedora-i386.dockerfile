@@ -1,10 +1,10 @@
 FROM fedora:latest
 
 RUN dnf groups install -y "Development Tools"
-RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.i686 cmake valgrind rsync passwd openssh-server ninja-build
+RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.i686 cmake valgrind rsync passwd openssh-server ninja-build java-1.8.0-openjdk
 
 #install 32-bit libraries
-RUN dnf -y install glibc-devel.i686 glibc-devel libstdc++.i686 java-1.8.0-openjdk.i686
+RUN dnf -y install glibc-devel.i686 glibc-devel libstdc++.i686
 
 # needed for test
 RUN dnf install -y maven net-tools gcovr
