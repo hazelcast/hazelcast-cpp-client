@@ -39,7 +39,7 @@ include(TestBigEndian)
 include(FindOpenSSL)
 include(FindBoost)
 
-SET(HZ_VERSION 4.0-SNAPSHOT)
+SET(HZ_VERSION 4.0-BETA)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
 	SET(CMAKE_BUILD_TYPE Debug)
