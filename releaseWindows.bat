@@ -12,7 +12,6 @@ mkdir .\cpp\Windows_64\lib\static
 mkdir .\cpp\Windows_64\lib\tls\static
 mkdir .\cpp\Windows_64\lib\shared
 mkdir .\cpp\Windows_64\lib\tls\shared
-mkdir .\cpp\Windows_64\hazelcast\include\hazelcast
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\include\hazelcast\
 xcopy /S /Q hazelcast\generated-sources\src\hazelcast\client\protocol\codec\*.h cpp\include\hazelcast\client\protocol\codec\
