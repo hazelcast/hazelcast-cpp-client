@@ -22,11 +22,10 @@ if %HZ_BIT_VERSION% == 32 (
 )
 
 echo "Generating the solution files for compilation without TLS"
-cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake -DHAZELCAST_INSTALL_DIR=%HZ_INSTALL_DIR% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_VERSION=%HZ_VERSION% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% || exit /b 1
+cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CONFIGURATION_TYPES=%HZ_BUILD_TYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DBUILD_GMOCK=OFF -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=OFF -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF || exit /b 1
 
 echo "Building for platform %BUILDFORPLATFORM%"
-
-MSBuild.exe HazelcastExamples.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;VisualStudioVersion=12.0;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% || exit /b 1
+cmake --build . --parallel -v --config %HZ_BUILD_TYPE%
 
 # clean the directory for a fresh build
 cd ..
@@ -35,11 +34,10 @@ mkdir build
 cd build
 
 echo "Generating the solution files for compilation with TLS support"
-cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake -DHAZELCAST_INSTALL_DIR=%HZ_INSTALL_DIR% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_VERSION=%HZ_VERSION% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_COMPILE_WITH_SSL=ON || exit /b 1
+cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CONFIGURATION_TYPES=%HZ_BUILD_TYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DBUILD_GMOCK=OFF -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=ON -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF || exit /b 1
 
 echo "Building for platform %BUILDFORPLATFORM%"
-
-MSBuild.exe HazelcastExamples.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;VisualStudioVersion=12.0;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% || exit /b 1
+cmake --build . --parallel -v --config %HZ_BUILD_TYPE%
 
 echo "Verification of the release located at %HZ_INSTALL_DIR% for version %HZ_VERSION% %HZ_LIB_TYPE% %HZ_BIT_VERSION%-bit library is finished."
 

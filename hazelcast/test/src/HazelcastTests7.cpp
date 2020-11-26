@@ -817,16 +817,8 @@ namespace hazelcast {
                         return true;
                     }
 
-                    void SelectAllMembers::to_string(std::ostream &os) const {
-                        os << "SelectAllMembers";
-                    }
-
                     bool SelectNoMembers::select(const hazelcast::client::member &member) const {
                         return false;
-                    }
-
-                    void SelectNoMembers::to_string(std::ostream &os) const {
-                        os << "SelectNoMembers";
                     }
                 }
             }

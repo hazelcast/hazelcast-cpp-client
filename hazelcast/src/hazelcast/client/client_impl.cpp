@@ -139,8 +139,8 @@ namespace hazelcast {
                       id_(++CLIENT_ID), random_generator_(std::random_device{}()),
                       uuid_generator_{random_generator_},
                       cp_subsystem_(client_context_), proxy_session_manager_(client_context_) {
-                const std::shared_ptr<std::string> &name = client_config_.get_instance_name();
-                if (name.get() != NULL) {
+                auto &name = client_config_.get_instance_name();
+                if (name) {
                     instance_name_ = *name;
                 } else {
                     std::ostringstream out;
@@ -377,8 +377,6 @@ namespace hazelcast {
 
         constexpr int address::ID;
 
-        const byte address::IPV4;
-        const byte address::IPV6;
 
         address::address() : host_("localhost"), type_(IPV4), scope_id_(0) {
         }
@@ -479,9 +477,8 @@ namespace hazelcast {
                 }
             }
             if (selected.empty()) {
-                throw (exception::exception_builder<exception::rejected_execution>(
-                        "IExecutorService::selectMembers") << "No member selected with memberSelector["
-                                                           << member_selector << "]").build();
+                BOOST_THROW_EXCEPTION(exception::rejected_execution("IExecutorService::selectMembers",
+                                                                    "No member could be selected with member selector"));
             }
             return selected;
         }

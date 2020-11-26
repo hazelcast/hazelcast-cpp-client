@@ -197,7 +197,7 @@ namespace hazelcast {
                         int32_t err = ie.get_error_code();
                         int32_t causeErrorCode = protocol::UNDEFINED;
                         try {
-                            std::rethrow_if_nested(std::current_exception());
+                            std::rethrow_if_nested(ie);
                         } catch (exception::iexception &causeException) {
                             causeErrorCode = causeException.get_error_code();
                         }

@@ -56,7 +56,7 @@ int main(int argc, char *args[]) {
     client_config config;
 
     if (argc > 3) {
-        config.set_instance_name(std::make_shared<std::string>(args[3]));
+        config.set_instance_name(args[3]);
     }
 
     config.get_network_config().add_address(address(server_address, 5701));
