@@ -60,11 +60,11 @@ call scripts\verifyReleaseWindowsSingleCase.bat "%CURRENT_DIRECTORY%\cpp" 32 SHA
 
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-call scripts\build-windows.bat 64 STATIC Release COMPILE_WITHOUT_SSL || exit /b 1
+call scripts\build-windows.bat 64 STATIC Release || exit /b 1
 copy buildSTATIC64Release\Release\HazelcastClient*  cpp\Windows_64\lib\tls\static\
 rd /s /q buildSTATIC64Release
 
-call scripts\build-windows.bat 64 SHARED Release COMPILE_WITHOUT_SSL || exit /b 1
+call scripts\build-windows.bat 64 SHARED Release || exit /b 1
 copy buildSHARED64Release\Release\HazelcastClient*  cpp\Windows_64\lib\tls\shared\
 rd /s /q buildSHARED64Release
 
