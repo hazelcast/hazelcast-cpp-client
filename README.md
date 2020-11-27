@@ -555,7 +555,7 @@ int main() {
     personnel->put<std::string, std::string>("Bob", "IT").get();
     personnel->put<std::string, std::string>("Clark", "IT").get();
     std::cout << "Added IT personnel. Logging all known personnel" << std::endl;
-    for (const auto &entry : personnel.entry_set().get()) {
+    for (const auto &entry : personnel->entry_set<std::string, std::string>().get()) {
         std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
     }
     
@@ -640,10 +640,9 @@ Members [1]  {
 Added Sales personnel. Logging all known personnel
 Denise is in Sales department
 Erwing is in Sales department
-Faith is in Sales department
-Alice is in IT department
-Clark is in IT department
+Fatih is in Sales department
 Bob is in IT department
+Clark is in IT department
 ```
 
 You will see this time we add only the sales employees but we get the list all known employees including the ones in IT.
