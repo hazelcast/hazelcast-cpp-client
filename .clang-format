@@ -1,0 +1,5 @@
+BasedOnStyle: Mozilla
+FixNamespaceComments: true
+ColumnLimit: 100
+IndentWidth: 4
+AccessModifierOffset: -4

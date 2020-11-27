@@ -1,0 +1,21 @@
+name: Codestyle Checker
+
+on:
+  - pull_request
+
+jobs:
+  check-formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install clang-format
+        run: sudo apt-get install clang-format
+
+      - uses: actions/checkout@v2
+
+      - name: Run clang-format
+        run: |
+          clang-format --dry-run -Werror \
+            $(find $GITHUB_WORKSPACE | \
+              grep -E "\.(cpp|h)$" | \
+              grep -v "generated-sources|cpp-controller")
