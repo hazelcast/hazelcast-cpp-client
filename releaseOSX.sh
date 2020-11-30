@@ -71,7 +71,7 @@ cd -
 # Uncomment below if you want to generate doxygen docs
 
 #echo "Generating docs "
-doxygen docsConfig
+doxygen
 
 #echo "Moving docs to target"
 mv  docs cpp/
