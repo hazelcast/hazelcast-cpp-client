@@ -78,6 +78,16 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
     message(STATUS "Operating System: ${CMAKE_SYSTEM}")
 
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        # This is a bug in CMake that causes it to prefer the system version over
+        # the one in the specified ROOT folder. see
+        # https://stackoverflow.com/questions/58446253/xcode-11-ld-error-your-binary-is-not-an-allowed-client-of-usr-lib-libcrypto-dy
+        set(OPENSSL_ROOT_DIR /usr/local/Cellar/openssl@1.1/1.1.1h/)
+        set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include CACHE FILEPATH "" FORCE)
+        set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
+        set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
+    endif()
+
     if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         if (${CMAKE_BUILD_TYPE} MATCHES "Release")
             set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
