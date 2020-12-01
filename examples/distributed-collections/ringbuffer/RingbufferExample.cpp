@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto rb = hz.get_ringbuffer("myringbuffer");
+    auto rb = hz.get_ringbuffer("myringbuffer").get();
 
     std::cout << "Capacity of the ringbuffer is:" << rb->capacity().get() << std::endl;
 

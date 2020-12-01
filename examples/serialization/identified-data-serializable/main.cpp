@@ -58,7 +58,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("map");
+    auto map = hz.get_map("map").get();
     map->put("foo", Person{"bar", true, 40}).get();
     std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
 

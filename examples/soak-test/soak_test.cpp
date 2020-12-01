@@ -63,7 +63,7 @@ int main(int argc, char *args[]) {
     hazelcast_client hz(std::move(config));
     spi::ClientContext context(hz);
     auto &logger_ = context.get_logger();
-    auto map = hz.get_map("test");
+    auto map = hz.get_map("test").get();
 
     HZ_LOG(logger_, info, (boost::format(
             "Soak test is starting with the following parameters: threadCount = %1% ,  server address = %2%") %

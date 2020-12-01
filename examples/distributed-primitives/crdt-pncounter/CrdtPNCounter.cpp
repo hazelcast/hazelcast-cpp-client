@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto pnCounter = hz.get_pn_counter("pncounterexample");
+    auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
     std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 

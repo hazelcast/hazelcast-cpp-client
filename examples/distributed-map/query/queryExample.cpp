@@ -80,7 +80,7 @@ public:
     void run() {
         hazelcast::client::hazelcast_client hz;
 
-        auto personMap = hz.get_map("personMap");
+        auto personMap = hz.get_map("personMap").get();
 
         personMap->put_all<std::string, Person>({{"1", Person{"Peter", true, 36}},
                                                 {"2", Person{"John", true, 50}},
@@ -89,7 +89,7 @@ public:
                                                 {"5", Person{"Rob", true, 60}},
                                                 {"6", Person{"Jane", false, 43}}}).get();
 
-        auto s = hz.get_set("foo");
+        auto s = hz.get_set("foo").get();
         s->add(Person{"Peter", true, 37});
         auto personsInSet = s->to_array<Person>().get();
 
@@ -118,7 +118,7 @@ public:
 void query_map_using_paging_predicate() {
     hazelcast::client::hazelcast_client client;
 
-    auto intMap = client.get_map("testIntMapValuesWithpaging_predicate");
+    auto intMap = client.get_map("testIntMapValuesWithpaging_predicate").get();
 
     int predSize = 5;
     const int totalEntries = 25;
@@ -155,7 +155,7 @@ void query_map_using_paging_predicate() {
     values = intMap->values<int>(predicate2).get();
 
     // test paging predicate with comparator
-    auto employees = client.get_map("testComplexObjectWithpaging_predicate");
+    auto employees = client.get_map("testComplexObjectWithpaging_predicate").get();
     employees->put_all<int32_t, employee>({
                                                  {3, employee("ahmet", 35)},
                                                  {4, employee("mehmet", 21)},
@@ -177,7 +177,7 @@ void query_map_using_paging_predicate() {
 void query_map_using_different_predicates() {
     hazelcast::client::hazelcast_client client;
 
-    auto intMap = client.get_map("testValuesWithPredicateIntMap");
+    auto intMap = client.get_map("testValuesWithPredicateIntMap").get();
 
     const int numItems = 20;
     for (int i = 0; i < numItems; ++i) {
@@ -273,7 +273,7 @@ void query_map_using_different_predicates() {
                                                                         query::query_constants::THIS_ATTRIBUTE_NAME,
                                                                         inVals))).get();
 
-    auto imap = client.get_map("StringMap");
+    auto imap = client.get_map("StringMap").get();
 
     // like_predicate
     // value LIKE "value1" : {"value1"}

@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto list = hz.get_list("list");
+    auto list = hz.get_list("list").get();
 
     for (auto &item : list->to_array<std::string>().get()) {
         std::cout << item << std::endl;

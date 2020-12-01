@@ -102,7 +102,6 @@ namespace hazelcast {
                     logger &logger_;
                     bool enabled_;
                     PeriodicStatistics periodic_stats_;
-                    util::Sync<std::shared_ptr<address> > cached_owner_address_;
                     std::shared_ptr<boost::asio::steady_timer> send_task_timer_;
                 };
 

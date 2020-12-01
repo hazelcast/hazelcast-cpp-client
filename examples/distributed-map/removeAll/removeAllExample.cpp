@@ -60,7 +60,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto personMap = hz.get_map("personMap");
+    auto personMap = hz.get_map("personMap").get();
     personMap->put_all<std::string, Person>({{"1", Person{"Peter", true, 36}},
                        {"2", Person{"John", true, 50}},
                        {"3", Person{"Marry", false, 20}},

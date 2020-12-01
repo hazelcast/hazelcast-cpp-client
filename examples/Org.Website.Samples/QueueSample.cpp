@@ -20,7 +20,7 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get a Blocking Queue called "my-distributed-queue"
-    auto queue = hz.get_queue("my-distributed-queue");
+    auto queue = hz.get_queue("my-distributed-queue").get();
     // Offer a String into the Distributed Queue
     queue->offer("item").get();
     // Poll the Distributed Queue and return the String

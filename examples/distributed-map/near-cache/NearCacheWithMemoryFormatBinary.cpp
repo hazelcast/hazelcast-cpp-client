@@ -31,7 +31,7 @@ int main() {
     config.add_near_cache_config(nearCacheConfig);
     hazelcast_client client(std::move(config));
 
-    auto map = client.get_map(mapName);
+    auto map = client.get_map(mapName).get();
 
     // the first get() will populate the Near Cache
     auto firstGet = map->get<int, std::string>(1).get();

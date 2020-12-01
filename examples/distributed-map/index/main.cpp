@@ -51,7 +51,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("personsWithIndex");
+    auto map = hz.get_map("personsWithIndex").get();
 
     map->add_index(config::index_config::index_type::SORTED, "name").get();
 

@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("evictiontestmap");
+    auto map = hz.get_map("evictiontestmap").get();
 
     int numberOfKeysToLock = 4;
     int numberOfEntriesToAdd = 1000;

@@ -21,7 +21,7 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get a Topic called "my-distributed-topic"
-    auto topic = hz.get_topic("my-distributed-topic");
+    auto topic = hz.get_topic("my-distributed-topic").get();
     // Add a Listener to the Topic
     topic->add_message_listener(
         topic::listener().

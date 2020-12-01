@@ -61,7 +61,7 @@ int main() {
 
     PartitionAwareString partitionKey{"MyString"};
 
-    auto map = hz.get_map("paritionawaremap");
+    auto map = hz.get_map("paritionawaremap").get();
 
     // Puts the key, value tokyo at the partition for "desiredKeyString" rather than the partition for "MyString"
     map->put<PartitionAwareString, std::string>(partitionKey, "Tokyo").get();

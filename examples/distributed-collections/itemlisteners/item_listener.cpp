@@ -20,7 +20,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto queue = hz.get_queue("queue");
+    auto queue = hz.get_queue("queue").get();
 
     std::atomic<int> numAdded(0);
     std::atomic<int> numRemoved(0);

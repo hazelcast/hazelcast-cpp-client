@@ -49,10 +49,41 @@
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/impl/vector_clock.h"
+#include "hazelcast/client/topic/reliable_listener.h"
 
 namespace hazelcast {
     namespace client {
         constexpr std::chrono::milliseconds imap::UNSET;
+
+        reliable_topic::reliable_topic(std::shared_ptr<ringbuffer> rb, const std::string &instance_name,
+                spi::ClientContext *context) : proxy::ReliableTopicImpl(rb, instance_name, context) {}
+
+        bool reliable_topic::remove_message_listener(const std::string &registration_id) {
+            int id = util::IOUtil::to_value<int>(registration_id);
+            auto runner = runners_map_.get(id);
+            if (!runner) {
+                return false;
+            }
+            runner->cancel();
+            runners_map_.remove(id);
+            return true;
+        }
+
+        void reliable_topic::on_destroy() {
+            // cancel all runners
+            for (auto &entry : runners_map_.clear()) {
+                entry.second->cancel();
+            }
+
+            // destroy the underlying ringbuffer
+            ringbuffer_->destroy();
+        }
+
+        namespace topic {
+            reliable_listener::reliable_listener(bool loss_tolerant, int64_t initial_sequence_id)
+                    : loss_tolerant_(loss_tolerant)
+                    , initial_sequence_id_(initial_sequence_id) {}
+        }
 
         namespace impl {
             ClientLockReferenceIdGenerator::ClientLockReferenceIdGenerator() : reference_id_counter_(0) {}
@@ -257,12 +288,11 @@ namespace hazelcast {
                     : name_(std::move(name)), include_value_(include_value), key_(std::move(key)) {}
 
 
-            ReliableTopicImpl::ReliableTopicImpl(const std::string &instance_name, spi::ClientContext *context)
-                    : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context),
+            ReliableTopicImpl::ReliableTopicImpl(std::shared_ptr<ringbuffer> rb, const std::string &instance_name,
+                                                 spi::ClientContext *context)
+                    : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context), ringbuffer_(rb),
                       logger_(context->get_logger()),
                       config_(context->get_client_config().get_reliable_topic_config(instance_name)) {
-                ringbuffer_ = context->get_hazelcast_client_implementation()->get_distributed_object<ringbuffer>(
-                        std::string(TOPIC_RB_PREFIX) + name_);
             }
 
             boost::future<void> ReliableTopicImpl::publish(serialization::pimpl::data &&data) {

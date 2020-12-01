@@ -165,7 +165,7 @@ namespace hazelcast {
                 }
 
                 void Statistics::PeriodicStatistics::add_near_cache_stats(std::ostringstream &stats) {
-                    for (const std::shared_ptr<internal::nearcache::BaseNearCache> &nearCache : statistics_.client_context_.get_near_cache_manager().list_all_near_caches()) {
+                    for (auto nearCache : statistics_.client_context_.get_near_cache_manager().list_all_near_caches()) {
                         std::string nearCacheName = nearCache->get_name();
                         std::ostringstream nearCacheNameWithPrefix;
                         get_name_with_prefix(nearCacheName, nearCacheNameWithPrefix);

@@ -129,7 +129,7 @@ namespace hazelcast {
                 * @returns distributed object
                 */
                 template<typename T>
-                std::shared_ptr<T> get_distributed_object(const std::string& name) {
+                boost::shared_future<std::shared_ptr<T>> get_distributed_object(const std::string& name) {
                     return proxy_manager_.get_or_create_proxy<T>(T::SERVICE_NAME, name);
                 }
 
@@ -252,13 +252,11 @@ namespace hazelcast {
 
                 std::vector<std::shared_ptr<connection::AddressProvider> > create_address_providers();
 
-                void start_logger();
-
                 void initalize_near_cache_manager();
             };
 
             template<>
-            std::shared_ptr<imap> HAZELCAST_API hazelcast_client_instance_impl::get_distributed_object(const std::string& name);
+            boost::shared_future<std::shared_ptr<imap>> HAZELCAST_API hazelcast_client_instance_impl::get_distributed_object(const std::string& name);
         }
     }
 }

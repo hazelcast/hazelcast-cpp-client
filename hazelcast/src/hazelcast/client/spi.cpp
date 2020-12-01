@@ -119,11 +119,15 @@ namespace hazelcast {
                 proxies_.clear();
             }
 
-            void ProxyManager::initialize(const std::shared_ptr<ClientProxy> &client_proxy) {
+            boost::future<void> ProxyManager::initialize(const std::shared_ptr<ClientProxy> &client_proxy) {
                 auto clientMessage = protocol::codec::client_createproxy_encode(client_proxy->get_name(),
                         client_proxy->get_service_name());
-                spi::impl::ClientInvocation::create(client_, clientMessage, client_proxy->get_service_name())->invoke().get();
-                client_proxy->on_initialize();
+                return spi::impl::ClientInvocation::create(client_, clientMessage,
+                                                           client_proxy->get_service_name())->invoke().then(
+                        boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                            f.get();
+                            client_proxy->on_initialize();
+                        });
             }
 
             boost::future<void> ProxyManager::destroy_proxy(ClientProxy &proxy) {

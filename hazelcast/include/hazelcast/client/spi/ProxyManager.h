@@ -38,16 +38,16 @@ namespace hazelcast {
 
             class HAZELCAST_API ProxyManager {
             public:
-                typedef std::unordered_map<DefaultObjectNamespace, std::shared_future<std::shared_ptr<ClientProxy>>> proxy_map;
+                typedef std::unordered_map<DefaultObjectNamespace, boost::shared_future<std::shared_ptr<ClientProxy>>> proxy_map;
 
                 explicit ProxyManager(ClientContext &context);
 
                 template<typename T>
-                std::shared_ptr<T> get_or_create_proxy(const std::string &service, const std::string &id) {
+                boost::shared_future<std::shared_ptr<T>> get_or_create_proxy(const std::string &service, const std::string &id) {
                     DefaultObjectNamespace ns(service, id);
 
-                    std::shared_future<std::shared_ptr<ClientProxy>> proxyFuture;
-                    std::promise<std::shared_ptr<ClientProxy>> promise;
+                    boost::shared_future<std::shared_ptr<ClientProxy>> proxyFuture;
+                    boost::promise<std::shared_ptr<ClientProxy>> promise;
                     bool insertedEntry = false;
                     {
                         std::lock_guard<std::mutex> guard(lock_);
@@ -61,22 +61,24 @@ namespace hazelcast {
                     }
 
                     if (proxyFuture.valid()) {
-                        return std::static_pointer_cast<T>(proxyFuture.get());
+                        return proxyFuture.then(boost::launch::deferred, [] (boost::shared_future<std::shared_ptr<ClientProxy>> f) {
+                            return std::static_pointer_cast<T>(f.get());
+                        });
                     }
 
-                    try {
-                        auto clientProxy = std::shared_ptr<T>(new T(id, &client_));
-                        initialize(std::static_pointer_cast<ClientProxy>(clientProxy));
-                        promise.set_value(std::static_pointer_cast<ClientProxy>(clientProxy));
-                        return clientProxy;
-                    } catch (exception::iexception &) {
-                        promise.set_exception(std::current_exception());
-                        std::lock_guard<std::mutex> guard(lock_);
-                        if (insertedEntry) {
-                            proxies_.erase(ns);
+                    auto clientProxy = std::shared_ptr<T>(new T(id, &client_));
+                    return initialize(std::static_pointer_cast<ClientProxy>(clientProxy)).then(boost::launch::deferred, [=] (boost::future<void> f) {
+                        try {
+                            f.get();
+                            return clientProxy;
+                        } catch (...) {
+                            std::lock_guard<std::mutex> guard(lock_);
+                            if (insertedEntry) {
+                                proxies_.erase(ns);
+                            }
+                            throw;
                         }
-                        throw;
-                    }
+                    });
                 }
 
                 /**
@@ -100,7 +102,7 @@ namespace hazelcast {
                 void destroy();
 
             private:
-                void initialize(const std::shared_ptr<ClientProxy> &client_proxy);
+                boost::future<void> initialize(const std::shared_ptr<ClientProxy> &client_proxy);
 
                 proxy_map proxies_;
                 std::mutex lock_;

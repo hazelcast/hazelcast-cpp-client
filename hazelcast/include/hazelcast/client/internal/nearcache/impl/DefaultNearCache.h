@@ -184,7 +184,7 @@ namespace hazelcast {
                             }
                         }
 
-                        const std::string &name_;
+                        std::string name_;
                         const client::config::near_cache_config &near_cache_config_;
                         std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
                         serialization::pimpl::SerializationService &serialization_service_;

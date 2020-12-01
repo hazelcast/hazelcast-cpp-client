@@ -550,7 +550,7 @@ Then, you can run the application using the following command:
 int main() {
     hazelcast::client::hazelcast_client hz; // Connects to the cluster
 
-    auto personnel = hz.get_map("personnel_map");
+    auto personnel = hz.get_map("personnel_map").get();
     personnel->put<std::string, std::string>("Alice", "IT").get();
     personnel->put<std::string, std::string>("Bob", "IT").get();
     personnel->put<std::string, std::string>("Clark", "IT").get();
@@ -608,7 +608,7 @@ Then, you can run the application using the following command:
 int main() {
     hazelcast::client::hazelcast_client hz; // Connects to the cluster
 
-    auto personnel = hz.get_map("personnel_map");
+    auto personnel = hz.get_map("personnel_map").get();
     personnel->put<std::string, std::string>("Denise", "Sales").get();
     personnel->put<std::string, std::string>("Erwing", "Sales").get();
     personnel->put<std::string, std::string>("Fatih", "Sales").get();
@@ -906,7 +906,7 @@ In order to use JSON serialization, you should use the `hazelcast_json_value` ob
 ```C++
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("map");
+    auto map = hz.get_map("map").get();
 
     map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
     map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
@@ -1468,7 +1468,7 @@ Hazelcast `replicated_map` is a distributed key-value data structure where the d
 A replicated_map usage example is shown below.
 
 ```C++
-    auto replicatedMap = hz.get_replicated_map("myReplicatedMap");
+    auto replicatedMap = hz.get_replicated_map("myReplicatedMap").get();
     replicatedMap->put<int, std::string>(1, "Furkan").get();
     replicatedMap->put<int, std::string>(2, "Ahmet").get();
     std::cout << "Replicated map value for key 2 is " << *replicatedMap->get<int, std::string>(2).get() << std::endl; // Replicated map value for key 2 is Ahmet
@@ -1545,7 +1545,7 @@ Hazelcast `ringbuffer` is a replicated but not partitioned data structure that s
 A ringbuffer usage example is shown below.
 
 ```C++
-    auto rb = hz.get_ring_buffer("rb");
+    auto rb = hz.get_ring_buffer("rb").get();
     // add two items into ring buffer
     rb->add(100).get();
     rb->add(200).get();
@@ -1585,7 +1585,7 @@ void listen_with_default_config() {
     hazelcast::client::hazelcast_client client;
 
     std::string topicName("MyReliableTopic");
-    auto topic = client.get_reliable_topic(topicName);
+    auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
     auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
@@ -1611,7 +1611,7 @@ void listen_with_config() {
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
     hazelcast::client::hazelcast_client client(std::move(clientConfig));
 
-    auto topic = client.get_reliable_topic(topicName);
+    auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
     auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
@@ -1639,7 +1639,7 @@ A pn_counter usage example is shown below.
 ```C++
     hazelcast::client::hazelcast_client hz;
 
-    auto pnCounter = hz.get_pn_counter("pncounterexample");
+    auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
     std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 
@@ -1659,7 +1659,7 @@ Hazelcast `flake_id_generator` is used to generate cluster-wide unique identifie
 A flake_id_generator usage example is shown below.
 
 ```C++
-    auto generator = hz.get_flake_id_generator("flakeIdGenerator");
+    auto generator = hz.get_flake_id_generator("flakeIdGenerator").get();
     std::cout << "Id : " << generator->newId().get() << std::endl; // Id : <some unique number>
 ```
 
@@ -1966,7 +1966,7 @@ int main() {
     try {
         hazelcast::client::hazelcast_client hz;
 
-        hazelcast::client::cluster &cluster = hz.get_cluster();
+        hazelcast::client::cluster &cluster = hz.get_cluster().get();
         clusterPtr = &cluster;
         auto members = cluster.get_members();
         std::cout << "The following are members in the cluster:" << std::endl;
@@ -2076,7 +2076,7 @@ See the following example.
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("EntryListenerExampleMap");
+    auto map = hz.get_map("EntryListenerExampleMap").get();
 
     auto registrationId = map->add_entry_listener(
         entry_listener().
@@ -2107,7 +2107,7 @@ See the example below.
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("EntryListenerExampleMap");
+    auto map = hz.get_map("EntryListenerExampleMap").get();
 
     auto registrationId = map->add_entry_listener(
         entry_listener().
@@ -2319,7 +2319,7 @@ To cancel a task, you can use the `executor_promise<T>::cancel()` API. This API 
 The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `timeout` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
 
 ```
-                auto service = client->get_executor_service(get_test_name());
+                auto service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -2765,7 +2765,7 @@ possible to query these objects using the Hazelcast query methods explained in t
     std::string person2 = "{ \"name\": \"Jane\", \"age\": 24 }";
     std::string person3 = "{ \"name\": \"Trey\", \"age\": 17 }";
 
-    auto idPersonMap = hz.get_map("jsonValues");
+    auto idPersonMap = hz.get_map("jsonValues").get();
 
     idPersonMap->put<int, hazelcast_json_value>(1, hazelcast_json_value(person1)).get();
     idPersonMap->put<int, hazelcast_json_value>(2, hazelcast_json_value(person2)).get();

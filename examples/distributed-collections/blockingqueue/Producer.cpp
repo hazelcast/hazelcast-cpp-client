@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto queue = hz.get_queue("queue");
+    auto queue = hz.get_queue("queue").get();
 
     for (int k = 1; k < 100; k++) {
         queue->put(k).get();

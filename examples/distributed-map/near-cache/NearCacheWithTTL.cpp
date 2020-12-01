@@ -30,7 +30,7 @@ int main() {
     config.add_near_cache_config(nearCacheConfig);
     hazelcast::client::hazelcast_client hz(std::move(config));
 
-    auto map = hz.get_map(mapName);
+    auto map = hz.get_map(mapName).get();
 
     map->put<int, std::string>(1, "myValue");
     NearCacheSupport::print_near_cache_stats(map, "The put(1, article) call has no effect on the empty Near Cache");

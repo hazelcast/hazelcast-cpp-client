@@ -29,8 +29,8 @@ int main() {
 
     hazelcast_client noNearCacheclient;
 
-    auto map = client.get_map(mapName);
-    auto noNearCacheMap = noNearCacheclient.get_map(mapName);
+    auto map = client.get_map(mapName).get();
+    auto noNearCacheMap = noNearCacheclient.get_map(mapName).get();
 
     noNearCacheMap->put<int, std::string>(1, "foo").get();
     NearCacheSupport::print_near_cache_stats(map, "The noNearCacheMap->put(key, \"foo\")) call has no effect on the Near Cache of map");

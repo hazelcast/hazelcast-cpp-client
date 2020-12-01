@@ -622,7 +622,7 @@ namespace hazelcast {
 
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
-                    auto map = client.get_map(random_map_name());
+                    auto map = client.get_map(random_map_name()).get();
                     map->size().get();
 
                     client.shutdown();
@@ -643,7 +643,7 @@ namespace hazelcast {
                     );
 
                     // no exception at this point
-                    auto map = client.get_map(random_map_name());
+                    auto map = client.get_map(random_map_name()).get();
                     map->put(1, 5).get();
 
                     hazelcastInstance.shutdown();
@@ -670,7 +670,7 @@ namespace hazelcast {
                     );
 
                     // no exception at this point
-                    auto map = client.get_map(random_map_name());
+                    auto map = client.get_map(random_map_name()).get();
                     map->put(1, 5).get();
 
                     server1.shutdown();
@@ -697,7 +697,7 @@ namespace hazelcast {
                     );
 
 // no exception at this point
-                    auto map = client.get_map(random_map_name());
+                    auto map = client.get_map(random_map_name()).get();
                     map->put(1, 5).get();
 
                     hazelcastInstance.shutdown();
@@ -725,7 +725,7 @@ namespace hazelcast {
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
-                    auto map = client.get_map(random_map_name());
+                    auto map = client.get_map(random_map_name()).get();
                     map->size().get();
 
                     client.shutdown();
@@ -764,7 +764,7 @@ namespace hazelcast {
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
 
-                    auto map = client.get_map(random_map_name());
+                    auto map = client.get_map(random_map_name()).get();
                     map->size().get();
 
                     client.shutdown();
@@ -791,7 +791,7 @@ namespace hazelcast {
 
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
-                    auto map = client.get_map(random_map_name());
+                    auto map = client.get_map(random_map_name()).get();
                     map->put(1, 5).get();
 
                     client.add_lifecycle_listener(
@@ -835,7 +835,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(client_config());
 
-                    map = client->get_map(MAP_NAME);
+                    map = client->get_map(MAP_NAME).get();
                     expected = new std::vector<int>;
                     for (int k = 0; k < MAP_SIZE; ++k) {
                         int item = rand();

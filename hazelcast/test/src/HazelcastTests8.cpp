@@ -102,6 +102,7 @@
 #include "hazelcast/client/aws/utility/cloud_utility.h"
 #include "hazelcast/client/iset.h"
 #include "hazelcast/client/reliable_topic.h"
+#include "hazelcast/client/topic/reliable_listener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -248,7 +249,7 @@ namespace hazelcast {
 
                 void create_no_near_cache_context() {
                     client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(get_config()));
-                    no_near_cache_map_ = client_->get_map(get_test_name());
+                    no_near_cache_map_ = client_->get_map(get_test_name()).get();
                 }
 
                 void create_near_cache_context() {
@@ -256,7 +257,7 @@ namespace hazelcast {
                     near_cached_client_config_.add_near_cache_config(near_cache_config_);
                     near_cached_client_ = std::unique_ptr<hazelcast_client>(
                             new hazelcast_client(std::move(near_cached_client_config_)));
-                    near_cached_map_ = near_cached_client_->get_map(get_test_name());
+                    near_cached_map_ = near_cached_client_->get_map(get_test_name()).get();
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
                     near_cache_ = near_cache_manager_->
@@ -695,7 +696,7 @@ namespace hazelcast {
                     client_config_->add_near_cache_config(config);
 
                     client_.reset(new hazelcast_client(std::move(*client_config_)));
-                    map_ = client_->get_map(mapName);
+                    map_ = client_->get_map(mapName).get();
                     return map_;
                 }
 
@@ -799,7 +800,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
-                    set = client->get_set("MySet");
+                    set = client->get_set("MySet").get();
                 }
 
                 static void TearDownTestCase() {
@@ -987,7 +988,7 @@ namespace hazelcast {
             hazelcast_client *ReliableTopicTest::client = nullptr;
 
             TEST_F(ReliableTopicTest, testBasics) {
-                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testBasics"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testBasics").get());
                 ASSERT_EQ("testBasics", topic_->get_name());
 
                 auto state = std::make_shared<ListenerState>(1);
@@ -1008,7 +1009,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, testListenerSequence) {
-                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testListenerSequence"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testListenerSequence").get());
 
                 employee empl1("first", 10);
                 employee empl2("second", 20);
@@ -1030,7 +1031,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenExisting) {
-                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("removeMessageListener_whenExisting"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("removeMessageListener_whenExisting").get());
 
                 employee empl1("first", 10);
 
@@ -1047,14 +1048,14 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenNonExisting) {
-                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("removeMessageListener_whenNonExisting"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("removeMessageListener_whenNonExisting").get());
 
                 // remove listener
                 ASSERT_FALSE(topic_->remove_message_listener("abc"));
             }
 
             TEST_F(ReliableTopicTest, publishMultiple) {
-                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("publishMultiple"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("publishMultiple").get());
 
                 auto state = std::make_shared<ListenerState>(5);
                 ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
@@ -1086,7 +1087,7 @@ namespace hazelcast {
                 clientConfig.add_reliable_topic_config(relConfig);
                 hazelcast_client configClient(std::move(clientConfig));
 
-                ASSERT_NO_THROW(topic_ = configClient.get_reliable_topic("testConfig"));
+                ASSERT_NO_THROW(topic_ = configClient.get_reliable_topic("testConfig").get());
 
                 auto state = std::make_shared<ListenerState>(5);
                 ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
@@ -1111,7 +1112,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, testMessageFieldSetCorrectly) {
-                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testMessageFieldSetCorrectly"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testMessageFieldSetCorrectly").get());
 
                 auto state = std::make_shared<ListenerState>(1);
                 ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
@@ -1136,7 +1137,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, testAlwaysStartAfterTail) {
-                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testAlwaysStartAfterTail"));
+                ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testAlwaysStartAfterTail").get());
                 ASSERT_NO_THROW(topic_->publish(1).get());
                 ASSERT_NO_THROW(topic_->publish(2).get());
                 ASSERT_NO_THROW(topic_->publish(3).get());
@@ -1337,7 +1338,7 @@ namespace hazelcast {
 
                         hazelcast_client hazelcastClient(std::move(clientConfig));
 
-                        auto map = hazelcastClient.get_map("cppDefault");
+                        auto map = hazelcastClient.get_map("cppDefault").get();
 
                         std::vector<std::future<void>> futures;
                         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -1404,7 +1405,7 @@ namespace hazelcast {
 
                 hazelcast_client client(std::move(clientConfig));
 
-                auto map = client.get_map("m");
+                auto map = client.get_map("m").get();
                 int expected = 1000;
                 std::thread t;
                 for (int i = 0; i < expected; i++) {
@@ -1429,7 +1430,7 @@ namespace hazelcast {
                 hazelcast_client client(std::move(clientConfig));
 
                 // 3. Get a map
-                auto map = client.get_map("IssueTest_map");
+                auto map = client.get_map("IssueTest_map").get();
 
                 // 4. Subscribe client to entry added event
                 map->add_entry_listener(std::move(issue864_map_listener_), true).get();
@@ -1462,7 +1463,7 @@ namespace hazelcast {
                 // start a client
                 hazelcast_client client(get_config());
 
-                auto map = client.get_map("Issue221_test_map");
+                auto map = client.get_map("Issue221_test_map").get();
 
                 server.shutdown();
 

@@ -30,7 +30,7 @@ using namespace hazelcast::util;
 
 class PipeliningDemo {
 public:
-    PipeliningDemo() : client_(), map_(client_.get_map("map")), gen_(rd_()) {}
+    PipeliningDemo() : client_(), map_(client_.get_map("map").get()), gen_(rd_()) {}
 
     void init() {
         for (int l = 0; l < keyDomain; l++) {

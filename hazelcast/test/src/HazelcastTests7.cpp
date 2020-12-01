@@ -141,7 +141,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
-                    mm = client->get_multi_map("MyMultiMap");
+                    mm = client->get_multi_map("MyMultiMap").get();
                 }
 
                 static void TearDownTestCase() {
@@ -372,7 +372,7 @@ namespace hazelcast {
                     client_config clientConfig = get_config();
 #endif // HZ_BUILD_WITH_SSL
                     client = new hazelcast_client(std::move(clientConfig));
-                    list = client->get_list("MyList");
+                    list = client->get_list("MyList").get();
                 }
 
                 static void TearDownTestCase() {
@@ -572,7 +572,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(std::move(get_config().backup_acks_enabled(false)));
-                    q = client->get_queue("MyQueue");
+                    q = client->get_queue("MyQueue").get();
                 }
 
                 static void TearDownTestCase() {
@@ -995,19 +995,19 @@ namespace hazelcast {
             const size_t ClientExecutorServiceTest::numberOfMembers = 4;
 
             TEST_F(ClientExecutorServiceTest, testIsTerminated) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 ASSERT_FALSE(service->is_terminated().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testIsShutdown) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 ASSERT_FALSE(service->is_shutdown().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testShutdown) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 service->shutdown();
 
@@ -1015,7 +1015,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testShutdownMultipleTimes) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 service->shutdown();
                 service->shutdown();
@@ -1024,7 +1024,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testCancellationAwareTask_whenTimeOut) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -1034,7 +1034,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testFutureAfterCancellationAwareTaskTimeOut) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -1047,7 +1047,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testGetFutureAfterCancel) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -1062,7 +1062,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::FailingCallable task;
 
@@ -1072,7 +1072,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
 
@@ -1085,7 +1085,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableReasonExceptionCause) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 auto failingFuture = service->submit<executor::tasks::FailingCallable, std::string>(
                         executor::tasks::FailingCallable()).get_future();
@@ -1094,7 +1094,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute_withNoMemberSelected) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string mapName = random_map_name();
 
@@ -1109,7 +1109,7 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testCallableSerializedOnce) {
                 std::string name = get_test_name();
 
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name).get();
 
                 executor::tasks::SerializedCounterCallable counterCallable{0};
 
@@ -1123,7 +1123,7 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testCallableSerializedOnce_submitToAddress) {
                 std::string name = get_test_name();
 
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name).get();
 
                 executor::tasks::SerializedCounterCallable counterCallable{0};
 
@@ -1139,7 +1139,7 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testUnserializableResponse_exceptionPropagatesToClient) {
                 std::string name = get_test_name();
 
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name).get();
 
                 executor::tasks::TaskWithUnserializableResponse taskWithUnserializableResponse;
 
@@ -1152,7 +1152,7 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testUnserializableResponse_exceptionPropagatesToClientCallback) {
                 std::string name = get_test_name();
 
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name).get();
 
                 executor::tasks::TaskWithUnserializableResponse taskWithUnserializableResponse;
 
@@ -1170,7 +1170,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMember) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::GetMemberUuidTask task;
 
@@ -1186,7 +1186,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMembers) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::GetMemberUuidTask task;
 
@@ -1207,7 +1207,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable_withMemberSelector) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
@@ -1221,7 +1221,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMembers_withMemberSelector) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::GetMemberUuidTask task;
                 executor::tasks::SelectAllMembers selectAll;
@@ -1240,7 +1240,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToAllMembers) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
@@ -1258,7 +1258,7 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withExecutionCallback) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
                 executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, spi::ClientContext(*client).random_uuid());
 
@@ -1271,14 +1271,14 @@ namespace hazelcast {
                 service->submit_to_member<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, members[0],
                                                                                                     callback);
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
                 ASSERT_EQ(1, map->size().get());
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withMultiExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::shared_ptr<boost::latch> responseLatch(new boost::latch(numberOfMembers));
                 std::shared_ptr<boost::latch> completeLatch(new boost::latch(numberOfMembers));
@@ -1298,7 +1298,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallable_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
@@ -1317,7 +1317,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMembers_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::shared_ptr<boost::latch> responseLatch(
                         new boost::latch(numberOfMembers));
@@ -1338,7 +1338,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToAllMembers_withMultiExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::shared_ptr<boost::latch> responseLatch(
                         new boost::latch(numberOfMembers));
@@ -1358,7 +1358,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableWithNullResultToAllMembers_withMultiExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::shared_ptr<boost::latch> responseLatch(new boost::latch(numberOfMembers));
                 std::shared_ptr<boost::latch> completeLatch(new boost::latch(numberOfMembers));
@@ -1375,7 +1375,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
@@ -1388,7 +1388,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
@@ -1406,7 +1406,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
@@ -1419,7 +1419,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name());
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
                 std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
@@ -1439,9 +1439,9 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 std::vector<member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
@@ -1461,9 +1461,9 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware_WithExecutionCallback) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 std::vector<member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
@@ -1486,33 +1486,33 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, testExecute) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
                 service->execute(
                         executor::tasks::MapPutPartitionAwareCallable<std::string>(testName, "key"));
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 assertSizeEventually(1, map);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute_withMemberSelector) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
                 executor::tasks::SelectAllMembers selector;
 
                 service->execute(
                         executor::tasks::MapPutPartitionAwareCallable<std::string>(testName, "key"), selector);
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 assertSizeEventually(1, map);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnKeyOwner) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
                 map->put(1, 1).get();
 
                 std::vector<member> members = client->get_cluster().get_members();
@@ -1530,9 +1530,9 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMember) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 std::vector<member> members = client->get_cluster().get_members();
                 member &member = members[0];
@@ -1547,9 +1547,9 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 std::vector<member> allMembers = client->get_cluster().get_members();
                 std::vector<member> members(allMembers.begin(), allMembers.begin() + 2);
@@ -1563,9 +1563,9 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers_withEmptyCollection) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-               auto map = client->get_map(testName);
+               auto map = client->get_map(testName).get();
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
@@ -1576,9 +1576,9 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers_withSelector) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
@@ -1591,9 +1591,9 @@ namespace hazelcast {
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnAllMembers) {
                 std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName);
+                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
 
-                auto map = client->get_map(testName);
+                auto map = client->get_map(testName).get();
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
@@ -1721,7 +1721,7 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
 #endif
                     hazelcast_client hazelcastClient(std::move(clientConfig));
-                    auto map = hazelcastClient.get_map("myMap");
+                    auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val.has_value());
@@ -1743,7 +1743,7 @@ namespace hazelcast {
 #endif
 
                     hazelcast_client hazelcastClient(std::move(clientConfig));
-                    auto map = hazelcastClient.get_map("myMap");
+                    auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val.has_value());
@@ -1770,7 +1770,7 @@ namespace hazelcast {
                     FIPS_mode_set(1);
 
                     hazelcast_client hazelcastClient(std::move(clientConfig));
-                    auto map = hazelcastClient.get_map("myMap");
+                    auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20);
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val);

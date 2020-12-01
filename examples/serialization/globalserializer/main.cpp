@@ -47,7 +47,7 @@ int main() {
     config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
     hazelcast::client::hazelcast_client hz(std::move(config));
 
-    auto map = hz.get_map("map");
+    auto map = hz.get_map("map").get();
     map->put("foo", Person{"first last name", false, 19}).get();
     std::cout << "Got value \"" << *(map->get<std::string, Person>("foo").get()) << "\" from the map->" << std::endl;
     std::cout << "Finished" << std::endl;

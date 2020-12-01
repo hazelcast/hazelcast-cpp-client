@@ -25,6 +25,8 @@
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/util/concurrent/Cancellable.h"
 #include "hazelcast/logger.h"
+#include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
+#include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,6 +50,7 @@ namespace hazelcast {
         */
         class HAZELCAST_API reliable_topic : public proxy::ReliableTopicImpl {
             friend class spi::ProxyManager;
+            friend class hazelcast_client;
         public:
             static constexpr const char *SERVICE_NAME = "hz:impl:topicService";
 
@@ -100,30 +103,13 @@ namespace hazelcast {
             *
             * @return true if registration is removed, false otherwise
             */
-            bool remove_message_listener(const std::string &registration_id) {
-                int id = util::IOUtil::to_value<int>(registration_id);
-                auto runner = runners_map_.get(id);
-                if (!runner) {
-                    return false;
-                }
-                runner->cancel();
-                runners_map_.remove(id);
-                return true;
-            };
+            bool remove_message_listener(const std::string &registration_id);
         protected:
-            void on_destroy() override {
-                // cancel all runners
-                for (auto &entry : runners_map_.clear()) {
-                    entry.second->cancel();
-                }
-
-                // destroy the underlying ringbuffer
-                ringbuffer_->destroy();
-            }
+            void on_destroy() override;
 
         private:
-            reliable_topic(const std::string &instance_name, spi::ClientContext *context) : proxy::ReliableTopicImpl(
-                    instance_name, context) {}
+            reliable_topic(std::shared_ptr<ringbuffer> rb, const std::string &instance_name,
+                           spi::ClientContext *context);
 
             template<typename Listener>
             class MessageRunner

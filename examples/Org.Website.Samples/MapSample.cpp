@@ -20,7 +20,7 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get the Distributed Map from Cluster.
-    auto map = hz.get_map("my-distributed-map");
+    auto map = hz.get_map("my-distributed-map").get();
     //Standard Put and Get.
     map->put<std::string, std::string>("key", "value").get();
     map->get<std::string, std::string>("key").get();
