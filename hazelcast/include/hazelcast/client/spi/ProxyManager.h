@@ -46,39 +46,28 @@ namespace hazelcast {
                 boost::shared_future<std::shared_ptr<T>> get_or_create_proxy(const std::string &service, const std::string &id) {
                     DefaultObjectNamespace ns(service, id);
 
-                    boost::shared_future<std::shared_ptr<ClientProxy>> proxyFuture;
-                    boost::promise<std::shared_ptr<ClientProxy>> promise;
-                    bool insertedEntry = false;
-                    {
-                        std::lock_guard<std::mutex> guard(lock_);
-                        auto it = proxies_.find(ns);
-                        if (it != proxies_.end()) {
-                            proxyFuture = it->second;
-                        } else {
-                            proxies_.insert({ns, promise.get_future().share()});
-                            insertedEntry = true;
-                        }
+                    std::lock_guard<std::mutex> guard(lock_);
+                    auto it = proxies_.find(ns);
+                    if (it != proxies_.end()) {
+                        auto proxy_future = it->second;
+                        return convert_to_concrete_proxy_future<T>(proxy_future);
                     }
 
-                    if (proxyFuture.valid()) {
-                        return proxyFuture.then(boost::launch::deferred, [] (boost::shared_future<std::shared_ptr<ClientProxy>> f) {
-                            return std::static_pointer_cast<T>(f.get());
-                        });
-                    }
-
-                    auto clientProxy = std::shared_ptr<T>(new T(id, &client_));
-                    return initialize(std::static_pointer_cast<ClientProxy>(clientProxy)).then(boost::launch::deferred, [=] (boost::future<void> f) {
+                    auto concrete_proxy = std::shared_ptr<T>(new T(id, &client_));
+                    auto client_proxy = std::static_pointer_cast<ClientProxy>(concrete_proxy);
+                    auto proxy_future = initialize(client_proxy).then(boost::launch::deferred, [=] (boost::future<void> f) {
                         try {
                             f.get();
-                            return clientProxy;
+                            return client_proxy;
                         } catch (...) {
                             std::lock_guard<std::mutex> guard(lock_);
-                            if (insertedEntry) {
-                                proxies_.erase(ns);
-                            }
+                            proxies_.erase(ns);
                             throw;
                         }
-                    });
+                    }).share();
+
+                    proxies_.insert({ns, proxy_future});
+                    return convert_to_concrete_proxy_future<T>(proxy_future);
                 }
 
                 /**
@@ -103,6 +92,14 @@ namespace hazelcast {
 
             private:
                 boost::future<void> initialize(const std::shared_ptr<ClientProxy> &client_proxy);
+
+                template <typename T>
+                boost::shared_future<std::shared_ptr<T>>
+                convert_to_concrete_proxy_future(boost::shared_future<std::shared_ptr<ClientProxy>> proxy_future) {
+                    return proxy_future.then(boost::launch::deferred, [] (boost::shared_future<std::shared_ptr<ClientProxy>> f) {
+                        return std::static_pointer_cast<T>(f.get());
+                    });
+                }
 
                 proxy_map proxies_;
                 std::mutex lock_;
