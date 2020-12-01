@@ -584,7 +584,7 @@ namespace hazelcast {
                     client_config_.get_connection_strategy_config().set_async_start(true);
                     hazelcast_client client(std::move(client_config_));
 
-                    ASSERT_THROW((client.get_map(random_map_name())),
+                    ASSERT_THROW((client.get_map(random_map_name()).get()),
                                  exception::hazelcast_client_offline);
 
                     client.shutdown();
@@ -594,7 +594,7 @@ namespace hazelcast {
                     client_config_.get_connection_strategy_config().set_async_start(true);
                     hazelcast_client client(std::move(client_config_));
                     client.shutdown();
-                    ASSERT_THROW((client.get_map(random_map_name())), exception::hazelcast_client_not_active);
+                    ASSERT_THROW((client.get_map(random_map_name()).get()), exception::hazelcast_client_not_active);
 
                     client.shutdown();
                 }
@@ -794,16 +794,12 @@ namespace hazelcast {
                     auto map = client.get_map(random_map_name()).get();
                     map->put(1, 5).get();
 
-                    client.add_lifecycle_listener(
-                        lifecycle_listener()
-                            .on_disconnected([&disconnectedLatch](){
+                    client.add_lifecycle_listener(lifecycle_listener().on_disconnected([&disconnectedLatch](){
                                 disconnectedLatch.try_count_down();
                             })
                     );
 
-                    client.add_lifecycle_listener(
-                        lifecycle_listener()
-                            .on_connected([&reconnectedLatch](){
+                    client.add_lifecycle_listener(lifecycle_listener().on_connected([&reconnectedLatch](){
                                 reconnectedLatch.try_count_down();
                             })
                     );
