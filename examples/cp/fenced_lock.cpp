@@ -20,7 +20,7 @@ int main() {
     hazelcast_client hz;
 
     // Get an fenced_lock named 'my-lock'
-    auto lock = hz.get_cp_subsystem().get_lock("my-lock");
+    auto lock = hz.get_cp_subsystem().get_lock("my-lock").get();
 
     // Acquire the lock
     lock->lock().get();

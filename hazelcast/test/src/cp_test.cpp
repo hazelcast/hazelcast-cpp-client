@@ -83,12 +83,12 @@ namespace hazelcast {
                 class basic_atomic_long_test : public cp_test<atomic_long> {
                 protected:
                     std::shared_ptr<atomic_long> get_cp_structure(const std::string &name) override {
-                        return client_->get_cp_subsystem().get_atomic_long(name);
+                        return client_->get_cp_subsystem().get_atomic_long(name).get();
                     }
                 };
                 
                 TEST_F(basic_atomic_long_test, create_proxy_on_metadata_cp_group) {
-                    ASSERT_THROW(client_->get_cp_subsystem().get_atomic_long("long@METADATA"),
+                    ASSERT_THROW(client_->get_cp_subsystem().get_atomic_long("long@METADATA").get(),
                                  exception::illegal_argument);
                 }
 
@@ -184,7 +184,7 @@ namespace hazelcast {
                     auto name = cp_structure_->get_name();
                     cp_structure_->destroy().get();
 
-                    cp_structure_ = client_->get_cp_subsystem().get_atomic_long(name);
+                    cp_structure_ = client_->get_cp_subsystem().get_atomic_long(name).get();
                     ASSERT_THROW(cp_structure_->increment_and_get().get(),
                                  exception::distributed_object_destroyed);
                 }
@@ -197,12 +197,12 @@ namespace hazelcast {
                 class basic_atomic_ref_test : public cp_test<atomic_reference> {
                 protected:
                     std::shared_ptr<atomic_reference> get_cp_structure(const std::string &name) override {
-                        return client_->get_cp_subsystem().get_atomic_reference(name);
+                        return client_->get_cp_subsystem().get_atomic_reference(name).get();
                     }
                 };
 
                 TEST_F(basic_atomic_ref_test, create_proxy_on_metadata_cp_group) {
-                    ASSERT_THROW(client_->get_cp_subsystem().get_atomic_reference("ref@METADATA"),
+                    ASSERT_THROW(client_->get_cp_subsystem().get_atomic_reference("ref@METADATA").get(),
                                  exception::illegal_argument);
                 }
 
@@ -287,7 +287,7 @@ namespace hazelcast {
                     auto name = cp_structure_->get_name();
                     cp_structure_->destroy().get();
 
-                    cp_structure_ = client_->get_cp_subsystem().get_atomic_reference(name);
+                    cp_structure_ = client_->get_cp_subsystem().get_atomic_reference(name).get();
                     ASSERT_THROW(cp_structure_->set(std::string("str1")).get(),
                                  exception::distributed_object_destroyed);
                 }
@@ -300,12 +300,12 @@ namespace hazelcast {
                 class basic_latch_test : public cp_test<latch> {
                 protected:
                     std::shared_ptr<latch> get_cp_structure(const std::string &name) override {
-                        return client_->get_cp_subsystem().get_latch(name);
+                        return client_->get_cp_subsystem().get_latch(name).get();
                     }
                 };
 
                 TEST_F(basic_latch_test, create_proxy_on_metadata_cp_group) {
-                    ASSERT_THROW(client_->get_cp_subsystem().get_latch("ref@METADATA"),
+                    ASSERT_THROW(client_->get_cp_subsystem().get_latch("ref@METADATA").get(),
                                  exception::illegal_argument);
                 }
 
@@ -409,7 +409,7 @@ namespace hazelcast {
                     static constexpr size_t LOCK_SERVICE_WAIT_TIMEOUT_TASK_UPPER_BOUND_MILLIS = 1500; // msecs
 
                     std::shared_ptr<fenced_lock> get_cp_structure(const std::string &name) override {
-                        return client_->get_cp_subsystem().get_lock(name);
+                        return client_->get_cp_subsystem().get_lock(name).get();
                     }
 
                     void try_lock(const std::chrono::milliseconds timeout) {
@@ -701,7 +701,7 @@ namespace hazelcast {
                     hazelcast_client c(
                             std::move(get_config().set_cluster_name(client_->get_client_config().get_cluster_name())));
                     auto proxy_name = get_test_name();
-                    auto l = c.get_cp_subsystem().get_lock(proxy_name);
+                    auto l = c.get_cp_subsystem().get_lock(proxy_name).get();
                     l->lock().get();
 
                     c.shutdown();
@@ -721,7 +721,7 @@ namespace hazelcast {
                 class basic_sessionless_semaphore_test : public cp_test<counting_semaphore> {
                 protected:
                     std::shared_ptr<counting_semaphore> get_cp_structure(const std::string &name) override {
-                        return client_->get_cp_subsystem().get_semaphore(name);
+                        return client_->get_cp_subsystem().get_semaphore(name).get();
                     }
 
                     client_config get_client_config() override {
@@ -730,7 +730,7 @@ namespace hazelcast {
                 };
 
                 TEST_F(basic_sessionless_semaphore_test, create_proxy_on_metadata_cp_group) {
-                    ASSERT_THROW(client_->get_cp_subsystem().get_semaphore("semaphore@METADATA"),
+                    ASSERT_THROW(client_->get_cp_subsystem().get_semaphore("semaphore@METADATA").get(),
                                  exception::illegal_argument);
                 }
 
@@ -1032,7 +1032,7 @@ namespace hazelcast {
                 TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies) {
                     hazelcast_client client2(
                             std::move(client_config().set_cluster_name(client_->get_client_config().get_cluster_name())));
-                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
+                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name()).get();
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());
                     ASSERT_FALSE(semaphore2->try_acquire().get());
@@ -1041,12 +1041,12 @@ namespace hazelcast {
                 class basic_session_semaphore_test : public cp_test<counting_semaphore> {
                 protected:
                     std::shared_ptr<counting_semaphore> get_cp_structure(const std::string &name) override {
-                        return client_->get_cp_subsystem().get_semaphore(name);
+                        return client_->get_cp_subsystem().get_semaphore(name).get();
                     }
                 };
 
                 TEST_F(basic_session_semaphore_test, create_proxy_on_metadata_cp_group) {
-                    ASSERT_THROW(client_->get_cp_subsystem().get_semaphore("semaphore@METADATA"),
+                    ASSERT_THROW(client_->get_cp_subsystem().get_semaphore("semaphore@METADATA").get(),
                                  exception::illegal_argument);
                 }
 
@@ -1387,7 +1387,7 @@ namespace hazelcast {
                 TEST_F(basic_session_semaphore_test, test_acquire_on_multiple_proxies) {
                     hazelcast_client client2(
                             std::move(client_config().set_cluster_name(client_->get_client_config().get_cluster_name())));
-                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
+                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name()).get();
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());
                     ASSERT_FALSE(semaphore2->try_acquire().get());

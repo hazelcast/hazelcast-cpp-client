@@ -53,7 +53,7 @@ namespace hazelcast {
                     return existing;
                 }
 
-                group_id = get_group_id(proxy_name, object_name);
+                group_id = get_group_id(proxy_name, object_name).get();
             }
         }
 
@@ -108,32 +108,34 @@ namespace hazelcast {
             return object_name;
         }
 
-        raft_group_id raft_proxy_factory::get_group_id(const std::string &proxy_name, const std::string &object_name) {
+        boost::future<raft_group_id> raft_proxy_factory::get_group_id(const std::string &proxy_name, const std::string &object_name) {
             auto request = cpgroup_createcpgroup_encode(proxy_name);
-            return *spi::impl::ClientInvocation::create(context_, request,
-                                                        object_name)->invoke().get().get_first_var_sized_field<raft_group_id>();
+            return spi::impl::ClientInvocation::create(context_, request, object_name)->invoke().then(
+                    boost::launch::deferred, [] (boost::future<protocol::ClientMessage> f) {
+                return *f.get().get_first_var_sized_field<raft_group_id>();
+            });
         }
 
         cp_subsystem::cp_subsystem(client::spi::ClientContext &context) : context_(context), proxy_factory_(context) {
         }
 
-        std::shared_ptr<atomic_long> cp_subsystem::get_atomic_long(const std::string &name) {
+        boost::future<std::shared_ptr<atomic_long>> cp_subsystem::get_atomic_long(const std::string &name) {
             return proxy_factory_.create_proxy<atomic_long>(name);
         }
 
-        std::shared_ptr<atomic_reference> cp_subsystem::get_atomic_reference(const std::string &name) {
+        boost::future<std::shared_ptr<atomic_reference>> cp_subsystem::get_atomic_reference(const std::string &name) {
             return proxy_factory_.create_proxy<atomic_reference>(name);
         }
 
-        std::shared_ptr<latch> cp_subsystem::get_latch(const std::string &name) {
+        boost::future<std::shared_ptr<latch>> cp_subsystem::get_latch(const std::string &name) {
             return proxy_factory_.create_proxy<latch>(name);
         }
 
-        std::shared_ptr<fenced_lock> cp_subsystem::get_lock(const std::string &name) {
+        boost::future<std::shared_ptr<fenced_lock>> cp_subsystem::get_lock(const std::string &name) {
             return proxy_factory_.create_proxy<fenced_lock>(name);
         }
 
-        std::shared_ptr<counting_semaphore> cp_subsystem::get_semaphore(const std::string &name) {
+        boost::future<std::shared_ptr<counting_semaphore>> cp_subsystem::get_semaphore(const std::string &name) {
             return proxy_factory_.create_proxy<counting_semaphore>(name);
         }
 

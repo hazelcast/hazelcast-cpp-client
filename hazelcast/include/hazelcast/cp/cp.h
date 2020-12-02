@@ -1234,11 +1234,13 @@ namespace hazelcast {
             static std::string object_name_for_proxy(const std::string &name);
 
             template<typename T>
-            std::shared_ptr<T> create_proxy(const std::string &name) {
+            boost::future<std::shared_ptr<T>> create_proxy(const std::string &name) {
                 auto proxy_name = without_default_group_name(name);
                 auto object_name = object_name_for_proxy(proxy_name);
-                auto group_id = get_group_id(proxy_name, object_name);
-                return create<T>(std::move(group_id), proxy_name, object_name);
+                return get_group_id(proxy_name, object_name).then([=] (boost::future<raft_group_id> f) {
+                    auto group_id = f.get();
+                    return create<T>(std::move(group_id), proxy_name, object_name);
+                });
             }
 
         private:
@@ -1277,7 +1279,7 @@ namespace hazelcast {
                 return create_semaphore(std::move(group_id), proxy_name, object_name);
             }
 
-            raft_group_id get_group_id(const std::string &proxy_name, const std::string &object_name);
+            boost::future<raft_group_id> get_group_id(const std::string &proxy_name, const std::string &object_name);
         };
 
         /**
@@ -1313,7 +1315,7 @@ namespace hazelcast {
              * @return atomic_long proxy for the given name
              * @throws hazelcast_ if CP Subsystem is not enabled
              */
-            std::shared_ptr<atomic_long> get_atomic_long(const std::string &name);
+            boost::future<std::shared_ptr<atomic_long>> get_atomic_long(const std::string &name);
 
             /**
              * Returns a proxy for an atomic_reference instance created on
@@ -1337,8 +1339,7 @@ namespace hazelcast {
              * @return atomic_reference proxy for the given name
              * @throws hazelcast_ if CP Subsystem is not enabled
              */
-
-            std::shared_ptr<atomic_reference> get_atomic_reference(const std::string &name);
+            boost::future<std::shared_ptr<atomic_reference>> get_atomic_reference(const std::string &name);
 
             /**
              * Returns a proxy for an count_down_latch instance created on
@@ -1361,7 +1362,7 @@ namespace hazelcast {
              * @return count_down_latch proxy for the given name
              * @throws hazelcast_ if CP Subsystem is not enabled
              */
-            std::shared_ptr<latch> get_latch(const std::string &name);
+            boost::future<std::shared_ptr<latch>> get_latch(const std::string &name);
 
             /**
              * Returns a proxy for an fenced_lock instance created on CP
@@ -1383,7 +1384,7 @@ namespace hazelcast {
              * @return fenced_lock proxy for the given name
              * @throws hazelcast_ if CP Subsystem is not enabled
              */
-            std::shared_ptr<fenced_lock> get_lock(const std::string &name);
+            boost::future<std::shared_ptr<fenced_lock>> get_lock(const std::string &name);
 
             /**
              * Returns a proxy for an semaphore instance created on CP
@@ -1405,7 +1406,7 @@ namespace hazelcast {
              * @return semaphore proxy for the given name
              * @throws hazelcast_ if CP Subsystem is not enabled
              */
-            std::shared_ptr<counting_semaphore> get_semaphore(const std::string &name);
+            boost::future<std::shared_ptr<counting_semaphore>> get_semaphore(const std::string &name);
 
         private:
             friend client::impl::hazelcast_client_instance_impl;
