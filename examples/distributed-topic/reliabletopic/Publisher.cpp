@@ -18,7 +18,7 @@
 void publish_with_default_config() {
     hazelcast::client::hazelcast_client client;
 
-    auto topic = client.get_reliable_topic("MyReliableTopic");
+    auto topic = client.get_reliable_topic("MyReliableTopic").get();
     topic->publish(std::string("My first message")).get();
 }
 
@@ -30,7 +30,7 @@ void publish_with_non_default_config() {
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
     hazelcast::client::hazelcast_client client(std::move(clientConfig));
 
-    auto topic = client.get_reliable_topic(topicName);
+    auto topic = client.get_reliable_topic(topicName).get();
 
     topic->publish(std::string("My first message")).get();
 }

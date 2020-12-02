@@ -75,7 +75,7 @@ namespace hazelcast {
             * @returns distributed object
             */
             template<typename T>
-            std::shared_ptr<T> get_distributed_object(const std::string& name) {
+            boost::shared_future<std::shared_ptr<T>> get_distributed_object(const std::string& name) {
                 return client_impl_->get_distributed_object<T>(name);
             }
 
@@ -88,7 +88,7 @@ namespace hazelcast {
             * @param name name of the distributed map
             * @return distributed map instance with the specified name
             */
-            std::shared_ptr<imap> get_map(const std::string &name) {
+            boost::shared_future<std::shared_ptr<imap>> get_map(const std::string &name) {
                 return client_impl_->get_distributed_object<imap>(name);
             }
 
@@ -98,11 +98,11 @@ namespace hazelcast {
             * @param name name of the distributed multimap
             * @return distributed multimap instance with the specified name
             */
-            std::shared_ptr<multi_map> get_multi_map(const std::string& name) {
+            boost::shared_future<std::shared_ptr<multi_map>> get_multi_map(const std::string& name) {
                 return client_impl_->get_distributed_object<multi_map>(name);
             }
 
-            std::shared_ptr<replicated_map> get_replicated_map(const std::string &name) {
+            boost::shared_future<std::shared_ptr<replicated_map>> get_replicated_map(const std::string &name) {
                 return client_impl_->get_distributed_object<replicated_map>(name);
             }
 
@@ -112,7 +112,7 @@ namespace hazelcast {
             * @param name name of the distributed queue
             * @return distributed queue instance with the specified name
             */
-            std::shared_ptr<iqueue> get_queue(const std::string& name) {
+            boost::shared_future<std::shared_ptr<iqueue>> get_queue(const std::string& name) {
                 return client_impl_->get_distributed_object<iqueue>(name);
             }
 
@@ -123,7 +123,7 @@ namespace hazelcast {
             * @param name name of the distributed set
             * @return distributed set instance with the specified name
             */
-            std::shared_ptr<iset> get_set(const std::string& name) {
+            boost::shared_future<std::shared_ptr<iset>> get_set(const std::string& name) {
                 return client_impl_->get_distributed_object<iset>(name);
             }
 
@@ -134,7 +134,7 @@ namespace hazelcast {
             * @param name name of the distributed list
             * @return distributed list instance with the specified name
             */
-            std::shared_ptr<ilist> get_list(const std::string& name) {
+            boost::shared_future<std::shared_ptr<ilist>> get_list(const std::string& name) {
                 return client_impl_->get_distributed_object<ilist>(name);
             }
 
@@ -144,7 +144,7 @@ namespace hazelcast {
             * @param name name of the distributed topic
             * @return distributed topic instance with the specified name
             */
-            std::shared_ptr<itopic> get_topic(const std::string& name) {
+            boost::shared_future<std::shared_ptr<itopic>> get_topic(const std::string& name) {
                 return client_impl_->get_distributed_object<itopic>(name);
             };
 
@@ -154,8 +154,12 @@ namespace hazelcast {
             * @param name name of the distributed topic
             * @return distributed topic instance with the specified name
             */
-            std::shared_ptr<reliable_topic> get_reliable_topic(const std::string& name) {
-                return client_impl_->get_distributed_object<reliable_topic>(name);
+            boost::shared_future<std::shared_ptr<reliable_topic>> get_reliable_topic(const std::string &name) {
+                return get_distributed_object<ringbuffer>(std::string(reliable_topic::TOPIC_RB_PREFIX) + name).then(
+                        boost::launch::deferred, [=](boost::shared_future<std::shared_ptr<ringbuffer>> f) {
+                            auto rb = f.get();
+                            return std::shared_ptr<reliable_topic>(new reliable_topic(rb, name, &rb->get_context()));
+                        });
             }
 
             /**
@@ -174,7 +178,7 @@ namespace hazelcast {
              * @param name name of the {@link flake_id_generator}
              * @return flake_id_generator for the given name
              */
-            std::shared_ptr<flake_id_generator> get_flake_id_generator(const std::string& name) {
+            boost::shared_future<std::shared_ptr<flake_id_generator>> get_flake_id_generator(const std::string& name) {
                 return client_impl_->get_distributed_object<flake_id_generator>(name);
             }
 
@@ -190,7 +194,7 @@ namespace hazelcast {
              * @param name the name of the PN counter
              * @return a {@link pn_counter}
              */
-            std::shared_ptr<pn_counter> get_pn_counter(const std::string& name) {
+            boost::shared_future<std::shared_ptr<pn_counter>> get_pn_counter(const std::string& name) {
                 return client_impl_->get_distributed_object<pn_counter>(name);
             }
 
@@ -200,7 +204,7 @@ namespace hazelcast {
              * @param name name of the distributed ringbuffer
              * @return distributed ringbuffer instance with the specified name
              */
-            std::shared_ptr<ringbuffer> get_ringbuffer(const std::string& name) {
+            boost::shared_future<std::shared_ptr<ringbuffer>> get_ringbuffer(const std::string& name) {
                 return client_impl_->get_distributed_object<ringbuffer>(name);
             }
 
@@ -215,7 +219,7 @@ namespace hazelcast {
              * @param name name of the executor service
              * @return the distributed executor service for the given name
              */
-            std::shared_ptr<iexecutor_service> get_executor_service(const std::string &name) {
+            boost::shared_future<std::shared_ptr<iexecutor_service>> get_executor_service(const std::string &name) {
                 return client_impl_->get_distributed_object<iexecutor_service>(name);
             }
 

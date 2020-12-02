@@ -19,7 +19,7 @@ using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
-    auto rb = hz.get_ringbuffer("rb");
+    auto rb = hz.get_ringbuffer("rb").get();
     // add two items into ring buffer
     rb->add(100).get();
     rb->add(200).get();

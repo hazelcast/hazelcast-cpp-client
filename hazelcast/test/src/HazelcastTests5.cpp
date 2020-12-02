@@ -395,7 +395,7 @@ namespace hazelcast {
                     clientConfig.get_serialization_config().set_global_serializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
                     client = new hazelcast_client(std::move(clientConfig));
-                    unknown_object_map = client->get_map("UnknownObject");
+                    unknown_object_map = client->get_map("UnknownObject").get();
                 }
 
                 static void TearDownTestCase() {
@@ -443,7 +443,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
-                    int_map = client->get_map("IntMap");
+                    int_map = client->get_map("IntMap").get();
                 }
 
                 static void TearDownTestCase() {
@@ -510,7 +510,7 @@ namespace hazelcast {
                     client_config clientConfig(get_config());
                     clientConfig.set_property(client_properties::PROP_HEARTBEAT_TIMEOUT, "20");
                     client = new hazelcast_client(std::move(clientConfig));
-                    map = client->get_map("map");
+                    map = client->get_map("map").get();
                 }
 
                 static void TearDownTestSuite() {
@@ -690,9 +690,9 @@ namespace hazelcast {
                 }
 
                 ClientMapTest() : client_(hazelcast_client(GetParam()())),
-                                  imap_(client_.get_map(imapName)),
-                                  int_map_(client_.get_map(intMapName)),
-                                  employees_(client_.get_map(employeesMapName)) {
+                                  imap_(client_.get_map(imapName).get()),
+                                  int_map_(client_.get_map(intMapName).get()),
+                                  employees_(client_.get_map(employeesMapName).get()) {
                 }
 
                 static void SetUpTestCase() {
@@ -737,8 +737,8 @@ namespace hazelcast {
                     employees_->destroy().get();
                     int_map_->destroy().get();
                     imap_->destroy().get();
-                    client_.get_map(ONE_SECOND_MAP_NAME)->destroy().get();
-                    client_.get_map("tradeMap")->destroy().get();
+                    client_.get_map(ONE_SECOND_MAP_NAME).get()->destroy().get();
+                    client_.get_map("tradeMap").get()->destroy().get();
                 }
 
                 void fill_map() {
@@ -947,7 +947,7 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testPartitionAwareKey) {
                 int partitionKey = 5;
                 int value = 25;
-                std::shared_ptr<imap> map = client_.get_map(intMapName);
+                std::shared_ptr<imap> map = client_.get_map(intMapName).get();
                 PartitionAwareInt partitionAwareInt(partitionKey, 7);
                 map->put(partitionAwareInt, value).get();
                 boost::optional<int> val = map->get<PartitionAwareInt, int>(partitionAwareInt).get();
@@ -1049,7 +1049,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testPutConfigTtl) {
-                std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME);
+                std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME).get();
                 validate_expiry_invalidations(map, [=] () { map->put<std::string, std::string>("key1", "value1").get(); });
             }
 
@@ -1080,7 +1080,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testSetConfigTtl) {
-                std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME);
+                std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME).get();
                 validate_expiry_invalidations(map, [=] () { map->set("key1", "value1").get(); });
             }
 
@@ -2372,7 +2372,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testListenerWithPortableKey) {
-                std::shared_ptr<imap> tradeMap = client_.get_map("tradeMap");
+                std::shared_ptr<imap> tradeMap = client_.get_map("tradeMap").get();
                 boost::latch countDownLatch(1);
                 std::atomic<int> atomicInteger(0);
 
@@ -3328,7 +3328,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testJsonPutGet) {
-                std::shared_ptr<imap> map = client_.get_map(get_test_name());
+                std::shared_ptr<imap> map = client_.get_map(get_test_name()).get();
                 hazelcast_json_value value("{ \"age\": 4 }");
                 map->put("item1", value).get();
                 boost::optional<hazelcast_json_value> retrieved = map->get<std::string, hazelcast_json_value>("item1").get();
@@ -3338,7 +3338,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testQueryOverJsonObject) {
-                std::shared_ptr<imap> map = client_.get_map(get_test_name());
+                std::shared_ptr<imap> map = client_.get_map(get_test_name()).get();
                 hazelcast_json_value young("{ \"age\": 4 }");
                 hazelcast_json_value old("{ \"age\": 20 }");
                 map->put("item1", young).get();

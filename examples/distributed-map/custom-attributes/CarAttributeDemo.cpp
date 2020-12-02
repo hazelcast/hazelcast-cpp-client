@@ -87,7 +87,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("cars");
+    auto map = hz.get_map("cars").get();
 
     map->put(1, Car("Audi Q7", 250, 22000)).get();
     map->put(2, Car("BMW X5", 312, 34000)).get();

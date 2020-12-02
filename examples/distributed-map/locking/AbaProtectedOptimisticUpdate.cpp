@@ -49,7 +49,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("map");
+    auto map = hz.get_map("map").get();
 
     map->put("1", Value{});
     std::cout << "Starting" << std::endl;

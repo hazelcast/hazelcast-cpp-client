@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/topic/reliable_listener.h>
 
 hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
     using namespace hazelcast::client::topic;
@@ -36,7 +37,7 @@ void listen_with_default_config() {
     hazelcast::client::hazelcast_client client;
 
     std::string topicName("MyReliableTopic");
-    auto topic = client.get_reliable_topic(topicName);
+    auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
     auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
@@ -62,7 +63,7 @@ void listen_with_config() {
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
     hazelcast::client::hazelcast_client client(std::move(clientConfig));
 
-    auto topic = client.get_reliable_topic(topicName);
+    auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
     auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));

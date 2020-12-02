@@ -44,7 +44,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("themap");
+    auto map = hz.get_map("themap").get();
 
     map->add_interceptor(MapInterceptor{}).get();
 

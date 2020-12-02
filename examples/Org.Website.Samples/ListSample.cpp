@@ -20,7 +20,7 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get the Distributed List from Cluster.
-    auto list = hz.get_list("my-distributed-list");
+    auto list = hz.get_list("my-distributed-list").get();
     // Add elements to the list
     list->add("item1").get();
     // Using future continuation here so that the calls are not blocking

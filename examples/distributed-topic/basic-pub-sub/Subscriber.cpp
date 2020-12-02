@@ -20,7 +20,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto topic = hz.get_topic("testtopic");
+    auto topic = hz.get_topic("testtopic").get();
 
     topic->add_message_listener(
         hazelcast::client::topic::listener().

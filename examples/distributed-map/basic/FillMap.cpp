@@ -18,13 +18,13 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("map");
+    auto map = hz.get_map("map").get();
     map->put<std::string, std::string>("1", "Tokyo").get();
     map->put<std::string, std::string>("2", "Paris").get();
     map->put<std::string, std::string>("3", "New York").get();
     std::cout << "Finished loading map" << std::endl;
 
-    auto binaryMap = hz.get_map("MyBinaryMap");
+    auto binaryMap = hz.get_map("MyBinaryMap").get();
     std::vector<char> value(100);
     binaryMap->put(3, value).get();
     std::cout << "Inserted an entry with key 3 and a binary value to the binary map->" << std::endl;

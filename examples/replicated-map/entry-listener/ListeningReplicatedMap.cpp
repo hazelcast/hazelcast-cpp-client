@@ -19,7 +19,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_replicated_map("map");
+    auto map = hz.get_replicated_map("map").get();
 
     auto listenerId = map->add_entry_listener(
         hazelcast::client::entry_listener()

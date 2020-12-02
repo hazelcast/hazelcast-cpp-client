@@ -550,7 +550,7 @@ Then, you can run the application using the following command:
 int main() {
     hazelcast::client::hazelcast_client hz; // Connects to the cluster
 
-    auto personnel = hz.get_map("personnel_map");
+    auto personnel = hz.get_map("personnel_map").get();
     personnel->put<std::string, std::string>("Alice", "IT").get();
     personnel->put<std::string, std::string>("Bob", "IT").get();
     personnel->put<std::string, std::string>("Clark", "IT").get();
@@ -608,7 +608,7 @@ Then, you can run the application using the following command:
 int main() {
     hazelcast::client::hazelcast_client hz; // Connects to the cluster
 
-    auto personnel = hz.get_map("personnel_map");
+    auto personnel = hz.get_map("personnel_map").get();
     personnel->put<std::string, std::string>("Denise", "Sales").get();
     personnel->put<std::string, std::string>("Erwing", "Sales").get();
     personnel->put<std::string, std::string>("Fatih", "Sales").get();
@@ -906,7 +906,7 @@ In order to use JSON serialization, you should use the `hazelcast_json_value` ob
 ```C++
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("map");
+    auto map = hz.get_map("map").get();
 
     map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
     map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
@@ -1302,7 +1302,7 @@ Let's create a map and populate it with some data, as shown below.
 
 ```C++
     // Get the Distributed Map from Cluster.
-    auto map = client.get_map("my-distributed-map");
+    auto map = client.get_map("my-distributed-map").get();
     //Standard put and get.
     map->put<std::string, std::string>("key", "value").get();
     map->get<std::string, std::string>("key").get();
@@ -1431,7 +1431,7 @@ A Map usage example is shown below.
 
 ```C++
     // Get the Distributed Map from Cluster.
-    auto map = hz.get_map("my-distributed-map");
+    auto map = hz.get_map("my-distributed-map").get();
     //Standard Put and Get.
     map->put<std::string, std::string>("key", "value").get();
     map->get<std::string, std::string>("key").get();
@@ -1448,7 +1448,7 @@ A multi_map usage example is shown below.
 
 ```C++
     // Get the Distributed multi_map from Cluster.
-    auto multiMap = hz.get_multi_map("my-distributed-multimap");
+    auto multiMap = hz.get_multi_map("my-distributed-multimap").get();
     // Put values in the map against the same key
     multiMap->put<std::string, std::string>("my-key", "value1").get();
     multiMap->put<std::string, std::string>("my-key", "value2").get();
@@ -1468,7 +1468,7 @@ Hazelcast `replicated_map` is a distributed key-value data structure where the d
 A replicated_map usage example is shown below.
 
 ```C++
-    auto replicatedMap = hz.get_replicated_map("myReplicatedMap");
+    auto replicatedMap = hz.get_replicated_map("myReplicatedMap").get();
     replicatedMap->put<int, std::string>(1, "Furkan").get();
     replicatedMap->put<int, std::string>(2, "Ahmet").get();
     std::cout << "Replicated map value for key 2 is " << *replicatedMap->get<int, std::string>(2).get() << std::endl; // Replicated map value for key 2 is Ahmet
@@ -1482,7 +1482,7 @@ A Queue usage example is shown below.
 
 ```C++
     // Get a Blocking Queue called "my-distributed-queue"
-    auto queue = hz.get_queue("my-distributed-queue");
+    auto queue = hz.get_queue("my-distributed-queue").get();
     // Offer a String into the Distributed Queue
     queue->offer<std::string>("item").get();
     // Poll the Distributed Queue and return the String
@@ -1503,7 +1503,7 @@ A Set usage example is shown below.
 
 ```C++
     // Get the Distributed Set from Cluster.
-    auto set = hz.get_set("my-distributed-set");
+    auto set = hz.get_set("my-distributed-set").get();
     // Add items to the set with duplicates
     set->add<std::string>("item1").get();
     set->add<std::string>("item1").get();
@@ -1525,7 +1525,7 @@ A List usage example is shown below.
 
 ```C++
     // Get the Distributed List from Cluster.
-    auto list = hz.get_list("my-distributed-list");
+    auto list = hz.get_list("my-distributed-list").get();
     // Add elements to the list
     list->add<std::string>("item1").get();
     list->add<std::string>("item2").get();
@@ -1545,7 +1545,7 @@ Hazelcast `ringbuffer` is a replicated but not partitioned data structure that s
 A ringbuffer usage example is shown below.
 
 ```C++
-    auto rb = hz.get_ring_buffer("rb");
+    auto rb = hz.get_ring_buffer("rb").get();
     // add two items into ring buffer
     rb->add(100).get();
     rb->add(200).get();
@@ -1585,7 +1585,7 @@ void listen_with_default_config() {
     hazelcast::client::hazelcast_client client;
 
     std::string topicName("MyReliableTopic");
-    auto topic = client.get_reliable_topic(topicName);
+    auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
     auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
@@ -1611,7 +1611,7 @@ void listen_with_config() {
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
     hazelcast::client::hazelcast_client client(std::move(clientConfig));
 
-    auto topic = client.get_reliable_topic(topicName);
+    auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
     auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
@@ -1639,7 +1639,7 @@ A pn_counter usage example is shown below.
 ```C++
     hazelcast::client::hazelcast_client hz;
 
-    auto pnCounter = hz.get_pn_counter("pncounterexample");
+    auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
     std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 
@@ -1659,7 +1659,7 @@ Hazelcast `flake_id_generator` is used to generate cluster-wide unique identifie
 A flake_id_generator usage example is shown below.
 
 ```C++
-    auto generator = hz.get_flake_id_generator("flakeIdGenerator");
+    auto generator = hz.get_flake_id_generator("flakeIdGenerator").get();
     std::cout << "Id : " << generator->newId().get() << std::endl; // Id : <some unique number>
 ```
 
@@ -1874,7 +1874,7 @@ You can create a `transaction_context` object using the C++ client to begin, com
                 context.begin_transaction().get();
 
                 // Get transactional distributed data structures
-                auto txnMap = context.get_map("transactional-map");
+                auto txnMap = context.get_map("transactional-map").get();
                 auto txnmulti_map = context.get_multi_map("transactional-multimap");
                 auto txnQueue = context.get_queue("transactional-queue");
                 auto txnSet = context.get_set("transactional-set");
@@ -1966,7 +1966,7 @@ int main() {
     try {
         hazelcast::client::hazelcast_client hz;
 
-        hazelcast::client::cluster &cluster = hz.get_cluster();
+        hazelcast::client::cluster &cluster = hz.get_cluster().get();
         clusterPtr = &cluster;
         auto members = cluster.get_members();
         std::cout << "The following are members in the cluster:" << std::endl;
@@ -2076,7 +2076,7 @@ See the following example.
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("EntryListenerExampleMap");
+    auto map = hz.get_map("EntryListenerExampleMap").get();
 
     auto registrationId = map->add_entry_listener(
         entry_listener().
@@ -2107,7 +2107,7 @@ See the example below.
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("EntryListenerExampleMap");
+    auto map = hz.get_map("EntryListenerExampleMap").get();
 
     auto registrationId = map->add_entry_listener(
         entry_listener().
@@ -2242,7 +2242,7 @@ An example where `MessagePrinter` task is executed is shown below.
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor");
+    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
     auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
     // Wait for the result of the submitted task and print the result
@@ -2268,7 +2268,7 @@ void printOnTheMember(const std::string &input, const Member &member) {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor");
+    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Get the first Hazelcast Cluster Member
     member firstMember = hz.get_cluster().get_members()[0];
     // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
@@ -2280,7 +2280,7 @@ void printOnTheMemberOwningTheKey(const std::string &input, const std::string &k
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor");
+    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
     ex->execute_on_key_owner<MessagePrinter, std::string>(
             MessagePrinter{"message to the member that owns the key"}, "key").get();
@@ -2292,7 +2292,7 @@ void printOnSomewhere(const std::string &input) {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor");
+    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
     auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"}).get();
 }
@@ -2303,7 +2303,7 @@ void printOnMembers(const std::string input, const std::vector<Member> &members)
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor");
+    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     ex->execute_on_members<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, members);
 }
 ```
@@ -2319,7 +2319,7 @@ To cancel a task, you can use the `executor_promise<T>::cancel()` API. This API 
 The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `timeout` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
 
 ```
-                auto service = client->get_executor_service(get_test_name());
+                auto service = client->get_executor_service(get_test_name()).get();
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -2536,7 +2536,7 @@ The code that runs on the entries is implemented in Java on the server side. The
 After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `imap` functions. See the following example.
 
 ```C++
-    auto map = hz.get_map("my-distributed-map");
+    auto map = hz.get_map("my-distributed-map").get();
     map->execute_on_key<std::string, IdentifiedEntryProcessor>("key", IdentifiedEntryProcessor("my new name"));
     std::cout << "Value for 'key' is : '" << *map->get<std::string, std::string>("key").get() << "'" << std::endl; // value for 'key' is 'my new name'
 ```
@@ -2728,7 +2728,7 @@ ILIKE is similar to the LIKE predicate but in a case-insensitive manner.
 You can use the `query::query_constants::KEY_ATTRIBUTE_NAME` (`__key`) attribute to perform a predicated search for entry keys. See the following example:
 
 ```C++
-    auto map = hz.get_map("personMap;");
+    auto map = hz.get_map("personMap").get();
     map->put<std::string, int>("Mali", 28).get();
     map->put<std::string, int>("Ahmet", 30).get();
     map->put<std::string, int>("Furkan", 23).get();
@@ -2742,7 +2742,7 @@ In this example, the code creates a list with the values whose keys start with t
 You can use `query::query_constants::THIS_ATTRIBUTE_NAME` (`this`) attribute to perform a predicated search for entry values. See the following example:
 
 ```C++
-    auto map = hz.get_map("personMap;");
+    auto map = hz.get_map("personMap").get();
     map->put<std::string, int>("Mali", 28).get();
     map->put<std::string, int>("Ahmet", 30).get();
     map->put<std::string, int>("Furkan", 23).get();
@@ -2765,7 +2765,7 @@ possible to query these objects using the Hazelcast query methods explained in t
     std::string person2 = "{ \"name\": \"Jane\", \"age\": 24 }";
     std::string person3 = "{ \"name\": \"Trey\", \"age\": 17 }";
 
-    auto idPersonMap = hz.get_map("jsonValues");
+    auto idPersonMap = hz.get_map("jsonValues").get();
 
     idPersonMap->put<int, hazelcast_json_value>(1, hazelcast_json_value(person1)).get();
     idPersonMap->put<int, hazelcast_json_value>(2, hazelcast_json_value(person2)).get();
@@ -2820,7 +2820,7 @@ whether such an entry is going to be returned or not from a query is not defined
 The C++ client provides paging for defined predicates. With its `paging_predicate` object, you can get a list of keys, values, or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
 ```C++
-    auto map = hz.get_map("personMap;");
+    auto map = hz.get_map("personMap").get();
     // paging_predicate with inner predicate (value < 10)
     auto predicate = intMap->new_paging_predicate<int, int>(5,
             query::greater_less_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 10, false, false));

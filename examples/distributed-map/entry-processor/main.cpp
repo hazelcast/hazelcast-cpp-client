@@ -20,7 +20,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto employees = hz.get_map("employees");
+    auto employees = hz.get_map("employees").get();
 
     employees->put("John", employee{1000}).get();
     employees->put("Mark", employee{1000}).get();

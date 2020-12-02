@@ -273,19 +273,19 @@ namespace hazelcast {
             constexpr size_t ClientReplicatedMapTest::OPERATION_COUNT;
 
             TEST_F(ClientReplicatedMapTest, testEmptyMapIsEmpty) {
-                std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name()).get();
                 ASSERT_TRUE(map->is_empty().get()) << "map should be empty";
             }
 
             TEST_F(ClientReplicatedMapTest, testNonEmptyMapIsNotEmpty) {
-                auto map = client->get_replicated_map(get_test_name());
+                auto map = client->get_replicated_map(get_test_name()).get();
                 map->put(1, 1).get();
                 ASSERT_FALSE(map->is_empty().get()) << "map should not be empty";
             }
 
             TEST_F(ClientReplicatedMapTest, testPutAll) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 put_all_entries_into_map(map1);
                 verify_entries_in_map(map1);
@@ -295,20 +295,20 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testGet) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
                 put_entries_into_map(map1);
                 get_and_verify_entries_in_map(map1);
                 get_and_verify_entries_in_map(map2);
             }
 
             TEST_F(ClientReplicatedMapTest, testPutNullReturnValueDeserialization) {
-                auto map = client->get_replicated_map(get_test_name());
+                auto map = client->get_replicated_map(get_test_name()).get();
                 ASSERT_FALSE(map->put(1, 2).get().has_value()) << "Put should return null";
             }
 
             TEST_F(ClientReplicatedMapTest, testPutReturnValueDeserialization) {
-                auto map = client->get_replicated_map(get_test_name());
+                auto map = client->get_replicated_map(get_test_name()).get();
                 map->put(1, 2).get();
                 auto value = map->put(1, 3).get();
                 ASSERT_TRUE(value.has_value());
@@ -316,8 +316,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testAdd) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -327,8 +327,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testClear) {
-                std::shared_ptr<replicated_map> map1 =client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 =client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 =client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 =client2->get_replicated_map(get_test_name()).get();
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -342,8 +342,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testUpdate) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -358,8 +358,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testRemove) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -383,8 +383,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testSize) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -399,8 +399,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testContainsKey) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 put_entries_into_map(map1);
 
@@ -414,8 +414,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testContainsValue) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -435,8 +435,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testValues) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -455,8 +455,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testKeySet) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -476,8 +476,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testEntrySet) {
-                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name()).get();
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name()).get();
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -504,7 +504,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testRetrieveUnknownValue) {
-                std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name()).get();
                 auto value = map->get<std::string, std::string>("foo").get();
                 ASSERT_FALSE(value.has_value()) << "No entry with key foo should exist";
             }
@@ -515,13 +515,13 @@ namespace hazelcast {
                 hazelcast_client client1(get_client_config_with_near_cache_invalidation_enabled());
                 hazelcast_client client2(get_client_config_with_near_cache_invalidation_enabled());
 
-                auto replicatedMap1 = client1.get_replicated_map(mapName);
+                auto replicatedMap1 = client1.get_replicated_map(mapName).get();
 
                 replicatedMap1->put(1, 1).get();
 // puts key 1 to Near Cache
                 replicatedMap1->get<int, int>(1).get();
 
-                auto replicatedMap2 = client2.get_replicated_map(mapName);
+                auto replicatedMap2 = client2.get_replicated_map(mapName).get();
 // this should invalidate Near Cache of replicatedMap1
                 replicatedMap2->clear().get();
 
@@ -529,7 +529,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode) {
-                auto sampleMap = client->get_replicated_map(get_test_name());
+                auto sampleMap = client->get_replicated_map(get_test_name()).get();
                 sampleMap->put(1, SamplePortable{666});
                 auto samplePortable = sampleMap->get<int, SamplePortable>(1).get();
                 ASSERT_TRUE(samplePortable.has_value());
@@ -635,14 +635,14 @@ namespace hazelcast {
             hazelcast_client *ClientReplicatedMapListenerTest::client2 = nullptr;
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryAdded) {
-                auto replicatedMap = client->get_replicated_map(get_test_name());
+                auto replicatedMap = client->get_replicated_map(get_test_name()).get();
                 replicatedMap->add_entry_listener(make_event_counting_listener(state_)).get();
                 replicatedMap->put(1, 1).get();
                 ASSERT_EQ_EVENTUALLY(1, state_.add_count.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryUpdated) {
-                auto replicatedMap = client->get_replicated_map(get_test_name());
+                auto replicatedMap = client->get_replicated_map(get_test_name()).get();
                 replicatedMap->add_entry_listener(make_event_counting_listener(state_)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->put(1, 2).get();
@@ -650,7 +650,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryRemoved) {
-                auto replicatedMap = client->get_replicated_map(get_test_name());
+                auto replicatedMap = client->get_replicated_map(get_test_name()).get();
                 replicatedMap->add_entry_listener(make_event_counting_listener(state_)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->remove<int, int>(1).get();
@@ -658,7 +658,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testMapClear) {
-                auto replicatedMap = client->get_replicated_map(get_test_name());
+                auto replicatedMap = client->get_replicated_map(get_test_name()).get();
                 replicatedMap->add_entry_listener(make_event_counting_listener(state_)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->clear().get();
@@ -666,7 +666,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenToKeyForEntryAdded) {
-                auto replicatedMap = client->get_replicated_map(get_test_name());
+                auto replicatedMap = client->get_replicated_map(get_test_name()).get();
                 replicatedMap->add_entry_listener(make_event_counting_listener(state_), 1).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->put(2, 2).get();
@@ -675,7 +675,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {
-                auto replicatedMap = client->get_replicated_map(get_test_name());
+                auto replicatedMap = client->get_replicated_map(get_test_name()).get();
                 replicatedMap->add_entry_listener(make_event_counting_listener(state_), query::false_predicate(*client)).get();
                 replicatedMap->put(2, 2).get();
                 ASSERT_TRUE_ALL_THE_TIME((state_.add_count.load() == 0), 1);
@@ -821,7 +821,7 @@ namespace hazelcast {
 
                 void create_no_near_cache_context() {
                     client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(get_config()));
-                    no_near_cache_map_ = client_->get_replicated_map(get_test_name());
+                    no_near_cache_map_ = client_->get_replicated_map(get_test_name()).get();
                 }
 
                 void create_near_cache_context() {
@@ -829,7 +829,7 @@ namespace hazelcast {
                     nearCachedClientConfig.add_near_cache_config(near_cache_config_);
                     near_cached_client_ = std::unique_ptr<hazelcast_client>(
                             new hazelcast_client(std::move(nearCachedClientConfig)));
-                    near_cached_map_ = near_cached_client_->get_replicated_map(get_test_name());
+                    near_cached_map_ = near_cached_client_->get_replicated_map(get_test_name()).get();
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
                     near_cache_ = near_cache_manager_->
@@ -1257,7 +1257,7 @@ namespace hazelcast {
                     client_config_->add_near_cache_config(config);
 
                     client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(std::move(*client_config_)));
-                    map_ = client_->get_replicated_map(mapName);
+                    map_ = client_->get_replicated_map(mapName).get();
                     return map_;
                 }
 
@@ -1361,7 +1361,7 @@ namespace hazelcast {
             };
 
             ClientTopicTest::ClientTopicTest() : instance_(*g_srvFactory), client_(get_new_client()),
-                                                 topic_(client_.get_topic("ClientTopicTest")) {}
+                                                 topic_(client_.get_topic("ClientTopicTest").get()) {}
 
             TEST_F(ClientTopicTest, testTopicListeners) {
                 boost::latch latch1(10);

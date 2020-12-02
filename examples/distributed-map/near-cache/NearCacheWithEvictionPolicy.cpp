@@ -27,7 +27,7 @@ int main() {
     config.add_near_cache_config(nearCacheConfig);
     hazelcast_client client(std::move(config));
 
-    auto map = client.get_map(mapName);
+    auto map = client.get_map(mapName).get();
 
     for (int i = 1; i <= 100; i++) {
         map->put(i, std::string{"foo-"} + std::to_string(i)).get();

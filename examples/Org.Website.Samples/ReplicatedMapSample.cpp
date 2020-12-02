@@ -20,7 +20,7 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast_client hz;
     // Get a Replicated Map called "my-replicated-map"
-    auto map = hz.get_replicated_map("my-replicated-map");
+    auto map = hz.get_replicated_map("my-replicated-map").get();
     // Add items to the set with duplicates
     // Put and Get a value from the Replicated Map
     auto replacedValue = map->put<std::string, std::string>("key", "value").get();

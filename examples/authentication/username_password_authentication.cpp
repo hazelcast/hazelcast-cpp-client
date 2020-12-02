@@ -25,7 +25,7 @@ int main() {
     
     hazelcast::client::hazelcast_client hz(std::move(clientConfig));
 
-    auto map = hz.get_map("MyMap");
+    auto map = hz.get_map("MyMap").get();
     
     map->put(1, 100).get();
 

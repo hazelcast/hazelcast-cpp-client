@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("map");
+    auto map = hz.get_map("map").get();
     auto entries = map->entry_set<std::string, std::string>().get();
     for (auto &entry : map->entry_set<std::string, std::string>().get()) {
         std::cout << entry.first << " " << entry.second << std::endl;

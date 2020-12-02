@@ -182,7 +182,7 @@ namespace hazelcast {
                 }
 
                 void produce_some_stats(hazelcast_client &client) {
-                    auto map = client.get_map(get_test_name());
+                    auto map = client.get_map(get_test_name()).get();
                     produce_some_stats(map);
                 }
 
@@ -266,7 +266,7 @@ namespace hazelcast {
                 hazelcast_client client(std::move(clientConfig));
 
                 // initialize near cache
-                client.get_map(mapName);
+                client.get_map(mapName).get();
 
                 // sleep twice the collection period
                 sleep_seconds(2);
@@ -373,7 +373,7 @@ namespace hazelcast {
                                             << "lastStatisticsCollectionTime value is not in correct (" << stats << ")";
 
                 // this creates empty map statistics
-                auto map = client->get_map(get_test_name());
+                auto map = client->get_map(get_test_name()).get();
 
                 statsMap = get_stats();
                 lastStatisticsCollectionTimeString = statsMap["lastStatisticsCollectionTime"];
@@ -467,8 +467,8 @@ namespace hazelcast {
                 protected:
                     void SetUp() override {
                         std::string testName = get_test_name();
-                        client_ringbuffer_ = client->get_ringbuffer(testName);
-                        client2_ringbuffer_ = client2->get_ringbuffer(testName);
+                        client_ringbuffer_ = client->get_ringbuffer(testName).get();
+                        client2_ringbuffer_ = client2->get_ringbuffer(testName).get();
                     }
 
                     void TearDown() override {
@@ -513,7 +513,7 @@ namespace hazelcast {
                 hazelcast_client *RingbufferTest::client2 = nullptr;
 
                 TEST_F(RingbufferTest, testAPI) {
-                    std::shared_ptr<ringbuffer> rb = client->get_ringbuffer(get_test_name() + "2");
+                    std::shared_ptr<ringbuffer> rb = client->get_ringbuffer(get_test_name() + "2").get();
                     ASSERT_EQ(CAPACITY, rb->capacity().get());
                     ASSERT_EQ(0, rb->head_sequence().get());
                     ASSERT_EQ(-1, rb->tail_sequence().get());
@@ -1248,25 +1248,25 @@ namespace hazelcast {
 
                     TEST_F(BasicPnCounterAPITest, testGetStart) {
                         std::shared_ptr<pn_counter> pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(0, pnCounter->get().get());
                     }
 
                     TEST_F(BasicPnCounterAPITest, testGetAndAdd) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(0, pnCounter->get_and_add(5).get());
                     }
 
                     TEST_F(BasicPnCounterAPITest, testAddAndGet) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(5, pnCounter->add_and_get(5).get());
                     }
 
                     TEST_F(BasicPnCounterAPITest, testGetAndAddExisting) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
 
                         ASSERT_EQ(0, pnCounter->get_and_add(2).get());
                         ASSERT_EQ(2, pnCounter->get_and_add(3).get());
@@ -1275,7 +1275,7 @@ namespace hazelcast {
 
                     TEST_F(BasicPnCounterAPITest, testGetAndIncrement) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(0, pnCounter->get_and_increment().get());
                         ASSERT_EQ(1, pnCounter->get_and_increment().get());
                         ASSERT_EQ(2, pnCounter->get().get());
@@ -1283,21 +1283,21 @@ namespace hazelcast {
 
                     TEST_F(BasicPnCounterAPITest, testIncrementAndGet) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(1, pnCounter->increment_and_get().get());
                         ASSERT_EQ(1, pnCounter->get().get());
                     }
 
                     TEST_F(BasicPnCounterAPITest, testGetAndDecrementFromDefault) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(0, pnCounter->get_and_decrement().get());
                         ASSERT_EQ(-1, pnCounter->get().get());
                     }
 
                     TEST_F(BasicPnCounterAPITest, testGetAndDecrement) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(1, pnCounter->increment_and_get().get());
                         ASSERT_EQ(1, pnCounter->get_and_decrement().get());
                         ASSERT_EQ(0, pnCounter->get().get());
@@ -1305,20 +1305,20 @@ namespace hazelcast {
 
                     TEST_F(BasicPnCounterAPITest, testGetAndSubtract) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(0, pnCounter->get_and_subtract(2).get());
                         ASSERT_EQ(-2, pnCounter->get().get());
                     }
 
                     TEST_F(BasicPnCounterAPITest, testSubtractAndGet) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         ASSERT_EQ(-3, pnCounter->subtract_and_get(3).get());
                     }
 
                     TEST_F(BasicPnCounterAPITest, testReset) {
                         auto pnCounter = client->get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                         pnCounter->reset().get();
                     }
 
@@ -1347,8 +1347,8 @@ namespace hazelcast {
 
                     TEST_F(PnCounterFunctionalityTest, testSimpleReplication) {
                         const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                        std::shared_ptr<pn_counter> counter1 = client->get_pn_counter(name);
-                        std::shared_ptr<pn_counter> counter2 = client->get_pn_counter(name);
+                        std::shared_ptr<pn_counter> counter1 = client->get_pn_counter(name).get();
+                        std::shared_ptr<pn_counter> counter2 = client->get_pn_counter(name).get();
 
                         ASSERT_EQ(5, counter1->add_and_get(5).get());
 
@@ -1358,8 +1358,8 @@ namespace hazelcast {
 
                     TEST_F(PnCounterFunctionalityTest, testParallelism) {
                         const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                        std::shared_ptr<pn_counter> counter1 = client->get_pn_counter(name);
-                        std::shared_ptr<pn_counter> counter2 = client->get_pn_counter(name);
+                        std::shared_ptr<pn_counter> counter1 = client->get_pn_counter(name).get();
+                        std::shared_ptr<pn_counter> counter2 = client->get_pn_counter(name).get();
 
                         int parallelism = 5;
                         int loopsPerThread = 100;
@@ -1396,7 +1396,7 @@ namespace hazelcast {
                         hazelcast_client client(std::move(config));
 
                         auto pnCounter = client.get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
 
                         ASSERT_THROW(pnCounter->add_and_get(5).get(), exception::no_data_member_in_cluster);
                     }
@@ -1435,7 +1435,7 @@ namespace hazelcast {
                         hazelcast_client client(std::move(config));
 
                         auto pnCounter = client.get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
 
                         pnCounter->add_and_get(5).get();
 
@@ -1459,7 +1459,7 @@ namespace hazelcast {
                         hazelcast_client client(std::move(config));
 
                         auto pnCounter = client.get_pn_counter(
-                                testing::UnitTest::GetInstance()->current_test_info()->name());
+                                testing::UnitTest::GetInstance()->current_test_info()->name()).get();
 
                         pnCounter->add_and_get(5).get();
 
@@ -1611,7 +1611,7 @@ namespace hazelcast {
                 client_config clientConfig = GetParam()();
                 hazelcast_client hazelcastClient(std::move(clientConfig));
 
-                auto map = hazelcastClient.get_map("testDeregisterListener");
+                auto map = hazelcastClient.get_map("testDeregisterListener").get();
 
                 ASSERT_FALSE(map->remove_entry_listener(spi::ClientContext(hazelcastClient).random_uuid()).get());
 
@@ -1641,7 +1641,7 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
                 hazelcast_client hazelcastClient(GetParam()());
 
-                auto map = hazelcastClient.get_map("testEmptyListener");
+                auto map = hazelcastClient.get_map("testEmptyListener").get();
 
                 // empty listener with no handlers
                 entry_listener listener;
@@ -1679,7 +1679,7 @@ namespace hazelcast {
             protected:
                 virtual void SetUp() {
                     ASSERT_TRUE(client);
-                    flake_id_generator_ = client->get_flake_id_generator(testing::UnitTest::GetInstance()->current_test_info()->name());
+                    flake_id_generator_ = client->get_flake_id_generator(testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                 }
 
                 static void SetUpTestCase() {
@@ -1776,12 +1776,12 @@ namespace hazelcast {
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 context.commit_transaction().get();
 
-                ASSERT_EQ("value1", (client_.get_map(name)->get<std::string, std::string>("key1").get().value()));
+                ASSERT_EQ("value1", (client_.get_map(name).get()->get<std::string, std::string>("key1").get().value()));
             }
 
             TEST_F(ClientTxnMapTest, testRemove) {
@@ -1794,7 +1794,7 @@ namespace hazelcast {
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_FALSE((map->remove<std::string, std::string>("key2").get().has_value()));
@@ -1804,7 +1804,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto regularMap = client_.get_map(name);
+                auto regularMap = client_.get_map(name).get();
                 ASSERT_TRUE(regularMap->is_empty().get());
             }
 
@@ -1819,7 +1819,7 @@ namespace hazelcast {
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_FALSE((map->remove<std::string, std::string>("key2").get().has_value()));;
@@ -1827,7 +1827,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto regularMap = client_.get_map(name);
+                auto regularMap = client_.get_map(name).get();
                 ASSERT_TRUE(regularMap->is_empty().get());
             }
 
@@ -1843,7 +1843,7 @@ namespace hazelcast {
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_NO_THROW(map->delete_entry("key1").get());
@@ -1852,7 +1852,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto regularMap = client_.get_map(name);
+                auto regularMap = client_.get_map(name).get();
                 ASSERT_TRUE(regularMap->is_empty().get());
             }
 
@@ -1866,14 +1866,14 @@ namespace hazelcast {
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_EQ("value1", (map->replace<std::string, std::string>("key1", "myNewValue").get().value()));
 
                 context.commit_transaction().get();
 
-                ASSERT_EQ("myNewValue", (client_.get_map(name)->get<std::string, std::string>("key1").get().value()));
+                ASSERT_EQ("myNewValue", (client_.get_map(name).get()->get<std::string, std::string>("key1").get().value()));
             }
 
             TEST_F(ClientTxnMapTest, testSet) {
@@ -1890,7 +1890,7 @@ namespace hazelcast {
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("value1", val.value());
 
-                val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_NO_THROW(map->set("key1", "myNewValue").get());
@@ -1901,7 +1901,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("myNewValue", val.value());
             }
@@ -1926,7 +1926,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto regularMap = client_.get_map(name);
+                auto regularMap = client_.get_map(name).get();
                 ASSERT_TRUE(regularMap->contains_key("key1").get());
             }
 
@@ -1940,7 +1940,7 @@ namespace hazelcast {
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_FALSE(map->replace("key1", "valueNonExistent", "myNewValue").get());
@@ -1948,7 +1948,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                ASSERT_EQ("myNewValue", (client_.get_map(name)->get<std::string, std::string>("key1").get().value()));
+                ASSERT_EQ("myNewValue", (client_.get_map(name).get()->get<std::string, std::string>("key1").get().value()));
             }
 
             TEST_F(ClientTxnMapTest, testPutIfSame) {
@@ -1964,7 +1964,7 @@ namespace hazelcast {
                 val = map->get<std::string, std::string>("key1").get();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("value1", val.value());
-                val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 val = map->put_if_absent<std::string, std::string>("key1", "value1").get();
@@ -1973,7 +1973,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                val = client_.get_map(name)->get<std::string, std::string>("key1").get();
+                val = client_.get_map(name).get()->get<std::string, std::string>("key1").get();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("value1", val.value());
             }
@@ -2017,7 +2017,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnMapTest, testKeySetValues) {
                 std::string name = "testKeySetValues";
-                auto map = client_.get_map(name);
+                auto map = client_.get_map(name).get();
                 map->put<std::string, std::string>("key1", "value1").get();
                 map->put<std::string, std::string>("key2", "value2").get();
 
@@ -2040,7 +2040,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnMapTest, testKeySetAndValuesWithPredicates) {
                 std::string name = "testKeysetAndValuesWithPredicates";
-                auto map = client_.get_map(name);
+                auto map = client_.get_map(name).get();
 
                 employee emp1("abc-123-xvz", 34);
                 employee emp2("abc-123-xvz", 20);
@@ -2085,7 +2085,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto regularMap = client_.get_map(name);
+                auto regularMap = client_.get_map(name).get();
                 ASSERT_FALSE(regularMap->is_empty().get());
             }
         }
@@ -2112,7 +2112,7 @@ namespace hazelcast {
             ClientTxnSetTest::~ClientTxnSetTest() = default;
 
             TEST_F(ClientTxnSetTest, testAddRemove) {
-                auto s = client_.get_set("testAddRemove");
+                auto s = client_.get_set("testAddRemove").get();
                 s->add<std::string>("item1").get();
 
                 transaction_context context = client_.new_transaction_context();
@@ -2216,7 +2216,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto q = client_->get_queue(queueName);
+                auto q = client_->get_queue(queueName).get();
                 auto  retrievedElement = q->poll<std::string>().get();
                 ASSERT_TRUE(retrievedElement.has_value());
                 ASSERT_EQ(value, retrievedElement.value());
@@ -2237,7 +2237,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto q = uniSocketClient.get_queue(queueName);
+                auto q = uniSocketClient.get_queue(queueName).get();
                 auto  retrievedElement = q->poll<std::string>().get();
                 ASSERT_TRUE(retrievedElement.has_value());
                 ASSERT_EQ(value, retrievedElement.value());
@@ -2259,7 +2259,7 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto q = client_->get_queue(queueName);
+                auto q = client_->get_queue(queueName).get();
                 auto  retrievedElement = q->poll<std::string>().get();
                 ASSERT_TRUE(retrievedElement.has_value());
                 ASSERT_EQ(value, retrievedElement.value());
@@ -2305,7 +2305,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
                 ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
-                auto q = client_->get_queue(queueName);
+                auto q = client_->get_queue(queueName).get();
                 ASSERT_FALSE(q->poll<std::string>().get().has_value())
                                             << "Poll result should be null since it is rolled back";
                 ASSERT_EQ(0, q->size().get());
@@ -2335,7 +2335,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
                 ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
-                auto q = client_->get_queue(queueName);
+                auto q = client_->get_queue(queueName).get();
                 ASSERT_FALSE(q->poll<std::string>().get().has_value()) << "queue poll should return null";
                 ASSERT_EQ(0, q->size().get());
             }
@@ -2363,7 +2363,7 @@ namespace hazelcast {
             ClientTxnListTest::~ClientTxnListTest() = default;
 
             TEST_F(ClientTxnListTest, testAddRemove) {
-                auto l = client_.get_list("testAddRemove");
+                auto l = client_.get_list("testAddRemove").get();
                 l->add<std::string>("item1").get();
 
                 transaction_context context = client_.new_transaction_context();
@@ -2418,12 +2418,12 @@ namespace hazelcast {
 
                 context.commit_transaction().get();
 
-                auto mm = client_.get_multi_map("testRemoveIfExists");
+                auto mm = client_.get_multi_map("testRemoveIfExists").get();
                 ASSERT_EQ(2, (int) (mm->get<std::string, std::string>(key).get().size()));
             }
 
             TEST_F(ClientTxnMultiMapTest, testPutGetRemove) {
-                auto mm = client_.get_multi_map("testPutGetRemove");
+                auto mm = client_.get_multi_map("testPutGetRemove").get();
                 constexpr int n = 10;
 
                 std::array<boost::future<void>, n> futures;
@@ -2431,10 +2431,10 @@ namespace hazelcast {
                     futures[i] = boost::async(std::packaged_task<void()>([&]() {
                         std::string key = std::to_string(hazelcast::util::get_current_thread_id());
                         std::string key2 = key + "2";
-                        client_.get_multi_map("testPutGetRemove")->put(key, "value").get();
+                        client_.get_multi_map("testPutGetRemove").get()->put(key, "value").get();
                         transaction_context context = client_.new_transaction_context();
                         context.begin_transaction().get();
-                        auto multiMap = context.get_multi_map("testPutGetRemove");
+                        auto multiMap = context.get_multi_map("testPutGetRemove").get();
                         ASSERT_FALSE(multiMap->put(key, "value").get());
                         ASSERT_TRUE(multiMap->put(key, "value1").get());
                         ASSERT_TRUE(multiMap->put(key, "value2").get());
@@ -2485,7 +2485,7 @@ namespace hazelcast {
                 ASSERT_EQ("ali", q->poll<std::string>().get().value());
                 ASSERT_EQ(0, q->size().get());
                 context.commit_transaction().get();
-                ASSERT_EQ(0, client_.get_queue(name)->size().get());
+                ASSERT_EQ(0, client_.get_queue(name).get()->size().get());
             }
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPollByteVector) {
@@ -2500,14 +2500,14 @@ namespace hazelcast {
                 ASSERT_EQ(value, q->poll<std::vector<byte>>().get().value());
                 ASSERT_EQ(0, q->size().get());
                 context.commit_transaction().get();
-                ASSERT_EQ(0, client_.get_queue(name)->size().get());
+                ASSERT_EQ(0, client_.get_queue(name).get()->size().get());
             }
 
             void test_transactional_offer_poll2_thread(hazelcast::util::ThreadArgs &args) {
                 boost::latch *latch1 = (boost::latch *) args.arg0;
                 hazelcast_client *client = (hazelcast_client *) args.arg1;
                 latch1->wait();
-                client->get_queue("defQueue0")->offer("item0").get();
+                client->get_queue("defQueue0").get()->offer("item0").get();
             }
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
@@ -2525,8 +2525,8 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(context.commit_transaction().get());
 
-                ASSERT_EQ(0, client_.get_queue("defQueue0")->size().get());
-                ASSERT_EQ("item0", client_.get_queue("defQueue1")->poll<std::string>().get().value());
+                ASSERT_EQ(0, client_.get_queue("defQueue0").get()->size().get());
+                ASSERT_EQ("item0", client_.get_queue("defQueue1").get()->poll<std::string>().get().value());
             }
         }
     }

@@ -18,8 +18,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
-    auto q1 = hz.get_queue("q");
-    auto q2 = hz.get_queue("q");
+    auto q1 = hz.get_queue("q").get();
+    auto q2 = hz.get_queue("q").get();
 
     q1->put("foo").get();
     std::cout << "q1->size:" << q1->size().get() << "  q2->size:" << q2->size().get() << std::endl;
