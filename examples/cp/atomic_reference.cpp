@@ -20,7 +20,7 @@ int main() {
     hazelcast_client hz;
 
     // Get an atomic_reference named 'my-ref'
-    auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref");
+    auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref").get();
 
     // Set the value atomically
     ref->set(42).get();

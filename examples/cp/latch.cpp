@@ -20,7 +20,7 @@ int main() {
     hazelcast_client hz;
 
     // Get a latch called 'my-latch'
-    auto latch = hz.get_cp_subsystem().get_latch("my-latch'");
+    auto latch = hz.get_cp_subsystem().get_latch("my-latch'").get();
 
     // Try to initialize the latch
     // (does nothing if the count is not zero)

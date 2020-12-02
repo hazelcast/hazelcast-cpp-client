@@ -1711,7 +1711,7 @@ A basic Lock usage example is shown below.
 
 ```C++
     // Get an fenced_lock named 'my-lock'
-    auto lock = hz.get_cp_subsystem().get_lock("my-lock");
+    auto lock = hz.get_cp_subsystem().get_lock("my-lock").get();
 
     // Acquire the lock
     lock->lock().get();
@@ -1757,7 +1757,7 @@ A basic counting_semaphore usage example is shown below.
 
 ```C++
     // Get counting_semaphore named 'my-semaphore'
-    auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore");
+    auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore").get();
     // Try to initialize the semaphore
     // (does nothing if the semaphore is already initialized)
     semaphore->init(3).get();
@@ -1803,7 +1803,7 @@ A basic latch usage example is shown below.
 
 ```C++
     // Get a latch called 'my-latch'
-    auto latch = hz.get_cp_subsystem().get_latch("my-latch'");
+    auto latch = hz.get_cp_subsystem().get_latch("my-latch'").get();
 
     // Try to initialize the latch
     // (does nothing if the count is not zero)
@@ -1836,7 +1836,7 @@ A basic atomic_reference usage example is shown below.
 
 ```C++
     // Get an atomic_reference named 'my-ref'
-    auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref'");
+    auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref'").get();
 
     // Set the value atomically
     ref->set(42).get();

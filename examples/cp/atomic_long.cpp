@@ -20,7 +20,7 @@ int main() {
     hazelcast_client hz;
 
     // Get an AtomicLong called 'my-atomic-long'
-    auto atomic_counter = hz.get_cp_subsystem().get_atomic_long("my-atomic-long");
+    auto atomic_counter = hz.get_cp_subsystem().get_atomic_long("my-atomic-long").get();
 
     // also present the future continuation capability. you can use sync version as well.
     // Get current value (returns a int64_t)
