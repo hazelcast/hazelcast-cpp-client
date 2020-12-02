@@ -57,7 +57,7 @@ class Cluster : public virtual ::apache::thrift::TBase {
   Cluster() : id() {
   }
 
-  virtual ~Cluster() noexcept;
+  ~Cluster() noexcept override;
   std::string id;
 
   _Cluster__isset __isset;
@@ -76,8 +76,8 @@ class Cluster : public virtual ::apache::thrift::TBase {
 
   bool operator < (const Cluster & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -101,7 +101,7 @@ class Member : public virtual ::apache::thrift::TBase {
   Member() : uuid(), host(), port(0) {
   }
 
-  virtual ~Member() noexcept;
+  ~Member() noexcept override;
   std::string uuid;
   std::string host;
   int32_t port;
@@ -130,8 +130,8 @@ class Member : public virtual ::apache::thrift::TBase {
 
   bool operator < (const Member & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -155,7 +155,7 @@ class Response : public virtual ::apache::thrift::TBase {
   Response() : success(0), message(), result() {
   }
 
-  virtual ~Response() noexcept;
+  ~Response() noexcept override;
   bool success;
   std::string message;
   std::string result;
@@ -184,8 +184,8 @@ class Response : public virtual ::apache::thrift::TBase {
 
   bool operator < (const Response & ) const;
 
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
 
   virtual void printTo(std::ostream& out) const;
 };
@@ -207,7 +207,7 @@ class ServerException : public ::apache::thrift::TException {
   ServerException() : message() {
   }
 
-  virtual ~ServerException() noexcept;
+  ~ServerException() noexcept override;
   std::string message;
 
   _ServerException__isset __isset;
@@ -231,7 +231,7 @@ class ServerException : public ::apache::thrift::TException {
 
   virtual void printTo(std::ostream& out) const;
   mutable std::string thriftTExceptionMessageHolder_;
-  const char* what() const noexcept;
+  const char* what() const noexcept override;
 };
 
 void swap(ServerException &a, ServerException &b);

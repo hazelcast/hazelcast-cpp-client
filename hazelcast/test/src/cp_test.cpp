@@ -36,13 +36,13 @@ namespace hazelcast {
                         return config;
                     }
 
-                    virtual void SetUp() {
+                    void SetUp() override {
                         client_.reset(new hazelcast_client(get_client_config()));
                         auto test_name = get_test_name();
                         cp_structure_ = get_cp_structure(test_name + "@cp_test_group");
                     }
 
-                    virtual void TearDown() {
+                    void TearDown() override {
                         if (cp_structure_) {
                             cp_structure_->destroy();
                         }

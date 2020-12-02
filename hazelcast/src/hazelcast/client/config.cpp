@@ -926,7 +926,7 @@ namespace hazelcast {
             token_credentials::token_credentials(const std::vector<byte> &token) : credentials(
                     token.empty() ? "<empty>" : "<token>"), token_(token) {}
 
-            credentials::~credentials() {}
+            credentials::~credentials() = default;
 
             const std::string &credentials::name() const {
                 return name_;

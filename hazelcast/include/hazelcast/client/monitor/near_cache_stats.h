@@ -47,7 +47,7 @@ namespace hazelcast {
                  *
                  * @return creation time of this Near Cache on this member.
                  */
-                int64_t get_creation_time() = 0;
+                int64_t get_creation_time() override = 0;
 
                 /**
                  * Returns the number of Near Cache entries owned by this member.

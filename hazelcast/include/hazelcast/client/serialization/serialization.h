@@ -500,6 +500,10 @@ namespace hazelcast {
                 */
                 ClassDefinition();
 
+                ClassDefinition(const ClassDefinition &) = delete;
+
+                ClassDefinition &operator=(const ClassDefinition &rhs) = delete;
+
                 /**
                 * Constructor
                 * @param factoryId factory id of class
@@ -582,10 +586,6 @@ namespace hazelcast {
                 int factory_id_;
                 int class_id_;
                 int version_;
-
-                ClassDefinition(const ClassDefinition &) = delete;
-
-                ClassDefinition &operator=(const ClassDefinition &rhs) = delete;
 
                 std::unordered_map<std::string, FieldDefinition> field_definitions_map_;
 
@@ -777,6 +777,10 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API PortableContext {
                 public:
+                    PortableContext(const PortableContext &) = delete;
+
+                    PortableContext &operator=(const PortableContext &) = delete;
+
                     PortableContext(const serialization_config &serialization_conf);
 
                     int get_class_version(int factory_id, int class_id);
@@ -876,11 +880,7 @@ namespace hazelcast {
                     static get_type() { return field_type::TYPE_UTF_ARRAY; }
 
                 private:
-                    PortableContext(const PortableContext &) = delete;
-
                     ClassDefinitionContext &get_class_definition_context(int factory_id);
-
-                    void operator=(const PortableContext &) = delete;
 
                     util::SynchronizedMap<int, ClassDefinitionContext> class_def_context_map_;
                     const serialization_config &serialization_config_;
@@ -1300,6 +1300,10 @@ namespace hazelcast {
 
                 class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
+                    SerializationService(const SerializationService &) = delete;
+
+                    SerializationService &operator=(const SerializationService &) = delete;
+
                     SerializationService(const serialization_config &config);
 
                     PortableSerializer &get_portable_serializer();
@@ -1397,10 +1401,6 @@ namespace hazelcast {
 
                     object_data_output new_output_stream();
                 private:
-                    SerializationService(const SerializationService &) = delete;
-
-                    SerializationService &operator=(const SerializationService &) = delete;
-
                     const serialization_config &serialization_config_;
                     PortableContext portable_context_;
                     serialization::pimpl::PortableSerializer portable_serializer_;

@@ -70,6 +70,10 @@ namespace hazelcast {
                 class HAZELCAST_API ClientInvocation
                         : public std::enable_shared_from_this<ClientInvocation> {
                 public:
+                    ClientInvocation(const ClientInvocation &rhs) = delete;
+
+                    ClientInvocation &operator=(const ClientInvocation &rhs) = delete;
+
                     virtual ~ClientInvocation();
 
                     static std::shared_ptr<ClientInvocation> create(spi::ClientContext &client_context,
@@ -195,10 +199,6 @@ namespace hazelcast {
                     bool should_retry(exception::iexception &exception);
 
                     void execute();
-
-                    ClientInvocation(const ClientInvocation &rhs) = delete;
-
-                    void operator=(const ClientInvocation &rhs) = delete;
 
                     std::shared_ptr<protocol::ClientMessage> copy_message();
 

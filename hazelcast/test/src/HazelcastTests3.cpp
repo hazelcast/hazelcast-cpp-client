@@ -220,7 +220,7 @@ namespace hazelcast {
                     return testValues;
                 }
 
-                virtual void SetUp() {
+                void SetUp() override {
                     ASSERT_TRUE(factory);
                     ASSERT_TRUE(instance1);
                     ASSERT_TRUE(client);
@@ -727,6 +727,9 @@ namespace hazelcast {
                  */
                 class NearCacheTestUtils : public ClientTestSupport {
                 public:
+                    NearCacheTestUtils() = delete;
+                    NearCacheTestUtils(const NearCacheTestUtils &) = delete;
+
                     /**
                      * Creates a {@link NearCacheConfig} with a given {@link InMemoryFormat}.
                      *
@@ -803,10 +806,6 @@ namespace hazelcast {
                         hazelcast::util::hz_snprintf(buf, 300, message_format, expected, actual);
                         ASSERT_EQ(expected, actual) << buf << "(" << stats.to_string() << ")";
                     }
-
-                private:
-                    NearCacheTestUtils() = delete;
-                    NearCacheTestUtils(const NearCacheTestUtils &) = delete;
                 };
 
                 /**

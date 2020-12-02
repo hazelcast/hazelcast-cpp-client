@@ -101,6 +101,10 @@ namespace hazelcast {
                     : public std::enable_shared_from_this<hazelcast_client_instance_impl> {
                 friend class spi::ClientContext;
             public:
+                hazelcast_client_instance_impl(const hazelcast_client_instance_impl& rhs) = delete;
+
+                hazelcast_client_instance_impl &operator=(const hazelcast_client_instance_impl& rhs) = delete;
+
                 /**
                 * Constructs a hazelcastClient with given ClientConfig.
                 * Note: client_config will be copied.
@@ -108,7 +112,7 @@ namespace hazelcast {
                 */
                 explicit hazelcast_client_instance_impl(client_config config);
 
-                /**
+              /**
                 * Destructor
                 */
                 ~hazelcast_client_instance_impl();
@@ -238,10 +242,6 @@ namespace hazelcast {
                 std::mutex uuid_generator_lock_;
                 cp::cp_subsystem cp_subsystem_;
                 cp::internal::session::proxy_session_manager proxy_session_manager_;
-
-                hazelcast_client_instance_impl(const hazelcast_client_instance_impl& rhs) = delete;
-
-                void operator=(const hazelcast_client_instance_impl& rhs) = delete;
 
                 std::shared_ptr<spi::impl::listener::listener_service_impl> init_listener_service();
 

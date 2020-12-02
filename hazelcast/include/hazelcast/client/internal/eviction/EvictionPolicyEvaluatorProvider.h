@@ -40,6 +40,8 @@ namespace hazelcast {
                  */
                 class EvictionPolicyEvaluatorProvider {
                 public:
+                    EvictionPolicyEvaluatorProvider() = delete;
+
                     /**
                      * Gets the {@link EvictionPolicyEvaluator} implementation specified with {@code evictionPolicy}.
                      *
@@ -83,11 +85,6 @@ namespace hazelcast {
                                 BOOST_THROW_EXCEPTION(exception::illegal_argument(out.str()));
                         }
                     }
-
-                    //Non-constructable class
-                    EvictionPolicyEvaluatorProvider() = delete;
-
-                    ~EvictionPolicyEvaluatorProvider() = delete;
                 };
 
             }

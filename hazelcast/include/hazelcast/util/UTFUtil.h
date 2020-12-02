@@ -26,6 +26,9 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API UTFUtil {
         public:
+            UTFUtil() = delete;
+
+            UTFUtil(const UTFUtil &) = delete;
 
             /**  UTF-8 Encoding
             Number      Bits for        First           Last        Byte 1	    Byte 2	    Byte 3	    Byte 4
@@ -76,10 +79,6 @@ namespace hazelcast {
                 }
             }
 
-        private:
-            UTFUtil() = delete;
-
-            UTFUtil(const UTFUtil &) = delete;
         };
     }
 }

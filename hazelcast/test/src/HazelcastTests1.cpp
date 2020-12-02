@@ -1677,7 +1677,7 @@ namespace hazelcast {
         namespace test {
             class FlakeIdGeneratorApiTest : public ClientTestSupport {
             protected:
-                virtual void SetUp() {
+                void SetUp() override {
                     ASSERT_TRUE(client);
                     flake_id_generator_ = client->get_flake_id_generator(testing::UnitTest::GetInstance()->current_test_info()->name()).get();
                 }

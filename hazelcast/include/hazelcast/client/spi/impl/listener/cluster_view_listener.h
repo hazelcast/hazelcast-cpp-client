@@ -34,24 +34,24 @@ namespace hazelcast {
 
                         void start();
 
-                        virtual void connection_added(const std::shared_ptr<connection::Connection> connection);
+                        void connection_added(const std::shared_ptr<connection::Connection> connection) override;
 
-                        virtual void connection_removed(const std::shared_ptr<connection::Connection> connection);
+                        void connection_removed(const std::shared_ptr<connection::Connection> connection) override;
 
                     private:
                         struct event_handler : public protocol::codec::client_addclusterviewlistener_handler {
                             event_handler(const std::shared_ptr <connection::Connection> &connection,
                                           cluster_view_listener &view_listener);
 
-                            virtual void before_listener_register();
+                            void before_listener_register() override;
 
-                            virtual void on_listener_register();
+                            void on_listener_register() override;
 
-                            virtual void
-                            handle_membersview(int32_t version, const std::vector<member> &member_infos);
+                            void
+                            handle_membersview(int32_t version, const std::vector<member> &member_infos) override;
 
-                            virtual void handle_partitionsview(int32_t version,
-                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
+                            void handle_partitionsview(int32_t version,
+                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) override;
 
                             std::shared_ptr<connection::Connection> connection;
                             cluster_view_listener &view_listener;

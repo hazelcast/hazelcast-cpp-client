@@ -35,6 +35,11 @@ project (HazelcastClient
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
+find_program(CLANG_TIDY NAMES clang-tidy)
+if (CLANG_TIDY)
+	set(CMAKE_CXX_CLANG_TIDY clang-tidy)
+endif()
+
 include(TestBigEndian)
 include(FindOpenSSL)
 include(FindBoost)

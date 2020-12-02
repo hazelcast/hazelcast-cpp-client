@@ -61,7 +61,7 @@ namespace hazelcast {
             raft_group_id group_id_;
             std::string object_name_;
 
-            void on_destroy() ;
+            void on_destroy() override ;
         };
 
         namespace internal {
@@ -867,7 +867,7 @@ namespace hazelcast {
             friend bool operator==(const fenced_lock &lhs, const fenced_lock &rhs);
 
         protected:
-            void post_destroy() ;
+            void post_destroy() override ;
 
         private:
             struct lock_ownership_state {

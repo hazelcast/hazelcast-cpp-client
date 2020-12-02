@@ -112,7 +112,7 @@ namespace hazelcast {
 
                 void on_connection_close(Connection &connection, std::exception_ptr ptr);
 
-                void add_connection_listener(const std::shared_ptr<ConnectionListener> &connection_listener) ;
+                void add_connection_listener(const std::shared_ptr<ConnectionListener> &connection_listener) override ;
 
                 logger &get_logger();
 
