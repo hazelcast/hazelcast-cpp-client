@@ -1632,21 +1632,6 @@ namespace hazelcast {
                 ASSERT_FALSE(in.read<std::vector<std::string>>().has_value()) << "Expected null string array";
             }
 
-            TEST_F(ClientSerializationTest, testGetUTF8CharCount) {
-                std::string utfStr = "xyzä123";
-
-                serialization_config serializationConfig;
-                serializationConfig.set_portable_version(1);
-                serialization::pimpl::SerializationService serializationService(serializationConfig);
-
-                serialization::object_data_output out;
-
-                out.write(utfStr);
-                auto byteArray = out.to_byte_array();
-                auto strLen = boost::endian::load_big_s32(&byteArray[0]);
-                ASSERT_EQ(7, strLen);
-            }
-
             TEST_F(ClientSerializationTest, testExtendedAscii) {
                 std::string utfStr = "Num\xc3\xa9ro";
 
@@ -1657,15 +1642,6 @@ namespace hazelcast {
                 auto deserializedString = serializationService.to_object<std::string>(data);
                 ASSERT_TRUE(deserializedString.has_value());
                 ASSERT_EQ(utfStr, deserializedString.value());
-            }
-
-            TEST_F(ClientSerializationTest, testExtendedAsciiIncorrectUtf8Write) {
-                std::string utfStr = "Num\351ro";
-
-                serialization_config serializationConfig;
-                serialization::pimpl::SerializationService serializationService(serializationConfig);
-
-                ASSERT_THROW(serializationService.to_data<std::string>(&utfStr), exception::utf_data_format);
             }
 
             TEST_F(ClientSerializationTest, testGlobalSerializer) {
