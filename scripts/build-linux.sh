@@ -47,7 +47,7 @@ cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
 
-cmake ..
+cmake .. \
     -DHZ_LIB_TYPE=${HZ_LIB_TYPE} \
     -DHZ_BIT=${HZ_BIT_VERSION} \
     -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} \
