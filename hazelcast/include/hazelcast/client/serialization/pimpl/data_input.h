@@ -18,13 +18,13 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
-#include "hazelcast/util/UTFUtil.h"
 
 #include <vector>
 #include <string>
 #include <memory>
 #include <stdint.h>
 #include <sstream>
+#include <boost/endian.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -95,8 +95,7 @@ namespace hazelcast {
                     typename std::enable_if<std::is_same<int16_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
                         check_available(util::Bits::SHORT_SIZE_IN_BYTES);
-                        int16_t result;
-                        util::Bits::big_endian_to_native2(&buffer_[pos_], &result);
+                        auto result = boost::endian::load_big_s16(&buffer_[pos_]);
                         pos_ += util::Bits::SHORT_SIZE_IN_BYTES;
                         return result;
                     }
@@ -105,8 +104,7 @@ namespace hazelcast {
                     typename std::enable_if<std::is_same<int32_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
                         check_available(util::Bits::INT_SIZE_IN_BYTES);
-                        int32_t result;
-                        util::Bits::big_endian_to_native4(&buffer_[pos_], &result);
+                        auto result = boost::endian::load_big_s32(&buffer_[pos_]);
                         pos_ += util::Bits::INT_SIZE_IN_BYTES;
                         return result;
                     }
@@ -115,8 +113,7 @@ namespace hazelcast {
                     typename std::enable_if<std::is_same<int64_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
                         check_available(util::Bits::LONG_SIZE_IN_BYTES);
-                        int64_t result;
-                        util::Bits::big_endian_to_native8(&buffer_[pos_], &result);
+                        auto result = boost::endian::load_big_s64(&buffer_[pos_]);
                         pos_ += util::Bits::LONG_SIZE_IN_BYTES;
                         return result;
                     }
@@ -242,15 +239,11 @@ namespace hazelcast {
                         }
                     }
 
-                    inline std::string read_utf(int char_count) {
-                        std::string result;
-                        result.reserve((size_t) MAX_UTF_CHAR_SIZE * char_count);
-                        byte b;
-                        for (int i = 0; i < char_count; ++i) {
-                            b = read<byte>();
-                            util::UTFUtil::read_ut_f8_char(*this, b, result);
-                        }
-                        return result;
+                    inline std::string read_utf(size_t byte_count) {
+                        check_available(byte_count);
+                        std::string value(reinterpret_cast<const char *>(&buffer_[pos_]),  byte_count);
+                        pos_ += byte_count;
+                        return value;
                     }
 
                 };
