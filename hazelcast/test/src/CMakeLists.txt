@@ -1,24 +1,13 @@
 cmake_minimum_required (VERSION 3.12.4)
 
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
-list(FILTER HZ_TEST_SOURCES EXCLUDE REGEX ".*cpp-controller.*")
 FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")
-list(FILTER HZ_TEST_HEADERS EXCLUDE REGEX ".*cpp-controller.*")
-
-FILE(GLOB_RECURSE THRIFT_CONTROLLER_SOURCES "./cpp-controller/*.cpp")
-add_library(
-    thrift_controller
-    OBJECT
-    ${THRIFT_CONTROLLER_SOURCES}
-)
-set_target_properties(thrift_controller
-                      PROPERTIES CXX_CLANG_TIDY "")
 
 set(GOOGLETEST_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/hazelcast/test/googletest/googletest/include)
 
 SET(HZ_EXE_NAME clientTest_${HZ_LIB_TYPE}_${HZ_BIT})
 
-add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS} $<TARGET_OBJECTS:thrift_controller>)
+add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS})
 
 add_dependencies(${HZ_EXE_NAME} gtest ${HZ_LIB_NAME})
 
