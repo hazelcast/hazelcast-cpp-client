@@ -237,15 +237,17 @@ option(HZ_ENABLE_CLANG_TIDY
        OFF)
 
 if (HZ_ENABLE_CLANG_TIDY)
-    find_program(CLANG_TIDY NAMES clang-tidy REQUIRED)
+    find_program(CLANG_TIDY_PATH NAMES clang-tidy)
 
-    set_target_properties(
-        ${HZ_LIB_NAME}
-        PROPERTIES
-            CXX_CLANG_TIDY ${CLANG_TIDY}
-    )
-
-    unset(CLANG_TIDY)
+    if (CLANG_TIDY_PATH)
+        set_target_properties(
+            ${HZ_LIB_NAME}
+            PROPERTIES
+                CXX_CLANG_TIDY ${CLANG_TIDY_PATH}
+        )
+    else()
+        message(WARNING "clang-tidy not found, ignoring HZ_ENABLE_CLANG_TIDY")
+    endif()
 endif()
 
 add_definitions(-DBOOST_NO_AUTO_PTR -DELPP_DISABLE_ASSERT -DELPP_WINSOCK2 -DWIN32_LEAN_AND_MEAN)
