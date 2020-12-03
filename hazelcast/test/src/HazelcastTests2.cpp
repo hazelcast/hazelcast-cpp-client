@@ -1910,12 +1910,12 @@ namespace hazelcast {
 
             TEST_F(SerializationWithServer, test_int32_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([2147483647, -2147483648], \"int[]\")"));
-                ASSERT_EQ(std::vector<int32_t>({2147483647,-2147483648}), (*map_->get<std::string, std::vector<int32_t>>("key").get()));
+                ASSERT_EQ(std::vector<int32_t>({INT32_MAX, INT32_MIN}), (*map_->get<std::string, std::vector<int32_t>>("key").get()));
             }
 
             TEST_F(SerializationWithServer, test_int64_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([1152921504606846976, -1152921504606846976], \"long[]\")"));
-                ASSERT_EQ(std::vector<int64_t>({1152921504606846976, -1152921504606846976}), (*map_->get<std::string, std::vector<int64_t>>("key").get()));
+                ASSERT_EQ(std::vector<int64_t>({1152921504606846976LL, -1152921504606846976LL}), (*map_->get<std::string, std::vector<int64_t>>("key").get()));
             }
 
             TEST_F(SerializationWithServer, test_float_array_from_server) {
