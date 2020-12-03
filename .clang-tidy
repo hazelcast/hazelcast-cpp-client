@@ -1,3 +1,10 @@
-Checks: "modernize-use-override,modernize-use-equals-delete,modernize-use-equals-default,-clang-diagnostic-*,-clang-analyzer-*"
-WarningsAsErrors: "*"
-HeaderFilterRegex: ".*/hazelcast/include/.*"
+Checks: >
+  -*,
+  modernize-use-override,
+  modernize-use-equals-delete,
+  modernize-use-equals-default
+
+WarningsAsErrors: >
+  *
+
+HeaderFilterRegex: .*/hazelcast/include/.*

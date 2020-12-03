@@ -112,7 +112,7 @@ namespace hazelcast {
                 */
                 explicit hazelcast_client_instance_impl(client_config config);
 
-              /**
+                /**
                 * Destructor
                 */
                 ~hazelcast_client_instance_impl();
