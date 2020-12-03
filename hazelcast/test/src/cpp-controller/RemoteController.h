@@ -21,7 +21,7 @@ namespace hazelcast { namespace client { namespace test { namespace remote {
 
 class RemoteControllerIf {
  public:
-  virtual ~RemoteControllerIf() = default;
+  virtual ~RemoteControllerIf() {}
   virtual bool ping() = 0;
   virtual bool clean() = 0;
   virtual bool exit() = 0;
@@ -43,7 +43,7 @@ class RemoteControllerIfFactory {
  public:
   typedef RemoteControllerIf Handler;
 
-  virtual ~RemoteControllerIfFactory() = default;
+  virtual ~RemoteControllerIfFactory() {}
 
   virtual RemoteControllerIf* getHandler(const ::apache::thrift::TConnectionInfo& connInfo) = 0;
   virtual void releaseHandler(RemoteControllerIf* /* handler */) = 0;
@@ -52,12 +52,12 @@ class RemoteControllerIfFactory {
 class RemoteControllerIfSingletonFactory : virtual public RemoteControllerIfFactory {
  public:
   RemoteControllerIfSingletonFactory(const ::std::shared_ptr<RemoteControllerIf>& iface) : iface_(iface) {}
-  ~RemoteControllerIfSingletonFactory() override = default;
+  virtual ~RemoteControllerIfSingletonFactory() {}
 
-  RemoteControllerIf* getHandler(const ::apache::thrift::TConnectionInfo&) override {
+  virtual RemoteControllerIf* getHandler(const ::apache::thrift::TConnectionInfo&) {
     return iface_.get();
   }
-  void releaseHandler(RemoteControllerIf* /* handler */) override {}
+  virtual void releaseHandler(RemoteControllerIf* /* handler */) {}
 
  protected:
   ::std::shared_ptr<RemoteControllerIf> iface_;
@@ -65,59 +65,59 @@ class RemoteControllerIfSingletonFactory : virtual public RemoteControllerIfFact
 
 class RemoteControllerNull : virtual public RemoteControllerIf {
  public:
-  ~RemoteControllerNull() override = default;
-  bool ping() override {
+  virtual ~RemoteControllerNull() {}
+  bool ping() {
     bool _return = false;
     return _return;
   }
-  bool clean() override {
+  bool clean() {
     bool _return = false;
     return _return;
   }
-  bool exit() override {
+  bool exit() {
     bool _return = false;
     return _return;
   }
-  void createCluster(Cluster& /* _return */, const std::string& /* hzVersion */, const std::string& /* xmlconfig */) override {
+  void createCluster(Cluster& /* _return */, const std::string& /* hzVersion */, const std::string& /* xmlconfig */) {
     return;
   }
-  void createClusterKeepClusterName(Cluster& /* _return */, const std::string& /* hzVersion */, const std::string& /* xmlconfig */) override {
+  void createClusterKeepClusterName(Cluster& /* _return */, const std::string& /* hzVersion */, const std::string& /* xmlconfig */) {
     return;
   }
-  void startMember(Member& /* _return */, const std::string& /* clusterId */) override {
+  void startMember(Member& /* _return */, const std::string& /* clusterId */) {
     return;
   }
-  bool shutdownMember(const std::string& /* clusterId */, const std::string& /* memberId */) override {
+  bool shutdownMember(const std::string& /* clusterId */, const std::string& /* memberId */) {
     bool _return = false;
     return _return;
   }
-  bool terminateMember(const std::string& /* clusterId */, const std::string& /* memberId */) override {
+  bool terminateMember(const std::string& /* clusterId */, const std::string& /* memberId */) {
     bool _return = false;
     return _return;
   }
-  bool suspendMember(const std::string& /* clusterId */, const std::string& /* memberId */) override {
+  bool suspendMember(const std::string& /* clusterId */, const std::string& /* memberId */) {
     bool _return = false;
     return _return;
   }
-  bool resumeMember(const std::string& /* clusterId */, const std::string& /* memberId */) override {
+  bool resumeMember(const std::string& /* clusterId */, const std::string& /* memberId */) {
     bool _return = false;
     return _return;
   }
-  bool shutdownCluster(const std::string& /* clusterId */) override {
+  bool shutdownCluster(const std::string& /* clusterId */) {
     bool _return = false;
     return _return;
   }
-  bool terminateCluster(const std::string& /* clusterId */) override {
+  bool terminateCluster(const std::string& /* clusterId */) {
     bool _return = false;
     return _return;
   }
-  void splitMemberFromCluster(Cluster& /* _return */, const std::string& /* memberId */) override {
+  void splitMemberFromCluster(Cluster& /* _return */, const std::string& /* memberId */) {
     return;
   }
-  void mergeMemberToCluster(Cluster& /* _return */, const std::string& /* clusterId */, const std::string& /* memberId */) override {
+  void mergeMemberToCluster(Cluster& /* _return */, const std::string& /* clusterId */, const std::string& /* memberId */) {
     return;
   }
-  void executeOnController(Response& /* _return */, const std::string& /* clusterId */, const std::string& /* script */, const Lang::type /* lang */) override {
+  void executeOnController(Response& /* _return */, const std::string& /* clusterId */, const std::string& /* script */, const Lang::type /* lang */) {
     return;
   }
 };
@@ -128,7 +128,8 @@ class RemoteController_ping_args {
 
   RemoteController_ping_args(const RemoteController_ping_args&);
   RemoteController_ping_args& operator=(const RemoteController_ping_args&);
-  RemoteController_ping_args() = default;
+  RemoteController_ping_args() {
+  }
 
   virtual ~RemoteController_ping_args() noexcept;
 
@@ -219,7 +220,8 @@ class RemoteController_clean_args {
 
   RemoteController_clean_args(const RemoteController_clean_args&);
   RemoteController_clean_args& operator=(const RemoteController_clean_args&);
-  RemoteController_clean_args() = default;
+  RemoteController_clean_args() {
+  }
 
   virtual ~RemoteController_clean_args() noexcept;
 
@@ -310,7 +312,8 @@ class RemoteController_exit_args {
 
   RemoteController_exit_args(const RemoteController_exit_args&);
   RemoteController_exit_args& operator=(const RemoteController_exit_args&);
-  RemoteController_exit_args() = default;
+  RemoteController_exit_args() {
+  }
 
   virtual ~RemoteController_exit_args() noexcept;
 
@@ -462,7 +465,8 @@ class RemoteController_createCluster_result {
 
   RemoteController_createCluster_result(const RemoteController_createCluster_result&);
   RemoteController_createCluster_result& operator=(const RemoteController_createCluster_result&);
-  RemoteController_createCluster_result() = default;
+  RemoteController_createCluster_result() {
+  }
 
   virtual ~RemoteController_createCluster_result() noexcept;
   Cluster success;
@@ -580,7 +584,8 @@ class RemoteController_createClusterKeepClusterName_result {
 
   RemoteController_createClusterKeepClusterName_result(const RemoteController_createClusterKeepClusterName_result&);
   RemoteController_createClusterKeepClusterName_result& operator=(const RemoteController_createClusterKeepClusterName_result&);
-  RemoteController_createClusterKeepClusterName_result() = default;
+  RemoteController_createClusterKeepClusterName_result() {
+  }
 
   virtual ~RemoteController_createClusterKeepClusterName_result() noexcept;
   Cluster success;
@@ -691,7 +696,8 @@ class RemoteController_startMember_result {
 
   RemoteController_startMember_result(const RemoteController_startMember_result&);
   RemoteController_startMember_result& operator=(const RemoteController_startMember_result&);
-  RemoteController_startMember_result() = default;
+  RemoteController_startMember_result() {
+  }
 
   virtual ~RemoteController_startMember_result() noexcept;
   Member success;
@@ -1453,7 +1459,8 @@ class RemoteController_splitMemberFromCluster_result {
 
   RemoteController_splitMemberFromCluster_result(const RemoteController_splitMemberFromCluster_result&);
   RemoteController_splitMemberFromCluster_result& operator=(const RemoteController_splitMemberFromCluster_result&);
-  RemoteController_splitMemberFromCluster_result() = default;
+  RemoteController_splitMemberFromCluster_result() {
+  }
 
   virtual ~RemoteController_splitMemberFromCluster_result() noexcept;
   Cluster success;
@@ -1563,7 +1570,8 @@ class RemoteController_mergeMemberToCluster_result {
 
   RemoteController_mergeMemberToCluster_result(const RemoteController_mergeMemberToCluster_result&);
   RemoteController_mergeMemberToCluster_result& operator=(const RemoteController_mergeMemberToCluster_result&);
-  RemoteController_mergeMemberToCluster_result() = default;
+  RemoteController_mergeMemberToCluster_result() {
+  }
 
   virtual ~RemoteController_mergeMemberToCluster_result() noexcept;
   Cluster success;
@@ -1680,7 +1688,8 @@ class RemoteController_executeOnController_result {
 
   RemoteController_executeOnController_result(const RemoteController_executeOnController_result&);
   RemoteController_executeOnController_result& operator=(const RemoteController_executeOnController_result&);
-  RemoteController_executeOnController_result() = default;
+  RemoteController_executeOnController_result() {
+  }
 
   virtual ~RemoteController_executeOnController_result() noexcept;
   Response success;
@@ -1749,49 +1758,49 @@ class RemoteControllerClient : virtual public RemoteControllerIf {
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  bool ping() override;
+  bool ping();
   void send_ping();
   bool recv_ping();
-  bool clean() override;
+  bool clean();
   void send_clean();
   bool recv_clean();
-  bool exit() override;
+  bool exit();
   void send_exit();
   bool recv_exit();
-  void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) override;
+  void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
   void send_createCluster(const std::string& hzVersion, const std::string& xmlconfig);
   void recv_createCluster(Cluster& _return);
-  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) override;
+  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
   void send_createClusterKeepClusterName(const std::string& hzVersion, const std::string& xmlconfig);
   void recv_createClusterKeepClusterName(Cluster& _return);
-  void startMember(Member& _return, const std::string& clusterId) override;
+  void startMember(Member& _return, const std::string& clusterId);
   void send_startMember(const std::string& clusterId);
   void recv_startMember(Member& _return);
-  bool shutdownMember(const std::string& clusterId, const std::string& memberId) override;
+  bool shutdownMember(const std::string& clusterId, const std::string& memberId);
   void send_shutdownMember(const std::string& clusterId, const std::string& memberId);
   bool recv_shutdownMember();
-  bool terminateMember(const std::string& clusterId, const std::string& memberId) override;
+  bool terminateMember(const std::string& clusterId, const std::string& memberId);
   void send_terminateMember(const std::string& clusterId, const std::string& memberId);
   bool recv_terminateMember();
-  bool suspendMember(const std::string& clusterId, const std::string& memberId) override;
+  bool suspendMember(const std::string& clusterId, const std::string& memberId);
   void send_suspendMember(const std::string& clusterId, const std::string& memberId);
   bool recv_suspendMember();
-  bool resumeMember(const std::string& clusterId, const std::string& memberId) override;
+  bool resumeMember(const std::string& clusterId, const std::string& memberId);
   void send_resumeMember(const std::string& clusterId, const std::string& memberId);
   bool recv_resumeMember();
-  bool shutdownCluster(const std::string& clusterId) override;
+  bool shutdownCluster(const std::string& clusterId);
   void send_shutdownCluster(const std::string& clusterId);
   bool recv_shutdownCluster();
-  bool terminateCluster(const std::string& clusterId) override;
+  bool terminateCluster(const std::string& clusterId);
   void send_terminateCluster(const std::string& clusterId);
   bool recv_terminateCluster();
-  void splitMemberFromCluster(Cluster& _return, const std::string& memberId) override;
+  void splitMemberFromCluster(Cluster& _return, const std::string& memberId);
   void send_splitMemberFromCluster(const std::string& memberId);
   void recv_splitMemberFromCluster(Cluster& _return);
-  void mergeMemberToCluster(Cluster& _return, const std::string& clusterId, const std::string& memberId) override;
+  void mergeMemberToCluster(Cluster& _return, const std::string& clusterId, const std::string& memberId);
   void send_mergeMemberToCluster(const std::string& clusterId, const std::string& memberId);
   void recv_mergeMemberToCluster(Cluster& _return);
-  void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang) override;
+  void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang);
   void send_executeOnController(const std::string& clusterId, const std::string& script, const Lang::type lang);
   void recv_executeOnController(Response& _return);
  protected:
@@ -1804,7 +1813,7 @@ class RemoteControllerClient : virtual public RemoteControllerIf {
 class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
  protected:
   ::std::shared_ptr<RemoteControllerIf> iface_;
-  bool dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext) override;
+  virtual bool dispatchCall(::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, const std::string& fname, int32_t seqid, void* callContext);
  private:
   typedef  void (RemoteControllerProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
@@ -1844,7 +1853,7 @@ class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
     process_map_["executeOnController"] = &RemoteControllerProcessor::process_executeOnController;
   }
 
-  ~RemoteControllerProcessor() override = default;
+  virtual ~RemoteControllerProcessor() {}
 };
 
 class RemoteControllerProcessorFactory : public ::apache::thrift::TProcessorFactory {
@@ -1852,7 +1861,7 @@ class RemoteControllerProcessorFactory : public ::apache::thrift::TProcessorFact
   RemoteControllerProcessorFactory(const ::std::shared_ptr< RemoteControllerIfFactory >& handlerFactory) :
       handlerFactory_(handlerFactory) {}
 
-  ::std::shared_ptr< ::apache::thrift::TProcessor > getProcessor(const ::apache::thrift::TConnectionInfo& connInfo) override;
+  ::std::shared_ptr< ::apache::thrift::TProcessor > getProcessor(const ::apache::thrift::TConnectionInfo& connInfo);
 
  protected:
   ::std::shared_ptr< RemoteControllerIfFactory > handlerFactory_;
@@ -1862,15 +1871,15 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
  public:
   RemoteControllerMultiface(std::vector<std::shared_ptr<RemoteControllerIf> >& ifaces) : ifaces_(ifaces) {
   }
-  ~RemoteControllerMultiface() override = default;
+  virtual ~RemoteControllerMultiface() {}
  protected:
   std::vector<std::shared_ptr<RemoteControllerIf> > ifaces_;
-  RemoteControllerMultiface() = default;
+  RemoteControllerMultiface() {}
   void add(::std::shared_ptr<RemoteControllerIf> iface) {
     ifaces_.push_back(iface);
   }
  public:
-  bool ping() override {
+  bool ping() {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1879,7 +1888,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->ping();
   }
 
-  bool clean() override {
+  bool clean() {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1888,7 +1897,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->clean();
   }
 
-  bool exit() override {
+  bool exit() {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1897,7 +1906,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->exit();
   }
 
-  void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) override {
+  void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1907,7 +1916,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return;
   }
 
-  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) override {
+  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1917,7 +1926,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return;
   }
 
-  void startMember(Member& _return, const std::string& clusterId) override {
+  void startMember(Member& _return, const std::string& clusterId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1927,7 +1936,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return;
   }
 
-  bool shutdownMember(const std::string& clusterId, const std::string& memberId) override {
+  bool shutdownMember(const std::string& clusterId, const std::string& memberId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1936,7 +1945,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->shutdownMember(clusterId, memberId);
   }
 
-  bool terminateMember(const std::string& clusterId, const std::string& memberId) override {
+  bool terminateMember(const std::string& clusterId, const std::string& memberId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1945,7 +1954,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->terminateMember(clusterId, memberId);
   }
 
-  bool suspendMember(const std::string& clusterId, const std::string& memberId) override {
+  bool suspendMember(const std::string& clusterId, const std::string& memberId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1954,7 +1963,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->suspendMember(clusterId, memberId);
   }
 
-  bool resumeMember(const std::string& clusterId, const std::string& memberId) override {
+  bool resumeMember(const std::string& clusterId, const std::string& memberId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1963,7 +1972,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->resumeMember(clusterId, memberId);
   }
 
-  bool shutdownCluster(const std::string& clusterId) override {
+  bool shutdownCluster(const std::string& clusterId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1972,7 +1981,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->shutdownCluster(clusterId);
   }
 
-  bool terminateCluster(const std::string& clusterId) override {
+  bool terminateCluster(const std::string& clusterId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1981,7 +1990,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return ifaces_[i]->terminateCluster(clusterId);
   }
 
-  void splitMemberFromCluster(Cluster& _return, const std::string& memberId) override {
+  void splitMemberFromCluster(Cluster& _return, const std::string& memberId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -1991,7 +2000,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return;
   }
 
-  void mergeMemberToCluster(Cluster& _return, const std::string& clusterId, const std::string& memberId) override {
+  void mergeMemberToCluster(Cluster& _return, const std::string& clusterId, const std::string& memberId) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -2001,7 +2010,7 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return;
   }
 
-  void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang) override {
+  void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -2043,49 +2052,49 @@ class RemoteControllerConcurrentClient : virtual public RemoteControllerIf {
   std::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
-  bool ping() override;
+  bool ping();
   int32_t send_ping();
   bool recv_ping(const int32_t seqid);
-  bool clean() override;
+  bool clean();
   int32_t send_clean();
   bool recv_clean(const int32_t seqid);
-  bool exit() override;
+  bool exit();
   int32_t send_exit();
   bool recv_exit(const int32_t seqid);
-  void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) override;
+  void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
   int32_t send_createCluster(const std::string& hzVersion, const std::string& xmlconfig);
   void recv_createCluster(Cluster& _return, const int32_t seqid);
-  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) override;
+  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
   int32_t send_createClusterKeepClusterName(const std::string& hzVersion, const std::string& xmlconfig);
   void recv_createClusterKeepClusterName(Cluster& _return, const int32_t seqid);
-  void startMember(Member& _return, const std::string& clusterId) override;
+  void startMember(Member& _return, const std::string& clusterId);
   int32_t send_startMember(const std::string& clusterId);
   void recv_startMember(Member& _return, const int32_t seqid);
-  bool shutdownMember(const std::string& clusterId, const std::string& memberId) override;
+  bool shutdownMember(const std::string& clusterId, const std::string& memberId);
   int32_t send_shutdownMember(const std::string& clusterId, const std::string& memberId);
   bool recv_shutdownMember(const int32_t seqid);
-  bool terminateMember(const std::string& clusterId, const std::string& memberId) override;
+  bool terminateMember(const std::string& clusterId, const std::string& memberId);
   int32_t send_terminateMember(const std::string& clusterId, const std::string& memberId);
   bool recv_terminateMember(const int32_t seqid);
-  bool suspendMember(const std::string& clusterId, const std::string& memberId) override;
+  bool suspendMember(const std::string& clusterId, const std::string& memberId);
   int32_t send_suspendMember(const std::string& clusterId, const std::string& memberId);
   bool recv_suspendMember(const int32_t seqid);
-  bool resumeMember(const std::string& clusterId, const std::string& memberId) override;
+  bool resumeMember(const std::string& clusterId, const std::string& memberId);
   int32_t send_resumeMember(const std::string& clusterId, const std::string& memberId);
   bool recv_resumeMember(const int32_t seqid);
-  bool shutdownCluster(const std::string& clusterId) override;
+  bool shutdownCluster(const std::string& clusterId);
   int32_t send_shutdownCluster(const std::string& clusterId);
   bool recv_shutdownCluster(const int32_t seqid);
-  bool terminateCluster(const std::string& clusterId) override;
+  bool terminateCluster(const std::string& clusterId);
   int32_t send_terminateCluster(const std::string& clusterId);
   bool recv_terminateCluster(const int32_t seqid);
-  void splitMemberFromCluster(Cluster& _return, const std::string& memberId) override;
+  void splitMemberFromCluster(Cluster& _return, const std::string& memberId);
   int32_t send_splitMemberFromCluster(const std::string& memberId);
   void recv_splitMemberFromCluster(Cluster& _return, const int32_t seqid);
-  void mergeMemberToCluster(Cluster& _return, const std::string& clusterId, const std::string& memberId) override;
+  void mergeMemberToCluster(Cluster& _return, const std::string& clusterId, const std::string& memberId);
   int32_t send_mergeMemberToCluster(const std::string& clusterId, const std::string& memberId);
   void recv_mergeMemberToCluster(Cluster& _return, const int32_t seqid);
-  void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang) override;
+  void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang);
   int32_t send_executeOnController(const std::string& clusterId, const std::string& script, const Lang::type lang);
   void recv_executeOnController(Response& _return, const int32_t seqid);
  protected:
