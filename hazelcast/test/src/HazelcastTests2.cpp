@@ -1796,7 +1796,7 @@ namespace hazelcast {
             }
 
             TEST_F(SerializationWithServer, test_utf_chars) {
-                std::string value = u8"\U00000040 Abcd \U000001DF \U000006A0 \U000012E0 \U00001D306";
+                std::string value = u8"\u0040 test \u01DF \u06A0 \u12E0 \u1D30";
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::string>("key").get()));
                 auto response = get_value_from_server();
