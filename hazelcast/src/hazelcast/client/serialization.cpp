@@ -453,28 +453,22 @@ namespace hazelcast {
                 template<>
                 void data_output::write(int16_t value) {
                     if (is_no_write_) { return; }
-                    int16_t result;
-                    byte *target = (byte *) &result;
-                    util::Bits::native_to_big_endian2(&value, target);
-                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::SHORT_SIZE_IN_BYTES);
+                    boost::endian::native_to_big_inplace(value);
+                    output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::SHORT_SIZE_IN_BYTES);
                 }
 
                 template<>
-                void data_output::write(int32_t v) {
+                void data_output::write(int32_t value) {
                     if (is_no_write_) { return; }
-                    int32_t result;
-                    byte *target = (byte *) &result;
-                    util::Bits::native_to_big_endian4(&v, target);
-                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::INT_SIZE_IN_BYTES);
+                    boost::endian::native_to_big_inplace(value);
+                    output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::INT_SIZE_IN_BYTES);
                 }
 
                 template<>
-                void data_output::write(int64_t l) {
+                void data_output::write(int64_t value) {
                     if (is_no_write_) { return; }
-                    int64_t result;
-                    byte *target = (byte *) &result;
-                    util::Bits::native_to_big_endian8(&l, target);
-                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::LONG_SIZE_IN_BYTES);
+                    boost::endian::native_to_big_inplace(value);
+                    output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::LONG_SIZE_IN_BYTES);
                 }
 
                 template<>
@@ -514,17 +508,9 @@ namespace hazelcast {
                 template<>
                 void data_output::write(const std::string &str) {
                     if (is_no_write_) { return; }
-                    int32_t len = util::UTFUtil::is_valid_ut_f8(str);
-                    if (len < 0) {
-                        BOOST_THROW_EXCEPTION((exception::exception_builder<exception::utf_data_format>(
-                                "DataOutput::write")
-                                << "String \"" << str << "\" is not UTF-8 formatted !!!").build());
-                    }
 
-                    write<int32_t>(len);
-                    if (len > 0) {
-                        output_stream_.insert(output_stream_.end(), str.begin(), str.end());
-                    }
+                    write<int32_t>(str.size());
+                    output_stream_.insert(output_stream_.end(), str.begin(), str.end());
                 }
 
                 template<>
@@ -847,7 +833,7 @@ namespace hazelcast {
                     if (total_size() == 0) {
                         return static_cast<int32_t>(serialization_constants::CONSTANT_TYPE_NULL);
                     }
-                    return util::Bits::read_int_b(data_, data::TYPE_OFFSET);
+                    return boost::endian::load_big_s32(&data_[data::TYPE_OFFSET]);
                 }
 
                 int data::hash() const {
@@ -861,7 +847,7 @@ namespace hazelcast {
                     }
 
                     if (has_partition_hash()) {
-                        return util::Bits::read_int_b(data_, data::PARTITION_HASH_OFFSET);
+                        return boost::endian::load_big_s32(&data_[data::PARTITION_HASH_OFFSET]);
                     }
 
                     return util::murmur_hash3_x86_32((void *) &((data_)[data::DATA_OFFSET]), (int) size);

@@ -58,7 +58,6 @@
 
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/util/Closeable.h"
-#include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/SyncHttpClient.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
@@ -270,42 +269,6 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         Closeable::~Closeable() = default;
-    }
-}
-        
-namespace hazelcast {
-    namespace util {
-        int32_t UTFUtil::is_valid_ut_f8(const std::string &str) {
-            int32_t numberOfUtf8Chars = 0;
-            for (size_t i = 0, len = str.length(); i < len; ++i) {
-                unsigned char c = (unsigned char) str[i];
-                size_t n = 0;
-                // is ascii
-                if (c <= 0x7f) {
-                    n = 0; // 0bbbbbbb
-                } else if ((c & 0xE0) == 0xC0) {
-                    n = 1; // 110bbbbb
-                } else if (c == 0xed && i < (len - 1) && ((unsigned char) str[i + 1] & 0xa0) == 0xa0) {
-                    return -1; //U+d800 to U+dfff
-                } else if ((c & 0xF0) == 0xE0) {
-                    n = 2; // 1110bbbb
-                } else if ((c & 0xF8) == 0xF0) {
-                    n = 3; // 11110bbb
-                } else {
-                    return -1;
-                }
-
-                for (size_t j = 0; j < n && i < len; j++) { // n bytes matching 10bbbbbb follow ?
-                    if ((++i == len) || (((unsigned char) str[i] & 0xC0) != 0x80)) {
-                        return -1;
-                    }
-                }
-
-                ++numberOfUtf8Chars;
-            }
-
-            return numberOfUtf8Chars;
-        }
     }
 }
 
