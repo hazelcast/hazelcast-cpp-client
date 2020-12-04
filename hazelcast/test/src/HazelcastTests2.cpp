@@ -1787,7 +1787,7 @@ namespace hazelcast {
             }
 
             TEST_F(SerializationWithServer, test_emoji) {
-                std::string value = u8"1⚐中\\uD83D\\uDCA62\\uD83D\\uDE2D\\u200D\\uD83D\\uDE46\\uD83D\\uDE145";
+                std::string value = u8"1⚐中\U0001f4a6 \U0001F62D \U0001F45F";
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::string>("key").get()));
                 auto response = get_value_from_server();
@@ -1796,7 +1796,7 @@ namespace hazelcast {
             }
 
             TEST_F(SerializationWithServer, test_utf_chars) {
-                std::string value = u8"\\u0040\\u0041\\u01DF\\u06A0\\u12E0\\u1D306";
+                std::string value = u8"\U00000040 Abcd \U000001DF \U000006A0 \U000012E0 \U00001D306";
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::string>("key").get()));
                 auto response = get_value_from_server();
