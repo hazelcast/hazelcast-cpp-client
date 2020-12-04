@@ -2541,45 +2541,63 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadByte) {
                     std::vector<byte> bytes{0x01, 0x12};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ(0x01, dataInput.read<byte>());
                     ASSERT_EQ(0x12, dataInput.read<byte>());
                 }
 
                 TEST_F(DataInputTest, testReadBoolean) {
                     std::vector<byte> bytes{0x00, 0x10};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_FALSE(dataInput.read<bool>());
                     ASSERT_TRUE(dataInput.read<bool>());
                 }
 
                 TEST_F(DataInputTest, testReadChar) {
                     std::vector<byte> bytes{'a', 'b'};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ('b', dataInput.read<char>());
                 }
 
                 TEST_F(DataInputTest, testReadShort) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ(0x1234, dataInput.read<int16_t>());
+                }
+
+                TEST_F(DataInputTest, testReadShortLittleEndian) {
+                    std::vector<byte> bytes{0x12, 0x34, 0x56};
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::little, bytes);
+                    ASSERT_EQ(0x3412, dataInput.read<int16_t>());
                 }
 
                 TEST_F(DataInputTest, testReadInteger) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ(INT32_C(0x12345678), dataInput.read<int32_t>());
+                }
+
+                TEST_F(DataInputTest, testReadIntegerLittleEndian) {
+                    std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90};
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::little, bytes);
+                    ASSERT_EQ(INT32_C(0x78563412), dataInput.read<int32_t>());
                 }
 
                 TEST_F(DataInputTest, testReadLong) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90, 0x9A, 0x9B, 0x9C};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ(INT64_C(0x12345678909A9B9C), dataInput.read<int64_t>());
+                }
+
+                TEST_F(DataInputTest, testReadLongLittleEndian) {
+                    std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90, 0x9A, 0x9B, 0x9C};
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::little, bytes);
+                    ASSERT_EQ(INT64_C(0x9C9B9A9078563412), dataInput.read<int64_t>());
                 }
 
                 TEST_F(DataInputTest, testReadUTF) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ("bdfh", dataInput.read<std::string>());
                 }
 
@@ -2587,7 +2605,7 @@ namespace hazelcast {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02};
                     std::vector<byte> actualDataBytes{0x12, 0x34};
                     bytes.insert(bytes.end(), actualDataBytes.begin(), actualDataBytes.end());
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     auto readBytes = dataInput.read<std::vector<byte>>();
                     ASSERT_TRUE(readBytes.has_value());
                     ASSERT_EQ(actualDataBytes, *readBytes);
@@ -2595,7 +2613,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadBooleanArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x00, 0x01};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     auto booleanArray = dataInput.read<std::vector<bool>>();
                     ASSERT_TRUE(booleanArray);
                     ASSERT_EQ(2U, booleanArray->size());
@@ -2605,7 +2623,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadCharArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x00, 'f', 0x00, 'h'};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     auto charArray = dataInput.read<std::vector<char>>();
                     ASSERT_TRUE(charArray);
                     ASSERT_EQ(2U, charArray->size());
@@ -2615,7 +2633,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadShortArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     auto array = dataInput.read<std::vector<int16_t>>();
                     ASSERT_TRUE(array);
                     ASSERT_EQ(2U, array->size());
@@ -2625,7 +2643,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadIntegerArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x1A, 0xBC, 0xDE, 0xEF};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     auto array = dataInput.read<std::vector<int32_t>>();
                     ASSERT_TRUE(array.has_value());
                     ASSERT_EQ(2U, array->size());
@@ -2636,7 +2654,7 @@ namespace hazelcast {
                 TEST_F(DataInputTest, testReadLongArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xEF,
                                             0x11, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8};
-                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     auto array = dataInput.read<std::vector<int64_t>>();
                     ASSERT_TRUE(array.has_value());
                     ASSERT_EQ(2U, array->size());
@@ -2694,7 +2712,7 @@ namespace hazelcast {
 
                 TEST_F(DataOutputTest, testWriteByte) {
                     std::vector<byte> bytes{0x01, 0x12};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<byte>((byte) 0x01);
                     dataOutput.write<byte>(0x12);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
@@ -2702,7 +2720,7 @@ namespace hazelcast {
 
                 TEST_F(DataOutputTest, testWriteBoolean) {
                     std::vector<byte> bytes{0x00, 0x01};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<bool>(false);
                     dataOutput.write<bool>(true);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
@@ -2712,35 +2730,56 @@ namespace hazelcast {
                     std::vector<byte> bytes;
                     bytes.push_back(0);
                     bytes.push_back('b');
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<char>('b');
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteShort) {
                     std::vector<byte> bytes{0x12, 0x34};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
+                    dataOutput.write<int16_t>(0x1234);
+                    ASSERT_EQ(bytes, dataOutput.to_byte_array());
+                }
+
+                TEST_F(DataOutputTest, testWriteShortLittleEndian) {
+                    std::vector<byte> bytes{0x34, 0x12};
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::little);
                     dataOutput.write<int16_t>(0x1234);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteInteger) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
+                    dataOutput.write<int32_t>(INT32_C(0x12345678));
+                    ASSERT_EQ(bytes, dataOutput.to_byte_array());
+                }
+
+                TEST_F(DataOutputTest, testWriteIntegerLittleEndian) {
+                    std::vector<byte> bytes{0x78, 0x56, 0x34, 0x12};
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::little);
                     dataOutput.write<int32_t>(INT32_C(0x12345678));
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteLong) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90, 0x9A, 0x9B, 0x9C};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
+                    dataOutput.write<int64_t>(INT64_C(0x12345678909A9B9C));
+                    ASSERT_EQ(bytes, dataOutput.to_byte_array());
+                }
+
+                TEST_F(DataOutputTest, testWriteLongLittleEndian) {
+                    std::vector<byte> bytes{0x9C, 0x9B, 0x9A, 0x90, 0x78, 0x56, 0x34, 0x12};
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::little);
                     dataOutput.write<int64_t>(INT64_C(0x12345678909A9B9C));
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteUTF) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     std::string value("bdfh");
                     dataOutput.write<std::string>(&value);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
@@ -2750,7 +2789,7 @@ namespace hazelcast {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02};
                     std::vector<byte> actualDataBytes{0x12, 0x34};
                     bytes.insert(bytes.end(), actualDataBytes.begin(), actualDataBytes.end());
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write(&actualDataBytes);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2760,7 +2799,7 @@ namespace hazelcast {
                     std::vector<bool> actualValues;
                     actualValues.push_back(false);
                     actualValues.push_back(true);
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<std::vector<bool>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2768,7 +2807,7 @@ namespace hazelcast {
                 TEST_F(DataOutputTest, testWriteCharArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0, 'f', 0, 'h'};
                     std::vector<char> actualChars{'f', 'h'};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<std::vector<char>>(actualChars);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2776,7 +2815,7 @@ namespace hazelcast {
                 TEST_F(DataOutputTest, testWriteShortArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78};
                     std::vector<int16_t> actualValues{0x1234, 0x5678};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<std::vector<int16_t>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2784,7 +2823,7 @@ namespace hazelcast {
                 TEST_F(DataOutputTest, testWriteIntegerArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x1A, 0xBC, 0xDE, 0xEF};
                     std::vector<int32_t> actualValues{INT32_C(0x12345678), INT32_C(0x1ABCDEEF)};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<std::vector<int32_t>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2793,7 +2832,7 @@ namespace hazelcast {
                     std::vector<byte> bytes = {0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xEF,
                                                0x01, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8};
                     std::vector<int64_t> actualValues{INT64_C(0x123456789ABCDEEF), INT64_C(0x01A2A3A4A5A6A7A8)};
-                    serialization::pimpl::data_output dataOutput;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<std::vector<int64_t>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }

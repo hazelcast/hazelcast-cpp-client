@@ -1534,7 +1534,7 @@ namespace hazelcast {
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                serialization::object_data_output out;
+                serialization::object_data_output out(boost::endian::order::big);
 
                 byte by = 2;
                 bool boolean = true;
@@ -1590,8 +1590,10 @@ namespace hazelcast {
                 out.write<std::string>(nullptr);
                 out.write<std::vector<std::string>>(nullptr);
 
-                serialization::object_data_input in(out.to_byte_array(), 0, serializationService.get_portable_serializer(), serializationService.get_data_serializer(),
-                                                  serializationConfig.get_global_serializer());
+                serialization::object_data_input in(boost::endian::order::big, out.to_byte_array(), 0,
+                                                    serializationService.get_portable_serializer(),
+                                                    serializationService.get_data_serializer(),
+                                                    serializationConfig.get_global_serializer());
 
                 ASSERT_EQ(by, in.read<byte>());
                 ASSERT_EQ(c, in.read<char>());

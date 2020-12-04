@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include <boost/endian/detail/order.hpp>
 
 #include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/ByteBuffer.h"
@@ -39,7 +40,7 @@ namespace hazelcast {
                 public:
                     static constexpr const size_t DEFAULT_SIZE = 4 * 1024;
 
-                    data_output(bool dont_write = false);
+                    data_output(boost::endian::order byte_order, bool dont_write = false);
 
                     /**
                      *
@@ -129,6 +130,7 @@ namespace hazelcast {
                     inline write(const T *value);
 
                 protected:
+                    boost::endian::order byte_order_;
                     bool is_no_write_;
                     std::vector<byte> output_stream_;
 

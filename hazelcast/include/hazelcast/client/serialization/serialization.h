@@ -652,8 +652,8 @@ namespace hazelcast {
                 /**
                 * Internal API. Constructor
                 */
-                object_data_input(const std::vector<byte> &buffer, int offset, pimpl::PortableSerializer &portable_ser,
-                                  pimpl::DataSerializer &data_ser,
+                object_data_input(boost::endian::order byte_order, const std::vector<byte> &buffer, int offset,
+                                  pimpl::PortableSerializer &portable_ser, pimpl::DataSerializer &data_ser,
                                   std::shared_ptr<serialization::global_serializer> global_serializer);
 
                 /**
@@ -711,7 +711,8 @@ namespace hazelcast {
                 /**
                 * Internal API Constructor
                 */
-                explicit object_data_output(bool dont_write = false, pimpl::PortableSerializer *portable_ser = nullptr,
+                explicit object_data_output(boost::endian::order byte_order, bool dont_write = false,
+                                            pimpl::PortableSerializer *portable_ser = nullptr,
                                             std::shared_ptr<serialization::global_serializer> global_serializer = nullptr);
 
                 template<typename T>
@@ -1308,7 +1309,7 @@ namespace hazelcast {
 
                     template<typename T>
                     inline data to_data(const T *object) {
-                        object_data_output output(false, &portable_serializer_, serialization_config_.get_global_serializer());
+                        object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
 
                         write_hash<T>(object, output);
 
@@ -1319,7 +1320,7 @@ namespace hazelcast {
 
                     template<typename T>
                     inline data to_data(const T &object) {
-                        object_data_output output(false, &portable_serializer_, serialization_config_.get_global_serializer());
+                        object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
 
                         write_hash<T>(&object, output);
 
@@ -1357,7 +1358,8 @@ namespace hazelcast {
 
                         // Constant 8 is Data::DATA_OFFSET. Windows DLL export does not
                         // let usage of static member.
-                        object_data_input objectDataInput(data.to_byte_array(), 8, portable_serializer_, data_serializer_,
+                        object_data_input objectDataInput(serialization_config_.get_byte_order(), data.to_byte_array(),
+                                                          8, portable_serializer_, data_serializer_,
                                                           serialization_config_.get_global_serializer());
                         return objectDataInput.read_object<T>(typeId);
                     }
