@@ -129,6 +129,8 @@ namespace hazelcast {
                                             std::is_same<std::vector<std::string>, T>::value, void>::type
                     inline write(const T *value);
 
+                    void write(int32_t value, boost::endian::order byte_order);
+
                 protected:
                     boost::endian::order byte_order_;
                     bool is_no_write_;
@@ -156,7 +158,11 @@ namespace hazelcast {
                     inline void write_at(int index, int32_t value) {
                         if (is_no_write_) { return; }
                         check_available(index, util::Bits::INT_SIZE_IN_BYTES);
-                        boost::endian::native_to_big_inplace(value);
+                        if (byte_order_ == boost::endian::order::big) {
+                            boost::endian::native_to_big_inplace(value);
+                        } else {
+                            boost::endian::native_to_little_inplace(value);
+                        }
                         std::memcpy(&output_stream_[index], &value, util::Bits::INT_SIZE_IN_BYTES);
                     }
                 };

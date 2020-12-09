@@ -2559,6 +2559,24 @@ namespace hazelcast {
                     ASSERT_EQ('b', dataInput.read<char>());
                 }
 
+                TEST_F(DataInputTest, testReadCharLittleEndian) {
+                    std::vector<byte> bytes{'a', 'b'};
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::little, bytes);
+                    ASSERT_EQ('a', dataInput.read<char>());
+                }
+
+                TEST_F(DataInputTest, testReadChar16) {
+                    std::vector<byte> bytes{0x20, 0xAC};
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
+                    ASSERT_EQ(0x20AC, dataInput.read<char16_t>());
+                }
+
+                TEST_F(DataInputTest, testReadChar16_LittleEndian) {
+                    std::vector<byte> bytes{0xAC, 0x20};
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::little, bytes);
+                    ASSERT_EQ(0x20AC, dataInput.read<char16_t>());
+                }
+
                 TEST_F(DataInputTest, testReadShort) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56};
                     serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
@@ -2727,12 +2745,31 @@ namespace hazelcast {
                 }
 
                 TEST_F(DataOutputTest, testWriteChar) {
-                    std::vector<byte> bytes;
-                    bytes.push_back(0);
-                    bytes.push_back('b');
+                    std::vector<byte> bytes{0, 'b'};
                     serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     dataOutput.write<char>('b');
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
+                }
+
+                TEST_F(DataOutputTest, testWriteCharLittleEndian) {
+                    std::vector<byte> bytes{'a', 0};
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::little);
+                    dataOutput.write<char>('a');
+                    ASSERT_EQ(bytes, dataOutput.to_byte_array());
+                }
+
+                TEST_F(DataOutputTest, testWriteChar_16) {
+                    char16_t value = (char16_t)0x20AC;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
+                    dataOutput.write(value);
+                    ASSERT_EQ(std::vector<byte>({0x20, 0xAC}), dataOutput.to_byte_array());
+                }
+
+                TEST_F(DataOutputTest, testWriteChar_16_LittleEndian) {
+                    char16_t value = (char16_t)0x20AC;
+                    serialization::pimpl::data_output dataOutput(boost::endian::order::little);
+                    dataOutput.write(value);
+                    ASSERT_EQ(std::vector<byte>({0xAC, 0x20}), dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteShort) {

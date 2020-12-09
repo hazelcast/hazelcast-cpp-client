@@ -441,17 +441,13 @@ namespace hazelcast {
 
                 template<>
                 void data_output::write(char i) {
-                    if (is_no_write_) { return; }
                     // C++ `char` is one byte only, `char16_t` is two bytes
-                    write<byte>(0);
-                    write<byte>(i);
+                    write<int16_t>(i);
                 }
 
                 template<>
                 void data_output::write(char16_t i) {
-                    if (is_no_write_) { return; }
-                    write<byte>(static_cast<byte>(i >> 8));
-                    write<byte>(i);
+                    write<int16_t>(i);
                 }
 
                 template<>
@@ -465,15 +461,19 @@ namespace hazelcast {
                     output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::SHORT_SIZE_IN_BYTES);
                 }
 
-                template<>
-                void data_output::write(int32_t value) {
+                void data_output::write(int32_t value, boost::endian::order byte_order) {
                     if (is_no_write_) { return; }
-                    if (byte_order_ == boost::endian::order::big) {
+                    if (byte_order == boost::endian::order::big) {
                         boost::endian::native_to_big_inplace(value);
                     } else {
                         boost::endian::native_to_little_inplace(value);
                     }
                     output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::INT_SIZE_IN_BYTES);
+                }
+
+                template<>
+                void data_output::write(int32_t value) {
+                    write(value, byte_order_);
                 }
 
                 template<>
@@ -512,6 +512,11 @@ namespace hazelcast {
                 template<>
                 void data_output::write(boost::uuids::uuid v) {
                     if (is_no_write_) { return; }
+                    if (byte_order_ == boost::endian::order::little) {
+                        boost::endian::endian_reverse_inplace<int64_t>(*reinterpret_cast<int64_t *>(v.data));
+                        boost::endian::endian_reverse_inplace<int64_t>(
+                                *reinterpret_cast<int64_t *>(&v.data[util::Bits::LONG_SIZE_IN_BYTES]));
+                    }
                     output_stream_.insert(output_stream_.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
                 }
 
