@@ -43,7 +43,7 @@ namespace hazelcast {
         /**
          * Cluster membership listener.
          *
-         * The MembershipListener will never be called concurrently and all MembershipListeners will receive the events
+         * The membership_listener will never be called concurrently and all membership_listeners will receive the events
          * in the same order.
          *
          * \warning
@@ -52,7 +52,7 @@ namespace hazelcast {
          * \warning
          * 2 - Do not make a call to hazelcast. It can cause deadlock.
          *
-         * \see Cluster::addMembershipListener
+         * \see cluster::add_membership_listener
          */
         class HAZELCAST_API membership_listener final {
             friend class cluster;
@@ -70,7 +70,7 @@ namespace hazelcast {
             };
 
             /**
-             * \copydoc MembershipListener::on_joined
+             * \copydoc membership_listener::on_joined
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
@@ -91,7 +91,7 @@ namespace hazelcast {
             };
 
             /**
-             * \copydoc MembershipListener::on_left
+             * \copydoc membership_listener::on_left
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
@@ -112,7 +112,7 @@ namespace hazelcast {
             };
 
             /**
-             * \copydoc MembershipListener::on_init
+             * \copydoc membership_listener::on_init
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>

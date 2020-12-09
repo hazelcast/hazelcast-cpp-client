@@ -48,7 +48,8 @@
 #include "hazelcast/client/query/predicates.h"
 #include "hazelcast/client/lifecycle_listener.h"
 #include "hazelcast/client/config/eviction_strategy_type.h"
-#include "hazelcast/client/impl/RoundRobinLB.h"
+#include "hazelcast/client/cluster.h"
+#include "hazelcast/client/initial_membership_event.h"
 
 namespace hazelcast {
     namespace client {
@@ -685,7 +686,7 @@ namespace hazelcast {
             }
         }
 
-        client_config::client_config() : cluster_name_("dev"), load_balancer_(nullptr), redo_operation_(false),
+        client_config::client_config() : cluster_name_("dev"), redo_operation_(false),
                                        socket_interceptor_(), executor_pool_size_(-1) {}
 
         client_config::client_config(client_config &&rhs) = default;
@@ -703,12 +704,21 @@ namespace hazelcast {
 
         load_balancer &client_config::get_load_balancer() {
             if (!load_balancer_) {
-                load_balancer_.reset(new impl::RoundRobinLB{});
+                auto index = std::make_shared<std::atomic<size_t>>(0);
+                load_balancer_ = load_balancer().next([=](cluster &c) {
+                    auto members = c.get_members();
+                    if (members.empty()) {
+                        return boost::optional<member>();
+                    }
+                    auto i = index->load();
+                    index->store(i + 1);
+                    return boost::make_optional(std::move(members[i % members.size()]));
+                });
             }
             return *load_balancer_;
         }
 
-        client_config &client_config::set_load_balancer(std::unique_ptr<load_balancer> load_balancer) {
+        client_config &client_config::set_load_balancer(load_balancer &&load_balancer) {
             this->load_balancer_ = std::move(load_balancer);
             return *this;
         }
