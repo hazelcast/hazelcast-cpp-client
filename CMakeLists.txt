@@ -25,7 +25,7 @@
 
 cmake_minimum_required(VERSION 3.12.4)
 
-project(HazelcastClient
+project(HazelcastClient # TODO maybe change name ?
         VERSION 4.0.0
         DESCRIPTION "Hazelcast C++ Client"
         HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
@@ -41,8 +41,7 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif ()
 
-include(TestBigEndian) # TODO probably not needed anymore
-include(FindOpenSSL) # TODO only include this if building with ssl, otherwise it outputs messages telling the library was not found
+include(FindOpenSSL)
 include(FindBoost)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
@@ -82,30 +81,18 @@ get_commit_date_and_id(HAZELCAST_GIT_COMMIT_DATE HAZELCAST_GIT_COMMIT_ID)
 message(STATUS "HAZELCAST_GIT_COMMIT_DATE = ${HAZELCAST_GIT_COMMIT_DATE}")
 message(STATUS "HAZELCAST_GIT_COMMIT_ID = ${HAZELCAST_GIT_COMMIT_ID}")
 
-# TODO this part is not needed
-#detect endianness
-TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
-if (${IS_BIG_ENDIAN})
-    message(STATUS "Current system is a BIG-ENDIAN system")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BIG_ENDIAN")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BIG_ENDIAN")
-else ()
-    message(STATUS "Current system is a LITTLE-ENDIAN system")
-ENDIF (${IS_BIG_ENDIAN})
-
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/src/*h")
 
 
-if (NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED"))
+if (NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED"))  # TODO provide option to build both? maybe not options at all
     # TODO improve message
     message(STATUS "Build needs HZ_LIB_TYPE. Setting default as -DHZ_LIB_TYPE=STATIC (other option -DHZ_LIB_TYPE=SHARED)")
     set(HZ_LIB_TYPE STATIC)
 endif ()
 message(STATUS "Generating ${HZ_LIB_TYPE} Library")
-
 
 add_library(
     HazelcastClient # TODO Maybe HazelcastClientCxx or Cpp in case there is a C library some day?
@@ -113,16 +100,20 @@ add_library(
     ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS}
 )
 
+if (MSVC)
+    target_compile_options(HazelcastClient PRIVATE /bigobj)
+endif()
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_link_libraries(HazelcastClient PUBLIC pthread rt)
+    target_link_libraries(HazelcastClient PUBLIC pthread rt) # TODO make sure these are actually required
 endif ()
 
 if (HZ_COMPILE_WITH_SSL)
     message(STATUS "Building the library with SSL support.")
 
     target_compile_definitions(
-            HazelcastClient
-            PUBLIC HZ_BUILD_WITH_SSL
+        HazelcastClient
+        PUBLIC HZ_BUILD_WITH_SSL
     )
 
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -137,7 +128,7 @@ if (HZ_COMPILE_WITH_SSL)
     endif ()
 
     find_package(OpenSSL REQUIRED)
-    target_link_libraries(HazelcastClient PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+    target_link_libraries(HazelcastClient PUBLIC OpenSSL::SSL OpenSSL::Crypto) # TODO are these public or private, probably public because asio depends on openssl
 else ()
     message(STATUS "Building the library without SSL.")
 endif ()
@@ -170,30 +161,30 @@ endif ()
 find_package(Boost REQUIRED COMPONENTS thread chrono)
 
 target_link_libraries(
-        HazelcastClient
-        PUBLIC Boost::headers Boost::thread Boost::chrono
+    HazelcastClient
+    PUBLIC Boost::headers Boost::thread Boost::chrono
 )
 
 target_compile_definitions(
-        HazelcastClient
-        PUBLIC BOOST_THREAD_VERSION=5
+    HazelcastClient
+    PUBLIC BOOST_THREAD_VERSION=5
 )
 
 target_include_directories(
-        HazelcastClient
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
-            $<INSTALL_INTERFACE:include/>
+    HazelcastClient
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
+        $<INSTALL_INTERFACE:include/>
 )
 
 target_compile_definitions(
-        HazelcastClient
-        PUBLIC
-            HAZELCAST_VERSION="${PROJECT_VERSION}" # TODO make this private and replace usages in tests with the API
-        PRIVATE
-            HAZELCAST_GIT_COMMIT_DATE=${HAZELCAST_GIT_COMMIT_DATE}
-            HAZELCAST_GIT_COMMIT_ID=${HAZELCAST_GIT_COMMIT_ID}
+    HazelcastClient
+    PUBLIC
+        HAZELCAST_VERSION="${PROJECT_VERSION}" # TODO make this private and replace usages in tests with the API
+    PRIVATE
+        HAZELCAST_GIT_COMMIT_DATE=${HAZELCAST_GIT_COMMIT_DATE}
+        HAZELCAST_GIT_COMMIT_ID=${HAZELCAST_GIT_COMMIT_ID}
 )
 
 if (HZ_DISABLE_LOGGING)
@@ -202,10 +193,10 @@ if (HZ_DISABLE_LOGGING)
 endif ()
 
 set_target_properties(
-        HazelcastClient
-        PROPERTIES
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR}
+    HazelcastClient
+    PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}
 )
 
 option(HZ_ENABLE_CLANG_TIDY
@@ -251,12 +242,12 @@ install(
     EXPORT HazelcastClientTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(
     DIRECTORY hazelcast/include/
-    EXPORT HazelcastClientTargets
     TYPE INCLUDE
     FILES_MATCHING PATTERN "*.h"
 )
