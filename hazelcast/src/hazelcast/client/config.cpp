@@ -710,8 +710,7 @@ namespace hazelcast {
                     if (members.empty()) {
                         return boost::optional<member>();
                     }
-                    auto i = index->load();
-                    index->store(i + 1);
+                    auto i = index->fetch_add(1);
                     return boost::make_optional(std::move(members[i % members.size()]));
                 });
             }
