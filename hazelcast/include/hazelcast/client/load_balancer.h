@@ -56,10 +56,9 @@ namespace hazelcast {
             }
 
             /**
-             * Sets the function to be called when load balancer is initialized.
+             * The function returns the next member to route to.
              *
-             * @param cluster Cluster contains current membership information for initialization. And one can
-             * add membership through this class for future notifications.
+             * @param h The function to be used for finding the next member.
              */
             template<typename Handler,
                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
@@ -76,6 +75,10 @@ namespace hazelcast {
             }
 
 		private:
+            /**
+             * Cluster contains current membership information for initialization. And one can
+             * add membership through this class for future notifications.
+             */
 		    std::function<void(cluster &)> init_ = util::noop<cluster &>;
 		    std::function<boost::optional<member>(cluster &)> next_ = [](cluster &) { return boost::none; };
 
