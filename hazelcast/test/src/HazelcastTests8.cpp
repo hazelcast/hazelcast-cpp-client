@@ -1547,6 +1547,9 @@ namespace hazelcast {
                 return member_;
             }
 
+            const std::string &HazelcastServer::cluster_id() const {
+                return factory_.get_cluster_id();
+            }
         }
     }
 }

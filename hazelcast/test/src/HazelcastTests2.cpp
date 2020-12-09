@@ -1534,7 +1534,7 @@ namespace hazelcast {
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                serialization::object_data_output out;
+                serialization::object_data_output out(boost::endian::order::big);
 
                 byte by = 2;
                 bool boolean = true;
@@ -1590,8 +1590,10 @@ namespace hazelcast {
                 out.write<std::string>(nullptr);
                 out.write<std::vector<std::string>>(nullptr);
 
-                serialization::object_data_input in(out.to_byte_array(), 0, serializationService.get_portable_serializer(), serializationService.get_data_serializer(),
-                                                  serializationConfig.get_global_serializer());
+                serialization::object_data_input in(boost::endian::order::big, out.to_byte_array(), 0,
+                                                    serializationService.get_portable_serializer(),
+                                                    serializationService.get_data_serializer(),
+                                                    serializationConfig.get_global_serializer());
 
                 ASSERT_EQ(by, in.read<byte>());
                 ASSERT_EQ(c, in.read<char>());
@@ -1660,27 +1662,35 @@ namespace hazelcast {
 
             extern std::shared_ptr<RemoteControllerClient> remoteController;
 
-            class SerializationWithServer : public ClientTestSupport {
-            public:
-                void TearDown() override {
-                    map_->clear().get();
-                }
+            class serialization_with_server : public ClientTestSupport, 
+                    public ::testing::WithParamInterface<boost::endian::order> {
+            protected:
+                void SetUp() override {
+                    if (!server_) {
+                        little_endian_server_factory_ = new HazelcastServerFactory(
+                                "hazelcast/test/resources/hazelcast-serialization-little-endian.xml");
+                    }
 
-                static void SetUpTestCase() {
-                    server_ = new HazelcastServer(*g_srvFactory);
-                    client_ = new hazelcast_client();
-                    map_ = client_->get_map("SerializationWithServer_Map").get();
+                    server_.reset(new HazelcastServer(
+                            *(boost::endian::order::little == GetParam() ? little_endian_server_factory_
+                                                                         : g_srvFactory)));
+
+                    auto config = get_config();
+                    config.set_cluster_name(boost::endian::order::little == GetParam() ? "little-endian-cluster" : "dev");
+                    config.get_serialization_config().set_byte_order(GetParam());
+
+                    client_.reset(new hazelcast_client(std::move(config)));
+                    map_ = client_->get_map("serialization_with_server_map").get();
                 }
 
                 static void TearDownTestCase() {
-                    delete client_;
-                    delete server_;
+                    delete little_endian_server_factory_;
                 }
 
             protected:
                 static Response get_value_from_server() {
                     const char *script = "function foo() {\n"
-                                             "var map = instance_0.getMap(\"SerializationWithServer_Map\");\n"
+                                             "var map = instance_0.getMap(\"serialization_with_server_map\");\n"
                                              "var res = map.get(\"key\");\n"
                                              "if (res.getClass().isArray()) {\n"
                                                 "return Java.from(res);\n"
@@ -1691,30 +1701,31 @@ namespace hazelcast {
                                          "result = \"\"+foo();";
 
                     Response response;
-                    remoteController->executeOnController(response, g_srvFactory->get_cluster_id(), script, Lang::JAVASCRIPT);
+                    HazelcastServerFactory *factory =
+                            boost::endian::order::little == GetParam() ? little_endian_server_factory_ : g_srvFactory;
+                    remoteController->executeOnController(response, factory->get_cluster_id(), script, Lang::JAVASCRIPT);
                     return response;
                 }
 
-                static bool set_on_server(const std::string &object) {
-                    auto script = (boost::format("var map = instance_0.getMap(\"SerializationWithServer_Map\");\n"
+                bool set_on_server(const std::string &object) {
+                    auto script = (boost::format("var map = instance_0.getMap(\"serialization_with_server_map\");\n"
                                    "map.set(\"key\", %1%);\n"
                     ) %object).str();
 
                     Response response;
-                    remoteController->executeOnController(response, g_srvFactory->get_cluster_id(), script, Lang::JAVASCRIPT);
+                    remoteController->executeOnController(response, server_->cluster_id(), script, Lang::JAVASCRIPT);
                     return response.success;
                 }
 
-                static HazelcastServer *server_;
-                static hazelcast_client *client_;
-                static std::shared_ptr<imap> map_;
+                static HazelcastServerFactory *little_endian_server_factory_;
+                std::unique_ptr<HazelcastServer> server_;
+                std::unique_ptr<hazelcast_client> client_;
+                std::shared_ptr<imap> map_;
             };
 
-            HazelcastServer *SerializationWithServer::server_ = nullptr;
-            hazelcast_client *SerializationWithServer::client_ = nullptr;
-            std::shared_ptr<imap> SerializationWithServer::map_;
+            HazelcastServerFactory *serialization_with_server::little_endian_server_factory_ = nullptr;
 
-            TEST_F(SerializationWithServer, test_bool) {
+            TEST_P(serialization_with_server, test_bool) {
                 bool value = true;
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, bool>("key").get()));
@@ -1723,7 +1734,7 @@ namespace hazelcast {
                 ASSERT_EQ("true", response.result);
             }
 
-            TEST_F(SerializationWithServer, test_byte) {
+            TEST_P(serialization_with_server, test_byte) {
                 byte value = INT8_MAX;
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, byte>("key").get()));
@@ -1732,7 +1743,7 @@ namespace hazelcast {
                 ASSERT_EQ("127", response.result);
             }
 
-            TEST_F(SerializationWithServer, test_int16_t) {
+            TEST_P(serialization_with_server, test_int16_t) {
                 int16_t value = INT16_MIN;
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, int16_t>("key").get()));
@@ -1741,7 +1752,7 @@ namespace hazelcast {
                 ASSERT_EQ(std::to_string(value), response.result);
             }
 
-            TEST_F(SerializationWithServer, test_int32_t) {
+            TEST_P(serialization_with_server, test_int32_t) {
                 int32_t value = INT32_MAX;
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, int32_t>("key").get()));
@@ -1750,7 +1761,7 @@ namespace hazelcast {
                 ASSERT_EQ(std::to_string(value), response.result);
             }
 
-            TEST_F(SerializationWithServer, test_int64_t) {
+            TEST_P(serialization_with_server, test_int64_t) {
                 int64_t value = INT64_MIN;
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, int64_t>("key").get()));
@@ -1759,7 +1770,7 @@ namespace hazelcast {
                 ASSERT_EQ(std::to_string(value), response.result);
             }
 
-            TEST_F(SerializationWithServer, test_double) {
+            TEST_P(serialization_with_server, test_double) {
                 double value = 123.6;
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, double>("key").get()));
@@ -1768,7 +1779,7 @@ namespace hazelcast {
                 ASSERT_EQ("123.6", response.result);
             }
 
-            TEST_F(SerializationWithServer, test_string) {
+            TEST_P(serialization_with_server, test_string) {
                 std::string value = "string_value";
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::string>("key").get()));
@@ -1777,7 +1788,7 @@ namespace hazelcast {
                 ASSERT_EQ(value, response.result);
             }
 
-            TEST_F(SerializationWithServer, test_utf_string) {
+            TEST_P(serialization_with_server, test_utf_string) {
                 std::string value = u8"Iñtërnâtiônàlizætiøn";
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::string>("key").get()));
@@ -1786,7 +1797,7 @@ namespace hazelcast {
                 ASSERT_EQ(value, response.result);
             }
 
-            TEST_F(SerializationWithServer, test_emoji) {
+            TEST_P(serialization_with_server, test_emoji) {
                 std::string value = u8"1⚐中\U0001f4a6 \U0001F62D \U0001F45F";
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::string>("key").get()));
@@ -1795,7 +1806,7 @@ namespace hazelcast {
                 ASSERT_EQ(value, response.result);
             }
 
-            TEST_F(SerializationWithServer, test_utf_chars) {
+            TEST_P(serialization_with_server, test_utf_chars) {
                 std::string value = u8"\u0040 test \u01DF \u06A0 \u12E0 \u1D30";
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::string>("key").get()));
@@ -1804,7 +1815,7 @@ namespace hazelcast {
                 ASSERT_EQ(value, response.result);
             }
 
-            TEST_F(SerializationWithServer, test_uuid) {
+            TEST_P(serialization_with_server, test_uuid) {
                 auto value = spi::ClientContext(*client_).random_uuid();
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, boost::uuids::uuid>("key").get()));
@@ -1813,7 +1824,7 @@ namespace hazelcast {
                 ASSERT_EQ(boost::uuids::to_string(value), response.result);
             }
 
-            TEST_F(SerializationWithServer, test_json_value) {
+            TEST_P(serialization_with_server, test_json_value) {
                 hazelcast_json_value value("{\"a\": 3}");
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, hazelcast_json_value>("key").get()));
@@ -1822,7 +1833,7 @@ namespace hazelcast {
                 ASSERT_EQ(value.to_string(), response.result);
             }
 
-            TEST_F(SerializationWithServer, test_list) {
+            TEST_P(serialization_with_server, test_list) {
                 std::vector<std::string> value({"1", "2", "3"});
                 map_->set("key", value).get();
                 ASSERT_EQ(value, (*map_->get<std::string, std::vector<std::string>>("key").get()));
@@ -1831,108 +1842,110 @@ namespace hazelcast {
                 ASSERT_EQ("1,2,3", response.result);
             }
 
-            TEST_F(SerializationWithServer, test_bool_from_server) {
+            TEST_P(serialization_with_server, test_bool_from_server) {
                 ASSERT_TRUE(set_on_server("true"));
                 ASSERT_TRUE((*map_->get<std::string, bool>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_byte_from_server) {
+            TEST_P(serialization_with_server, test_byte_from_server) {
                 ASSERT_TRUE(set_on_server("new java.lang.Byte(-23)"));
                 ASSERT_EQ((byte)-23, (*map_->get<std::string, byte>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_char_from_server) {
+            TEST_P(serialization_with_server, test_char_from_server) {
                 ASSERT_TRUE(set_on_server("new java.lang.Character('x')"));
                 ASSERT_EQ('x', (*map_->get<std::string, char>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_int16_t_from_server) {
+            TEST_P(serialization_with_server, test_int16_t_from_server) {
                 ASSERT_TRUE(set_on_server("new java.lang.Short(23)"));
                 ASSERT_EQ(23, (*map_->get<std::string, int16_t>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_int32_t_from_server) {
+            TEST_P(serialization_with_server, test_int32_t_from_server) {
                 ASSERT_TRUE(set_on_server("new java.lang.Integer(1 << 30)"));
                 ASSERT_EQ(1 << 30, (*map_->get<std::string, int32_t>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_int64_t_from_server) {
+            TEST_P(serialization_with_server, test_int64_t_from_server) {
                 ASSERT_TRUE(set_on_server(std::string("new java.lang.Long(") + std::to_string(1LL << 63) + ")"));
                 ASSERT_EQ(1LL << 63, (*map_->get<std::string, int64_t>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_float_from_server) {
+            TEST_P(serialization_with_server, test_float_from_server) {
                 ASSERT_TRUE(set_on_server("new java.lang.Float(32.0)"));
                 ASSERT_EQ(32.0, (*map_->get<std::string, float>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_double_from_server) {
+            TEST_P(serialization_with_server, test_double_from_server) {
                 ASSERT_TRUE(set_on_server("new java.lang.Double(-12332.0)"));
                 ASSERT_EQ(-12332.0, (*map_->get<std::string, double>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_string_from_server) {
+            TEST_P(serialization_with_server, test_string_from_server) {
                 ASSERT_TRUE(set_on_server(u8"\"1⚐中💦2😭‍🙆😔5\""));
                 ASSERT_EQ(u8"1⚐中💦2😭‍🙆😔5", (*map_->get<std::string, std::string>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_uuid_from_server) {
+            TEST_P(serialization_with_server, test_uuid_from_server) {
                 ASSERT_TRUE(set_on_server("new java.util.UUID(0, 1)"));
                 boost::uuids::uuid id = boost::uuids::nil_uuid();
                 id.data[15] = 1;
                 ASSERT_EQ(id, (*map_->get<std::string, boost::uuids::uuid>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_json_from_server) {
+            TEST_P(serialization_with_server, test_json_from_server) {
                 ASSERT_TRUE(set_on_server("new com.hazelcast.core.HazelcastJsonValue(\"{\\\"a\\\": 3}\")"));
                 ASSERT_EQ(hazelcast_json_value("{\"a\": 3}"), (*map_->get<std::string, hazelcast_json_value>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_bool_array_from_server) {
+            TEST_P(serialization_with_server, test_bool_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([true, false], \"boolean[]\")"));
                 ASSERT_EQ(std::vector<bool>({true, false}), (*map_->get<std::string, std::vector<bool>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_byte_array_from_server) {
+            TEST_P(serialization_with_server, test_byte_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([3, 123], \"byte[]\")"));
                 ASSERT_EQ(std::vector<byte>({3, 123}), (*map_->get<std::string, std::vector<byte>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_char_array_from_server) {
+            TEST_P(serialization_with_server, test_char_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to(['x', 'y'], \"char[]\")"));
                 ASSERT_EQ(std::vector<char>({'x', 'y'}), (*map_->get<std::string, std::vector<char>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_int16_array_from_server) {
+            TEST_P(serialization_with_server, test_int16_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([1323, -1232], \"short[]\")"));
                 ASSERT_EQ(std::vector<int16_t>({1323, -1232}), (*map_->get<std::string, std::vector<int16_t>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_int32_array_from_server) {
+            TEST_P(serialization_with_server, test_int32_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([2147483647, -2147483648], \"int[]\")"));
                 ASSERT_EQ(std::vector<int32_t>({INT32_MAX, INT32_MIN}), (*map_->get<std::string, std::vector<int32_t>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_int64_array_from_server) {
+            TEST_P(serialization_with_server, test_int64_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([1152921504606846976, -1152921504606846976], \"long[]\")"));
                 ASSERT_EQ(std::vector<int64_t>({1152921504606846976LL, -1152921504606846976LL}), (*map_->get<std::string, std::vector<int64_t>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_float_array_from_server) {
+            TEST_P(serialization_with_server, test_float_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([3123.0, -123.0], \"float[]\")"));
                 ASSERT_EQ(std::vector<float>({3123.0, -123.0}), (*map_->get<std::string, std::vector<float>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_double_array_from_server) {
+            TEST_P(serialization_with_server, test_double_array_from_server) {
                 ASSERT_TRUE(set_on_server("Java.to([3123.0, -123.0], \"double[]\")"));
                 ASSERT_EQ(std::vector<double>({3123.0, -123.0}), (*map_->get<std::string, std::vector<double>>("key").get()));
             }
 
-            TEST_F(SerializationWithServer, test_string_array_from_server) {
+            TEST_P(serialization_with_server, test_string_array_from_server) {
                 ASSERT_TRUE(set_on_server(u8"Java.to([\"hey\", \"1⚐中💦2😭‍🙆😔5\"], \"java.lang.String[]\")"));
                 ASSERT_EQ(std::vector<std::string>({u8"hey", u8"1⚐中💦2😭‍🙆😔5"}), (*map_->get<std::string, std::vector<std::string>>("key").get()));
             }
 
+            INSTANTIATE_TEST_SUITE_P(serialization_with_server_endian, serialization_with_server,
+                                     ::testing::Values(boost::endian::order::little, boost::endian::order::big));
         }
     }
 }

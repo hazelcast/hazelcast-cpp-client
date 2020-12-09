@@ -41,11 +41,11 @@ namespace hazelcast {
                 template<typename Container>
                 class data_input {
                 public:
-                    static constexpr const int MAX_UTF_CHAR_SIZE = 4;
+                    explicit data_input(boost::endian::order byte_order, const Container &buf) : byte_order_(
+                            byte_order), buffer_(buf), pos_(0) {}
 
-                    explicit data_input(const Container &buf) : buffer_(buf), pos_(0) {}
-
-                    data_input(const Container &buf, int offset) : buffer_(buf), pos_(offset) {}
+                    data_input(boost::endian::order byte_order, const Container &buf, int offset) : byte_order_(
+                            byte_order), buffer_(buf), pos_(offset) {}
 
                     inline void read_fully(std::vector<byte> &bytes) {
                         size_t length = bytes.size();
@@ -70,19 +70,14 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<std::is_same<char, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        check_available(util::Bits::CHAR_SIZE_IN_BYTES);
-                        // skip the first byte
-                        byte b = buffer_[pos_ + 1];
-                        pos_ += util::Bits::CHAR_SIZE_IN_BYTES;
-                        return b;
+                        return read<char16_t>();
                     }
 
                     template<typename T>
                     typename std::enable_if<std::is_same<char16_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        check_available(util::Bits::CHAR_SIZE_IN_BYTES);
-                        pos_ += util::Bits::CHAR_SIZE_IN_BYTES;
-                        return static_cast<char16_t>(buffer_[pos_] << 8 | buffer_[pos_+1]);
+                        auto int_value = read<int16_t>();
+                        return static_cast<char16_t>(int_value);
                     }
 
                     template<typename T>
@@ -95,7 +90,12 @@ namespace hazelcast {
                     typename std::enable_if<std::is_same<int16_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
                         check_available(util::Bits::SHORT_SIZE_IN_BYTES);
-                        auto result = boost::endian::load_big_s16(&buffer_[pos_]);
+                        int16_t result;
+                        if (byte_order_ == boost::endian::order::big) {
+                            result = boost::endian::load_big_s16(&buffer_[pos_]);
+                        } else {
+                            result = boost::endian::load_little_s16(&buffer_[pos_]);
+                        }
                         pos_ += util::Bits::SHORT_SIZE_IN_BYTES;
                         return result;
                     }
@@ -103,8 +103,17 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<std::is_same<int32_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
+                        return read(byte_order_);
+                    }
+
+                    int32_t read(boost::endian::order byte_order) {
                         check_available(util::Bits::INT_SIZE_IN_BYTES);
-                        auto result = boost::endian::load_big_s32(&buffer_[pos_]);
+                        int32_t result;
+                        if (byte_order == boost::endian::order::big) {
+                            result = boost::endian::load_big_s32(&buffer_[pos_]);
+                        } else {
+                            result = boost::endian::load_little_s32(&buffer_[pos_]);
+                        }
                         pos_ += util::Bits::INT_SIZE_IN_BYTES;
                         return result;
                     }
@@ -113,7 +122,12 @@ namespace hazelcast {
                     typename std::enable_if<std::is_same<int64_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
                         check_available(util::Bits::LONG_SIZE_IN_BYTES);
-                        auto result = boost::endian::load_big_s64(&buffer_[pos_]);
+                        int64_t result;
+                        if (byte_order_ == boost::endian::order::big) {
+                            result = boost::endian::load_big_s64(&buffer_[pos_]);
+                        } else {
+                            result = boost::endian::load_little_s64(&buffer_[pos_]);
+                        }
                         pos_ += util::Bits::LONG_SIZE_IN_BYTES;
                         return result;
                     }
@@ -175,6 +189,12 @@ namespace hazelcast {
                         boost::uuids::uuid u;
                         std::memcpy(&u.data, &buffer_[pos_], util::Bits::UUID_SIZE_IN_BYTES);
                         pos_ += util::Bits::UUID_SIZE_IN_BYTES;
+                        if (byte_order_ == boost::endian::order::little) {
+                            boost::endian::endian_reverse_inplace<int64_t>(*reinterpret_cast<int64_t *>(u.data));
+                            boost::endian::endian_reverse_inplace<int64_t>(
+                                    *reinterpret_cast<int64_t *>(&u.data[util::Bits::LONG_SIZE_IN_BYTES]));
+                        }
+
                         return u;
                     }
 
@@ -226,6 +246,7 @@ namespace hazelcast {
                     }
 
                 private:
+                    boost::endian::order byte_order_;
                     const Container &buffer_;
                     int pos_;
 

@@ -46,6 +46,8 @@ namespace hazelcast {
 
                 const remote::Member &get_member() const;
 
+                const std::string &cluster_id() const;
+
             private:
                 HazelcastServerFactory & factory_;
                 std::atomic_bool is_started_;
