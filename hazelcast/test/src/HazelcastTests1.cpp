@@ -187,14 +187,16 @@ namespace hazelcast {
                 }
 
                 void produce_some_stats(std::shared_ptr<imap> &map) {
-                    map->put(5, 10).get();
                     auto nearCacheStatsImpl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
                             map->get_local_map_stats().get_near_cache_stats());
 
                     auto invalidationRequests = nearCacheStatsImpl->get_invalidation_requests();
-                    // When for invalidation to come from server for the put operation
+
+                    map->put(5, 10).get();
+
+                    // 2 invalidation requests: One locally during map->put and one from server
                     ASSERT_EQ_EVENTUALLY(
-                            invalidationRequests + 1, nearCacheStatsImpl->get_invalidation_requests());
+                            invalidationRequests + 2, nearCacheStatsImpl->get_invalidation_requests());
 
                     ASSERT_EQ(10, (*map->get<int, int>(5).get()));
                     ASSERT_EQ(10, (*map->get<int, int>(5).get()));
