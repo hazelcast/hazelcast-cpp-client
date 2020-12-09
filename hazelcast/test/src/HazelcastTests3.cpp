@@ -95,7 +95,6 @@
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/execution_callback.h"

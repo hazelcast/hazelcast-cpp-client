@@ -68,9 +68,19 @@ namespace hazelcast {
             return global_serializer_;
         }
 
-        void serialization_config::set_global_serializer(
+        serialization_config &serialization_config::set_global_serializer(
                 const std::shared_ptr<serialization::global_serializer> &global_serializer) {
             global_serializer_ = global_serializer;
+            return *this;
+        }
+
+        serialization_config &serialization_config::set_byte_order(boost::endian::order byte_order) {
+            byte_order_ = byte_order;
+            return *this;
+        }
+
+        boost::endian::order serialization_config::get_byte_order() const {
+            return byte_order_;
         }
 
         namespace config {

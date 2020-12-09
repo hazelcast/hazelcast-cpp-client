@@ -264,15 +264,17 @@ namespace hazelcast {
                 return os;
             }
 
-            object_data_input::object_data_input(const std::vector<byte> &buffer, int offset,
-                                                 pimpl::PortableSerializer &portable_ser, pimpl::DataSerializer &data_ser,
+            object_data_input::object_data_input(boost::endian::order byte_order, const std::vector<byte> &buffer,
+                                                 int offset, pimpl::PortableSerializer &portable_ser,
+                                                 pimpl::DataSerializer &data_ser,
                                                  std::shared_ptr<serialization::global_serializer> global_serializer)
-                    : pimpl::data_input<std::vector<byte>>(buffer, offset), portable_serializer_(portable_ser), data_serializer_(data_ser),
-                      global_serializer_(std::move(global_serializer)) {}
+                    : pimpl::data_input<std::vector<byte>>(byte_order, buffer, offset), portable_serializer_(portable_ser), data_serializer_(data_ser), global_serializer_(std::move(global_serializer)) {}
 
-            object_data_output::object_data_output(bool dont_write, pimpl::PortableSerializer *portable_ser,
+            object_data_output::object_data_output(boost::endian::order byte_order, bool dont_write,
+                                                   pimpl::PortableSerializer *portable_ser,
                                                    std::shared_ptr<serialization::global_serializer> global_serializer)
-                    : data_output(dont_write), portable_serializer_(portable_ser), global_serializer_(std::move(global_serializer)) {}
+                    : data_output(byte_order, dont_write), portable_serializer_(portable_ser),
+                      global_serializer_(std::move(global_serializer)) {}
 
             portable_reader::portable_reader(pimpl::PortableSerializer &portable_ser, object_data_input &input,
                                              const std::shared_ptr<ClassDefinition> &cd, bool is_default_reader)
@@ -408,7 +410,8 @@ namespace hazelcast {
             namespace pimpl {
                 ClassDefinitionWriter::ClassDefinitionWriter(PortableContext &portable_context,
                                                              ClassDefinitionBuilder &builder)
-                        : builder_(builder), context_(portable_context), empty_data_output_(true) {}
+                        : builder_(builder), context_(portable_context),
+                          empty_data_output_(portable_context.get_serialization_config().get_byte_order(), true) {}
 
                 std::shared_ptr<ClassDefinition> ClassDefinitionWriter::register_and_get() {
                     std::shared_ptr<ClassDefinition> cd = builder_.build();
@@ -421,7 +424,8 @@ namespace hazelcast {
 
                 void ClassDefinitionWriter::end() {}
 
-                data_output::data_output(bool dont_write) : is_no_write_(dont_write) {
+                data_output::data_output(boost::endian::order byte_order, bool dont_write) : byte_order_(byte_order),
+                                                                                             is_no_write_(dont_write) {
                     if (is_no_write_) {
                         output_stream_.reserve(0);
                     } else {
@@ -437,44 +441,50 @@ namespace hazelcast {
 
                 template<>
                 void data_output::write(char i) {
-                    if (is_no_write_) { return; }
                     // C++ `char` is one byte only, `char16_t` is two bytes
-                    write<byte>(0);
-                    write<byte>(i);
+                    write<int16_t>(i);
                 }
 
                 template<>
                 void data_output::write(char16_t i) {
-                    if (is_no_write_) { return; }
-                    write<byte>(static_cast<byte>(i >> 8));
-                    write<byte>(i);
+                    write<int16_t>(i);
                 }
 
                 template<>
                 void data_output::write(int16_t value) {
                     if (is_no_write_) { return; }
-                    int16_t result;
-                    byte *target = (byte *) &result;
-                    util::Bits::native_to_big_endian2(&value, target);
-                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::SHORT_SIZE_IN_BYTES);
+                    if (byte_order_ == boost::endian::order::big) {
+                        boost::endian::native_to_big_inplace(value);
+                    } else {
+                        boost::endian::native_to_little_inplace(value);
+                    }
+                    output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::SHORT_SIZE_IN_BYTES);
+                }
+
+                void data_output::write(int32_t value, boost::endian::order byte_order) {
+                    if (is_no_write_) { return; }
+                    if (byte_order == boost::endian::order::big) {
+                        boost::endian::native_to_big_inplace(value);
+                    } else {
+                        boost::endian::native_to_little_inplace(value);
+                    }
+                    output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::INT_SIZE_IN_BYTES);
                 }
 
                 template<>
-                void data_output::write(int32_t v) {
-                    if (is_no_write_) { return; }
-                    int32_t result;
-                    byte *target = (byte *) &result;
-                    util::Bits::native_to_big_endian4(&v, target);
-                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::INT_SIZE_IN_BYTES);
+                void data_output::write(int32_t value) {
+                    write(value, byte_order_);
                 }
 
                 template<>
-                void data_output::write(int64_t l) {
+                void data_output::write(int64_t value) {
                     if (is_no_write_) { return; }
-                    int64_t result;
-                    byte *target = (byte *) &result;
-                    util::Bits::native_to_big_endian8(&l, target);
-                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::LONG_SIZE_IN_BYTES);
+                    if (byte_order_ == boost::endian::order::big) {
+                        boost::endian::native_to_big_inplace(value);
+                    } else {
+                        boost::endian::native_to_little_inplace(value);
+                    }
+                    output_stream_.insert(output_stream_.end(), (byte *) &value, (byte *) &value + util::Bits::LONG_SIZE_IN_BYTES);
                 }
 
                 template<>
@@ -502,6 +512,11 @@ namespace hazelcast {
                 template<>
                 void data_output::write(boost::uuids::uuid v) {
                     if (is_no_write_) { return; }
+                    if (byte_order_ == boost::endian::order::little) {
+                        boost::endian::endian_reverse_inplace<int64_t>(*reinterpret_cast<int64_t *>(v.data));
+                        boost::endian::endian_reverse_inplace<int64_t>(
+                                *reinterpret_cast<int64_t *>(&v.data[util::Bits::LONG_SIZE_IN_BYTES]));
+                    }
                     output_stream_.insert(output_stream_.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
                 }
 
@@ -514,17 +529,9 @@ namespace hazelcast {
                 template<>
                 void data_output::write(const std::string &str) {
                     if (is_no_write_) { return; }
-                    int32_t len = util::UTFUtil::is_valid_ut_f8(str);
-                    if (len < 0) {
-                        BOOST_THROW_EXCEPTION((exception::exception_builder<exception::utf_data_format>(
-                                "DataOutput::write")
-                                << "String \"" << str << "\" is not UTF-8 formatted !!!").build());
-                    }
 
-                    write<int32_t>(len);
-                    if (len > 0) {
-                        output_stream_.insert(output_stream_.end(), str.begin(), str.end());
-                    }
+                    write<int32_t>(str.size());
+                    output_stream_.insert(output_stream_.end(), str.begin(), str.end());
                 }
 
                 template<>
@@ -758,7 +765,7 @@ namespace hazelcast {
                     if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id ||
                         serialization_constants::CONSTANT_TYPE_PORTABLE == type.type_id) {
                         // 8 (data Header) = Hash(4-bytes) + data TypeId(4 bytes)
-                        data_input<std::vector<byte>> dataInput(data->to_byte_array(), 8);
+                        data_input<std::vector<byte>> dataInput(serialization_config_.get_byte_order(), data->to_byte_array(), 8);
 
                         if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id) {
                             bool identified = dataInput.read<bool>();
@@ -788,7 +795,8 @@ namespace hazelcast {
                 }
 
                 object_data_output SerializationService::new_output_stream() {
-                    return object_data_output(false, &portable_serializer_, serialization_config_.get_global_serializer());
+                    return object_data_output(serialization_config_.get_byte_order(), false, &portable_serializer_,
+                                              serialization_config_.get_global_serializer());
                 }
 
                 template<>
@@ -847,7 +855,7 @@ namespace hazelcast {
                     if (total_size() == 0) {
                         return static_cast<int32_t>(serialization_constants::CONSTANT_TYPE_NULL);
                     }
-                    return util::Bits::read_int_b(data_, data::TYPE_OFFSET);
+                    return boost::endian::load_big_s32(&data_[data::TYPE_OFFSET]);
                 }
 
                 int data::hash() const {
@@ -861,7 +869,7 @@ namespace hazelcast {
                     }
 
                     if (has_partition_hash()) {
-                        return util::Bits::read_int_b(data_, data::PARTITION_HASH_OFFSET);
+                        return boost::endian::load_big_s32(&data_[data::PARTITION_HASH_OFFSET]);
                     }
 
                     return util::murmur_hash3_x86_32((void *) &((data_)[data::DATA_OFFSET]), (int) size);

@@ -652,8 +652,8 @@ namespace hazelcast {
                 /**
                 * Internal API. Constructor
                 */
-                object_data_input(const std::vector<byte> &buffer, int offset, pimpl::PortableSerializer &portable_ser,
-                                  pimpl::DataSerializer &data_ser,
+                object_data_input(boost::endian::order byte_order, const std::vector<byte> &buffer, int offset,
+                                  pimpl::PortableSerializer &portable_ser, pimpl::DataSerializer &data_ser,
                                   std::shared_ptr<serialization::global_serializer> global_serializer);
 
                 /**
@@ -711,7 +711,8 @@ namespace hazelcast {
                 /**
                 * Internal API Constructor
                 */
-                explicit object_data_output(bool dont_write = false, pimpl::PortableSerializer *portable_ser = nullptr,
+                explicit object_data_output(boost::endian::order byte_order, bool dont_write = false,
+                                            pimpl::PortableSerializer *portable_ser = nullptr,
                                             std::shared_ptr<serialization::global_serializer> global_serializer = nullptr);
 
                 template<typename T>
@@ -1308,7 +1309,7 @@ namespace hazelcast {
 
                     template<typename T>
                     inline data to_data(const T *object) {
-                        object_data_output output(false, &portable_serializer_, serialization_config_.get_global_serializer());
+                        object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
 
                         write_hash<T>(object, output);
 
@@ -1319,7 +1320,7 @@ namespace hazelcast {
 
                     template<typename T>
                     inline data to_data(const T &object) {
-                        object_data_output output(false, &portable_serializer_, serialization_config_.get_global_serializer());
+                        object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
 
                         write_hash<T>(&object, output);
 
@@ -1357,7 +1358,8 @@ namespace hazelcast {
 
                         // Constant 8 is Data::DATA_OFFSET. Windows DLL export does not
                         // let usage of static member.
-                        object_data_input objectDataInput(data.to_byte_array(), 8, portable_serializer_, data_serializer_,
+                        object_data_input objectDataInput(serialization_config_.get_byte_order(), data.to_byte_array(),
+                                                          8, portable_serializer_, data_serializer_,
                                                           serialization_config_.get_global_serializer());
                         return objectDataInput.read_object<T>(typeId);
                     }
@@ -1421,7 +1423,7 @@ namespace hazelcast {
 
                     template<typename T>
                     void write_hash(const void *obj, data_output &out) {
-                        out.write<int32_t>(0);
+                        out.write(0, boost::endian::order::big);
                     }
                 };
 
@@ -1650,7 +1652,8 @@ namespace hazelcast {
             void object_data_output::write_object(const T *object) {
                 if (is_no_write_) { return; }
                 if (!object) {
-                    write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL));
+                    write(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL),
+                          boost::endian::order::big);
                     return;
                 }
 
@@ -1662,7 +1665,8 @@ namespace hazelcast {
             object_data_output::write_object(const boost::optional<T> &object) {
                 if (is_no_write_) { return; }
                 if (!object) {
-                    write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL));
+                    write(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL),
+                          boost::endian::order::big);
                     return;
                 }
 
@@ -1673,7 +1677,8 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<identified_data_serializer, hz_serializer<T>>::value, void>::type
             inline object_data_output::write_object(const T &object) {
                 if (is_no_write_) { return; }
-                write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_DATA));
+                write(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_DATA),
+                      boost::endian::order::big);
                 pimpl::DataSerializer::write<T>(object, *this);
             }
 
@@ -1681,7 +1686,8 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<portable_serializer, hz_serializer<T>>::value, void>::type
             inline object_data_output::write_object(const T &object) {
                 if (is_no_write_) { return; }
-                write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_PORTABLE));
+                write(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_PORTABLE),
+                      boost::endian::order::big);
                 portable_serializer_->write<T>(object, *this);
             }
 
@@ -1689,7 +1695,7 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<builtin_serializer, hz_serializer<T>>::value, void>::type
             inline object_data_output::write_object(const T &object) {
                 if (is_no_write_) { return; }
-                write<int32_t>(static_cast<int32_t>((hz_serializer<T>::get_type_id())));
+                write(static_cast<int32_t>((hz_serializer<T>::get_type_id())), boost::endian::order::big);
                 write < T > (object);
             }
 
@@ -1704,7 +1710,7 @@ namespace hazelcast {
             inline object_data_output::write_object(const T &object) {
                 if (is_no_write_) { return; }
                 static_assert(hz_serializer<T>::get_type_id() > 0, "Custom serializer type id can not be negative!");
-                write<int32_t>(hz_serializer<T>::get_type_id());
+                write(hz_serializer<T>::get_type_id(), boost::endian::order::big);
                 hz_serializer<T>::write(object, *this);
             }
 
@@ -1727,7 +1733,7 @@ namespace hazelcast {
                                                                        (boost::format("No serializer found for type(%1%).") %typeid(T).name()).str());
                 }
                 if (is_no_write_) { return; }
-                write<int32_t>(static_cast<int32_t>(global_serializer::get_type_id()));
+                write(static_cast<int32_t>(global_serializer::get_type_id()), boost::endian::order::big);
                 global_serializer_->write(boost::any(std::move(object)), *this);
             }
 
@@ -1735,7 +1741,7 @@ namespace hazelcast {
             typename std::enable_if<!(std::is_array<T>::value &&
                                       std::is_same<typename std::remove_all_extents<T>::type, char>::value), boost::optional<T>>::type
             inline object_data_input::read_object() {
-                int32_t typeId = read<int32_t>();
+                int32_t typeId = read(boost::endian::order::big);
                 if (static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL) == typeId) {
                     return boost::none;
                 }

@@ -16,6 +16,7 @@
 #pragma once
 
 #include <memory>
+#include <boost/endian/detail/order.hpp>
 
 #include "hazelcast/util/hazelcast_dll.h"
 
@@ -52,17 +53,36 @@ namespace hazelcast {
 
             /**
              *
-             * @param v
-             * @return itself SerializationConfig
+             * @param v The default portable version to be used.
+             * @return itself serialization_config
              */
             serialization_config& set_portable_version(int v);
 
             std::shared_ptr<serialization::global_serializer> get_global_serializer() const;
 
-            void set_global_serializer(const std::shared_ptr<serialization::global_serializer> &global_serializer);
+            /**
+             * @param global_serializer the serializer to be used when no other serialization can be found for an object
+             * @return itself serialization_config
+             */
+            serialization_config &set_global_serializer(const std::shared_ptr<serialization::global_serializer> &global_serializer);
+
+            /**
+             *
+             * @param byte_order that the serialization will use
+             * @return itself serialization_config
+             */
+            serialization_config &set_byte_order(boost::endian::order byte_order);
+
+            /**
+             *
+             * @return the configured byte endian order
+             */
+            boost::endian::order get_byte_order() const;
+
         private:
             int version_;
             std::shared_ptr<serialization::global_serializer> global_serializer_;
+            boost::endian::order byte_order_ = boost::endian::order::big;
         };
     }
 }

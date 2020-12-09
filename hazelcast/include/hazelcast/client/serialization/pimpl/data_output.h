@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include <boost/endian/detail/order.hpp>
 
 #include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/ByteBuffer.h"
@@ -39,7 +40,7 @@ namespace hazelcast {
                 public:
                     static constexpr const size_t DEFAULT_SIZE = 4 * 1024;
 
-                    data_output(bool dont_write = false);
+                    data_output(boost::endian::order byte_order, bool dont_write = false);
 
                     /**
                      *
@@ -128,7 +129,10 @@ namespace hazelcast {
                                             std::is_same<std::vector<std::string>, T>::value, void>::type
                     inline write(const T *value);
 
+                    void write(int32_t value, boost::endian::order byte_order);
+
                 protected:
+                    boost::endian::order byte_order_;
                     bool is_no_write_;
                     std::vector<byte> output_stream_;
 
@@ -154,7 +158,12 @@ namespace hazelcast {
                     inline void write_at(int index, int32_t value) {
                         if (is_no_write_) { return; }
                         check_available(index, util::Bits::INT_SIZE_IN_BYTES);
-                        util::Bits::native_to_big_endian4(&value, &output_stream_[index]);
+                        if (byte_order_ == boost::endian::order::big) {
+                            boost::endian::native_to_big_inplace(value);
+                        } else {
+                            boost::endian::native_to_little_inplace(value);
+                        }
+                        std::memcpy(&output_stream_[index], &value, util::Bits::INT_SIZE_IN_BYTES);
                     }
                 };
 
