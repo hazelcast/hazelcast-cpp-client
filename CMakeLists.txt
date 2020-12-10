@@ -102,6 +102,7 @@ add_library(
 
 if (MSVC)
     target_compile_options(HazelcastClient PRIVATE /bigobj)
+    target_compile_definitions(HazelcastClient PUBLIC NOMINMAX) # TODO remove this and use (min)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")

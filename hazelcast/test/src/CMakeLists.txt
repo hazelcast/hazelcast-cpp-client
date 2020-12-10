@@ -67,3 +67,6 @@ target_include_directories(
     PRIVATE ${CMAKE_SOURCE_DIR}/hazelcast/test/src
 )
 
+if (MSVC)
+    target_compile_options(clientTest PRIVATE /bigobj)
+endif()
