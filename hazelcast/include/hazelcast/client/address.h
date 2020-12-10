@@ -15,8 +15,10 @@
  */
 #pragma once
 
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/serialization/serialization.h"
 
+#include <string>
 #include <sstream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

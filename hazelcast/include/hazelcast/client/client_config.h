@@ -213,7 +213,7 @@ namespace hazelcast {
             /**
             * Used to distribute the operations to multiple Endpoints.
             *
-            * \return loadBalancer
+            * \return load_balancer
             */
             load_balancer &get_load_balancer();
 
@@ -221,7 +221,7 @@ namespace hazelcast {
             * Used to distribute the operations to multiple connections.
             * If not set, round robin based load balancer is used
             *
-            * \param loadBalancer
+            * \param load_balancer
             *
             * \return itself ClientConfig
             */
