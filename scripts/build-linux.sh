@@ -37,7 +37,7 @@ echo BUILD_DIR=${BUILD_DIR}
 echo EXECUTABLE_NAME=${EXECUTABLE_NAME}
 
 if [ "$4" == "WITH_COVERAGE" ]; then
-echo "Code coverage is ON. Cmake flag: ${HZ_COVERAGE_STRING}"
+  echo "Code coverage is ON. Additional compiler flags: ${COVERAGE_FLAGS}"
 fi
 
 rm -rf ${BUILD_DIR}
@@ -46,8 +46,8 @@ mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
-cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} \
-         ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=${HZ_COMPILE_WITH_TESTS} -DHZ_BUILD_EXAMPLES=ON \
+cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} \
+         -DHZ_BUILD_TESTS=${HZ_COMPILE_WITH_TESTS} -DHZ_BUILD_EXAMPLES=ON \
          -DHZ_COMPILE_WITH_SSL=${HZ_COMPILE_WITH_SSL} -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF \
          -DCMAKE_CXX_FLAGS="-m${HZ_BIT_VERSION} ${COVERAGE_FLAGS}"
 
