@@ -1607,7 +1607,7 @@ namespace hazelcast {
         namespace test {
             class VersionTest: public ClientTestSupport {};
             TEST_F(VersionTest, test_client_version) {
-                ASSERT_EQ(HAZELCAST_VERSION, version());
+                ASSERT_EQ("4.0.0", version());
             }
 
             class ClientMessageTest: public ClientTestSupport {

@@ -15,9 +15,6 @@
 #
 # FLAGS
 #  -DHZ_LIB_TYPE=[STATIC | SHARED]
-#  -DHZ_CODE_COVERAGE=ON
-#  -DHZ_VALGRIND=ON
-#  -DCMAKE_BUILD_TYPE=Debug
 #  -DHZ_BUILD_TESTS=ON
 #  -DHZ_BUILD_EXAMPLES=ON
 #  -DHZ_COMPILE_WITH_SSL=ON
@@ -25,7 +22,7 @@
 
 cmake_minimum_required(VERSION 3.12.4)
 
-project(HazelcastClient # TODO maybe change name ?
+project(HazelcastCppClient
         VERSION 4.0.0
         DESCRIPTION "Hazelcast C++ Client"
         HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
@@ -81,11 +78,8 @@ get_commit_date_and_id(HAZELCAST_GIT_COMMIT_DATE HAZELCAST_GIT_COMMIT_ID)
 message(STATUS "HAZELCAST_GIT_COMMIT_DATE = ${HAZELCAST_GIT_COMMIT_DATE}")
 message(STATUS "HAZELCAST_GIT_COMMIT_ID = ${HAZELCAST_GIT_COMMIT_ID}")
 
-FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
-FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
-FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
-FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/src/*h")
-
+FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp" "./hazelcast/generated-sources/src/*cpp")
+FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h" "./hazelcast/generated-sources/src/*h")
 
 if (NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED"))  # TODO provide option to build both? maybe not options at all
     # TODO improve message
@@ -97,7 +91,7 @@ message(STATUS "Generating ${HZ_LIB_TYPE} Library")
 add_library(
     HazelcastClient # TODO Maybe HazelcastClientCxx or Cpp in case there is a C library some day?
     ${HZ_LIB_TYPE}
-    ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS}
+    ${HZ_SOURCES} ${HZ_HEADERS}
 )
 
 if (MSVC)
@@ -117,12 +111,11 @@ if (HZ_COMPILE_WITH_SSL)
         PUBLIC HZ_BUILD_WITH_SSL
     )
 
-    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if (APPLE)
         # This is a bug in CMake that causes it to prefer the system version over
         # the one in the specified ROOT folder. see
         # https://stackoverflow.com/questions/58446253/xcode-11-ld-error-your-binary-is-not-an-allowed-client-of-usr-lib-libcrypto-dy
-        # TODO search for a better solution to this
-        set(OPENSSL_ROOT_DIR /usr/local/Cellar/openssl@1.1/1.1.1h/)
+        set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
         set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include CACHE FILEPATH "" FORCE)
         set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
         set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
@@ -158,7 +151,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     ENDIF (${HZ_LIB_TYPE} MATCHES "SHARED")
 endif ()
 
-
 find_package(Boost REQUIRED COMPONENTS thread chrono)
 
 target_link_libraries(
@@ -181,9 +173,8 @@ target_include_directories(
 
 target_compile_definitions(
     HazelcastClient
-    PUBLIC
-        HAZELCAST_VERSION="${PROJECT_VERSION}" # TODO make this private and replace usages in tests with the API
     PRIVATE
+        HAZELCAST_VERSION="${PROJECT_VERSION}"
         HAZELCAST_GIT_COMMIT_DATE=${HAZELCAST_GIT_COMMIT_DATE}
         HAZELCAST_GIT_COMMIT_ID=${HAZELCAST_GIT_COMMIT_ID}
 )
@@ -220,8 +211,8 @@ endif ()
 
 target_compile_definitions(
     HazelcastClient
-    PUBLIC  # TODO are these public or private
-        BOOST_NO_AUTO_PTR WIN32_LEAN_AND_MEAN
+    PRIVATE
+        WIN32_LEAN_AND_MEAN
 )
 
 if (HZ_BUILD_TESTS)

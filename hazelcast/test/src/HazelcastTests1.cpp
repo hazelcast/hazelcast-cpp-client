@@ -284,7 +284,7 @@ namespace hazelcast {
                 ASSERT_NE(std::string::npos, statsFromServer.result.find("enterprise=false"));
                 ASSERT_NE(std::string::npos, statsFromServer.result.find("clientType=CPP"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("clientVersion=") + HAZELCAST_VERSION));
+                          statsFromServer.result.find("clientVersion=" + std::string(client::version())));
                 ASSERT_NE(std::string::npos, statsFromServer.result.find("clusterConnectionTimestamp="));
                 ASSERT_NE(std::string::npos,
                           statsFromServer.result.find(std::string("clientAddress=") + localAddress));
@@ -356,7 +356,7 @@ namespace hazelcast {
                 ASSERT_EQ(expectedClientAddress, statsMap["clientAddress"]);
 
                 ASSERT_EQ(1U, statsMap.count("clientVersion")) << "clientVersion stat should exist (" << stats << ")";
-                ASSERT_EQ(HAZELCAST_VERSION, statsMap["clientVersion"]);
+                ASSERT_EQ(client::version(), statsMap["clientVersion"]);
 
                 // time measured by us after client connection should be greater than the connection time reported by the statistics
                 ASSERT_GE(clientConnectionTime, connectionTimeStat) << "connectionTimeStat was " << connectionTimeStat

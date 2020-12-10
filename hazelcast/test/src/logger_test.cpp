@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "hazelcast/logger.h"
+#include "hazelcast/client/hazelcast_client.h"
 
 using hazelcast::logger;
 
@@ -139,7 +140,7 @@ TEST_F(default_log_handler_test, test_format) {
     expected_tid << "[" << std::this_thread::get_id() << "]";
     ASSERT_EQ(expected_tid.str(), std::string(tid));
     ASSERT_EQ("instance0[cluster0]", std::string(ins_grp));
-    ASSERT_EQ(std::string() + "[" + HAZELCAST_VERSION + "]", std::string(ver));
+    ASSERT_EQ("[" + hazelcast::client::version().to_string() + "]", std::string(ver));
     ASSERT_EQ("[file.cpp:123]", std::string(file_line));
     ASSERT_EQ("message", std::string(msg));
 }
