@@ -376,10 +376,7 @@ namespace hazelcast {
 
         }
 
-        load_balancer::~load_balancer() = default;
-
         constexpr int address::ID;
-
 
         address::address() : host_("localhost"), type_(IPV4), scope_id_(0) {
         }

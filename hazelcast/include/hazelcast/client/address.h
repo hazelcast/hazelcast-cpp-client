@@ -30,7 +30,7 @@ namespace hazelcast {
     namespace client {
 
         /**
-         * IP Address
+         * Represents an address of a client or member in the cluster.
          */
         class HAZELCAST_API address {
             friend struct serialization::hz_serializer<address>;
@@ -45,19 +45,14 @@ namespace hazelcast {
              */
             address();
 
-            /**
-             * Constructor
-             */
             address(const std::string &url, int port);
 
             /**
-             * comparison operator
              * @param address to be compared.
              */
             bool operator == (const address &address) const;
 
             /**
-             * comparison operator
              * @param address to be compared.
              */
             bool operator != (const address &address) const;

@@ -144,7 +144,7 @@ namespace hazelcast {
                     schedule_connect_to_all_members();
                 }
 
-                load_balancer_.init(client_.get_cluster());
+                load_balancer_.init_(client_.get_cluster());
 
                 return true;
             }
@@ -677,7 +677,7 @@ namespace hazelcast {
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::get_random_connection() {
                 if (smart_routing_enabled_) {
-                    auto member = load_balancer_.next();
+                    auto member = load_balancer_.next_(client_.get_cluster());
                     if (!member) {
                         return nullptr;
                     }

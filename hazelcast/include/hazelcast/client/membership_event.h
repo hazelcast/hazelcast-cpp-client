@@ -33,16 +33,10 @@ namespace hazelcast {
          * Membership event fired when a new member is added
          * to the cluster and/or when a member leaves the cluster.
          *
-         * @see MembershipListener
+         * @see membership_listener
          */
         class HAZELCAST_API membership_event {
         public:
-            /**
-             * MembershipEventType
-             *
-             * MEMBER_JOINED = 1,
-             * MEMBER_LEFT = 2,
-             */
             enum membership_event_type {
                 MEMBER_JOINED = 1,
                 MEMBER_LEFT = 2,
@@ -73,14 +67,14 @@ namespace hazelcast {
              *
              * @return the members at the moment after this event.
              */
-            virtual std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> get_members() const;
+            std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> get_members() const;
 
             /**
              * Returns the cluster of the event.
              *
-             * @return
+             * @return the cluster reference
              */
-            virtual const cluster &get_cluster() const;
+            cluster &get_cluster();
 
             /**
              * Returns the membership event type; MembershipEvent#MEMBER_JOINED ,
@@ -88,14 +82,14 @@ namespace hazelcast {
              *
              * @return the membership event type
              */
-            virtual membership_event_type get_event_type() const;
+            membership_event_type get_event_type() const;
 
             /**
              * Returns the removed or added member.
              *
              * @return member which is removed/added
              */
-            virtual const member &get_member() const;
+            const member &get_member() const;
 
         private:
             cluster &cluster_;
