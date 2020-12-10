@@ -201,6 +201,10 @@ else()
     set(CLIENT_TARGET_NAME HazelcastClient)
 endif()
 
+if (MSVC)
+    add_compile_options(/bigobj)
+endif()
+
 link_libraries(${CLIENT_TARGET_NAME}) # TODO find a better way to do this
 
 add_subdirectory(transactions)
