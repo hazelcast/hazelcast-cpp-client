@@ -70,3 +70,5 @@ target_include_directories(
 if (MSVC)
     target_compile_options(clientTest PRIVATE /bigobj)
 endif()
+
+target_compile_definitions(clientTest PRIVATE HAZELCAST_VERSION="${HazelcastCppClient_VERSION}")

@@ -8,6 +8,10 @@ if (@HZ_COMPILE_WITH_SSL@)
     find_dependency(OpenSSL)
 endif()
 
-# TODO _INCLUDE_DIRS _LIB_DIR etc.
-
 include(${CMAKE_CURRENT_LIST_DIR}/HazelcastClientTargets.cmake)
+
+set_and_check(HazelcastClient_INCLUDE_DIRS @PACKAGE_INCLUDE_INSTALL_DIR@)
+set_and_check(HazelcastClient_LIBRARY_DIRS @PACKAGE_LIBRARY_INSTALL_DIR@)
+set(HazelcastClient_LIBRARIES HazelcastClient::HazelcastClient)
+
+check_required_components(HazelcastClient)

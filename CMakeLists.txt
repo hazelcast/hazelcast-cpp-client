@@ -263,10 +263,13 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion
 )
 
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
 configure_package_config_file(
     cmake/HazelcastClientConfig.cmake.in
     HazelcastClientConfig.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/HazelcastClient
+    PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR
 )
 
 install(
