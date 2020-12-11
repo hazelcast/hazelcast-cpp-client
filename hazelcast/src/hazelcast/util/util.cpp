@@ -1028,6 +1028,10 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             // needed due to bug https://github.com/chriskohlhoff/asio/issues/431
             boost::asio::use_service<boost::asio::detail::win_iocp_io_context>(*pool_).stop();
+            // We need the following line so that the windows threads can be terminated. Otherwise,
+            // the threads stay dangling and cause resource leakage. Normally, the pool_ is destructed on client
+            // destruction but somehow it needs to be triggered at this point.
+            pool_.reset();
 #endif
         }
 
