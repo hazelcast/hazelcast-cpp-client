@@ -20,13 +20,11 @@
 #include <unordered_map>
 #include <memory>
 #include <boost/optional.hpp>
-#include <hazelcast/client/serialization/serialization.h>
 
 #include "hazelcast/client/address.h"
 #include "hazelcast/client/serialization_config.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/client/load_balancer.h"
-#include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/config/reliable_topic_config.h"
 #include "hazelcast/client/config/near_cache_config.h"
@@ -112,7 +110,7 @@ namespace hazelcast {
             * redoOperation(false)
             * connectionAttemptLimit(2)
             * attemptPeriod(3000)
-            * defaultLoadBalancer(impl::RoundRobinLB)
+            * defaultLoadBalancer: round robin load balancer
             */
             client_config();
 
@@ -215,19 +213,19 @@ namespace hazelcast {
             /**
             * Used to distribute the operations to multiple Endpoints.
             *
-            * \return loadBalancer
+            * \return load_balancer
             */
             load_balancer &get_load_balancer();
 
             /**
-            * Used to distribute the operations to multiple Endpoints.
-            * If not set, RoundRobin based load balancer is used
+            * Used to distribute the operations to multiple connections.
+            * If not set, round robin based load balancer is used
             *
-            * \param loadBalancer
+            * \param load_balancer
             *
             * \return itself ClientConfig
             */
-            client_config &set_load_balancer(std::unique_ptr<load_balancer> load_balancer);
+            client_config &set_load_balancer(load_balancer &&load_balancer);
 
             /**
             *
@@ -431,7 +429,7 @@ namespace hazelcast {
 
             serialization_config serialization_config_;
 
-            std::unique_ptr<load_balancer> load_balancer_;
+            boost::optional<load_balancer> load_balancer_;
 
             std::vector<membership_listener> membership_listeners_;
 

@@ -16,39 +16,74 @@
 #pragma once
 
 #include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/client/member.h"
 
 namespace hazelcast {
     namespace client {
-        class member;
 
         class cluster;
+
+        namespace connection { class ClientConnectionManagerImpl; }
+
         /**
          *
-         * LoadBalancer allows you to send operations to one of a number of endpoints(Members).
+         * load_balancer allows you to send operations to one of a number of endpoints(Members).
          * It is up to the implementation to use different load balancing policies. If Client is configured as smart,
          * only the operations that are not key based will be router to the endpoint returned by the Load Balancer.
-         * If it is not smart, LoadBalancer will not be used.
-         * Note Client is smart by default.
+         * If it is not smart, load_balancer will not be used.
+         * **Note:** Client is smart by default.
          *
          */
-		class HAZELCAST_API load_balancer {
+		class HAZELCAST_API load_balancer final  {
         public:
-
             /**
-             * This method will be called when load balancer is initialized.
+             * Sets the function to be called when load balancer is initialized.
              *
              * @param cluster Cluster contains current membership information for initialization. And one can
              * add membership through this class for future notifications.
              */
-            virtual void init(cluster &cluster) = 0;
+            template<typename Handler,
+                    typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            load_balancer &init(Handler &&h) & {
+                init_ = std::forward<Handler>(h);
+                return *this;
+            }
+
+            template<typename Handler,
+                    typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            load_balancer &&init(Handler &&h) && {
+                init_ = std::forward<Handler>(h);
+                return std::move(*this);
+            }
 
             /**
-             * Returns the next member to route to
-             * @return Returns the next member or boost::none if no member is available
+             * The function returns the next member to route to.
+             *
+             * @param h The function to be used for finding the next member.
              */
-            virtual boost::optional<member> next() = 0;
+            template<typename Handler,
+                    typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            load_balancer &next(Handler &&h) & {
+                next_ = std::forward<Handler>(h);
+                return *this;
+            }
 
-            virtual ~load_balancer();
+            template<typename Handler,
+                    typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            load_balancer &&next(Handler &&h) && {
+                next_ = std::forward<Handler>(h);
+                return std::move(*this);
+            }
+
+		private:
+            /**
+             * Cluster contains current membership information for initialization. And one can
+             * add membership through this class for future notifications.
+             */
+		    std::function<void(cluster &)> init_ = util::noop<cluster &>;
+		    std::function<boost::optional<member>(cluster &)> next_ = [](cluster &) { return boost::none; };
+
+		    friend class connection::ClientConnectionManagerImpl;
         };
     }
 }

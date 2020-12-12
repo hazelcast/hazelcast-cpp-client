@@ -40,7 +40,6 @@
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/membership_event.h"
-#include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/client/impl/vector_clock.h"
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
@@ -146,7 +145,7 @@ namespace hazelcast {
             return members_;
         }
 
-        const cluster &membership_event::get_cluster() const {
+        cluster &membership_event::get_cluster() {
             return cluster_;
         }
 
@@ -167,71 +166,6 @@ namespace hazelcast {
         }
 
         namespace impl {
-            RoundRobinLB::RoundRobinLB() = default;
-
-            void RoundRobinLB::init(cluster &cluster) {
-                AbstractLoadBalancer::init(cluster);
-            }
-
-            boost::optional<member> RoundRobinLB::next() {
-                auto members = get_members();
-                if (members.empty()) {
-                    return boost::none;
-                }
-                return members[++index_ % members.size()];
-            }
-
-            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index_(rhs.index_.load()) {
-            }
-
-            void RoundRobinLB::operator=(const RoundRobinLB &rhs) {
-                index_.store(rhs.index_.load());
-            }
-
-            AbstractLoadBalancer::AbstractLoadBalancer(const AbstractLoadBalancer &rhs) {
-                *this = rhs;
-            }
-
-            void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
-                std::lock_guard<std::mutex> lg(rhs.members_lock_);
-                std::lock_guard<std::mutex> lg2(members_lock_);
-                members_ref_ = rhs.members_ref_;
-                cluster_ = rhs.cluster_;
-            }
-
-            void AbstractLoadBalancer::init(cluster &cluster) {
-                this->cluster_ = &cluster;
-                set_members_ref();
-
-                cluster.add_membership_listener(
-                        membership_listener()
-                        .on_init([this](const initial_membership_event &){
-                            set_members_ref();
-                        })
-                        .on_joined([this](const membership_event &){
-                            set_members_ref();
-                        })
-                        .on_left([this](const membership_event &){
-                            set_members_ref();
-                        })
-                );
-            }
-
-            void AbstractLoadBalancer::set_members_ref() {
-                std::lock_guard<std::mutex> lg(members_lock_);
-                members_ref_ = cluster_->get_members();
-            }
-
-            std::vector<member> AbstractLoadBalancer::get_members() {
-                std::lock_guard<std::mutex> lg(members_lock_);
-                return members_ref_;
-            }
-
-            AbstractLoadBalancer::~AbstractLoadBalancer() = default;
-
-            AbstractLoadBalancer::AbstractLoadBalancer() : cluster_(NULL) {
-            }
-
             vector_clock::vector_clock() = default;
 
             vector_clock::vector_clock(const vector_clock::timestamp_vector &replica_logical_timestamps)

@@ -187,14 +187,16 @@ namespace hazelcast {
                 }
 
                 void produce_some_stats(std::shared_ptr<imap> &map) {
-                    map->put(5, 10).get();
                     auto nearCacheStatsImpl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
                             map->get_local_map_stats().get_near_cache_stats());
 
                     auto invalidationRequests = nearCacheStatsImpl->get_invalidation_requests();
-                    // When for invalidation to come from server for the put operation
+
+                    map->put(5, 10).get();
+
+                    // 2 invalidation requests: One locally during map->put and one from server
                     ASSERT_EQ_EVENTUALLY(
-                            invalidationRequests + 1, nearCacheStatsImpl->get_invalidation_requests());
+                            invalidationRequests + 2, nearCacheStatsImpl->get_invalidation_requests());
 
                     ASSERT_EQ(10, (*map->get<int, int>(5).get()));
                     ASSERT_EQ(10, (*map->get<int, int>(5).get()));
@@ -2149,24 +2151,6 @@ namespace hazelcast {
                 std::unique_ptr<load_balancer> load_balancer_;
             };
 
-            class MyLoadBalancer : public impl::AbstractLoadBalancer {
-            public:
-                boost::optional<member> next() override {
-                    std::vector<member> members = get_members();
-                    size_t len = members.size();
-                    if (len == 0) {
-                        return boost::none;
-                    }
-                    for (size_t i = 0; i < len; i++) {
-                        if (members[i].get_address().get_port() == 5701) {
-                            return members[i];
-                        }
-                    }
-                    return members[0];
-                }
-
-            };
-
             membership_listener make_member_removed_listener(boost::latch &l) {
                 return membership_listener()
                     .on_left([&l](const membership_event &){
@@ -2179,7 +2163,19 @@ namespace hazelcast {
                 server_.reset(new HazelcastServer(hazelcast_instance_factory_));
                 client_config clientConfig = get_config();
                 //always start the txn on first member
-                clientConfig.set_load_balancer(std::unique_ptr<load_balancer>{ new MyLoadBalancer{} });
+                clientConfig.set_load_balancer(load_balancer().next([] (cluster &c) {
+                    std::vector<member> members = c.get_members();
+                    size_t len = members.size();
+                    if (len == 0) {
+                        return boost::optional<member>();
+                    }
+                    for (size_t i = 0; i < len; i++) {
+                        if (members[i].get_address().get_port() == 5701) {
+                            return boost::make_optional<member>(std::move(members[i]));
+                        }
+                    }
+                    return boost::make_optional<member>(std::move(members[0]));
+                }));
                 client_.reset(new hazelcast_client(std::move(clientConfig)));
                 second_.reset(new HazelcastServer(hazelcast_instance_factory_));
             }
