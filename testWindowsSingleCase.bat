@@ -5,7 +5,7 @@
 
 @SET BUILD_DIR=build%HZ_LIB_TYPE%%HZ_BIT_VERSION%%HZ_BUILD_TYPE%
 
-@SET EXECUTABLE_NAME=clientTest_%HZ_LIB_TYPE%_%HZ_BIT_VERSION%.exe
+@SET EXECUTABLE_NAME=client_test.exe
 
 if %HZ_BIT_VERSION% == 32 (
     call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"

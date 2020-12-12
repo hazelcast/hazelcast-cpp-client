@@ -16,28 +16,32 @@
 
 cmake_minimum_required (VERSION 3.10)
 
-project (HazelcastCppClientExamples
-        VERSION 4.0
-        DESCRIPTION "Hazelcast C++ Client Code Examples"
-        HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
-        LANGUAGES CXX)
+project (hazelcast_cpp_client_examples
+         VERSION 4.0.0
+         DESCRIPTION "Hazelcast C++ Client Code Examples"
+         HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
+         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (NOT TARGET HazelcastClient)
-    message(STATUS "HazelcastClient not found, trying to find with find_package")
-    find_package(HazelcastClient REQUIRED)
-    set(CLIENT_TARGET_NAME HazelcastClient::HazelcastClient)
-else()
-    set(CLIENT_TARGET_NAME HazelcastClient)
+if (NOT LIBRARY_FOR_EXAMPLES)
+    message(FATAL_ERROR "Specify LIBRARY_FOR_EXAMPLES")
+endif()
+
+if (NOT TARGET ${LIBRARY_FOR_EXAMPLES})
+    message(STATUS "${LIBRARY_FOR_EXAMPLES} is not a valid target, using find_package to find it.")
+    find_package(${LIBRARY_FOR_EXAMPLES} REQUIRED)
+    # the found target will have the namespace hazelcast::
+    set(LIBRARY_FOR_EXAMPLES hazelcast::${LIBRARY_FOR_EXAMPLES})
 endif()
 
 if (MSVC)
     add_compile_options(/bigobj)
 endif()
 
-link_libraries(${CLIENT_TARGET_NAME}) # TODO find a better way to do this
+message(STATUS "Examples will be built with ${LIBRARY_FOR_EXAMPLES}")
+link_libraries(${LIBRARY_FOR_EXAMPLES}) # TODO find a better way to do this
 
 add_subdirectory(transactions)
 add_subdirectory(spi)
@@ -60,7 +64,7 @@ add_subdirectory(authentication)
 add_subdirectory(cp)
 add_subdirectory(soak-test)
 
-if (HZ_COMPILE_WITH_SSL)
+if (${LIBRARY_FOR_EXAMPLES} MATCHES "_ssl")
     add_subdirectory(tls)
     add_subdirectory(aws)
-endif()
+endif ()
