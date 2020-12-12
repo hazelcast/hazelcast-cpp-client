@@ -306,7 +306,7 @@ namespace hazelcast {
                 std::string xmlConfig = read_from_xml_file(server_xml_config_file_path);
 
                 remote::Cluster cluster;
-                remoteController->createClusterKeepClusterName(cluster, client::version().to_string(), xmlConfig);
+                remoteController->createClusterKeepClusterName(cluster, HAZELCAST_VERSION, xmlConfig);
 
                 this->cluster_id_ = cluster.id;
             }

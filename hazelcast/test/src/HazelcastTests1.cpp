@@ -358,7 +358,7 @@ namespace hazelcast {
                 ASSERT_EQ(expectedClientAddress, statsMap["clientAddress"]);
 
                 ASSERT_EQ(1U, statsMap.count("clientVersion")) << "clientVersion stat should exist (" << stats << ")";
-                ASSERT_EQ(client::version(), statsMap["clientVersion"]);
+                ASSERT_EQ(HAZELCAST_VERSION, statsMap["clientVersion"]);
 
                 // time measured by us after client connection should be greater than the connection time reported by the statistics
                 ASSERT_GE(clientConnectionTime, connectionTimeStat) << "connectionTimeStat was " << connectionTimeStat

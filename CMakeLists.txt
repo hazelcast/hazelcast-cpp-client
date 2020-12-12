@@ -85,7 +85,7 @@ endif ()
 # find dependencies
 
 # find Boost
-find_package(Boost REQUIRED COMPONENTS thread chrono)
+find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono)
 
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)
@@ -155,13 +155,13 @@ function(add_hazelcast_library name type)
         if (type STREQUAL "SHARED")
             # For the shared library,
             #   we define HAZELCAST_EXPORTS=1,
-            #   users defines HAZELCAST_USE_SHARED
+            #   users define HAZELCAST_USE_SHARED
             target_compile_definitions(${name} PRIVATE HAZELCAST_EXPORTS=1)
             target_compile_definitions(${name} INTERFACE HAZELCAST_USE_SHARED)
         else () # type STREQUAL "STATIC"
             # For the static library,
             #   we define HAZELCAST_EXPORTS=0,
-            #   users defines HAZELCAST_USE_STATIC
+            #   users define HAZELCAST_USE_STATIC
             target_compile_definitions(${name} PRIVATE HAZELCAST_EXPORTS=0)
             target_compile_definitions(${name} INTERFACE HAZELCAST_USE_STATIC)
         endif ()
