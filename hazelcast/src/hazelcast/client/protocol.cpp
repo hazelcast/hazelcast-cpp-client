@@ -156,7 +156,7 @@ namespace hazelcast {
                 // If there were bytes of a frame (remaining_bytes_in_frame) to read from the previous call, it is read.
                 auto remaining = byte_buff.remaining();
                 if (remaining_bytes_in_frame) {
-                    size_t bytes_to_read = std::min(remaining_bytes_in_frame, remaining);
+                    size_t bytes_to_read = (std::min)(remaining_bytes_in_frame, remaining);
                     byte_buff.read_bytes(wr_ptr(bytes_to_read), bytes_to_read);
                     remaining_bytes_in_frame -= bytes_to_read;
                     if (remaining_bytes_in_frame > 0 || is_final) {
@@ -172,7 +172,7 @@ namespace hazelcast {
                     auto *f = reinterpret_cast<frame_header_t *>(read_ptr);
                     auto frame_len = static_cast<size_t>(static_cast<int32_t>(f->frame_len));
                     is_final = ClientMessage::is_flag_set(f->flags, ClientMessage::IS_FINAL_FLAG);
-                    auto actual_bytes_to_read = std::min(frame_len, remaining);
+                    auto actual_bytes_to_read = (std::min)(frame_len, remaining);
                     byte_buff.read_bytes(wr_ptr(frame_len, actual_bytes_to_read), actual_bytes_to_read);
                     remaining_bytes_in_frame = frame_len - actual_bytes_to_read;
                 }

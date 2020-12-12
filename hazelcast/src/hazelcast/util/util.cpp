@@ -598,7 +598,7 @@ namespace hazelcast {
                 const int64_t allowedShift = min<int64_t>(max_shift_, proposedShift);
                 return proposedShift > max_shift_ ? max_park_period_ns_
                                                 : proposedShift < max_shift_ ? min_park_period_ns_ << allowedShift
-                                                                           : min(min_park_period_ns_ << allowedShift,
+                                                                           : (min)(min_park_period_ns_ << allowedShift,
                                                                                  max_park_period_ns_);
             }
         }

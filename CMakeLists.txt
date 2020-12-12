@@ -120,7 +120,6 @@ function(add_hazelcast_library name type)
     # MSVC-specific compiler flags
     if (MSVC)
         target_compile_options(${name} PRIVATE /bigobj)
-        target_compile_definitions(${name} PUBLIC NOMINMAX) # TODO remove this and use (min)
     endif ()
 
     if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")

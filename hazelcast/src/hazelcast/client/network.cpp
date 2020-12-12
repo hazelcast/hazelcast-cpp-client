@@ -72,7 +72,7 @@ namespace hazelcast {
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
                                                                      const std::shared_ptr<AddressTranslator> &address_translator,
                                                                      const std::vector<std::shared_ptr<AddressProvider> > &address_providers)
-                    : alive_(false), logger_(client.get_logger()), connection_timeout_millis_(std::chrono::milliseconds::max()),
+                    : alive_(false), logger_(client.get_logger()), connection_timeout_millis_((std::chrono::milliseconds::max)()),
                       client_(client),
                       socket_interceptor_(client.get_client_config().get_socket_interceptor()),
                       execution_service_(client.get_client_execution_service()),
