@@ -44,8 +44,12 @@ message(STATUS "GIT_COMMIT_DATE = ${GIT_COMMIT_DATE}")
 message(STATUS "GIT_COMMIT_ID = ${GIT_COMMIT_ID}")
 
 # find all source and header files
-FILE(GLOB_RECURSE SOURCE_FILES "./hazelcast/src/*cpp" "./hazelcast/generated-sources/src/*cpp")
-FILE(GLOB_RECURSE HEADER_FILES "./hazelcast/include/*h" "./hazelcast/generated-sources/src/*h")
+FILE(GLOB_RECURSE SOURCE_FILES
+     "./hazelcast/src/*cpp"
+     "./hazelcast/generated-sources/src/*cpp")
+FILE(GLOB_RECURSE HEADER_FILES
+     "./hazelcast/include/*h"
+     "./hazelcast/generated-sources/src/*h")
 
 # options
 option(WITH_OPENSSL
@@ -263,7 +267,7 @@ install(
     FILES_MATCHING PATTERN "*.h"
 )
 
-# since shared and static libraries can both be requested for the build,
+# since shared and static libraries can be requested for the build at the same time,
 # we need a default one to use for tests and examples.
 # the static library is preferred to the shared library, because it is OFF by default.
 if (BUILD_STATIC_LIB)
@@ -274,11 +278,6 @@ endif ()
 
 if (BUILD_TESTS)
     set(LIBRARY_FOR_TESTS ${DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES})
-
-    option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
-    option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
-    option(BUILD_GTEST "Install Googletest's GMock?" ON)
-    option(BUILD_GMOCK "Install Googletest's GTest?" OFF)
 
     add_subdirectory(hazelcast/test)
 endif ()
