@@ -1,5 +1,9 @@
 FROM fedora:latest
 
+# needed the following line since with earlier docker versions the build gives the following error:
+# Error: Transaction test error:
+#     file /usr/share/gcc-10/python/libstdcxx/__pycache__/__init__.cpython-39.opt-1.pyc from install of libstdc++-10.2.1-9.fc33.i686 conflicts with file from package libstdc++-10.2.1-6.fc33.x86_64
+RUN dnf clean packages
 RUN dnf groups install -y "Development Tools"
 RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.i686 cmake valgrind rsync passwd openssh-server ninja-build java-1.8.0-openjdk
 
