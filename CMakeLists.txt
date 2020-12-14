@@ -32,8 +32,9 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif ()
 
-include(FindOpenSSL)
+include(FindThreads)
 include(FindBoost)
+include(FindOpenSSL)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(./cmake/utils.cmake)
@@ -88,6 +89,9 @@ endif ()
 
 # find dependencies
 
+# find Threads
+find_package(Threads REQUIRED)
+
 # find Boost
 find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono)
 
@@ -126,9 +130,8 @@ function(add_hazelcast_library name type)
         target_compile_options(${name} PRIVATE /bigobj)
     endif ()
 
-    if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-        target_link_libraries(${name} PUBLIC pthread rt) # TODO make sure these are actually required
-    endif ()
+    # links the library against the system's thread library
+    target_link_libraries(${name} PUBLIC Threads::Threads)
 
     # add Boost::thread and Boost::chrono as dependencies
     target_link_libraries(
