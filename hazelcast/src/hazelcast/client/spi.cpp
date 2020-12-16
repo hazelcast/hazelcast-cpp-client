@@ -591,7 +591,7 @@ namespace hazelcast {
 
                 void
                 ClientInvocationServiceImpl::handle_client_message(const std::shared_ptr<ClientInvocation> &invocation,
-                                                                 const std::shared_ptr<ClientMessage> &response) {
+                                                                   const std::shared_ptr<protocol::ClientMessage> &response) {
                     response_thread_.process(invocation, response);
                 }
 
@@ -673,7 +673,7 @@ namespace hazelcast {
 
                 void ClientInvocationServiceImpl::ResponseProcessor::process(
                         const std::shared_ptr<ClientInvocation> &invocation,
-                        const std::shared_ptr<ClientMessage> &response) {
+                        const std::shared_ptr<protocol::ClientMessage> &response) {
                     if (!pool_) {
                         process_internal(invocation, response);
                         return;
@@ -2049,7 +2049,6 @@ namespace hazelcast {
                     }
 
                     void listener_service_impl::shutdown() {
-                        event_strands_.clear();
                         ClientExecutionServiceImpl::shutdown_thread_pool(event_executor_.get());
                         ClientExecutionServiceImpl::shutdown_thread_pool(registration_executor_.get());
                     }

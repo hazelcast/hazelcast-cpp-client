@@ -1613,7 +1613,7 @@ namespace hazelcast {
             class ClientMessageTest: public ClientTestSupport {
             protected:
                 struct BufferedMessageHandler {
-                    std::shared_ptr<ClientMessage> msg;
+                    std::shared_ptr<protocol::ClientMessage> msg;
 
                     void handle_client_message(const std::shared_ptr<protocol::ClientMessage> &message) {
                         msg = message;

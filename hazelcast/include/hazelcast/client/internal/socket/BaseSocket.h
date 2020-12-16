@@ -34,10 +34,11 @@ namespace hazelcast {
                 public:
                     template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
-                            const address &addr, client::config::socket_options &socket_options,
-                            boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis)
+                               const address &addr, client::config::socket_options &socket_options,
+                               boost::asio::io_context &io, std::chrono::milliseconds &connect_timeout_in_millis)
                             : socket_options_(socket_options), remote_endpoint_(addr), io_(io), socket_strand_(io),
-                              connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver), socket_(socket_strand_) {
+                              connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver),
+                              socket_(socket_strand_) {
                     }
                     
 #ifdef HZ_BUILD_WITH_SSL
@@ -53,9 +54,6 @@ namespace hazelcast {
 #endif // HZ_BUILD_WITH_SSL
 
                     void connect(const std::shared_ptr<connection::Connection> connection) override {
-                        using namespace boost::asio;
-                        using namespace boost::asio::ip;
-
                         boost::asio::steady_timer connectTimer(socket_.get_executor());
                         connectTimer.expires_from_now(connect_timeout_);
                         connectTimer.async_wait([=](const boost::system::error_code &ec) {
@@ -177,7 +175,7 @@ namespace hazelcast {
                         return remote_endpoint_;
                     }
 
-                    boost::asio::executor get_executor() noexcept override {
+                    boost::asio::ip::tcp::socket::executor_type get_executor() noexcept override {
                         return socket_.get_executor();
                     }
 
@@ -207,19 +205,18 @@ namespace hazelcast {
                     }
 
                     void do_read(const std::shared_ptr<connection::Connection> connection) {
-                        using namespace boost::asio;
-                        using namespace boost::asio::ip;
-
-                        socket_.async_read_some(buffer(connection->read_handler.byte_buffer.ix(),
-                                                        connection->read_handler.byte_buffer.remaining()),
-                                                 [=](const boost::system::error_code &ec, std::size_t bytes_read) {
-                                                     if (ec) {
-                                                         // prevent any exceptions
-                                                         util::IOUtil::close_resource(connection.get(),
-                                                                 (boost::format("Socket read error. %1% for %2%")
-                                                                 %ec %(*connection)).str().c_str());
-                                                         return;
-                                                     }
+                        socket_.async_read_some(boost::asio::buffer(connection->read_handler.byte_buffer.ix(),
+                                                                    connection->read_handler.byte_buffer.remaining()),
+                                                [=](const boost::system::error_code &ec, std::size_t bytes_read) {
+                                                    if (ec) {
+                                                        // prevent any exceptions
+                                                        util::IOUtil::close_resource(connection.get(),
+                                                                                     (boost::format(
+                                                                                             "Socket read error. %1% for %2%")
+                                                                                      % ec %
+                                                                                      (*connection)).str().c_str());
+                                                        return;
+                                                    }
 
                                                      connection->read_handler.byte_buffer.safe_increment_position(
                                                              bytes_read);

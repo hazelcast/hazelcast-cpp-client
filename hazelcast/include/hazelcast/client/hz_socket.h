@@ -29,8 +29,6 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             class Connection;
-
-            class ConnectionFuture;
         }
 
         namespace spi {
@@ -63,7 +61,7 @@ namespace hazelcast {
 
             virtual const address &get_remote_endpoint() const = 0;
 
-            virtual boost::asio::executor get_executor() noexcept = 0;
+            virtual boost::asio::ip::tcp::socket::executor_type get_executor() noexcept = 0;
         };
     }
 }

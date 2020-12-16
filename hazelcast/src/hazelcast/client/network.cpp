@@ -255,18 +255,24 @@ namespace hazelcast {
                     if (f.wait_for(authentication_timeout_) != boost::future_status::ready) {
                         BOOST_THROW_EXCEPTION(exception::timeout(
                                 "ClientConnectionManagerImpl::authenticate", (boost::format("Authentication response is "
-                                "not received for %1% msecs for %2%") %authentication_timeout_.count() %*clientInvocation).str()));
+                                                                                            "not received for %1% msecs for %2%") %
+                                                                              authentication_timeout_.count() %
+                                                                              *clientInvocation).str()));
                     }
                     auto response = f.get();
-                    auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(response.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN));
+                    auto *initial_frame = reinterpret_cast<protocol::ClientMessage::frame_header_t *>(response.rd_ptr(
+                            protocol::ClientMessage::RESPONSE_HEADER_LEN));
                     result = {
                             response.get<byte>(), response.get<boost::uuids::uuid>(),
                             response.get<byte>(), response.get<int32_t>(),
                             response.get<boost::uuids::uuid>()
                     };
                     // skip first frame
-                    response.rd_ptr(static_cast<int32_t>(initial_frame->frame_len) - ClientMessage::RESPONSE_HEADER_LEN - 2 * ClientMessage::UINT8_SIZE -
-                                    2 * (sizeof(boost::uuids::uuid) + ClientMessage::UINT8_SIZE) - ClientMessage::INT32_SIZE);
+                    response.rd_ptr(static_cast<int32_t>(initial_frame->frame_len) -
+                                    protocol::ClientMessage::RESPONSE_HEADER_LEN -
+                                    2 * protocol::ClientMessage::UINT8_SIZE -
+                                    2 * (sizeof(boost::uuids::uuid) + protocol::ClientMessage::UINT8_SIZE) -
+                                    protocol::ClientMessage::INT32_SIZE);
 
                     result.server_address = response.get_nullable<address>();
                     result.server_version = response.get<std::string>();

@@ -64,7 +64,7 @@ namespace hazelcast {
                     bool is_redo_operation();
 
                     void handle_client_message(const std::shared_ptr<ClientInvocation> &invocation,
-                                             const std::shared_ptr<ClientMessage> &response) override;
+                                               const std::shared_ptr<protocol::ClientMessage> &response) override;
 
                     const std::chrono::milliseconds &get_backup_timeout() const;
 
@@ -85,7 +85,7 @@ namespace hazelcast {
                         void start();
 
                         void process(const std::shared_ptr<ClientInvocation> &invocation,
-                                     const std::shared_ptr<ClientMessage> &response);
+                                     const std::shared_ptr<protocol::ClientMessage> &response);
 
                     private:
                         logger &logger_;
