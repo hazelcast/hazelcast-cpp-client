@@ -54,8 +54,8 @@ FILE(GLOB_RECURSE HEADER_FILES
 
 # options
 option(WITH_OPENSSL
-       "Use OpenSSL, setting this option to OFF causes SSL-related features to be disabled."
-       ON)
+       "Build with OpenSSL. Setting this option to ON enables SSL-related features."
+       OFF)
 
 option(BUILD_STATIC_LIB
        "Build static library."
