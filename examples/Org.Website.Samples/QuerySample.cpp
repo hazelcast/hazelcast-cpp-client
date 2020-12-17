@@ -64,7 +64,7 @@ void generate_users(std::shared_ptr<imap> users) {
 }
 
 int main() {
-    hazelcast_client hz;
+    hazelcast::client::hazelcast_client hz;
     // Get a Distributed Map called "users"
     auto users = hz.get_map("users").get();
     // Add some users to the Distributed Map

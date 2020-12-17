@@ -18,7 +18,7 @@
 using namespace hazelcast::client;
 
 int main() {
-    client_config config;
+    hazelcast::client::client_config config;
     const char *mapName = "ObjectMap";
     address serverAddr("127.0.0.1", 5701);
     config.get_network_config().add_address(serverAddr);

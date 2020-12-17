@@ -120,7 +120,7 @@ public:
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast_client hz;
+    hazelcast::client::hazelcast_client hz;
     // Get the Distributed Executor Service
     std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member

@@ -54,7 +54,7 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast_client hz;
+    hazelcast::client::hazelcast_client hz;
 
     auto map = hz.get_map("customMap").get();
     map->put(1L, Person{"My Person", false, 57}).get();

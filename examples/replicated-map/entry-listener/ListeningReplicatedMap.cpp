@@ -21,17 +21,17 @@ int main() {
 
     auto map = hz.get_replicated_map("map").get();
 
-    auto listenerId = map->add_entry_listener(
-        hazelcast::client::entry_listener()
-            .on_added([](hazelcast::client::entry_event &&event) {
-                std::cout << "[added] " << event << std::endl;
-            })
-            .on_removed([](hazelcast::client::entry_event &&event) {
-                std::cout << "[removed] " << event << std::endl;
-            })
-            .on_updated([](hazelcast::client::entry_event &&event) {
-                std::cout << "[added] " << event << std::endl;
-            })
+    auto listener_id = map->add_entry_listener(
+            hazelcast::client::entry_listener()
+                    .on_added([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[added] " << event << std::endl;
+                    })
+                    .on_removed([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[removed] " << event << std::endl;
+                    })
+                    .on_updated([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[added] " << event << std::endl;
+                    })
             .on_evicted([](hazelcast::client::entry_event &&event) {
                 std::cout << "[updated] " << event << std::endl;
             })
@@ -49,7 +49,7 @@ int main() {
             })
     ).get();
 
-    std::cout << "EntryListener registered with id " << boost::uuids::to_string(listenerId) << std::endl;
+    std::cout << "EntryListener registered with id " << boost::uuids::to_string(listener_id) << std::endl;
 
     return 0;
 }
