@@ -1,19 +1,7 @@
 #!/bin/sh
 
-function cleanup {
-    echo "cleanup is being performed."
-    if [ "x${rcPid}" != "x" ]
-    then
-        echo "Killing remote controller server with pid ${rcPid}"
-        kill -9 ${rcPid}
-    fi
-    exit
-}
-
 # Disables printing security sensitive data to the logs
 set +x
-
-trap cleanup EXIT
 
 HZ_VERSION="4.1"
 HAZELCAST_TEST_VERSION=${HZ_VERSION}
@@ -68,7 +56,4 @@ fi
 CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
 echo "Starting Remote Controller ... enterprise ..."
 
-java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} -Dhazelcast.phone.home.enabled=false com.hazelcast.remotecontroller.Main --use-simple-server &
-rcPid=$!
-wait ${rcPid}
-exit $?
+java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} -Dhazelcast.phone.home.enabled=false com.hazelcast.remotecontroller.Main --use-simple-server
