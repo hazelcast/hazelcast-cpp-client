@@ -4,10 +4,12 @@ include(FindGTest)
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-#required to suppress the warning:
-# `gtest-death-test.cc:1301:24: error: 'dummy' may be used uninitialized [-Werror=maybe-uninitialized]`
-#for googletest source comnpilation
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-maybe-uninitialized")
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    #required to suppress the warning:
+    # `gtest-death-test.cc:1301:24: error: 'dummy' may be used uninitialized [-Werror=maybe-uninitialized]`
+    #for googletest source compilation
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-maybe-uninitialized")
+endif ()
 
 find_package(GTest QUIET)
 if (NOT GTest_FOUND)

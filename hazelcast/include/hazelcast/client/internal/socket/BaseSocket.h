@@ -65,8 +65,10 @@ namespace hazelcast {
                             return;
                         });
                         try {
-                            auto addresses = resolver_.resolve(remote_endpoint_.get_host(), std::to_string(remote_endpoint_.get_port()));
-                            boost::asio::connect(socket_.lowest_layer(), addresses);
+                            auto addresses = resolver_.resolve(remote_endpoint_.get_host(),
+                                                               std::to_string(remote_endpoint_.get_port()));
+                            boost::asio::async_connect(socket_.lowest_layer(), addresses,
+                                                       boost::asio::use_future).get();
                             post_connect();
                             connectTimer.cancel();
                             set_socket_options(socket_options_);
