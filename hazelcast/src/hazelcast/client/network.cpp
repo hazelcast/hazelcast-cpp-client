@@ -61,6 +61,7 @@
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/sync_associative_container.h"
+#include "hazelcast/client/internal/socket/SocketFactory.h"
 
 namespace hazelcast {
     namespace client {
@@ -816,7 +817,8 @@ namespace hazelcast {
 
             void Connection::connect() {
                 socket_->connect(shared_from_this());
-                backup_timer_.reset(new boost::asio::steady_timer(socket_->get_executor()));
+                backup_timer_.reset(new boost::asio::steady_timer(
+                        client_context_.get_client_execution_service().get_user_executor()));
                 auto backupTimeout = static_cast<spi::impl::ClientInvocationServiceImpl &>(invocation_service_).get_backup_timeout();
                 auto this_connection = shared_from_this();
                 schedule_periodic_backup_cleanup(backupTimeout, this_connection);
@@ -825,7 +827,7 @@ namespace hazelcast {
             void Connection::schedule_periodic_backup_cleanup(std::chrono::milliseconds backup_timeout,
                                                               std::shared_ptr<Connection> this_connection) {
                 backup_timer_->expires_from_now(backup_timeout);
-                backup_timer_->async_wait([=] (boost::system::error_code ec) {
+                backup_timer_->async_wait(socket_->get_executor().wrap([=](boost::system::error_code ec) {
                     if (ec) {
                         return;
                     }
@@ -834,7 +836,7 @@ namespace hazelcast {
                     }
 
                     schedule_periodic_backup_cleanup(backup_timeout, this_connection);
-                });
+                }));
             }
 
             void Connection::close() {
