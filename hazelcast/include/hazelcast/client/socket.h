@@ -37,15 +37,15 @@ namespace hazelcast {
             }
         }
 
-        class HAZELCAST_API hz_socket {
+        class HAZELCAST_API socket {
         public:
-            virtual ~hz_socket() = default;
+            virtual ~socket() = default;
 
             virtual void connect(const std::shared_ptr<connection::Connection> connection) = 0;
 
             virtual void
             async_write(const std::shared_ptr<connection::Connection> connection,
-                       const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
+                        const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
 
             virtual void close() = 0;
 

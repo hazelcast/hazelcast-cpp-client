@@ -1039,7 +1039,7 @@ namespace hazelcast {
                 return start_time_;
             }
 
-            hz_socket &Connection::get_socket() {
+            socket &Connection::get_socket() {
                 return *socket_;
             }
 
@@ -1188,19 +1188,21 @@ namespace hazelcast {
                     return true;
                 }
 
-                std::unique_ptr<hz_socket> SocketFactory::create(const address &address,
-                                                                 std::chrono::milliseconds &connect_timeout_in_millis) {
+                std::unique_ptr<hazelcast::client::socket> SocketFactory::create(const address &address,
+                                                                                 std::chrono::milliseconds &connect_timeout_in_millis) {
 #ifdef HZ_BUILD_WITH_SSL
                     if (ssl_context_.get()) {
-                        return std::unique_ptr<hz_socket>(new internal::socket::SSLSocket(io_, *ssl_context_, address,
-                                                                                       client_context_.get_client_config().get_network_config().get_socket_options(),
-                                                                                       connect_timeout_in_millis, io_resolver_));
+                        return std::unique_ptr<hazelcast::client::socket>(
+                                new internal::socket::SSLSocket(io_, *ssl_context_, address,
+                                                                client_context_.get_client_config().get_network_config().get_socket_options(),
+                                                                connect_timeout_in_millis, io_resolver_));
                     }
 #endif
 
-                    return std::unique_ptr<hz_socket>(new internal::socket::TcpSocket(io_, address,
-                                                                                      client_context_.get_client_config().get_network_config().get_socket_options(),
-                                                                                      connect_timeout_in_millis, io_resolver_));
+                    return std::unique_ptr<hazelcast::client::socket>(new internal::socket::TcpSocket(io_, address,
+                                                                                                      client_context_.get_client_config().get_network_config().get_socket_options(),
+                                                                                                      connect_timeout_in_millis,
+                                                                                                      io_resolver_));
                 }
 
 #ifdef HZ_BUILD_WITH_SSL

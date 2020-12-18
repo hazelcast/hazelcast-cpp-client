@@ -29,7 +29,7 @@
 
 namespace hazelcast {
     namespace client {
-        class hz_socket;
+        class socket;
 
         namespace connection {
             class ClientConnectionManagerImpl;
@@ -68,9 +68,9 @@ namespace hazelcast {
         private:
             friend class connection::ClientConnectionManagerImpl;
 
-            using handler_t = std::function<void(const hz_socket &)>;
+            using handler_t = std::function<void(const socket &)>;
 
-            handler_t connect_{ util::noop<const hz_socket &> };
+            handler_t connect_{util::noop<const socket &>};
         };
     }
 }

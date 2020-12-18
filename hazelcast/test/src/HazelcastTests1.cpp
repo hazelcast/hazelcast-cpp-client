@@ -60,7 +60,7 @@
 #include "hazelcast/client/membership_listener.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/socket_interceptor.h"
-#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/socket.h"
 #include "hazelcast/client/cluster.h"
 #include "hazelcast/client/imap.h"
 #include "hazelcast/util/SyncHttpsClient.h"
@@ -1072,11 +1072,11 @@ namespace hazelcast {
 
             socket_interceptor make_socket_interceptor(boost::latch &l) {
                 return socket_interceptor()
-                    .on_connect([&l](const hazelcast::client::hz_socket &connected_sock) {
-                        ASSERT_EQ("127.0.0.1", connected_sock.get_address().get_host());
-                        ASSERT_NE(0, connected_sock.get_address().get_port());
-                        l.count_down();
-                    });
+                        .on_connect([&l](const hazelcast::client::socket &connected_sock) {
+                            ASSERT_EQ("127.0.0.1", connected_sock.get_address().get_host());
+                            ASSERT_NE(0, connected_sock.get_address().get_port());
+                            l.count_down();
+                        });
             }
 
 #ifdef HZ_BUILD_WITH_SSL

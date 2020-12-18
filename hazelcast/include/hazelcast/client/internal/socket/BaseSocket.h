@@ -20,7 +20,7 @@
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
 
-#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/socket.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/socket_interceptor.h"
@@ -30,7 +30,7 @@ namespace hazelcast {
         namespace internal {
             namespace socket {
                 template<typename T>
-                class BaseSocket : public hz_socket {
+                class BaseSocket : public hazelcast::client::socket {
                 public:
                     template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &io_resolver,
