@@ -32,22 +32,22 @@ int main() {
                     .on_updated([](hazelcast::client::entry_event &&event) {
                         std::cout << "[added] " << event << std::endl;
                     })
-            .on_evicted([](hazelcast::client::entry_event &&event) {
-                std::cout << "[updated] " << event << std::endl;
-            })
-            .on_expired([](hazelcast::client::entry_event &&event) {
-                std::cout << "[expired] " << event << std::endl;
-            })
-            .on_merged([](hazelcast::client::entry_event &&event) {
-                std::cout << "[merged] " << event << std::endl;
-            })
-            .on_map_evicted([](hazelcast::client::map_event &&event) {
-                std::cout << "[map_evicted] " << event << std::endl;
-            })
-            .on_map_cleared([](hazelcast::client::map_event &&event) {
-                std::cout << "[map_cleared] " << event << std::endl;
-            })
-    ).get();
+                    .on_evicted([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[updated] " << event << std::endl;
+                    })
+                    .on_expired([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[expired] " << event << std::endl;
+                    })
+                    .on_merged([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[merged] " << event << std::endl;
+                    })
+                    .on_map_evicted([](hazelcast::client::map_event &&event) {
+                        std::cout << "[map_evicted] " << event << std::endl;
+                    })
+                    .on_map_cleared([](hazelcast::client::map_event &&event) {
+                        std::cout << "[map_cleared] " << event << std::endl;
+                    })
+            ).get();
 
     std::cout << "EntryListener registered with id " << boost::uuids::to_string(listener_id) << std::endl;
 

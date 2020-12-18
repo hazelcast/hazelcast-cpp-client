@@ -26,7 +26,7 @@ using namespace hazelcast::client;
  *
  */
 int main() {
-    hazelcast::client::client_config config;
+    client_config config;
 
     config.set_property("hazelcast.client.statistics.enabled", "true");
 

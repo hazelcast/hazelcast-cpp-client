@@ -25,9 +25,9 @@ int main() {
     hazelcast::client::client_config config;
 
     /**
-     * Set true for non blocking {@link hazelcast_client(const hazelcast::client::client_config &)}. The client creation won't wait to
+     * Set true for non blocking {@link hazelcast_client(const client_config &)}. The client creation won't wait to
      * connect to cluster. The client instace will throw exception until it connects to cluster and become ready.
-     * If set to false, {@link hazelcast_client(const hazelcast::client::client_config &)} will block until a cluster connection established and it's
+     * If set to false, {@link hazelcast_client(const client_config &)} will block until a cluster connection established and it's
      * ready to use client instance.
      *
      * default value is false

@@ -18,7 +18,7 @@
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast::client::hazelcast_client hz;
+    hazelcast_client hz;
     // Get a Replicated Map called "my-replicated-map"
     auto map = hz.get_replicated_map("my-replicated-map").get();
     // Add items to the set with duplicates

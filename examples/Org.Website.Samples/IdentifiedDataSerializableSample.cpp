@@ -56,7 +56,7 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    hazelcast_client hz;
     //Employee can be used here
     hz.shutdown();
 

@@ -20,7 +20,7 @@
 using namespace hazelcast::client;
 
 int main() {
-    hazelcast::client::client_config config;
+    client_config config;
     const char *mapName = "MaxIdleMap";
     address serverAddr("127.0.0.1", 5701);
     config.get_network_config().add_address(serverAddr);

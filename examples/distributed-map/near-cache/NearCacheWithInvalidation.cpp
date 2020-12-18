@@ -18,7 +18,7 @@
 using namespace hazelcast::client;
 
 int main() {
-    hazelcast::client::client_config config;
+    client_config config;
     const char *mapName = "InvalidationMap";
     config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
     nearCacheConfig.set_invalidate_on_change(true);
