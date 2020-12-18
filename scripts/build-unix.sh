@@ -14,8 +14,10 @@
 # Command line arguments are forwarded to CMake.
 #
 
+. ./scripts/utils.sh
+
 # kill background processes on exit
-trap "kill $(jobs -p)" EXIT
+trap kill_background_jobs EXIT
 
 # exit if a command returns non-zero status
 set -e
