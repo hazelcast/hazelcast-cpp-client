@@ -38,7 +38,7 @@
 #include "hazelcast/client/membership_listener.h"
 #include "hazelcast/client/multi_map.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/socket.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/client/transactional_list.h"
 #include "hazelcast/client/transactional_map.h"

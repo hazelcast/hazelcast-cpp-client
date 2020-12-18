@@ -181,9 +181,9 @@ namespace hazelcast {
 
             boost::future<boost::uuids::uuid>
             MultiMapImpl::add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
-                                           bool include_value, data &&key) {
+                                             bool include_value, serialization::pimpl::data &&key) {
                 return register_listener(create_multi_map_entry_listener_codec(include_value, std::move(key)),
-                                        std::move(entry_event_handler));
+                                         std::move(entry_event_handler));
             }
 
             boost::future<bool> MultiMapImpl::remove_entry_listener(boost::uuids::uuid registration_id) {
@@ -813,7 +813,7 @@ namespace hazelcast {
                         get_name(), size);
                 return invoke(request).then(boost::launch::deferred, [] (boost::future<protocol::ClientMessage> f) {
                     auto msg = f.get();
-                    msg.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN);
+                    msg.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN);
 
                     auto base = msg.get<int64_t>();
                     auto increment = msg.get<int64_t>();
@@ -1211,18 +1211,22 @@ namespace hazelcast {
 
             boost::future<boost::uuids::uuid>
             IMapImpl::add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
-                    data &&predicate, bool include_value, int32_t listener_flags) {
-                return register_listener(create_map_entry_listener_codec(include_value, std::move(predicate), listener_flags), std::move(entry_event_handler));
+                                         serialization::pimpl::data &&predicate, bool include_value,
+                                         int32_t listener_flags) {
+                return register_listener(
+                        create_map_entry_listener_codec(include_value, std::move(predicate), listener_flags),
+                        std::move(entry_event_handler));
             }
 
             boost::future<bool> IMapImpl::remove_entry_listener(boost::uuids::uuid registration_id) {
                 return get_context().get_client_listener_service().deregister_listener(registration_id);
             }
 
-            boost::future<boost::uuids::uuid> IMapImpl::add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
-                                                   bool include_value, data &&key, int32_t listener_flags) {
+            boost::future<boost::uuids::uuid>
+            IMapImpl::add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
+                                         bool include_value, serialization::pimpl::data &&key, int32_t listener_flags) {
                 return register_listener(create_map_entry_listener_codec(include_value, listener_flags, std::move(key)),
-                                        std::move(entry_event_handler));
+                                         std::move(entry_event_handler));
             }
 
             boost::future<boost::optional<map::data_entry_view>> IMapImpl::get_entry_view_data(const serialization::pimpl::data &key) {
@@ -1656,15 +1660,20 @@ namespace hazelcast {
                 return max_idle_;
             }
 
-            data_entry_view::data_entry_view(data &&key, data &&value, int64_t cost, int64_t creation_time,
+            data_entry_view::data_entry_view(serialization::pimpl::data &&key, serialization::pimpl::data &&value,
+                                             int64_t cost, int64_t creation_time,
                                              int64_t expiration_time, int64_t hits, int64_t last_access_time,
-                                             int64_t last_stored_time, int64_t last_update_time, int64_t version, int64_t ttl,
-                                             int64_t max_idle) : key_(std::move(key)), value_(std::move(value)), cost_(cost),
-                                                            creation_time_(creation_time), expiration_time_(expiration_time),
-                                                            hits_(hits), last_access_time_(last_access_time),
-                                                            last_stored_time_(last_stored_time),
-                                                            last_update_time_(last_update_time), version_(version), ttl_(ttl),
-                                                            max_idle_(max_idle) {}
+                                             int64_t last_stored_time, int64_t last_update_time, int64_t version,
+                                             int64_t ttl,
+                                             int64_t max_idle) : key_(std::move(key)), value_(std::move(value)),
+                                                                 cost_(cost),
+                                                                 creation_time_(creation_time),
+                                                                 expiration_time_(expiration_time),
+                                                                 hits_(hits), last_access_time_(last_access_time),
+                                                                 last_stored_time_(last_stored_time),
+                                                                 last_update_time_(last_update_time), version_(version),
+                                                                 ttl_(ttl),
+                                                                 max_idle_(max_idle) {}
         }
 
         namespace topic {

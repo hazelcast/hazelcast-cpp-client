@@ -237,14 +237,16 @@ namespace hazelcast {
 
             rb::read_result_set get_result_set(boost::future<protocol::ClientMessage> f) {
                 auto msg = f.get();
-                auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN));
+                auto *initial_frame = reinterpret_cast<protocol::ClientMessage::frame_header_t *>(msg.rd_ptr(
+                        protocol::ClientMessage::RESPONSE_HEADER_LEN));
                 auto read_count = msg.get<int32_t>();
                 auto next_seq = msg.get<int64_t>();
                 msg.rd_ptr(
-                        static_cast<int32_t>(initial_frame->frame_len) - ClientMessage::RESPONSE_HEADER_LEN - ClientMessage::INT32_SIZE -
-                        ClientMessage::INT64_SIZE);
+                        static_cast<int32_t>(initial_frame->frame_len) - protocol::ClientMessage::RESPONSE_HEADER_LEN -
+                        protocol::ClientMessage::INT32_SIZE -
+                        protocol::ClientMessage::INT64_SIZE);
 
-                auto datas = msg.get<std::vector<data>>();
+                auto datas = msg.get<std::vector<serialization::pimpl::data>>();
                 auto item_seqs = msg.get_nullable<std::vector<int64_t>>();
                 return rb::read_result_set(read_count, std::move(datas), get_serialization_service(), item_seqs,
                                            next_seq);

@@ -1,8 +1,15 @@
-cmake_minimum_required (VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.12.4)
 
 include(FindGTest)
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    #required to suppress the warning:
+    # `gtest-death-test.cc:1301:24: error: 'dummy' may be used uninitialized [-Werror=maybe-uninitialized]`
+    #for googletest source compilation
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-maybe-uninitialized")
+endif ()
 
 find_package(GTest QUIET)
 if (NOT GTest_FOUND)
@@ -10,8 +17,8 @@ if (NOT GTest_FOUND)
     configure_file(CMakeLists.googletest.in googletest-download/CMakeLists.txt)
     execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-    if(result)
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+    if (result)
         message(FATAL_ERROR "CMake step for googletest failed: ${result}")
     endif()
     execute_process(COMMAND ${CMAKE_COMMAND} --build .

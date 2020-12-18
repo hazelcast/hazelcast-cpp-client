@@ -432,7 +432,8 @@ namespace hazelcast {
                         near_cache_->clear();
                     }
 
-                    void handle_imapinvalidation(const boost::optional<data> &key, boost::uuids::uuid source_uuid,
+                    void handle_imapinvalidation(const boost::optional<serialization::pimpl::data> &key,
+                                                 boost::uuids::uuid source_uuid,
                                                  boost::uuids::uuid partition_uuid, int64_t sequence) override {
                         // null key means Near Cache has to remove all entries in it (see MapAddNearCacheEntryListenerMessageTask)
                         if (!key) {

@@ -91,7 +91,7 @@
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/lifecycle_listener.h"
 #include "hazelcast/client/socket_interceptor.h"
-#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/socket.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/pipelining.h"
