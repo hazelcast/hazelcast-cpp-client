@@ -60,7 +60,6 @@
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/sync_associative_container.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
 
 namespace hazelcast {
@@ -205,8 +204,8 @@ namespace hazelcast {
                     return connection;
                 }
 
-                auto f = conn_locks_.emplace(address, std::unique_ptr<std::mutex>(new std::mutex()));
-                std::lock_guard<std::mutex> g(*f.first->second);
+                auto f = conn_locks_.get_or_put_if_absent(address, std::make_shared<std::mutex>());
+                std::lock_guard<std::mutex> g(*f.first);
                 // double check here
                 connection = get_connection(address);
                 if (connection) {
@@ -416,16 +415,14 @@ namespace hazelcast {
                     return;
                 }
 
-                auto connecting_addresses = std::make_shared<util::sync_associative_container<std::unordered_set<address>>>();
                 for (const auto &member : client_.get_client_cluster_service().get_member_list()) {
                     const auto& member_addr = member.get_address();
 
                     if (client_.get_lifecycle_service().is_running() && !get_connection(member_addr)
-                        && connecting_addresses->insert(member_addr).second) {
-                        // submit a task for this address only if there is no
-                        // another connection attempt for it
+                        && connecting_addresses_.get_or_put_if_absent(member_addr, nullptr).second) {
+                        // submit a task for this address only if there is no other pending connection attempt for it
                         address addr = member_addr;
-                        boost::asio::post(executor_->get_executor(), [=] () {
+                        boost::asio::post(executor_->get_executor(), [=]() {
                             try {
                                 if (!client_.get_lifecycle_service().is_running()) {
                                     return;
@@ -433,9 +430,9 @@ namespace hazelcast {
                                 if (!get_connection(member.get_uuid())) {
                                     get_or_connect(addr);
                                 }
-                                connecting_addresses->erase(addr);
+                                connecting_addresses_.remove(addr);
                             } catch (std::exception &) {
-                                connecting_addresses->erase(addr);
+                                connecting_addresses_.remove(addr);
                             }
                         });
                     }
