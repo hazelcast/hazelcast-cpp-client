@@ -214,6 +214,9 @@ namespace hazelcast {
                 }
 
                 auto target = translator_->translate(address);
+                HZ_LOG(logger_, info, boost::str(
+                        boost::format("Trying to connect to %1%. Translated address:%2%.") % address % target));
+
                 connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
                                                           *socket_factory_, *this, connection_timeout_millis_);
                 connection->connect();
@@ -409,7 +412,7 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::connect_to_all_members() {
-                if (!client_.get_lifecycle_service().is_running()) {
+                if (!client_.get_lifecycle_service().is_running() || active_connections_.empty()) {
                     return;
                 }
 
@@ -592,8 +595,6 @@ namespace hazelcast {
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &address) {
                 try {
-                    HZ_LOG(logger_, info, 
-                        boost::str(boost::format("Trying to connect to %1%") % address));
                     return get_or_connect(address);
                 } catch (std::exception &e) {
                     HZ_LOG(logger_, warning,
