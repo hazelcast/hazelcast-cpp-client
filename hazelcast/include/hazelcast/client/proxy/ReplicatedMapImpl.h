@@ -355,7 +355,8 @@ namespace hazelcast {
                         : public protocol::codec::replicatedmap_addnearcacheentrylistener_handler {
                 public:
                     ReplicatedMapAddNearCacheEventHandler(
-                            const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>> &near_cache) : near_cache_(near_cache) {}
+                            const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>> &near_cache)
+                            : near_cache_(near_cache) {}
 
                     void before_listener_register() override {
                         near_cache_->clear();
@@ -365,8 +366,10 @@ namespace hazelcast {
                         near_cache_->clear();
                     }
 
-                    void handle_entry(const boost::optional<data> &key, const boost::optional<data> &value,
-                                      const boost::optional<data> &old_value, const boost::optional<data> &merging_value,
+                    void handle_entry(const boost::optional<serialization::pimpl::data> &key,
+                                      const boost::optional<serialization::pimpl::data> &value,
+                                      const boost::optional<serialization::pimpl::data> &old_value,
+                                      const boost::optional<serialization::pimpl::data> &merging_value,
                                       int32_t event_type, boost::uuids::uuid uuid,
                                       int32_t number_of_affected_entries) override {
                         switch (event_type) {

@@ -53,7 +53,7 @@ int main() {
 
     auto map = hz.get_map("personsWithIndex").get();
 
-    map->add_index(config::index_config::index_type::SORTED, "name").get();
+    map->add_index(hazelcast::client::config::index_config::index_type::SORTED, "name").get();
 
     const int mapSize = 200000;
 

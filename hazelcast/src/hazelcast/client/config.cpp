@@ -29,6 +29,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <atomic>
 
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/serialization_config.h"

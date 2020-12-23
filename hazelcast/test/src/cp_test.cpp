@@ -80,9 +80,9 @@ namespace hazelcast {
                 template<typename T> HazelcastServer *cp_test<T>::server2 = nullptr;
                 template<typename T> HazelcastServer *cp_test<T>::server3 = nullptr;
 
-                class basic_atomic_long_test : public cp_test<atomic_long> {
+                class basic_atomic_long_test : public cp_test<hazelcast::cp::atomic_long> {
                 protected:
-                    std::shared_ptr<atomic_long> get_cp_structure(const std::string &name) override {
+                    std::shared_ptr<hazelcast::cp::atomic_long> get_cp_structure(const std::string &name) override {
                         return client_->get_cp_subsystem().get_atomic_long(name).get();
                     }
                 };
@@ -194,9 +194,10 @@ namespace hazelcast {
                     ASSERT_NO_THROW(cp_structure_->destroy().get());
                 }
 
-                class basic_atomic_ref_test : public cp_test<atomic_reference> {
+                class basic_atomic_ref_test : public cp_test<hazelcast::cp::atomic_reference> {
                 protected:
-                    std::shared_ptr<atomic_reference> get_cp_structure(const std::string &name) override {
+                    std::shared_ptr<hazelcast::cp::atomic_reference>
+                    get_cp_structure(const std::string &name) override {
                         return client_->get_cp_subsystem().get_atomic_reference(name).get();
                     }
                 };
@@ -297,9 +298,9 @@ namespace hazelcast {
                     ASSERT_NO_THROW(cp_structure_->destroy().get());
                 }
 
-                class basic_latch_test : public cp_test<latch> {
+                class basic_latch_test : public cp_test<hazelcast::cp::latch> {
                 protected:
-                    std::shared_ptr<latch> get_cp_structure(const std::string &name) override {
+                    std::shared_ptr<hazelcast::cp::latch> get_cp_structure(const std::string &name) override {
                         return client_->get_cp_subsystem().get_latch(name).get();
                     }
                 };
@@ -404,28 +405,28 @@ namespace hazelcast {
                     ASSERT_NO_THROW(cp_structure_->destroy().get());
                 }
 
-                class basic_lock_test : public cp_test<fenced_lock> {
+                class basic_lock_test : public cp_test<hazelcast::cp::fenced_lock> {
                 protected:
                     static constexpr size_t LOCK_SERVICE_WAIT_TIMEOUT_TASK_UPPER_BOUND_MILLIS = 1500; // msecs
 
-                    std::shared_ptr<fenced_lock> get_cp_structure(const std::string &name) override {
+                    std::shared_ptr<hazelcast::cp::fenced_lock> get_cp_structure(const std::string &name) override {
                         return client_->get_cp_subsystem().get_lock(name).get();
                     }
 
                     void try_lock(const std::chrono::milliseconds timeout) {
-                        std::async([=] () {
+                        std::async([=]() {
                             cp_structure_->lock().get();
                         }).get();
 
                         auto fence = cp_structure_->try_lock_and_get_fence(timeout).get();
 
-                        ASSERT_EQ(fenced_lock::INVALID_FENCE, fence);
+                        ASSERT_EQ(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                         ASSERT_TRUE(cp_structure_->is_locked().get());
                         ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
                         ASSERT_EQ(1, cp_structure_->get_lock_count().get());
                     }
 
-                    void close_session(const raft_group_id &group_id, int64_t session_id) {
+                    void close_session(const hazelcast::cp::raft_group_id &group_id, int64_t session_id) {
                         auto request = client::protocol::codec::cpsession_closesession_encode(group_id, session_id);
                         auto context = spi::ClientContext(*client_);
                         spi::impl::ClientInvocation::create(context, request, "sessionManager")->invoke().get();
@@ -433,10 +434,11 @@ namespace hazelcast {
 
                     void test_when_session_closed(std::function<void()> f) {
                         auto fence = cp_structure_->lock_and_get_fence().get();
-                        ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                        ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
 
                         auto group_id = cp_structure_->get_group_id();
-                        auto session_id = spi::ClientContext(*client_).get_proxy_session_manager().get_session(group_id);
+                        auto session_id = spi::ClientContext(*client_).get_proxy_session_manager().get_session(
+                                group_id);
                         close_session(group_id, session_id);
 
                         ASSERT_THROW(f(), exception::lock_ownership_lost);
@@ -444,13 +446,14 @@ namespace hazelcast {
 
                     void test_when_new_session_created(std::function<void()> f) {
                         auto fence = cp_structure_->lock_and_get_fence().get();
-                        ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                        ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
 
                         auto group_id = cp_structure_->get_group_id();
-                        auto session_id = spi::ClientContext(*client_).get_proxy_session_manager().get_session(group_id);
+                        auto session_id = spi::ClientContext(*client_).get_proxy_session_manager().get_session(
+                                group_id);
                         close_session(group_id, session_id);
 
-                        std::async([=] () {cp_structure_->lock().get(); }).get();
+                        std::async([=]() { cp_structure_->lock().get(); }).get();
 
                         // now we have a new session
                         try {
@@ -465,7 +468,7 @@ namespace hazelcast {
 
                 TEST_F(basic_lock_test, test_lock_when_not_locked) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                     ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
                     ASSERT_EQ(1, cp_structure_->get_lock_count().get());
                     ASSERT_EQ(fence, cp_structure_->get_fence().get());
@@ -473,7 +476,7 @@ namespace hazelcast {
 
                 TEST_F(basic_lock_test, test_lock_when_locked_by_self) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
 
                     auto new_fence = cp_structure_->lock_and_get_fence().get();
                     ASSERT_EQ(fence, new_fence);
@@ -483,17 +486,17 @@ namespace hazelcast {
 
                 TEST_F(basic_lock_test, test_lock_when_locked_by_other) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                     ASSERT_TRUE(cp_structure_->is_locked().get());
                     ASSERT_EQ(1, cp_structure_->get_lock_count().get());
                     ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
 
                     boost::latch start(1);
-                    auto f = std::async([=, &start] () {
+                    auto f = std::async([=, &start]() {
                         auto invocation = cp_structure_->lock();
                         start.count_down();
                         invocation.get();
-                       return true;
+                        return true;
                     });
 
                     ASSERT_EQ(boost::cv_status::no_timeout, start.wait_for(boost::chrono::seconds(120)));
@@ -535,7 +538,7 @@ namespace hazelcast {
 
                 TEST_F(basic_lock_test, test_unlock_when_reentrantly_locked_by_self) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                     cp_structure_->lock().get();
                     cp_structure_->unlock().get();
 
@@ -547,10 +550,10 @@ namespace hazelcast {
 
                 TEST_F(basic_lock_test, test_lock_unlock_then_lock) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                     cp_structure_->unlock().get();
 
-                    auto f = std::async([=] () {
+                    auto f = std::async([=]() {
                         return cp_structure_->lock_and_get_fence().get();
                     });
 
@@ -567,10 +570,10 @@ namespace hazelcast {
 
                 TEST_F(basic_lock_test, test_lock_unlock_when_pending_lock_of_other_thread) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
 
                     boost::latch start(1);
-                    auto f = std::async([=, &start] () {
+                    auto f = std::async([=, &start]() {
                         auto invocation = cp_structure_->try_lock_and_get_fence(std::chrono::seconds(60));
                         start.count_down();
                         return invocation.get();
@@ -604,7 +607,7 @@ namespace hazelcast {
                 TEST_F(basic_lock_test, test_try_lock_when_not_locked) {
                     auto fence = cp_structure_->try_lock_and_get_fence().get();
 
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                     ASSERT_EQ(fence, cp_structure_->get_fence().get());
                     ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
                     ASSERT_EQ(1, cp_structure_->get_lock_count().get());
@@ -612,7 +615,7 @@ namespace hazelcast {
 
                 TEST_F(basic_lock_test, test_try_lock_when_locked_by_self) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
 
                     auto new_fence = cp_structure_->try_lock_and_get_fence().get();
                     ASSERT_EQ(fence, new_fence);
@@ -624,14 +627,14 @@ namespace hazelcast {
                 TEST_F(basic_lock_test, test_try_lock_timeout) {
                     auto fence = cp_structure_->try_lock_and_get_fence(std::chrono::seconds(1)).get();
 
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                     ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
                     ASSERT_EQ(1, cp_structure_->get_lock_count().get());
                 }
 
                 TEST_F(basic_lock_test, test_try_lock_timeout_when_locked_by_self) {
                     auto fence = cp_structure_->lock_and_get_fence().get();
-                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_NE(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
 
                     auto new_fence = cp_structure_->try_lock_and_get_fence(std::chrono::seconds(1)).get();
 
@@ -677,7 +680,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_lock_test, test_failed_try_lock_does_not_acquire_session) {
-                    std::async([=] () {cp_structure_->lock().get(); }).get();
+                    std::async([=]() { cp_structure_->lock().get(); }).get();
 
                     auto group_id = cp_structure_->get_group_id();
                     auto &session_manager = spi::ClientContext(*client_).get_proxy_session_manager();
@@ -686,7 +689,7 @@ namespace hazelcast {
                     ASSERT_EQ(1, session_manager.get_session_acquire_count(group_id, session_id));
 
                     auto fence = cp_structure_->try_lock_and_get_fence().get();
-                    ASSERT_EQ(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_EQ(hazelcast::cp::fenced_lock::INVALID_FENCE, fence);
                     ASSERT_EQ(1, session_manager.get_session_acquire_count(group_id, session_id));
                 }
 
@@ -718,9 +721,10 @@ namespace hazelcast {
                                                                                                      "0"));
                 }
 
-                class basic_sessionless_semaphore_test : public cp_test<counting_semaphore> {
+                class basic_sessionless_semaphore_test : public cp_test<hazelcast::cp::counting_semaphore> {
                 protected:
-                    std::shared_ptr<counting_semaphore> get_cp_structure(const std::string &name) override {
+                    std::shared_ptr<hazelcast::cp::counting_semaphore>
+                    get_cp_structure(const std::string &name) override {
                         return client_->get_cp_subsystem().get_semaphore(name).get();
                     }
 
@@ -1038,9 +1042,10 @@ namespace hazelcast {
                     ASSERT_FALSE(semaphore2->try_acquire().get());
                 }
 
-                class basic_session_semaphore_test : public cp_test<counting_semaphore> {
+                class basic_session_semaphore_test : public cp_test<hazelcast::cp::counting_semaphore> {
                 protected:
-                    std::shared_ptr<counting_semaphore> get_cp_structure(const std::string &name) override {
+                    std::shared_ptr<hazelcast::cp::counting_semaphore>
+                    get_cp_structure(const std::string &name) override {
                         return client_->get_cp_subsystem().get_semaphore(name).get();
                     }
                 };

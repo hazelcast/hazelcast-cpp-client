@@ -33,7 +33,7 @@
 
 namespace hazelcast {
     namespace client {
-        class hz_socket;
+        class socket;
 
         class address;
 
@@ -49,7 +49,7 @@ namespace hazelcast {
 
                     bool start();
 
-                    std::unique_ptr<hz_socket>
+                    std::unique_ptr<hazelcast::client::socket>
                     create(const address &address, std::chrono::milliseconds &connect_timeout_in_millis);
 
                 private:

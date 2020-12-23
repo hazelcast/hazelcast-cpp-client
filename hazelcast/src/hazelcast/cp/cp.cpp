@@ -60,14 +60,17 @@ namespace hazelcast {
         std::shared_ptr<counting_semaphore>
         raft_proxy_factory::create_semaphore(raft_group_id &&group_id, const std::string &proxy_name,
                                              const std::string &object_name) {
-            auto request = protocol::codec::semaphore_getsemaphoretype_encode(proxy_name);
-            auto is_sessionless = spi::impl::ClientInvocation::create(context_, request, object_name)->invoke().get().get_first_fixed_sized_field<bool>();
+            auto request = client::protocol::codec::semaphore_getsemaphoretype_encode(proxy_name);
+            auto is_sessionless = client::spi::impl::ClientInvocation::create(context_, request,
+                                                                              object_name)->invoke().get().get_first_fixed_sized_field<bool>();
             if (is_sessionless) {
-                return std::shared_ptr<counting_semaphore>(new sessionless_semaphore(proxy_name, &context_, group_id, object_name,
-                                                                                     context_.get_proxy_session_manager()));
+                return std::shared_ptr<counting_semaphore>(
+                        new sessionless_semaphore(proxy_name, &context_, group_id, object_name,
+                                                  context_.get_proxy_session_manager()));
             } else {
-                return std::shared_ptr<counting_semaphore>(new session_semaphore(proxy_name, &context_, group_id, object_name,
-                                                                                 context_.get_proxy_session_manager()));
+                return std::shared_ptr<counting_semaphore>(
+                        new session_semaphore(proxy_name, &context_, group_id, object_name,
+                                              context_.get_proxy_session_manager()));
             }
         }
 
@@ -110,10 +113,10 @@ namespace hazelcast {
 
         boost::future<raft_group_id> raft_proxy_factory::get_group_id(const std::string &proxy_name, const std::string &object_name) {
             auto request = cpgroup_createcpgroup_encode(proxy_name);
-            return spi::impl::ClientInvocation::create(context_, request, object_name)->invoke().then(
-                    boost::launch::deferred, [] (boost::future<protocol::ClientMessage> f) {
-                return *f.get().get_first_var_sized_field<raft_group_id>();
-            });
+            return client::spi::impl::ClientInvocation::create(context_, request, object_name)->invoke().then(
+                    boost::launch::deferred, [](boost::future<client::protocol::ClientMessage> f) {
+                        return *f.get().get_first_var_sized_field<raft_group_id>();
+                    });
         }
 
         cp_subsystem::cp_subsystem(client::spi::ClientContext &context) : context_(context), proxy_factory_(context) {
@@ -156,7 +159,7 @@ namespace hazelcast {
             return group_id_;
         }
 
-        atomic_long::atomic_long(const std::string &name, spi::ClientContext &context,
+        atomic_long::atomic_long(const std::string &name, client::spi::ClientContext &context,
                                  const raft_group_id &group_id, const std::string &object_name)
                 : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name) {}
 
@@ -205,60 +208,68 @@ namespace hazelcast {
             return to_void_future(get_and_set(new_value));
         }
 
-        boost::future<int64_t> atomic_long::alter_data(data &function_data,
+        boost::future<int64_t> atomic_long::alter_data(client::serialization::pimpl::data &function_data,
                                                        alter_result_type result_type) {
             auto request = atomiclong_alter_encode(group_id_, object_name_, function_data,
                                                    static_cast<int32_t>(result_type));
             return invoke_and_get_future<int64_t>(request);
         }
 
-        boost::future<boost::optional<data>> atomic_long::apply_data(data &function_data) {
+        boost::future<boost::optional<client::serialization::pimpl::data>>
+        atomic_long::apply_data(client::serialization::pimpl::data &function_data) {
             auto request = atomiclong_apply_encode(group_id_, object_name_, function_data);
-            return invoke_and_get_future<boost::optional<data>>(request);
+            return invoke_and_get_future<boost::optional<client::serialization::pimpl::data>>(request);
         }
 
-        atomic_reference::atomic_reference(const std::string &name, spi::ClientContext &context,
+        atomic_reference::atomic_reference(const std::string &name, client::spi::ClientContext &context,
                                            const raft_group_id &group_id, const std::string &object_name)
                 : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name) {}
 
-        boost::future<boost::optional<data>> atomic_reference::get_data() {
+        boost::future<boost::optional<client::serialization::pimpl::data>> atomic_reference::get_data() {
             auto request = atomicref_get_encode(group_id_, object_name_);
-            return invoke_and_get_future<boost::optional<data>>(request);
+            return invoke_and_get_future<boost::optional<client::serialization::pimpl::data>>(request);
         }
 
-        boost::future<boost::optional<data>> atomic_reference::set_data(const data &new_value_data) {
+        boost::future<boost::optional<client::serialization::pimpl::data>>
+        atomic_reference::set_data(const client::serialization::pimpl::data &new_value_data) {
             auto request = atomicref_set_encode(group_id_, object_name_, &new_value_data, false);
-            return invoke_and_get_future<boost::optional<data>>(request);
+            return invoke_and_get_future<boost::optional<client::serialization::pimpl::data>>(request);
         }
 
-        boost::future<boost::optional<data>> atomic_reference::get_and_set_data(const data &new_value_data) {
+        boost::future<boost::optional<client::serialization::pimpl::data>>
+        atomic_reference::get_and_set_data(const client::serialization::pimpl::data &new_value_data) {
             auto request = atomicref_set_encode(group_id_, object_name_, &new_value_data, true);
-            return invoke_and_get_future<boost::optional<data>>(request);
+            return invoke_and_get_future<boost::optional<client::serialization::pimpl::data>>(request);
         }
 
-        boost::future<bool> atomic_reference::compare_and_set_data(const data &expect_data, const data &update_data) {
+        boost::future<bool>
+        atomic_reference::compare_and_set_data(const client::serialization::pimpl::data &expect_data,
+                                               const client::serialization::pimpl::data &update_data) {
             auto request = atomicref_compareandset_encode(group_id_, object_name_, &expect_data, &update_data);
             return invoke_and_get_future<bool>(request);
         }
 
-        boost::future<bool> atomic_reference::contains_data(const data &value_data) {
+        boost::future<bool> atomic_reference::contains_data(const client::serialization::pimpl::data &value_data) {
             auto request = atomicref_contains_encode(group_id_, object_name_, &value_data);
             return invoke_and_get_future<bool>(request);
         }
 
-        boost::future<void> atomic_reference::alter_data(const data &function_data) {
+        boost::future<void> atomic_reference::alter_data(const client::serialization::pimpl::data &function_data) {
             return to_void_future(invoke_apply(function_data, return_value_type::NO_VALUE, true));
         }
 
-        boost::future<boost::optional<data>> atomic_reference::alter_and_get_data(const data &function_data) {
+        boost::future<boost::optional<client::serialization::pimpl::data>>
+        atomic_reference::alter_and_get_data(const client::serialization::pimpl::data &function_data) {
             return invoke_apply(function_data, return_value_type::NEW, true);
         }
 
-        boost::future<boost::optional<data>> atomic_reference::get_and_alter_data(const data &function_data) {
+        boost::future<boost::optional<client::serialization::pimpl::data>>
+        atomic_reference::get_and_alter_data(const client::serialization::pimpl::data &function_data) {
             return invoke_apply(function_data, return_value_type::OLD, true);
         }
 
-        boost::future<boost::optional<data>> atomic_reference::apply_data(const data &function_data) {
+        boost::future<boost::optional<client::serialization::pimpl::data>>
+        atomic_reference::apply_data(const client::serialization::pimpl::data &function_data) {
             return invoke_apply(function_data, return_value_type::NEW, false);
         }
 
@@ -270,14 +281,15 @@ namespace hazelcast {
             return to_void_future(set(static_cast<byte *>(nullptr)));
         }
 
-        boost::future<boost::optional<data>>
-        atomic_reference::invoke_apply(const data function_data, return_value_type return_type, bool alter) {
+        boost::future<boost::optional<client::serialization::pimpl::data>>
+        atomic_reference::invoke_apply(const client::serialization::pimpl::data function_data,
+                                       return_value_type return_type, bool alter) {
             auto request = atomicref_apply_encode(group_id_, object_name_, function_data,
                                                   static_cast<int32_t>(return_type), alter);
-            return invoke_and_get_future<boost::optional<data>>(request);
+            return invoke_and_get_future<boost::optional<client::serialization::pimpl::data>>(request);
         }
 
-        latch::latch(const std::string &name, spi::ClientContext &context, const raft_group_id &group_id,
+        latch::latch(const std::string &name, client::spi::ClientContext &context, const raft_group_id &group_id,
                      const std::string &object_name) : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name) {}
 
         boost::future<bool> latch::try_set_count(int32_t count) {
@@ -300,7 +312,7 @@ namespace hazelcast {
                     try {
                         count_down(round, invocation_uid);
                         return;
-                    } catch (exception::operation_timeout &) {
+                    } catch (client::exception::operation_timeout &) {
                         // I can retry safely because my retry would be idempotent...
                     }
                 }
@@ -348,10 +360,12 @@ namespace hazelcast {
         }
 
         constexpr int64_t fenced_lock::INVALID_FENCE;
-        fenced_lock::fenced_lock(const std::string &name, spi::ClientContext &context, const raft_group_id &group_id,
+
+        fenced_lock::fenced_lock(const std::string &name, client::spi::ClientContext &context,
+                                 const raft_group_id &group_id,
                                  const std::string &object_name) : session_aware_proxy(SERVICE_NAME, name, &context,
-                                                                                      group_id, object_name,
-                                                                                      context.get_proxy_session_manager()) {}
+                                                                                       group_id, object_name,
+                                                                                       context.get_proxy_session_manager()) {}
 
         boost::future<void> fenced_lock::lock() {
             return to_void_future(lock_and_get_fence());
@@ -371,16 +385,20 @@ namespace hazelcast {
                             locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
                             return fence;
                         }
-                        BOOST_THROW_EXCEPTION(exception::lock_acquire_limit_reached(
-                                                      "fenced_lock::lock_and_get_fence", (boost::format("Lock [%1%] reentrant lock limit is already reached!") %object_name_).str()));
-                    } catch(exception::session_expired &) {
+                        BOOST_THROW_EXCEPTION(client::exception::lock_acquire_limit_reached(
+                                                      "fenced_lock::lock_and_get_fence", (boost::format(
+                                                              "Lock [%1%] reentrant lock limit is already reached!") %
+                                                                                          object_name_).str()));
+                    } catch (client::exception::session_expired &) {
                         invalidate_session(session_id);
                         verify_no_locked_session_id_present(thread_id);
                         return INVALID_FENCE;
-                    } catch(exception::wait_key_cancelled &) {
+                    } catch (client::exception::wait_key_cancelled &) {
                         release_session(session_id);
-                        BOOST_THROW_EXCEPTION(exception::lock_acquire_limit_reached(
-                                                      "fenced_lock::lock_and_get_fence", (boost::format("Lock [%1%] not acquired because the lock call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %object_name_).str()));
+                        BOOST_THROW_EXCEPTION(client::exception::lock_acquire_limit_reached(
+                                                      "fenced_lock::lock_and_get_fence", (boost::format(
+                                                              "Lock [%1%] not acquired because the lock call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
+                                                                                          object_name_).str()));
                     } catch (...) {
                         release_session(session_id);
                         throw;
@@ -506,15 +524,15 @@ namespace hazelcast {
                             release_session(session_id);
                         }
                         return std::make_pair(fence, false);
-                    } catch(exception::session_expired &) {
+                    } catch (client::exception::session_expired &) {
                         invalidate_session(session_id);
                         verify_no_locked_session_id_present(thread_id);
-                        auto timeout_left = timeout -  (steady_clock::now() - start);
+                        auto timeout_left = timeout - (steady_clock::now() - start);
                         if (timeout_left.count() <= 0) {
                             return std::make_pair(INVALID_FENCE, false);
                         }
                         return std::make_pair(INVALID_FENCE, false);
-                    } catch(exception::wait_key_cancelled &) {
+                    } catch (client::exception::wait_key_cancelled &) {
                         release_session(session_id);
                         return std::make_pair(INVALID_FENCE, false);
                     } catch (...) {
@@ -550,18 +568,18 @@ namespace hazelcast {
                 try {
                     auto still_locked_by_current_thread = f.get();
                     if (still_locked_by_current_thread) {
-                            locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
+                        locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
                     } else {
                         locked_session_ids_.remove(thread_id);
                     }
 
                     release_session(session_id);
-                } catch (exception::session_expired &) {
+                } catch (client::exception::session_expired &) {
                     invalidate_session(session_id);
                     locked_session_ids_.remove(thread_id);
 
                     throw_lock_ownership_lost(session_id);
-                } catch (exception::illegal_monitor_state &) {
+                } catch (client::exception::illegal_monitor_state &) {
                     locked_session_ids_.remove(thread_id);
                     throw;
                 }
@@ -661,7 +679,7 @@ namespace hazelcast {
         }
 
         session_aware_proxy::session_aware_proxy(const std::string &service_name, const std::string &proxy_name,
-                                                 spi::ClientContext *context, const raft_group_id &group_id,
+                                                 client::spi::ClientContext *context, const raft_group_id &group_id,
                                                  const std::string &object_name,
                                                  internal::session::proxy_session_manager &session_manager) : cp_proxy(
                 service_name, proxy_name, context, group_id, object_name), session_manager_(session_manager) {}
@@ -678,19 +696,20 @@ namespace hazelcast {
             return fence != INVALID_FENCE;
         }
 
-        counting_semaphore::counting_semaphore(const std::string &proxy_name, spi::ClientContext *context,
+        counting_semaphore::counting_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
                                                const raft_group_id &group_id, const std::string &object_name,
-                                               internal::session::proxy_session_manager &session_manager) : session_aware_proxy(SERVICE_NAME,
-                                                                                                     proxy_name, context,
-                                                                                                     group_id,
-                                                                                                     object_name, session_manager) {}
+                                               internal::session::proxy_session_manager &session_manager)
+                : session_aware_proxy(SERVICE_NAME,
+                                      proxy_name, context,
+                                      group_id,
+                                      object_name, session_manager) {}
 
         boost::future<bool> counting_semaphore::init(int32_t permits) {
             util::Preconditions::check_not_negative(permits, "Permits must be non-negative!");
 
             auto request = client::protocol::codec::semaphore_init_encode(group_id_, object_name_, permits);
-            return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                    boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) {
+            return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                    boost::launch::deferred, [](boost::future<client::protocol::ClientMessage> f) {
                         return f.get().get_first_fixed_sized_field<bool>();
                     });
         }
@@ -709,12 +728,14 @@ namespace hazelcast {
         boost::future<void> counting_semaphore::do_release(int32_t permits, int64_t thread_id, int64_t session_id) {
             auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = codec::semaphore_release_encode(group_id_, object_name_, session_id, thread_id, invocation_uid, permits);
-            return to_void_future(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+            return to_void_future(
+                    client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
         boost::future<int32_t> counting_semaphore::available_permits() {
             auto request = codec::semaphore_availablepermits_encode(group_id_, object_name_);
-            return decode<int32_t>(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+            return decode<int32_t>(
+                    client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
         boost::future<void> counting_semaphore::reduce_permits(int32_t reduction) {
@@ -733,10 +754,10 @@ namespace hazelcast {
             return do_change_permits(increase);
         }
 
-        sessionless_semaphore::sessionless_semaphore(const std::string &proxy_name, spi::ClientContext *context,
+        sessionless_semaphore::sessionless_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
                                                      const raft_group_id &group_id, const std::string &object_name,
                                                      internal::session::proxy_session_manager &session_manager)
-                                                     : counting_semaphore(proxy_name, context, group_id, object_name, session_manager) {}
+                : counting_semaphore(proxy_name, context, group_id, object_name, session_manager) {}
 
         boost::future<void> sessionless_semaphore::acquire(int32_t permits) {
             util::Preconditions::check_positive(permits, "permits must be positive number.");
@@ -749,16 +770,17 @@ namespace hazelcast {
             auto cluster_wide_threadId = get_thread_id();
             auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = client::protocol::codec::semaphore_acquire_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid, permits, timeout_ms.count());
-            return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
-                try {
-                    return f.get().get_first_fixed_sized_field<bool>();
-                } catch (exception::wait_key_cancelled &) {
-                    throw exception::illegal_state("sessionless_semaphore::acquire",
-                                                           (boost::format(
-                                                                   "Semaphore[%1%] ] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
-                                                            object_name_).str());
-                }
-            });
+            return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                    boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
+                        try {
+                            return f.get().get_first_fixed_sized_field<bool>();
+                        } catch (client::exception::wait_key_cancelled &) {
+                            throw client::exception::illegal_state("sessionless_semaphore::acquire",
+                                                                   (boost::format(
+                                                                           "Semaphore[%1%] ] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
+                                                                    object_name_).str());
+                        }
+                    });
         }
 
         boost::future<bool> sessionless_semaphore::try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) {
@@ -781,20 +803,22 @@ namespace hazelcast {
             auto cluster_wide_threadId = get_thread_id();
             auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = client::protocol::codec::semaphore_drain_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid);
-            return decode<int32_t>(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+            return decode<int32_t>(
+                    client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
         boost::future<void> sessionless_semaphore::do_change_permits(int32_t delta) {
             auto cluster_wide_threadId = get_thread_id();
             auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = client::protocol::codec::semaphore_change_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid, delta);
-            return to_void_future(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+            return to_void_future(
+                    client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
-        session_semaphore::session_semaphore(const std::string &proxy_name, spi::ClientContext *context,
-                                                     const raft_group_id &group_id, const std::string &object_name,
-                                                     internal::session::proxy_session_manager &session_manager)
-                                                     : counting_semaphore(proxy_name, context, group_id, object_name, session_manager) {}
+        session_semaphore::session_semaphore(const std::string &proxy_name, client::spi::ClientContext *context,
+                                             const raft_group_id &group_id, const std::string &object_name,
+                                             internal::session::proxy_session_manager &session_manager)
+                : counting_semaphore(proxy_name, context, group_id, object_name, session_manager) {}
 
         boost::future<void> session_semaphore::acquire(int32_t permits) {
             return to_void_future(try_acquire_for_millis(permits, std::chrono::milliseconds(-1)));
@@ -815,8 +839,8 @@ namespace hazelcast {
                                                                                  session_id,
                                                                                  thread_id, invocation_uid, permits,
                                                                                  timeout.count());
-                return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                        boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                        boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
                             try {
                                 auto acquired = f.get().get_first_fixed_sized_field<bool>();
                                 if (!acquired) {
@@ -824,19 +848,21 @@ namespace hazelcast {
                                 }
                                 // first bool means acquired or not, second bool means if should try again
                                 return std::make_pair(acquired, false);
-                            } catch (exception::session_expired &) {
+                            } catch (client::exception::session_expired &) {
                                 session_manager_.invalidate_session(group_id_, session_id);
-                                if (use_timeout && (timeout - (std::chrono::steady_clock::now() - start) <= std::chrono::milliseconds::zero())) {
+                                if (use_timeout && (timeout - (std::chrono::steady_clock::now() - start) <=
+                                                    std::chrono::milliseconds::zero())) {
                                     return std::make_pair(false, false);
                                 }
                                 return std::make_pair(false, true);
-                            } catch (exception::wait_key_cancelled &) {
+                            } catch (client::exception::wait_key_cancelled &) {
                                 session_manager_.release_session(group_id_, session_id, permits);
                                 if (!use_timeout) {
                                     BOOST_THROW_EXCEPTION(
-                                            exception::illegal_state("session_semaphore::try_acquire_for_millis", (boost::format(
-                                                    "Semaphore[%1%] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
-                                                                                                            object_name_).str()));
+                                            client::exception::illegal_state(
+                                                    "session_semaphore::try_acquire_for_millis", (boost::format(
+                                                            "Semaphore[%1%] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
+                                                                                                  object_name_).str()));
                                 }
                                 return std::make_pair(false, false);
                             }
@@ -865,7 +891,7 @@ namespace hazelcast {
                 try {
                     f.get();
                     session_manager_.release_session(group_id_, session_id, permits);
-                } catch(exception::session_expired &) {
+                } catch (client::exception::session_expired &) {
                     session_manager_.invalidate_session(group_id_, session_id);
                     session_manager_.release_session(group_id_, session_id, permits);
                     throw_illegal_state_exception(std::current_exception());
@@ -875,7 +901,7 @@ namespace hazelcast {
 
         void session_semaphore::throw_illegal_state_exception(std::exception_ptr e) {
             auto ise = boost::enable_current_exception(
-                    exception::illegal_state("session_semaphore::illegal_state",
+                    client::exception::illegal_state("session_semaphore::illegal_state",
                                                      "No valid session!"));
             if (!e) {
                 throw ise;
@@ -898,15 +924,16 @@ namespace hazelcast {
             auto do_drain_once = ([=] () {
                 auto session_id = session_manager_.acquire_session(group_id_, DRAIN_SESSION_ACQ_COUNT);
                 auto request = client::protocol::codec::semaphore_drain_encode(group_id_, object_name_,
-                                                                                 session_id,
-                                                                                 thread_id, invocation_uid);
-                return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                        boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                                                                               session_id,
+                                                                               thread_id, invocation_uid);
+                return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                        boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
                             try {
                                 auto count = f.get().get_first_fixed_sized_field<int32_t>();
-                                session_manager_.release_session(group_id_, session_id,DRAIN_SESSION_ACQ_COUNT - count);
+                                session_manager_.release_session(group_id_, session_id,
+                                                                 DRAIN_SESSION_ACQ_COUNT - count);
                                 return count;
-                            } catch (exception::session_expired &) {
+                            } catch (client::exception::session_expired &) {
                                 session_manager_.invalidate_session(group_id_, session_id);
                                 return -1;
                             }
@@ -929,14 +956,14 @@ namespace hazelcast {
             auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
 
             auto request = client::protocol::codec::semaphore_change_encode(group_id_, object_name_,
-                                                                           session_id,
-                                                                           thread_id, invocation_uid, delta);
-            return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                    boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                                                                            session_id,
+                                                                            thread_id, invocation_uid, delta);
+            return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                    boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
                         try {
                             f.get();
                             session_manager_.release_session(group_id_, session_id);
-                        } catch (exception::session_expired &) {
+                        } catch (client::exception::session_expired &) {
                             session_manager_.invalidate_session(group_id_, session_id);
                             throw_illegal_state_exception(std::current_exception());
                         }

@@ -53,15 +53,15 @@ int main(int argc, char *args[]) {
 
     const int thread_count = atoi(args[1]);
     const std::string server_address = args[2];
-    client_config config;
+    hazelcast::client::client_config config;
 
     if (argc > 3) {
         config.set_instance_name(args[3]);
     }
 
-    config.get_network_config().add_address(address(server_address, 5701));
-    hazelcast_client hz(std::move(config));
-    spi::ClientContext context(hz);
+    config.get_network_config().add_address(hazelcast::client::address(server_address, 5701));
+    hazelcast::client::hazelcast_client hz(std::move(config));
+    hazelcast::client::spi::ClientContext context(hz);
     auto &logger_ = context.get_logger();
     auto map = hz.get_map("test").get();
 
@@ -98,7 +98,10 @@ int main(int argc, char *args[]) {
                         map->put(key, std::to_string(distrib(gen))).get();
                         ++put_count;
                     } else if (operation < 80) {
-                        map->values<std::string>(query::between_predicate(hz, query::query_constants::THIS_ATTRIBUTE_NAME, std::string("1"), std::string("10"))).get();
+                        map->values<std::string>(hazelcast::client::query::between_predicate(hz,
+                                                                                             hazelcast::client::query::query_constants::THIS_ATTRIBUTE_NAME,
+                                                                                             std::string("1"),
+                                                                                             std::string("10"))).get();
                         ++values_count;
                     } else {
                         map->execute_on_key<std::string, std::string, identified_entry_processor>(key, identified_entry_processor{std::to_string(distrib(gen))}).get();

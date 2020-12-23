@@ -78,9 +78,10 @@ namespace hazelcast {
 
                 proxy_session_manager::session_response
                 proxy_session_manager::request_new_session(const raft_group_id &group_id) {
-                    auto request = client::protocol::codec::cpsession_createsession_encode(group_id, client_.get_name());
-                    auto response = spi::impl::ClientInvocation::create(client_, request,
-                                                                        "sessionManager")->invoke().get();
+                    auto request = client::protocol::codec::cpsession_createsession_encode(group_id,
+                                                                                           client_.get_name());
+                    auto response = client::spi::impl::ClientInvocation::create(client_, request,
+                                                                                "sessionManager")->invoke().get();
                     auto session_id = response.get_first_fixed_sized_field<int64_t>();
                     auto ttl_millis = response.get<int64_t>();
                     auto hearbeat_millis = response.get<int64_t>();
@@ -111,23 +112,28 @@ namespace hazelcast {
                                     prev_heartbeats->emplace_back(
                                             heartbeat(group_id, session_id).then(boost::launch::sync,
                                                                                  [=](boost::future<client::protocol::ClientMessage> f) {
-                                                try {
-                                                    f.get();
-                                                } catch (client::exception::session_expired &) {
-                                                    invalidate_session(group_id, session_id);
-                                                } catch (client::exception::cp_group_destroyed &) {
-                                                    invalidate_session(group_id, session_id);
-                                                }
-                                            }));
+                                                                                     try {
+                                                                                         f.get();
+                                                                                     } catch (
+                                                                                             client::exception::session_expired &) {
+                                                                                         invalidate_session(group_id,
+                                                                                                            session_id);
+                                                                                     } catch (
+                                                                                             client::exception::cp_group_destroyed &) {
+                                                                                         invalidate_session(group_id,
+                                                                                                            session_id);
+                                                                                     }
+                                                                                 }));
                                 }
                             }
                         }, duration, duration);
                     }
                 }
 
-                boost::future<client::protocol::ClientMessage> proxy_session_manager::heartbeat(const raft_group_id &group_id, int64_t session_id) {
+                boost::future<client::protocol::ClientMessage>
+                proxy_session_manager::heartbeat(const raft_group_id &group_id, int64_t session_id) {
                     auto request = client::protocol::codec::cpsession_heartbeatsession_encode(group_id, session_id);
-                    return spi::impl::ClientInvocation::create(client_, request,"sessionManager")->invoke();
+                    return client::spi::impl::ClientInvocation::create(client_, request, "sessionManager")->invoke();
                 }
 
                 void proxy_session_manager::invalidate_session(const raft_group_id &group_id, int64_t session_id) {
@@ -188,7 +194,7 @@ namespace hazelcast {
                         heartbeat_timer_->cancel();
                     }
 
-                    std::vector<boost::future<protocol::ClientMessage>> invocations;
+                    std::vector<boost::future<client::protocol::ClientMessage>> invocations;
                     for (const auto &s : sessions_) {
                         invocations.emplace_back(close_session(s.first, s.second.id));
                     }
@@ -201,10 +207,10 @@ namespace hazelcast {
                     running_ = false;
                 }
 
-                boost::future<protocol::ClientMessage>
+                boost::future<client::protocol::ClientMessage>
                 proxy_session_manager::close_session(const raft_group_id &group_id, int64_t session_id) {
                     auto request = client::protocol::codec::cpsession_closesession_encode(group_id, session_id);
-                    return spi::impl::ClientInvocation::create(client_, request, "sessionManager")->invoke();
+                    return client::spi::impl::ClientInvocation::create(client_, request, "sessionManager")->invoke();
                 }
 
                 int64_t proxy_session_manager::get_session_acquire_count(const raft_group_id &group_id, int64_t session_id) {
@@ -215,8 +221,8 @@ namespace hazelcast {
 
                 int64_t proxy_session_manager::generate_thread_id(const raft_group_id &group_id) {
                     auto request = client::protocol::codec::cpsession_generatethreadid_encode(group_id);
-                    return spi::impl::ClientInvocation::create(client_, request,
-                                                               "sessionManager")->invoke().get().get_first_fixed_sized_field<int64_t>();
+                    return client::spi::impl::ClientInvocation::create(client_, request,
+                                                                       "sessionManager")->invoke().get().get_first_fixed_sized_field<int64_t>();
                 }
 
                 bool proxy_session_manager::session_state::is_valid() const {

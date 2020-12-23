@@ -36,8 +36,6 @@ namespace hazelcast {
         }
     }
     namespace cp {
-        using namespace client::serialization::pimpl;
-
         class raft_proxy_factory;
 
         struct HAZELCAST_API raft_group_id {
@@ -239,9 +237,10 @@ namespace hazelcast {
             };
 
             boost::future<int64_t>
-            alter_data(data &function_data, alter_result_type result_type);
+            alter_data(client::serialization::pimpl::data &function_data, alter_result_type result_type);
 
-            boost::future<boost::optional<data>> apply_data(data &function_data);
+            boost::future<boost::optional<client::serialization::pimpl::data>>
+            apply_data(client::serialization::pimpl::data &function_data);
         };
 
         /**
@@ -313,26 +312,33 @@ namespace hazelcast {
                 NEW
             };
 
-            boost::future<boost::optional<data>> get_data();
+            boost::future<boost::optional<client::serialization::pimpl::data>> get_data();
 
-            boost::future<boost::optional<data>> set_data(const data &new_value_data);
+            boost::future<boost::optional<client::serialization::pimpl::data>>
+            set_data(const client::serialization::pimpl::data &new_value_data);
 
-            boost::future<boost::optional<data>> get_and_set_data(const data &new_value_data);
+            boost::future<boost::optional<client::serialization::pimpl::data>>
+            get_and_set_data(const client::serialization::pimpl::data &new_value_data);
 
-            boost::future<bool> compare_and_set_data(const data &expect_data, const data &update_data);
+            boost::future<bool> compare_and_set_data(const client::serialization::pimpl::data &expect_data,
+                                                     const client::serialization::pimpl::data &update_data);
 
-            boost::future<bool> contains_data(const data &value_data);
+            boost::future<bool> contains_data(const client::serialization::pimpl::data &value_data);
 
-            boost::future<void> alter_data(const data &function_data);
+            boost::future<void> alter_data(const client::serialization::pimpl::data &function_data);
 
-            boost::future<boost::optional<data>> alter_and_get_data(const data &function_data);
+            boost::future<boost::optional<client::serialization::pimpl::data>>
+            alter_and_get_data(const client::serialization::pimpl::data &function_data);
 
-            boost::future<boost::optional<data>> get_and_alter_data(const data &function_data);
+            boost::future<boost::optional<client::serialization::pimpl::data>>
+            get_and_alter_data(const client::serialization::pimpl::data &function_data);
 
-            boost::future<boost::optional<data>> apply_data(const data &function_data);
+            boost::future<boost::optional<client::serialization::pimpl::data>>
+            apply_data(const client::serialization::pimpl::data &function_data);
 
-            boost::future<boost::optional<data>> invoke_apply(const data function_data, return_value_type return_type,
-                                                              bool alter);
+            boost::future<boost::optional<client::serialization::pimpl::data>>
+            invoke_apply(const client::serialization::pimpl::data function_data, return_value_type return_type,
+                         bool alter);
         };
 
         class HAZELCAST_API latch : public cp_proxy {
@@ -433,8 +439,7 @@ namespace hazelcast {
              */
             template<typename Clock, typename Duration>
             boost::future<std::cv_status> wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time) {
-                using namespace std::chrono;
-                return wait_for(duration_cast<milliseconds>(timeout_time - Clock::now()));
+                return wait_for(std::chrono::duration_cast<std::chrono::milliseconds>(timeout_time - Clock::now()));
             }
 
         private:
@@ -1097,9 +1102,8 @@ namespace hazelcast {
              */
             template<class Clock, class Duration>
             boost::future<bool> try_acquire_until(const std::chrono::time_point<Clock, Duration>& abs_time, int32_t permits = 1) {
-                using namespace std::chrono;
                 auto now = Clock::now();
-                return try_acquire_for(duration_cast<milliseconds>(abs_time - now), permits);
+                return try_acquire_for(std::chrono::duration_cast<std::chrono::milliseconds>(abs_time - now), permits);
             }
 
             //---- std::counting_semaphore method impl ends ----------

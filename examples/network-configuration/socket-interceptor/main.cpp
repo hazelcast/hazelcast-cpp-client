@@ -19,11 +19,11 @@
 int main() {
     hazelcast::client::client_config config;
     config.set_socket_interceptor(
-            socket_interceptor()
-            .on_connect([](const hazelcast::client::hz_socket &connected_socket) {
-                std::cout << "Connected to remote host " 
-                    << connected_socket.get_address() << std::endl;
-            })
+            hazelcast::client::socket_interceptor()
+                    .on_connect([](const hazelcast::client::socket &connected_socket) {
+                        std::cout << "Connected to remote host "
+                                  << connected_socket.get_address() << std::endl;
+                    })
     );
 
     hazelcast::client::hazelcast_client hz(std::move(config));
