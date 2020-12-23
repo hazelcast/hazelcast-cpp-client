@@ -14,15 +14,10 @@
 # Command line arguments are forwarded to CMake.
 #
 
-. ./scripts/utils.sh
-
-# kill background processes on exit
-trap kill_background_jobs EXIT
-
 # exit if a command returns non-zero status
 set -e
 
-# add test coverage flags
+# add compiler flags necessary for test coverage
 if [ "$COVERAGE" = "ON" ]; then
   CXXFLAGS="${CXXFLAGS} -fprofile-arcs -ftest-coverage -fPIC -O0"
 fi
@@ -53,24 +48,6 @@ cmake -S . -B "$BUILD_DIR" "$@"
 
 echo "Building..."
 cmake --build "$BUILD_DIR" --verbose --parallel 8
-
-if [ "$TEST" = "ON" ]; then
-  echo "Testing..."
-
-  TEST_EXECUTABLE="$BUILD_DIR/hazelcast/test/src/client_test"
-
-  if [ ! -f "$TEST_EXECUTABLE" ]; then
-    echo "Test executable cannot be found, make sure tests are configured to be built!"
-    exit 1
-  fi
-
-  ./scripts/start-rc.sh &
-  while [ -z "$(netstat -an | grep 9701)" ]; do
-    sleep 1;
-  done
-
-  $TEST_EXECUTABLE --gtest_output="xml:test_report.xml" --gtest_filter="*log*"
-fi
 
 if [ "$INSTALL" = "ON" ]; then
   echo "Installing..."
