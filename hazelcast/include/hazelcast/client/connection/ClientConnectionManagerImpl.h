@@ -24,7 +24,6 @@
 #include <boost/asio.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
-#include <hazelcast/util/sync_associative_container.h>
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/ConcurrentSet.h"
 #include "hazelcast/client/lifecycle_event.h"
@@ -189,7 +188,8 @@ namespace hazelcast {
                 std::shared_ptr<AddressTranslator> translator_;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> active_connections_;
                 util::SynchronizedMap<int32_t, Connection> active_connection_ids_;
-                util::sync_associative_container<std::unordered_map<address, std::unique_ptr<std::mutex>>> conn_locks_;
+                util::SynchronizedMap<address, std::mutex> conn_locks_;
+                util::SynchronizedMap<address, bool> connecting_addresses_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connection_listeners_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
