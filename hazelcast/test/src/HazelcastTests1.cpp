@@ -60,10 +60,9 @@
 #include "hazelcast/client/membership_listener.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/socket_interceptor.h"
-#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/socket.h"
 #include "hazelcast/client/cluster.h"
 #include "hazelcast/client/imap.h"
-#include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/itopic.h"
@@ -1073,11 +1072,11 @@ namespace hazelcast {
 
             socket_interceptor make_socket_interceptor(boost::latch &l) {
                 return socket_interceptor()
-                    .on_connect([&l](const hazelcast::client::hz_socket &connected_sock) {
-                        ASSERT_EQ("127.0.0.1", connected_sock.get_address().get_host());
-                        ASSERT_NE(0, connected_sock.get_address().get_port());
-                        l.count_down();
-                    });
+                        .on_connect([&l](const hazelcast::client::socket &connected_sock) {
+                            ASSERT_EQ("127.0.0.1", connected_sock.get_address().get_host());
+                            ASSERT_NE(0, connected_sock.get_address().get_port());
+                            l.count_down();
+                        });
             }
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -2883,13 +2882,13 @@ namespace hazelcast {
             };
 
             TEST_F(HttpsClientTest, testConnect) {
-                SyncHttpsClient httpsClient("localhost", "non_existentURL/no_page");
+                hazelcast::util::SyncHttpsClient httpsClient("localhost", "non_existentURL/no_page");
                 ASSERT_THROW(httpsClient.open_connection(), client::exception::io);
             }
 
             TEST_F(HttpsClientTest, testConnectToGithub) {
-                SyncHttpsClient httpsClient("ec2.us-east-1.amazonaws.com",
-                                            "/?Action=DescribeInstances&Version=2014-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIU5IAVNR6X75ARYQ%2F20170413%2Fus-east-1%2Fec2%2Faws4_request&X-Amz-Date=20170413T083821Z&X-Amz-Expires=30&X-Amz-Signature=dff261333170c81ecb21f3a0d5820147233197a32c&X-Amz-SignedHeaders=host");
+                hazelcast::util::SyncHttpsClient httpsClient("ec2.us-east-1.amazonaws.com",
+                                                             "/?Action=DescribeInstances&Version=2014-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIU5IAVNR6X75ARYQ%2F20170413%2Fus-east-1%2Fec2%2Faws4_request&X-Amz-Date=20170413T083821Z&X-Amz-Expires=30&X-Amz-Signature=dff261333170c81ecb21f3a0d5820147233197a32c&X-Amz-SignedHeaders=host");
                 try {
                     httpsClient.open_connection();
                 } catch (exception::iexception &e) {

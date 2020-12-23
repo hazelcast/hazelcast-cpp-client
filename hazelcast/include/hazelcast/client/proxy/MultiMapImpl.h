@@ -86,7 +86,7 @@ namespace hazelcast {
 
                 boost::future<boost::uuids::uuid>
                 add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, bool include_value,
-                                 data &&key);
+                                   serialization::pimpl::data &&key);
 
                 boost::future<void> lock(const serialization::pimpl::data& key);
 

@@ -186,14 +186,19 @@ namespace hazelcast {
                 return keysArray;
             }
 
-            std::shared_ptr<V> get_or_put_if_absent(const K &key) {
-                std::shared_ptr<V> value = get(key);
-                if (!value) {
-                    value.reset(new V());
-                    std::shared_ptr<V> current = put_if_absent(key, value);
-                    value = !current ? value : current;
-                }
-                return value;
+            /**
+             *
+             * @param key The key of the entry to be inserted
+             * @param new_value The new value to be inserted for the key
+             * @return A pair of value and bool. The second part of the pair is true if the insertion of the new values
+             * actually happened, i.e. there was no entry associated with the key, otherwise it is set to false.
+             * The first part of the pair is existing value or the newly inserted value.
+             */
+            std::pair<std::shared_ptr<V>, bool>
+            get_or_put_if_absent(const K &key, const std::shared_ptr<V> &new_value) {
+                std::lock_guard<std::mutex> lg(map_lock_);
+                auto result = internal_map_.emplace(key, new_value);
+                return {result.first->second, result.second};
             }
 
             virtual size_t size() const {

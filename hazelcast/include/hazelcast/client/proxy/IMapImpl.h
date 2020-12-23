@@ -165,12 +165,13 @@ namespace hazelcast {
                 add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, bool include_value, int32_t listener_flags);
 
                 boost::future<boost::uuids::uuid>
-                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, data &&predicate,
-                                 bool include_value, int32_t listener_flags);
+                add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler,
+                                   serialization::pimpl::data &&predicate,
+                                   bool include_value, int32_t listener_flags);
 
                 boost::future<boost::uuids::uuid>
                 add_entry_listener(std::shared_ptr<impl::BaseEventHandler> entry_event_handler, bool include_value,
-                                 data &&key, int32_t listener_flags);
+                                   serialization::pimpl::data &&key, int32_t listener_flags);
 
                 boost::future<boost::optional<map::data_entry_view>> get_entry_view_data(const serialization::pimpl::data &key);
 
