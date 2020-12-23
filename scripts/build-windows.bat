@@ -1,60 +1,49 @@
-EXIT
+REM Builds the library using CMake on Windows
+REM The script should be run from the project's root directory
+REM This environment variables are the parameters to this script:
+REM - BUILD_DIR : build directory
+REM - BIT_VERSION : target platform architecture (32 or 64)
+REM - INSTALL : install after the build finishes (set to ON)
+REM - CXXFLAGS : additional compiler flags
+REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
+REM
+REM Command line arguments are forwarded to CMake.
+REM
 
-@SET HZ_BIT_VERSION=%1
-@SET HZ_LIB_TYPE=%2
-@SET HZ_BUILD_TYPE=%3
-@SET COMPILE_WITHOUT_SSL=%4
+@set VCPKG_ROOT=C:\dev\vcpkg
+@set SOLUTION_TYPE="Visual Studio 16 2019"
 
-@SET BUILD_DIR=build%HZ_LIB_TYPE%%HZ_BIT_VERSION%%HZ_BUILD_TYPE%
-
-@SET EXECUTABLE_NAME=client_test.exe
-
-@echo HZ_BIT_VERSION=%HZ_BIT_VERSION%
-@echo HZ_LIB_TYPE=%HZ_LIB_TYPE%
-@echo HZ_BUILD_TYPE=%HZ_BUILD_TYPE%
-@echo BUILD_DIR=%BUILD_DIR%
-@echo EXECUTABLE_NAME=%EXECUTABLE_NAME%
-
-set SOLUTIONTYPE="Visual Studio 16 2019"
-
-if %HZ_BIT_VERSION% == 32 (
-    set BUILDFORPLATFORM="win32"
+if %BIT_VERSION% == 32 (
+    @set PLATFORM="win32"
 ) else (
-    set BUILDFORPLATFORM="x64"
+    @set PLATFORM="x64"
 )
 
-if "%COMPILE_WITHOUT_SSL%" == "COMPILE_WITHOUT_SSL" (
-    set HZ_COMPILE_WITH_SSL=OFF
-) else (
-    set HZ_COMPILE_WITH_SSL=ON
+REM remove the given build directory if already exists
+@rd /s /q %BUILD_DIR%
+@mkdir %BUILD_DIR%
+
+REM print variables for debugging
+@echo SOLUTION_TYPE = %SOLUTION_TYPE%
+@echo PLATFORM      = %PLATFORM%
+@echo BUILD_DIR     = %BUILD_DIR%
+
+
+@echo Configuring...
+cmake -S . -B %BUILD_DIR% ^
+      -G %SOLUTION_TYPE% -A %PLATFORM% ^
+      -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake ^
+      %* ^
+      || exit /b 1 
+
+@echo Building...
+cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_CONFIGURATION% || exit /b 1
+
+
+if "%INSTALL%" == "ON" (
+    @echo Installing...
+    cmake --install %BUILD_DIR% || exit /b 1
 )
 
-if "%HZ_LIB_TYPE%" == "SHARED" (
-    set HZ_BUILD_SHARED=ON
-    set HZ_BUILD_STATIC=OFF
-) else (
-    set HZ_BUILD_SHARED=OFF
-    set HZ_BUILD_STATIC=ON
-)
-@echo HZ_BUILD_SHARED=%HZ_BUILD_SHARED%
-@echo HZ_BUILD_STATIC=%HZ_BUILD_STATIC%
-
-RD /S /Q %BUILD_DIR%
-mkdir %BUILD_DIR%
-
-pushd %BUILD_DIR%
-
-set VCPKG_ROOT=C:\\vcpkg
-echo "Generating the solution files for compilation"
-cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% ^
-      -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake ^
-      -DCMAKE_CONFIGURATION_TYPES=%HZ_BUILD_TYPE% ^
-      -DBUILD_SHARED_LIB=%HZ_BUILD_SHARED% -DBUILD_STATIC_LIB=%HZ_BUILD_STATIC% ^
-      -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DBUILD_TESTS=ON ^
-      -DBUILD_EXAMPLES=ON -DWITH_SSL=%HZ_COMPILE_WITH_SSL% -DINSTALL_GTEST=OFF || exit /b 1
-      
-cmake --build . --parallel -v --config %HZ_BUILD_TYPE%
-
-popd
 
 exit /b 0
