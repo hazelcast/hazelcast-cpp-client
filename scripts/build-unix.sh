@@ -8,6 +8,7 @@
 # - BIT_VERSION : target platform architecture (32 or 64)
 # - COVERAGE : add compiler flags necessary for test coverage (set to ON)
 # - INSTALL : install after the build finishes (set to ON)
+# - WARN_AS_ERR : treat compiler warnings as errors (set to ON)
 # - CXXFLAGS : additional compiler flags
 #
 # Command line arguments are forwarded to CMake.
@@ -18,16 +19,20 @@ set -e
 
 # add compiler flags necessary for test coverage
 if [ "$COVERAGE" = "ON" ]; then
-  CXXFLAGS="${CXXFLAGS} -fprofile-arcs -ftest-coverage -fPIC -O0"
+  CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage -fPIC -O0"
 fi
 
 # set -m32 or -m64 if a BIT_VERSION is given
 if [ -n "$BIT_VERSION" ]; then
-  CXXFLAGS="${CXXFLAGS} -m${BIT_VERSION}"
+  CXXFLAGS="$CXXFLAGS -m$BIT_VERSION"
 fi
 
 # enable all compiler warnings and treat them as errors
-CXXFLAGS="${CXXFLAGS} -Wall -Werror"
+CXXFLAGS="$CXXFLAGS -Wall"
+
+if [ "$WARN_AS_ERR" = "ON" ]; then
+  CXXFLAGS="$CXXFLAGS -Werror"
+fi
 
 # remove the given build directory if already exists
 if [ -d "$BUILD_DIR" ]; then
