@@ -7,7 +7,6 @@
 # - BUILD_DIR : build directory
 # - BIT_VERSION : target platform architecture (32 or 64)
 # - COVERAGE : add compiler flags necessary for test coverage (set to ON)
-# - TEST : run tests (set to ON)
 # - INSTALL : install after the build finishes (set to ON)
 # - CXXFLAGS : additional compiler flags
 #
