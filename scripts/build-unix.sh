@@ -42,6 +42,9 @@ echo "COVERAGE    = $COVERAGE"
 echo "INSTALL     = $INSTALL"
 echo "CXXFLAGS    = $CXXFLAGS"
 
+# export flags variable to be used by CMake
+export CXXFLAGS
+
 echo "Configuring..."
 cmake -S . -B "$BUILD_DIR" "$@"
 
