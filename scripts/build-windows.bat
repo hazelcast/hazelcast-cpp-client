@@ -1,14 +1,14 @@
-REM Builds the library using CMake on Windows
-REM The script should be run from the project's root directory
-REM This environment variables are the parameters to this script:
-REM - BUILD_DIR : build directory
-REM - BIT_VERSION : target platform architecture (32 or 64)
-REM - INSTALL : install after the build finishes (set to ON)
-REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
-REM - CXXFLAGS : additional compiler flags
-REM
-REM Command line arguments are forwarded to CMake.
-REM
+@REM Builds the library using CMake on Windows
+@REM The script should be run from the project's root directory
+@REM This environment variables are the parameters to this script:
+@REM - BUILD_DIR : build directory
+@REM - BIT_VERSION : target platform architecture (32 or 64)
+@REM - INSTALL : install after the build finishes (set to ON)
+@REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
+@REM - CXXFLAGS : additional compiler flags
+@REM
+@REM Command line arguments are forwarded to CMake.
+@REM
 
 @call .\scripts\windows-common.bat
 

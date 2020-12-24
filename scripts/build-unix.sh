@@ -27,7 +27,7 @@ if [ -n "$BIT_VERSION" ]; then
   CXXFLAGS="$CXXFLAGS -m$BIT_VERSION"
 fi
 
-# enable all compiler warnings and treat them as errors
+# enable all compiler warnings
 CXXFLAGS="$CXXFLAGS -Wall"
 
 if [ "$WARN_AS_ERR" = "ON" ]; then
