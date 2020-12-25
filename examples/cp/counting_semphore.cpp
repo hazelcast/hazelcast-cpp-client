@@ -17,7 +17,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast_client hz;
+    hazelcast::client::hazelcast_client hz;
 
     // Get counting_semaphore named 'my-semaphore'
     auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore").get();

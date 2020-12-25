@@ -53,7 +53,7 @@
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/socket_interceptor.h"
-#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/socket.h"
 #include "hazelcast/client/imap.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/client/pipelining.h"

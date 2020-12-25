@@ -78,7 +78,7 @@ public:
     }
 
     void run() {
-        hazelcast::client::hazelcast_client hz;
+        hazelcast_client hz;
 
         auto personMap = hz.get_map("personMap").get();
 

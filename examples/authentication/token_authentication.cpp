@@ -20,12 +20,12 @@
 int main() {
     std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
 
-    client_config config;
+    hazelcast::client::client_config config;
 
     config.set_cluster_name("token-credentials-dev")
-          .set_credentials(std::make_shared<security::token_credentials>(my_token));
+            .set_credentials(std::make_shared<hazelcast::client::security::token_credentials>(my_token));
 
-    hazelcast_client hz(std::move(config));
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
     auto map = hz.get_map("MyMap").get();
 

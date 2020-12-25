@@ -307,7 +307,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             executor_promise<T>
             submit(const HazelcastSerializable &task) {
-                data task_data = to_data<HazelcastSerializable>(task);
+                serialization::pimpl::data task_data = to_data<HazelcastSerializable>(task);
 
                 if (task_data.has_partition_hash()) {
                     int partitionId = get_partition_id(task_data);
@@ -328,7 +328,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             void submit(const HazelcastSerializable &task, const std::shared_ptr<execution_callback<T> > &callback) {
-                data task_data = to_data<HazelcastSerializable>(task);
+                serialization::pimpl::data task_data = to_data<HazelcastSerializable>(task);
 
                 if (task_data.has_partition_hash()) {
                     int partitionId = get_partition_id(task_data);
@@ -604,7 +604,7 @@ namespace hazelcast {
             executor_promise<T>
             submit_to_key_owner_internal(const HazelcastSerializable &task, const K &key, bool prevent_sync) {
 
-                data dataKey = to_data<K>(key);
+                serialization::pimpl::data dataKey = to_data<K>(key);
 
                 int partitionId = get_partition_id(dataKey);
 
@@ -615,7 +615,7 @@ namespace hazelcast {
             void submit_to_key_owner_internal(const HazelcastSerializable &task, const K &key,
                                           const std::shared_ptr<execution_callback<T> > &callback) {
 
-                data dataKey = to_data<K>(key);
+                serialization::pimpl::data dataKey = to_data<K>(key);
 
                 int partitionId = get_partition_id(dataKey);
 

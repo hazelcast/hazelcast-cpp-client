@@ -21,35 +21,35 @@ int main() {
 
     auto map = hz.get_replicated_map("map").get();
 
-    auto listenerId = map->add_entry_listener(
-        hazelcast::client::entry_listener()
-            .on_added([](hazelcast::client::entry_event &&event) {
-                std::cout << "[added] " << event << std::endl;
-            })
-            .on_removed([](hazelcast::client::entry_event &&event) {
-                std::cout << "[removed] " << event << std::endl;
-            })
-            .on_updated([](hazelcast::client::entry_event &&event) {
-                std::cout << "[added] " << event << std::endl;
-            })
-            .on_evicted([](hazelcast::client::entry_event &&event) {
-                std::cout << "[updated] " << event << std::endl;
-            })
-            .on_expired([](hazelcast::client::entry_event &&event) {
-                std::cout << "[expired] " << event << std::endl;
-            })
-            .on_merged([](hazelcast::client::entry_event &&event) {
-                std::cout << "[merged] " << event << std::endl;
-            })
-            .on_map_evicted([](hazelcast::client::map_event &&event) {
-                std::cout << "[map_evicted] " << event << std::endl;
-            })
-            .on_map_cleared([](hazelcast::client::map_event &&event) {
-                std::cout << "[map_cleared] " << event << std::endl;
-            })
-    ).get();
+    auto listener_id = map->add_entry_listener(
+            hazelcast::client::entry_listener()
+                    .on_added([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[added] " << event << std::endl;
+                    })
+                    .on_removed([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[removed] " << event << std::endl;
+                    })
+                    .on_updated([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[added] " << event << std::endl;
+                    })
+                    .on_evicted([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[updated] " << event << std::endl;
+                    })
+                    .on_expired([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[expired] " << event << std::endl;
+                    })
+                    .on_merged([](hazelcast::client::entry_event &&event) {
+                        std::cout << "[merged] " << event << std::endl;
+                    })
+                    .on_map_evicted([](hazelcast::client::map_event &&event) {
+                        std::cout << "[map_evicted] " << event << std::endl;
+                    })
+                    .on_map_cleared([](hazelcast::client::map_event &&event) {
+                        std::cout << "[map_cleared] " << event << std::endl;
+                    })
+            ).get();
 
-    std::cout << "EntryListener registered with id " << boost::uuids::to_string(listenerId) << std::endl;
+    std::cout << "EntryListener registered with id " << boost::uuids::to_string(listener_id) << std::endl;
 
     return 0;
 }

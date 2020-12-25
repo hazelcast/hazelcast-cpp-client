@@ -4,7 +4,7 @@
 # The script should be run from the project's root directory
 #
 # This environment variables are the parameters to this script:
-# - TEST_EXECUTABLE : path to the test executable
+# - BUILD_DIR : build directory
 #
 
 function cleanup {
@@ -23,6 +23,8 @@ trap cleanup EXIT
 
 RC_START_TIMEOUT_IN_SECS=300
 RC_PORT=9701
+
+TEST_EXECUTABLE="$BUILD_DIR/hazelcast/test/src/client_test"
 
 scripts/start-rc.sh &
 rcPid=$!
