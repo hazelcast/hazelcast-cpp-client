@@ -16,7 +16,7 @@
 
 cmake_minimum_required(VERSION 3.12.4)
 
-project(hazelcast_cpp_client
+project(hazelcast-cpp-client
         VERSION 4.0.0
         DESCRIPTION "Hazelcast C++ Client"
         HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
@@ -37,6 +37,7 @@ include(FindBoost)
 include(FindOpenSSL)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
+include(GenerateExportHeader)
 include(./cmake/utils.cmake)
 
 # get and set Git commit date and id
@@ -67,10 +68,6 @@ option(BUILD_SHARED_LIB
 
 option(DISABLE_LOGGING
        "Disable logging."
-       OFF)
-
-option(ENABLE_CLANG_TIDY
-       "Enable clang-tidy linter."
        OFF)
 
 option(BUILD_TESTS
@@ -158,20 +155,6 @@ function(add_hazelcast_library name type)
     if (WIN32)
         # speeds the build process
         target_compile_definitions(${name} PRIVATE WIN32_LEAN_AND_MEAN)
-
-        if (type STREQUAL "SHARED")
-            # For the shared library,
-            #   we define HAZELCAST_EXPORTS=1,
-            #   users define HAZELCAST_USE_SHARED
-            target_compile_definitions(${name} PRIVATE HAZELCAST_EXPORTS=1)
-            target_compile_definitions(${name} INTERFACE HAZELCAST_USE_SHARED)
-        else () # type STREQUAL "STATIC"
-            # For the static library,
-            #   we define HAZELCAST_EXPORTS=0,
-            #   users define HAZELCAST_USE_STATIC
-            target_compile_definitions(${name} PRIVATE HAZELCAST_EXPORTS=0)
-            target_compile_definitions(${name} INTERFACE HAZELCAST_USE_STATIC)
-        endif ()
     endif ()
 
     # add include directories
@@ -180,6 +163,7 @@ function(add_hazelcast_library name type)
         PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 
@@ -195,6 +179,21 @@ function(add_hazelcast_library name type)
     if (DISABLE_LOGGING)
         target_compile_definitions(${name} PUBLIC HZ_LOGGING_DISABLED)
     endif ()
+
+    set_target_properties(${name} PROPERTIES DEFINE_SYMBOL HAZELCAST_EXPORTS)
+
+    generate_export_header(
+        ${name}
+        BASE_NAME hazelcast
+        EXPORT_MACRO_NAME HAZELCAST_API
+        EXPORT_FILE_NAME include/hazelcast/export.h
+        NO_EXPORT_MACRO_NAME HAZELCAST_PRIVATE
+        STATIC_DEFINE HAZELCAST_USE_STATIC
+    )
+
+    if (type STREQUAL "STATIC")
+        target_compile_definitions(${name} PUBLIC HAZELCAST_USE_STATIC)
+    endif()
 
     # install library target
     install(
@@ -251,21 +250,24 @@ endif()
 set(SHARED_LIBRARY_NAME ${BASE_LIBRARY_NAME})
 set(STATIC_LIBRARY_NAME ${BASE_LIBRARY_NAME}_static)
 
+# add static library if requested
+if (BUILD_STATIC_LIB)
+    add_hazelcast_library(${STATIC_LIBRARY_NAME} STATIC)
+endif()
+
 # add shared library if requested
 if (BUILD_SHARED_LIB)
     add_hazelcast_library(${SHARED_LIBRARY_NAME} SHARED)
 endif()
 
-# add static library if requested
-if (BUILD_STATIC_LIB)
-    add_hazelcast_library(${STATIC_LIBRARY_NAME} STATIC)
-endif()
 
 # install header files, this applies both to the shared and the static library
 install(
     DIRECTORY
         hazelcast/include/
         hazelcast/generated-sources/src/
+        ${CMAKE_CURRENT_BINARY_DIR}/include/
+
     TYPE INCLUDE
     FILES_MATCHING PATTERN "*.h"
 )

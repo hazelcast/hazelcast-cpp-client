@@ -16,7 +16,7 @@
 
 cmake_minimum_required (VERSION 3.10)
 
-project (hazelcast_cpp_client_examples
+project (hazelcast-cpp-client-examples
          VERSION 4.0.0
          DESCRIPTION "Hazelcast C++ Client Code Examples"
          HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
