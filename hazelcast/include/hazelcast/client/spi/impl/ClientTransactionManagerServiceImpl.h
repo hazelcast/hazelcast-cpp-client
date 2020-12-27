@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/address.h"
 

@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 
 namespace hazelcast {
     namespace client {

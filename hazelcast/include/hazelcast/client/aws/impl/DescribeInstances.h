@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/aws/security/ec2_request_signer.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 

@@ -20,7 +20,7 @@
 #include <memory>
 #include <boost/thread/future.hpp>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/distributed_object.h"
 #include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/spi/EventHandler.h"

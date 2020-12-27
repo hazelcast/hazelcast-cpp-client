@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.10)
 
 project(hazelcast-cpp-client
         VERSION 4.0.0
@@ -96,8 +96,8 @@ find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono)
 if (WITH_OPENSSL)
     if (APPLE)
         # This is a bug in CMake that causes it to prefer the system version over
-        # the one in the specified ROOT folder. see
-        # https://stackoverflow.com/questions/58446253/xcode-11-ld-error-your-binary-is-not-an-allowed-client-of-usr-lib-libcrypto-dy
+        # the one in the specified ROOT folder.
+        # See https://stackoverflow.com/a/62063357
         set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
         set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include CACHE FILEPATH "" FORCE)
         set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
@@ -122,11 +122,6 @@ function(add_hazelcast_library name type)
         PUBLIC cxx_std_11
     )
 
-    # MSVC-specific compiler flags
-    if (MSVC)
-        target_compile_options(${name} PRIVATE /bigobj)
-    endif ()
-
     # links the library against the system's thread library
     target_link_libraries(${name} PUBLIC Threads::Threads)
 
@@ -150,6 +145,11 @@ function(add_hazelcast_library name type)
         )
         target_link_libraries(${name} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
     endif()
+
+    # MSVC-specific compiler flags
+    if (MSVC)
+      target_compile_options(${name} PRIVATE /bigobj)
+    endif ()
 
     # windows-specific compile flags
     if (WIN32)
@@ -186,7 +186,7 @@ function(add_hazelcast_library name type)
         ${name}
         BASE_NAME hazelcast
         EXPORT_MACRO_NAME HAZELCAST_API
-        EXPORT_FILE_NAME include/hazelcast/export.h
+        EXPORT_FILE_NAME include/hazelcast/util/export.h
         NO_EXPORT_MACRO_NAME HAZELCAST_PRIVATE
         STATIC_DEFINE HAZELCAST_USE_STATIC
     )

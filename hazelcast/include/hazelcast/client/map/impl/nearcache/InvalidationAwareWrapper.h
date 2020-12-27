@@ -16,7 +16,7 @@
 #pragma once
 
 #include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

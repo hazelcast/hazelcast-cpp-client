@@ -19,7 +19,7 @@
 #include <atomic>
 #include <chrono>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

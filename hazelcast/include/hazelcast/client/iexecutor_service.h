@@ -21,7 +21,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/execution_callback.h"

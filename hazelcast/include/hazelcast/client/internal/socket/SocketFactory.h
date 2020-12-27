@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 
 #ifdef HZ_BUILD_WITH_SSL
 

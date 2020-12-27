@@ -20,7 +20,7 @@
 #pragma warning(disable: 4251) //for dll export
 #endif
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 
 namespace hazelcast {
     namespace util {

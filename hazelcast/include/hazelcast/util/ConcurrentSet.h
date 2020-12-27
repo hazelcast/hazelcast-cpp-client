@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 
 #include <mutex>
 #include <unordered_set>

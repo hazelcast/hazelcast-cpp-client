@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/entry_event.h"
 #include <string>

@@ -15,8 +15,6 @@
  */
 #pragma once
 
-#include <hazelcast/export.h>
-
-namespace hazelcast{
+namespace hazelcast {
     typedef unsigned char byte;
 }

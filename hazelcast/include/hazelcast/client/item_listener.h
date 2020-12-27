@@ -18,7 +18,7 @@
 #include <utility>
 #include <functional>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/util/noop.h"
 #include "hazelcast/util/type_traits.h"
 

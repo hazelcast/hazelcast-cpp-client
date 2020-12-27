@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <boost/endian/detail/order.hpp>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
