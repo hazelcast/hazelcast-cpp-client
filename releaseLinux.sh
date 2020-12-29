@@ -47,10 +47,10 @@ docker stop linux_64_bit_release_build
 docker rm linux_64_bit_release_build
 
 echo "Starting the docker build for 32-bit"
-docker run -d --name linux_32_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora_32 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 32 ${relative_install_dir}"
+docker run -d --privileged --name linux_32_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora_32 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 32 ${relative_install_dir}"
 
 echo "Starting the docker build for 64-bit"
-docker run -d --name linux_64_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora22_64 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 64 ${relative_install_dir}"
+docker run -d --privileged --name linux_64_bit_release_build -v `pwd`:/hazelcast-cpp-client -w /hazelcast-cpp-client fedora22_64 /bin/bash -l -c "scripts/build_linux_release_libraries.sh 64 ${relative_install_dir}"
 
 echo "Waiting for 32-bit docker build to finish"
 result=`docker wait linux_32_bit_release_build`
