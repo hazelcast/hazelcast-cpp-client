@@ -116,6 +116,14 @@ function(add_hazelcast_library name type)
         ${SOURCE_FILES} ${HEADER_FILES}
     )
 
+    # set library's version and soversion
+    set_target_properties(
+        ${name}
+        PROPERTIES
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION}
+    )
+
     # library requires c++11
     target_compile_features(
         ${name}
