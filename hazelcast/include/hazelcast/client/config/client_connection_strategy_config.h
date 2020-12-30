@@ -100,7 +100,7 @@ namespace hazelcast {
                  * @param connection_retry_config the connection retry config to read or modify.
                  * @return the updated client_connection_strategy_config
                  */
-                client_connection_strategy_config &set_retry_config(const connection_retry_config &retry_config);
+                client_connection_strategy_config &set_retry_config(connection_retry_config retry_config);
 
             private:
                 bool async_start_;
@@ -115,4 +115,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
