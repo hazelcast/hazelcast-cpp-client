@@ -170,25 +170,24 @@ namespace hazelcast {
             constexpr std::chrono::milliseconds connection_retry_config::CLUSTER_CONNECT_TIMEOUT;
             constexpr double connection_retry_config::JITTER;
 
-            const std::chrono::milliseconds &connection_retry_config::get_initial_backoff_duration() const {
+            std::chrono::milliseconds connection_retry_config::get_initial_backoff_duration() const {
                 return initial_backoff_duration_;
             }
 
             connection_retry_config &
-            connection_retry_config::set_initial_backoff_duration(
-                    const std::chrono::milliseconds &initial_backoff_duration) {
+            connection_retry_config::set_initial_backoff_duration(std::chrono::milliseconds initial_backoff_duration) {
                 util::Preconditions::check_not_negative(initial_backoff_duration.count(),
                                                         "Initial backoff must be non-negative!");
                 initial_backoff_duration_ = initial_backoff_duration;
                 return *this;
             }
 
-            const std::chrono::milliseconds &connection_retry_config::get_max_backoff_duration() const {
+            std::chrono::milliseconds connection_retry_config::get_max_backoff_duration() const {
                 return max_backoff_duration_;
             }
 
             connection_retry_config &
-            connection_retry_config::set_max_backoff_duration(const std::chrono::milliseconds &max_backoff_duration) {
+            connection_retry_config::set_max_backoff_duration(std::chrono::milliseconds max_backoff_duration) {
                 util::Preconditions::check_not_negative(max_backoff_duration.count(),
                                                         "Max backoff must be non-negative!");
                 max_backoff_duration_ = max_backoff_duration;
@@ -205,12 +204,12 @@ namespace hazelcast {
                 return *this;
             }
 
-            const std::chrono::milliseconds &connection_retry_config::get_cluster_connect_timeout() const {
+            std::chrono::milliseconds connection_retry_config::get_cluster_connect_timeout() const {
                 return cluster_connect_timeout_;
             }
 
             connection_retry_config &connection_retry_config::set_cluster_connect_timeout(
-                    const std::chrono::milliseconds &cluster_connect_timeout) {
+                    std::chrono::milliseconds cluster_connect_timeout) {
                 util::Preconditions::check_not_negative(cluster_connect_timeout.count(),
                                                         "Cluster connect timeout must be non-negative!");
                 cluster_connect_timeout_ = cluster_connect_timeout;

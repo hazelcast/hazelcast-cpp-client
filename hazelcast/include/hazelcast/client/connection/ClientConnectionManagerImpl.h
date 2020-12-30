@@ -102,9 +102,9 @@ namespace hazelcast {
                  * @return associated connection if available, creates new connection otherwise
                  * @throws io if connection is not established
                  */
-                std::shared_ptr<Connection> get_or_connect_to_address(const address &address);
+                std::shared_ptr<Connection> get_or_connect(const address &address);
 
-                std::shared_ptr<Connection> get_or_connect_to_member(const member &m);
+                std::shared_ptr<Connection> get_or_connect(const member &m);
 
                 std::vector<std::shared_ptr<Connection>> get_active_connections();
 
@@ -174,9 +174,9 @@ namespace hazelcast {
 
                 template<typename T>
                 std::shared_ptr<Connection>
-                connect(const T &target, std::function<std::shared_ptr<Connection>(const T &)> f) {
+                try_connect(const T &target) {
                     try {
-                        return f(target);
+                        return get_or_connect(target);
                     } catch (std::exception &e) {
                         HZ_LOG(logger_, warning,
                                boost::str(boost::format("Exception during initial connection to %1%: %2%")

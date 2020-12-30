@@ -186,7 +186,7 @@ namespace hazelcast {
             }
 
             std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::get_or_connect_to_address(const address &address) {
+            ClientConnectionManagerImpl::get_or_connect(const address &address) {
                 auto connection = get_connection(address);
                 if (connection) {
                     return connection;
@@ -209,7 +209,7 @@ namespace hazelcast {
             }
 
             std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::get_or_connect_to_member(const member &m) {
+            ClientConnectionManagerImpl::get_or_connect(const member &m) {
                 const auto &uuid = m.get_uuid();
                 auto connection = active_connections_.get(uuid);
                 if (connection) {
@@ -443,7 +443,7 @@ namespace hazelcast {
                                     return;
                                 }
                                 if (!get_connection(member.get_uuid())) {
-                                    get_or_connect_to_address(addr);
+                                    get_or_connect(addr);
                                 }
                                 connecting_addresses_.remove(addr);
                             } catch (std::exception &) {
@@ -469,9 +469,7 @@ namespace hazelcast {
                     for (const auto &m : member_list) {
                         check_client_active();
                         tried_addresses_per_attempt.insert(m.get_address());
-                        auto connection = connect<member>(m, [=](const member &server) {
-                            return get_or_connect_to_member(server);
-                        });
+                        auto connection = try_connect(m);
                         if (connection) {
                             return true;
                         }
@@ -483,10 +481,7 @@ namespace hazelcast {
                             //if we can not add it means that it is already tried to be connected with the member list
                             continue;
                         }
-
-                        auto connection = connect<address>(server_address, [=](const address &target) {
-                            return get_or_connect_to_address(target);
-                        });
+                        auto connection = try_connect<address>(server_address);
                         if (connection) {
                             return true;
                         }
@@ -757,7 +752,7 @@ namespace hazelcast {
 
                 for (const auto &member : client_.get_client_cluster_service().get_member_list()) {
                     try {
-                        get_or_connect_to_address(member.get_address());
+                        get_or_connect(member.get_address());
                     } catch (std::exception &) {
                         // ignore
                     }
