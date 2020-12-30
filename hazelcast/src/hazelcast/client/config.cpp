@@ -160,7 +160,7 @@ namespace hazelcast {
             client_flake_id_generator_config &
             client_flake_id_generator_config::set_prefetch_validity_duration(std::chrono::milliseconds duration) {
                 util::Preconditions::check_not_negative(duration.count(),
-                                                        "prefetchValidityMs must be non negative");
+                                                        "duration must be nonnegative");
                 prefetch_validity_duration_ = duration;
                 return *this;
             }
@@ -316,8 +316,8 @@ namespace hazelcast {
             }
 
             client_connection_strategy_config &
-            client_connection_strategy_config::set_retry_config(const connection_retry_config &retry_config) {
-                retry_config_ = retry_config;
+            client_connection_strategy_config::set_retry_config(connection_retry_config retry_config) {
+                retry_config_ = std::move(retry_config);
                 return *this;
             }
 

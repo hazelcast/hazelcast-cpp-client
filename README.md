@@ -1020,7 +1020,7 @@ Its default value is `false` (disabled).
 ## 5.4. Setting Cluster Connection Timeout
 Cluster connection timeout is the timeout value for which the client tries to connect to the cluster. If the client can not connect to cluster during this timeout duration, the client shuts down itself and it can not be re-used (you need to obtain a new client).
  
-The following example shows how yopu can set the cluster connection timeout to 30 seconds.
+The following example shows how you can set the cluster connection timeout to 30 seconds.
 
 ```C++
     client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(std::chrono::seconds(30));

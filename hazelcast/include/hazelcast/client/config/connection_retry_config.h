@@ -38,21 +38,21 @@ namespace hazelcast {
                  *
                  * @return initial_backoff_duration_
                  */
-                const std::chrono::milliseconds &get_initial_backoff_duration() const;
+                std::chrono::milliseconds get_initial_backoff_duration() const;
 
                 /**
                  * @param initial_backoff_duration how long to wait after the first failure before retrying
                  * @return updated connection_retry_config
                  */
                 connection_retry_config &
-                set_initial_backoff_duration(const std::chrono::milliseconds &initial_backoff_duration);
+                set_initial_backoff_duration(std::chrono::milliseconds initial_backoff_duration);
 
                 /**
                  * When backoff reaches this upper bound, it does not increase any more.
                  *
                  * @return max_backoff_duration_
                  */
-                const std::chrono::milliseconds &get_max_backoff_duration() const;
+                std::chrono::milliseconds get_max_backoff_duration() const;
 
                 /**
                  * When backoff reaches this upper bound, it does not increase any more.
@@ -60,7 +60,7 @@ namespace hazelcast {
                  * @param max_backoff_duration upper bound on backoff
                  * @return updated connection_retry_config
                  */
-                connection_retry_config &set_max_backoff_duration(const std::chrono::milliseconds &max_backoff_duration);
+                connection_retry_config &set_max_backoff_duration(std::chrono::milliseconds max_backoff_duration);
 
                 /**
                  * factor with which to multiply backoff time after a failed retry
@@ -81,7 +81,7 @@ namespace hazelcast {
                  *
                  * @return cluster_connect_timeout_
                  */
-                const std::chrono::milliseconds &get_cluster_connect_timeout() const;
+                std::chrono::milliseconds get_cluster_connect_timeout() const;
 
                 /**
                  * @param cluster_connect_timeout timeout for the client to give up to connect to the current cluster
@@ -89,7 +89,7 @@ namespace hazelcast {
                  * @return updated connection_retry_config
                  */
                 connection_retry_config &
-                set_cluster_connect_timeout(const std::chrono::milliseconds &cluster_connect_timeout);
+                set_cluster_connect_timeout(std::chrono::milliseconds cluster_connect_timeout);
 
                 /**
                  * by how much to randomize backoffs.
@@ -128,5 +128,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 
