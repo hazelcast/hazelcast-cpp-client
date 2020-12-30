@@ -285,7 +285,7 @@ namespace hazelcast {
                 ASSERT_NE(std::string::npos, statsFromServer.result.find("enterprise=false"));
                 ASSERT_NE(std::string::npos, statsFromServer.result.find("clientType=CPP"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find("clientVersion=" + std::string(client::version())));
+                          statsFromServer.result.find(std::string("clientVersion=") + HAZELCAST_VERSION));
                 ASSERT_NE(std::string::npos, statsFromServer.result.find("clusterConnectionTimestamp="));
                 ASSERT_NE(std::string::npos,
                           statsFromServer.result.find(std::string("clientAddress=") + localAddress));

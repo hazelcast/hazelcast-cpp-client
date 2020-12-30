@@ -27,7 +27,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set the default build type if not given
-if (NOT CMAKE_BUILD_TYPE)
+if ((NOT GENERATOR_IS_MULTI_CONFIG) AND (NOT CMAKE_BUILD_TYPE))
     message(STATUS "CMAKE_BUILD_TYPE was not set, using Release as the default.")
     set(CMAKE_BUILD_TYPE Release)
 endif ()
