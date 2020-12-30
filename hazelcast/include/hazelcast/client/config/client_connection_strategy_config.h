@@ -16,6 +16,7 @@
 #pragma once
 
 #include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/client/config/connection_retry_config.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -84,10 +85,27 @@ namespace hazelcast {
                  */
                 client_connection_strategy_config &set_reconnect_mode(reconnect_mode reconnect_mode);
 
+                /**
+                 * connection_retry_config controls the period among the retries and when a client should give up
+                 * retrying. Exponential behaviour can be chosen or jitter can be added to wait periods.
+                 *
+                 * @return connection_retry_config the connection retry config to read or modify.
+                 */
+                connection_retry_config &get_retry_config();
+
+                /**
+                 * connection_retry_config controls the period among the retries and when a client should give up
+                 * retrying. Exponential behaviour can be chosen or jitter can be added to wait periods.
+                 *
+                 * @param connection_retry_config the connection retry config to read or modify.
+                 * @return the updated connection_retry_config
+                 */
+                client_connection_strategy_config &set_retry_config(const connection_retry_config &retry_config);
+
             private:
                 bool async_start_;
                 reconnect_mode reconnect_mode_;
-
+                connection_retry_config retry_config_;
             };
 
         }

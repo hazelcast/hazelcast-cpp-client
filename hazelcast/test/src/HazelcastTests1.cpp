@@ -152,7 +152,10 @@ namespace hazelcast {
                                     // add IMap Near Cache config
                             .add_near_cache_config(config::near_cache_config(get_test_name()));
 
-                    clientConfig.get_network_config().set_connection_attempt_limit(20);
+                    clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                            std::chrono::seconds(20)).set_initial_backoff_duration(
+                            std::chrono::milliseconds(100)).set_max_backoff_duration(
+                            std::chrono::seconds(4)).set_multiplier(3).set_jitter(0.8);
 
                     return std::unique_ptr<hazelcast_client>(new hazelcast_client(std::move(clientConfig)));
                 }
@@ -846,8 +849,9 @@ namespace hazelcast {
             TEST_F(ClientConnectionTest, testTcpSocketTimeoutToOutsideNetwork) {
                 HazelcastServer instance(*g_srvFactory);
                 client_config config;
-                config.get_network_config().set_connection_attempt_period(std::chrono::seconds(1)).set_connection_timeout(std::chrono::seconds (2)).add_address(
-                        address("8.8.8.8", 5701));
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(2)).set_initial_backoff_duration(std::chrono::milliseconds(100));
+                config.get_network_config().add_address(address("8.8.8.8", 5701));
                 ASSERT_THROW(hazelcast_client client(std::move(config)), exception::illegal_state);
             }
 
@@ -856,8 +860,9 @@ namespace hazelcast {
                 HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
                 HazelcastServer instance(sslFactory);
                 client_config config;
-                config.set_cluster_name(get_ssl_cluster_name()).get_network_config().
-                        set_connection_attempt_period(std::chrono::seconds(1)).set_connection_timeout(std::chrono::seconds(2)).add_address(
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(2)).set_initial_backoff_duration(std::chrono::milliseconds(100));
+                config.set_cluster_name(get_ssl_cluster_name()).get_network_config().add_address(
                         address("8.8.8.8", 5701)).get_ssl_config().set_enabled(true).add_verify_file(get_ca_file_path());
                 ASSERT_THROW(hazelcast_client client(std::move(config)), exception::illegal_state);
             }
@@ -962,8 +967,8 @@ namespace hazelcast {
                 std::unique_ptr<HazelcastServer> instance = start_server(clientConfig);
 
                 auto networkConfig = clientConfig.get_network_config();
-                networkConfig.set_connection_attempt_period(std::chrono::seconds(1));
-                networkConfig.set_connection_attempt_limit(1);
+                clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(1));
                 boost::latch startingLatch(1);
                 boost::latch startedLatch(1);
                 boost::latch connectedLatch(1);
@@ -971,7 +976,7 @@ namespace hazelcast {
                 boost::latch shuttingDownLatch(1);
                 boost::latch shutdownLatch(1);
                 auto listener = make_all_states_listener(startingLatch, startedLatch, connectedLatch, disconnectedLatch,
-                                                      shuttingDownLatch, shutdownLatch);
+                                                         shuttingDownLatch, shutdownLatch);
                 clientConfig.add_listener(std::move(listener));
 
                 hazelcast_client client(std::move(clientConfig));
@@ -989,8 +994,9 @@ namespace hazelcast {
 
             TEST_P(ClusterTest, testConnectionAttemptPeriod) {
                 client_config clientConfig = GetParam()();
-                clientConfig.get_network_config().set_connection_attempt_period(std::chrono::milliseconds(900)).
-                        set_connection_timeout(std::chrono::seconds(2)).set_connection_attempt_limit(2);
+                config::connection_retry_config &retry_config = clientConfig.get_connection_strategy_config().get_retry_config();
+                retry_config.set_cluster_connect_timeout(std::chrono::seconds(3)).set_cluster_connect_timeout(
+                        std::chrono::milliseconds(500));
                 clientConfig.get_network_config().add_address(address("8.8.8.8", 8000));
 
                 int64_t startTimeMillis = hazelcast::util::current_time_millis();

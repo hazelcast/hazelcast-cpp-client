@@ -1325,7 +1325,9 @@ namespace hazelcast {
                         client_config clientConfig;
                         clientConfig.set_property(client_properties::PROP_HEARTBEAT_TIMEOUT, "10");
                         auto member = server.get_member();
-                        clientConfig.get_network_config().add_address(address(member.host, member.port)).set_connection_attempt_period(std::chrono::seconds(10));
+                        clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                                std::chrono::seconds(10));
+                        clientConfig.get_network_config().add_address(address(member.host, member.port));
 
                         Stats stats;
                         auto lg = std::make_shared<logger>("SimpleMapTest", "SimpleMapTest",
@@ -1424,7 +1426,8 @@ namespace hazelcast {
 
                 // 2. Start a client
                 client_config clientConfig = get_config();
-                clientConfig.get_network_config().set_connection_attempt_limit(10);
+                clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(10));
 
                 hazelcast_client client(std::move(clientConfig));
 

@@ -38,6 +38,7 @@
 #include "hazelcast/client/config/client_connection_strategy_config.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/logger.h"
+#include "hazelcast/client/connection/wait_strategy.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -101,7 +102,9 @@ namespace hazelcast {
                  * @return associated connection if available, creates new connection otherwise
                  * @throws io if connection is not established
                  */
-                std::shared_ptr<Connection> get_or_connect(const address &address);
+                std::shared_ptr<Connection> get_or_connect_to_address(const address &address);
+
+                std::shared_ptr<Connection> get_or_connect_to_member(const member &m);
 
                 std::vector<std::shared_ptr<Connection>> get_active_connections();
 
@@ -109,9 +112,9 @@ namespace hazelcast {
 
                 bool is_alive();
 
-                void on_connection_close(Connection &connection, std::exception_ptr ptr);
+                void on_connection_close(const std::shared_ptr<Connection> &connection);
 
-                void add_connection_listener(const std::shared_ptr<ConnectionListener> &connection_listener) ;
+                void add_connection_listener(const std::shared_ptr<ConnectionListener> &connection_listener);
 
                 logger &get_logger();
 
@@ -127,8 +130,6 @@ namespace hazelcast {
 
             private:
                 static constexpr size_t EXECUTOR_CORE_POOL_SIZE = 10;
-                static constexpr int32_t DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC = 2;
-                static constexpr int32_t DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC = 20;
 
                 struct auth_response {
                     byte status;
@@ -142,7 +143,7 @@ namespace hazelcast {
 
                 std::shared_ptr<Connection> get_connection(const address &address);
 
-                void authenticate_on_cluster(std::shared_ptr<Connection> &connection);
+                auth_response authenticate_on_cluster(std::shared_ptr<Connection> &connection);
 
                 void fire_connection_added_event(const std::shared_ptr<Connection> &connection);
 
@@ -171,12 +172,28 @@ namespace hazelcast {
 
                 void check_client_active();
 
-                std::shared_ptr<Connection> connect(const address &address);
+                template<typename T>
+                std::shared_ptr<Connection>
+                connect(const T &target, std::function<std::shared_ptr<Connection>(const T &)> f) {
+                    try {
+                        return f(target);
+                    } catch (std::exception &e) {
+                        HZ_LOG(logger_, warning,
+                               boost::str(boost::format("Exception during initial connection to %1%: %2%")
+                                          % target % e.what()));
+                        return nullptr;
+                    }
+                }
 
                 protocol::ClientMessage
                 encode_authentication_request(serialization::pimpl::SerializationService &ss);
 
-                void handle_successful_auth(const std::shared_ptr<Connection> &connection, auth_response response);
+                /**
+                 * The returned connection could be different than the one passed to this method if there is already an existing
+                 * connection to the given member.
+                 */
+                std::shared_ptr<Connection>
+                on_authenticated(const std::shared_ptr<Connection> &connection, auth_response &response);
 
                 std::atomic_bool alive_;
                 logger &logger_;
@@ -184,17 +201,12 @@ namespace hazelcast {
                 spi::ClientContext &client_;
                 std::unique_ptr<boost::asio::io_context> io_context_;
                 socket_interceptor socket_interceptor_;
-                spi::impl::ClientExecutionServiceImpl &execution_service_;
                 std::shared_ptr<AddressTranslator> translator_;
-                util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> active_connections_;
-                util::SynchronizedMap<int32_t, Connection> active_connection_ids_;
                 util::SynchronizedMap<address, std::mutex> conn_locks_;
                 util::SynchronizedMap<address, bool> connecting_addresses_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connection_listeners_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
-                std::chrono::milliseconds connection_attempt_period_;
-                int32_t connection_attempt_limit_;
                 int32_t io_thread_count_;
                 bool shuffle_member_list_;
                 std::vector<std::shared_ptr<AddressProvider> > address_providers_;
@@ -204,22 +216,27 @@ namespace hazelcast {
                 HeartbeatManager heartbeat_;
                 std::vector<std::thread> io_threads_;
                 std::unique_ptr<boost::asio::io_context::work> io_guard_;
-                std::atomic<int32_t> partition_count_;
                 const bool async_start_;
                 const config::client_connection_strategy_config::reconnect_mode reconnect_mode_;
                 const bool smart_routing_enabled_;
                 boost::optional<boost::asio::steady_timer> connect_to_members_timer_;
-                std::atomic_bool connect_to_cluster_task_submitted_;
                 boost::uuids::uuid client_uuid_;
                 boost::chrono::milliseconds authentication_timeout_;
+                std::vector<std::string> labels_;
+                load_balancer &load_balancer_;
+                wait_strategy wait_strategy_;
+
+                // following fields are updated inside synchronized(clientStateMutex)
+                std::mutex client_state_mutex_;
+                util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> active_connections_;
+                util::SynchronizedMap<int32_t, Connection> active_connection_ids_;
 #ifdef __linux__
                 // default support for 16 byte atomics is missing for linux
                 util::Sync<boost::uuids::uuid> cluster_id_;
 #else
                 std::atomic<boost::uuids::uuid> cluster_id_;
 #endif
-                std::vector<std::string> labels_;
-                load_balancer &load_balancer_;
+                std::atomic_bool connect_to_cluster_task_submitted_;
 
                 void schedule_connect_to_all_members();
 

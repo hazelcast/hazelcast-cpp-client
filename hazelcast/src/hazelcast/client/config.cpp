@@ -160,16 +160,75 @@ namespace hazelcast {
             client_flake_id_generator_config &
             client_flake_id_generator_config::set_prefetch_validity_duration(std::chrono::milliseconds duration) {
                 util::Preconditions::check_not_negative(duration.count(),
-                                                      "prefetchValidityMs must be non negative");
+                                                        "prefetchValidityMs must be non negative");
                 prefetch_validity_duration_ = duration;
                 return *this;
             }
 
-            int32_t client_network_config::CONNECTION_ATTEMPT_PERIOD = 3000;
+            constexpr std::chrono::milliseconds connection_retry_config::INITIAL_BACKOFF;
+            constexpr std::chrono::milliseconds connection_retry_config::MAX_BACKOFF;
+            constexpr std::chrono::milliseconds connection_retry_config::CLUSTER_CONNECT_TIMEOUT;
+            constexpr double connection_retry_config::JITTER;
+
+            const std::chrono::milliseconds &connection_retry_config::get_initial_backoff_duration() const {
+                return initial_backoff_duration_;
+            }
+
+            connection_retry_config &
+            connection_retry_config::set_initial_backoff_duration(
+                    const std::chrono::milliseconds &initial_backoff_duration) {
+                util::Preconditions::check_not_negative(initial_backoff_duration.count(),
+                                                        "Initial backoff must be non-negative!");
+                initial_backoff_duration_ = initial_backoff_duration;
+                return *this;
+            }
+
+            const std::chrono::milliseconds &connection_retry_config::get_max_backoff_duration() const {
+                return max_backoff_duration_;
+            }
+
+            connection_retry_config &
+            connection_retry_config::set_max_backoff_duration(const std::chrono::milliseconds &max_backoff_duration) {
+                util::Preconditions::check_not_negative(max_backoff_duration.count(),
+                                                        "Max backoff must be non-negative!");
+                max_backoff_duration_ = max_backoff_duration;
+                return *this;
+            }
+
+            double connection_retry_config::get_multiplier() const {
+                return multiplier_;
+            }
+
+            connection_retry_config &connection_retry_config::set_multiplier(double m) {
+                util::Preconditions::check_true(m >= 1.0, "Multiplier must be greater than or equal to 1.0!");
+                multiplier_ = m;
+                return *this;
+            }
+
+            const std::chrono::milliseconds &connection_retry_config::get_cluster_connect_timeout() const {
+                return cluster_connect_timeout_;
+            }
+
+            connection_retry_config &connection_retry_config::set_cluster_connect_timeout(
+                    const std::chrono::milliseconds &cluster_connect_timeout) {
+                util::Preconditions::check_not_negative(cluster_connect_timeout.count(),
+                                                        "Cluster connect timeout must be non-negative!");
+                cluster_connect_timeout_ = cluster_connect_timeout;
+                return *this;
+            }
+
+            double connection_retry_config::get_jitter() const {
+                return jitter_;
+            }
+
+            connection_retry_config &connection_retry_config::set_jitter(double jitter) {
+                util::Preconditions::check_true(jitter >= 0.0 && jitter <= 1.0, "Jitter must be in range [0.0, 1.0]");
+                jitter_ = jitter;
+                return *this;
+            }
 
             client_network_config::client_network_config()
-                    : connection_timeout_(5000), smart_routing_(true), connection_attempt_limit_(-1),
-                      connection_attempt_period_(CONNECTION_ATTEMPT_PERIOD) {}
+                    : connection_timeout_(5000), smart_routing_(true) {}
 
             ssl_config &client_network_config::get_ssl_config() {
                 return ssl_config_;
@@ -202,24 +261,6 @@ namespace hazelcast {
                 return *this;
             }
 
-            int32_t client_network_config::get_connection_attempt_limit() const {
-                return connection_attempt_limit_;
-            }
-
-            client_network_config &client_network_config::set_connection_attempt_limit(int32_t connection_attempt_limit) {
-                if (connection_attempt_limit < 0) {
-                    BOOST_THROW_EXCEPTION(
-                            exception::illegal_argument("client_network_config::setConnectionAttemptLimit",
-                                                                "connectionAttemptLimit cannot be negative"));
-                }
-                this->connection_attempt_limit_ = connection_attempt_limit;
-                return *this;
-            }
-
-            std::chrono::milliseconds client_network_config::get_connection_attempt_period() const {
-                return connection_attempt_period_;
-            }
-
             std::vector<address> client_network_config::get_addresses() const {
                 return address_list_;
             }
@@ -248,14 +289,6 @@ namespace hazelcast {
                 return *this;
             }
 
-            client_network_config &
-            client_network_config::set_connection_attempt_period(const std::chrono::milliseconds &interval) {
-                util::Preconditions::check_not_negative(interval.count(), (boost::format(
-                        "Provided connectionAttemptPeriod(%1% msecs) cannot be negative") % interval.count()).str());
-                connection_attempt_period_ = interval;
-                return *this;
-            }
-
             client_connection_strategy_config::client_connection_strategy_config() : async_start_(false), reconnect_mode_(ON) {
             }
 
@@ -278,11 +311,22 @@ namespace hazelcast {
                 return *this;
             }
 
+            connection_retry_config &client_connection_strategy_config::get_retry_config() {
+                return retry_config_;
+            }
+
+            client_connection_strategy_config &
+            client_connection_strategy_config::set_retry_config(const connection_retry_config &retry_config) {
+                retry_config_ = retry_config;
+                return *this;
+            }
+
             constexpr int reliable_topic_config::DEFAULT_READ_BATCH_SIZE;
 
             reliable_topic_config::reliable_topic_config() = default;
 
-            reliable_topic_config::reliable_topic_config(const char *topic_name) : read_batch_size_(DEFAULT_READ_BATCH_SIZE),
+            reliable_topic_config::reliable_topic_config(const char *topic_name) : read_batch_size_(
+                    DEFAULT_READ_BATCH_SIZE),
                                                                                    name_(topic_name) {
             }
 

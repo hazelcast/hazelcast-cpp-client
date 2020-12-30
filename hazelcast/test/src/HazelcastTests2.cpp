@@ -416,7 +416,7 @@ namespace hazelcast {
         namespace test {
             class ClientConfigTest : public ClientTestSupport
             {};
-
+            
             TEST_F(ClientConfigTest, testGetAddresses) {
                 client_config clientConfig;
                 address address("localhost", 5555);
@@ -504,6 +504,50 @@ namespace hazelcast {
                 ASSERT_EQ(test_name, client.get_name());
             }
 
+            class connection_retry_config_test : public ClientTestSupport
+            {};
+
+            TEST_F(connection_retry_config_test, large_jitter) {
+                ASSERT_THROW(client_config().get_connection_strategy_config().get_retry_config().set_jitter(1.01), exception::illegal_argument);
+            }
+
+            TEST_F(connection_retry_config_test, max_backoff_duration_boundaries) {
+                auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
+                ASSERT_THROW(retry_config.set_max_backoff_duration(std::chrono::milliseconds(-1)), exception::illegal_argument);
+                ASSERT_NO_THROW(retry_config.set_max_backoff_duration(std::chrono::milliseconds(0)));
+                ASSERT_NO_THROW(retry_config.set_max_backoff_duration(std::chrono::seconds(100)));
+            }
+
+            TEST_F(connection_retry_config_test, initial_backoff_duration_boundaries) {
+                auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
+                ASSERT_THROW(retry_config.set_initial_backoff_duration(std::chrono::milliseconds(-1)), exception::illegal_argument);
+                ASSERT_NO_THROW(retry_config.set_initial_backoff_duration(std::chrono::milliseconds(0)));
+                ASSERT_NO_THROW(retry_config.set_initial_backoff_duration(std::chrono::seconds(100)));
+            }
+
+            TEST_F(connection_retry_config_test, cluster_connect_timeout_boundaries) {
+                auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
+                ASSERT_THROW(retry_config.set_cluster_connect_timeout(std::chrono::milliseconds(-1)), exception::illegal_argument);
+                ASSERT_NO_THROW(retry_config.set_cluster_connect_timeout(std::chrono::milliseconds(0)));
+                ASSERT_NO_THROW(retry_config.set_cluster_connect_timeout(std::chrono::seconds(100)));
+            }
+
+            TEST_F(connection_retry_config_test, multiplier_boundaries) {
+                auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
+                ASSERT_THROW(retry_config.set_multiplier(0.99), exception::illegal_argument);
+                ASSERT_THROW(retry_config.set_multiplier(-1), exception::illegal_argument);
+                ASSERT_NO_THROW(retry_config.set_multiplier(1));
+                ASSERT_NO_THROW(retry_config.set_multiplier(2));
+            }
+
+            TEST_F(connection_retry_config_test, jitter_boundaries) {
+                auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
+                ASSERT_THROW(retry_config.set_jitter(1.01), exception::illegal_argument);
+                ASSERT_THROW(retry_config.set_jitter(-0.01), exception::illegal_argument);
+                ASSERT_NO_THROW(retry_config.set_jitter(1));
+                ASSERT_NO_THROW(retry_config.set_jitter(0));
+                ASSERT_NO_THROW(retry_config.set_jitter(0.5));
+            }
         }
     }
 }
@@ -516,8 +560,8 @@ namespace hazelcast {
                 class ConfiguredBehaviourTest : public ClientTestSupport {
                 public:
                     ConfiguredBehaviourTest() {
-                        client_config_.get_network_config().set_connection_timeout(std::chrono::seconds(2)).set_connection_attempt_limit(2).
-                                set_connection_attempt_period(std::chrono::seconds(1));
+                        client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                                std::chrono::seconds(2));
                     }
 
                 protected:
@@ -548,13 +592,15 @@ namespace hazelcast {
 
                     // trying 8.8.8.8 address will delay the initial connection since no such server exist
                     client_config_.get_network_config().add_address(address("8.8.8.8", 5701))
-                            .add_address(address("127.0.0.1", 5701)).set_connection_attempt_limit(INT32_MAX);
+                            .add_address(address("127.0.0.1", 5701));
+                    client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                            std::chrono::milliseconds::max());
                     client_config_.set_property("hazelcast.client.shuffle.member.list", "false");
                     client_config_.add_listener(
-                        lifecycle_listener()
-                            .on_connected([&connectedLatch](){
-                                connectedLatch.try_count_down();
-                            })
+                            lifecycle_listener()
+                                    .on_connected([&connectedLatch]() {
+                                        connectedLatch.try_count_down();
+                                    })
                     );
                     client_config_.get_connection_strategy_config().set_async_start(true);
 
@@ -681,12 +727,13 @@ namespace hazelcast {
                     boost::latch initialConnectionLatch(1);
                     boost::latch reconnectedLatch(1);
 
-                    client_config_.get_network_config().set_connection_attempt_limit(INT32_MAX);
+                    client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                            std::chrono::milliseconds::max());
                     client_config_.add_listener(
-                        lifecycle_listener()
-                            .on_connected([&initialConnectionLatch](){
-                                initialConnectionLatch.try_count_down();
-                            })
+                            lifecycle_listener()
+                                    .on_connected([&initialConnectionLatch]() {
+                                        initialConnectionLatch.try_count_down();
+                                    })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
@@ -720,12 +767,13 @@ namespace hazelcast {
 
                     boost::latch connectedLatch(1), disconnectedLatch(1), reconnectedLatch(1);
 
-                    client_config_.get_network_config().set_connection_attempt_limit(10);
+                    client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                            std::chrono::seconds(10));
                     client_config_.add_listener(
-                        lifecycle_listener()
-                            .on_connected([&connectedLatch](){
-                                connectedLatch.try_count_down();
-                            })
+                            lifecycle_listener()
+                                    .on_connected([&connectedLatch]() {
+                                        connectedLatch.try_count_down();
+                                    })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
