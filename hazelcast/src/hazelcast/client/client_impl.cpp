@@ -373,7 +373,6 @@ namespace hazelcast {
             logger *BaseEventHandler::get_logger() const {
                 return logger_;
             }
-
         }
 
         constexpr int address::ID;

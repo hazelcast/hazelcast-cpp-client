@@ -37,15 +37,14 @@
   * [5.1. Providing Member Addresses](#51-providing-member-addresses)
   * [5.2. Setting Smart Routing](#52-setting-smart-routing)
   * [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
-  * [5.4. Setting Connection Timeout](#54-setting-connection-timeout)
-  * [5.5. Setting Connection Attempt Limit](#55-setting-connection-attempt-limit)
-  * [5.6. Setting Connection Attempt Period](#56-setting-connection-attempt-period)
-  * [5.7. Enabling Client TLS/SSL](#57-enabling-client-tlsssl)
-  * [5.8. Enabling Hazelcast AWS Cloud Discovery](#58-enabling-hazelcast-aws-cloud-discovery)
-  * [5.9. Authentication](#59-authentication)
-    * [5.9.1. Username Password Authentication](#591-authentication)
-    * [5.9.2. Token Authentication](#591-authentication)
-  * [5.10. Configuring Backup Acknowledgment](#59-configuring-backup-acknowledgment)    
+  * [5.4. Setting Cluster Connection Timeout](#54-setting-cluster-connection-timeout)
+  * [5.5. Advanced Cluster Connection Retry Configuration](#55-advanced-cluster-connection-retry-configuration)
+  * [5.6. Enabling Client TLS/SSL](#56-enabling-client-tlsssl)
+  * [5.7. Enabling Hazelcast AWS Cloud Discovery](#57-enabling-hazelcast-aws-cloud-discovery)
+  * [5.8. Authentication](#58-authentication)
+    * [5.8.1. Username Password Authentication](#581-authentication)
+    * [5.8.2. Token Authentication](#581-authentication)
+  * [5.9. Configuring Backup Acknowledgment](#59-configuring-backup-acknowledgment)    
 * [6. Securing Client Connection](#6-securing-client-connection)
   * [6.1. TLS/SSL](#61-tlsssl)
     * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
@@ -976,9 +975,8 @@ Here is an example of configuring the network for C++ Client programmatically.
     clientConfig.get_network_config().add_addresses({{"10.1.1.21", 5701}, {"10.1.1.22", 5703}});
     clientConfig.get_network_config().set_smart_routing(true);
     clientConfig.set_redo_operation(true);
-    clientConfig.get_network_config().set_connection_timeout(6000);
-    clientConfig.get_network_config().set_connection_attempt_period(5000);
-    clientConfig.get_network_config().set_connection_attempt_limit(5);
+    clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+            std::chrono::seconds(30));
 ```
 
 ## 5.1. Providing Member Addresses
@@ -1019,54 +1017,44 @@ It enables/disables redo-able operations. While sending the requests to the rela
 
 Its default value is `false` (disabled).
 
-## 5.4. Setting Connection Timeout
-
-Connection timeout is the timeout value in milliseconds for the members to accept the client connection requests.
-If the member does not respond within the timeout, the client will retry to connect as many as `client_network_config::getConnectionAttemptLimit()` times.
+## 5.4. Setting Cluster Connection Timeout
+Cluster connection timeout is the timeout value for which the client tries to connect to the cluster. If the client can not connect to cluster during this timeout duration, the client shuts down itself and it can not be re-used (you need to obtain a new client).
  
-The following is an example configuration.
+The following example shows how you can set the cluster connection timeout to 30 seconds.
 
 ```C++
-    client_config clientConfig;
-    clientConfig.get_network_config().set_connection_timeout(6000);
+    client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(std::chrono::seconds(30));
 ```
 
-Its default value is `5000` milliseconds.
+## 5.5. Advanced Cluster Connection Retry Configuration
 
-## 5.5. Setting Connection Attempt Limit
-
-While the client is trying to connect initially to one of the members in the `client_network_config::get_addresses()` (and the cluster member list addresses if the cluster member list were loaded at least once during a previous connection to the cluster), that member might not be available at that moment. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `client_network_config::getConnectionAttemptLimit()` times. This is also the case when the previously established connection between the client and that member goes down.
-
+When client is disconnected from the cluster, it searches for new connections to reconnect. You can configure the frequency of the reconnection attempts and client shutdown behavior using `connection_retry_config`.
 The following is an example configuration.
 
-```C++
-    client_config clientConfig;
-    clientConfig.get_network_config().set_connection_attempt_limit(5);
-```
-
-Its default value is `2`.
-
-## 5.6. Setting Connection Attempt Period
-
-Connection attempt period is the duration in milliseconds between the connection attempts defined by `client_network_config::getConnectionAttemptPeriod()`.
- 
-The following is an example configuration.
+Below is an example configuration. It configures a total timeout of 30 seconds to connect to a cluster, by initial backoff time being 100 milliseconds and doubling the time before every try with a jitter of 0.8  up to a maximum of 3 seconds backoff between each try..
 
 ```C++
-    client_config clientConfig;
-    clientConfig.get_network_config().set_connection_attempt_period(5000);
+    client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+            std::chrono::seconds(30)).set_multiplier(2.0).set_jitter(0.8).set_initial_backoff_duration(
+            std::chrono::seconds(100)).set_max_backoff_duration(std::chrono::seconds(3));
 ```
 
-Its default value is `3000` milliseconds.
+The following are configuration element descriptions:
 
-## 5.7. Enabling Client TLS/SSL
+* `initial_backoff_duration`: Specifies how long to wait (backoff) after the first failure before retrying.
+* `max_backoff_duration`: Specifies the upper limit for the backoff between each cluster connect tries.
+* `multiplier`: Factor to multiply the backoff after a failed retry.
+* `cluster_connect)timeout`: Timeout value for the client to give up to connect to the current cluster. If the client can not connect during this time, then it shuts down and it can not be re-used.
+* `jitter`: Specifies by how much to randomize backoffs.
+
+## 5.6. Enabling Client TLS/SSL
 
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
 for the client-cluster connection, you should set an SSL configuration. Please see the [TLS/SSL section](#61-tlsssl).
 
 As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast C++ clients have certificate authorities used to define which members they can trust. 
 
-## 5.8. Enabling Hazelcast AWS Cloud Discovery
+## 5.7. Enabling Hazelcast AWS Cloud Discovery
 
 The C++ client can discover the existing Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the [describe-instances] (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html) query of AWS. The client finds only the up and running instances and filters them based on the filter config provided at the `client_aws_config` configuration.
  
@@ -1082,7 +1070,7 @@ You need to enable the discovery by calling the `set_enabled(true)`. You can set
  
 The C++ client works the same way as the Java client. For details, see [aws_client Configuration] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#awsclient-configuration) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
 
-## 5.9. Authentication
+## 5.8. Authentication
 
 By default, the client does not use any authentication method and just uses the cluster "dev" to connect to. You can change which cluster to connect by using the configuration API `client_config::set_cluster_name`. This way, you can have multiple clusters in the network but the client will only be able to connect to the cluster with the correct cluster name (server should also be started with the cluster name configured to the same cluster name).
 
@@ -1091,7 +1079,7 @@ If you want to enable authentication, then the client can be configured in one o
 * Username password based authentication
 * Token based authentication
 
-## 5.9.1. Username Password Authentication
+## 5.8.1. Username Password Authentication
 
 The following is an example configuration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
 
@@ -1113,7 +1101,7 @@ Note that the server needs to be configured to use the same username and passwor
     </security>
 ```
 
-## 5.9.2. Token Authentication
+## 5.8.2. Token Authentication
 
 The following is an example configuration where we set the secret token bytes to be used while trying to connect to the cluster:
 
@@ -1137,7 +1125,7 @@ Note that the server needs to be configured to use the same token. An example se
     </security>
 ```
 
-## 5.10. Configuring Backup Acknowledgment
+## 5.9. Configuring Backup Acknowledgment
 
 When an operation with sync backup is sent by a client to the Hazelcast member(s), the acknowledgment of the operation's backup is sent to the client by the backup replica member(s). This improves the performance of the client operations.
 
