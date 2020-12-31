@@ -245,6 +245,8 @@ namespace hazelcast {
                 void check_partition_count(int32_t new_partition_count);
 
                 void trigger_cluster_reconnection();
+
+                std::shared_ptr<Connection> connect(const address &address);
             };
         }
     }

@@ -994,18 +994,16 @@ namespace hazelcast {
 
             TEST_P(ClusterTest, testConnectionAttemptPeriod) {
                 client_config clientConfig = GetParam()();
+                auto timeout = std::chrono::seconds(2);
+                clientConfig.get_network_config().set_connection_timeout(std::chrono::milliseconds(500));
                 config::connection_retry_config &retry_config = clientConfig.get_connection_strategy_config().get_retry_config();
-                retry_config.set_cluster_connect_timeout(std::chrono::seconds(3)).set_cluster_connect_timeout(
-                        std::chrono::milliseconds(500));
+                retry_config.set_cluster_connect_timeout(timeout).set_initial_backoff_duration(
+                        std::chrono::milliseconds(100));
                 clientConfig.get_network_config().add_address(address("8.8.8.8", 8000));
 
-                int64_t startTimeMillis = hazelcast::util::current_time_millis();
-                try {
-                    hazelcast_client client(std::move(clientConfig));
-                } catch (exception::illegal_state &) {
-                    // this is expected
-                }
-                ASSERT_GE(hazelcast::util::current_time_millis() - startTimeMillis, 2 * 900);
+                auto start_time = std::chrono::steady_clock::now();
+                ASSERT_THROW(hazelcast_client(std::move(clientConfig)), exception::illegal_state);
+                ASSERT_GE(std::chrono::steady_clock::now() - start_time, timeout);
             }
 
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {

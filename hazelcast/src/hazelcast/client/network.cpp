@@ -192,20 +192,7 @@ namespace hazelcast {
                     return connection;
                 }
 
-                auto target = translator_->translate(address);
-                HZ_LOG(logger_, info, boost::str(
-                        boost::format("Trying to connect to %1%. Translated address:%2%.") % address % target));
-
-                connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
-                                                          *socket_factory_, *this, connection_timeout_millis_);
-                connection->connect();
-
-                // call the interceptor from user thread
-                socket_interceptor_.connect_(connection->get_socket());
-
-                auto result = authenticate_on_cluster(connection);
-
-                return on_authenticated(connection, result);
+                return connect(address);
             }
 
             std::shared_ptr<Connection>
@@ -216,21 +203,7 @@ namespace hazelcast {
                     return connection;
                 }
 
-                auto server_address = m.get_address();
-                auto target = translator_->translate(server_address);
-                HZ_LOG(logger_, info, boost::str(
-                        boost::format("Trying to connect to %1%. Translated address:%2%.") % server_address % target));
-
-                connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
-                                                          *socket_factory_, *this, connection_timeout_millis_);
-                connection->connect();
-
-                // call the interceptor from user thread
-                socket_interceptor_.connect_(connection->get_socket());
-
-                auto result = authenticate_on_cluster(connection);
-
-                return on_authenticated(connection, result);
+                return connect(m.get_address());
             }
 
             std::vector<std::shared_ptr<Connection> > ClientConnectionManagerImpl::get_active_connections() {
@@ -393,8 +366,8 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::submit_connect_to_cluster_task() {
-                // called in std::lock_guard<std::mutex>(client_state_mutex_)
-                if (connect_to_cluster_task_submitted_) {
+                bool expected = false;
+                if (!connect_to_cluster_task_submitted_.compare_exchange_strong(expected, true)) {
                     return;
                 }
 
@@ -780,6 +753,23 @@ namespace hazelcast {
                         invocation_it->second->notify_backup();
                     }
                 });
+            }
+
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &address) {
+                auto target = translator_->translate(address);
+                HZ_LOG(logger_, info, boost::str(
+                        boost::format("Trying to connect to %1%. Translated address:%2%.") % address % target));
+
+                auto connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
+                                                          *socket_factory_, *this, connection_timeout_millis_);
+                connection->connect();
+
+                // call the interceptor from user thread
+                socket_interceptor_.connect_(connection->get_socket());
+
+                auto result = authenticate_on_cluster(connection);
+
+                return on_authenticated(connection, result);
             }
 
             ReadHandler::ReadHandler(Connection &connection, size_t buffer_size)
