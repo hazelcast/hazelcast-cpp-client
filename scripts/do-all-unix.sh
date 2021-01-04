@@ -19,7 +19,7 @@ export INSTALL=ON
 
 DESTINATION=$(pwd)/destination
 
-# Set BUILD_STATIC_LIB and BUILD_SHARED_LIB depending on LIBRARY_TYPE
+# set BUILD_STATIC_LIB and BUILD_SHARED_LIB depending on LIBRARY_TYPE
 BUILD_STATIC_LIB=OFF
 BUILD_SHARED_LIB=OFF
 if [ "$LIBRARY_TYPE" == "SHARED" ]; then
@@ -39,8 +39,8 @@ fi
 
 ./scripts/test-unix.sh
 
-gcovr --xml-pretty -o cpp_coverage.xml -r . \
-	  -e ".*boost.*" -e ".*examples.*" -e ".*test.*" -e ".*usr.*include.*" -e ".*asio.*" -d
+gcovr --xml-pretty -o cpp_coverage.xml -r .                                                  \
+	    -e ".*boost.*" -e ".*examples.*" -e ".*test.*" -e ".*usr.*include.*" -e ".*asio.*" -d
 
 export BUILD_DIR=build-examples
 
@@ -54,6 +54,6 @@ if [ "$LIBRARY_TYPE" == "STATIC" ]; then
   LIBRARY_FOR_EXAMPLES="${LIBRARY_FOR_EXAMPLES}_static"
 fi
 
-./scripts/verify-installation-unix.sh       \
-	-DCMAKE_PREFIX_PATH=$DESTINATION        \
+./scripts/verify-installation-unix.sh            \
+	-DCMAKE_PREFIX_PATH=$DESTINATION               \
 	-DLIBRARY_FOR_EXAMPLES=$LIBRARY_FOR_EXAMPLES
