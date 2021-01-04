@@ -594,7 +594,7 @@ namespace hazelcast {
                     client_config_.get_network_config().add_address(address("8.8.8.8", 5701))
                             .add_address(address("127.0.0.1", 5701));
                     client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
-                            std::chrono::milliseconds::max());
+                            (std::chrono::milliseconds::max)());
                     client_config_.set_property("hazelcast.client.shuffle.member.list", "false");
                     client_config_.add_listener(
                             lifecycle_listener()
@@ -728,7 +728,7 @@ namespace hazelcast {
                     boost::latch reconnectedLatch(1);
 
                     client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
-                            std::chrono::milliseconds::max());
+                            (std::chrono::milliseconds::max)());
                     client_config_.add_listener(
                             lifecycle_listener()
                                     .on_connected([&initialConnectionLatch]() {
