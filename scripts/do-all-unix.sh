@@ -18,8 +18,8 @@ export BUILD_DIR=build
 export INSTALL=ON
 
 # treat compiler warnings as errors when the build type is Debug
-if [ "$BUILD_TYPE" == "Debug" ]
-  export WARN_AS_ERR=ON;
+if [ "$BUILD_TYPE" == "Debug" ]; then
+  export WARN_AS_ERR=ON
 fi
 
 DESTINATION=$(pwd)/destination
