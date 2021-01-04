@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12.4)
+cmake_minimum_required (VERSION 3.10)
 
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
 FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")
@@ -51,14 +51,6 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     message(STATUS "Using THRIFT_LIBRARIES: ${THRIFT_LIBRARIES}")
     include_directories(${THRIFT_INCLUDE_DIR})
     target_link_libraries(client_test PRIVATE ${THRIFT_LIBRARIES})
-
-    IF (${HZ_LIB_TYPE} MATCHES "STATIC")
-        message(STATUS "Shall use the STATIC Hazelcast library for the tests.")
-        add_definitions(-DHAZELCAST_USE_STATIC)
-    ELSE (${HZ_LIB_TYPE} MATCHES "SHARED")
-        message(STATUS "Shall use the SHARED Hazelcast library for the tests.")
-        add_definitions(-DHAZELCAST_USE_SHARED)
-    ENDIF (${HZ_LIB_TYPE} MATCHES "STATIC")
 
     set_target_properties(client_test PROPERTIES COMPILE_FLAGS " /EHsc ")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
