@@ -61,31 +61,31 @@
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
+#include "hazelcast/client/connection/wait_strategy.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
             constexpr size_t ClientConnectionManagerImpl::EXECUTOR_CORE_POOL_SIZE;
-            constexpr int32_t ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
-            constexpr int32_t ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
 
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
                                                                      const std::shared_ptr<AddressTranslator> &address_translator,
                                                                      const std::vector<std::shared_ptr<AddressProvider> > &address_providers)
-                    : alive_(false), logger_(client.get_logger()), connection_timeout_millis_((std::chrono::milliseconds::max)()),
+                    : alive_(false), logger_(client.get_logger()),
+                      connection_timeout_millis_((std::chrono::milliseconds::max)()),
                       client_(client),
                       socket_interceptor_(client.get_client_config().get_socket_interceptor()),
-                      execution_service_(client.get_client_execution_service()),
                       translator_(address_translator), connection_id_gen_(0),
-                      heartbeat_(client, *this), partition_count_(-1),
+                      heartbeat_(client, *this),
                       async_start_(client.get_client_config().get_connection_strategy_config().is_async_start()),
                       reconnect_mode_(client.get_client_config().get_connection_strategy_config().get_reconnect_mode()),
                       smart_routing_enabled_(client.get_client_config().get_network_config().is_smart_routing()),
-                      connect_to_cluster_task_submitted_(false),
                       client_uuid_(client.random_uuid()),
                       authentication_timeout_(boost::chrono::milliseconds(heartbeat_.get_heartbeat_timeout().count())),
-                      cluster_id_(boost::uuids::nil_uuid()),
-                      load_balancer_(client.get_client_config().get_load_balancer()) {
+                      load_balancer_(client.get_client_config().get_load_balancer()),
+                      wait_strategy_(client.get_client_config().get_connection_strategy_config().get_retry_config(),
+                                     logger_), cluster_id_(boost::uuids::nil_uuid()),
+                      connect_to_cluster_task_submitted_(false) {
 
                 config::client_network_config &networkConfig = client.get_client_config().get_network_config();
                 auto connTimeout = networkConfig.get_connection_timeout();
@@ -97,18 +97,6 @@ namespace hazelcast {
                 shuffle_member_list_ = clientProperties.get_boolean(clientProperties.get_shuffle_member_list());
 
                 ClientConnectionManagerImpl::address_providers_ = address_providers;
-
-                connection_attempt_period_ = networkConfig.get_connection_attempt_period();
-
-                int connAttemptLimit = networkConfig.get_connection_attempt_limit();
-                bool isAsync = client.get_client_config().get_connection_strategy_config().is_async_start();
-
-                if (connAttemptLimit < 0) {
-                    this->connection_attempt_limit_ = isAsync ? DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC
-                                                           : DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
-                } else {
-                    this->connection_attempt_limit_ = connAttemptLimit == 0 ? INT32_MAX : connAttemptLimit;
-                }
 
                 io_thread_count_ = clientProperties.get_integer(clientProperties.get_io_thread_count());
             }
@@ -204,28 +192,18 @@ namespace hazelcast {
                     return connection;
                 }
 
-                auto f = conn_locks_.get_or_put_if_absent(address, std::make_shared<std::mutex>());
-                std::lock_guard<std::mutex> g(*f.first);
-                // double check here
-                connection = get_connection(address);
+                return connect(address);
+            }
+
+            std::shared_ptr<Connection>
+            ClientConnectionManagerImpl::get_or_connect(const member &m) {
+                const auto &uuid = m.get_uuid();
+                auto connection = active_connections_.get(uuid);
                 if (connection) {
                     return connection;
                 }
 
-                auto target = translator_->translate(address);
-                HZ_LOG(logger_, info, boost::str(
-                        boost::format("Trying to connect to %1%. Translated address:%2%.") % address % target));
-
-                connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
-                                                          *socket_factory_, *this, connection_timeout_millis_);
-                connection->connect();
-
-                // call the interceptor from user thread
-                socket_interceptor_.connect_(connection->get_socket());
-
-                authenticate_on_cluster(connection);
-
-                return connection;
+                return connect(m.get_address());
             }
 
             std::vector<std::shared_ptr<Connection> > ClientConnectionManagerImpl::get_active_connections() {
@@ -247,7 +225,7 @@ namespace hazelcast {
                 return active_connections_.get(uuid);
             }
 
-            void
+            ClientConnectionManagerImpl::auth_response
             ClientConnectionManagerImpl::authenticate_on_cluster(std::shared_ptr<Connection> &connection) {
                 auto request = encode_authentication_request(client_.get_serialization_service());
                 auto clientInvocation = spi::impl::ClientInvocation::create(client_, request, "", connection);
@@ -287,19 +265,27 @@ namespace hazelcast {
                 auto authentication_status = (protocol::authentication_status) result.status;
                 switch (authentication_status) {
                     case protocol::AUTHENTICATED: {
-                        handle_successful_auth(connection, std::move(result));
-                        break;
+                        return result;
                     }
                     case protocol::CREDENTIALS_FAILED: {
-                        auto e = std::make_exception_ptr(exception::authentication("AuthCallback::onResponse",
-                                                                                            "Authentication failed. The configured cluster name on the client (see ClientConfig::setClusterName()) does not match the one configured in the cluster or the credentials set in the Client security config could not be authenticated"));
+                        auto e = std::make_exception_ptr(
+                                exception::authentication("ClientConnectionManagerImpl::authenticate_on_cluster",
+                                                          "Authentication failed. The configured cluster name on the client (see client_config::set_cluster_name()) does not match the one configured in the cluster or the credentials set in the Client security config could not be authenticated"));
+                        connection->close("Failed to authenticate connection", e);
+                        std::rethrow_exception(e);
+                    }
+                    case protocol::NOT_ALLOWED_IN_CLUSTER: {
+                        auto e = std::make_exception_ptr(
+                                exception::authentication("ClientConnectionManagerImpl::authenticate_on_cluster",
+                                                          "Client is not allowed in the cluster"));
                         connection->close("Failed to authenticate connection", e);
                         std::rethrow_exception(e);
                     }
                     default: {
                         auto e = std::make_exception_ptr(exception::authentication(
-                                "AuthCallback::onResponse",
-                                (boost::format("Authentication status code not supported. status: %1%") %authentication_status).str()));
+                                "ClientConnectionManagerImpl::authenticate_on_cluster",
+                                (boost::format("Authentication status code not supported. status: %1%") %
+                                 authentication_status).str()));
                         connection->close("Failed to authenticate connection", e);
                         std::rethrow_exception(e);
                     }
@@ -385,14 +371,16 @@ namespace hazelcast {
                     return;
                 }
 
-                boost::asio::post(executor_->get_executor(), [=] () {
+                boost::asio::post(executor_->get_executor(), [=]() {
                     try {
                         do_connect_to_cluster();
+
+                        std::lock_guard<std::mutex> guard(client_state_mutex_);
                         connect_to_cluster_task_submitted_ = false;
                         if (active_connections_.empty()) {
-                            HZ_LOG(logger_, finest, 
-                                boost::str(boost::format("No connection to cluster: %1%")
-                                                         % cluster_id_)
+                            HZ_LOG(logger_, finest,
+                                   boost::str(boost::format("No connection to cluster: %1%")
+                                              % cluster_id_)
                             );
 
                             submit_connect_to_cluster_task();
@@ -440,51 +428,46 @@ namespace hazelcast {
             }
 
             bool ClientConnectionManagerImpl::do_connect_to_cluster() {
-                int attempt = 0;
-                std::unordered_set<address> triedAddresses;
+                std::unordered_set<address> tried_addresses;
+                wait_strategy_.reset();
 
-                while (attempt < connection_attempt_limit_) {
-                    attempt++;
-                    auto nextTryTime = std::chrono::steady_clock::now() + connection_attempt_period_;
+                do {
+                    std::unordered_set<address> tried_addresses_per_attempt;
+                    auto member_list = client_.get_client_cluster_service().get_member_list();
+                    if (shuffle_member_list_) {
+                        shuffle(member_list);
+                    }
 
-                    for (const address &address : get_possible_member_addresses()) {
+                    //try to connect to a member in the member list first
+                    for (const auto &m : member_list) {
                         check_client_active();
-                        triedAddresses.insert(address);
-                        auto connection = connect(address);
+                        tried_addresses_per_attempt.insert(m.get_address());
+                        auto connection = try_connect(m);
                         if (connection) {
                             return true;
                         }
                     }
-
-                    // If the address providers load no addresses (which seems to be possible), then the above loop is not entered
+                    //try to connect to a member given via config(explicit config/discovery mechanisms)
+                    for (const address &server_address : get_possible_member_addresses()) {
+                        check_client_active();
+                        if (!tried_addresses_per_attempt.insert(server_address).second) {
+                            //if we can not add it means that it is already tried to be connected with the member list
+                            continue;
+                        }
+                        auto connection = try_connect<address>(server_address);
+                        if (connection) {
+                            return true;
+                        }
+                    }
+                    tried_addresses.insert(tried_addresses_per_attempt.begin(), tried_addresses_per_attempt.end());
+                    // If the address provider loads no addresses, then the above loop is not entered
                     // and the lifecycle check is missing, hence we need to repeat the same check at this point.
                     check_client_active();
+                } while (wait_strategy_.sleep());
 
-                    if (attempt < connection_attempt_limit_) {
-                        auto remainingTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                nextTryTime - std::chrono::steady_clock::now()).count();
-                        HZ_LOG(logger_, warning,
-                            boost::str(boost::format("Unable to get alive cluster connection, try in "
-                                                     "%1% ms later, attempt %2% of %3%.")
-                                                     % (remainingTime > 0 ? remainingTime : 0)
-                                                     % attempt % connection_attempt_limit_)
-                        );
-
-                        if (remainingTime > 0) {
-                            // TODO use a condition variable here
-                            std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
-                        }
-                    } else {
-                        HZ_LOG(logger_, warning, 
-                            boost::str(boost::format("Unable to get alive cluster connection, "
-                                                     "attempt %1% of %2%.")
-                                                     % attempt % connection_attempt_limit_)
-                        );
-                    }
-                }
                 std::ostringstream out;
                 out << "Unable to connect to any address! The following addresses were tried: { ";
-                for (const auto &address : triedAddresses) {
+                for (const auto &address : tried_addresses) {
                     out << address << " , ";
                 }
                 out << "}";
@@ -529,28 +512,28 @@ namespace hazelcast {
                 return alive_;
             }
 
-            void ClientConnectionManagerImpl::on_connection_close(Connection &connection, std::exception_ptr cause) {
-                auto endpoint = connection.get_remote_address();
-                auto member_uuid = connection.get_remote_uuid();
+            void ClientConnectionManagerImpl::on_connection_close(const std::shared_ptr<Connection> &connection) {
+                auto endpoint = connection->get_remote_address();
+                auto member_uuid = connection->get_remote_uuid();
 
-                auto socket_remote_address = connection.get_socket().get_remote_endpoint();
+                auto socket_remote_address = connection->get_socket().get_remote_endpoint();
 
                 if (!endpoint) {
                     HZ_LOG(logger_, finest,
-                        boost::str(boost::format("Destroying %1% , but it has end-point set to null "
-                                                 "-> not removing it from a connection map")
-                                                 % connection)
+                           boost::str(boost::format("Destroying %1% , but it has end-point set to null "
+                                                    "-> not removing it from a connection map")
+                                      % *connection)
                     );
                     return;
                 }
 
-                auto conn = connection.shared_from_this();
-                if (active_connections_.remove(member_uuid, conn)) {
-                    active_connection_ids_.remove(conn->get_connection_id());
+                std::lock_guard<std::mutex> guard(client_state_mutex_);
+                if (active_connections_.remove(member_uuid, connection)) {
+                    active_connection_ids_.remove(connection->get_connection_id());
 
-                    HZ_LOG(logger_, info, 
-                        boost::str(boost::format("Removed connection to endpoint: %1%, connection: %2%")
-                                                 % *endpoint % connection)
+                    HZ_LOG(logger_, info,
+                           boost::str(boost::format("Removed connection to endpoint: %1%, connection: %2%")
+                                      % *endpoint % *connection)
                     );
 
                     if (active_connections_.empty()) {
@@ -559,12 +542,12 @@ namespace hazelcast {
                         trigger_cluster_reconnection();
                     }
 
-                    fire_connection_removed_event(connection.shared_from_this());
+                    fire_connection_removed_event(connection);
                 } else {
                     HZ_LOG(logger_, finest,
                         boost::str(boost::format("Destroying a connection, but there is no mapping "
                                                  "%1% -> %2% in the connection map.")
-                                                 % endpoint % connection)
+                                   % endpoint % *connection)
                     );
                 }
             }
@@ -586,72 +569,83 @@ namespace hazelcast {
             void ClientConnectionManagerImpl::check_client_active() {
                 if (!client_.get_lifecycle_service().is_running()) {
                     BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
-                            "ClientConnectionManagerImpl::check_client_active", "Client is shutdown"));
+                                                  "ClientConnectionManagerImpl::check_client_active", "Client is shutdown"));
                 }
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &address) {
-                try {
-                    return get_or_connect(address);
-                } catch (std::exception &e) {
-                    HZ_LOG(logger_, warning,
-                        boost::str(boost::format("Exception during initial connection to %1%: %2%")
-                                                 % address % e.what()));
+            std::shared_ptr<Connection>
+            ClientConnectionManagerImpl::on_authenticated(const std::shared_ptr<Connection> &connection,
+                                                          auth_response &response) {
+                {
+                    std::lock_guard<std::mutex> guard(client_state_mutex_);
+                    check_partition_count(response.partition_count);
+                    connection->set_connected_server_version(response.server_version);
+                    connection->set_remote_address(std::move(response.server_address));
+                    connection->set_remote_uuid(response.member_uuid);
+
+                    auto existing_connection = active_connections_.get(response.member_uuid);
+                    if (existing_connection) {
+                        connection->close((boost::format("Duplicate connection to same member with uuid : %1%") %
+                                           boost::uuids::to_string(response.member_uuid)).str());
+                        return existing_connection;
+                    }
+
+
+                    auto new_cluster_id = response.cluster_id;
+                    boost::uuids::uuid current_cluster_id = cluster_id_;
+
+                    HZ_LOG(logger_, finest,
+                           boost::str(boost::format("Checking the cluster: %1%, current cluster: %2%")
+                                      % new_cluster_id % current_cluster_id)
+                    );
+
+                    auto cluster_id_changed = !current_cluster_id.is_nil() && !(new_cluster_id == current_cluster_id);
+                    if (cluster_id_changed) {
+                        HZ_LOG(logger_, warning,
+                               boost::str(boost::format("Switching from current cluster: %1%  to new cluster: %2%")
+                                          % current_cluster_id % new_cluster_id)
+                        );
+                        client_.get_hazelcast_client_implementation()->on_cluster_restart();
+                    }
+
+                    auto connections_empty = active_connections_.empty();
+                    active_connection_ids_.put(connection->get_connection_id(), connection);
+                    active_connections_.put(response.member_uuid, connection);
+                    if (connections_empty) {
+                        cluster_id_ = new_cluster_id;
+                        fire_life_cycle_event(lifecycle_event::lifecycle_state::CLIENT_CONNECTED);
+                    }
+
+                    auto local_address = connection->get_local_socket_address();
+                    if (local_address) {
+                        HZ_LOG(logger_, info,
+                               boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
+                                                        "local address: %4%")
+                                          % response.server_address % response.member_uuid
+                                          % response.server_version % *local_address)
+                        );
+                    } else {
+                        HZ_LOG(logger_, info,
+                               boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
+                                                        "no local address: (connection disconnected ?)")
+                                          % response.server_address % response.member_uuid
+                                          % response.server_version)
+                        );
+                    }
+
+                    fire_connection_added_event(connection);
+                }
+
+                // It could happen that this connection is already closed and
+                // on_connection_close() is called even before the synchronized block
+                // above is executed. In this case, now we have a closed but registered
+                // connection. We do a final check here to remove this connection
+                // if needed.
+                if (!connection->is_alive()) {
+                    on_connection_close(connection);
                     return nullptr;
                 }
-            }
-
-            void ClientConnectionManagerImpl::handle_successful_auth(const std::shared_ptr<Connection> &connection,
-                                                                   auth_response response) {
-                check_partition_count(response.partition_count);
-                connection->set_connected_server_version(response.server_version);
-                connection->set_remote_address(std::move(response.server_address));
-                connection->set_remote_uuid(response.member_uuid);
-
-                auto new_cluster_id = response.cluster_id;
-                boost::uuids::uuid current_cluster_id = cluster_id_;
-
-                HZ_LOG(logger_, finest, 
-                    boost::str(boost::format("Checking the cluster: %1%, current cluster: %2%") 
-                                             % new_cluster_id % current_cluster_id)    
-                );
-
-                auto initial_connection = active_connections_.empty();
-                auto changedCluster = initial_connection && !current_cluster_id.is_nil() && !(new_cluster_id == current_cluster_id);
-                if (changedCluster) {
-                    HZ_LOG(logger_, warning,
-                        boost::str(boost::format("Switching from current cluster: %1%  to new cluster: %2%")
-                                                 % current_cluster_id % new_cluster_id)
-                    );
-                    client_.get_hazelcast_client_implementation()->on_cluster_restart();
-                }
-
-                active_connection_ids_.put(connection->get_connection_id(), connection);
-                active_connections_.put(response.member_uuid, connection);
-
-                if (initial_connection) {
-                    cluster_id_ = new_cluster_id;
-                    fire_life_cycle_event(lifecycle_event::lifecycle_state::CLIENT_CONNECTED);
-                }
-
-                auto local_address = connection->get_local_socket_address();
-                if (local_address) {
-                    HZ_LOG(logger_, info,
-                        boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
-                                                 "local address: %4%")
-                                   % response.server_address % response.member_uuid
-                                   % response.server_version % *local_address)
-                    );
-                } else {
-                    HZ_LOG(logger_, info,
-                        boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
-                                                 "no local address: (connection disconnected ?)")
-                                   % response.server_address % response.member_uuid
-                                   % response.server_version)
-                    );
-                }
-
-                fire_connection_added_event(connection);
+                return connection;
             }
 
             void ClientConnectionManagerImpl::fire_life_cycle_event(lifecycle_event::lifecycle_state state) {
@@ -761,6 +755,23 @@ namespace hazelcast {
                 });
             }
 
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &address) {
+                auto target = translator_->translate(address);
+                HZ_LOG(logger_, info, boost::str(
+                        boost::format("Trying to connect to %1%. Translated address:%2%.") % address % target));
+
+                auto connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
+                                                          *socket_factory_, *this, connection_timeout_millis_);
+                connection->connect();
+
+                // call the interceptor from user thread
+                socket_interceptor_.connect_(connection->get_socket());
+
+                auto result = authenticate_on_cluster(connection);
+
+                return on_authenticated(connection, result);
+            }
+
             ReadHandler::ReadHandler(Connection &connection, size_t buffer_size)
                     : buffer(new char[buffer_size]), byte_buffer(buffer, buffer_size), builder_(connection),
                       last_read_time_duration_(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -868,18 +879,19 @@ namespace hazelcast {
                     inner_close();
                 } catch (exception::iexception &e) {
                     HZ_LOG(client_context_.get_logger(), warning,
-                        boost::str(boost::format("Exception while closing connection %1%")
-                                                 % e.get_message())
+                           boost::str(boost::format("Exception while closing connection %1%")
+                                      % e.get_message())
                     );
                 }
 
-                client_context_.get_connection_manager().on_connection_close(*this, close_cause_);
-
                 auto thisConnection = shared_from_this();
+                client_context_.get_connection_manager().on_connection_close(thisConnection);
+
                 boost::asio::post(socket_->get_executor(), [=]() {
                     for (auto &invocationEntry : thisConnection->invocations) {
-                        invocationEntry.second->notify_exception(std::make_exception_ptr(boost::enable_current_exception(
-                                exception::target_disconnected("Connection::close",
+                        invocationEntry.second->notify_exception(
+                                std::make_exception_ptr(boost::enable_current_exception(
+                                        exception::target_disconnected("Connection::close",
                                                                        thisConnection->get_close_reason()))));
                     }
                 });
@@ -1123,6 +1135,51 @@ namespace hazelcast {
                 return heartbeat_timeout_;
             }
 
+            void wait_strategy::reset() {
+                attempt_ = 0;
+                cluster_connect_attempt_begin_ = std::chrono::steady_clock::now();
+                current_backoff_millis_ = (std::min)(max_backoff_millis_, initial_backoff_millis_);
+            }
+
+            wait_strategy::wait_strategy(const config::connection_retry_config &retry_config, logger &log)
+                    : initial_backoff_millis_(retry_config.get_initial_backoff_duration()),
+                      max_backoff_millis_(retry_config.get_max_backoff_duration()),
+                      multiplier_(retry_config.get_multiplier()), jitter_(retry_config.get_jitter()), logger_(log),
+                      cluster_connect_timeout_millis_(retry_config.get_cluster_connect_timeout()) {}
+
+            bool wait_strategy::sleep() {
+                attempt_++;
+                using namespace std::chrono;
+                auto current_time = steady_clock::now();
+                auto time_passed = duration_cast<milliseconds>(current_time - cluster_connect_attempt_begin_);
+                if (time_passed > cluster_connect_timeout_millis_) {
+                    HZ_LOG(logger_, warning, (boost::format(
+                            "Unable to get live cluster connection, cluster connect timeout (%1% millis) is reached. Attempt %2%.") %
+                                              duration_cast<milliseconds>(cluster_connect_timeout_millis_).count() %
+                                              attempt_).str());
+                    return false;
+                }
+
+                //sleep time: current_backoff_millis_(1 +- (jitter * [0, 1]))
+                auto actual_sleep_time = current_backoff_millis_ + milliseconds(
+                        static_cast<milliseconds::rep>(current_backoff_millis_.count() * jitter_ *
+                                                       (2.0 * random_(random_generator_) - 1.0)));
+
+                actual_sleep_time = (std::min)(actual_sleep_time, cluster_connect_timeout_millis_ - time_passed);
+
+                HZ_LOG(logger_, warning, (boost::format(
+                        "Unable to get live cluster connection, retry in %1% ms, attempt: %2% , cluster connect timeout: %3% seconds , max backoff millis: %4%") %
+                                          actual_sleep_time.count() % attempt_ %
+                                          cluster_connect_timeout_millis_.count() %
+                                          max_backoff_millis_.count()).str());
+
+                std::this_thread::sleep_for(actual_sleep_time);
+
+                current_backoff_millis_ = (std::min)(
+                        milliseconds(static_cast<milliseconds::rep>(current_backoff_millis_.count() * multiplier_)),
+                        max_backoff_millis_);
+                return true;
+            }
         }
 
         namespace internal {

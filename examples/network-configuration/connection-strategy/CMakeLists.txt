@@ -16,4 +16,5 @@
 add_executable(startAsync StartAsync.cpp)
 add_executable(doNotReconnect DoNotReconnectToCluster.cpp)
 add_executable(reconnectAsync ReconnectAsync.cpp)
+add_executable(cluster_connection_retry cluster_connection_retry.cpp)
 

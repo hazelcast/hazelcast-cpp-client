@@ -115,42 +115,6 @@ namespace hazelcast {
                 client_network_config &set_smart_routing(bool smart_routing);
 
                 /**
-                 * See client_network_config#setConnectionAttemptLimit(int32_t) for details
-                 *
-                 * @return connection attempt Limit
-                 */
-                int32_t get_connection_attempt_limit() const;
-
-                /**
-                 * While client is trying to connect initially to one of the members in the client_network_config#addressList,
-                 * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
-                 * attempt to retry as much as client_network_config#connectionAttemptLimit() times.
-                 *
-                 * @param connectionAttemptLimit number of times to attempt to connect
-                 *                               A zero value means try forever.
-                 *                               A negative value means default value
-                 * @return configured \client_network_config for chaining
-                 */
-                client_network_config &set_connection_attempt_limit(int32_t connection_attempt_limit);
-
-                /**
-                 * Period for the next attempt to find a member to connect.
-                 * <p>
-                 * See \client_network_config::connectionAttemptLimit
-                 *
-                 * @return connection attempt period
-                 */
-                std::chrono::milliseconds get_connection_attempt_period() const;
-
-                /**
-                 * Period for the next attempt to find a member to connect.
-                 *
-                 * @param period time to wait before another attempt. The resolution of time is up to milliseconds.
-                 * @return configured \client_network_config for chaining
-                 */
-                client_network_config &set_connection_attempt_period(const std::chrono::milliseconds &interval);
-
-                /**
                  * Returns the list of candidate addresses that client will use to establish initial connection
                  *
                  * @return list of addresses
@@ -184,16 +148,11 @@ namespace hazelcast {
                 socket_options &get_socket_options();
 
             private:
-                static int32_t CONNECTION_ATTEMPT_PERIOD;
-
                 config::ssl_config ssl_config_;
                 config::client_aws_config client_aws_config_;
 
                 std::chrono::milliseconds connection_timeout_;
                 bool smart_routing_;
-
-                int32_t connection_attempt_limit_;
-                std::chrono::milliseconds connection_attempt_period_;
 
                 std::vector<address> address_list_;
 
