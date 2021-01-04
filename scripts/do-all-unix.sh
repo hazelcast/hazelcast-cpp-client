@@ -8,14 +8,19 @@
 # - BUILD_TYPE : Release, Debug, etc.
 # - LIBRARY_TYPE : SHARED or STATIC
 # - WITH_OPENSSL : ON or OFF
+# - COVERAGE: ON or OFF
 #
 
 # exit if a command returns non-zero status
 set -e
 
 export BUILD_DIR=build
-export COVERAGE=ON
 export INSTALL=ON
+
+# treat compiler warnings as errors when the build type is Debug
+if [ "$BUILD_TYPE" == "Debug" ]
+  export WARN_AS_ERR=ON;
+fi
 
 DESTINATION=$(pwd)/destination
 
@@ -39,8 +44,10 @@ fi
 
 ./scripts/test-unix.sh
 
-gcovr --xml-pretty -o cpp_coverage.xml -r .                                                  \
-	    -e ".*boost.*" -e ".*examples.*" -e ".*test.*" -e ".*usr.*include.*" -e ".*asio.*" -d
+if [ "$COVERAGE" == "ON" ]; then
+  gcovr --xml-pretty -o cpp_coverage.xml -r .                                                  \
+        -e ".*boost.*" -e ".*examples.*" -e ".*test.*" -e ".*usr.*include.*" -e ".*asio.*" -d
+fi
 
 export BUILD_DIR=build-examples
 
