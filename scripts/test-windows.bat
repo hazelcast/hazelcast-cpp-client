@@ -1,10 +1,10 @@
-REM Runs the tests on Windows
-REM The script should be run from the project's root directory
-REM
-REM This environment variables are the parameters to this script:
-REM - BUILD_DIR : build directory
-REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
-REM
+@REM Runs the tests on Windows
+@REM The script should be run from the project's root directory
+@REM
+@REM This environment variables are the parameters to this script:
+@REM - BUILD_DIR : build directory
+@REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
+@REM
 
 call scripts/start-rc.bat || (
     echo "Failed to start the remote controller"

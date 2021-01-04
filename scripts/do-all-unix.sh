@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Builds, tests and installs the library, and verifies the installation
+# Builds, tests and installs the library, and verifies the installation on UNIX-like platforms
 # The script should be run from the project's root directory
 #
 # This environment variables are the parameters to this script:
