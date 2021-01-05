@@ -48,6 +48,6 @@ if "%LIBRARY_TYPE%" == "STATIC" (
 )
 
 call .\scripts\verify-installation-windows.bat     ^
-	-DCMAKE_PREFIX_PATH=%DESTINATION%              ^
-	-DLIBRARY_FOR_EXAMPLES=%LIBRARY_FOR_EXAMPLES%  ^
+    -DCMAKE_PREFIX_PATH=%DESTINATION%              ^
+    -DLIBRARY_FOR_EXAMPLES=%LIBRARY_FOR_EXAMPLES%  ^
      || exit /b 1
