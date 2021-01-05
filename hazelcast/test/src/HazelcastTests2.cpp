@@ -468,15 +468,13 @@ namespace hazelcast {
 
                 auto h = [&called](const std::string &,
                                    const std::string &,
-                                   const char*,
-                                   int,
                                    logger::level,
                                    const std::string &) {
                     called = true;
                 };
 
                 logger_config.handler(h);
-                logger_config.handler()("", "", "", 0, logger::level::fine, "");
+                logger_config.handler()("", 0, logger::level::fine, "");
 
                 ASSERT_TRUE(called);
             }
