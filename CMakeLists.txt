@@ -32,9 +32,6 @@ if ((NOT GENERATOR_IS_MULTI_CONFIG) AND (NOT CMAKE_BUILD_TYPE))
     set(CMAKE_BUILD_TYPE Release)
 endif ()
 
-include(FindThreads)
-include(FindBoost)
-include(FindOpenSSL)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(GenerateExportHeader)
@@ -99,9 +96,6 @@ if (WITH_OPENSSL)
         # the one in the specified ROOT folder.
         # See https://stackoverflow.com/a/62063357
         set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
-        set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include CACHE FILEPATH "" FORCE)
-        set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
-        set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
     endif ()
 
     find_package(OpenSSL REQUIRED)
