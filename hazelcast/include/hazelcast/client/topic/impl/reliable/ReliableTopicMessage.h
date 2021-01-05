@@ -21,7 +21,7 @@
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/topic/message.h"
 #include "hazelcast/client/member.h"
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

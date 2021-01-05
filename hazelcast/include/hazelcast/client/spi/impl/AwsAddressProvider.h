@@ -20,7 +20,7 @@
 
 #include "hazelcast/client/aws/aws_client.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 #include "hazelcast/logger.h"
 

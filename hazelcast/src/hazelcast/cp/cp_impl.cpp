@@ -236,7 +236,7 @@ namespace hazelcast {
                 bool proxy_session_manager::session_state::is_expired() const {
                     auto expirationTime = creation_time + ttl;
                     if (expirationTime.time_since_epoch().count() < 0) {
-                        expirationTime = std::chrono::steady_clock::time_point::max();
+                        expirationTime = (std::chrono::steady_clock::time_point::max)();
                     }
                     return std::chrono::steady_clock::now() > expirationTime;
                 }

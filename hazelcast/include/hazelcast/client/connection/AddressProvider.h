@@ -18,7 +18,7 @@
 
 #include <vector>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/address.h"
 
 namespace hazelcast {

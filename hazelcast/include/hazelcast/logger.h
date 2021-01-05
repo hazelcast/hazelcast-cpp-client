@@ -4,7 +4,7 @@
 #include <functional>
 #include <limits>
 
-#include <hazelcast/util/hazelcast_dll.h>
+#include "hazelcast/util/export.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -60,14 +60,14 @@ private:
 };
 
 enum class logger::level : int {
-    all = std::numeric_limits<int>::min(),
+    all = (std::numeric_limits<int>::min)(),
     finest = 300,
     finer = 400,
     fine = 500,
     info = 800,
     warning = 900,
     severe = 1000,
-    off = std::numeric_limits<int>::max()
+    off = (std::numeric_limits<int>::max)()
 };
 
 HAZELCAST_API std::ostream& operator<<(std::ostream&, logger::level level);

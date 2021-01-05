@@ -13,236 +13,290 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# FLAGS
-#  -DHZ_LIB_TYPE=[STATIC | SHARED]
-#  -DHZ_BIT=[32 | 64]
-#  -DHZ_CODE_COVERAGE=ON
-#  -DHZ_VALGRIND=ON
-#  -DCMAKE_BUILD_TYPE=Debug
-#  -DHZ_BUILD_TESTS=ON
-#  -DHZ_BUILD_EXAMPLES=ON
-#  -DHZ_COMPILE_WITH_SSL=ON
-#  -DHZ_DISABLE_LOGGING=ON
 
-cmake_minimum_required (VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.10)
 
-project (HazelcastClient
-		VERSION 4.0
-		DESCRIPTION "Hazelcast C++ Client"
-		HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
-		LANGUAGES CXX)
+project(hazelcast-cpp-client
+        VERSION 4.0.0
+        DESCRIPTION "Hazelcast C++ Client"
+        HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
+        LANGUAGES CXX)
 
+# Set the C++ standard
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(TestBigEndian)
-include(FindOpenSSL)
+# Set the default build type if not given
+if ((NOT GENERATOR_IS_MULTI_CONFIG) AND (NOT CMAKE_BUILD_TYPE))
+    message(STATUS "CMAKE_BUILD_TYPE was not set, using Release as the default.")
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
+
+include(FindThreads)
 include(FindBoost)
+include(FindOpenSSL)
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+include(GenerateExportHeader)
+include(./cmake/utils.cmake)
 
-SET(HZ_VERSION 4.0-SNAPSHOT)
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
-	SET(CMAKE_BUILD_TYPE Debug)
+# get and set Git commit date and id
+get_commit_date_and_id(GIT_COMMIT_DATE GIT_COMMIT_ID)
+message(STATUS "GIT_COMMIT_DATE = ${GIT_COMMIT_DATE}")
+message(STATUS "GIT_COMMIT_ID = ${GIT_COMMIT_ID}")
+
+# find all source and header files
+FILE(GLOB_RECURSE SOURCE_FILES
+     "./hazelcast/src/*cpp"
+     "./hazelcast/generated-sources/src/*cpp")
+FILE(GLOB_RECURSE HEADER_FILES
+     "./hazelcast/include/*h"
+     "./hazelcast/generated-sources/src/*h")
+
+# options
+option(WITH_OPENSSL
+       "Build with OpenSSL. Setting this option to ON enables SSL-related features."
+       OFF)
+
+option(BUILD_STATIC_LIB
+       "Build static library."
+       OFF)
+
+option(BUILD_SHARED_LIB
+       "Build shared library."
+       ON)
+
+option(DISABLE_LOGGING
+       "Disable logging."
+       OFF)
+
+option(BUILD_TESTS
+       "Build tests."
+       OFF)
+
+option(BUILD_EXAMPLES
+       "Build examples."
+       OFF)
+
+# exit with an error message if none of BUILD_SHARED_LIB and BUILD_STATIC_LIB was set.
+if ((NOT BUILD_SHARED_LIB) AND (NOT BUILD_STATIC_LIB))
+    message(FATAL_ERROR
+            "Set at least one of BUILD_SHARED_LIB and BUILD_STATIC_LIB to ON.")
 endif ()
 
-message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
+# find dependencies
 
-add_definitions(-DHAZELCAST_VERSION="${HZ_VERSION}")
+# find Threads
+find_package(Threads REQUIRED)
 
-execute_process(COMMAND git show -s --format=%cd OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_DATE RESULT_VARIABLE GIT_DATE_RESULT)
-if (NOT (${GIT_DATE_RESULT} EQUAL 0))
-	message(WARNING "Could not execute command git show for obtaining the git commit date. Process exit result:${GIT_DATE_RESULT}")
-	set(HAZELCAST_GIT_COMMIT_DATE "NOT_FOUND")
-else()
-	string(STRIP "${HAZELCAST_GIT_COMMIT_DATE}" HAZELCAST_GIT_COMMIT_DATE)
-	if ("${HAZELCAST_GIT_COMMIT_DATE}" STREQUAL "")
-		message(WARNING "git show command returned empty commit date.")
-		set(HAZELCAST_GIT_COMMIT_DATE "NOT_FOUND")
-	endif()
+# find Boost
+find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono)
+
+# find OpenSSL if building WITH_OPENSSL
+if (WITH_OPENSSL)
+    if (APPLE)
+        # This is a bug in CMake that causes it to prefer the system version over
+        # the one in the specified ROOT folder.
+        # See https://stackoverflow.com/a/62063357
+        set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
+        set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include CACHE FILEPATH "" FORCE)
+        set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
+        set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
+    endif ()
+
+    find_package(OpenSSL REQUIRED)
 endif ()
-message(STATUS "HAZELCAST_GIT_COMMIT_DATE = ${HAZELCAST_GIT_COMMIT_DATE}" )
-add_definitions(-DHAZELCAST_GIT_COMMIT_DATE=${HAZELCAST_GIT_COMMIT_DATE})
 
-execute_process(COMMAND git show -s --format=%h OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_ID RESULT_VARIABLE GIT_COMMIT_ID_RESULT)
-if (NOT (${GIT_COMMIT_ID_RESULT} EQUAL 0))
-	message(WARNING "Could not execute command git show for obtaining the git commit id. Process exit result:${GIT_DATE_RESULT}")
-	set(HAZELCAST_GIT_COMMIT_ID "NOT_FOUND")
-else()
-	string(STRIP "${HAZELCAST_GIT_COMMIT_ID}" HAZELCAST_GIT_COMMIT_ID)
-	if ("${HAZELCAST_GIT_COMMIT_ID}" STREQUAL "")
-		message(WARNING "git show command returned empty commit id.")
-		set(HAZELCAST_GIT_COMMIT_ID "NOT_FOUND")
-	endif()
-endif ()
-message(STATUS "HAZELCAST_GIT_COMMIT_ID = ${HAZELCAST_GIT_COMMIT_ID}" )
-add_definitions(-DHAZELCAST_GIT_COMMIT_ID=${HAZELCAST_GIT_COMMIT_ID})
 
-message(STATUS "Preparing hazelcast client ..... ")
+function(add_hazelcast_library name type)
+    # add the library target
+    add_library(
+        ${name}
+        ${type}
+        ${SOURCE_FILES} ${HEADER_FILES}
+    )
 
-#detect endianness
-TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
-if (${IS_BIG_ENDIAN})
-	message(STATUS "Current system is a BIG-ENDIAN system")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BIG_ENDIAN")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BIG_ENDIAN")
-else()
-	message(STATUS "Current system is a LITTLE-ENDIAN system")
-ENDIF (${IS_BIG_ENDIAN})
+    # set library's version and soversion
+    set_target_properties(
+        ${name}
+        PROPERTIES
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION}
+    )
 
-FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
-FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
-FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
-FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
-FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/src/*h")
+    # library requires c++11
+    target_compile_features(
+        ${name}
+        PUBLIC cxx_std_11
+    )
 
-include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/src)
+    # links the library against the system's thread library
+    target_link_libraries(${name} PUBLIC Threads::Threads)
 
-if (HZ_DISABLE_LOGGING)
-	message(STATUS "Logging is disabled.")
-	add_definitions(-DHZ_LOGGING_DISABLED)
+    # add Boost::thread and Boost::chrono as dependencies
+    target_link_libraries(
+        ${name}
+        PUBLIC Boost::headers Boost::thread Boost::chrono
+    )
+    # set the Boost thread version
+    target_compile_definitions(
+        ${name}
+        PUBLIC BOOST_THREAD_VERSION=5
+    )
+
+    # If building WITH_OPENSSL, add OpenSSL::SSL and OpenSSL::Crypto as dependencies
+    # Both we and the user defines HZ_BUILD_WITH_SSL.
+    if (WITH_OPENSSL)
+        target_compile_definitions(
+            ${name}
+            PUBLIC HZ_BUILD_WITH_SSL
+        )
+        target_link_libraries(${name} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+    endif()
+
+    # MSVC-specific compiler flags
+    if (MSVC)
+      target_compile_options(${name} PRIVATE /bigobj)
+    endif ()
+
+    # windows-specific compile flags
+    if (WIN32)
+        # speeds the build process
+        target_compile_definitions(${name} PRIVATE WIN32_LEAN_AND_MEAN)
+    endif ()
+
+    # add include directories
+    target_include_directories(
+        ${name}
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+
+    # add compile flags for version and git commit information
+    target_compile_definitions(
+        ${name}
+        PRIVATE
+            HAZELCAST_VERSION="${PROJECT_VERSION}"
+            HAZELCAST_GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+            HAZELCAST_GIT_COMMIT_ID=${GIT_COMMIT_ID}
+    )
+
+    if (DISABLE_LOGGING)
+        target_compile_definitions(${name} PUBLIC HZ_LOGGING_DISABLED)
+    endif ()
+
+    set_target_properties(${name} PROPERTIES DEFINE_SYMBOL HAZELCAST_EXPORTS)
+
+    generate_export_header(
+        ${name}
+        BASE_NAME hazelcast
+        EXPORT_MACRO_NAME HAZELCAST_API
+        EXPORT_FILE_NAME include/hazelcast/util/export.h
+        NO_EXPORT_MACRO_NAME HAZELCAST_PRIVATE
+        STATIC_DEFINE HAZELCAST_USE_STATIC
+    )
+
+    if (type STREQUAL "STATIC")
+        target_compile_definitions(${name} PUBLIC HAZELCAST_USE_STATIC)
+    endif()
+
+    # install library target
+    install(
+        TARGETS ${name}
+        EXPORT ${name}-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+
+    # install the -targets.cmake file
+    install(
+        EXPORT ${name}-targets
+        FILE ${name}-targets.cmake
+        NAMESPACE hazelcast::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}
+    )
+
+    # configure -config-version.cmake file
+    write_basic_package_version_file(
+        ${name}-config-version.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
+
+    # configure -config.cmake file
+    set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+    set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+    configure_package_config_file(
+        cmake/config.cmake.in
+        ${name}-config.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}
+        PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR
+    )
+
+    # install -config.cmake and -config-version.cmake files
+    install(
+        FILES
+            ${CMAKE_BINARY_DIR}/${name}-config.cmake
+            ${CMAKE_BINARY_DIR}/${name}-config-version.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}
+    )
+endfunction()
+
+# the base name for shared and static libraries
+set(BASE_LIBRARY_NAME hazelcastcxx)
+# add the _ssl suffix to the base name if building WITH_OPENSSL
+if (WITH_OPENSSL)
+    set(BASE_LIBRARY_NAME ${BASE_LIBRARY_NAME}_ssl)
 endif()
 
-if (HZ_COMPILE_WITH_SSL)
-	message(STATUS "Building the library with SSL support.")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
+# set the names for the shared and static libraries
+set(SHARED_LIBRARY_NAME ${BASE_LIBRARY_NAME})
+set(STATIC_LIBRARY_NAME ${BASE_LIBRARY_NAME}_static)
 
-	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-		# This is a bug in CMake that causes it to prefer the system version over
-		# the one in the specified ROOT folder. see
-		# https://stackoverflow.com/questions/58446253/xcode-11-ld-error-your-binary-is-not-an-allowed-client-of-usr-lib-libcrypto-dy
-		set(OPENSSL_ROOT_DIR /usr/local/Cellar/openssl@1.1/1.1.1h/)
-		set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_DIR}/include CACHE FILEPATH "" FORCE)
-		set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
-		set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
-	endif()
-
-	find_package(OpenSSL REQUIRED)
-	include_directories(${OPENSSL_INCLUDE_DIR})
-	link_libraries(${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES})
-	message(STATUS "Using Open SSL include directory ${OPENSSL_INCLUDE_DIR}")
-	message(STATUS "Using Open SSL link libraries ${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES}")
-ELSE ()
-	message(STATUS "Building the library without SSL.")
-ENDIF()
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	if (${CMAKE_BUILD_TYPE} MATCHES "Release")
-		set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
-		set(Boost_USE_MULTITHREADED      ON)
-		set(Boost_USE_STATIC_RUNTIME     OFF)
-		set(Boost_USE_DEBUG_RUNTIME      OFF)
-
-		set(Boost_USE_DEBUG_LIBS         OFF)  # ignore debug libs and
-		set(Boost_USE_RELEASE_LIBS       ON)   # only find release libs
-	else()
-		set(Boost_USE_DEBUG_LIBS         ON)   # only find debug libs
-		set(Boost_USE_RELEASE_LIBS       OFF)  # ignore release libs
-	endif()
-	message(STATUS "Using Boost_USE_DEBUG_LIBS: ${Boost_USE_DEBUG_LIBS}")
-	message(STATUS "Using Boost_USE_RELEASE_LIBS: ${Boost_USE_RELEASE_LIBS}")
+# add static library if requested
+if (BUILD_STATIC_LIB)
+    add_hazelcast_library(${STATIC_LIBRARY_NAME} STATIC)
 endif()
-find_package(Boost REQUIRED COMPONENTS thread chrono)
-include_directories(${Boost_INCLUDE_DIRS})
-link_libraries(Boost::thread Boost::chrono)
-add_definitions("-DBOOST_THREAD_VERSION=5")
-message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-message(STATUS "Using Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 
-IF (NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
-    message(STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)")
-    set(HZ_BIT 64)
-ENDIF (NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
+# add shared library if requested
+if (BUILD_SHARED_LIB)
+    add_hazelcast_library(${SHARED_LIBRARY_NAME} SHARED)
+endif()
 
-IF (NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED"))
-	message(STATUS "Build needs HZ_LIB_TYPE. Setting default as -DHZ_LIB_TYPE=STATIC (other option -DHZ_LIB_TYPE=SHARED)")
-	set(HZ_LIB_TYPE STATIC)
-ENDIF(NOT (${HZ_LIB_TYPE} MATCHES "STATIC") AND NOT (${HZ_LIB_TYPE} MATCHES "SHARED") )
 
-message(STATUS "Generating ${HZ_LIB_TYPE} Library")
+# install header files, this applies both to the shared and the static library
+install(
+    DIRECTORY
+        hazelcast/include/
+        hazelcast/generated-sources/src/
+        ${CMAKE_CURRENT_BINARY_DIR}/include/
 
-SET(HZ_LIB_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
+    TYPE INCLUDE
+    FILES_MATCHING PATTERN "*.h"
+)
 
-set(HZ_CODE_COVERAGE_COMPILE_FLAGS " ")
-set(HZ_CODE_COVERAGE_LINK_FLAGS " ")
+# since shared and static libraries can be requested for the build at the same time,
+# we need a default one to use for tests and examples.
+# the static library is preferred to the shared library, because it is OFF by default.
+if (BUILD_STATIC_LIB)
+    set(DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES ${STATIC_LIBRARY_NAME})
+else ()
+    set(DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES ${SHARED_LIBRARY_NAME})
+endif ()
 
-IF(HZ_CODE_COVERAGE)
-	message(STATUS "Code coverage is on")
-	set(HZ_CODE_COVERAGE_COMPILE_FLAGS " -fprofile-arcs -ftest-coverage -fPIC -O0 ")
-	set(HZ_CODE_COVERAGE_LINK_FLAGS " -lgcov -fprofile-arcs -ftest-coverage -fPIC -O0 ")
-ENDIF(HZ_CODE_COVERAGE)
+if (BUILD_TESTS)
+    set(LIBRARY_FOR_TESTS ${DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES})
 
-set(HZ_VALGRIND_COMPILE_FLAGS " ")
-set(HZ_VALGRIND_LINK_FLAGS " ")
-IF(HZ_VALGRIND)
-	message(STATUS "Valgrind is on")
-	set(HZ_VALGRIND_COMPILE_FLAGS " -O0 ")
-	set(HZ_VALGRIND_LINK_FLAGS " -O0 ")
-ENDIF(HZ_VALGRIND)
+    add_subdirectory(hazelcast/test)
+endif ()
 
-message(STATUS "${CMAKE_SYSTEM}")
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	message(STATUS "APPLE ENVIRONMENT DETECTED")
+if (BUILD_EXAMPLES)
+    set(LIBRARY_FOR_EXAMPLES ${DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES})
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror -fsanitize=address -fno-omit-frame-pointer")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall")
-
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
-
-	link_libraries(${HZ_LIB_NAME})
-
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	message(STATUS "LINUX ENVIRONMENT DETECTED")
-
-	IF(${HZ_BIT} MATCHES "32")
-		SET(HZ_BIT_FLAG " -m32 ")
-	ELSE()
-		SET(HZ_BIT_FLAG " -m64 ")
-	ENDIF(${HZ_BIT} MATCHES "32")
-
-	message(STATUS "${HZ_BIT} Bit")
-
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -g -Wall -Werror ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -O3 -Wall ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}")
-
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
-
-	link_libraries(${HZ_LIB_NAME} pthread rt)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	message(STATUS "WINDOWS ENVIRONMENT DETECTED ${CMAKE_GENERATOR} ${CMAKE_BUILD_TYPE} ")
-	add_definitions(-D__WIN${HZ_BIT}__ -DWIN${HZ_BIT} -D_WIN${HZ_BIT} -DNOMINMAX)
-
-	IF(${HZ_LIB_TYPE} MATCHES "SHARED")
-		add_definitions(-DHAZELCAST_EXPORTS=1)
-	ELSE(${HZ_LIB_TYPE} MATCHES "STATIC")
-		add_definitions(-DHAZELCAST_EXPORTS=0)
-	ENDIF(${HZ_LIB_TYPE} MATCHES "SHARED")
-
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /EHsc /bigobj")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /EHsc /bigobj")
-
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
-
-	link_libraries(${HZ_LIB_NAME})
-
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-add_definitions(-DBOOST_NO_AUTO_PTR -DELPP_DISABLE_ASSERT -DELPP_WINSOCK2 -DWIN32_LEAN_AND_MEAN)
-
-IF(HZ_BUILD_TESTS)
-	option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
-	option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
-	option(BUILD_GTEST "Install Googletest's GMock?" ON)
-	option(BUILD_GMOCK "Install Googletest's GTest?" OFF)
-	ADD_SUBDIRECTORY(hazelcast/test)
-	message(STATUS "Configured to build the tests. BUILD_GTEST=${BUILD_GTEST} BUILD_GMOCK=${BUILD_GMOCK}")
-ENDIF(HZ_BUILD_TESTS)
-
-IF(HZ_BUILD_EXAMPLES)
-	ADD_SUBDIRECTORY(examples)
-	message(STATUS "Configured to build the examples.")
-ENDIF(HZ_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif ()

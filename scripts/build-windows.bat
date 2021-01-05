@@ -1,42 +1,41 @@
-@SET HZ_BIT_VERSION=%1
-@SET HZ_LIB_TYPE=%2
-@SET HZ_BUILD_TYPE=%3
-@SET COMPILE_WITHOUT_SSL=%4
+@REM Builds the library using CMake on Windows
+@REM The script should be run from the project's root directory
+@REM This environment variables are the parameters to this script:
+@REM - BUILD_DIR : build directory
+@REM - BIT_VERSION : target platform architecture (32 or 64)
+@REM - INSTALL : install after the build finishes (set to ON)
+@REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
+@REM - CXXFLAGS : additional compiler flags
+@REM
+@REM Command line arguments are forwarded to CMake.
+@REM
 
-@SET BUILD_DIR=build%HZ_LIB_TYPE%%HZ_BIT_VERSION%%HZ_BUILD_TYPE%
+@call .\scripts\windows-common.bat
 
-@SET EXECUTABLE_NAME=clientTest_%HZ_LIB_TYPE%_%HZ_BIT_VERSION%.exe
+REM print variables for debugging
+@echo SOLUTION_TYPE = %SOLUTION_TYPE%
+@echo PLATFORM      = %PLATFORM%
+@echo BUILD_DIR     = %BUILD_DIR%
 
-@echo HZ_BIT_VERSION=%HZ_BIT_VERSION%
-@echo HZ_LIB_TYPE=%HZ_LIB_TYPE%
-@echo HZ_BUILD_TYPE=%HZ_BUILD_TYPE%
-@echo BUILD_DIR=%BUILD_DIR%
-@echo EXECUTABLE_NAME=%EXECUTABLE_NAME%
+REM remove the given build directory if already exists
+@rd /s /q %BUILD_DIR%
+@mkdir %BUILD_DIR%
 
-set SOLUTIONTYPE="Visual Studio 16 2019"
+@echo Configuring...
+cmake -S . -B %BUILD_DIR% ^
+      -G %SOLUTION_TYPE% -A %PLATFORM% ^
+      -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake ^
+      %* ^
+      || exit /b 1 
 
-if %HZ_BIT_VERSION% == 32 (
-    set BUILDFORPLATFORM="win32"
-) else (
-    set BUILDFORPLATFORM="x64"
+@echo Building...
+cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_CONFIGURATION% || exit /b 1
+
+
+if "%INSTALL%" == "ON" (
+    @echo Installing...
+    cmake --install %BUILD_DIR% || exit /b 1
 )
 
-if "%COMPILE_WITHOUT_SSL%" == "COMPILE_WITHOUT_SSL" (
-    set HZ_COMPILE_WITH_SSL=OFF
-) else (
-    set HZ_COMPILE_WITH_SSL=ON
-)
-
-RD /S /Q %BUILD_DIR%
-mkdir %BUILD_DIR%
-
-pushd %BUILD_DIR%
-
-set VCPKG_ROOT=C:\\vcpkg
-echo "Generating the solution files for compilation"
-cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\\scripts\\buildsystems\\vcpkg.cmake -DCMAKE_CONFIGURATION_TYPES=%HZ_BUILD_TYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DBUILD_GMOCK=OFF -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=%HZ_COMPILE_WITH_SSL% -DINSTALL_GTEST=OFF || exit /b 1
-cmake --build . --parallel -v --config %HZ_BUILD_TYPE%
-
-popd
 
 exit /b 0

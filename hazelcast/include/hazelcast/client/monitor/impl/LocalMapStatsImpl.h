@@ -18,7 +18,7 @@
 #include <memory>
 
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/monitor/local_map_stats.h"
 

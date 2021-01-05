@@ -25,7 +25,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/container_hash/hash.hpp>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/lifecycle_listener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

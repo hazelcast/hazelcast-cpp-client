@@ -72,7 +72,7 @@ namespace hazelcast {
                                                                      const std::shared_ptr<AddressTranslator> &address_translator,
                                                                      const std::vector<std::shared_ptr<AddressProvider> > &address_providers)
                     : alive_(false), logger_(client.get_logger()),
-                      connection_timeout_millis_(std::chrono::milliseconds::max()),
+                      connection_timeout_millis_((std::chrono::milliseconds::max)()),
                       client_(client),
                       socket_interceptor_(client.get_client_config().get_socket_interceptor()),
                       translator_(address_translator), connection_id_gen_(0),
@@ -1138,7 +1138,7 @@ namespace hazelcast {
             void wait_strategy::reset() {
                 attempt_ = 0;
                 cluster_connect_attempt_begin_ = std::chrono::steady_clock::now();
-                current_backoff_millis_ = std::min(max_backoff_millis_, initial_backoff_millis_);
+                current_backoff_millis_ = (std::min)(max_backoff_millis_, initial_backoff_millis_);
             }
 
             wait_strategy::wait_strategy(const config::connection_retry_config &retry_config, logger &log)

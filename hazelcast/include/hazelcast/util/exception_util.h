@@ -17,7 +17,7 @@
 #pragma once
 
 #include "hazelcast/client/exception/iexception.h"
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

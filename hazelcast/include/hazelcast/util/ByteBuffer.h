@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/byte.h"
+#include "hazelcast/util/export.h"
 #include <vector>
 #include <cstdlib>
 #include <memory>

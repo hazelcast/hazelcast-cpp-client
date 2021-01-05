@@ -22,7 +22,7 @@
 
 #include <boost/asio/steady_timer.hpp>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/util/Sync.h"
 
 namespace hazelcast {

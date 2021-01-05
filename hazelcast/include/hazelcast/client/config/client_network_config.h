@@ -18,7 +18,7 @@
 #include <memory>
 #include <stdint.h>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/config/socket_options.h"

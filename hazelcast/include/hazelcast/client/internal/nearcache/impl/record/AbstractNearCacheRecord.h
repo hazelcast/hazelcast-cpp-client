@@ -19,7 +19,7 @@
 #include <memory>
 #include <atomic>
 
-#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/util/export.h"
 
 #include "hazelcast/client/internal/nearcache/NearCacheRecord.h"
 #include <boost/uuid/uuid.hpp>
