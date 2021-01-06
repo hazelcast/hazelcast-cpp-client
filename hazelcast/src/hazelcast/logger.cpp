@@ -49,9 +49,8 @@ bool logger::enabled(level lvl) noexcept {
     return lvl >= level_;
 }
 
-void logger::log(const char *file_name, int line, 
-                 level lvl, const std::string &msg) noexcept {
-    handler_(instance_name_, cluster_name_, file_name, line, lvl, msg);
+void logger::log(level lvl, const std::string &msg) noexcept {
+    handler_(instance_name_, cluster_name_, lvl, msg);
 }
 
 namespace {
@@ -71,12 +70,10 @@ std::tm time_t_to_localtime(const std::time_t &t) {
 }
 
 void logger::default_handler(const std::string &instance_name,
-                             const std::string &cluster_name, 
-                             const char* file_name,
-                             int line,
+                             const std::string &cluster_name,
                              level lvl, 
                              const std::string &msg) noexcept {
-                             
+
     auto tp = std::chrono::system_clock::now();
     auto t = std::chrono::system_clock::to_time_t(tp);
     auto local_t = time_t_to_localtime(t);
@@ -94,8 +91,7 @@ void logger::default_handler(const std::string &instance_name,
           << std::setfill('0') << std::setw(3) << ms << ' '
           << lvl << ": [" << std::this_thread::get_id() << "] "
           << instance_name << '[' << cluster_name << "] ["
-          << client::version() << "] ["
-          << file_name << ':' << line << "] "
+          << client::version() << "] "
           << msg
           << '\n';
 

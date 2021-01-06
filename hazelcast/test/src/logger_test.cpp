@@ -66,35 +66,27 @@ TEST(logger_test, test_log) {
     struct {
         std::string instance_name;
         std::string cluster_name;
-        std::string file_name;
-        int line;
         logger::level level;
         std::string msg;
     } results;
 
     auto mock_handler = [&results](const std::string &instance_name,
-                                   const std::string &cluster_name, 
-                                   const char* file_name,
-                                   int line,
+                                   const std::string &cluster_name,
                                    logger::level level, 
                                    const std::string &msg) 
     {
         results.instance_name = instance_name;
         results.cluster_name = cluster_name;
-        results.file_name = file_name;
-        results.line = line;
         results.level = level;
         results.msg = msg;
     };
 
     logger lg{ "instance0", "cluster0", logger::level::info, mock_handler };
 
-    lg.log("file.cpp", 42, logger::level::info, "message");
+    lg.log(logger::level::info, "message");
 
     ASSERT_EQ("instance0", results.instance_name);
     ASSERT_EQ("cluster0", results.cluster_name);
-    ASSERT_EQ("file.cpp", results.file_name);
-    ASSERT_EQ(42, results.line);
     ASSERT_EQ(logger::level::info, results.level);
     ASSERT_EQ("message", results.msg);
 }
@@ -115,17 +107,16 @@ protected:
 };
 
 TEST_F(default_log_handler_test, test_format) {
-    logger::default_handler("instance0", "cluster0", "file.cpp", 123, 
-                            logger::level::warning, "message");
+    logger::default_handler("instance0", "cluster0", logger::level::warning, "message");
 
     int day, mon, year, hr, mn, sec, ms;
-    char lev[64], tid[64], msg[64], ins_grp[64], ver[64], file_line[256];
+    char lev[64], tid[64], msg[64], ins_grp[64], ver[64];
 
-    int read = std::sscanf(sstrm_.str().c_str(), 
-        "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s %s\n", 
-         &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, file_line, msg);
+    int read = std::sscanf(sstrm_.str().c_str(),
+                           "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s\n",
+                           &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, msg);
 
-    ASSERT_EQ(13, read);
+    ASSERT_EQ(12, read);
 
     ASSERT_TRUE(0 <= day && day <= 31);
     ASSERT_TRUE(1 <= mon && mon <= 12);
@@ -140,38 +131,30 @@ TEST_F(default_log_handler_test, test_format) {
     ASSERT_EQ(expected_tid.str(), std::string(tid));
     ASSERT_EQ("instance0[cluster0]", std::string(ins_grp));
     ASSERT_EQ(std::string() + "[" + HAZELCAST_VERSION + "]", std::string(ver));
-    ASSERT_EQ("[file.cpp:123]", std::string(file_line));
     ASSERT_EQ("message", std::string(msg));
 }
 
 TEST(log_macro_test, test_log_when_enabled) {
     struct mock_logger {
         bool called{ false };
-        std::string file_name;
-        int line;
         logger::level level;
         std::string msg;
 
         bool enabled(logger::level) {
             return true;
         }
-        void log(const char* file_name, int line, logger::level level, const std::string &msg) {
+        void log(logger::level l, const std::string &m) {
             called = true;
-            this->file_name = file_name;
-            this->line = line;
-            this->level = level;
-            this->msg = msg;
+            this->level = l;
+            this->msg = m;
         }
     };
 
     mock_logger lg;
 
     HZ_LOG(lg, warning, "message"); 
-    int expected_line = __LINE__ - 1;
 
     ASSERT_TRUE(lg.called);
-    ASSERT_EQ(__FILE__, lg.file_name);
-    ASSERT_EQ(expected_line, lg.line);
     ASSERT_EQ(logger::level::warning, lg.level);
     ASSERT_EQ("message", lg.msg);
 }
