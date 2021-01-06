@@ -45,8 +45,8 @@ fi
 ./scripts/test-unix.sh
 
 if [ "$COVERAGE" == "ON" ]; then
-  gcovr --xml-pretty -o cpp_coverage.xml -r .                                                  \
-        -e ".*boost.*" -e ".*examples.*" -e ".*test.*" -e ".*usr.*include.*" -e ".*asio.*" -d
+  gcovr --xml-pretty -o cpp_coverage.xml --delete             \
+        -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"      \
 fi
 
 export BUILD_DIR=build-examples
