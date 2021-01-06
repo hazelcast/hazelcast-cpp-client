@@ -876,6 +876,11 @@ namespace hazelcast {
                 return invoke_and_get_future<std::vector<serialization::pimpl::data>>(request, partition_id_);
             }
 
+            boost::future<boost::optional<serialization::pimpl::data>> IQueueImpl::take_data() {
+                auto request = protocol::codec::queue_take_encode(get_name());
+                return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(request, partition_id_);
+            }
+
             boost::future<boost::optional<serialization::pimpl::data>> IQueueImpl::peek_data() {
                 auto request = protocol::codec::queue_peek_encode(get_name());
                 return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(request, partition_id_);
