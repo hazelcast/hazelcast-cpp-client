@@ -97,7 +97,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<boost::optional<E>> take() {
-                return poll<E>(std::chrono::milliseconds(-1));
+                return to_object<E>(proxy::IQueueImpl::take_data());
             }
 
             /**

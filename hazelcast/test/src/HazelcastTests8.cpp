@@ -1633,7 +1633,7 @@ namespace hazelcast {
 
             TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
                 auto request = protocol::codec::map_size_encode("map_name");
-                ASSERT_EQ(request.get_operation_name(), "Map.Size");
+                ASSERT_EQ(request.get_operation_name(), "map.size");
             }
 
             TEST_F(ClientMessageTest, testFragmentedMessageHandling) {
