@@ -107,16 +107,16 @@ protected:
 };
 
 TEST_F(default_log_handler_test, test_format) {
-    logger::default_handler("instance0", "cluster0",logger::level::warning, "message");
+    logger::default_handler("instance0", "cluster0", logger::level::warning, "message");
 
     int day, mon, year, hr, mn, sec, ms;
     char lev[64], tid[64], msg[64], ins_grp[64], ver[64];
 
-    int read = std::sscanf(sstrm_.str().c_str(), 
-        "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s\n",
-         &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, msg);
+    int read = std::sscanf(sstrm_.str().c_str(),
+                           "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s\n",
+                           &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, msg);
 
-    ASSERT_EQ(13, read);
+    ASSERT_EQ(12, read);
 
     ASSERT_TRUE(0 <= day && day <= 31);
     ASSERT_TRUE(1 <= mon && mon <= 12);
