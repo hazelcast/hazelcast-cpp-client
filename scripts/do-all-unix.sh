@@ -46,7 +46,7 @@ fi
 
 if [ "$COVERAGE" == "ON" ]; then
   gcovr --xml-pretty -o cpp_coverage.xml --delete             \
-        -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"      \
+        -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"
 fi
 
 export BUILD_DIR=build-examples
