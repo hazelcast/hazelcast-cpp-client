@@ -20,8 +20,6 @@
 
 void my_log_handler(const std::string &instance_name, 
                     const std::string &cluster_name,
-                    const char *file_name,
-                    int line,
                     hazelcast::logger::level lvl,
                     const std::string &msg) 
 {
@@ -35,8 +33,6 @@ void my_log_handler(const std::string &instance_name,
     std::cerr << "{\n"
               << "  \"instance_name\": \"" << instance_name << "\",\n"
               << "  \"cluster_name\": \"" << cluster_name << "\",\n"
-              << "  \"file_name\": \"" << file_name << "\",\n"
-              << "  \"line\": " << line << ",\n"
               << "  \"level\": \"" << lvl << "\",\n"
               << "  \"message\": \"" << msg << "\"\n"
               << "}\n\n";

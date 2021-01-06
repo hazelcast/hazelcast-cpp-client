@@ -12,9 +12,9 @@
 #endif
 
 #ifndef HZ_LOGGING_DISABLED
-    #define HZ_LOG(lg, lvl, msg) \
+#define HZ_LOG(lg, lvl, msg) \
         if ((lg).enabled( ::hazelcast::logger::level::lvl )) { \
-            (lg).log(__FILE__, __LINE__, ::hazelcast::logger::level::lvl, ( msg )); \
+            (lg).log(::hazelcast::logger::level::lvl, ( msg )); \
         }
 #else
     #define HZ_LOG(lg, lvl, msg) 
@@ -32,8 +32,6 @@ public:
 
     using handler_type = std::function<void(const std::string &,
                                             const std::string &,
-                                            const char *,
-                                            int line,
                                             level,
                                             const std::string &)>;
 
@@ -42,13 +40,10 @@ public:
 
     bool enabled(level lvl) noexcept;
 
-    void log(const char* file_name, int line, 
-             level lvl, const std::string &msg) noexcept;
+    void log(level lvl, const std::string &msg) noexcept;
 
     static void default_handler(const std::string &instance_name,
                                 const std::string &cluster_name,
-                                const char *file_name,
-                                int line,
                                 level lvl,
                                 const std::string &msg) noexcept;
 

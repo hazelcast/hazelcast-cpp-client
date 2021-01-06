@@ -460,7 +460,7 @@ namespace hazelcast {
                 ASSERT_THROW(config.get_logger_config().handler(nullptr), exception::illegal_argument);
             }
 
-            TEST_F(ClientConfigTest, testSetGetLoadHandler) {
+            TEST_F(ClientConfigTest, testSetGetLogHandler) {
                 client_config config;
                 auto logger_config = config.get_logger_config();
 
@@ -468,15 +468,13 @@ namespace hazelcast {
 
                 auto h = [&called](const std::string &,
                                    const std::string &,
-                                   const char*,
-                                   int,
                                    logger::level,
                                    const std::string &) {
                     called = true;
                 };
 
                 logger_config.handler(h);
-                logger_config.handler()("", "", "", 0, logger::level::fine, "");
+                logger_config.handler()("", "", logger::level::fine, "");
 
                 ASSERT_TRUE(called);
             }
