@@ -34,13 +34,13 @@ elif [ "$LIBRARY_TYPE" == "STATIC" ]; then
 fi
 
 ./scripts/build-unix.sh                      \
-	-DCMAKE_BUILD_TYPE=$BUILD_TYPE             \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE           \
     -DCMAKE_INSTALL_PREFIX=$DESTINATION      \
     -DBUILD_STATIC_LIB=$BUILD_STATIC_LIB     \
     -DBUILD_SHARED_LIB=$BUILD_SHARED_LIB     \
-	  -DWITH_OPENSSL=$WITH_OPENSSL             \
+    -DWITH_OPENSSL=$WITH_OPENSSL             \
     -DBUILD_TESTS=ON                         \
-	  -DBUILD_EXAMPLES=OFF
+    -DBUILD_EXAMPLES=OFF
 
 ./scripts/test-unix.sh
 
@@ -62,5 +62,5 @@ if [ "$LIBRARY_TYPE" == "STATIC" ]; then
 fi
 
 ./scripts/verify-installation-unix.sh            \
-	-DCMAKE_PREFIX_PATH=$DESTINATION               \
-	-DLIBRARY_FOR_EXAMPLES=$LIBRARY_FOR_EXAMPLES
+  -DCMAKE_PREFIX_PATH=$DESTINATION               \
+  -DLIBRARY_FOR_EXAMPLES=$LIBRARY_FOR_EXAMPLES

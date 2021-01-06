@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-include(FindGTest)
-
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
