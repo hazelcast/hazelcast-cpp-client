@@ -2019,10 +2019,10 @@ int main() {
             });
     );
 
-hazelcast::client::hazelcast_client hz(std::move(config));
+    hazelcast::client::hazelcast_client hz(std::move(config));
 
-hz.shutdown().get();
-return 0;
+    hz.shutdown().get();
+    return 0;
 }
 ```
 
