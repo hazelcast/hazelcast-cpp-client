@@ -87,7 +87,7 @@ endif ()
 find_package(Threads REQUIRED)
 
 # find Boost
-find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono)
+find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
 
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)

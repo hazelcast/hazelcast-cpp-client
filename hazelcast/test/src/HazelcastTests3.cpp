@@ -713,10 +713,10 @@ namespace hazelcast {
                         no_near_cache_map_->destroy().get();
                     }
                     if (client_) {
-                        client_->shutdown();
+                        client_->shutdown().get();
                     }
                     if (near_cached_client_) {
-                        near_cached_client_->shutdown();
+                        near_cached_client_->shutdown().get();
                     }
                 }
 

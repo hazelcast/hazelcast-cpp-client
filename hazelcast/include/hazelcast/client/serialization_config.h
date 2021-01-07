@@ -16,7 +16,7 @@
 #pragma once
 
 #include <memory>
-#include <boost/endian/detail/order.hpp>
+#include <boost/endian/conversion.hpp>
 
 #include "hazelcast/util/export.h"
 

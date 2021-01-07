@@ -43,7 +43,7 @@ int main() {
     f.get();
 
     // Shutdown this Hazelcast Client
-    hz.shutdown();
+    hz.shutdown().get();
 
     return 0;
 }

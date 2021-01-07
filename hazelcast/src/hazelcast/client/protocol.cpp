@@ -75,15 +75,18 @@ namespace hazelcast {
 
             //----- Setter methods begin --------------------------------------
             void ClientMessage::set_message_type(int32_t type) {
-                boost::endian::store_little_s64(&data_buffer_[0][TYPE_FIELD_OFFSET], type);
+                boost::endian::endian_store<boost::int64_t, 8, boost::endian::order::little>(
+                        &data_buffer_[0][TYPE_FIELD_OFFSET], type);
             }
 
             void ClientMessage::set_correlation_id(int64_t id) {
-                boost::endian::store_little_s64(&data_buffer_[0][CORRELATION_ID_FIELD_OFFSET], id);
+                boost::endian::endian_store<boost::int64_t, 8, boost::endian::order::little>(
+                        &data_buffer_[0][CORRELATION_ID_FIELD_OFFSET], id);
             }
 
             void ClientMessage::set_partition_id(int32_t partition_id) {
-                boost::endian::store_little_s32(&data_buffer_[0][PARTITION_ID_FIELD_OFFSET], partition_id);
+                boost::endian::endian_store<boost::int32_t, 4, boost::endian::order::little>(
+                        &data_buffer_[0][PARTITION_ID_FIELD_OFFSET], partition_id);
             }
 
             template<>
@@ -187,19 +190,23 @@ namespace hazelcast {
             }
 
             int32_t ClientMessage::get_message_type() const {
-                return boost::endian::load_little_s32(&data_buffer_[0][TYPE_FIELD_OFFSET]);
+                return boost::endian::endian_load<boost::int32_t, 4, boost::endian::order::little>(
+                        &data_buffer_[0][TYPE_FIELD_OFFSET]);
             }
 
             uint16_t ClientMessage::get_header_flags() const {
-                return boost::endian::load_little_u16(&data_buffer_[0][FLAGS_FIELD_OFFSET]);
+                return boost::endian::endian_load<boost::uint16_t, 2, boost::endian::order::little>(
+                        &data_buffer_[0][FLAGS_FIELD_OFFSET]);
             }
 
             void ClientMessage::set_header_flags(uint16_t new_flags) {
-                return boost::endian::store_little_u16(&data_buffer_[0][FLAGS_FIELD_OFFSET], new_flags);
+                return boost::endian::endian_store<boost::uint16_t, 2, boost::endian::order::little>(
+                        &data_buffer_[0][FLAGS_FIELD_OFFSET], new_flags);
             }
 
             int64_t ClientMessage::get_correlation_id() const {
-                return boost::endian::load_little_s64(&data_buffer_[0][CORRELATION_ID_FIELD_OFFSET]);
+                return boost::endian::endian_load<boost::int64_t, 8, boost::endian::order::little>(
+                        &data_buffer_[0][CORRELATION_ID_FIELD_OFFSET]);
             }
 
             int8_t ClientMessage::get_number_of_backups() const {
@@ -207,7 +214,8 @@ namespace hazelcast {
             }
 
             int32_t ClientMessage::get_partition_id() const {
-                return boost::endian::load_little_s32(&data_buffer_[0][PARTITION_ID_FIELD_OFFSET]);
+                return boost::endian::endian_load<boost::int32_t, 4, boost::endian::order::little>(
+                        &data_buffer_[0][PARTITION_ID_FIELD_OFFSET]);
             }
 
             void ClientMessage::append(std::shared_ptr<ClientMessage> msg) {
@@ -251,7 +259,9 @@ namespace hazelcast {
                        << ", isEvent = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::IS_EVENT_FLAG)
                        << "}";
                 } else if (begin_fragment) {
-                    os << ", fragmentationId = " << boost::endian::load_little_s64(&msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET])
+                    os << ", fragmentationId = "
+                       << boost::endian::endian_load<boost::int64_t, 8, boost::endian::order::little>(
+                               &msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET])
                        << ", correlationId = " << msg.get_correlation_id()
                        << ", messageType = 0x" << std::hex << msg.get_message_type() << std::dec
                        << ", flags = 0x" << std::hex << msg.get_header_flags() << std::dec
@@ -260,7 +270,9 @@ namespace hazelcast {
                        << ", isEvent = " << ClientMessage::is_flag_set(msg.get_header_flags(), ClientMessage::IS_EVENT_FLAG)
                        << "}";
                 } else {
-                    os << ", fragmentationId = " << boost::endian::load_little_s64(&msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET]);
+                    os << ", fragmentationId = "
+                       << boost::endian::endian_load<boost::int64_t, 8, boost::endian::order::little>(
+                               &msg.data_buffer_[0][ClientMessage::FRAGMENTATION_ID_OFFSET]);
                 }
                 os << ", is_fragmented = " << (unfragmented ? "no" : "yes");
 

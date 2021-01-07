@@ -24,7 +24,7 @@
 #include <memory>
 #include <stdint.h>
 #include <sstream>
-#include <boost/endian.hpp>
+#include <boost/endian/conversion.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -92,9 +92,11 @@ namespace hazelcast {
                         check_available(util::Bits::SHORT_SIZE_IN_BYTES);
                         int16_t result;
                         if (byte_order_ == boost::endian::order::big) {
-                            result = boost::endian::load_big_s16(&buffer_[pos_]);
+                            result = boost::endian::endian_load<boost::uint16_t, 2, boost::endian::order::big>(
+                                    &buffer_[pos_]);
                         } else {
-                            result = boost::endian::load_little_s16(&buffer_[pos_]);
+                            result = boost::endian::endian_load<boost::int16_t, 2, boost::endian::order::little>(
+                                    &buffer_[pos_]);
                         }
                         pos_ += util::Bits::SHORT_SIZE_IN_BYTES;
                         return result;
@@ -110,9 +112,11 @@ namespace hazelcast {
                         check_available(util::Bits::INT_SIZE_IN_BYTES);
                         int32_t result;
                         if (byte_order == boost::endian::order::big) {
-                            result = boost::endian::load_big_s32(&buffer_[pos_]);
+                            result = boost::endian::endian_load<boost::uint32_t, 4, boost::endian::order::big>(
+                                    &buffer_[pos_]);
                         } else {
-                            result = boost::endian::load_little_s32(&buffer_[pos_]);
+                            result = boost::endian::endian_load<boost::int32_t, 4, boost::endian::order::little>(
+                                    &buffer_[pos_]);
                         }
                         pos_ += util::Bits::INT_SIZE_IN_BYTES;
                         return result;
@@ -124,9 +128,11 @@ namespace hazelcast {
                         check_available(util::Bits::LONG_SIZE_IN_BYTES);
                         int64_t result;
                         if (byte_order_ == boost::endian::order::big) {
-                            result = boost::endian::load_big_s64(&buffer_[pos_]);
+                            result = boost::endian::endian_load<boost::int64_t, 8, boost::endian::order::big>(
+                                    &buffer_[pos_]);
                         } else {
-                            result = boost::endian::load_little_s64(&buffer_[pos_]);
+                            result = boost::endian::endian_load<boost::int64_t, 8, boost::endian::order::little>(
+                                    &buffer_[pos_]);
                         }
                         pos_ += util::Bits::LONG_SIZE_IN_BYTES;
                         return result;

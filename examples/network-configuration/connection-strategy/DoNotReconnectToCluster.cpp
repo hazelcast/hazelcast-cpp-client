@@ -62,7 +62,7 @@ int main() {
         std::cout << "The client did not connect to the cluster 10 seconds after disconnection as expected." << std::endl;
     }
 
-    hz.shutdown();
+    hz.shutdown().get();
     std::cout << "Finished" << std::endl;
 
     return 0;

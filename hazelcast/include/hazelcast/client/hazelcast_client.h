@@ -284,7 +284,7 @@ namespace hazelcast {
             /**
             * Shuts down this hazelcast_client.
             */
-            void shutdown();
+            boost::future<void> shutdown();
 
             /**
              * Returns the lifecycle service for this instance.

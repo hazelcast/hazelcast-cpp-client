@@ -28,7 +28,8 @@
 #include <unordered_map>
 #include <ostream>
 #include <boost/uuid/uuid.hpp>
-#include <boost/endian.hpp>
+#include <boost/endian/arithmetic.hpp>
+#include <boost/endian/conversion.hpp>
 #include <boost/optional.hpp>
 #include <boost/uuid/nil_generator.hpp>
 
@@ -315,35 +316,41 @@ namespace hazelcast {
                 template<typename T>
                 typename std::enable_if<std::is_same<T, uint16_t>::value, T>::type
                 inline get() {
-                    return boost::endian::load_little_u16(rd_ptr(UINT16_SIZE));
+                    return boost::endian::endian_load<boost::uint16_t, 2, boost::endian::order::little>(
+                            rd_ptr(UINT16_SIZE));
                 }
 
                 template<typename T>
                 typename std::enable_if<std::is_same<T, int16_t>::value, T>::type
                 inline get() {
-                    return boost::endian::load_little_s16(rd_ptr(INT16_SIZE));
+                    return boost::endian::endian_load<boost::int16_t, 2, boost::endian::order::little>(
+                            rd_ptr(INT16_SIZE));
                 }
 
                 inline uint32_t get_uint32() {
-                    return boost::endian::load_little_u32(rd_ptr(UINT32_SIZE));
+                    return boost::endian::endian_load<boost::uint32_t, 4, boost::endian::order::little>(
+                            rd_ptr(UINT32_SIZE));
                 }
 
                 template<typename T>
                 typename std::enable_if<std::is_same<T, int32_t>::value, T>::type
                 inline get() {
-                    return boost::endian::load_little_s32(rd_ptr(INT32_SIZE));
+                    return boost::endian::endian_load<boost::int32_t, 4, boost::endian::order::little>(
+                            rd_ptr(INT32_SIZE));
                 }
 
                 template<typename T>
                 typename std::enable_if<std::is_same<T, uint64_t>::value, T>::type
                 inline get() {
-                    return boost::endian::load_little_u64(rd_ptr(UINT64_SIZE));
+                    return boost::endian::endian_load<boost::uint64_t, 8, boost::endian::order::little>(
+                            rd_ptr(UINT64_SIZE));
                 }
 
                 template<typename T>
                 typename std::enable_if<std::is_same<T, int64_t>::value, T>::type
                 inline get() {
-                    return boost::endian::load_little_s64(rd_ptr(INT64_SIZE));
+                    return boost::endian::endian_load<boost::int64_t, 8, boost::endian::order::little>(
+                            rd_ptr(INT64_SIZE));
                 }
 
                 template<typename T>
@@ -671,27 +678,33 @@ namespace hazelcast {
                 }
 
                 inline void set(uint16_t value) {
-                    boost::endian::store_little_u16(wr_ptr(UINT16_SIZE), value);
+                    boost::endian::endian_store<boost::uint16_t, 2, boost::endian::order::little>(wr_ptr(UINT16_SIZE),
+                                                                                                  value);
                 }
 
                 inline void set(int16_t value) {
-                    boost::endian::store_little_s16(wr_ptr(INT16_SIZE), value);
+                    boost::endian::endian_store<boost::int16_t, 2, boost::endian::order::little>(wr_ptr(INT16_SIZE),
+                                                                                                 value);
                 }
 
                 inline void set(uint32_t value) {
-                    boost::endian::store_little_u32(wr_ptr(UINT32_SIZE), value);
+                    boost::endian::endian_store<boost::uint32_t, 4, boost::endian::order::little>(wr_ptr(UINT32_SIZE),
+                                                                                                  value);
                 }
 
                 inline void set(int32_t value) {
-                    boost::endian::store_little_s32(wr_ptr(INT32_SIZE), value);
+                    boost::endian::endian_store<boost::int32_t, 4, boost::endian::order::little>(wr_ptr(INT32_SIZE),
+                                                                                                 value);
                 }
 
                 inline void set(uint64_t value) {
-                    boost::endian::store_little_u64(wr_ptr(UINT64_SIZE), value);
+                    boost::endian::endian_store<boost::uint64_t, 8, boost::endian::order::little>(wr_ptr(UINT64_SIZE),
+                                                                                                  value);
                 }
 
                 inline void set(int64_t value) {
-                    boost::endian::store_little_s64(wr_ptr(INT64_SIZE), value);
+                    boost::endian::endian_store<boost::int64_t, 8, boost::endian::order::little>(wr_ptr(INT64_SIZE),
+                                                                                                 value);
                 }
 
                 void set_message_type(int32_t type);
@@ -924,13 +937,15 @@ namespace hazelcast {
 
                 inline bool next_frame_is_data_structure_end_frame() {
                     return is_flag_set(
-                            boost::endian::load_little_u16(peek(SIZE_OF_FRAME_LENGTH_AND_FLAGS) + FLAGS_FIELD_OFFSET),
+                            boost::endian::endian_load<boost::uint16_t, 2, boost::endian::order::little>(
+                                    peek(SIZE_OF_FRAME_LENGTH_AND_FLAGS) + FLAGS_FIELD_OFFSET),
                             END_DATA_STRUCTURE_FLAG);
                 }
 
                 inline bool next_frame_is_null_frame() {
                     return is_flag_set(
-                            boost::endian::load_little_u16(peek(SIZE_OF_FRAME_LENGTH_AND_FLAGS) + FLAGS_FIELD_OFFSET),
+                            boost::endian::endian_load<boost::uint16_t, 2, boost::endian::order::little>(
+                                    peek(SIZE_OF_FRAME_LENGTH_AND_FLAGS) + FLAGS_FIELD_OFFSET),
                             IS_NULL_FLAG);
                 }
 
