@@ -32,7 +32,7 @@ int main() {
     queue->put("yetanotheritem");
     std::cout << *queue->take<std::string>().get() << std::endl;
     // Shutdown this Hazelcast Client
-    hz.shutdown();
+    hz.shutdown().get();
 
     return 0;
 }

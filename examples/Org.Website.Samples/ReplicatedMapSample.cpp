@@ -31,7 +31,7 @@ int main() {
     // the value is retrieved from a random member in the cluster
     std::cout << "value for key = " << value.value_or("null");
     // Shutdown this Hazelcast Client
-    hz.shutdown();
+    hz.shutdown().get();
 
     return 0;
 }

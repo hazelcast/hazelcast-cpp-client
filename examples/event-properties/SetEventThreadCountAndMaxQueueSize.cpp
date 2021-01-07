@@ -78,7 +78,7 @@ int main() {
 
     std::cout << "Finished" << std::endl;
 
-    hz.shutdown();
+    hz.shutdown().get();
 
     return 0;
 }

@@ -102,8 +102,8 @@ namespace hazelcast {
             return client_impl_->remove_lifecycle_listener(registration_id);
         }
 
-        void hazelcast_client::shutdown() {
-            client_impl_->shutdown();
+        boost::future<void> hazelcast_client::shutdown() {
+            return boost::async(boost::launch::async, [=]() { client_impl_->shutdown(); });
         }
 
         spi::lifecycle_service &hazelcast_client::get_lifecycle_service() {

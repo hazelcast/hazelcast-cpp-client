@@ -1026,7 +1026,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(startedLatch);
                 ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
-                client.shutdown();
+                client.shutdown().get();
 
                 ASSERT_OPEN_EVENTUALLY(shuttingDownLatch);
                 ASSERT_OPEN_EVENTUALLY(shutdownLatch);
@@ -2184,13 +2184,13 @@ namespace hazelcast {
             }
 
             ClientTxnTest::~ClientTxnTest() {
-                client_->shutdown();
+                client_->shutdown().get();
                 server_->shutdown();
                 second_->shutdown();
             }
 
             TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
-                client_->shutdown();
+                client_->shutdown().get();
                 ASSERT_THROW(client_->new_transaction_context(), exception::hazelcast_client_not_active);
             }
 
@@ -2272,7 +2272,7 @@ namespace hazelcast {
                 std::string value = random_string();
                 queue->offer(value).get();
 
-                client_->shutdown();
+                client_->shutdown().get();
 
                 ASSERT_THROW(context.commit_transaction().get(), exception::transaction);
             }
