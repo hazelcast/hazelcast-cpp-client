@@ -645,6 +645,12 @@ namespace hazelcast {
                     on_connection_close(connection);
                     return nullptr;
                 }
+
+                // If the client is shutdown in parallel, we need to close this new connection.
+                if (!client_.get_lifecycle_service().is_running()) {
+                    connection->close("Client is shutdown");
+                }
+
                 return connection;
             }
 
