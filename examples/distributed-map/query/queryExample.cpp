@@ -118,6 +118,8 @@ public:
 void query_map_using_paging_predicate() {
     hazelcast::client::hazelcast_client client;
 
+    client.start().get();
+
     auto intMap = client.get_map("testIntMapValuesWithpaging_predicate").get();
 
     int predSize = 5;
@@ -176,6 +178,8 @@ void query_map_using_paging_predicate() {
 
 void query_map_using_different_predicates() {
     hazelcast::client::hazelcast_client client;
+
+    client.start().get();
 
     auto intMap = client.get_map("testValuesWithPredicateIntMap").get();
 

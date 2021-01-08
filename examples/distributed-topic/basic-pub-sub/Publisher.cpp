@@ -18,6 +18,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto topic = hz.get_topic("testtopic").get();
     topic->publish("first message").get();
     std::cout << "Published: Published the message." << std::endl;

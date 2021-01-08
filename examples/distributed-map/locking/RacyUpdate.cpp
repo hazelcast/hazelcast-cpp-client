@@ -50,6 +50,8 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto map = hz.get_map("map").get();
 
     std::string key("1");

@@ -20,6 +20,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto queue = hz.get_queue("queue").get();
 
     std::atomic<int> numAdded(0);
@@ -27,8 +29,8 @@ int main() {
 
     hazelcast::client::item_listener listener;
     listener.
-        on_added([&numAdded](hazelcast::client::item_event &&event) {
-            std::cout << "Item added:" << event.get_item().get<std::string>().value() << std::endl;
+            on_added([&numAdded](hazelcast::client::item_event &&event) {
+        std::cout << "Item added:" << event.get_item().get<std::string>().value() << std::endl;
             ++numAdded;
         }).
         on_removed([&numRemoved](hazelcast::client::item_event &&event) {

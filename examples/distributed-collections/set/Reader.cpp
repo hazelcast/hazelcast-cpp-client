@@ -18,6 +18,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto set = hz.get_set("set").get();
 
     for (auto &item : set->to_array<std::string>().get()) {

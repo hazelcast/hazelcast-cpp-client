@@ -45,6 +45,7 @@ int main() {
             std::chrono::milliseconds(100)).set_max_backoff_duration(std::chrono::seconds(3));
 
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     auto map = hz.get_map("MyMap").get();
 

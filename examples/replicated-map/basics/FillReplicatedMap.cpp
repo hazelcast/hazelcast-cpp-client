@@ -18,6 +18,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto map = hz.get_replicated_map("map").get();
 
     map->put<std::string, std::string>("1", "Tokyo").get();

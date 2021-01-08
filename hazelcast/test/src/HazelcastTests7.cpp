@@ -141,6 +141,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
+                    client->start().get();
                     mm = client->get_multi_map("MyMultiMap").get();
                 }
 
@@ -372,6 +373,7 @@ namespace hazelcast {
                     client_config clientConfig = get_config();
 #endif // HZ_BUILD_WITH_SSL
                     client = new hazelcast_client(std::move(clientConfig));
+                    client->start().get();
                     list = client->get_list("MyList").get();
                 }
 
@@ -572,6 +574,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(std::move(get_config().backup_acks_enabled(false)));
+                    client->start().get();
                     q = client->get_queue("MyQueue").get();
                 }
 
@@ -845,6 +848,7 @@ namespace hazelcast {
                         instances.push_back(new HazelcastServer(*factory));
                     }
                     client = new hazelcast_client(std::move(client_config().set_cluster_name("executor-test")));
+                    client->start().get();
                 }
 
                 static void TearDownTestCase() {
@@ -1687,7 +1691,7 @@ namespace hazelcast {
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "-1");
 
-                    ASSERT_THROW(hazelcast_client hazelcastClient(std::move(clientConfig)),
+                    ASSERT_THROW(hazelcast_client(std::move(clientConfig)).start().get(),
                                  exception::invalid_configuration);
                 }
             }
@@ -1712,7 +1716,8 @@ namespace hazelcast {
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
-                            set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY")).
+                            set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            std::getenv("AWS_SECRET_ACCESS_KEY")).
                             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -1721,6 +1726,7 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
 #endif
                     hazelcast_client hazelcastClient(std::move(clientConfig));
+                    hazelcastClient.start().get();
                     auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
@@ -1743,6 +1749,7 @@ namespace hazelcast {
 #endif
 
                     hazelcast_client hazelcastClient(std::move(clientConfig));
+                    hazelcastClient.start().get();
                     auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
@@ -1770,6 +1777,7 @@ namespace hazelcast {
                     FIPS_mode_set(1);
 
                     hazelcast_client hazelcastClient(std::move(clientConfig));
+                    hazelcastClient.start().get();
                     auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20);
                     auto val = map->get<int, int>(5).get();
@@ -1790,7 +1798,7 @@ namespace hazelcast {
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
                     hazelcast_client hazelcastClient(std::move(clientConfig));
-                }
+                hazelcastClient.start().get();                }
 
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
                     client_config clientConfig = get_config();
@@ -1800,7 +1808,7 @@ namespace hazelcast {
                             "aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
                     hazelcast_client hazelcastClient(std::move(clientConfig));
-                }
+                hazelcastClient.start().get();                }
 #endif
             }
         }

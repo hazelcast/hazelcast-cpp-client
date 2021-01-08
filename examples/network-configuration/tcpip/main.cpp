@@ -24,6 +24,7 @@ int main() {
                                                                             {"192.168.1.10", 5701}});
 
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     auto map = hz.get_map("test map");
 

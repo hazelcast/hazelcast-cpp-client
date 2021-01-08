@@ -40,6 +40,7 @@ int main() {
             set_region("us-east-1");
     
     hazelcast::client::hazelcast_client hz(std::move(clientConfig));
+    hz.start().get();
 
     auto map = hz.get_map("MyMap").get();
 

@@ -248,6 +248,7 @@ namespace hazelcast {
 
                 void create_no_near_cache_context() {
                     client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(get_config()));
+                    client_->start().get();
                     no_near_cache_map_ = client_->get_map(get_test_name()).get();
                 }
 
@@ -256,6 +257,7 @@ namespace hazelcast {
                     near_cached_client_config_.add_near_cache_config(near_cache_config_);
                     near_cached_client_ = std::unique_ptr<hazelcast_client>(
                             new hazelcast_client(std::move(near_cached_client_config_)));
+                    near_cached_client_->start().get();
                     near_cached_map_ = near_cached_client_->get_map(get_test_name()).get();
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
@@ -695,6 +697,7 @@ namespace hazelcast {
                     client_config_->add_near_cache_config(config);
 
                     client_.reset(new hazelcast_client(std::move(*client_config_)));
+                    client_->start().get();
                     map_ = client_->get_map(mapName).get();
                     return map_;
                 }
@@ -799,6 +802,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
+                    client->start().get();
                     set = client->get_set("MySet").get();
                 }
 
@@ -967,6 +971,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
+                    client->start().get();
                 }
 
                 static void TearDownTestCase() {
@@ -1085,6 +1090,7 @@ namespace hazelcast {
                 relConfig.set_read_batch_size(2);
                 clientConfig.add_reliable_topic_config(relConfig);
                 hazelcast_client configClient(std::move(clientConfig));
+                configClient.start().get();
 
                 ASSERT_NO_THROW(topic_ = configClient.get_reliable_topic("testConfig").get());
 
@@ -1338,7 +1344,7 @@ namespace hazelcast {
                         });
 
                         hazelcast_client hazelcastClient(std::move(clientConfig));
-
+                        hazelcastClient.start().get();
                         auto map = hazelcastClient.get_map("cppDefault").get();
 
                         std::vector<std::future<void>> futures;
@@ -1405,6 +1411,7 @@ namespace hazelcast {
                 clientConfig.get_network_config().set_smart_routing(false);
 
                 hazelcast_client client(std::move(clientConfig));
+                client.start().get();
 
                 auto map = client.get_map("m").get();
                 int expected = 1000;
@@ -1430,6 +1437,7 @@ namespace hazelcast {
                         std::chrono::seconds(10));
 
                 hazelcast_client client(std::move(clientConfig));
+                client.start().get();
 
                 // 3. Get a map
                 auto map = client.get_map("IssueTest_map").get();
@@ -1464,6 +1472,7 @@ namespace hazelcast {
 
                 // start a client
                 hazelcast_client client(get_config());
+                client.start().get();
 
                 auto map = client.get_map("Issue221_test_map").get();
 

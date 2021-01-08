@@ -19,6 +19,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     // Get an atomic_reference named 'my-ref'
     auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref").get();
 

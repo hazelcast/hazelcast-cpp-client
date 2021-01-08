@@ -20,13 +20,15 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto topic = hz.get_topic("testtopic").get();
 
     topic->add_message_listener(
-        hazelcast::client::topic::listener().
-            on_received([](hazelcast::client::topic::message &&msg) {
+            hazelcast::client::topic::listener().
+                    on_received([](hazelcast::client::topic::message &&msg) {
                 std::cout << "Message received:"
-                    << msg.get_message_object().get<std::string>().value() << std::endl;
+                          << msg.get_message_object().get<std::string>().value() << std::endl;
             })
     ).get();
 

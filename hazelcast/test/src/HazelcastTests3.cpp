@@ -229,7 +229,9 @@ namespace hazelcast {
                 static hazelcast_client* create_client() {
                     auto config = get_config();
                     config.set_cluster_name("replicated-map-binary-test");
-                    return new hazelcast_client(std::move(config));
+                    auto client = new hazelcast_client(std::move(config));
+                    client->start().get();
+                    return client;
                 }
 
                 static void SetUpTestCase() {
@@ -512,7 +514,9 @@ namespace hazelcast {
                 std::string mapName = random_string();
 
                 hazelcast_client client1(get_client_config_with_near_cache_invalidation_enabled());
+                client1.start().get();
                 hazelcast_client client2(get_client_config_with_near_cache_invalidation_enabled());
+                client2.start().get();
 
                 auto replicatedMap1 = client1.get_replicated_map(mapName).get();
 
@@ -606,7 +610,9 @@ namespace hazelcast {
                     instance1 = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client(get_config());
+                    client->start().get();
                     client2 = new hazelcast_client(get_config());
+                    client2->start().get();
                 }
 
                 static void TearDownTestCase() {
@@ -820,6 +826,7 @@ namespace hazelcast {
 
                 void create_no_near_cache_context() {
                     client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(get_config()));
+                    client_->start().get();
                     no_near_cache_map_ = client_->get_replicated_map(get_test_name()).get();
                 }
 
@@ -828,6 +835,7 @@ namespace hazelcast {
                     nearCachedClientConfig.add_near_cache_config(near_cache_config_);
                     near_cached_client_ = std::unique_ptr<hazelcast_client>(
                             new hazelcast_client(std::move(nearCachedClientConfig)));
+                    near_cached_client_->start().get();
                     near_cached_map_ = near_cached_client_->get_replicated_map(get_test_name()).get();
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
@@ -1256,6 +1264,7 @@ namespace hazelcast {
                     client_config_->add_near_cache_config(config);
 
                     client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(std::move(*client_config_)));
+                    client_->start().get();
                     map_ = client_->get_replicated_map(mapName).get();
                     return map_;
                 }

@@ -48,18 +48,24 @@ namespace hazelcast {
             friend class spi::ClientContext;
         public:
             /**
-            * Constructs a hazelcastClient with default configurations.
+            * Constructs a hazelcast_client with default configurations.
             */
             hazelcast_client();
-            
+
             /**
-            * Constructs a hazelcastClient with given ClientConfig.
-            * Note: client_config will be copied.
+            * Constructs a hazelcast_client with given config.
             * @param config client configuration to start the client with
             */
             explicit hazelcast_client(client_config config);
 
             virtual ~hazelcast_client();
+
+            /**
+             * Initializes the client. Connects to the cluster. Throws exception if can not initialize.
+             *
+             * @return the future for start completion.
+             */
+            boost::future<void> start();
 
             /**
              * Returns the name of this Hazelcast instance.

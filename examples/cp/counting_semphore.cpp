@@ -19,6 +19,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     // Get counting_semaphore named 'my-semaphore'
     auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore").get();
     // Try to initialize the semaphore

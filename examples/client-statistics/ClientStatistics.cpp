@@ -37,6 +37,7 @@ int main() {
 
     config.add_near_cache_config(config::near_cache_config("MyMap"));
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     auto map = hz.get_map("MyMap").get();
     

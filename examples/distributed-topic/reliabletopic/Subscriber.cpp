@@ -36,6 +36,8 @@ hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_re
 void listen_with_default_config() {
     hazelcast::client::hazelcast_client client;
 
+    client.start().get();
+
     std::string topicName("MyReliableTopic");
     auto topic = client.get_reliable_topic(topicName).get();
 
@@ -62,6 +64,7 @@ void listen_with_config() {
     reliableTopicConfig.set_read_batch_size(5);
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
     hazelcast::client::hazelcast_client client(std::move(clientConfig));
+    client.start().get();
 
     auto topic = client.get_reliable_topic(topicName).get();
 

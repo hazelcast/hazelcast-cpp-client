@@ -30,6 +30,7 @@ int main() {
         set_tag_value("aws-tag-value-1").set_inside_aws(true);
     
     hazelcast::client::hazelcast_client hz(std::move(clientConfig));
+    hz.start().get();
 
     auto map = hz.get_map("MyMap").get();
     

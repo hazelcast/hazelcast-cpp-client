@@ -45,6 +45,7 @@ int main() {
     config.get_logger_config().handler(my_log_handler);
 
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     return 0;
 }

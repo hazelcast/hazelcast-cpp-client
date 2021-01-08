@@ -26,6 +26,7 @@ int main() {
             .set_credentials(std::make_shared<hazelcast::client::security::token_credentials>(my_token));
 
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     auto map = hz.get_map("MyMap").get();
 

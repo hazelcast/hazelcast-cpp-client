@@ -19,6 +19,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     // Get an fenced_lock named 'my-lock'
     auto lock = hz.get_cp_subsystem().get_lock("my-lock").get();
 

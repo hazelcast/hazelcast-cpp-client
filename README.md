@@ -426,7 +426,9 @@ You can configure Hazelcast C++ Client programatically.
 You can start the client with no custom configuration like this:
 
 ```C++
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
+    hazelcast::client::hazelcast_client hz;
+
+hz.start().get(); // Connects to the cluster
 ```
 
 This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview)
@@ -437,9 +439,11 @@ pass this object to the client when starting it, as shown below.
 
 ```C++
     hazelcast::client::client_config config;
-    config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
-    config.get_network_config().add_address(address("192.168.1.10", 5701));    
-    hazelcast::client::hazelcast_client hz(std::move(config)); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
+config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
+config.get_network_config().add_address(address("192.168.1.10", 5701));
+// Connects to the cluster member at ip address `192.168.1.10` and port 5701
+hazelcast::client::hazelcast_client hz(std::move(config));
+hz.start().get(); 
 ```
 
 If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
@@ -502,11 +506,14 @@ Now that we have a working cluster and we know how to configure both our cluster
 The following example first creates a programmatic configuration object. Then, it starts a client.
 
 ```C++
-#include <hazelcast/client/hazelcast_client.h>
+#include
+<hazelcast/client/hazelcast_client.h>
 int main() {
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
-    std::cout << "Started the Hazelcast C++ client instance " << hz.get_name() << std::endl; // Prints client instance name
-    return 0;
+hazelcast::client::hazelcast_client hz;
+
+hz.start().get(); // Connects to the cluster
+std::cout << "Started the Hazelcast C++ client instance " << hz.get_name() << std::endl; // Prints client instance name
+return 0;
 }
 ```
 This should print logs about the cluster members and information about the client itself such as client type and local address port.
@@ -545,20 +552,23 @@ Then, you can run the application using the following command:
 **main.cpp**
 
 ```C++
-#include <hazelcast/client/hazelcast_client.h>
+#include
+<hazelcast/client/hazelcast_client.h>
 int main() {
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
+hazelcast::client::hazelcast_client hz;
 
-    auto personnel = hz.get_map("personnel_map").get();
-    personnel->put<std::string, std::string>("Alice", "IT").get();
-    personnel->put<std::string, std::string>("Bob", "IT").get();
-    personnel->put<std::string, std::string>("Clark", "IT").get();
-    std::cout << "Added IT personnel. Logging all known personnel" << std::endl;
-    for (const auto &entry : personnel->entry_set<std::string, std::string>().get()) {
-        std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
-    }
-    
-    return 0;
+hz.start().get(); // Connects to the cluster
+
+auto personnel = hz.get_map("personnel_map").get();
+personnel->put<std::string, std::string>("Alice", "IT").get();
+personnel->put<std::string, std::string>("Bob", "IT").get();
+personnel->put<std::string, std::string>("Clark", "IT").get();
+std::cout << "Added IT personnel. Logging all known personnel" << std::endl;
+for (const auto &entry : personnel->entry_set<std::string, std::string>().get()) {
+std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
+}
+
+return 0;
 }
 ```
 
@@ -603,19 +613,22 @@ Then, you can run the application using the following command:
 **Sales.cpp**
 
 ```C++
-#include <hazelcast/client/hazelcast_client.h>
+#include
+<hazelcast/client/hazelcast_client.h>
 int main() {
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
+hazelcast::client::hazelcast_client hz;
 
-    auto personnel = hz.get_map("personnel_map").get();
-    personnel->put<std::string, std::string>("Denise", "Sales").get();
-    personnel->put<std::string, std::string>("Erwing", "Sales").get();
-    personnel->put<std::string, std::string>("Fatih", "Sales").get();
-    personnel->put<std::string, std::string>("Bob", "IT").get();
-    personnel->put<std::string, std::string>("Clark", "IT").get();
-    std::cout << "Added all sales personnel. Logging all known personnel" << std::endl;
-    for (const auto &entry : personnel.entry_set().get()) {
-        std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
+hz.start().get(); // Connects to the cluster
+
+auto personnel = hz.get_map("personnel_map").get();
+personnel->put<std::string, std::string>("Denise", "Sales").get();
+personnel->put<std::string, std::string>("Erwing", "Sales").get();
+personnel->put<std::string, std::string>("Fatih", "Sales").get();
+personnel->put<std::string, std::string>("Bob", "IT").get();
+personnel->put<std::string, std::string>("Clark", "IT").get();
+std::cout << "Added all sales personnel. Logging all known personnel" << std::endl;
+for (const auto &entry : personnel.entry_set().get()) {
+std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
     }
 
     return 0;
@@ -711,8 +724,10 @@ desired aspects. An example is shown below.
 
 ```C++
     hazelcast::client::client_config config;
-    config.get_network_config().add_address({"your server ip", 5701 /* your server port*/});
-    hazelcast::client::hazelcast_client hz(std::move(config)); // Connects to the cluster
+config.get_network_config().add_address({ "your server ip", 5701 /* your server port*/});
+// Connects to the cluster
+hazelcast::client::hazelcast_client hz(std::move(config));
+hz.start().get(); 
 ```
 
 See the `client_config` class reference at the Hazelcast C++ client API Documentation for details.
@@ -905,10 +920,12 @@ In order to use JSON serialization, you should use the `hazelcast_json_value` ob
 ```C++
     hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("map").get();
+hz.start().get();
 
-    map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
-    map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
+auto map = hz.get_map("map").get();
+
+map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
+map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
 ```
 
 `hazelcast_json_value` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `hazelcast_json_value` object using the `to_string()` method. 
@@ -959,7 +976,8 @@ You should register the global serializer in the configuration.
 ```C++
     hazelcast::client::client_config config;
     config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
-    hazelcast::client::hazelcast_client hz(std::move(config));
+hazelcast::client::hazelcast_client hz(std::move(config));
+hz.start().get();
 ```
 
 You need to utilize the `boost::any_cast` methods tyo actually use the objects provided for serialization and you are expected to return type `boost::any` from the `read` method. 
@@ -1562,25 +1580,27 @@ hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_re
             auto object = message.get_message_object().get<std::string>();
             if (object) {
                 std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name();
-            } else {
-                std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
-                message.get_name();
-            }
-        });
+} else {
+std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
+message.get_name();
+}
+});
 }
 
 void listen_with_default_config() {
-    hazelcast::client::hazelcast_client client;
+hazelcast::client::hazelcast_client client;
 
-    std::string topicName("MyReliableTopic");
-    auto topic = client.get_reliable_topic(topicName).get();
+client.start().get();
 
-    std::atomic<int> numberOfMessagesReceived{0};
-    auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
+std::string topicName("MyReliableTopic");
+auto topic = client.get_reliable_topic(topicName).get();
 
-    std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+std::atomic<int> numberOfMessagesReceived{ 0 };
+auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
 
-    while (numberOfMessagesReceived < 1) {
+std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+
+while (numberOfMessagesReceived < 1) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
@@ -1627,15 +1647,17 @@ A pn_counter usage example is shown below.
 ```C++
     hazelcast::client::hazelcast_client hz;
 
-    auto pnCounter = hz.get_pn_counter("pncounterexample").get();
+hz.start().get();
 
-    std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
+auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
-    std::cout << "Counter new value after adding is: " << pnCounter->add_and_get(5).get() << std::endl;
+std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 
-    std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2).get() << std::endl;
+std::cout << "Counter new value after adding is: " << pnCounter->add_and_get(5).get() << std::endl;
 
-    std::cout << "Counter new value is: " << pnCounter->get().get() << std::endl;
+std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2).get() << std::endl;
+
+std::cout << "Counter new value is: " << pnCounter->get().get() << std::endl;
 
     std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get().get() << std::endl;
 ```
@@ -1946,23 +1968,25 @@ membership_listener make_initial_membership_listener() {
 }
 
 int main() {
-    auto memberListener = make_membership_listener();
-    auto initialMemberListener = make_initial_membership_listener();
+auto memberListener = make_membership_listener();
+auto initialMemberListener = make_initial_membership_listener();
 
-    hazelcast::client::cluster *clusterPtr = nullptr;
-    boost::uuids::uuid listenerId, initialListenerId;
-    try {
-        hazelcast::client::hazelcast_client hz;
+hazelcast::client::cluster *clusterPtr = nullptr;
+boost::uuids::uuid listenerId, initialListenerId;
+try {
+hazelcast::client::hazelcast_client hz;
 
-        hazelcast::client::cluster &cluster = hz.get_cluster().get();
-        clusterPtr = &cluster;
-        auto members = cluster.get_members();
-        std::cout << "The following are members in the cluster:" << std::endl;
-        for (const auto &member: members) {
-            std::cout << member.get_address() << std::endl;
-        }
+hz.start().get();
 
-        listenerId = cluster.add_membership_listener(std::move(memberListener));
+hazelcast::client::cluster &cluster = hz.get_cluster().get();
+clusterPtr = &cluster;
+auto members = cluster.get_members();
+std::cout << "The following are members in the cluster:" << std::endl;
+for (const auto &member: members) {
+std::cout << member.get_address() << std::endl;
+}
+
+listenerId = cluster.add_membership_listener(std::move(memberListener));
         initialListenerId = cluster.add_membership_listener(std::move(initialMemberListener));
 
         // sleep some time for the events to be delivered before exiting
@@ -2019,9 +2043,10 @@ int main() {
             });
     );
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+hazelcast::client::hazelcast_client hz(std::move(config));
+hz.start().get();
 
-    hz.shutdown().get();
+hz.shutdown().get();
     return 0;
 }
 ```
@@ -2062,17 +2087,19 @@ See the following example.
 
 ```C++
 int main() {
-    hazelcast::client::hazelcast_client hz;
+hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("EntryListenerExampleMap").get();
+hz.start().get();
 
-    auto registrationId = map->add_entry_listener(
-        entry_listener().
-            on_added([](hazelcast::client::EntryEvent &&event) {
-                std::cout << "Entry added:" << event.getKey().get<int>().value() 
-                    << " --> " << event.getValue().get<std::string>().value() << std::endl;
-            }).
-            on_removed([](hazelcast::client::EntryEvent &&event) {
+auto map = hz.get_map("EntryListenerExampleMap").get();
+
+auto registrationId = map->add_entry_listener(
+entry_listener().
+on_added([](hazelcast::client::EntryEvent &&event) {
+std::cout << "Entry added:" << event.getKey().get<int>().value()
+<< " --> " << event.getValue().get<std::string>().value() << std::endl;
+}).
+on_removed([](hazelcast::client::EntryEvent &&event) {
                 std::cout << "Entry removed:" << event.getKey().get<int>().value() 
                     << " --> " << event.getValue().get<std::string>().value() << std::endl;
             })
@@ -2093,18 +2120,20 @@ See the example below.
 
 ```C++
 int main() {
-    hazelcast::client::hazelcast_client hz;
+hazelcast::client::hazelcast_client hz;
 
-    auto map = hz.get_map("EntryListenerExampleMap").get();
+hz.start().get();
 
-    auto registrationId = map->add_entry_listener(
-        entry_listener().
-            on_map_cleared([](hazelcast::client::map_event &&event) {
-                std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
-            })    
-        , false).get();
+auto map = hz.get_map("EntryListenerExampleMap").get();
 
-    map->put(1, "Mali").get();
+auto registrationId = map->add_entry_listener(
+entry_listener().
+on_map_cleared([](hazelcast::client::map_event &&event) {
+std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
+})
+, false).get();
+
+map->put(1, "Mali").get();
     map->put(2, "Ahmet").get();
     map->put(3, "Furkan").get();
     map->clear().get();
@@ -2949,9 +2978,8 @@ Hazelcast Map can be configured to work with near cache enabled. You can enable 
     nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
             .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
     config.add_near_cache_config(nearCacheConfig);
-    hazelcast_client client(std::move(config));
-
-```
+hazelcast_client client(std::move(config));
+client.start().get();```
 
 Following are the descriptions of all configuration elements:
  - `set_in_memory_format`: Specifies in which format data will be stored in your Near Cache. Note that a map’s in-memory format can be different from that of its Near Cache. Available values are as follows:

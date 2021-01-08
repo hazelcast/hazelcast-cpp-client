@@ -36,6 +36,7 @@ int main() {
     // "Trying to connect to 127.0.0.1:5702 as owner member" but this will fail since no such member exist.
 
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     std::cout << "Finished" << std::endl;
 

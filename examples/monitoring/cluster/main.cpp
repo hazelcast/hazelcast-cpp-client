@@ -58,6 +58,8 @@ int main() {
     try {
         hazelcast::client::hazelcast_client hz;
 
+        hz.start().get();
+
         hazelcast::client::cluster &cluster = hz.get_cluster();
         clusterPtr = &cluster;
         auto members = cluster.get_members();

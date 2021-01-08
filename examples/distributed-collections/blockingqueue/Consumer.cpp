@@ -18,6 +18,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto queue = hz.get_queue("queue").get();
 
     while (true) {

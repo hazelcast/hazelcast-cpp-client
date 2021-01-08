@@ -18,6 +18,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     hazelcast::client::transaction_options txOptions;
     txOptions.set_timeout(std::chrono::seconds(10));
 

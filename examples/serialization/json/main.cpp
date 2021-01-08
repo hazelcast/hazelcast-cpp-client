@@ -20,6 +20,8 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto map = hz.get_map("map").get();
 
     map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();

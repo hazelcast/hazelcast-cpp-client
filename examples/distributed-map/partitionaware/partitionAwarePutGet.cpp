@@ -59,6 +59,8 @@ const std::string PartitionAwareString::desiredPartitionString = "desiredKeyStri
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     PartitionAwareString partitionKey{"MyString"};
 
     auto map = hz.get_map("paritionawaremap").get();

@@ -52,6 +52,7 @@ int main() {
     config.set_serialization_config(serializationConfig);
 
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     return 0;
 }

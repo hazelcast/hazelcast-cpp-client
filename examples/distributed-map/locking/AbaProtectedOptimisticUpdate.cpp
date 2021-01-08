@@ -49,12 +49,14 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto map = hz.get_map("map").get();
 
     map->put("1", Value{});
     std::cout << "Starting" << std::endl;
     for (int k = 0; k < 1000; k++) {
-        for (; ;) {
+        for (;;) {
             auto oldValue = map->get<std::string, Value>("1").get();
             Value newValue(*oldValue);
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

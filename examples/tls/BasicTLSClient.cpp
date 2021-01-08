@@ -30,6 +30,7 @@ int main() {
                                        // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html)
     
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
 
     auto map = hz.get_map("MyMap").get();
     

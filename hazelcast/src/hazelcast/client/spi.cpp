@@ -283,12 +283,15 @@ namespace hazelcast {
                 }
             }
 
-            bool lifecycle_service::start() {
+            bool lifecycle_service::set_active() {
                 bool expected = false;
                 if (!active_.compare_exchange_strong(expected, true)) {
                     return false;
                 }
+                return true;
+            }
 
+            bool lifecycle_service::start() {
                 fire_lifecycle_event(lifecycle_event::STARTED);
 
                 client_context_.get_client_execution_service().start();

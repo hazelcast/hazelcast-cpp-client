@@ -38,6 +38,7 @@ namespace hazelcast {
 
                     virtual void SetUp() {
                         client_.reset(new hazelcast_client(get_client_config()));
+                        client_->start().get();
                         auto test_name = get_test_name();
                         cp_structure_ = get_cp_structure(test_name + "@cp_test_group");
                     }
@@ -703,6 +704,7 @@ namespace hazelcast {
                 TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
                     hazelcast_client c(
                             std::move(get_config().set_cluster_name(client_->get_client_config().get_cluster_name())));
+                    c.start().get();
                     auto proxy_name = get_test_name();
                     auto l = c.get_cp_subsystem().get_lock(proxy_name).get();
                     l->lock().get();
@@ -1036,6 +1038,7 @@ namespace hazelcast {
                 TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies) {
                     hazelcast_client client2(
                             std::move(client_config().set_cluster_name(client_->get_client_config().get_cluster_name())));
+                    client2.start().get();
                     auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name()).get();
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());
@@ -1392,6 +1395,7 @@ namespace hazelcast {
                 TEST_F(basic_session_semaphore_test, test_acquire_on_multiple_proxies) {
                     hazelcast_client client2(
                             std::move(client_config().set_cluster_name(client_->get_client_config().get_cluster_name())));
+                    client2.start().get();
                     auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name()).get();
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());

@@ -61,6 +61,7 @@ int main(int argc, char *args[]) {
 
     config.get_network_config().add_address(hazelcast::client::address(server_address, 5701));
     hazelcast::client::hazelcast_client hz(std::move(config));
+    hz.start().get();
     hazelcast::client::spi::ClientContext context(hz);
     auto &logger_ = context.get_logger();
     auto map = hz.get_map("test").get();

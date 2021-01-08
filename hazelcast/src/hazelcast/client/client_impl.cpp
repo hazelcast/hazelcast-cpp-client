@@ -66,12 +66,14 @@
 namespace hazelcast {
     namespace client {
         hazelcast_client::hazelcast_client() : client_impl_(new impl::hazelcast_client_instance_impl(client_config())) {
-            client_impl_->start();
         }
 
         hazelcast_client::hazelcast_client(client_config config) : client_impl_(
                 new impl::hazelcast_client_instance_impl(std::move(config))) {
-            client_impl_->start();
+        }
+
+        boost::future<void> hazelcast_client::start() {
+            return boost::async([=]() { client_impl_->start(); });
         }
 
         const std::string &hazelcast_client::get_name() const {
@@ -187,13 +189,17 @@ namespace hazelcast {
             hazelcast_client_instance_impl::~hazelcast_client_instance_impl() = default;
 
             void hazelcast_client_instance_impl::start() {
+                if (!lifecycle_service_.set_active()) {
+                    return;
+                }
+
                 lifecycle_service_.fire_lifecycle_event(lifecycle_event::STARTING);
 
                 try {
                     if (!lifecycle_service_.start()) {
                         lifecycle_service_.shutdown();
                         BOOST_THROW_EXCEPTION(exception::illegal_state("hazelcast_client",
-                                                                               "hazelcast_client could not be started!"));
+                                                                       "hazelcast_client could not be started!"));
                     }
                 } catch (std::exception &) {
                     lifecycle_service_.shutdown();

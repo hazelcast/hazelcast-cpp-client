@@ -18,15 +18,17 @@
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto list = hz.get_list("list").get();
 
-    list->add("Tokyo").then(boost::launch::deferred, [=] (boost::future<bool> f) {
-       if (f.get()) {
-           std::cout << "First addition is successfull!!!" << '\n';
-           list->add("Paris").get();
-           list->add("London").get();
-           list->add("New York").get();
-       }
+    list->add("Tokyo").then(boost::launch::deferred, [=](boost::future<bool> f) {
+        if (f.get()) {
+            std::cout << "First addition is successfull!!!" << '\n';
+            list->add("Paris").get();
+            list->add("London").get();
+            list->add("New York").get();
+        }
     });
 
     std::cout << "Putting finished!" << std::endl;

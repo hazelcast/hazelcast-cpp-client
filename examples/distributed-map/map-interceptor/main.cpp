@@ -44,13 +44,16 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto map = hz.get_map("themap").get();
 
     map->add_interceptor(MapInterceptor{}).get();
 
     map->put<std::string, std::string>("1", "1").get();
 
-    std::cout << "The modified value (modified by the interceptor) at the server:" << *map->get<std::string, std::string>("1").get() << std::endl;
+    std::cout << "The modified value (modified by the interceptor) at the server:"
+              << *map->get<std::string, std::string>("1").get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

@@ -31,6 +31,7 @@ int main() {
     nearCacheConfig.set_max_idle_seconds(1);
     config.add_near_cache_config(nearCacheConfig);
     hazelcast_client client(std::move(config));
+    client.start().get();
 
     auto map = client.get_map(mapName).get();
 

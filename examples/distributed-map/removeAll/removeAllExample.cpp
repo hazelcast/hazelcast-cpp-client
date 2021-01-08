@@ -60,13 +60,15 @@ namespace hazelcast {
 int main() {
     hazelcast::client::hazelcast_client hz;
 
+    hz.start().get();
+
     auto personMap = hz.get_map("personMap").get();
     personMap->put_all<std::string, Person>({{"1", Person{"Peter", true, 36}},
-                       {"2", Person{"John", true, 50}},
-                       {"3", Person{"Marry", false, 20}},
-                       {"4", Person{"Mike", true, 35}},
-                       {"5", Person{"Rob", true, 60}},
-                       {"6", Person{"Jane", false, 43}}}).get();
+                                             {"2", Person{"John", true, 50}},
+                                             {"3", Person{"Marry", false, 20}},
+                                             {"4", Person{"Mike", true, 35}},
+                                             {"5", Person{"Rob", true, 60}},
+                                             {"6", Person{"Jane", false, 43}}}).get();
 
     // Remove entries that whose name start with 'M'
     personMap->remove_all(query::like_predicate(hz, "name", "M%")).get();
