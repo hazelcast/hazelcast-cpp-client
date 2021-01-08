@@ -1458,7 +1458,7 @@ namespace hazelcast {
                         // progressive retry delay
                         int64_t delayMillis = util::min<int64_t>(static_cast<int64_t>(1) << (invoke_count_ - MAX_FAST_INVOCATION_COUNT),
                                                                  std::chrono::duration_cast<std::chrono::milliseconds>(retry_pause_).count());
-                        execution_service_->schedule(command, std::chrono::milliseconds(delayMillis));
+                        retry_timer_ = execution_service_->schedule(command, std::chrono::milliseconds(delayMillis));
                     }
                 }
 

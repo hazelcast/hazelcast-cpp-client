@@ -386,11 +386,11 @@ namespace hazelcast {
                             submit_connect_to_cluster_task();
                         }
 
-                    } catch (exception::iexception &e) {
+                    } catch (std::exception &e) {
                         HZ_LOG(logger_, warning,
-                            boost::str(boost::format("Could not connect to any cluster, "
-                                                     "shutting down the client: %1%")
-                                                     % e)
+                               boost::str(boost::format("Could not connect to any cluster, "
+                                                        "shutting down the client: %1%")
+                                          % e.what())
                         );
 
                         shutdown_with_external_thread(client_.get_hazelcast_client_implementation());
@@ -645,6 +645,12 @@ namespace hazelcast {
                     on_connection_close(connection);
                     return nullptr;
                 }
+
+                // If the client is shutdown in parallel, we need to close this new connection.
+                if (!client_.get_lifecycle_service().is_running()) {
+                    connection->close("Client is shutdown");
+                }
+
                 return connection;
             }
 
