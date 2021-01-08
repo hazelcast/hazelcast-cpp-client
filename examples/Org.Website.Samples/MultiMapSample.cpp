@@ -26,14 +26,16 @@ int main() {
     multiMap->put("my-key", "value2").get();
     multiMap->put("my-key", "value3").get();
     // Print out all the values for associated with key called "my-key"
-    multiMap->get<std::string, std::string>("my-key").then(boost::launch::deferred,[] (boost::future<std::vector<std::string>> f) {
-        for (auto &value : f.get()) {
-            std::cout << value << '\n';
-        }
-    }).get();
+    multiMap->get<std::string, std::string>("my-key").then(boost::launch::deferred,
+                                                           [](boost::future<std::vector<std::string>> f) {
+                                                               for (auto &value : f.get()) {
+                                                                   std::cout << value << '\n';
+                                                               }
+                                                           }).get();
     // remove specific key/value pair
-    multiMap->remove("my-key", "value2").get();    // Shutdown this Hazelcast Client
-    hz.shutdown();
+    multiMap->remove("my-key", "value2").get();
+    // Shutdown this Hazelcast Client
+    hz.shutdown().get();
 
     return 0;
 }

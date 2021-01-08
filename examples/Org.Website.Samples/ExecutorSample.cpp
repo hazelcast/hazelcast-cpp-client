@@ -144,7 +144,7 @@ int main() {
     ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message when using the member selector"},
                                             MyMemberSelector());
     // Shutdown this Hazelcast Client
-    hz.shutdown();
+    hz.shutdown().get();
 
     return 0;
 }

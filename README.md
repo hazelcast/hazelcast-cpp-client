@@ -1303,7 +1303,7 @@ As the final step, if you are done with your client, you can shut it down as sho
 
 ```C++
     // Shutdown this Hazelcast Client
-    client.shutdown();
+    client.shutdown().get();
 ```
 
 The client object destructor also shuts down the client upon destruction if you do not explicitly call the shutdown method.
@@ -2021,7 +2021,7 @@ int main() {
 
     hazelcast::client::hazelcast_client hz(std::move(config));
 
-    hz.shutdown();
+    hz.shutdown().get();
     return 0;
 }
 ```

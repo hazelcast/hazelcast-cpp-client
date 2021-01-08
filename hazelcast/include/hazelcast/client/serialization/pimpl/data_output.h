@@ -20,7 +20,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
-#include <boost/endian/detail/order.hpp>
+#include <boost/endian/conversion.hpp>
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/util/ByteBuffer.h"

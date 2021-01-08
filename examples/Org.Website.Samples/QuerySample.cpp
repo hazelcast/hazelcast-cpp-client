@@ -86,7 +86,7 @@ int main() {
     for (auto &value : result2) {
         std::cout << value << std::endl;
     }
-    hz.shutdown();
+    hz.shutdown().get();
 
     return 0;
 }

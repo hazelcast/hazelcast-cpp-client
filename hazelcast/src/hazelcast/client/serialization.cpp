@@ -855,7 +855,8 @@ namespace hazelcast {
                     if (total_size() == 0) {
                         return static_cast<int32_t>(serialization_constants::CONSTANT_TYPE_NULL);
                     }
-                    return boost::endian::load_big_s32(&data_[data::TYPE_OFFSET]);
+                    return boost::endian::endian_load<boost::uint32_t, 4, boost::endian::order::big>(
+                            &data_[data::TYPE_OFFSET]);
                 }
 
                 int data::hash() const {
@@ -869,7 +870,8 @@ namespace hazelcast {
                     }
 
                     if (has_partition_hash()) {
-                        return boost::endian::load_big_s32(&data_[data::PARTITION_HASH_OFFSET]);
+                        return boost::endian::endian_load<boost::uint32_t, 4, boost::endian::order::big>(
+                                &data_[data::PARTITION_HASH_OFFSET]);
                     }
 
                     return util::murmur_hash3_x86_32((void *) &((data_)[data::DATA_OFFSET]), (int) size);
