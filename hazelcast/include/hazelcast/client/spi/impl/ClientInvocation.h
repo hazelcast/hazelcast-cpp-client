@@ -24,6 +24,7 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
@@ -178,6 +179,8 @@ namespace hazelcast {
                      * The time when the response of the primary has been received.
                      */
                     std::chrono::steady_clock::time_point pending_response_received_time_;
+
+                    std::shared_ptr<boost::asio::steady_timer> retry_timer_;
 
                     ClientInvocation(spi::ClientContext &client_context,
                                      std::shared_ptr<protocol::ClientMessage> &&message,

@@ -386,11 +386,11 @@ namespace hazelcast {
                             submit_connect_to_cluster_task();
                         }
 
-                    } catch (exception::iexception &e) {
+                    } catch (std::exception &e) {
                         HZ_LOG(logger_, warning,
-                            boost::str(boost::format("Could not connect to any cluster, "
-                                                     "shutting down the client: %1%")
-                                                     % e)
+                               boost::str(boost::format("Could not connect to any cluster, "
+                                                        "shutting down the client: %1%")
+                                          % e.what())
                         );
 
                         shutdown_with_external_thread(client_.get_hazelcast_client_implementation());
