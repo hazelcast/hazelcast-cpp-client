@@ -63,8 +63,8 @@ namespace hazelcast {
 
                 /**
                  * Internal API.
-                 * Called before client shutdown.
-                 * Overriding implementations can add shutdown specific logic here.
+                 * Called before client stop.
+                 * Overriding implementations can add stop specific logic here.
                  */
                 virtual void on_shutdown();
 

@@ -709,7 +709,7 @@ namespace hazelcast {
                     auto l = c.get_cp_subsystem().get_lock(proxy_name).get();
                     l->lock().get();
 
-                    c.shutdown().get();
+                    c.stop().get();
 
                     std::ostringstream script;
                     script << "result = instance_0.getCPSubsystem().getLock(\"" << proxy_name

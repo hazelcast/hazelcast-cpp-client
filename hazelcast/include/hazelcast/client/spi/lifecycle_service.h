@@ -21,6 +21,7 @@
 #include <unordered_set>
 #include <atomic>
 #include <boost/thread/latch.hpp>
+#include <boost/thread/future.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/container_hash/hash.hpp>
@@ -53,11 +54,11 @@ namespace hazelcast {
 
                 virtual ~lifecycle_service();
 
-                bool start();
+                boost::future<bool> start();
 
                 void fire_lifecycle_event(const lifecycle_event &lifecycle_event);
 
-                void shutdown();
+                boost::future<void> stop();
 
                 boost::uuids::uuid add_listener(lifecycle_listener &&lifecycle_listener);
 
@@ -65,16 +66,17 @@ namespace hazelcast {
 
                 bool is_running();
 
-                bool set_active();
+                bool is_started() const;
 
             private:
                 ClientContext &client_context_;
                 std::unordered_map<boost::uuids::uuid, lifecycle_listener, boost::hash<boost::uuids::uuid>> listeners_;
                 std::mutex listener_lock_;
                 std::atomic<bool> active_{false};
-                boost::latch shutdown_completed_latch_;
                 std::mt19937 random_generator_{std::random_device{}()};
                 boost::uuids::basic_random_generator<std::mt19937> uuid_generator_{random_generator_};
+                std::mutex start_stop_lock_;
+                std::atomic<bool> started_{false};
 
                 void wait_for_initial_membership_event() const;
             };

@@ -840,10 +840,15 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
+            class StartStopTest : public ClientTestSupport {
+            };
+
             class ClientConnectionTest : public ClientTestSupport {
             protected:
 #ifdef HZ_BUILD_WITH_SSL
-                std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> get_ciphers(client_config config) {
+
+                std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo>
+                get_ciphers(client_config config) {
                     hazelcast_client client(std::move(config));
                     client.start().get();
                     spi::ClientContext context(client);
@@ -1017,7 +1022,6 @@ namespace hazelcast {
 
                 auto start_time = std::chrono::steady_clock::now();
                 hazelcast_client client(std::move(clientConfig));
-                client.start().get();
                 ASSERT_THROW(client.start().get(), exception::illegal_state);
                 ASSERT_GE(std::chrono::steady_clock::now() - start_time, timeout);
             }
@@ -1043,7 +1047,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(startedLatch);
                 ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
-                client.shutdown().get();
+                client.stop().get();
 
                 ASSERT_OPEN_EVENTUALLY(shuttingDownLatch);
                 ASSERT_OPEN_EVENTUALLY(shutdownLatch);
@@ -2216,13 +2220,13 @@ namespace hazelcast {
             }
 
             ClientTxnTest::~ClientTxnTest() {
-                client_->shutdown().get();
+                client_->stop().get();
                 server_->shutdown();
                 second_->shutdown();
             }
 
             TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
-                client_->shutdown().get();
+                client_->stop().get();
                 ASSERT_THROW(client_->new_transaction_context(), exception::hazelcast_client_not_active);
             }
 
@@ -2305,7 +2309,7 @@ namespace hazelcast {
                 std::string value = random_string();
                 queue->offer(value).get();
 
-                client_->shutdown().get();
+                client_->stop().get();
 
                 ASSERT_THROW(context.commit_transaction().get(), exception::transaction);
             }

@@ -114,7 +114,7 @@ namespace hazelcast {
             }
 
             /**
-             * Set an handler function to be invoked when the client's shutdown has completed
+             * Set an handler function to be invoked when the client's stop has completed
              * \param h a `void` function object that is callable without any parameters.
              * \return `*this`
              */

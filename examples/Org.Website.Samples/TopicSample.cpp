@@ -32,7 +32,7 @@ int main() {
     // Publish a message to the Topic
     topic->publish("Hello to distributed world").get();
     // Shutdown this Hazelcast Client
-    hz.shutdown().get();
+    hz.stop().get();
 
     return 0;
 }

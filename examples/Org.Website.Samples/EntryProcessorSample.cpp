@@ -63,7 +63,7 @@ int main() {
     // Show that the IncEntryProcessor updated the value.
     std::cout << "new value:" << *map->get<std::string, std::string>("key").get();
     // Shutdown this Hazelcast Client
-    hz.shutdown().get();
+    hz.stop().get();
 
     return 0;
 }

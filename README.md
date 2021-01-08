@@ -1046,10 +1046,13 @@ The following example shows how you can set the cluster connection timeout to 30
 
 ## 5.5. Advanced Cluster Connection Retry Configuration
 
-When client is disconnected from the cluster, it searches for new connections to reconnect. You can configure the frequency of the reconnection attempts and client shutdown behavior using `connection_retry_config`.
-The following is an example configuration.
+When client is disconnected from the cluster, it searches for new connections to reconnect. You can configure the
+frequency of the reconnection attempts and client stop behavior using `connection_retry_config`. The following is an
+example configuration.
 
-Below is an example configuration. It configures a total timeout of 30 seconds to connect to a cluster, by initial backoff time being 100 milliseconds and doubling the time before every try with a jitter of 0.8  up to a maximum of 3 seconds backoff between each try..
+Below is an example configuration. It configures a total timeout of 30 seconds to connect to a cluster, by initial
+backoff time being 100 milliseconds and doubling the time before every try with a jitter of 0.8 up to a maximum of 3
+seconds backoff between each try..
 
 ```C++
     client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
@@ -1321,10 +1324,10 @@ As the final step, if you are done with your client, you can shut it down as sho
 
 ```C++
     // Shutdown this Hazelcast Client
-    client.shutdown().get();
+    client.stop().get();
 ```
 
-The client object destructor also shuts down the client upon destruction if you do not explicitly call the shutdown method.
+The client object destructor also shuts down the client upon destruction if you do not explicitly call the stop method.
 
 ## 7.2. C++ Client Operation Modes
 
@@ -1921,7 +1924,7 @@ This chapter explains when various events are fired and describes how you can ad
 You can add event listeners to a Hazelcast C++ client. You can configure the following listeners to listen to the events on the client side:
 
 * Membership Listener: Notifies when a member joins to/leaves the cluster, or when an attribute is changed in a member.
-* Lifecycle Listener: Notifies when the client is starting, started, shutting down and shutdown.
+* Lifecycle Listener: Notifies when the client is starting, started, shutting down and stop.
 
 #### 7.5.1.1. Listening for Member Events
 
@@ -2012,7 +2015,7 @@ The `lifecycle_listener` interface notifies for the following events:
 * `starting`: The client is starting.
 * `started`: The client has started.
 * `shutting_down`: The client is shutting down.
-* `shutdown`: The client’s shutdown has completed.
+* `stop`: The client’s stop has completed.
 * `client_connected`: The client is connected to the cluster.
 * `client_disconnected`: The client is disconnected from the cluster.
 
@@ -2046,8 +2049,8 @@ int main() {
 hazelcast::client::hazelcast_client hz(std::move(config));
 hz.start().get();
 
-hz.shutdown().get();
-    return 0;
+hz.stop().get();
+return 0;
 }
 ```
 

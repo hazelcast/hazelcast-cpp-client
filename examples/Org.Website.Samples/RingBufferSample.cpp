@@ -30,6 +30,6 @@ int main() {
     sequence++;
     std::cout << *rb->read_one<int>(sequence).get() << std::endl;
     // Shutdown this Hazelcast Client
-    hz.shutdown().get();
+    hz.stop().get();
 
 }

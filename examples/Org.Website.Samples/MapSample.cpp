@@ -40,7 +40,7 @@ int main() {
     future.get();
 
     // Shutdown this Hazelcast Client
-    hz.shutdown().get();
+    hz.stop().get();
 
     return 0;
 }

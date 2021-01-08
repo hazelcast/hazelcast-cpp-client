@@ -575,17 +575,17 @@ namespace hazelcast {
                     ASSERT_THROW((client.get_map(random_map_name()).get()),
                                  exception::hazelcast_client_offline);
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
                     client_config_.get_connection_strategy_config().set_async_start(true);
                     hazelcast_client client(std::move(client_config_));
                     client.start().get();
-                    client.shutdown().get();
+                    client.stop().get();
                     ASSERT_THROW((client.get_map(random_map_name()).get()), exception::hazelcast_client_not_active);
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrue) {
@@ -617,7 +617,7 @@ namespace hazelcast {
                     auto map = client.get_map(random_map_name()).get();
                     map->size().get();
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFSingleMember) {
@@ -644,7 +644,7 @@ namespace hazelcast {
 
                     ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFTwoMembers) {
@@ -673,7 +673,7 @@ namespace hazelcast {
 
                     ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberInitiallyOffline) {
@@ -682,6 +682,7 @@ namespace hazelcast {
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
                     hazelcast_client client(std::move(client_config_));
+                    client.start().get();
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         lifecycle_listener()
@@ -690,7 +691,7 @@ namespace hazelcast {
                             })
                     );
 
-// no exception at this point
+                    // no exception at this point
                     auto map = client.get_map(random_map_name()).get();
                     map->put(1, 5).get();
 
@@ -699,7 +700,7 @@ namespace hazelcast {
 
                     ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMember) {
@@ -723,7 +724,7 @@ namespace hazelcast {
                     auto map = client.get_map(random_map_name()).get();
                     map->size().get();
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberStartLate) {
@@ -764,7 +765,7 @@ namespace hazelcast {
                     auto map = client.get_map(random_map_name()).get();
                     map->size().get();
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers) {
@@ -814,7 +815,7 @@ namespace hazelcast {
 
                     map->get<int, int>(1).get();
 
-                    client.shutdown().get();
+                    client.stop().get();
                 }
             }
         }

@@ -1502,7 +1502,7 @@ namespace hazelcast {
                 fencedlock_getlockownership_encode(const cp::raft_group_id &group_id, const std::string &name);
 
                 /**
-                 * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
+                 * Initiates an orderly stop in which previously submitted tasks are executed, but no new tasks will be accepted.
                  * Invocation has no additional effect if already shut down.
                  */
                 ClientMessage HAZELCAST_API executorservice_shutdown_encode(const std::string  & name);

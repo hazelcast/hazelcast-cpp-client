@@ -73,7 +73,7 @@ namespace hazelcast {
         }
 
         boost::future<void> hazelcast_client::start() {
-            return boost::async([=]() { client_impl_->start(); });
+            return client_impl_->start();
         }
 
         const std::string &hazelcast_client::get_name() const {
@@ -104,8 +104,8 @@ namespace hazelcast {
             return client_impl_->remove_lifecycle_listener(registration_id);
         }
 
-        boost::future<void> hazelcast_client::shutdown() {
-            return boost::async(boost::launch::async, [=]() { client_impl_->shutdown(); });
+        boost::future<void> hazelcast_client::stop() {
+            return client_impl_->stop();
         }
 
         spi::lifecycle_service &hazelcast_client::get_lifecycle_service() {
@@ -117,7 +117,7 @@ namespace hazelcast {
         }
 
         hazelcast_client::~hazelcast_client() {
-            client_impl_->shutdown();
+            client_impl_->stop().get();
         }
 
         cp::cp_subsystem &hazelcast_client::get_cp_subsystem() {
@@ -188,23 +188,19 @@ namespace hazelcast {
 
             hazelcast_client_instance_impl::~hazelcast_client_instance_impl() = default;
 
-            void hazelcast_client_instance_impl::start() {
-                if (!lifecycle_service_.set_active()) {
-                    return;
-                }
-
-                lifecycle_service_.fire_lifecycle_event(lifecycle_event::STARTING);
-
-                try {
-                    if (!lifecycle_service_.start()) {
-                        lifecycle_service_.shutdown();
-                        BOOST_THROW_EXCEPTION(exception::illegal_state("hazelcast_client",
-                                                                       "hazelcast_client could not be started!"));
+            boost::future<void> hazelcast_client_instance_impl::start() {
+                return lifecycle_service_.start().then(boost::launch::sync, [=](boost::future<bool> f) {
+                    try {
+                        if (!f.get()) {
+                            lifecycle_service_.stop().get();
+                            BOOST_THROW_EXCEPTION(exception::illegal_state("hazelcast_client",
+                                                                           "hazelcast_client could not be started!"));
+                        }
+                    } catch (std::exception &) {
+                        lifecycle_service_.stop().get();
+                        throw;
                     }
-                } catch (std::exception &) {
-                    lifecycle_service_.shutdown();
-                    throw;
-                }
+                });
             }
 
             client_config &hazelcast_client_instance_impl::get_client_config() {
@@ -212,10 +208,12 @@ namespace hazelcast {
             }
 
             cluster &hazelcast_client_instance_impl::get_cluster() {
+                check_started();
                 return cluster_;
             }
 
-            boost::uuids::uuid hazelcast_client_instance_impl::add_lifecycle_listener(lifecycle_listener &&lifecycle_listener) {
+            boost::uuids::uuid
+            hazelcast_client_instance_impl::add_lifecycle_listener(lifecycle_listener &&lifecycle_listener) {
                 return lifecycle_service_.add_listener(std::move(lifecycle_listener));
             }
 
@@ -223,8 +221,8 @@ namespace hazelcast {
                 return lifecycle_service_.remove_listener(registration_id);
             }
 
-            void hazelcast_client_instance_impl::shutdown() {
-                lifecycle_service_.shutdown();
+            boost::future<void> hazelcast_client_instance_impl::stop() {
+                return lifecycle_service_.stop();
             }
 
             transaction_context hazelcast_client_instance_impl::new_transaction_context() {
@@ -232,11 +230,14 @@ namespace hazelcast {
                 return new_transaction_context(defaultOptions);
             }
 
-            transaction_context hazelcast_client_instance_impl::new_transaction_context(const transaction_options &options) {
+            transaction_context
+            hazelcast_client_instance_impl::new_transaction_context(const transaction_options &options) {
+                check_started();
                 return transaction_context(transaction_manager_, options);
             }
 
             internal::nearcache::NearCacheManager &hazelcast_client_instance_impl::get_near_cache_manager() {
+                check_started();
                 return *near_cache_manager_;
             }
 
@@ -338,6 +339,7 @@ namespace hazelcast {
             }
 
             local_endpoint hazelcast_client_instance_impl::get_local_endpoint() const {
+                check_started();
                 return cluster_service_.get_local_client();
             }
 
@@ -365,7 +367,15 @@ namespace hazelcast {
             }
 
             cp::cp_subsystem &hazelcast_client_instance_impl::get_cp_subsystem() {
+                check_started();
                 return cp_subsystem_;
+            }
+
+            void hazelcast_client_instance_impl::check_started() const {
+                if (!lifecycle_service_.is_started()) {
+                    throw exception::illegal_state("hazelcast_client_instance_impl::check_started",
+                                                   "Client is not started!");
+                }
             }
 
             BaseEventHandler::~BaseEventHandler() = default;

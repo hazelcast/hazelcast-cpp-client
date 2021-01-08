@@ -2750,7 +2750,7 @@ namespace hazelcast {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
-                    msg.set_operation_name("executorservice.shutdown");
+                    msg.set_operation_name("executorservice.stop");
 
                     msg.set_message_type(static_cast<int32_t>(524544));
                     msg.set_partition_id(-1);

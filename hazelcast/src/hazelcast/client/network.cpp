@@ -353,13 +353,13 @@ namespace hazelcast {
                     }
 
                     try {
-                        clientInstance->get_lifecycle_service().shutdown();
+                        clientInstance->get_lifecycle_service().stop();
                     } catch (exception::iexception &e) {
                         HZ_LOG(*clientInstance->get_logger(), severe,
-                            boost::str(boost::format("Exception during client shutdown "
-                                                     "%1%.clientShutdown-:%2%")
-                                                     % clientInstance->get_name()
-                                                     % e)
+                               boost::str(boost::format("Exception during client stop "
+                                                        "%1%.stop()-:%2%")
+                                          % clientInstance->get_name()
+                                          % e)
                         );
                     }
                 }).detach();
@@ -558,9 +558,7 @@ namespace hazelcast {
                 connection_listeners_.add(connection_listener);
             }
 
-            ClientConnectionManagerImpl::~ClientConnectionManagerImpl() {
-                shutdown();
-            }
+            ClientConnectionManagerImpl::~ClientConnectionManagerImpl() = default;
 
             logger &ClientConnectionManagerImpl::get_logger() {
                 return client_.get_logger();
@@ -569,7 +567,7 @@ namespace hazelcast {
             void ClientConnectionManagerImpl::check_client_active() {
                 if (!client_.get_lifecycle_service().is_running()) {
                     BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
-                                                  "ClientConnectionManagerImpl::check_client_active", "Client is shutdown"));
+                                                  "ClientConnectionManagerImpl::check_client_active", "Client is stopped."));
                 }
             }
 
@@ -648,7 +646,7 @@ namespace hazelcast {
 
                 // If the client is shutdown in parallel, we need to close this new connection.
                 if (!client_.get_lifecycle_service().is_running()) {
-                    connection->close("Client is shutdown");
+                    connection->close("Client is stopped.");
                 }
 
                 return connection;

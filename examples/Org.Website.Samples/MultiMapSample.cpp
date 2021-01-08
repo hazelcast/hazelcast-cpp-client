@@ -35,7 +35,7 @@ int main() {
     // remove specific key/value pair
     multiMap->remove("my-key", "value2").get();
     // Shutdown this Hazelcast Client
-    hz.shutdown().get();
+    hz.stop().get();
 
     return 0;
 }

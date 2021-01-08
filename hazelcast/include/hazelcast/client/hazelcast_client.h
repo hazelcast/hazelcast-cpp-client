@@ -220,7 +220,7 @@ namespace hazelcast {
              * on the Hazelcast cluster.
              * <p>
              * <p><b>Note:</b> Note that it doesn't support {@code invokeAll/Any}
-             * and doesn't have standard shutdown behavior</p>
+             * and doesn't have standard stop behavior</p>
              *
              * @param name name of the executor service
              * @return the distributed executor service for the given name
@@ -290,12 +290,12 @@ namespace hazelcast {
             /**
             * Shuts down this hazelcast_client.
             */
-            boost::future<void> shutdown();
+            boost::future<void> stop();
 
             /**
              * Returns the lifecycle service for this instance.
              * <p>
-             * LifecycleService allows you to shutdown this HazelcastInstance and listen for the lifecycle events.
+             * LifecycleService allows you to stop this HazelcastInstance and listen for the lifecycle events.
              *
              * @return the lifecycle service for this instance
              */

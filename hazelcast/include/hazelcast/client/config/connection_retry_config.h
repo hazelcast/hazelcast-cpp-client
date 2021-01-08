@@ -77,7 +77,7 @@ namespace hazelcast {
 
                 /**
                  * Timeout value for the client to give up to connect to the current cluster
-                 *  Theclient can shutdown after reaching the timeout.
+                 * The client can stop after reaching the timeout.
                  *
                  * @return cluster_connect_timeout_
                  */
@@ -85,7 +85,7 @@ namespace hazelcast {
 
                 /**
                  * @param cluster_connect_timeout timeout for the client to give up to connect to the current cluster
-                 *                                    The client can shutdown after reaching the timeout.
+                 *                                    The client can stop after reaching the timeout.
                  * @return updated connection_retry_config
                  */
                 connection_retry_config &

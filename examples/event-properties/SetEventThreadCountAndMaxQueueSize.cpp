@@ -79,7 +79,7 @@ int main() {
 
     std::cout << "Finished" << std::endl;
 
-    hz.shutdown().get();
+    hz.stop().get();
 
     return 0;
 }

@@ -113,7 +113,7 @@ namespace hazelcast {
                 */
                 ~hazelcast_client_instance_impl();
 
-                void start();
+                boost::future<void> start();
 
                 /**
                  * Returns the name of this Hazelcast instance.
@@ -130,6 +130,7 @@ namespace hazelcast {
                 */
                 template<typename T>
                 boost::shared_future<std::shared_ptr<T>> get_distributed_object(const std::string& name) {
+                    check_started();
                     return proxy_manager_.get_or_create_proxy<T>(T::SERVICE_NAME, name);
                 }
 
@@ -187,7 +188,7 @@ namespace hazelcast {
                 /**
                 * Shuts down this hazelcast_client.
                 */
-                void shutdown();
+                boost::future<void> stop();
 
                 spi::lifecycle_service &get_lifecycle_service();
 
@@ -253,6 +254,8 @@ namespace hazelcast {
                 std::vector<std::shared_ptr<connection::AddressProvider> > create_address_providers();
 
                 void initalize_near_cache_manager();
+
+                void check_started() const;
             };
 
             template<>

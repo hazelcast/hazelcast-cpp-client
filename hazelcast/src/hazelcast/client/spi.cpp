@@ -276,79 +276,94 @@ namespace hazelcast {
 
             lifecycle_service::lifecycle_service(ClientContext &client_context,
                                                  const std::vector<lifecycle_listener> &listeners) :
-                    client_context_(client_context), listeners_(),
-                    shutdown_completed_latch_(1) {
+                    client_context_(client_context), listeners_() {
                 for (const auto &listener: listeners) {
                     add_listener(lifecycle_listener(listener));
                 }
             }
 
-            bool lifecycle_service::set_active() {
-                bool expected = false;
-                if (!active_.compare_exchange_strong(expected, true)) {
-                    return false;
-                }
-                return true;
+            bool lifecycle_service::is_started() const {
+                return started_;
             }
 
-            bool lifecycle_service::start() {
-                fire_lifecycle_event(lifecycle_event::STARTED);
+            boost::future<bool> lifecycle_service::start() {
+                return boost::async([=]() {
+                    std::lock_guard<std::mutex> guard(start_stop_lock_);
 
-                client_context_.get_client_execution_service().start();
+                    if (active_) {
+                        throw exception::illegal_state("lifecycle_service::start",
+                                                       "Client is already started.");
+                    }
 
-                client_context_.get_client_listener_service().start();
+                    active_ = true;
 
-                client_context_.get_invocation_service().start();
+                    fire_lifecycle_event(lifecycle_event::STARTING);
 
-                client_context_.get_client_cluster_service().start();
+                    fire_lifecycle_event(lifecycle_event::STARTED);
 
-                client_context_.get_cluster_view_listener().start();
+                    client_context_.get_client_execution_service().start();
 
-                if (!client_context_.get_connection_manager().start()) {
-                    return false;
-                }
+                    client_context_.get_client_listener_service().start();
 
-                auto &connectionStrategyConfig = client_context_.get_client_config().get_connection_strategy_config();
-                if (!connectionStrategyConfig.is_async_start()) {
-                    // The client needs to open connections to all members before any services requiring internal listeners start
-                    wait_for_initial_membership_event();
-                    client_context_.get_connection_manager().connect_to_all_cluster_members();
-                }
+                    client_context_.get_invocation_service().start();
 
-                client_context_.get_invocation_service().add_backup_listener();
+                    client_context_.get_client_cluster_service().start();
 
-                client_context_.get_clientstatistics().start();
+                    client_context_.get_cluster_view_listener().start();
 
-                return true;
+                    if (!client_context_.get_connection_manager().start()) {
+                        return false;
+                    }
+
+                    auto &connectionStrategyConfig = client_context_.get_client_config().get_connection_strategy_config();
+                    if (!connectionStrategyConfig.is_async_start()) {
+                        // The client needs to open connections to all members before any services requiring internal listeners start
+                        wait_for_initial_membership_event();
+                        client_context_.get_connection_manager().connect_to_all_cluster_members();
+                    }
+
+                    client_context_.get_invocation_service().add_backup_listener();
+
+                    client_context_.get_clientstatistics().start();
+
+                    started_ = true;
+
+                    return true;
+                });
             }
 
-            void lifecycle_service::shutdown() {
-                bool expected = true;
-                if (!active_.compare_exchange_strong(expected, false)) {
-                    shutdown_completed_latch_.wait();
-                    return;
-                }
-                try {
-                    fire_lifecycle_event(lifecycle_event::SHUTTING_DOWN);
-                    client_context_.get_proxy_session_manager().shutdown();
-                    client_context_.get_clientstatistics().shutdown();
-                    client_context_.get_proxy_manager().destroy();
-                    client_context_.get_connection_manager().shutdown();
-                    client_context_.get_client_cluster_service().shutdown();
-                    client_context_.get_invocation_service().shutdown();
-                    client_context_.get_client_listener_service().shutdown();
-                    client_context_.get_near_cache_manager().destroy_all_near_caches();
-                    fire_lifecycle_event(lifecycle_event::SHUTDOWN);
-                    client_context_.get_client_execution_service().shutdown();
-                    client_context_.get_serialization_service().dispose();
-                    shutdown_completed_latch_.count_down();
-                } catch (std::exception &e) {
-                    HZ_LOG(client_context_.get_logger(), info,
-                        boost::str(boost::format("An exception occured during LifecycleService shutdown. %1%")
-                                                 % e.what())
-                    );
-                    shutdown_completed_latch_.count_down();
-                }
+            boost::future<void> lifecycle_service::stop() {
+                return boost::async([=]() {
+                    std::lock_guard<std::mutex> guard(start_stop_lock_);
+
+                    if (!active_) {
+                        return;
+                    }
+
+                    active_ = false;
+
+                    try {
+                        fire_lifecycle_event(lifecycle_event::SHUTTING_DOWN);
+                        client_context_.get_proxy_session_manager().shutdown();
+                        client_context_.get_clientstatistics().shutdown();
+                        client_context_.get_proxy_manager().destroy();
+                        client_context_.get_connection_manager().shutdown();
+                        client_context_.get_client_cluster_service().shutdown();
+                        client_context_.get_invocation_service().shutdown();
+                        client_context_.get_client_listener_service().shutdown();
+                        client_context_.get_near_cache_manager().destroy_all_near_caches();
+                        fire_lifecycle_event(lifecycle_event::SHUTDOWN);
+                        client_context_.get_client_execution_service().shutdown();
+                        client_context_.get_serialization_service().dispose();
+                    } catch (std::exception &e) {
+                        HZ_LOG(client_context_.get_logger(), info,
+                               boost::str(boost::format("An exception occured during LifecycleService stop. %1%")
+                                          % e.what())
+                        );
+                    }
+
+                    started_ = false;
+                });
             }
 
             boost::uuids::uuid lifecycle_service::add_listener(lifecycle_listener &&lifecycle_listener) {
@@ -443,7 +458,7 @@ namespace hazelcast {
 
             lifecycle_service::~lifecycle_service() {
                 if (active_) {
-                    shutdown();
+                    stop();
                 }
             }
 
@@ -1566,14 +1581,14 @@ namespace hazelcast {
                             if (std::chrono::steady_clock::now() - startTime > invocationTimeout) {
                                 std::rethrow_exception(
                                         new_operation_timeout_exception(std::current_exception(), invocationTimeout,
-                                                                     startTime));
+                                                                        startTime));
                             }
                         }
                         std::this_thread::sleep_for(invocationService.get_invocation_retry_pause());
                     }
                     BOOST_THROW_EXCEPTION(
                             exception::hazelcast_client_not_active("ClientTransactionManagerServiceImpl::connect",
-                                                                         "Client is shutdown"));
+                                                                   "Client is stopped."));
                 }
 
                 std::exception_ptr
