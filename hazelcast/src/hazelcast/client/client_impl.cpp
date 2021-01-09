@@ -373,8 +373,8 @@ namespace hazelcast {
 
             void hazelcast_client_instance_impl::check_started() const {
                 if (!lifecycle_service_.is_started()) {
-                    throw exception::illegal_state("hazelcast_client_instance_impl::check_started",
-                                                   "Client is not started!");
+                    throw exception::hazelcast_client_not_active("hazelcast_client_instance_impl::check_started",
+                                                                 "Client is not started!");
                 }
             }
 
