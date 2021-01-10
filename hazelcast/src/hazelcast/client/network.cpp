@@ -371,6 +371,7 @@ namespace hazelcast {
                     return;
                 }
 
+                std::weak_ptr<client::impl::hazelcast_client_instance_impl> this_client = client_.get_hazelcast_client_implementation();
                 boost::asio::post(executor_->get_executor(), [=]() {
                     try {
                         do_connect_to_cluster();
@@ -393,7 +394,7 @@ namespace hazelcast {
                                           % e.what())
                         );
 
-                        shutdown_with_external_thread(client_.get_hazelcast_client_implementation());
+                        shutdown_with_external_thread(this_client);
                     }
                 });
             }

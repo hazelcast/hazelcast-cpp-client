@@ -116,9 +116,7 @@ namespace hazelcast {
             return client_impl_->get_local_endpoint();
         }
 
-        hazelcast_client::~hazelcast_client() {
-            client_impl_->stop().get();
-        }
+        hazelcast_client::~hazelcast_client() = default;
 
         cp::cp_subsystem &hazelcast_client::get_cp_subsystem() {
             return client_impl_->get_cp_subsystem();
@@ -186,7 +184,9 @@ namespace hazelcast {
                 statistics_.reset(new statistics::Statistics(client_context_));
             }
 
-            hazelcast_client_instance_impl::~hazelcast_client_instance_impl() = default;
+            hazelcast_client_instance_impl::~hazelcast_client_instance_impl() {
+                stop().get();
+            }
 
             boost::future<void> hazelcast_client_instance_impl::start() {
                 return lifecycle_service_.start().then(boost::launch::sync, [=](boost::future<bool> f) {
