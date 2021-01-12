@@ -340,7 +340,7 @@ namespace hazelcast {
                 auto nearCacheConfig = client_config_.get_near_cache_config(name);
                 if (nearCacheConfig) {
                     return proxy_manager_.get_or_create_proxy<map::NearCachedClientMapProxy<serialization::pimpl::data, serialization::pimpl::data>>(
-                            imap::SERVICE_NAME, name).then(boost::launch::deferred,
+                            imap::SERVICE_NAME, name).then(boost::launch::async,
                                                            [=](boost::shared_future<std::shared_ptr<map::NearCachedClientMapProxy<serialization::pimpl::data, serialization::pimpl::data>>> f) {
                                                                return std::static_pointer_cast<imap>(f.get());
                                                            });

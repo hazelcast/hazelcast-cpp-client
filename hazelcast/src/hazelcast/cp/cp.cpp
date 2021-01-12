@@ -114,7 +114,7 @@ namespace hazelcast {
         boost::future<raft_group_id> raft_proxy_factory::get_group_id(const std::string &proxy_name, const std::string &object_name) {
             auto request = cpgroup_createcpgroup_encode(proxy_name);
             return client::spi::impl::ClientInvocation::create(context_, request, object_name)->invoke().then(
-                    boost::launch::deferred, [](boost::future<client::protocol::ClientMessage> f) {
+                    boost::launch::async, [](boost::future<client::protocol::ClientMessage> f) {
                         return *f.get().get_first_var_sized_field<raft_group_id>();
                     });
         }
@@ -306,7 +306,7 @@ namespace hazelcast {
 
         boost::future<void> latch::count_down() {
             auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
-            return get_round().then(boost::launch::deferred,[=] (boost::future<int32_t> f) {
+            return get_round().then(boost::launch::async, [=](boost::future<int32_t> f) {
                 auto round = f.get();
                 for (;;) {
                     try {
@@ -321,7 +321,7 @@ namespace hazelcast {
         }
 
         boost::future<bool> latch::try_wait() {
-            return get_count().then(boost::launch::deferred, [] (boost::future<int32_t> f) {
+            return get_count().then(boost::launch::async, [](boost::future<int32_t> f) {
                 return f.get() == 0;
             });
         }
@@ -344,7 +344,7 @@ namespace hazelcast {
             auto timeout_millis = std::max<int64_t>(0, timeout.count());
             auto invoation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = countdownlatch_await_encode(group_id_, object_name_, invoation_uid, timeout_millis);
-            return invoke_and_get_future<bool>(request).then(boost::launch::deferred, [] (boost::future<bool> f) {
+            return invoke_and_get_future<bool>(request).then(boost::launch::async, [](boost::future<bool> f) {
                 return f.get() ? std::cv_status::no_timeout : std::cv_status::timeout;
             });
         }
@@ -378,17 +378,23 @@ namespace hazelcast {
             auto do_lock_once = [=] () {
                 auto session_id = session_manager_.acquire_session(group_id_);
                 verify_locked_session_id_if_present(thread_id, session_id, true);
-                return do_lock(session_id, thread_id, invocation_uid).then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
-                    try {
-                        auto fence = f.get();
-                        if (fence != INVALID_FENCE) {
-                            locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
-                            return fence;
-                        }
-                        BOOST_THROW_EXCEPTION(client::exception::lock_acquire_limit_reached(
-                                                      "fenced_lock::lock_and_get_fence", (boost::format(
-                                                              "Lock [%1%] reentrant lock limit is already reached!") %
-                                                                                          object_name_).str()));
+                return do_lock(session_id, thread_id, invocation_uid).then(boost::launch::async,
+                                                                           [=](boost::future<int64_t> f) {
+                                                                               try {
+                                                                                   auto fence = f.get();
+                                                                                   if (fence != INVALID_FENCE) {
+                                                                                       locked_session_ids_.put(
+                                                                                               thread_id,
+                                                                                               std::make_shared<int64_t>(
+                                                                                                       session_id));
+                                                                                       return fence;
+                                                                                   }
+                                                                                   BOOST_THROW_EXCEPTION(
+                                                                                           client::exception::lock_acquire_limit_reached(
+                                                                                           "fenced_lock::lock_and_get_fence", (
+                                                                                                   boost::format(
+                                                                                                           "Lock [%1%] reentrant lock limit is already reached!") %
+                                                                                                   object_name_).str()));
                     } catch (client::exception::session_expired &) {
                         invalidate_session(session_id);
                         verify_no_locked_session_id_present(thread_id);
@@ -406,13 +412,13 @@ namespace hazelcast {
                 });
             };
 
-            return do_lock_once().then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
+            return do_lock_once().then(boost::launch::async, [=](boost::future<int64_t> f) {
                 auto result = f.get();
                 if (result != INVALID_FENCE) {
                     return result;
                 }
                 // iterate in the user thread
-                for (result = do_lock_once().get();result == INVALID_FENCE;) {}
+                for (result = do_lock_once().get(); result == INVALID_FENCE;) {}
                 return result;
             });
         }
@@ -473,7 +479,7 @@ namespace hazelcast {
 
         boost::future<fenced_lock::lock_ownership_state> fenced_lock::do_get_lock_ownership_state(){
             auto request = client::protocol::codec::fencedlock_getlockownership_encode(group_id_, object_name_);
-            return invoke(request).then(boost::launch::deferred, [] (boost::future<client::protocol::ClientMessage> f) {
+            return invoke(request).then(boost::launch::async, [](boost::future<client::protocol::ClientMessage> f) {
                 auto msg = f.get();
                 fenced_lock::lock_ownership_state state;
                 state.fence = msg.get_first_fixed_sized_field<int64_t>();
@@ -489,13 +495,13 @@ namespace hazelcast {
         }
 
         boost::future<bool> fenced_lock::try_lock() {
-            return try_lock_and_get_fence().then(boost::launch::deferred, [] (boost::future<int64_t> f) {
+            return try_lock_and_get_fence().then(boost::launch::async, [](boost::future<int64_t> f) {
                 return f.get() != INVALID_FENCE;
             });
         }
 
         boost::future<bool> fenced_lock::try_lock(std::chrono::milliseconds timeout) {
-            return try_lock_and_get_fence(timeout).then(boost::launch::deferred, [] (boost::future<int64_t> f) {
+            return try_lock_and_get_fence(timeout).then(boost::launch::async, [](boost::future<int64_t> f) {
                 return f.get() != INVALID_FENCE;
             });
         }
@@ -514,17 +520,27 @@ namespace hazelcast {
                 auto start = steady_clock::now();
                 auto session_id = session_manager_.acquire_session(group_id_);
                 verify_locked_session_id_if_present(thread_id, session_id, true);
-                return do_try_lock(session_id, thread_id, invocation_uid, timeout).then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
-                    try {
-                        auto fence = f.get();
-                        if (fence != INVALID_FENCE) {
-                            locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
-                            return std::make_pair(fence, false);
-                        } else {
-                            release_session(session_id);
-                        }
-                        return std::make_pair(fence, false);
-                    } catch (client::exception::session_expired &) {
+                return do_try_lock(session_id, thread_id, invocation_uid, timeout).then(boost::launch::async,
+                                                                                        [=](boost::future<int64_t> f) {
+                                                                                            try {
+                                                                                                auto fence = f.get();
+                                                                                                if (fence !=
+                                                                                                    INVALID_FENCE) {
+                                                                                                    locked_session_ids_.put(
+                                                                                                            thread_id,
+                                                                                                            std::make_shared<int64_t>(
+                                                                                                                    session_id));
+                                                                                                    return std::make_pair(
+                                                                                                            fence,
+                                                                                                            false);
+                                                                                                } else {
+                                                                                                    release_session(
+                                                                                                            session_id);
+                                                                                                }
+                                                                                                return std::make_pair(
+                                                                                                        fence, false);
+                                                                                            } catch (
+                                                                                                    client::exception::session_expired &) {
                         invalidate_session(session_id);
                         verify_no_locked_session_id_present(thread_id);
                         auto timeout_left = timeout - (steady_clock::now() - start);
@@ -542,7 +558,7 @@ namespace hazelcast {
                 });
             };
 
-            return do_try_lock_once().then(boost::launch::deferred, [=] (boost::future<std::pair<int64_t, bool>> f) {
+            return do_try_lock_once().then(boost::launch::async, [=](boost::future<std::pair<int64_t, bool>> f) {
                 auto result = f.get();
                 if (!result.second) {
                     return result.first;
@@ -564,17 +580,24 @@ namespace hazelcast {
                 throw_illegal_monitor_state();
             }
 
-            return do_unlock(session_id, thread_id, get_context().random_uuid()).then(boost::launch::deferred, [=] (boost::future<bool> f) {
-                try {
-                    auto still_locked_by_current_thread = f.get();
-                    if (still_locked_by_current_thread) {
-                        locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
-                    } else {
-                        locked_session_ids_.remove(thread_id);
-                    }
+            return do_unlock(session_id, thread_id, get_context().random_uuid()).then(boost::launch::async,
+                                                                                      [=](boost::future<bool> f) {
+                                                                                          try {
+                                                                                              auto still_locked_by_current_thread = f.get();
+                                                                                              if (still_locked_by_current_thread) {
+                                                                                                  locked_session_ids_.put(
+                                                                                                          thread_id,
+                                                                                                          std::make_shared<int64_t>(
+                                                                                                                  session_id));
+                                                                                              } else {
+                                                                                                  locked_session_ids_.remove(
+                                                                                                          thread_id);
+                                                                                              }
 
-                    release_session(session_id);
-                } catch (client::exception::session_expired &) {
+                                                                                              release_session(
+                                                                                                      session_id);
+                                                                                          } catch (
+                                                                                                  client::exception::session_expired &) {
                     invalidate_session(session_id);
                     locked_session_ids_.remove(thread_id);
 
@@ -597,7 +620,7 @@ namespace hazelcast {
                 throw_illegal_monitor_state();
             }
 
-            return do_get_lock_ownership_state().then(boost::launch::deferred, [=] (boost::future<lock_ownership_state> f) {
+            return do_get_lock_ownership_state().then(boost::launch::async, [=](boost::future<lock_ownership_state> f) {
                 auto ownership = f.get();
                 if (ownership.is_locked_by(session_id, thread_id)) {
                     locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
@@ -616,7 +639,7 @@ namespace hazelcast {
 
             verify_locked_session_id_if_present(thread_id, session_id, false);
 
-            return do_get_lock_ownership_state().then(boost::launch::deferred, [=] (boost::future<lock_ownership_state> f) {
+            return do_get_lock_ownership_state().then(boost::launch::async, [=](boost::future<lock_ownership_state> f) {
                 auto ownership = f.get();
                 if (ownership.is_locked_by(session_id, thread_id)) {
                     locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
@@ -634,7 +657,7 @@ namespace hazelcast {
 
             verify_locked_session_id_if_present(thread_id, session_id, false);
 
-            return do_get_lock_ownership_state().then(boost::launch::deferred, [=] (boost::future<lock_ownership_state> f) {
+            return do_get_lock_ownership_state().then(boost::launch::async, [=](boost::future<lock_ownership_state> f) {
                 auto ownership = f.get();
                 auto locked_by_current_thread = ownership.is_locked_by(session_id, thread_id);
                 if (locked_by_current_thread) {
@@ -653,7 +676,7 @@ namespace hazelcast {
 
             verify_locked_session_id_if_present(thread_id, session_id, false);
 
-            return do_get_lock_ownership_state().then(boost::launch::deferred, [=] (boost::future<lock_ownership_state> f) {
+            return do_get_lock_ownership_state().then(boost::launch::async, [=](boost::future<lock_ownership_state> f) {
                 auto ownership = f.get();
                 if (ownership.is_locked_by(session_id, thread_id)) {
                     locked_session_ids_.put(thread_id, std::make_shared<int64_t>(session_id));
@@ -709,7 +732,7 @@ namespace hazelcast {
 
             auto request = client::protocol::codec::semaphore_init_encode(group_id_, object_name_, permits);
             return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                    boost::launch::deferred, [](boost::future<client::protocol::ClientMessage> f) {
+                    boost::launch::async, [](boost::future<client::protocol::ClientMessage> f) {
                         return f.get().get_first_fixed_sized_field<bool>();
                     });
         }
@@ -771,7 +794,7 @@ namespace hazelcast {
             auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = client::protocol::codec::semaphore_acquire_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid, permits, timeout_ms.count());
             return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                    boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
+                    boost::launch::async, [=](boost::future<client::protocol::ClientMessage> f) {
                         try {
                             return f.get().get_first_fixed_sized_field<bool>();
                         } catch (client::exception::wait_key_cancelled &) {
@@ -840,7 +863,7 @@ namespace hazelcast {
                                                                                  thread_id, invocation_uid, permits,
                                                                                  timeout.count());
                 return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                        boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
+                        boost::launch::async, [=](boost::future<client::protocol::ClientMessage> f) {
                             try {
                                 auto acquired = f.get().get_first_fixed_sized_field<bool>();
                                 if (!acquired) {
@@ -869,12 +892,12 @@ namespace hazelcast {
                         });
             });
 
-            return do_try_acquire_once().then(boost::launch::deferred, [=] (boost::future<std::pair<bool, bool>> f) {
+            return do_try_acquire_once().then(boost::launch::async, [=](boost::future<std::pair<bool, bool>> f) {
                 auto result = f.get();
                 if (!result.second) {
                     return result.first;
                 }
-                for (;result.second;result = do_try_acquire_once().get());
+                for (; result.second; result = do_try_acquire_once().get());
                 return result.first;
             });
         }
@@ -927,7 +950,7 @@ namespace hazelcast {
                                                                                session_id,
                                                                                thread_id, invocation_uid);
                 return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                        boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
+                        boost::launch::async, [=](boost::future<client::protocol::ClientMessage> f) {
                             try {
                                 auto count = f.get().get_first_fixed_sized_field<int32_t>();
                                 session_manager_.release_session(group_id_, session_id,
@@ -940,12 +963,12 @@ namespace hazelcast {
                         });
             });
 
-            return do_drain_once().then(boost::launch::deferred, [=] (boost::future<int32_t> f) {
+            return do_drain_once().then(boost::launch::async, [=](boost::future<int32_t> f) {
                 int32_t count = f.get();
                 if (count != -1) {
                     return count;
                 }
-                while((count = do_drain_once().get()) == -1) {}
+                while ((count = do_drain_once().get()) == -1) {}
                 return count;
             });
         }
@@ -959,7 +982,7 @@ namespace hazelcast {
                                                                             session_id,
                                                                             thread_id, invocation_uid, delta);
             return client::spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
-                    boost::launch::deferred, [=](boost::future<client::protocol::ClientMessage> f) {
+                    boost::launch::async, [=](boost::future<client::protocol::ClientMessage> f) {
                         try {
                             f.get();
                             session_manager_.release_session(group_id_, session_id);

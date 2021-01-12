@@ -55,7 +55,7 @@ namespace hazelcast {
 
                     auto concrete_proxy = std::shared_ptr<T>(new T(id, &client_));
                     auto client_proxy = std::static_pointer_cast<ClientProxy>(concrete_proxy);
-                    auto proxy_future = initialize(client_proxy).then(boost::launch::deferred, [=] (boost::future<void> f) {
+                    auto proxy_future = initialize(client_proxy).then(boost::launch::async, [=](boost::future<void> f) {
                         try {
                             f.get();
                             return client_proxy;
@@ -96,9 +96,10 @@ namespace hazelcast {
                 template <typename T>
                 boost::shared_future<std::shared_ptr<T>>
                 convert_to_concrete_proxy_future(boost::shared_future<std::shared_ptr<ClientProxy>> proxy_future) {
-                    return proxy_future.then(boost::launch::deferred, [] (boost::shared_future<std::shared_ptr<ClientProxy>> f) {
-                        return std::static_pointer_cast<T>(f.get());
-                    });
+                    return proxy_future.then(boost::launch::async,
+                                             [](boost::shared_future<std::shared_ptr<ClientProxy>> f) {
+                                                 return std::static_pointer_cast<T>(f.get());
+                                             });
                 }
 
                 proxy_map proxies_;

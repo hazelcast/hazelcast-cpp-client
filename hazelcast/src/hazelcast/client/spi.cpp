@@ -124,7 +124,7 @@ namespace hazelcast {
                         client_proxy->get_service_name());
                 return spi::impl::ClientInvocation::create(client_, clientMessage,
                                                            client_proxy->get_service_name())->invoke().then(
-                        boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                        boost::launch::async, [=](boost::future<protocol::ClientMessage> f) {
                             f.get();
                             client_proxy->on_initialize();
                         });
@@ -521,8 +521,9 @@ namespace hazelcast {
             boost::future<void> ClientProxy::destroy_remotely() {
                 auto clientMessage = protocol::codec::client_destroyproxy_encode(
                         get_name(), get_service_name());
-                return spi::impl::ClientInvocation::create(get_context(), std::make_shared<protocol::ClientMessage>(std::move(clientMessage)), get_name())->invoke().then(
-                        boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) { f.get(); });
+                return spi::impl::ClientInvocation::create(get_context(), std::make_shared<protocol::ClientMessage>(
+                        std::move(clientMessage)), get_name())->invoke().then(
+                        boost::launch::async, [](boost::future<protocol::ClientMessage> f) { f.get(); });
             }
 
             boost::future<boost::uuids::uuid>
