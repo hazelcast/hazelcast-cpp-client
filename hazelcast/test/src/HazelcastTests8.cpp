@@ -1493,6 +1493,26 @@ namespace hazelcast {
                         }).get();
 
                 ASSERT_EQ(4 * 5, result);
+
+                boost::latch success_deferred(1);
+                map->lock<int>(1).then(boost::launch::deferred, [](boost::future<void> f) {
+                    f.get();
+                }).then(boost::launch::deferred, [&](boost::future<void> f) {
+                    map->unlock<int>(1).get();
+                    success_deferred.count_down();
+                }).get();
+
+                ASSERT_OPEN_EVENTUALLY(success_deferred);
+
+                boost::latch success_async_deferred(1);
+                map->lock<int>(1).then(boost::launch::async, [](boost::future<void> f) {
+                    f.get();
+                }).then(boost::launch::deferred, [&](boost::future<void> f) {
+                    map->unlock<int>(1).get();
+                    success_async_deferred.count_down();
+                }).get();
+
+                ASSERT_OPEN_EVENTUALLY(success_async_deferred);
             }
         }
     }
