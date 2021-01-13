@@ -1487,13 +1487,6 @@ namespace hazelcast {
 
                 ASSERT_EQ(3 * 5, result);
 
-                result = map->get<int, int>(1)
-                        .then(boost::launch::async, [](boost::future<boost::optional<int>> f) {
-                            return 4 * f.get().value();
-                        }).get();
-
-                ASSERT_EQ(4 * 5, result);
-
                 boost::latch success_deferred(1);
                 map->lock<int>(1).then(boost::launch::deferred, [](boost::future<void> f) {
                     f.get();
