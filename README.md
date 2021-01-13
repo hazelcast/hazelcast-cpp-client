@@ -2321,7 +2321,7 @@ The following code waits for the task to be completed in 3 seconds. If it is not
                 }
 ```
 
-#### 7.6.1.7 Selecting Members for Task Execution
+#### 7.6.1.6 Selecting Members for Task Execution
 As previously mentioned, it is possible to indicate where in the Hazelcast cluster the task is executed. Usually you execute these in the cluster based on the location of a key or set of keys, or you allow Hazelcast to select a member.
 
 If you want more control over where your code runs, use the `member_selector` interface. For example, you may want certain tasks to run only on certain members, or you may wish to implement some form of custom load balancing regime.  The `member_selector` is an interface that you can implement and then provide to the `iexecutor_service` when you submit or execute.
