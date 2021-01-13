@@ -24,7 +24,7 @@ int main() {
     // will disable the logs completely.
     config.get_logger_config().level(hazelcast::logger::level::off);
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 
     return 0;
 }

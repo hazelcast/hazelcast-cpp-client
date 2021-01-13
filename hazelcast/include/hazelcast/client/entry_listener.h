@@ -44,7 +44,7 @@ namespace hazelcast {
         * \warning
         * 2 - Do not make a call to hazelcast. It can cause deadlock.
         *
-        * \see IMap::add_entry_listener
+        * \see imap::add_entry_listener
         */
         class entry_listener final {
         public:
@@ -187,7 +187,7 @@ namespace hazelcast {
             }
 
             /**
-             * Set an handler function to be invoked when all entries are evicted by IMap::evictAll
+             * Set an handler function to be invoked when all entries are evicted by imap::evict_all
              * \param h a `void` function object that is callable with a single parameter of type `MapEvent &&`
              * \return `*this`
              */
@@ -210,8 +210,8 @@ namespace hazelcast {
             }
 
             /**
-             * Set an handler function to be invoked when all entries are removed by IMap::clear
-             * \param h a `void` function object that is callable with a single parameter of type `MapEvent &&`
+             * Set an handler function to be invoked when all entries are removed by imap::clear
+             * \param h a `void` function object that is callable with a single parameter of type `map_event &&`
              * \return `*this`
              */
             template<typename Handler,

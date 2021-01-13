@@ -25,6 +25,18 @@
 #endif
 
 namespace hazelcast {
+    /**
+    * Constructs a hazelcastClient with default configurations.
+    */
+    boost::future<client::hazelcast_client> HAZELCAST_API new_client();
+
+    /**
+    * Constructs a hazelcast_client with given config.
+    * Note: client_config will be moved.
+    * @param config client configuration to start the client with
+    */
+    boost::future<client::hazelcast_client> HAZELCAST_API new_client(client::client_config config);
+
     namespace client {
         /*
          * You can use native C++ Client to connect to hazelcast nodes and make almost all operations that a node does.
@@ -46,25 +58,18 @@ namespace hazelcast {
          */
         class HAZELCAST_API hazelcast_client {
             friend class spi::ClientContext;
+
         public:
-            /**
-            * Constructs a hazelcastClient with default configurations.
-            */
-            hazelcast_client();
-            
-            /**
-            * Constructs a hazelcastClient with given ClientConfig.
-            * Note: client_config will be copied.
-            * @param config client configuration to start the client with
-            */
-            explicit hazelcast_client(client_config config);
+            friend boost::future<hazelcast_client> hazelcast::new_client();
+
+            friend boost::future<hazelcast_client> hazelcast::new_client(hazelcast::client::client_config config);
 
             virtual ~hazelcast_client();
 
             /**
-             * Returns the name of this Hazelcast instance.
+             * Returns the name of this client instance.
              *
-             * @return name of this Hazelcast instance
+             * @return name of this client instance
              */
             const std::string &get_name() const;
 
@@ -302,6 +307,10 @@ namespace hazelcast {
             cp::cp_subsystem &get_cp_subsystem();
 
         private:
+            hazelcast_client();
+
+            explicit hazelcast_client(client_config config);
+
             std::shared_ptr<impl::hazelcast_client_instance_impl> client_impl_;
         };
 

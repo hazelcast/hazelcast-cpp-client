@@ -25,12 +25,12 @@ using namespace hazelcast::util;
 /**
  * A demonstration of the performance impact of using pipeling.
  *
- * For the benchmark we compare simple IMap::get calls with a pipelined approach.
+ * For the benchmark we compare simple imap::get calls with a pipelined approach.
  */
 
 class PipeliningDemo {
 public:
-    PipeliningDemo() : client_(), map_(client_.get_map("map").get()), gen_(rd_()) {}
+    PipeliningDemo() : client_(hazelcast::new_client().get()), map_(client_.get_map("map").get()), gen_(rd_()) {}
 
     void init() {
         for (int l = 0; l < keyDomain; l++) {

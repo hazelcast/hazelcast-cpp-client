@@ -18,7 +18,7 @@
 #include "employee.h"
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     auto employees = hz.get_map("employees").get();
 

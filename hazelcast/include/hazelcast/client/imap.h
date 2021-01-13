@@ -56,9 +56,8 @@ namespace hazelcast {
         * Notice that this class have a private constructor.
         * You can access get an IMap in the following way
         *
-        *      client_config clientConfig;
-        *      hazelcast_client client(clientConfig);
-        *      IMap imap = client.getMap("aKey");
+        *      auto client = new_client();
+        *      auto imap = client.get_map("aMap");
         *
         */
         class HAZELCAST_API imap : public proxy::IMapImpl {

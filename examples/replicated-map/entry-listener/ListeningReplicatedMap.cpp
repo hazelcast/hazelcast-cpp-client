@@ -17,7 +17,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_replicated_map("map").get();
 
