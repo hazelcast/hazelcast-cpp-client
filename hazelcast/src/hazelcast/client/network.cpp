@@ -827,7 +827,7 @@ namespace hazelcast {
 
             void Connection::connect() {
                 socket_->connect(shared_from_this());
-                backup_timer_.reset(new boost::asio::steady_timer(socket_->get_executor()));
+                backup_timer_.reset(new boost::asio::steady_timer(socket_->get_executor().context()));
                 auto backupTimeout = static_cast<spi::impl::ClientInvocationServiceImpl &>(invocation_service_).get_backup_timeout();
                 auto this_connection = shared_from_this();
                 schedule_periodic_backup_cleanup(backupTimeout, this_connection);
