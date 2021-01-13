@@ -1090,7 +1090,6 @@ namespace hazelcast {
                     // for back pressure
                     call_id_sequence_->force_next();
                     invoke_on_selection();
-                    hazelcast::util::hz_thread_pool p(1);
                     auto id_seq = call_id_sequence_;
                     return invocation_promise_.get_future().then(boost::launch::async,
                                                                  [=](boost::future<protocol::ClientMessage> f) {
