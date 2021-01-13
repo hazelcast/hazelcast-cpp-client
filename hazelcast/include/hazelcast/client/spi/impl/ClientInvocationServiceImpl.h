@@ -72,30 +72,6 @@ namespace hazelcast {
 
                     void add_backup_listener();
                 private:
-                    class HAZELCAST_API ResponseProcessor {
-                    public:
-                        ResponseProcessor(logger &lg,
-                                          ClientInvocationServiceImpl &invocation_service,
-                                          ClientContext &client_context);
-
-                        virtual ~ResponseProcessor();
-
-                        void shutdown();
-
-                        void start();
-
-                        void process(const std::shared_ptr<ClientInvocation> &invocation,
-                                     const std::shared_ptr<protocol::ClientMessage> &response);
-
-                    private:
-                        logger &logger_;
-                        ClientContext &client_;
-                        std::unique_ptr<hazelcast::util::hz_thread_pool> pool_;
-
-                        void process_internal(const std::shared_ptr<ClientInvocation> &invocation,
-                                             const std::shared_ptr<protocol::ClientMessage> &response);
-                    };
-
                     class BackupListenerMessageCodec : public ListenerMessageCodec {
                     public:
                         protocol::ClientMessage encode_add_request(bool local_only) const override;
@@ -114,7 +90,6 @@ namespace hazelcast {
                     std::atomic<bool> is_shutdown_{ false };
                     std::chrono::milliseconds invocation_timeout_;
                     std::chrono::milliseconds invocation_retry_pause_;
-                    ResponseProcessor response_thread_;
                     bool smart_routing_;
                     bool backup_acks_enabled_;
                     bool fail_on_indeterminate_operation_state_;

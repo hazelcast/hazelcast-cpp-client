@@ -24,8 +24,6 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/execution_callback.h"
-#include "hazelcast/client/multi_execution_callback.h"
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
@@ -46,11 +44,8 @@ namespace hazelcast {
          * Distributed implementation of java.util.concurrent.ExecutorService.
          * IExecutorService provides additional methods like executing tasks
          * on a specific member, on a member who is owner of a specific key,
-         * executing a tasks on multiple members and listening execution result using a callback.
+         * executing a tasks on multiple members.
          *
-         *
-         * @see ExecutionCallback
-         * @see MultiExecutionCallback
          */
         class HAZELCAST_API iexecutor_service : public proxy::ProxyImpl {
             friend class spi::ProxyManager;
@@ -319,27 +314,6 @@ namespace hazelcast {
             }
 
             /**
-             * Submits a task to a random member. Caller will be notified of the result of the task by
-             * {@link execution_callback<T>::onResponse()} or {@link execution_callback<T>::onFailure(exception::IException)}.
-             *
-             * @param task     a task submitted to a random member
-             * @param callback callback
-             * @param <T>      the response type of callback
-             */
-            template<typename HazelcastSerializable, typename T>
-            void submit(const HazelcastSerializable &task, const std::shared_ptr<execution_callback<T> > &callback) {
-                serialization::pimpl::data task_data = to_data<HazelcastSerializable>(task);
-
-                if (task_data.has_partition_hash()) {
-                    int partitionId = get_partition_id(task_data);
-
-                    submit_to_partition_internal<T>(task_data, partitionId, callback);
-                } else {
-                    submit_to_random_internal<T>(task_data, callback);
-                }
-            }
-
-            /**
              * Submits a task to a randomly selected member and returns a executor_promise
              * representing that task.
              *
@@ -355,110 +329,6 @@ namespace hazelcast {
                 std::vector<member> members = select_members(member_selector);
                 int selectedMember = rand() % (int) members.size();
                 return submit_to_member<HazelcastSerializable, T>(task, members[selectedMember]);
-            }
-
-            /**
-             * Submits a task to randomly selected members. Caller will be notified for the result of the task by
-             * {@link execution_callback<T>::onResponse()} or {@link execution_callback<T>::onFailure(exception::IException)}.
-             *
-             * @param task           the task submitted to randomly selected members
-             * @param memberSelector memberSelector
-             * @param callback       callback
-             * @param <T>            the response type of callback
-             * @throws rejected_execution if no member is selected
-             */
-            template<typename HazelcastSerializable, typename T>
-            void
-            submit(const HazelcastSerializable &task, const member_selector &member_selector,
-                   const std::shared_ptr<execution_callback<T> > &callback) {
-                std::vector<member> members = select_members(member_selector);
-                int selectedMember = rand() % (int) members.size();
-                return submit_to_member(task, members[selectedMember], callback);
-            }
-
-            /**
-             * Submits a task to the owner of the specified key. Caller will be notified for the result of the task by
-             * {@link execution_callback<T>::onResponse()} or {@link execution_callback<T>::onFailure(exception::IException)}.
-             *
-             * @param task     task submitted to the owner of the specified key
-             * @param key      the specified key
-             * @param callback callback
-             * @param <T>      the response type of callback
-             */
-            template<typename HazelcastSerializable, typename T, typename K>
-            void submit_to_key_owner(const HazelcastSerializable &task, const K &key,
-                                  const std::shared_ptr<execution_callback<T> > &callback) {
-                submit_to_key_owner_internal<HazelcastSerializable, T, K>(task, key, callback);
-            }
-
-            /**
-             * Submits a task to the specified member. Caller will be notified for the result of the task by
-             * {@link execution_callback<T>::onResponse()} or {@link execution_callback<T>::onFailure(exception::IException)}.
-             *
-             * @param task     the task submitted to the specified member
-             * @param member   the specified member
-             * @param callback callback
-             * @param <T>      the response type of callback
-             */
-            template<typename HazelcastSerializable, typename T>
-            void submit_to_member(const HazelcastSerializable &task, const member &member,
-                                const std::shared_ptr<execution_callback<T> > &callback) {
-                return submit_to_target_internal<HazelcastSerializable, T>(task, member, callback);
-            }
-
-            /**
-             * Submits a task to the specified members. Caller will be notified for the result of the each task by
-             * {@link MultiExecutionCallback#onResponse(Member, Object)}, and when all tasks are completed,
-             * {@link MultiExecutionCallback#onComplete(std::vector)} will be called.
-             *
-             * @param task     the task submitted to the specified members
-             * @param members  the specified members
-             * @param callback callback
-             */
-            template<typename HazelcastSerializable, typename T>
-            void submit_to_members(const HazelcastSerializable &task, const std::vector<member> &members,
-                                 const std::shared_ptr<multi_execution_callback<T> > &callback) {
-                std::shared_ptr<MultiExecutionCallbackWrapper < T> >
-                multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) members.size(), callback));
-
-                for (auto &member : members) {
-                    std::shared_ptr<ExecutionCallbackWrapper < T> >
-                    executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, member));
-                    submit_to_member<HazelcastSerializable, T>(task, member, executionCallback);
-                }
-            }
-
-            /**
-             * Submits task to the selected members. Caller will be notified for the result of the each task by
-             * {@link MultiExecutionCallback#onResponse(Member, Object)}, and when all tasks are completed,
-             * {@link MultiExecutionCallback#onComplete(std::unordered_map)} will be called.
-             *
-             * @param task           the task submitted to the selected members
-             * @param memberSelector memberSelector
-             * @param callback       callback
-             * @throws rejected_execution if no member is selected
-             */
-            template<typename HazelcastSerializable, typename T>
-            void submit_to_members(const HazelcastSerializable &task,
-                                 const member_selector &member_selector,
-                                 const std::shared_ptr<multi_execution_callback<T> > &callback) {
-                std::vector<member> members = select_members(member_selector);
-                submit_to_members<HazelcastSerializable, T>(task, members, callback);
-            }
-
-            /**
-             * Submits task to all the cluster members. Caller will be notified for the result of each task by
-             * {@link MultiExecutionCallback#onResponse(const Member &, const std::shared_ptr<V> &)}, and when all tasks are completed,
-             * {@link MultiExecutionCallback#onComplete(std::unordered_map)} will be called.
-             *
-             * @param task     the task submitted to all the cluster members
-             * @param callback callback
-             */
-            template<typename HazelcastSerializable, typename T>
-            void submit_to_all_members(const HazelcastSerializable &task,
-                                    const std::shared_ptr<multi_execution_callback<T> > &callback) {
-                std::vector<member> memberList = get_context().get_client_cluster_service().get_member_list();
-                submit_to_members<HazelcastSerializable, T>(task, memberList, callback);
             }
 
             /**
@@ -493,74 +363,6 @@ namespace hazelcast {
 
             struct executor_marker {};
 
-            template<typename T>
-            class MultiExecutionCallbackWrapper : multi_execution_callback<T> {
-            public:
-                MultiExecutionCallbackWrapper(
-                        int member_size, const std::shared_ptr<multi_execution_callback<T> > &multi_execution_callback)
-                        : multi_execution_callback_(multi_execution_callback), members_(member_size) {
-                }
-
-            public:
-                void on_response(const member &member, const boost::optional<T> &value) override {
-                    multi_execution_callback_->on_response(member, value);
-
-                    std::lock_guard<std::mutex> guard(lock_);
-                    values_[member] = value;
-                    int waitingResponse = --members_;
-                    if (waitingResponse == 0) {
-                        on_complete(values_, exceptions_);
-                    }
-                }
-
-                void
-                on_failure(const member &member, std::exception_ptr exception) override {
-                    multi_execution_callback_->on_failure(member, exception);
-
-                    std::lock_guard<std::mutex> guard(lock_);
-                    exceptions_[member] = exception;
-                    int waitingResponse = --members_;
-                    if (waitingResponse == 0) {
-                        on_complete(values_, exceptions_);
-                    }
-                }
-
-                void on_complete(const std::unordered_map<member, boost::optional<T> > &vals,
-                                        const std::unordered_map<member, std::exception_ptr> &excs) override {
-                    multi_execution_callback_->on_complete(vals, excs);
-                }
-
-            private:
-
-                const std::shared_ptr<multi_execution_callback<T> > multi_execution_callback_;
-                // TODO: We may not need thread safe structures here if being used from the same thread
-                std::unordered_map<member, boost::optional<T>> values_;
-                std::unordered_map<member, std::exception_ptr> exceptions_;
-                int members_;
-                std::mutex lock_;
-            };
-
-            template<typename T>
-            class ExecutionCallbackWrapper : public execution_callback<T> {
-            public:
-                ExecutionCallbackWrapper(
-                        const std::shared_ptr<MultiExecutionCallbackWrapper<T> > &multi_execution_callback_wrapper,
-                        member member) : multi_execution_callback_wrapper_(multi_execution_callback_wrapper),
-                                                member_(std::move(member)) {}
-
-                void on_response(const boost::optional<T> &response) override {
-                    multi_execution_callback_wrapper_->on_response(member_, response);
-                }
-
-                void on_failure(std::exception_ptr e) override {
-                    multi_execution_callback_wrapper_->on_failure(member_, e);
-                }
-
-            private:
-                const std::shared_ptr<MultiExecutionCallbackWrapper<T> > multi_execution_callback_wrapper_;
-                const member member_;
-            };
-
             std::vector<member> select_members(const member_selector &member_selector);
 
             template<typename T>
@@ -571,26 +373,6 @@ namespace hazelcast {
                 auto f = invoke_on_partition_internal(task_data, partition_id, uuid);
 
                 return check_sync<T>(f, uuid, partition_id, prevent_sync);
-            }
-
-            template<typename T>
-            void submit_to_partition_internal(const serialization::pimpl::data &task_data, int partition_id,
-                                           const std::shared_ptr<execution_callback<T> > &callback) {
-                boost::uuids::uuid uuid = context_.random_uuid();
-
-                auto messageFuture = invoke_on_partition_internal(task_data, partition_id, uuid);
-
-                serialization::pimpl::SerializationService *serializationService = &get_serialization_service();
-                spi::impl::ClientExecutionServiceImpl *executionService = &get_context().get_client_execution_service();
-                messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
-                    try {
-                        auto result = retrieve_result_from_message<T>(serializationService, std::move(f));
-                        executionService->execute([=]() { callback->on_response(result); });
-                    } catch (exception::iexception &) {
-                        auto exception = std::current_exception();
-                        executionService->execute([=]() { callback->on_failure(exception); });
-                    }
-                });
             }
 
             std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
@@ -611,17 +393,6 @@ namespace hazelcast {
                 return submit_to_partition_internal<T>(to_data<HazelcastSerializable>(task), prevent_sync, partitionId);
             }
 
-            template<typename HazelcastSerializable, typename T, typename K>
-            void submit_to_key_owner_internal(const HazelcastSerializable &task, const K &key,
-                                          const std::shared_ptr<execution_callback<T> > &callback) {
-
-                serialization::pimpl::data dataKey = to_data<K>(key);
-
-                int partitionId = get_partition_id(dataKey);
-
-                submit_to_partition_internal<T>(to_data<HazelcastSerializable>(task), partitionId, callback);
-            }
-
             template<typename T>
             executor_promise<T>
             submit_to_random_internal(const serialization::pimpl::data &task_data, bool prevent_sync) {
@@ -629,15 +400,6 @@ namespace hazelcast {
                 int partitionId = random_partition_id();
 
                 return submit_to_partition_internal<T>(task_data, prevent_sync, partitionId);
-            }
-
-            template<typename T>
-            void submit_to_random_internal(const serialization::pimpl::data &task_data,
-                                        const std::shared_ptr<execution_callback<T> > &callback) {
-
-                int partitionId = random_partition_id();
-
-                submit_to_partition_internal<T>(task_data, partitionId, callback);
             }
 
             template<typename HazelcastSerializable, typename T>
@@ -648,26 +410,6 @@ namespace hazelcast {
                 auto f = invoke_on_target_internal<HazelcastSerializable>(task, member, uuid);
 
                 return check_sync<T>(f, uuid, -1, member, prevent_sync);
-            }
-
-            template<typename HazelcastSerializable, typename T>
-            void submit_to_target_internal(const HazelcastSerializable &task, const member &member,
-                                        const std::shared_ptr<execution_callback<T> > &callback) {
-                boost::uuids::uuid uuid = context_.random_uuid();
-
-                auto messageFuture = invoke_on_target_internal<HazelcastSerializable>(task, member, uuid);
-
-                serialization::pimpl::SerializationService *serializationService = &(get_serialization_service());
-                spi::impl::ClientExecutionServiceImpl *executionService = &get_context().get_client_execution_service();
-                messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
-                    try {
-                        auto result = retrieve_result_from_message<T>(serializationService, std::move(f));
-                        executionService->execute([=]() { callback->on_response(result); });
-                    } catch (exception::iexception &) {
-                        auto exception = std::current_exception();
-                        executionService->execute([=]() { callback->on_failure(exception); });
-                    }
-                });
             }
 
             template<typename HazelcastSerializable>
