@@ -103,7 +103,7 @@ namespace hazelcast {
         }
 
         boost::future<void> hazelcast_client::shutdown() {
-            return boost::async(boost::launch::async, [=]() { client_impl_->shutdown(); });
+            return boost::async([=]() { client_impl_->shutdown(); });
         }
 
         spi::lifecycle_service &hazelcast_client::get_lifecycle_service() {
@@ -340,7 +340,7 @@ namespace hazelcast {
                 auto nearCacheConfig = client_config_.get_near_cache_config(name);
                 if (nearCacheConfig) {
                     return proxy_manager_.get_or_create_proxy<map::NearCachedClientMapProxy<serialization::pimpl::data, serialization::pimpl::data>>(
-                            imap::SERVICE_NAME, name).then(boost::launch::async,
+                            imap::SERVICE_NAME, name).then(boost::launch::sync,
                                                            [=](boost::shared_future<std::shared_ptr<map::NearCachedClientMapProxy<serialization::pimpl::data, serialization::pimpl::data>>> f) {
                                                                return std::static_pointer_cast<imap>(f.get());
                                                            });

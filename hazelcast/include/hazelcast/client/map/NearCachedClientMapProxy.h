@@ -129,7 +129,7 @@ namespace hazelcast {
                     try {
                         auto future = imap::get_internal(*key);
                         if (marked) {
-                            return future.then(boost::launch::async,
+                            return future.then(boost::launch::sync,
                                                [=](boost::future<boost::optional<serialization::pimpl::data>> f) {
                                                    auto data = f.get();
                                                    auto cachedValue = data
@@ -332,7 +332,7 @@ namespace hazelcast {
                         }
 
                         return imap::get_all_internal(partition_id, remainingKeys).then(
-                                boost::launch::async, [=](boost::future<EntryVector> f) {
+                                boost::launch::sync, [=](boost::future<EntryVector> f) {
                                     EntryVector allEntries(result);
                                     for (auto &entry : f.get()) {
                                         auto key = std::make_shared<serialization::pimpl::data>(std::move(entry.first));

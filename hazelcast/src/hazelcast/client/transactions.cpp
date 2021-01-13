@@ -96,7 +96,7 @@ namespace hazelcast {
                     auto request = protocol::codec::transaction_create_encode(
                             std::chrono::duration_cast<std::chrono::milliseconds>(get_timeout()).count(), options_.get_durability(),
                             static_cast<int32_t>(options_.get_transaction_type()), thread_id_);
-                    return invoke(request).then(boost::launch::async, [=](boost::future<protocol::ClientMessage> f) {
+                    return invoke(request).then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                         try {
                             auto msg = f.get();
                             // skip header
@@ -125,7 +125,7 @@ namespace hazelcast {
                     check_timeout();
 
                     auto request = protocol::codec::transaction_commit_encode(txn_id_, thread_id_);
-                    return invoke(request).then(boost::launch::async, [=](boost::future<protocol::ClientMessage> f) {
+                    return invoke(request).then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                         try {
                             f.get();
                             state_ = TxnState::COMMITTED;
@@ -154,7 +154,7 @@ namespace hazelcast {
                     check_thread();
                     try {
                         auto request = protocol::codec::transaction_rollback_encode(txn_id_, thread_id_);
-                        return invoke(request).then(boost::launch::async,
+                        return invoke(request).then(boost::launch::sync,
                                                     [=](boost::future<protocol::ClientMessage> f) {
                                                         try {
                                                             state_ = TxnState::ROLLED_BACK;

@@ -138,7 +138,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<size_t> drain_to(std::vector<E> &elements) {
-                return proxy::IQueueImpl::drain_to_data().then(boost::launch::async,
+                return proxy::IQueueImpl::drain_to_data().then(boost::launch::sync,
                                                                [&](boost::future<std::vector<serialization::pimpl::data>> f) {
                                                                    return drain_items(std::move(f), elements);
                                                                });
@@ -153,7 +153,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<size_t> drain_to(std::vector<E> &elements, size_t max_elements) {
-                return proxy::IQueueImpl::drain_to_data(max_elements).then(boost::launch::async,
+                return proxy::IQueueImpl::drain_to_data(max_elements).then(boost::launch::sync,
                                                                            [&](boost::future<std::vector<serialization::pimpl::data>> f) {
                                                                                return drain_items(std::move(f),
                                                                                                   elements);

@@ -496,7 +496,7 @@ namespace hazelcast {
                 try {
                     auto timestamps = observed_clock_.get()->entry_set();
                     auto request = protocol::codec::pncounter_get_encode(get_name(), timestamps, target->get_uuid());
-                    return invoke_on_member(request, target->get_uuid()).then(boost::launch::async,
+                    return invoke_on_member(request, target->get_uuid()).then(boost::launch::sync,
                                                                               [=](boost::future<protocol::ClientMessage> f) {
                                                                                   try {
                                                                                       return get_and_update_timestamps(
@@ -534,7 +534,7 @@ namespace hazelcast {
                 try {
                     auto request = protocol::codec::pncounter_add_encode(
                             get_name(), delta, getBeforeUpdate, observed_clock_.get()->entry_set(), target->get_uuid());
-                    return invoke_on_member(request, target->get_uuid()).then(boost::launch::async,
+                    return invoke_on_member(request, target->get_uuid()).then(boost::launch::sync,
                                                                               [=](boost::future<protocol::ClientMessage> f) {
                                                                                   try {
                                                                                       return get_and_update_timestamps(
@@ -811,7 +811,7 @@ namespace hazelcast {
                 try {
                     return boost::make_ready_future(new_id_internal());
                 } catch (std::overflow_error &) {
-                    return new_id_batch(batch_size_).then(boost::launch::async,
+                    return new_id_batch(batch_size_).then(boost::launch::sync,
                                                           [=](boost::future<flake_id_generator_impl::IdBatch> f) {
                                                               auto newBlock = boost::make_shared<Block>(f.get(),
                                                                                                         validity_);
@@ -826,7 +826,7 @@ namespace hazelcast {
             boost::future<flake_id_generator_impl::IdBatch> flake_id_generator_impl::new_id_batch(int32_t size) {
                 auto request = protocol::codec::flakeidgenerator_newidbatch_encode(
                         get_name(), size);
-                return invoke(request).then(boost::launch::async, [](boost::future<protocol::ClientMessage> f) {
+                return invoke(request).then(boost::launch::sync, [](boost::future<protocol::ClientMessage> f) {
                     auto msg = f.get();
                     msg.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN);
 
@@ -1284,7 +1284,7 @@ namespace hazelcast {
             boost::future<std::pair<std::vector<serialization::pimpl::data>, query::anchor_data_list>> IMapImpl::key_set_for_paging_predicate_data(
                     protocol::codec::holder::paging_predicate_holder const & predicate) {
                 auto request = protocol::codec::map_keysetwithpagingpredicate_encode(get_name(), predicate);
-                return invoke(request).then(boost::launch::async, [=](boost::future<protocol::ClientMessage> f) {
+                return invoke(request).then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     return get_paging_predicate_response<std::vector<serialization::pimpl::data>>(std::move(f));
                 });
             }
@@ -1302,7 +1302,7 @@ namespace hazelcast {
             boost::future<std::pair<EntryVector, query::anchor_data_list>> IMapImpl::entry_set_for_paging_predicate_data(
                     protocol::codec::holder::paging_predicate_holder const & predicate) {
                 auto request = protocol::codec::map_entrieswithpagingpredicate_encode(get_name(), predicate);
-                return invoke(request).then(boost::launch::async, [=](boost::future<protocol::ClientMessage> f) {
+                return invoke(request).then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     return get_paging_predicate_response<EntryVector>(std::move(f));
                 });
             }
@@ -1320,7 +1320,7 @@ namespace hazelcast {
             boost::future<std::pair<std::vector<serialization::pimpl::data>, query::anchor_data_list>>
             IMapImpl::values_for_paging_predicate_data(protocol::codec::holder::paging_predicate_holder const & predicate) {
                 auto request = protocol::codec::map_valueswithpagingpredicate_encode(get_name(), predicate);
-                return invoke(request).then(boost::launch::async, [=](boost::future<protocol::ClientMessage> f) {
+                return invoke(request).then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     return get_paging_predicate_response<std::vector<serialization::pimpl::data>>(std::move(f));
                 });
             }

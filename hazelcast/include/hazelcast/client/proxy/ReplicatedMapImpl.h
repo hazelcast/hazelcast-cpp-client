@@ -198,7 +198,7 @@ namespace hazelcast {
                     }
                     auto request = protocol::codec::replicatedmap_get_encode(get_name(), *sharedKey);
                     return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
-                            request, key).then(boost::launch::async,
+                            request, key).then(boost::launch::sync,
                                                [=](boost::future<boost::optional<serialization::pimpl::data>> f) {
                                                    try {
                                                        auto response = f.get();
