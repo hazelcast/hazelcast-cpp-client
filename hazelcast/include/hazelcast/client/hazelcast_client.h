@@ -25,6 +25,10 @@
 #endif
 
 namespace hazelcast {
+    namespace client {
+        class hazelcast_client;
+    }
+
     /**
     * Constructs a hazelcastClient with default configurations.
     */
@@ -32,7 +36,6 @@ namespace hazelcast {
 
     /**
     * Constructs a hazelcast_client with given config.
-    * Note: client_config will be moved.
     * @param config client configuration to start the client with
     */
     boost::future<client::hazelcast_client> HAZELCAST_API new_client(client::client_config config);
