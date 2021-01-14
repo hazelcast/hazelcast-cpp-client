@@ -124,7 +124,7 @@ namespace hazelcast {
                         client_proxy->get_service_name());
                 return spi::impl::ClientInvocation::create(client_, clientMessage,
                                                            client_proxy->get_service_name())->invoke().then(
-                        boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                        boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                             f.get();
                             client_proxy->on_initialize();
                         });
@@ -521,8 +521,9 @@ namespace hazelcast {
             boost::future<void> ClientProxy::destroy_remotely() {
                 auto clientMessage = protocol::codec::client_destroyproxy_encode(
                         get_name(), get_service_name());
-                return spi::impl::ClientInvocation::create(get_context(), std::make_shared<protocol::ClientMessage>(std::move(clientMessage)), get_name())->invoke().then(
-                        boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) { f.get(); });
+                return spi::impl::ClientInvocation::create(get_context(), std::make_shared<protocol::ClientMessage>(
+                        std::move(clientMessage)), get_name())->invoke().then(
+                        boost::launch::sync, [](boost::future<protocol::ClientMessage> f) { f.get(); });
             }
 
             boost::future<boost::uuids::uuid>
@@ -1053,7 +1054,6 @@ namespace hazelcast {
                                                    boost::uuids::uuid uuid) :
                         logger_(client_context.get_logger()),
                         lifecycle_service_(client_context.get_lifecycle_service()),
-                        client_cluster_service_(client_context.get_client_cluster_service()),
                         invocation_service_(client_context.get_invocation_service()),
                         execution_service_(client_context.get_client_execution_service().shared_from_this()),
                         call_id_sequence_(client_context.get_call_id_sequence()),
@@ -1076,11 +1076,12 @@ namespace hazelcast {
                     // for back pressure
                     call_id_sequence_->next();
                     invoke_on_selection();
-                    return invocation_promise_.get_future().then(boost::launch::sync,
-                                                               [=](boost::future<protocol::ClientMessage> f) {
-                                                                   call_id_sequence_->complete();
-                                                                   return f.get();
-                                                               });
+                    auto id_seq = call_id_sequence_;
+                    return invocation_promise_.get_future().then(boost::launch::async,
+                                                                 [=](boost::future<protocol::ClientMessage> f) {
+                                                                     id_seq->complete();
+                                                                     return f.get();
+                                                                 });
                 }
 
                 boost::future<protocol::ClientMessage> ClientInvocation::invoke_urgent() {
@@ -1089,11 +1090,12 @@ namespace hazelcast {
                     // for back pressure
                     call_id_sequence_->force_next();
                     invoke_on_selection();
-                    return invocation_promise_.get_future().then(boost::launch::sync,
-                                                               [=](boost::future<protocol::ClientMessage> f) {
-                                                                   call_id_sequence_->complete();
-                                                                   return f.get();
-                                                               });
+                    auto id_seq = call_id_sequence_;
+                    return invocation_promise_.get_future().then(boost::launch::async,
+                                                                 [=](boost::future<protocol::ClientMessage> f) {
+                                                                     id_seq->complete();
+                                                                     return f.get();
+                                                                 });
                 }
 
                 void ClientInvocation::invoke_on_selection() {

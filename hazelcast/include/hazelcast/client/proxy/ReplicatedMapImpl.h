@@ -198,17 +198,19 @@ namespace hazelcast {
                     }
                     auto request = protocol::codec::replicatedmap_get_encode(get_name(), *sharedKey);
                     return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
-                            request, key).then(boost::launch::deferred, [=] (boost::future<boost::optional<serialization::pimpl::data>> f) {
-                                try {
-                                    auto response = f.get();
-                                    if (!response) {
-                                        return boost::optional<serialization::pimpl::data>();
-                                    }
+                            request, key).then(boost::launch::sync,
+                                               [=](boost::future<boost::optional<serialization::pimpl::data>> f) {
+                                                   try {
+                                                       auto response = f.get();
+                                                       if (!response) {
+                                                           return boost::optional<serialization::pimpl::data>();
+                                                       }
 
-                                    auto sharedValue = std::make_shared<serialization::pimpl::data>(std::move(*response));
-                                    if (near_cache_) {
-                                        near_cache_->put(sharedKey, sharedValue);
-                                    }
+                                                       auto sharedValue = std::make_shared<serialization::pimpl::data>(
+                                                               std::move(*response));
+                                                       if (near_cache_) {
+                                                           near_cache_->put(sharedKey, sharedValue);
+                                                       }
                                     return boost::make_optional(*sharedValue);
                                 } catch (...) {
                                     invalidate(sharedKey);
