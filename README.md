@@ -13,7 +13,7 @@
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
-  * [1.3 Compiling Your Project](#131-compiling-your-project)
+  * [1.3 Compiling Your Project](#13-compiling-your-project)
       * [1.3.1 CMake Users](#131-cmake-users)
       * [1.3.2 Linux and MacOS Users](#132-linux-and-macos-users)
       * [1.3.3 Windows Users](#133-windows-users)
