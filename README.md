@@ -10,9 +10,9 @@
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
     * [1.3.1 Compiling Your Project](#131-compiling-your-project)
-        * [1.3.1.1 Mac Client](#1311-mac-client)
-        * [1.3.1.2 Linux Client](#1312-linux-client)
-        * [1.3.1.3 Windows Client](#1313-windows-client)
+        * [1.3.1.1 CMake Users](#1311-cmake-users)
+        * [1.3.1.2 Linux and MacOS Users](#1312-linux-and-macos-users)
+        * [1.3.1.3 Windows Users](#1313-windows-users)
     * [1.3.2 Building Hazelcast From Source Code](#132-building-hazelcast-from-source)
     * [1.3.3 Building Hazelcast Tests From Source Code](#133-building-hazelcast-tests-from-source)
   * [1.4. Basic Configuration](#14-basic-configuration)
@@ -213,7 +213,7 @@ Run `cmake` to configure:
 cmake -G "Visual Studio 16 2019" ..
 ``` 
 The command above assumes that you have Visual Studio 2019 installed. 
-See `cmake --help` for more generator options.
+See `cmake --help` for generator options.
 
 
 Build and install:
@@ -330,8 +330,8 @@ See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/
 If you are using CMake, see the section for [CMake users](#1311-cmake-users).
 
 If you are not, then read the instructions specific to your platform:
-* Linux and MacOS
-* Windows
+* [Linux and MacOS](#1312-linux-and-macos-users)
+* [Windows](#1313-windows-users)
 
 #### 1.3.1.1 CMake users
 A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. 
@@ -348,8 +348,8 @@ Options are `hazelcastcxx`, `hazelcastcxx_ssl`, `hazelcastcxx_static`, and `haze
 Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 
 if you are using a custom installation location. 
 
-#### 1.3.1.4. Linux and MacOS users
-You can pass the `-lhazelcastcxx` or `-lhazelcastcxx_ssl` option the compiler to link against 
+#### 1.3.1.2. Linux and MacOS users
+You can pass the `-lhazelcastcxx` or `-lhazelcastcxx_ssl` option to the compiler to link against 
 the client library. The name of library depends on how it was configured during build time. 
 If the library was built with `-DWITH_OPENSSL=ON`, then the name is `hazelcastcxx_ssl`.
 If it was built with `-DWITH_OPENSSL=OFF`, then the name is `hazelcastcxx`. 
@@ -361,9 +361,9 @@ for necessary features such as futures and future continuations to be enabled.
 
 Here is how you can compile an example from the examples directory:
 ```sh
-g++ -std=c++11 \ 
+g++ -std=c++11 \
     examples/path/to/example.cpp \
-    -DBOOST_THREAD_VERSION=5 \ 
+    -DBOOST_THREAD_VERSION=5 \
     -lhazelcastcxx -lboost_thread -lboost_chrono
 ``` 
 
@@ -376,56 +376,9 @@ g++ -std=c++11 \
     -lhazelcastcxx -lboost_thread -lboost_chrono 
 ```
 
-#### 1.3.1.3 Windows users
+#### 1.3.1.3. Windows users
 
-For Windows, there are 32- and 64-bit distributions. The static library is in the `static` directory and the dynamic library (`dll`) is in the `shared` directory.
-
-When compiling for Windows environment, you should specify one of the following flags:
-
-- `HAZELCAST_USE_STATIC`: You want the application to use the static Hazelcast library.
-- `HAZELCAST_USE_SHARED`: You want the application to use the shared Hazelcast library.
-
-### 1.3.2 Building Hazelcast From Source Code
-The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
-
-You also need to install the [Boost library](http://boost.org/)
-
-The simplest way to build the project from source code is to run the script `scripts/build-linux.sh` for Linux and Mac OS, `scripts/build-windows.bat` for windows. The script uses the following parameters:
-
-`scripts/build-linux.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
-
-- Use `32` if you want to generate 32-bit library. 
-- Use `SHARED` if you want to generate SHARED library.
-- Use `STATIC` if you want to generate STATIC library.
-- Use `Debug` if you want to generate Debug version of the library.
-- Use `Release` if you want to generate Release version of the library.
-- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
-
-The exact same options work for the windows batch script `scripts/build-windows.bat`.
-
-The project depends on OpenSSL only if you compile the project enabled with the TLS feature (i.e. if `COMPILE_WITHOUT_SSL` is NOT provided) 
-
-### 1.3.3 Building Hazelcast Tests Source Code
-The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
-
-The test sources depend on the Boost development libraries (thread and chrono), OpenSSL (only needed if compiling with SSL support) and [apache thrift](https://github.com/apache/thrift) (needed for communications to remote controller).
-
-The easiest way to compile and run the tests is to use the test scripts. The scripts are :
-- `testLinuxSingleCase.sh` for linux and MAC OS.
-- `testWindowsSingleCase.bat` for Windows.
-
-The scripts accept the following options:
-
-`testLinuxSingleCase.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
-
-- Use `32` if you want to generate 32-bit library. 
-- Use `SHARED` if you want to generate SHARED library.
-- Use `STATIC` if you want to generate STATIC library.
-- Use `Debug` if you want to generate Debug version of the library.
-- Use `Release` if you want to generate Release version of the library.
-- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
-
-It runs the build script and if successfully builds the project including the examples, it starts the [remote controller](https://github.com/hazelcast/hazelcast-remote-controller) for managing server start and shutdowns during the test, then runs the test binary. The test framework uses [Google test](https://github.com/google/googletest) 
+What to write here?
 
 ## 1.4. Basic Configuration
 
