@@ -857,133 +857,6 @@ namespace hazelcast {
                     client = nullptr;
                 }
 
-                class FailingExecutionCallback : public execution_callback<std::string> {
-                public:
-                    FailingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(
-                            latch1) {}
-
-                    void on_response(const boost::optional<std::string> &response) override {
-                    }
-
-                    void on_failure(std::exception_ptr e) override {
-                        exception_ = e;
-                        latch1_->count_down();
-                    }
-
-                    std::exception_ptr get_exception() {
-                        return exception_;
-                    }
-
-                private:
-                    const std::shared_ptr<boost::latch> latch1_;
-                    hazelcast::util::Sync<std::exception_ptr> exception_;
-                };
-
-                class SuccessfullExecutionCallback : public execution_callback<boost::uuids::uuid> {
-                public:
-                    SuccessfullExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(latch1) {}
-
-                    void on_response(const boost::optional<boost::uuids::uuid> &response) override {
-                        latch1_->count_down();
-                    }
-
-                    void on_failure(std::exception_ptr e) override {
-                    }
-
-                private:
-                    const std::shared_ptr<boost::latch> latch1_;
-                };
-
-                template<typename T>
-                class ResultSettingExecutionCallback : public execution_callback<T> {
-                public:
-                    explicit ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(latch1) {}
-
-                    void on_response(const boost::optional<T> &response) override {
-                        result_.set(response);
-                        latch1_->count_down();
-                    }
-
-                    void on_failure(std::exception_ptr e) override {
-                    }
-
-                    boost::optional<T> get_result() {
-                        return result_.get();
-                    }
-
-                private:
-                    const std::shared_ptr<boost::latch> latch1_;
-                    hazelcast::util::Sync<boost::optional<T>> result_;
-                };
-
-                class MultiExecutionCompletionCallback : public multi_execution_callback<std::string> {
-                public:
-                    MultiExecutionCompletionCallback(std::string msg,
-                                                     std::shared_ptr<boost::latch> response_latch,
-                                                     const std::shared_ptr<boost::latch> &complete_latch) : msg_(std::move(msg)),
-                                                                                                           response_latch_(std::move(
-                                                                                                                   response_latch)),
-                                                                                                           complete_latch_(
-                                                                                                                   complete_latch) {}
-
-                    void on_response(const member &member, const boost::optional<std::string> &response) override {
-                        if (response && *response == msg_ + APPENDAGE) {
-                            response_latch_->count_down();
-                        }
-                    }
-
-                    void
-                    on_failure(const member &member, std::exception_ptr exception) override {
-                    }
-
-                    void on_complete(const std::unordered_map<member, boost::optional<std::string> > &values,
-                                            const std::unordered_map<member, std::exception_ptr> &exceptions) override {
-                        typedef std::unordered_map<member, boost::optional<std::string> > VALUE_MAP;
-                        std::string expectedValue(msg_ + APPENDAGE);
-                        for (const VALUE_MAP::value_type &entry  : values) {
-                            if (entry.second && *entry.second == expectedValue) {
-                                complete_latch_->count_down();
-                            }
-                        }
-                    }
-
-                private:
-                    std::string msg_;
-                    const std::shared_ptr<boost::latch> response_latch_;
-                    const std::shared_ptr<boost::latch> complete_latch_;
-                };
-
-                class MultiExecutionNullCallback : public multi_execution_callback<std::string> {
-                public:
-                    MultiExecutionNullCallback(std::shared_ptr<boost::latch> response_latch,
-                                               std::shared_ptr<boost::latch> complete_latch)
-                            : response_latch_(std::move(response_latch)), complete_latch_(std::move(complete_latch)) {}
-
-                    void on_response(const member &member, const boost::optional<std::string> &response) override {
-                        if (!response) {
-                            response_latch_->count_down();
-                        }
-                    }
-
-                    void
-                    on_failure(const member &member, std::exception_ptr exception) override {
-                    }
-
-                    void on_complete(const std::unordered_map<member, boost::optional<std::string> > &values,
-                                            const std::unordered_map<member, std::exception_ptr> &exceptions) override {
-                        typedef std::unordered_map<member, boost::optional<std::string> > VALUE_MAP;
-                        for (const VALUE_MAP::value_type &entry  : values) {
-                            if (!entry.second) {
-                                complete_latch_->count_down();
-                            }
-                        }
-                    }
-
-                private:
-                    const std::shared_ptr<boost::latch> response_latch_;
-                    const std::shared_ptr<boost::latch> complete_latch_;
-                };
-
                 static std::vector<HazelcastServer *> instances;
                 static hazelcast_client *client;
                 static HazelcastServerFactory *factory;
@@ -1071,19 +944,6 @@ namespace hazelcast {
                 ASSERT_THROW(future.get(), exception::illegal_state);
             }
 
-            TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-
-                executor::tasks::FailingCallable task;
-                std::shared_ptr<execution_callback<std::string> > callback(new FailingExecutionCallback(latch1));
-
-                service->submit<executor::tasks::FailingCallable, std::string>(task, callback);
-
-                ASSERT_OPEN_EVENTUALLY(*latch1);
-            }
-
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableReasonExceptionCause) {
                 std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
@@ -1147,26 +1007,6 @@ namespace hazelcast {
                         taskWithUnserializableResponse).get_future();
 
                 ASSERT_THROW(future.get(), exception::hazelcast_serialization);
-            }
-
-            TEST_F(ClientExecutorServiceTest, testUnserializableResponse_exceptionPropagatesToClientCallback) {
-                std::string name = get_test_name();
-
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(name).get();
-
-                executor::tasks::TaskWithUnserializableResponse taskWithUnserializableResponse;
-
-                std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-
-                std::shared_ptr<FailingExecutionCallback> callback(new FailingExecutionCallback(latch1));
-
-                service->submit<executor::tasks::TaskWithUnserializableResponse, std::string>(
-                        taskWithUnserializableResponse, callback);
-
-                ASSERT_OPEN_EVENTUALLY(*latch1);
-
-                auto exception = callback->get_exception();
-                ASSERT_THROW(std::rethrow_exception(exception), exception::hazelcast_serialization);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMember) {
@@ -1256,124 +1096,6 @@ namespace hazelcast {
                 }
             }
 
-            TEST_F(ClientExecutorServiceTest, submitCallableToMember_withExecutionCallback) {
-                std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
-
-                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, spi::ClientContext(*client).random_uuid());
-
-                std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-                std::shared_ptr<SuccessfullExecutionCallback> callback(new SuccessfullExecutionCallback(latch1));
-
-                std::vector<member> members = client->get_cluster().get_members();
-                ASSERT_EQ(numberOfMembers, members.size());
-
-                service->submit_to_member<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, members[0],
-                                                                                                    callback);
-
-                auto map = client->get_map(testName).get();
-
-                ASSERT_OPEN_EVENTUALLY(*latch1);
-                ASSERT_EQ(1, map->size().get());
-            }
-
-            TEST_F(ClientExecutorServiceTest, submitCallableToMember_withMultiExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::shared_ptr<boost::latch> responseLatch(new boost::latch(numberOfMembers));
-                std::shared_ptr<boost::latch> completeLatch(new boost::latch(numberOfMembers));
-
-                std::string msg = random_string();
-                executor::tasks::AppendCallable callable{msg};
-                std::vector<member> members = client->get_cluster().get_members();
-                ASSERT_EQ(numberOfMembers, members.size());
-
-                std::shared_ptr<multi_execution_callback<std::string> > callback(
-                        new MultiExecutionCompletionCallback(msg, responseLatch, completeLatch));
-
-                service->submit_to_members<executor::tasks::AppendCallable, std::string>(callable, members, callback);
-
-                ASSERT_OPEN_EVENTUALLY(*responseLatch);
-                ASSERT_OPEN_EVENTUALLY(*completeLatch);
-            }
-
-            TEST_F(ClientExecutorServiceTest, submitCallable_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::string msg = random_string();
-                executor::tasks::AppendCallable callable{msg};
-                executor::tasks::SelectAllMembers selector;
-                std::shared_ptr<boost::latch> responseLatch(new boost::latch(1));
-                auto callback = std::make_shared<ResultSettingExecutionCallback<std::string>>(responseLatch);
-
-                service->submit<executor::tasks::AppendCallable, std::string>(callable, selector,
-                                                                              std::static_pointer_cast<execution_callback<std::string>>(
-                                                                                      callback));
-
-                ASSERT_OPEN_EVENTUALLY(*responseLatch);
-                auto message = callback->get_result();
-                ASSERT_TRUE(message.has_value());
-                ASSERT_EQ(msg + APPENDAGE, *message);
-            }
-
-            TEST_F(ClientExecutorServiceTest, submitCallableToMembers_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::shared_ptr<boost::latch> responseLatch(
-                        new boost::latch(numberOfMembers));
-                std::shared_ptr<boost::latch> completeLatch(
-                        new boost::latch(numberOfMembers));
-
-                std::string msg = random_string();
-                executor::tasks::AppendCallable callable{msg};
-                executor::tasks::SelectAllMembers selector;
-
-                std::shared_ptr<multi_execution_callback<std::string> > callback(
-                        new MultiExecutionCompletionCallback(msg, responseLatch, completeLatch));
-
-                service->submit_to_members<executor::tasks::AppendCallable, std::string>(callable, selector, callback);
-
-                ASSERT_OPEN_EVENTUALLY(*responseLatch);
-                ASSERT_OPEN_EVENTUALLY(*completeLatch);
-            }
-
-            TEST_F(ClientExecutorServiceTest, submitCallableToAllMembers_withMultiExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::shared_ptr<boost::latch> responseLatch(
-                        new boost::latch(numberOfMembers));
-                std::shared_ptr<boost::latch> completeLatch(
-                        new boost::latch(numberOfMembers));
-
-                std::string msg = random_string();
-                executor::tasks::AppendCallable callable{msg};
-
-                std::shared_ptr<multi_execution_callback<std::string> > callback(
-                        new MultiExecutionCompletionCallback(msg, responseLatch, completeLatch));
-
-                service->submit_to_all_members<executor::tasks::AppendCallable, std::string>(callable, callback);
-
-                ASSERT_OPEN_EVENTUALLY(*completeLatch);
-                ASSERT_OPEN_EVENTUALLY(*responseLatch);
-            }
-
-            TEST_F(ClientExecutorServiceTest, submitCallableWithNullResultToAllMembers_withMultiExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::shared_ptr<boost::latch> responseLatch(new boost::latch(numberOfMembers));
-                std::shared_ptr<boost::latch> completeLatch(new boost::latch(numberOfMembers));
-
-                executor::tasks::NullCallable callable;
-
-                std::shared_ptr<multi_execution_callback<std::string> > callback(
-                        new MultiExecutionNullCallback(responseLatch, completeLatch));
-
-                service->submit_to_all_members<executor::tasks::NullCallable, std::string>(callable, callback);
-
-                ASSERT_OPEN_EVENTUALLY(*responseLatch);
-                ASSERT_OPEN_EVENTUALLY(*completeLatch);
-            }
-
             TEST_F(ClientExecutorServiceTest, testSubmitCallable) {
                 std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
@@ -1387,24 +1109,6 @@ namespace hazelcast {
                 ASSERT_EQ(msg + APPENDAGE, *message);
             }
 
-            TEST_F(ClientExecutorServiceTest, testSubmitCallable_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::string msg = random_string();
-                executor::tasks::AppendCallable callable{msg};
-
-                std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-                auto callback = std::make_shared<ResultSettingExecutionCallback<std::string>>(latch1);
-
-                service->submit<executor::tasks::AppendCallable, std::string>(callable, std::static_pointer_cast<execution_callback<std::string>>(
-                                                                                      callback));
-
-                ASSERT_OPEN_EVENTUALLY(*latch1);
-                auto value = callback->get_result();
-                ASSERT_TRUE(value.has_value());
-                ASSERT_EQ(msg + APPENDAGE, *value);
-            }
-
             TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner) {
                 std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
 
@@ -1416,25 +1120,6 @@ namespace hazelcast {
                 auto result = f.get();
                 ASSERT_TRUE(result);
                 ASSERT_EQ(msg + APPENDAGE, *result);
-            }
-
-            TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner_withExecutionCallback) {
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(get_test_name()).get();
-
-                std::string msg = random_string();
-                executor::tasks::AppendCallable callable{msg};
-
-                std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-                auto callback = std::make_shared<ResultSettingExecutionCallback<std::string>>(latch1);
-
-                service->submit_to_key_owner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key",
-                                                                                                     std::static_pointer_cast<execution_callback<std::string>>(
-                                                                                                             callback));
-
-                ASSERT_OPEN_EVENTUALLY(*latch1);
-                auto value = callback->get_result();
-                ASSERT_TRUE(value.has_value());
-                ASSERT_EQ(msg + APPENDAGE, *value);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware) {
@@ -1456,31 +1141,6 @@ namespace hazelcast {
                 auto result = f.get();
                 ASSERT_TRUE(result);
                 ASSERT_EQ(member.get_uuid(), *result);
-                ASSERT_TRUE(map->contains_key(member.get_uuid()).get());
-            }
-
-            TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware_WithExecutionCallback) {
-                std::string testName = get_test_name();
-                std::shared_ptr<iexecutor_service> service = client->get_executor_service(testName).get();
-
-                auto map = client->get_map(testName).get();
-
-                std::vector<member> members = client->get_cluster().get_members();
-                spi::ClientContext clientContext(*client);
-                member &member = members[0];
-                auto key = generate_key_owned_by(clientContext, member);
-
-                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, key);
-
-                std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-                auto callback = std::make_shared<ResultSettingExecutionCallback<boost::uuids::uuid>>(latch1);
-
-                service->submit<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, callback);
-
-                ASSERT_OPEN_EVENTUALLY(*latch1);
-                auto value = std::static_pointer_cast<ResultSettingExecutionCallback<boost::uuids::uuid>>(callback)->get_result();
-                ASSERT_TRUE(value);
-                ASSERT_EQ(member.get_uuid(), *value);
                 ASSERT_TRUE(map->contains_key(member.get_uuid()).get());
             }
 

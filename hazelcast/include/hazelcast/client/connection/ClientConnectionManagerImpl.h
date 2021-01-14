@@ -207,14 +207,13 @@ namespace hazelcast {
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connection_listeners_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
-                int32_t io_thread_count_;
                 bool shuffle_member_list_;
                 std::vector<std::shared_ptr<AddressProvider> > address_providers_;
                 std::atomic<int32_t> connection_id_gen_;
                 std::unique_ptr<boost::asio::ip::tcp::resolver> io_resolver_;
                 std::unique_ptr<internal::socket::SocketFactory> socket_factory_;
                 HeartbeatManager heartbeat_;
-                std::vector<std::thread> io_threads_;
+                std::thread io_thread_;
                 std::unique_ptr<boost::asio::io_context::work> io_guard_;
                 const bool async_start_;
                 const config::client_connection_strategy_config::reconnect_mode reconnect_mode_;
@@ -227,7 +226,7 @@ namespace hazelcast {
                 wait_strategy wait_strategy_;
 
                 // following fields are updated inside synchronized(clientStateMutex)
-                std::mutex client_state_mutex_;
+                std::recursive_mutex client_state_mutex_;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> active_connections_;
                 util::SynchronizedMap<int32_t, Connection> active_connection_ids_;
 #ifdef __linux__
