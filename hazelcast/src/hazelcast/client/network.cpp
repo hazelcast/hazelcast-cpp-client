@@ -370,7 +370,7 @@ namespace hazelcast {
                     try {
                         do_connect_to_cluster();
 
-                        std::lock_guard<std::mutex> guard(client_state_mutex_);
+                        std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
                         connect_to_cluster_task_submitted_ = false;
                         if (active_connections_.empty()) {
                             HZ_LOG(logger_, finest,
@@ -522,7 +522,7 @@ namespace hazelcast {
                     return;
                 }
 
-                std::lock_guard<std::mutex> guard(client_state_mutex_);
+                std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
                 if (active_connections_.remove(member_uuid, connection)) {
                     active_connection_ids_.remove(connection->get_connection_id());
 
@@ -572,7 +572,7 @@ namespace hazelcast {
             ClientConnectionManagerImpl::on_authenticated(const std::shared_ptr<Connection> &connection,
                                                           auth_response &response) {
                 {
-                    std::lock_guard<std::mutex> guard(client_state_mutex_);
+                    std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
                     check_partition_count(response.partition_count);
                     connection->set_connected_server_version(response.server_version);
                     connection->set_remote_address(std::move(response.server_address));

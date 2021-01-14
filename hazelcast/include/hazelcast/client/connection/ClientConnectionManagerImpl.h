@@ -226,7 +226,7 @@ namespace hazelcast {
                 wait_strategy wait_strategy_;
 
                 // following fields are updated inside synchronized(clientStateMutex)
-                std::mutex client_state_mutex_;
+                std::recursive_mutex client_state_mutex_;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> active_connections_;
                 util::SynchronizedMap<int32_t, Connection> active_connection_ids_;
 #ifdef __linux__

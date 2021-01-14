@@ -129,13 +129,16 @@ namespace hazelcast {
                     try {
                         auto future = imap::get_internal(*key);
                         if (marked) {
-                            return future.then(boost::launch::deferred, [=](boost::future<boost::optional<serialization::pimpl::data>> f) {
-                                auto data = f.get();
-                                auto cachedValue = data ? std::make_shared<serialization::pimpl::data>(*data)
-                                                        : internal::nearcache::NearCache<K, V>::NULL_OBJECT;
-                                try_to_put_near_cache(key, cachedValue);
-                                return data;
-                            });
+                            return future.then(boost::launch::sync,
+                                               [=](boost::future<boost::optional<serialization::pimpl::data>> f) {
+                                                   auto data = f.get();
+                                                   auto cachedValue = data
+                                                                      ? std::make_shared<serialization::pimpl::data>(
+                                                                   *data)
+                                                                      : internal::nearcache::NearCache<K, V>::NULL_OBJECT;
+                                                   try_to_put_near_cache(key, cachedValue);
+                                                   return data;
+                                               });
                         }
                         return future;
                     } catch (exception::iexception &) {
@@ -329,17 +332,18 @@ namespace hazelcast {
                         }
 
                         return imap::get_all_internal(partition_id, remainingKeys).then(
-                                boost::launch::deferred, [=](boost::future<EntryVector> f) {
-                            EntryVector allEntries(result);
-                            for (auto &entry : f.get()) {
-                                auto key = std::make_shared<serialization::pimpl::data>(std::move(entry.first));
-                                auto value = std::make_shared<serialization::pimpl::data>(std::move(entry.second));
-                                bool marked = false;
-                                auto foundEntry = markers->find(key);
-                                if (foundEntry != markers->end()) {
-                                    marked = foundEntry->second;
-                                    markers->erase(foundEntry);
-                                }
+                                boost::launch::sync, [=](boost::future<EntryVector> f) {
+                                    EntryVector allEntries(result);
+                                    for (auto &entry : f.get()) {
+                                        auto key = std::make_shared<serialization::pimpl::data>(std::move(entry.first));
+                                        auto value = std::make_shared<serialization::pimpl::data>(
+                                                std::move(entry.second));
+                                        bool marked = false;
+                                        auto foundEntry = markers->find(key);
+                                        if (foundEntry != markers->end()) {
+                                            marked = foundEntry->second;
+                                            markers->erase(foundEntry);
+                                        }
 
                                 if (marked) {
                                     try_to_put_near_cache(key, value);
