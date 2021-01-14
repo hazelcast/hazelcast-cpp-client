@@ -13,13 +13,10 @@
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
-  * [1.3. Downloading and Installing](#13-downloading-and-installing)
-    * [1.3.1 Compiling Your Project](#131-compiling-your-project)
-        * [1.3.1.1 CMake Users](#1311-cmake-users)
-        * [1.3.1.2 Linux and MacOS Users](#1312-linux-and-macos-users)
-        * [1.3.1.3 Windows Users](#1313-windows-users)
-    * [1.3.2 Building Hazelcast From Source Code](#132-building-hazelcast-from-source)
-    * [1.3.3 Building Hazelcast Tests From Source Code](#133-building-hazelcast-tests-from-source)
+  * [1.3 Compiling Your Project](#131-compiling-your-project)
+      * [1.3.1 CMake Users](#131-cmake-users)
+      * [1.3.2 Linux and MacOS Users](#132-linux-and-macos-users)
+      * [1.3.3 Windows Users](#133-windows-users)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
@@ -330,15 +327,15 @@ If you want to add a `Portable` class, you should use `<portable-factories>` ins
 
 See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
 
-### 1.3.1 Compiling Your Project
+### 1.3 Compiling Your Project
 
-If you are using CMake, see the section for [CMake users](#1311-cmake-users).
+If you are using CMake, see the section for [CMake users](#131-cmake-users).
 
 If you are not, then read the instructions specific to your platform:
-* [Linux and MacOS](#1312-linux-and-macos-users)
-* [Windows](#1313-windows-users)
+* [Linux and MacOS](#132-linux-and-macos-users)
+* [Windows](#133-windows-users)
 
-#### 1.3.1.1 CMake users
+#### 1.3.1 CMake users
 A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. 
 If your project is using CMake, you can easily find and link against the client library:
 ```cmake
@@ -353,7 +350,7 @@ Options are `hazelcastcxx`, `hazelcastcxx_ssl`, `hazelcastcxx_static`, and `haze
 Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 
 if you are using a custom installation location. 
 
-#### 1.3.1.2. Linux and MacOS users
+#### 1.3.2. Linux and MacOS users
 You can pass the `-lhazelcastcxx` or `-lhazelcastcxx_ssl` option to the compiler to link against 
 the client library. The name of library depends on how it was configured during build time. 
 If the library was built with `-DWITH_OPENSSL=ON`, then the name is `hazelcastcxx_ssl`.
@@ -381,7 +378,7 @@ g++ -std=c++11 \
     -lhazelcastcxx -lboost_thread -lboost_chrono 
 ```
 
-#### 1.3.1.3. Windows users
+#### 1.3.3. Windows users
 
 What to write here?
 
