@@ -1568,7 +1568,7 @@ hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_re
 }
 
 void listen_with_default_config() {
-hazelcast::client::auto client = hazelcast::new_client().get();
+    auto client = hazelcast::new_client().get();
 
 std::string topicName("MyReliableTopic");
     auto topic = client.get_reliable_topic(topicName).get();
