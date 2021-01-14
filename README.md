@@ -436,8 +436,8 @@ pass this object to the client when starting it, as shown below.
 ```C++
     hazelcast::client::client_config config;
     config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
-config.get_network_config().add_address(address("192.168.1.10", 5701));
-auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
+    config.get_network_config().add_address(address("192.168.1.10", 5701));
+    auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
 ```
 
 If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
@@ -502,8 +502,8 @@ The following example first creates a programmatic configuration object. Then, i
 ```C++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
-auto hz = hazelcast::new_client().get(); // Connects to the cluster
-std::cout << "Started the Hazelcast C++ client instance " << hz.get_name() << std::endl; // Prints client instance name
+    auto hz = hazelcast::new_client().get(); // Connects to the cluster
+    std::cout << "Started the Hazelcast C++ client instance " << hz.get_name() << std::endl; // Prints client instance name
     return 0;
 }
 ```
@@ -545,9 +545,9 @@ Then, you can run the application using the following command:
 ```C++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
-auto hz = hazelcast::new_client().get(); // Connects to the cluster
+    auto hz = hazelcast::new_client().get(); // Connects to the cluster
 
-auto personnel = hz.get_map("personnel_map").get();
+    auto personnel = hz.get_map("personnel_map").get();
     personnel->put<std::string, std::string>("Alice", "IT").get();
     personnel->put<std::string, std::string>("Bob", "IT").get();
     personnel->put<std::string, std::string>("Clark", "IT").get();

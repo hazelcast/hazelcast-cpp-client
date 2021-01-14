@@ -815,9 +815,12 @@ namespace hazelcast {
     }
 
     boost::future<client::hazelcast_client> new_client(client::client_config config) {
-        return boost::async(util::capture(std::move(config), [](client::client_config &c) {
-            return client::hazelcast_client(std::move(c));
-        }));
+        return boost::async(
+            [](client::client_config &&c) {
+                return client::hazelcast_client(std::move(c));
+            },
+            std::move(config)
+        );
     }
 }
 
