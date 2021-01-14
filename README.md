@@ -3,7 +3,12 @@
 
 * [Introduction](#introduction)
 * [1. Getting Started](#1-getting-started)
-  * [1.1. Requirements](#11-requirements)
+  * [1.1. Installing](#11-installing)
+    * [1.1.1. Requirements](#111-requirements)
+    * [1.1.2. Downloading](#112-downloading)
+    * [1.1.3. Linux and MacOS users](#113-linux-and-macos-users)
+    * [1.1.4. Windows users](#114-windows-users)
+    * [1.1.5. Advanced installation](#115-advanced-installation)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
