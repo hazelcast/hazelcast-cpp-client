@@ -339,9 +339,8 @@ namespace hazelcast {
 
             void
             ClientConnectionManagerImpl::shutdown_with_external_thread(
-                    const std::weak_ptr<client::impl::hazelcast_client_instance_impl>& client_impl) {
-
-                std::thread([client_impl] {
+                    std::weak_ptr<client::impl::hazelcast_client_instance_impl> client_impl) {
+                std::thread([=] {
                     std::shared_ptr<client::impl::hazelcast_client_instance_impl> clientInstance = client_impl.lock();
                     if (!clientInstance || !clientInstance->get_lifecycle_service().is_running()) {
                         return;
@@ -351,7 +350,7 @@ namespace hazelcast {
                         clientInstance->get_lifecycle_service().shutdown();
                     } catch (exception::iexception &e) {
                         HZ_LOG(*clientInstance->get_logger(), severe,
-                            boost::str(boost::format("Exception during client shutdown "
+                               boost::str(boost::format("Exception during client shutdown "
                                                      "%1%.clientShutdown-:%2%")
                                                      % clientInstance->get_name()
                                                      % e)
