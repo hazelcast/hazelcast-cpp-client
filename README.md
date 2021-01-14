@@ -210,7 +210,7 @@ cd build
 
 Run `cmake` to configure:
 ```bat
-cmake -G "Visual Studio 16 2019" -A x64 ..
+cmake -G "Visual Studio 16 2019" ..
 ``` 
 The command above assumes that you have Visual Studio 2019 installed. 
 See `cmake --help` for more generator options.
