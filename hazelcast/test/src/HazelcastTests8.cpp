@@ -1477,7 +1477,7 @@ namespace hazelcast {
             TEST_F(IssueTest, testIssue753) {
                 HazelcastServer server(*g_srvFactory);
 
-                hazelcast::client::hazelcast_client hz;
+                auto hz = new_client().get();
 
                 auto map = hz.get_map("my_map").get();
 
