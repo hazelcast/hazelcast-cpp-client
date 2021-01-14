@@ -93,10 +93,6 @@ namespace hazelcast {
 
             const client_property &get_statistics_period_seconds() const;
 
-            const client_property &get_io_thread_count() const;
-
-            const client_property &get_response_executor_thread_count() const;
-
             const client_property &backup_timeout_millis() const;
 
             const client_property &fail_on_indeterminate_state() const;
@@ -237,19 +233,6 @@ namespace hazelcast {
             static const std::string STATISTICS_PERIOD_SECONDS_DEFAULT;
 
             /**
-             * The number of threads for the io operations.
-             */
-            static const std::string IO_THREAD_COUNT;
-            static const std::string IO_THREAD_COUNT_DEFAULT;
-
-            /**
-             * The number of threads for the response executor processing.
-             * Default is no thread usage.
-             */
-            static const std::string RESPONSE_EXECUTOR_THREAD_COUNT;
-            static const std::string RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT;
-
-            /**
              * If an operation has backups, this property specifies how long the invocation will wait for acks from the backup replicas.
              * If acks are not received from some backups, there will not be any rollback on other successful replicas.
              */
@@ -313,8 +296,6 @@ namespace hazelcast {
             client_property backpressure_backoff_timeout_millis_;
             client_property statistics_enabled_;
             client_property statistics_period_seconds_;
-            client_property io_thread_count_;
-            client_property response_executor_thread_count_;
             client_property backup_timeout_millis_;
             client_property fail_on_indeterminate_state_;
 

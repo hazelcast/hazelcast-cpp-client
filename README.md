@@ -93,10 +93,8 @@
         * [7.6.1.3 Scaling The Executor Service](#7613-scaling-the-executor-service)
         * [7.6.1.4 Executing Code in the Cluster](#7614-executing-code-in-the-cluster)
         * [7.6.1.5 Canceling an Executing Task](#7615-canceling-an-executing-task)
-            * [7.6.1.5.1 Example Task to Cancel](#76151-example-task-to-cancel)
-        * [7.6.1.6 Callback When Task Completes](#7616-callback-when-task-completes)
-            * [7.6.1.6.1 Example Task to Callback](#76161-example-task-to-callback)
-        * [7.6.1.7 Selecting Members for Task Execution](#7617-selecting-members-for-task-execution)
+          * [7.6.1.5.1 Example Task to Cancel](#76151-example-task-to-cancel)
+        * [7.6.1.6 Selecting Members for Task Execution](#7616-selecting-members-for-task-execution)
     * [7.6.2. Using entry_processor](#762-using-entryprocessor)
   * [7.7. Distributed Query](#77-distributed-query)
     * [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
@@ -2323,43 +2321,7 @@ The following code waits for the task to be completed in 3 seconds. If it is not
                 }
 ```
 
-#### 7.6.1.6 Callback When Task Completes
-
-You can use the `execution_callback` interface offered by Hazelcast to asynchronously be notified when the execution is done.
-
-* To be notified when your task completes without an error, implement the `on_response` method.
-* To be notified when your task completes with an error, implement the `on_failure` method.
-
-#### 7.6.1.6.1 Example Task to Callback
-
-The example code below submits the `MessagePrinter` task to `PrinterCallback` and prints the result asynchronously. `ExecutionCallback` has the methods `onResponse` and `onFailure`. In this example code, `onResponse` is called upon a valid response and prints the calculation result, whereas `onFailure` is called upon a failure and prints the exception details.
-
-```C++
-    boost::shared_ptr<ExecutionCallback<std::string> > callback(new PrinterCallback());
-    ex->submit<MessagePrinter, std::string>(MessagePrinter(input), callback);
-```
-
-The `PrinterCallback` implementation class is as below:
-
-```C++
-class PrinterCallback : public execution_callback<std::string> {
-public:
-    void on_response(const boost::optional<std::string> &response) override {
-        std::cout << "The execution of the task is completed successfully and server returned:" << *response
-                  << std::endl;
-    }
-
-    void on_failure(std::exception_ptr e) override {
-        try {
-            std::rethrow_exception(e);
-        } catch (hazelcast::client::exception::iexception &e) {
-            std::cout << "The execution of the task failed with exception:" << e << std::endl;
-        }
-    }
-};
-```
-
-#### 7.6.1.7 Selecting Members for Task Execution
+#### 7.6.1.6 Selecting Members for Task Execution
 As previously mentioned, it is possible to indicate where in the Hazelcast cluster the task is executed. Usually you execute these in the cluster based on the location of a key or set of keys, or you allow Hazelcast to select a member.
 
 If you want more control over where your code runs, use the `member_selector` interface. For example, you may want certain tasks to run only on certain members, or you may wish to implement some form of custom load balancing regime.  The `member_selector` is an interface that you can implement and then provide to the `iexecutor_service` when you submit or execute.

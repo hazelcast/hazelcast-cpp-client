@@ -97,8 +97,6 @@ namespace hazelcast {
                 shuffle_member_list_ = clientProperties.get_boolean(clientProperties.get_shuffle_member_list());
 
                 ClientConnectionManagerImpl::address_providers_ = address_providers;
-
-                io_thread_count_ = clientProperties.get_integer(clientProperties.get_io_thread_count());
             }
 
             bool ClientConnectionManagerImpl::start() {
@@ -118,9 +116,7 @@ namespace hazelcast {
 
                 socket_interceptor_ = client_.get_client_config().get_socket_interceptor();
 
-                for (int j = 0; j < io_thread_count_; ++j) {
-                    io_threads_.emplace_back([=]() { io_context_->run(); });
-                }
+                io_thread_ = std::thread([=]() { io_context_->run(); });
 
                 executor_.reset(new hazelcast::util::hz_thread_pool(EXECUTOR_CORE_POOL_SIZE));
                 connect_to_members_timer_ = boost::asio::steady_timer(executor_->get_executor());
@@ -175,10 +171,9 @@ namespace hazelcast {
 
                 io_guard_.reset();
                 io_context_->stop();
-                boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(*io_context_).shutdown();
-                for (auto &t : io_threads_) {
-                    t.join();
-                }
+                boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(
+                        *io_context_).shutdown();
+                io_thread_.join();
 
                 connection_listeners_.clear();
                 active_connections_.clear();
@@ -832,8 +827,7 @@ namespace hazelcast {
 
             void Connection::connect() {
                 socket_->connect(shared_from_this());
-                backup_timer_.reset(new boost::asio::steady_timer(
-                        client_context_.get_client_execution_service().get_user_executor()));
+                backup_timer_.reset(new boost::asio::steady_timer(socket_->get_executor().context()));
                 auto backupTimeout = static_cast<spi::impl::ClientInvocationServiceImpl &>(invocation_service_).get_backup_timeout();
                 auto this_connection = shared_from_this();
                 schedule_periodic_backup_cleanup(backupTimeout, this_connection);

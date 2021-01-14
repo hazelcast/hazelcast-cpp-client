@@ -207,14 +207,13 @@ namespace hazelcast {
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connection_listeners_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
-                int32_t io_thread_count_;
                 bool shuffle_member_list_;
                 std::vector<std::shared_ptr<AddressProvider> > address_providers_;
                 std::atomic<int32_t> connection_id_gen_;
                 std::unique_ptr<boost::asio::ip::tcp::resolver> io_resolver_;
                 std::unique_ptr<internal::socket::SocketFactory> socket_factory_;
                 HeartbeatManager heartbeat_;
-                std::vector<std::thread> io_threads_;
+                std::thread io_thread_;
                 std::unique_ptr<boost::asio::io_context::work> io_guard_;
                 const bool async_start_;
                 const config::client_connection_strategy_config::reconnect_mode reconnect_mode_;

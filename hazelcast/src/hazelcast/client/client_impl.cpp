@@ -594,12 +594,6 @@ namespace hazelcast {
         const std::string client_properties::STATISTICS_PERIOD_SECONDS = "hazelcast.client.statistics.period.seconds";
         const std::string client_properties::STATISTICS_PERIOD_SECONDS_DEFAULT = "3";
 
-        const std::string client_properties::IO_THREAD_COUNT = "hazelcast.client.io.thread.count";
-        const std::string client_properties::IO_THREAD_COUNT_DEFAULT = "1";
-
-        const std::string client_properties::RESPONSE_EXECUTOR_THREAD_COUNT = "hazelcast.client.response.executor.thread.count";
-        const std::string client_properties::RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT = "0";
-
         client_property::client_property(const std::string &name, const std::string &default_value)
                 : name_(name), default_value_(default_value) {
         }
@@ -645,8 +639,6 @@ namespace hazelcast {
                                                    BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT),
                   statistics_enabled_(STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
                   statistics_period_seconds_(STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT),
-                  io_thread_count_(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT),
-                  response_executor_thread_count_(RESPONSE_EXECUTOR_THREAD_COUNT, RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT),
                   backup_timeout_millis_(OPERATION_BACKUP_TIMEOUT_MILLIS, OPERATION_BACKUP_TIMEOUT_MILLIS_DEFAULT),
                   fail_on_indeterminate_state_(FAIL_ON_INDETERMINATE_OPERATION_STATE, FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT),
                   properties_map_(properties) {
@@ -704,10 +696,6 @@ namespace hazelcast {
             return statistics_period_seconds_;
         }
 
-        const client_property &client_properties::get_io_thread_count() const {
-            return io_thread_count_;
-        }
-
         std::string client_properties::get_string(const client_property &property) const {
             std::unordered_map<std::string, std::string>::const_iterator valueIt = properties_map_.find(property.get_name());
             if (valueIt != properties_map_.end()) {
@@ -732,10 +720,6 @@ namespace hazelcast {
 
         int64_t client_properties::get_long(const client_property &property) const {
             return util::IOUtil::to_value<int64_t>(get_string(property));
-        }
-
-        const client_property &client_properties::get_response_executor_thread_count() const {
-            return response_executor_thread_count_;
         }
 
         const client_property &client_properties::backup_timeout_millis() const {

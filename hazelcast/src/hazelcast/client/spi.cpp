@@ -554,14 +554,12 @@ namespace hazelcast {
                                   client.get_client_properties().get_invocation_timeout_seconds()))),
                           invocation_retry_pause_(std::chrono::milliseconds(client.get_client_properties().get_long(
                                   client.get_client_properties().get_invocation_retry_pause_millis()))),
-                          response_thread_(logger_, *this, client),
                           smart_routing_(client.get_client_config().get_network_config().is_smart_routing()),
                           backup_acks_enabled_(smart_routing_ && client.get_client_config().backup_acks_enabled()),
                           fail_on_indeterminate_operation_state_(client.get_client_properties().get_boolean(client.get_client_properties().fail_on_indeterminate_state())),
                           backup_timeout_(std::chrono::milliseconds(client.get_client_properties().get_integer(client.get_client_properties().backup_timeout_millis()))) {}
 
                 void ClientInvocationServiceImpl::start() {
-                    response_thread_.start();
                 }
 
                 void ClientInvocationServiceImpl::add_backup_listener() {
@@ -574,8 +572,6 @@ namespace hazelcast {
 
                 void ClientInvocationServiceImpl::shutdown() {
                     is_shutdown_.store(true);
-
-                    response_thread_.shutdown();
                 }
 
                 std::chrono::milliseconds ClientInvocationServiceImpl::get_invocation_timeout() const {
@@ -593,7 +589,20 @@ namespace hazelcast {
                 void
                 ClientInvocationServiceImpl::handle_client_message(const std::shared_ptr<ClientInvocation> &invocation,
                                                                    const std::shared_ptr<protocol::ClientMessage> &response) {
-                    response_thread_.process(invocation, response);
+                    try {
+                        if (protocol::codec::ErrorCodec::EXCEPTION_MESSAGE_TYPE == response->get_message_type()) {
+                            auto error_holder = protocol::codec::ErrorCodec::decode(*response);
+                            invocation->notify_exception(
+                                    client_.get_client_exception_factory().create_exception(error_holder));
+                        } else {
+                            invocation->notify(response);
+                        }
+                    } catch (std::exception &e) {
+                        HZ_LOG(logger_, severe,
+                               boost::str(boost::format("Failed to process response for %1%. %2%")
+                                          % *invocation % e.what())
+                        );
+                    }
                 }
 
                 bool ClientInvocationServiceImpl::send(const std::shared_ptr<impl::ClientInvocation>& invocation,
@@ -630,57 +639,6 @@ namespace hazelcast {
                         return false;
                     }
                     return send(invocation, connection);
-                }
-
-                ClientInvocationServiceImpl::ResponseProcessor::ResponseProcessor(logger &lg,
-                                                                                  ClientInvocationServiceImpl &invocation_service,
-                                                                                  ClientContext &client_context)
-                        : logger_(lg), client_(client_context) {
-                }
-
-                void ClientInvocationServiceImpl::ResponseProcessor::process_internal(
-                        const std::shared_ptr<ClientInvocation> &invocation,
-                        const std::shared_ptr<protocol::ClientMessage> &response) {
-                    try {
-                        if (protocol::codec::ErrorCodec::EXCEPTION_MESSAGE_TYPE == response->get_message_type()) {
-                            auto error_holder = protocol::codec::ErrorCodec::decode(*response);
-                            invocation->notify_exception(client_.get_client_exception_factory().create_exception(error_holder));
-                        } else {
-                            invocation->notify(response);
-                        }
-                    } catch (std::exception &e) {
-                        HZ_LOG(logger_, severe, 
-                            boost::str(boost::format("Failed to process response for %1%. %2%")
-                                                     % *invocation % e.what())
-                        );
-                    }
-                }
-
-                void ClientInvocationServiceImpl::ResponseProcessor::shutdown() {
-                    ClientExecutionServiceImpl::shutdown_thread_pool(pool_.get());
-                }
-
-                void ClientInvocationServiceImpl::ResponseProcessor::start() {
-                    client_properties &clientProperties = client_.get_client_properties();
-                    auto threadCount = clientProperties.get_integer(clientProperties.get_response_executor_thread_count());
-                    if (threadCount > 0) {
-                        pool_.reset(new hazelcast::util::hz_thread_pool(threadCount));
-                    }
-                }
-
-                ClientInvocationServiceImpl::ResponseProcessor::~ResponseProcessor() {
-                    shutdown();
-                }
-
-                void ClientInvocationServiceImpl::ResponseProcessor::process(
-                        const std::shared_ptr<ClientInvocation> &invocation,
-                        const std::shared_ptr<protocol::ClientMessage> &response) {
-                    if (!pool_) {
-                        process_internal(invocation, response);
-                        return;
-                    }
-
-                    boost::asio::post(pool_->get_executor(), [=] { process_internal(invocation, response); });
                 }
 
                 DefaultAddressProvider::DefaultAddressProvider(config::client_network_config &network_config,
@@ -1016,24 +974,11 @@ namespace hazelcast {
                                 client_properties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);
                     }
 
-                    if (user_executor_pool_size_ <= 0) {
-                        user_executor_pool_size_ = std::thread::hardware_concurrency();
-                    }
-                    if (user_executor_pool_size_ <= 0) {
-                        user_executor_pool_size_ = 4; // hard coded thread pool count in case we could not get the processor count
-                    }
-
                     internal_executor_.reset(new hazelcast::util::hz_thread_pool(internalPoolSize));
-                    user_executor_.reset(new hazelcast::util::hz_thread_pool(user_executor_pool_size_));
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
-                    shutdown_thread_pool(user_executor_.get());
                     shutdown_thread_pool(internal_executor_.get());
-                }
-
-                boost::asio::thread_pool::executor_type ClientExecutionServiceImpl::get_user_executor() const {
-                    return user_executor_->get_executor();
                 }
 
                 void ClientExecutionServiceImpl::shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool) {
