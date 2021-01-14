@@ -68,12 +68,9 @@ namespace hazelcast {
                         return schedule_with_repetition_internal(token, delay, period, timer);
                     }
 
-                    boost::asio::thread_pool::executor_type get_user_executor() const;
-
                     static void shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool);
                 private:
                     std::unique_ptr<hazelcast::util::hz_thread_pool> internal_executor_;
-                    std::unique_ptr<hazelcast::util::hz_thread_pool> user_executor_;
                     spi::lifecycle_service &lifecycle_service_;
                     const client_properties &client_properties_;
                     int user_executor_pool_size_;

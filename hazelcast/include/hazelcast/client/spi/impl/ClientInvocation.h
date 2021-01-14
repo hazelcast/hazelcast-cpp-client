@@ -143,7 +143,6 @@ namespace hazelcast {
 
                     logger &logger_;
                     lifecycle_service &lifecycle_service_;
-                    ClientClusterServiceImpl &client_cluster_service_;
                     ClientInvocationServiceImpl &invocation_service_;
                     std::shared_ptr<ClientExecutionServiceImpl> execution_service_;
                     boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>> client_message_;

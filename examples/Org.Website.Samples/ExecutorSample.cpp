@@ -90,22 +90,6 @@ namespace hazelcast {
     }
 }
 
-class PrinterCallback : public execution_callback<std::string> {
-public:
-    void on_response(const boost::optional<std::string> &response) override {
-        std::cout << "The execution of the task is completed successfully and server returned:" << *response
-                  << std::endl;
-    }
-
-    void on_failure(std::exception_ptr e) override {
-        try {
-            std::rethrow_exception(e);
-        } catch (hazelcast::client::exception::iexception &e) {
-            std::cout << "The execution of the task failed with exception:" << e << std::endl;
-        }
-    }
-};
-
 class MyMemberSelector : public member_selector {
 public:
     bool select(const member &member) const override {
@@ -137,9 +121,6 @@ int main() {
     // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
     ex->execute_on_key_owner<MessagePrinter, std::string>(
             MessagePrinter{"message to the member that owns the key"}, "key");
-    // Use a callback execution when the task is completed
-    ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message for the callback"},
-                                            std::make_shared<PrinterCallback>());
     // Choose which member to submit the task to using a member selector
     ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message when using the member selector"},
                                             MyMemberSelector());

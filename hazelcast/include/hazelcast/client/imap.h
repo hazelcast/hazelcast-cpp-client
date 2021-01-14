@@ -594,15 +594,18 @@ namespace hazelcast {
                     futures.push_back(get_all_internal(entry.first, entry.second));
                 }
 
-                return boost::when_all(futures.begin(), futures.end()).then(boost::launch::deferred,
+                return boost::when_all(futures.begin(), futures.end()).then(boost::launch::sync,
                                                                             [=](boost::future<boost::csbl::vector<boost::future<EntryVector>>> results_data) {
                                                                                 std::unordered_map<K, V> result;
                                                                                 for (auto &entryVectorFuture : results_data.get()) {
-                                                                                    for(auto &entry : entryVectorFuture.get()) {
-                                                                                        auto val = to_object<V>(entry.second);
+                                                                                    for (auto &entry : entryVectorFuture.get()) {
+                                                                                        auto val = to_object<V>(
+                                                                                                entry.second);
                                                                                         // it is guaranteed that all values are non-null
                                                                                         assert(val.has_value());
-                                                                                        result[to_object<K>(entry.first).value()] = std::move(val.value());
+                                                                                        result[to_object<K>(
+                                                                                                entry.first).value()] = std::move(
+                                                                                                val.value());
                                                                                     }
                                                                                 }
                                                                                 return result;
@@ -950,7 +953,7 @@ namespace hazelcast {
                     auto partitionId = partitionEntry.first;
                     resultFutures.push_back(put_all_internal(partitionId, std::move(partitionEntry.second)));
                 }
-                return boost::when_all(resultFutures.begin(), resultFutures.end()).then(boost::launch::deferred,
+                return boost::when_all(resultFutures.begin(), resultFutures.end()).then(boost::launch::sync,
                                                                                         [](boost::future<boost::csbl::vector<boost::future<protocol::ClientMessage>>> futures) {
                                                                                             for (auto &f : futures.get()) {
                                                                                                 f.get();

@@ -1270,7 +1270,7 @@ namespace hazelcast {
                                         map_->put<int, std::vector<char>>(key, value).get();
                                         ++putCount;
                                     } else {
-                                        map_->remove<int, std::string>(key).get();
+                                        map_->remove<int, std::vector<char>>(key).get();
                                         ++removeCount;
                                     }
                                     update_stats(updateIntervalCount, getCount, putCount, removeCount);
@@ -1472,6 +1472,42 @@ namespace hazelcast {
                 server.shutdown();
 
                 ASSERT_THROW((map->get<int, int>(1).get()), exception::hazelcast_client_not_active);
+            }
+
+            TEST_F(IssueTest, testIssue753) {
+                HazelcastServer server(*g_srvFactory);
+
+                hazelcast::client::hazelcast_client hz;
+
+                auto map = hz.get_map("my_map").get();
+
+                ASSERT_NO_THROW(map->put(1, 5).get());
+                auto result = map->get<int, int>(1)
+                        .then(boost::launch::async, [](boost::future<boost::optional<int>> f) {
+                            return 3 * f.get().value();
+                        }).get();
+
+                ASSERT_EQ(3 * 5, result);
+
+                boost::latch success_deferred(1);
+                map->lock<int>(1).then(boost::launch::deferred, [](boost::future<void> f) {
+                    f.get();
+                }).then(boost::launch::deferred, [&](boost::future<void> f) {
+                    map->unlock<int>(1).get();
+                    success_deferred.count_down();
+                }).get();
+
+                ASSERT_OPEN_EVENTUALLY(success_deferred);
+
+                boost::latch success_async_deferred(1);
+                map->lock<int>(1).then(boost::launch::async, [](boost::future<void> f) {
+                    f.get();
+                }).then(boost::launch::deferred, [&](boost::future<void> f) {
+                    map->unlock<int>(1).get();
+                    success_async_deferred.count_down();
+                }).get();
+
+                ASSERT_OPEN_EVENTUALLY(success_async_deferred);
             }
         }
     }

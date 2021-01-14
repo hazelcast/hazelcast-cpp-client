@@ -47,8 +47,9 @@ namespace hazelcast {
             public:
                 template<typename T>
                 static boost::future<void> to_void_future(boost::future<T> message_future) {
-                    return message_future.then(boost::launch::deferred, [](boost::future<T> f) {
-                        f.get(); }
+                    return message_future.then(boost::launch::sync, [](boost::future<T> f) {
+                                                   f.get();
+                                               }
                     );
                 }
 
@@ -134,37 +135,38 @@ namespace hazelcast {
 
                 template<typename T>
                 boost::future<boost::optional<T>> to_object(boost::future<serialization::pimpl::data> f) {
-                    return f.then(boost::launch::deferred, [=] (boost::future<serialization::pimpl::data> f) {
+                    return f.then(boost::launch::sync, [=](boost::future<serialization::pimpl::data> f) {
                         return to_object<T>(f.get());
                     });
                 }
 
                 template<typename T>
                 boost::future<boost::optional<T>> to_object(boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
-                    return f.then(boost::launch::deferred, [=] (boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
-                        return to_object<T>(f.get());
-                    });
+                    return f.then(boost::launch::sync,
+                                  [=](boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
+                                      return to_object<T>(f.get());
+                                  });
                 }
 
                 template<typename T>
                 inline boost::future<std::vector<T>>
                 to_object_vector(boost::future<std::vector<serialization::pimpl::data>> data_future) {
-                    return data_future.then(boost::launch::deferred,
-                                           [=](boost::future<std::vector<serialization::pimpl::data>> f) {
-                                               auto dataResult = f.get();
-                                               std::vector<T> result;
-                                               result.reserve(dataResult.size());
-                                               for (const auto &d : dataResult) {
-                                                   // The object is guaranteed to exist (non-null)
-                                                   result.push_back(std::move(to_object<T>(d).value()));
-                                               }
-                                               return result;
-                                           });
+                    return data_future.then(boost::launch::sync,
+                                            [=](boost::future<std::vector<serialization::pimpl::data>> f) {
+                                                auto dataResult = f.get();
+                                                std::vector<T> result;
+                                                result.reserve(dataResult.size());
+                                                for (const auto &d : dataResult) {
+                                                    // The object is guaranteed to exist (non-null)
+                                                    result.push_back(std::move(to_object<T>(d).value()));
+                                                }
+                                                return result;
+                                            });
                 }
 
                 template<typename K, typename V>
                 boost::future<std::unordered_map<K, boost::optional<V>>> to_object_map(boost::future<EntryVector> entries_data) {
-                    return entries_data.then(boost::launch::deferred, [=](boost::future<EntryVector> f) {
+                    return entries_data.then(boost::launch::sync, [=](boost::future<EntryVector> f) {
                         auto entries = f.get();
                         std::unordered_map<K, boost::optional<V>> result;
                         result.reserve(entries.size());
@@ -178,7 +180,7 @@ namespace hazelcast {
                 template<typename K, typename V>
                 inline boost::future<std::vector<std::pair<K, V>>>
                 to_entry_object_vector(boost::future<EntryVector> data_future) {
-                    return data_future.then(boost::launch::deferred, [=](boost::future<EntryVector> f) {
+                    return data_future.then(boost::launch::sync, [=](boost::future<EntryVector> f) {
                         auto dataEntryVector = f.get();
                         std::vector<std::pair<K, V>> result;
                         result.reserve(dataEntryVector.size());
@@ -231,7 +233,7 @@ namespace hazelcast {
                 template<typename T>
                 static boost::future<boost::optional<T>>
                 decode_optional_var_sized(boost::future<protocol::ClientMessage> f) {
-                    return f.then(boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) {
+                    return f.then(boost::launch::sync, [](boost::future<protocol::ClientMessage> f) {
                         auto msg = f.get();
                         return msg.get_first_optional_var_sized_field<T>();
                     });
@@ -240,7 +242,7 @@ namespace hazelcast {
                 template<typename T>
                 typename std::enable_if<std::is_trivial<T>::value, boost::future<T>>::type
                 static decode(boost::future<protocol::ClientMessage> f) {
-                    return f.then(boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) {
+                    return f.then(boost::launch::sync, [](boost::future<protocol::ClientMessage> f) {
                         auto msg = f.get();
                         return msg.get_first_fixed_sized_field<T>();
                     });
@@ -249,7 +251,7 @@ namespace hazelcast {
                 template<typename T>
                 typename std::enable_if<!std::is_trivial<T>::value, boost::future<T>>::type
                 static decode(boost::future<protocol::ClientMessage> f) {
-                    return f.then(boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) {
+                    return f.then(boost::launch::sync, [](boost::future<protocol::ClientMessage> f) {
                         auto msg = f.get();
                         return *msg.get_first_var_sized_field<T>();
                     });
