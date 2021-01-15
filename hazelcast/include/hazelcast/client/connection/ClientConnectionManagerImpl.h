@@ -156,7 +156,7 @@ namespace hazelcast {
                 void connect_to_all_members();
 
                 static void
-                shutdown_with_external_thread(const std::weak_ptr<client::impl::hazelcast_client_instance_impl>& client_impl);
+                shutdown_with_external_thread(std::weak_ptr<client::impl::hazelcast_client_instance_impl> client_impl);
 
                 bool do_connect_to_cluster();
 

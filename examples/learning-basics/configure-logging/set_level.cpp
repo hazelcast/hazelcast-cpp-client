@@ -22,7 +22,7 @@ int main() {
 
     config.get_logger_config().level(hazelcast::logger::level::finest);
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 
     return 0;
 }

@@ -44,7 +44,7 @@ int main() {
     // my_log_handler will be called for each log message.
     config.get_logger_config().handler(my_log_handler);
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 
     return 0;
 }

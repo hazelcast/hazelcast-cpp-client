@@ -473,7 +473,7 @@ You can configure Hazelcast C++ Client programatically.
 You can start the client with no custom configuration like this:
 
 ```C++
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
+    auto hz = hazelcast::new_client().get(); // Connects to the cluster
 ```
 
 This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview)
@@ -485,8 +485,8 @@ pass this object to the client when starting it, as shown below.
 ```C++
     hazelcast::client::client_config config;
     config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
-    config.get_network_config().add_address(address("192.168.1.10", 5701));    
-    hazelcast::client::hazelcast_client hz(std::move(config)); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
+    config.get_network_config().add_address(address("192.168.1.10", 5701));
+    auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
 ```
 
 If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
@@ -551,7 +551,7 @@ The following example first creates a programmatic configuration object. Then, i
 ```C++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
+    auto hz = hazelcast::new_client().get(); // Connects to the cluster
     std::cout << "Started the Hazelcast C++ client instance " << hz.get_name() << std::endl; // Prints client instance name
     return 0;
 }
@@ -594,7 +594,7 @@ Then, you can run the application using the following command:
 ```C++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
+    auto hz = hazelcast::new_client().get(); // Connects to the cluster
 
     auto personnel = hz.get_map("personnel_map").get();
     personnel->put<std::string, std::string>("Alice", "IT").get();
@@ -651,9 +651,9 @@ Then, you can run the application using the following command:
 ```C++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
-    hazelcast::client::hazelcast_client hz; // Connects to the cluster
+auto hz = hazelcast::new_client().get(); // Connects to the cluster
 
-    auto personnel = hz.get_map("personnel_map").get();
+auto personnel = hz.get_map("personnel_map").get();
     personnel->put<std::string, std::string>("Denise", "Sales").get();
     personnel->put<std::string, std::string>("Erwing", "Sales").get();
     personnel->put<std::string, std::string>("Fatih", "Sales").get();
@@ -757,8 +757,8 @@ desired aspects. An example is shown below.
 
 ```C++
     hazelcast::client::client_config config;
-    config.get_network_config().add_address({"your server ip", 5701 /* your server port*/});
-    hazelcast::client::hazelcast_client hz(std::move(config)); // Connects to the cluster
+config.get_network_config().add_address({ "your server ip", 5701 /* your server port*/});
+auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster
 ```
 
 See the `client_config` class reference at the Hazelcast C++ client API Documentation for details.
@@ -949,9 +949,9 @@ You can use the JSON formatted strings as objects in Hazelcast cluster. Creating
 In order to use JSON serialization, you should use the `hazelcast_json_value` object for the key or value. Here is an example imap usage:
 
 ```C++
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
-    auto map = hz.get_map("map").get();
+auto map = hz.get_map("map").get();
 
     map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
     map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
@@ -1004,8 +1004,8 @@ You should register the global serializer in the configuration.
 
 ```C++
     hazelcast::client::client_config config;
-    config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
-    hazelcast::client::hazelcast_client hz(std::move(config));
+config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
+auto hz = hazelcast::new_client(std::move(config)).get();
 ```
 
 You need to utilize the `boost::any_cast` methods tyo actually use the objects provided for serialization and you are expected to return type `boost::any` from the `read` method. 
@@ -1326,8 +1326,8 @@ The following is an example on how to create a `client_config` object and config
 The second step is initializing the `hazelcast_client` to be connected to the cluster:
 
 ```C++
-    hazelcast_client client(clientConfig);
-    // some operation
+    auto client = new_client(std::move(clientConfig));
+// some operation
 ```
 
 **This client object is your gateway to access all the Hazelcast distributed objects.**
@@ -1616,9 +1616,9 @@ hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_re
 }
 
 void listen_with_default_config() {
-    hazelcast::client::hazelcast_client client;
+    auto client = hazelcast::new_client().get();
 
-    std::string topicName("MyReliableTopic");
+std::string topicName("MyReliableTopic");
     auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
@@ -1643,9 +1643,9 @@ void listen_with_config() {
     hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
     reliableTopicConfig.set_read_batch_size(5);
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
-    hazelcast::client::hazelcast_client client(std::move(clientConfig));
+auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
-    auto topic = client.get_reliable_topic(topicName).get();
+auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{0};
     auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
@@ -1671,9 +1671,9 @@ Hazelcast `pn_counter` (Positive-Negative Counter) is a CRDT positive-negative c
 A pn_counter usage example is shown below.
 
 ```C++
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
-    auto pnCounter = hz.get_pn_counter("pncounterexample").get();
+auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
     std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 
@@ -1998,9 +1998,9 @@ int main() {
     hazelcast::client::cluster *clusterPtr = nullptr;
     boost::uuids::uuid listenerId, initialListenerId;
     try {
-        hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
-        hazelcast::client::cluster &cluster = hz.get_cluster().get();
+    hazelcast::client::cluster &cluster = hz.get_cluster().get();
         clusterPtr = &cluster;
         auto members = cluster.get_members();
         std::cout << "The following are members in the cluster:" << std::endl;
@@ -2063,11 +2063,11 @@ int main() {
             }).on_disconnected([] () {
                 std::cout << "Client is disconnected from the cluster" << std::endl;                
             });
-    );
+);
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+auto hz = hazelcast::new_client(std::move(config)).get();
 
-    hz.shutdown().get();
+hz.shutdown().get();
     return 0;
 }
 ```
@@ -2108,9 +2108,9 @@ See the following example.
 
 ```C++
 int main() {
-    hazelcast::client::hazelcast_client hz;
+auto hz = hazelcast::new_client().get();
 
-    auto map = hz.get_map("EntryListenerExampleMap").get();
+auto map = hz.get_map("EntryListenerExampleMap").get();
 
     auto registrationId = map->add_entry_listener(
         entry_listener().
@@ -2139,9 +2139,9 @@ See the example below.
 
 ```C++
 int main() {
-    hazelcast::client::hazelcast_client hz;
+auto hz = hazelcast::new_client().get();
 
-    auto map = hz.get_map("EntryListenerExampleMap").get();
+auto map = hz.get_map("EntryListenerExampleMap").get();
 
     auto registrationId = map->add_entry_listener(
         entry_listener().
@@ -2274,8 +2274,8 @@ An example where `MessagePrinter` task is executed is shown below.
 
 ```C++
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast_client hz;
-    // Get the Distributed Executor Service
+auto hz = hazelcast::new_client().get();
+// Get the Distributed Executor Service
     std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
     auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
@@ -2299,9 +2299,9 @@ The distributed executor service allows you to execute your code in the cluster.
 
 ```C++
 void printOnTheMember(const std::string &input, const Member &member) {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast_client hz;
-    // Get the Distributed Executor Service
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+auto hz = hazelcast::new_client().get();
+// Get the Distributed Executor Service
     std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Get the first Hazelcast Cluster Member
     member firstMember = hz.get_cluster().get_members()[0];
@@ -2311,9 +2311,9 @@ void printOnTheMember(const std::string &input, const Member &member) {
 
 ```C++
 void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast_client hz;
-    // Get the Distributed Executor Service
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+auto hz = hazelcast::new_client().get();
+// Get the Distributed Executor Service
     std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
     ex->execute_on_key_owner<MessagePrinter, std::string>(
@@ -2323,9 +2323,9 @@ void printOnTheMemberOwningTheKey(const std::string &input, const std::string &k
 
 ```C++
 void printOnSomewhere(const std::string &input) {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast_client hz;
-    // Get the Distributed Executor Service
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+auto hz = hazelcast::new_client().get();
+// Get the Distributed Executor Service
     std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
     auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"}).get();
@@ -2334,9 +2334,9 @@ void printOnSomewhere(const std::string &input) {
 
 ```C++
 void printOnMembers(const std::string input, const std::vector<Member> &members) {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast_client hz;
-    // Get the Distributed Executor Service
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+auto hz = hazelcast::new_client().get();
+// Get the Distributed Executor Service
     std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
     ex->execute_on_members<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, members);
 }
@@ -2958,8 +2958,8 @@ Hazelcast Map can be configured to work with near cache enabled. You can enable 
     nearCacheConfig.set_invalidate_on_change(false);
     nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
             .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
-    config.add_near_cache_config(nearCacheConfig);
-    hazelcast_client client(std::move(config));
+config.add_near_cache_config(nearCacheConfig);
+hazelcast_client hz{ new_client(std::move(config)).get() };
 
 ```
 

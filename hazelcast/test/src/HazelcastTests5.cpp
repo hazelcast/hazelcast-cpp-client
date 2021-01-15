@@ -394,7 +394,7 @@ namespace hazelcast {
                     client_config clientConfig = get_config();
                     clientConfig.get_serialization_config().set_global_serializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
-                    client = new hazelcast_client(std::move(clientConfig));
+                    client = new hazelcast_client{new_client(std::move(clientConfig)).get()};
                     unknown_object_map = client->get_map("UnknownObject").get();
                 }
 
@@ -442,7 +442,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    client = new hazelcast_client(get_config());
+                    client = new hazelcast_client{new_client(get_config()).get()};
                     int_map = client->get_map("IntMap").get();
                 }
 
@@ -509,7 +509,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     client_config clientConfig(get_config());
                     clientConfig.set_property(client_properties::PROP_HEARTBEAT_TIMEOUT, "20");
-                    client = new hazelcast_client(std::move(clientConfig));
+                    client = new hazelcast_client{new_client(std::move(clientConfig)).get()};
                     map = client->get_map("map").get();
                 }
 
@@ -689,7 +689,7 @@ namespace hazelcast {
                     return config;
                 }
 
-                ClientMapTest() : client_(hazelcast_client(GetParam()())),
+                ClientMapTest() : client_(new_client(GetParam()()).get()),
                                   imap_(client_.get_map(imapName).get()),
                                   int_map_(client_.get_map(intMapName).get()),
                                   employees_(client_.get_map(employeesMapName).get()) {

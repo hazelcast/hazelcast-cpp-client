@@ -36,7 +36,7 @@ int main() {
      */
     config.set_property("hazelcast.client.event.queue.capacity", "50000");
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();
 

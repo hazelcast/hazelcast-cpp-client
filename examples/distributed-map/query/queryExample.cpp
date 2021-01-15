@@ -78,7 +78,7 @@ public:
     }
 
     void run() {
-        hazelcast_client hz;
+        auto hz = hazelcast::new_client().get();
 
         auto personMap = hz.get_map("personMap").get();
 
@@ -116,7 +116,7 @@ public:
 };
 
 void query_map_using_paging_predicate() {
-    hazelcast::client::hazelcast_client client;
+    auto client = hazelcast::new_client().get();
 
     auto intMap = client.get_map("testIntMapValuesWithpaging_predicate").get();
 
@@ -175,7 +175,7 @@ void query_map_using_paging_predicate() {
 }
 
 void query_map_using_different_predicates() {
-    hazelcast::client::hazelcast_client client;
+    auto client = hazelcast::new_client().get();
 
     auto intMap = client.get_map("testValuesWithPredicateIntMap").get();
 

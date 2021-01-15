@@ -31,7 +31,6 @@
 
 namespace hazelcast {
     namespace util {
-
         HAZELCAST_API int64_t get_current_thread_id();
 
         HAZELCAST_API void sleep(int seconds);

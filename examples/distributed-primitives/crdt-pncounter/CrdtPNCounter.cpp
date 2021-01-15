@@ -16,7 +16,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 

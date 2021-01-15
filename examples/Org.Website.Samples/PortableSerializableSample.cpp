@@ -53,7 +53,7 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
     //PortableSerializableSample can be used here
     hz.shutdown().get();
 
