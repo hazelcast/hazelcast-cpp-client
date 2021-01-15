@@ -17,7 +17,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     // Get a latch called 'my-latch'
     auto latch = hz.get_cp_subsystem().get_latch("my-latch'").get();

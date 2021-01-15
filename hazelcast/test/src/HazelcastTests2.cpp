@@ -498,7 +498,7 @@ namespace hazelcast {
             TEST_F(ClientConfigTest, test_set_instance_name) {
                 HazelcastServer instance(*g_srvFactory);
                 auto test_name = get_test_name();
-                hazelcast_client client(std::move(client_config().set_instance_name(test_name)));
+                hazelcast_client client(new_client(std::move(client_config().set_instance_name(test_name))).get());
                 ASSERT_EQ(test_name, client.get_name());
             }
 
@@ -568,7 +568,7 @@ namespace hazelcast {
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster) {
                     client_config_.get_connection_strategy_config().set_async_start(true);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
 
                     ASSERT_THROW((client.get_map(random_map_name()).get()),
                                  exception::hazelcast_client_offline);
@@ -578,7 +578,7 @@ namespace hazelcast {
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
                     client_config_.get_connection_strategy_config().set_async_start(true);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
                     client.shutdown().get();
                     ASSERT_THROW((client.get_map(random_map_name()).get()), exception::hazelcast_client_not_active);
 
@@ -602,7 +602,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_async_start(true);
 
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
@@ -621,7 +621,7 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         lifecycle_listener()
@@ -648,7 +648,7 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         lifecycle_listener()
@@ -675,7 +675,7 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         lifecycle_listener()
@@ -709,7 +709,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -735,7 +735,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
 
                     ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
 
@@ -775,7 +775,7 @@ namespace hazelcast {
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::ASYNC);
-                    hazelcast_client client(std::move(client_config_));
+                    hazelcast_client client(new_client(std::move(client_config_)).get());
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
@@ -819,7 +819,7 @@ namespace hazelcast {
             public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    client = new hazelcast_client(client_config());
+                    client = new hazelcast_client(new_client().get());
 
                     map = client->get_map(MAP_NAME).get();
                     expected = new std::vector<int>;
@@ -1722,10 +1722,11 @@ namespace hazelcast {
                                                                          : g_srvFactory)));
 
                     auto config = get_config();
-                    config.set_cluster_name(boost::endian::order::little == GetParam() ? "little-endian-cluster" : "dev");
+                    config.set_cluster_name(
+                            boost::endian::order::little == GetParam() ? "little-endian-cluster" : "dev");
                     config.get_serialization_config().set_byte_order(GetParam());
 
-                    client_.reset(new hazelcast_client(std::move(config)));
+                    client_.reset(new hazelcast_client(new_client(std::move(config)).get()));
                     map_ = client_->get_map("serialization_with_server_map").get();
                 }
 

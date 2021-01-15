@@ -48,7 +48,7 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("map").get();
 

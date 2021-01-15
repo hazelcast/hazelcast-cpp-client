@@ -56,7 +56,7 @@ int main() {
     hazelcast::client::cluster *clusterPtr = nullptr;
     boost::uuids::uuid listenerId, initialListenerId;
     try {
-        hazelcast::client::hazelcast_client hz;
+        auto hz = hazelcast::new_client().get();
 
         hazelcast::client::cluster &cluster = hz.get_cluster();
         clusterPtr = &cluster;

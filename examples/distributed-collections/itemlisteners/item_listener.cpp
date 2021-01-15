@@ -18,7 +18,7 @@
 #include <hazelcast/client/item_listener.h>
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     auto queue = hz.get_queue("queue").get();
 

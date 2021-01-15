@@ -23,7 +23,7 @@ int main() {
     config.get_network_config().add_address({serverIp, port}).add_addresses({{"127.0.0.1", 5702},
                                                                             {"192.168.1.10", 5701}});
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("test map");
 

@@ -86,8 +86,6 @@ namespace hazelcast {
             }
         }
 
-        class client_config;
-
         class transaction_context;
 
         class transaction_options;

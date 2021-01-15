@@ -16,7 +16,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 void publish_with_default_config() {
-    hazelcast::client::hazelcast_client client;
+    auto client = hazelcast::new_client().get();
 
     auto topic = client.get_reliable_topic("MyReliableTopic").get();
     topic->publish(std::string("My first message")).get();
@@ -28,7 +28,7 @@ void publish_with_non_default_config() {
     hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
     reliableTopicConfig.set_read_batch_size(5);
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
-    hazelcast::client::hazelcast_client client(std::move(clientConfig));
+    auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
     auto topic = client.get_reliable_topic(topicName).get();
 

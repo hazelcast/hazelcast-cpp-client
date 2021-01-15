@@ -114,9 +114,7 @@ namespace hazelcast {
             return client_impl_->get_local_endpoint();
         }
 
-        hazelcast_client::~hazelcast_client() {
-            client_impl_->shutdown();
-        }
+        hazelcast_client::~hazelcast_client() = default;
 
         cp::cp_subsystem &hazelcast_client::get_cp_subsystem() {
             return client_impl_->get_cp_subsystem();
@@ -184,7 +182,9 @@ namespace hazelcast {
                 statistics_.reset(new statistics::Statistics(client_context_));
             }
 
-            hazelcast_client_instance_impl::~hazelcast_client_instance_impl() = default;
+            hazelcast_client_instance_impl::~hazelcast_client_instance_impl() {
+                shutdown();
+            }
 
             void hazelcast_client_instance_impl::start() {
                 lifecycle_service_.fire_lifecycle_event(lifecycle_event::STARTING);
@@ -193,7 +193,7 @@ namespace hazelcast {
                     if (!lifecycle_service_.start()) {
                         lifecycle_service_.shutdown();
                         BOOST_THROW_EXCEPTION(exception::illegal_state("hazelcast_client",
-                                                                               "hazelcast_client could not be started!"));
+                                                                       "hazelcast_client could not be started!"));
                     }
                 } catch (std::exception &) {
                     lifecycle_service_.shutdown();
@@ -799,15 +799,28 @@ namespace hazelcast {
                                                                                                           retryable) {}
 
             member_left::member_left(const std::string &source, const std::string &message,
-                                                     const std::string &details, std::exception_ptr cause)
+                                     const std::string &details, std::exception_ptr cause)
                     : execution("member_left", protocol::MEMBER_LEFT, source, message, details,
-                                         cause, false,true) {}
+                                cause, false, true) {}
 
             consistency_lost::consistency_lost(const std::string &source, const std::string &message,
-                                                               const std::string &details, std::exception_ptr cause)
+                                               const std::string &details, std::exception_ptr cause)
                     : hazelcast_("consistency_lost", protocol::CONSISTENCY_LOST_EXCEPTION, source, message,
-                                         details, cause, true,false) {}
+                                 details, cause, true, false) {}
         }
+    }
+
+    boost::future<client::hazelcast_client> new_client() {
+        return boost::async([]() { return client::hazelcast_client(); });
+    }
+
+    boost::future<client::hazelcast_client> new_client(client::client_config config) {
+        return boost::async(
+            [](client::client_config &&c) {
+                return client::hazelcast_client(std::move(c));
+            },
+            std::move(config)
+        );
     }
 }
 

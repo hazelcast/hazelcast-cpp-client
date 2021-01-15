@@ -16,7 +16,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     auto flakeIdGenerator = hz.get_flake_id_generator("idGenerator").get();
     std::ostringstream out("somemap");

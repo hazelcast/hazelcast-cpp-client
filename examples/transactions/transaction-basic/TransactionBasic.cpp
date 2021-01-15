@@ -16,7 +16,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     hazelcast::client::transaction_options txOptions;
     txOptions.set_timeout(std::chrono::seconds(10));

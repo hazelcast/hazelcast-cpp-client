@@ -24,7 +24,7 @@ int main() {
     clientConfig.set_credentials(
             std::make_shared<hazelcast::client::security::username_password_credentials>("test-user", "test-pass"));
     
-    hazelcast::client::hazelcast_client hz(std::move(clientConfig));
+    auto hz = hazelcast::new_client(std::move(clientConfig)).get();
 
     auto map = hz.get_map("MyMap").get();
     
