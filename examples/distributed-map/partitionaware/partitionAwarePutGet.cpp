@@ -57,7 +57,7 @@ namespace hazelcast {
 const std::string PartitionAwareString::desiredPartitionString = "desiredKeyString";
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     PartitionAwareString partitionKey{"MyString"};
 

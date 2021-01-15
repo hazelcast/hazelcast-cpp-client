@@ -46,7 +46,7 @@ hazelcast::client::entry_listener make_listener() {
 }
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("somemap").get();
 

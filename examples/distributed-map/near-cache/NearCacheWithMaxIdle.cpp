@@ -30,9 +30,9 @@ int main() {
             .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT);
     nearCacheConfig.set_max_idle_seconds(1);
     config.add_near_cache_config(nearCacheConfig);
-    hazelcast_client client(std::move(config));
+    hazelcast_client hz{hazelcast::new_client(std::move(config)).get()};
 
-    auto map = client.get_map(mapName).get();
+    auto map = hz.get_map(mapName).get();
 
     map->put<int, std::string>(1, "foo").get();
     NearCacheSupport::print_near_cache_stats(map, "The put(1, article) call has no effect on the empty Near Cache");

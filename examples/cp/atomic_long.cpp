@@ -17,7 +17,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
 
     // Get an AtomicLong called 'my-atomic-long'
     auto atomic_counter = hz.get_cp_subsystem().get_atomic_long("my-atomic-long").get();

@@ -51,7 +51,7 @@ int main() {
     serializationConfig.set_global_serializer(std::make_shared<MyGlobalSerializer>());
     config.set_serialization_config(serializationConfig);
 
-    hazelcast::client::hazelcast_client hz(std::move(config));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 
     return 0;
 }

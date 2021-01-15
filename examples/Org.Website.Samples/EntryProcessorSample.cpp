@@ -51,7 +51,7 @@ namespace hazelcast {
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    hazelcast_client hz;
+    auto hz = hazelcast::new_client().get();
     // Get the Distributed Map from Cluster.
     auto map = hz.get_map("my-distributed-map").get();
     // Put the integer value of 0 into the Distributed Map
