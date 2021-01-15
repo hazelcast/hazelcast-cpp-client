@@ -2,7 +2,7 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(Boost 1.71 REQUIRED COMPONENTS headers thread chrono)
+find_dependency(Boost 1.71 REQUIRED COMPONENTS thread chrono)
 
 if (@WITH_OPENSSL@)
     find_dependency(OpenSSL REQUIRED)

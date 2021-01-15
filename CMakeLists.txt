@@ -88,7 +88,7 @@ endif ()
 find_package(Threads REQUIRED)
 
 # find Boost
-find_package(Boost 1.71 REQUIRED COMPONENTS headers thread chrono)
+find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
 
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)
@@ -131,7 +131,7 @@ function(add_hazelcast_library name type)
     # add Boost::thread and Boost::chrono as dependencies
     target_link_libraries(
         ${name}
-        PUBLIC Boost::headers Boost::thread Boost::chrono
+        PUBLIC Boost::boost Boost::thread Boost::chrono
     )
     # set the Boost thread version
     target_compile_definitions(
