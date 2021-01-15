@@ -210,11 +210,14 @@ cd build
 
 Run `cmake` to configure:
 ```bat
-cmake -G "Visual Studio 16 2019" ..
+cmake -G "Visual Studio 16 2019" .. -DCMAKE_INSTALL_PREFIX=C:\HazelcastCxx
 ``` 
-The command above assumes that you have Visual Studio 2019 installed. 
-See `cmake --help` for generator options.
+The above command assumes that you have Visual Studio 2019 installed. 
+If you are using another version or another compiler, 
+see the output of `cmake --help` for a list of generators that are avaliable on your platform.
 
+You also set the installation location in the configuration command above. 
+Pass the `-DCMAKE_INSTALL_PREFIX=C:\path\to\install` option to specify your desired installation location.
 
 Build and install:
 ```bat
@@ -223,7 +226,6 @@ cmake --build . --target install --config Release
 ```
 The above commands will build and install the library with the `Release` configuration. 
 The install command may require administrator privileges depending on your install prefix. 
-See the [this section](#custom-install-location) for information on how to use a different install location.
 
 ### 1.1.5. Advanced installation
 
@@ -377,8 +379,19 @@ g++ -std=c++11 \
 ```
 
 #### 1.3.3. Windows users
+Provide your compiler with the include directories and library files for the Hazelcast IMDG C++ client and its dependencies.
 
-What to write here?
+You also need to pass the preprocessor definition `BOOST_THREAD_VERSION=5`
+for necessary features such as futures and future continuations to be enabled. 
+
+The following is a command that can be used to compile an example from the examples directory.
+```bat
+cl.exe path\to\example.cpp ^
+    C:\HazelcastCxx\lib\hazelcastcxx.lib ^
+    C:\path\to\boost\lib\boost_thread.lib C:\path\to\boost\lib\boost_chrono.lib ^
+    /EHsc /DBOOST_THREAD_VERSION=5 ^
+    /I C:\HazelcastCxx\include /I C:\path\to\boost\include
+```
 
 ## 1.4. Basic Configuration
 
