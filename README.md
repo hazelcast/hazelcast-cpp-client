@@ -156,7 +156,7 @@ This chapter provides information on how to get started with your Hazelcast C++ 
 2. A compiler that supports C++11
 3. [CMake](https://cmake.org) 3.10 or above 
 4. [Boost](https://www.boost.org) 1.71 or above 
-5. [OpenSSL](https://www.openssl.org) (optional) (version ?)
+5. [OpenSSL](https://www.openssl.org) (optional)
 
 ### 1.1.2. Downloading
 Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page to 
@@ -372,7 +372,7 @@ options to add the library and include paths to the compiler's search path.
 ```
 g++ -std=c++11 \
     examples/path/to/example.cpp \
-    -I /path/to/install/include -L /path/to/install/lib 
+    -I /path/to/install/include -L /path/to/install/lib \
     -lhazelcastcxx -lboost_thread -lboost_chrono 
 ```
 
@@ -568,7 +568,7 @@ Let's manipulate a distributed map on a cluster using the client.
 Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
 
 ```C++
-`g++ IT.cpp -o IT  -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
+g++ IT.cpp -o IT -lhazelcastcxx -lboost_thread -lboost_chrono
 ```
 Then, you can run the application using the following command:
  
@@ -623,8 +623,7 @@ Now create a `Sales.cpp` file, compile and run it as shown below.
 **Compile:**
 
 ```C++
-`g++ Sales.cpp -o Sales -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
-
+g++ Sales.cpp -o Sales -lhazelcastcxx -lboost_thread -lboost_chrono
 ```
 **Run**
 
