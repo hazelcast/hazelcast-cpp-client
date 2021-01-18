@@ -6,8 +6,8 @@
   * [1.1. Installing](#11-installing)
     * [1.1.1. Requirements](#111-requirements)
     * [1.1.2. Downloading](#112-downloading)
-    * [1.1.3. Linux and MacOS users](#113-linux-and-macos-users)
-    * [1.1.4. Windows users](#114-windows-users)
+    * [1.1.3. Linux and MacOS Users](#113-linux-and-macos-users)
+    * [1.1.4. Windows Users](#114-windows-users)
     * [1.1.5. Advanced installation](#115-advanced-installation)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
@@ -169,7 +169,7 @@ Follow the instructions for your platform:
 * [Linux and maxOS](#113-linux-and-macos-users)
 * [Windows](#114-windows-users)
 
-### 1.1.3. Linux and MacOS users
+### 1.1.3. Linux and MacOS Users
 Here is how you download and extract version 4.0.0 using the **curl** command:
 ```sh
 curl -Lo hazelcast-cpp-client-4.0.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.0.0.tar.gz
@@ -204,7 +204,7 @@ sudo cmake --build . --target install
 ```
 See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
-### 1.1.4. Windows users
+### 1.1.4. Windows Users
 Download and extract the release archive from the 
 [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page.
 
@@ -233,16 +233,16 @@ Make sure you pass the same `--config` option to both commands.
 The install command may require administrator privileges depending on your install prefix. 
 See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
-### 1.1.5. Advanced installation
+### 1.1.5. Advanced Installation
 
-#### 1.1.5.1. Custom install location
+#### 1.1.5.1. Custom Install Location
 Pass the argument `-DCMAKE_INSTALL_PREFIX=/path/to/install` the first time you run `cmake` to configure 
 the installation directory:
 ```sh
 cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
 ```
 
-#### 1.1.5.2. CMake configuration
+#### 1.1.5.2. CMake Configuration
 You can provide additional configuration options using the `-DVARIABLE=VALUE` syntax on the command line.
 Here are all the options that are supported:
 * `WITH_OPENSSL` : Set to `ON` to build the library with SSL support.
@@ -251,7 +251,7 @@ This will require [OpenSSL](https://www.openssl.org) to be installed on your sys
 * `BUILD_SHARED_LIB` : Set to `ON` or `OFF` depending on whether you want the shared library. The default is `ON`.
 * `DISABLE_LOGGING` : Setting this option to `ON` disables logging. The default is `OFF`.
 
-##### Example configuration commands
+##### 1.1.5.2.1 Example Configuration Commands
 Build only the static library with SSL support:
 ```sh
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIB=OFF -DBUILD_STATIC_LIB=ON
@@ -341,7 +341,7 @@ If you are not, then read the instructions specific to your platform:
 * [Linux and MacOS](#132-linux-and-macos-users)
 * [Windows](#133-windows-users)
 
-#### 1.3.1. CMake users
+#### 1.3.1. CMake Users
 A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. 
 If your project is using CMake, you can easily find and link against the client library:
 ```cmake
@@ -356,7 +356,7 @@ Options are `hazelcastcxx`, `hazelcastcxx_ssl`, `hazelcastcxx_static`, and `haze
 Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 
 if you are using a custom installation location. 
 
-#### 1.3.2. Linux and MacOS users
+#### 1.3.2. Linux and MacOS Users
 You can pass the `-lhazelcastcxx` or `-lhazelcastcxx_ssl` option to the compiler to link against 
 the client library. The name of library depends on how it was configured during build time. 
 If the library was built with `-DWITH_OPENSSL=ON`, then the name is `hazelcastcxx_ssl`.
@@ -384,7 +384,7 @@ g++ -std=c++11 \
     -lhazelcastcxx -lboost_thread -lboost_chrono 
 ```
 
-#### 1.3.3. Windows users
+#### 1.3.3. Windows Users
 Provide your compiler with the include directories and library files for the Hazelcast IMDG C++ client and its dependencies.
 
 You also need to pass the preprocessor definition `BOOST_THREAD_VERSION=5`
