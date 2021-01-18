@@ -590,7 +590,7 @@ Let's manipulate a distributed map on a cluster using the client.
 Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
 
 ```C++
-g++ IT.cpp -o IT -lhazelcastcxx -lboost_thread -lboost_chrono
+g++ IT.cpp -o IT -lhazelcastcxx -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 Then, you can run the application using the following command:
  
@@ -645,7 +645,7 @@ Now create a `Sales.cpp` file, compile and run it as shown below.
 **Compile:**
 
 ```C++
-g++ Sales.cpp -o Sales -lhazelcastcxx -lboost_thread -lboost_chrono
+g++ Sales.cpp -o Sales -lhazelcastcxx -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 **Run**
 
