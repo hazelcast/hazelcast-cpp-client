@@ -170,19 +170,27 @@ Follow the instructions for your platform:
 * [Windows](#windows-users)
 
 ### 1.1.3. Linux and MacOS users
-Here is how you download and extract version 4.0.0:
+Here is how you download and extract version 4.0.0 using the **curl** command:
 ```sh
 curl -Lo hazelcast-cpp-client-4.0.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.0.0.tar.gz
 tar xzf hazelcast-cpp-client-4.0.0.tar.gz
 ```
 
-Once you are in the directory where you extracted the contents of the release archive, 
+Alternatively, you may clone the repository and checkout a specific version:
+```sh
+git clone https://github.com/hazelcast/hazelcast-cpp-client.git
+cd hazelcast-cpp-client
+git checkout v4.0.0
+```
+
+Once you are in the source directory of the Hazelcast C++ client library, 
 create and change into a new directory:
 ```sh
 cd hazelcast-cpp-client-4.0.0
 mkdir build
 cd build
 ```
+
 Run `cmake` (or `cmake3` if you are on CentOS or RHEL) to configure:
 ```sh
 cmake ..
@@ -210,14 +218,9 @@ cd build
 
 Run `cmake` to configure:
 ```bat
-cmake -G "Visual Studio 16 2019" .. -DCMAKE_INSTALL_PREFIX=C:\HazelcastCxx
+cmake ..
 ``` 
-The above command assumes that you have Visual Studio 2019 installed. 
-If you are using another version or another compiler, 
-see the output of `cmake --help` for a list of generators that are avaliable on your platform.
-
-You also set the installation location in the configuration command above. 
-Pass the `-DCMAKE_INSTALL_PREFIX=C:\path\to\install` option to specify your desired installation location.
+See the [advanced installation](#advanced-installation) section for configuration options.
 
 Build and install:
 ```bat
@@ -225,7 +228,10 @@ cmake --build . --config Release
 cmake --build . --target install --config Release
 ```
 The above commands will build and install the library with the `Release` configuration. 
+Make sure you pass the same `--config` option to both commands.
+
 The install command may require administrator privileges depending on your install prefix. 
+See [this section](#custom-install-location) for information on how to use a different installation location.
 
 ### 1.1.5. Advanced installation
 
@@ -239,13 +245,13 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
 #### 1.1.5.2. CMake configuration
 You can provide additional configuration options using the `-DVARIABLE=VALUE` syntax on the command line.
 Here are all the options that are supported:
-* `WITH_OPENSSL` : Set to `ON` to build the library with SSL support. 
+* `WITH_OPENSSL` : Set to `ON` to build the library with SSL support.
 This will require [OpenSSL](https://www.openssl.org) to be installed on your system. The default is `OFF`.
 * `BUILD_STATIC_LIB` : Set to `ON` or `OFF` depending on whether you want the static library. The default is `OFF`.
 * `BUILD_SHARED_LIB` : Set to `ON` or `OFF` depending on whether you want the shared library. The default is `ON`.
 * `DISABLE_LOGGING` : Setting this option to `ON` disables logging. The default is `OFF`.
 
-#### 1.1.5.3. Examples
+##### Example configuration commands
 Build only the static library with SSL support:
 ```sh
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIB=OFF -DBUILD_STATIC_LIB=ON
@@ -387,10 +393,10 @@ for necessary features such as futures and future continuations to be enabled.
 The following is a command that can be used to compile an example from the examples directory.
 ```bat
 cl.exe path\to\example.cpp ^
-    C:\HazelcastCxx\lib\hazelcastcxx.lib ^
+    C:\path\to\hazelcast\lib\hazelcastcxx.lib ^
     C:\path\to\boost\lib\boost_thread.lib C:\path\to\boost\lib\boost_chrono.lib ^
     /EHsc /DBOOST_THREAD_VERSION=5 ^
-    /I C:\HazelcastCxx\include /I C:\path\to\boost\include
+    /I C:\path\to\hazelcast\include /I C:\path\to\boost\include
 ```
 
 ## 1.4. Basic Configuration
