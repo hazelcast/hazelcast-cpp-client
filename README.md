@@ -3,18 +3,23 @@
 
 * [Introduction](#introduction)
 * [1. Getting Started](#1-getting-started)
-  * [1.1. Requirements](#11-requirements)
+  * [1.1. Installing](#11-installing)
+    * [1.1.1. Requirements](#111-requirements)
+    * [1.1.2. Downloading](#112-downloading)
+    * [1.1.3. Linux and MacOS Users](#113-linux-and-macos-users)
+    * [1.1.4. Windows Users](#114-windows-users)
+    * [1.1.5. Advanced Installation](#115-advanced-installation)
+      * [1.1.5.1. Custom Install Location](#1151-custom-install-location)
+      * [1.1.5.2. CMake Configuration](#1152-cmake-configuration)
+        * [1.1.5.2.1. Example Configuration Commands](#11521-example-configuration-commands)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
-  * [1.3. Downloading and Installing](#13-downloading-and-installing)
-    * [1.3.1 Compiling Your Project](#131-compiling-your-project)
-        * [1.3.1.1 Mac Client](#1311-mac-client)
-        * [1.3.1.2 Linux Client](#1312-linux-client)
-        * [1.3.1.3 Windows Client](#1313-windows-client)
-    * [1.3.2 Building Hazelcast From Source Code](#132-building-hazelcast-from-source)
-    * [1.3.3 Building Hazelcast Tests From Source Code](#133-building-hazelcast-tests-from-source)
+  * [1.3. Compiling Your Project](#13-compiling-your-project)
+      * [1.3.1. CMake Users](#131-cmake-users)
+      * [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
+      * [1.3.3. Windows Users](#133-windows-users)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
@@ -143,19 +148,121 @@ See the following for more information on Hazelcast IMDG:
 
 See the [Releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page of this repository.
 
-
 # 1. Getting Started
 
 This chapter provides information on how to get started with your Hazelcast C++ client. It outlines the requirements, installation and configuration of the client, setting up a cluster, and provides a simple application that uses a distributed map in C++ client.
 
-## 1.1. Requirements
+## 1.1. Installing
 
-- Windows, Linux or MacOS
-- Java 8 or newer (for server side)
-- Hazelcast IMDG 4.0 or newer (for server side)
-- Latest Hazelcast C++ Client
-- Latest [Boost](https://www.boost.org/) Library (C++ client dependency)
-- Feature complete C++11 compiler (feature completeness for C++11 compiler and standard library are required. The minimum complete compiler for gcc is gcc 5.0)
+### 1.1.1. Requirements
+1. Linux, macOS or Windows
+2. A compiler that supports C++11
+3. [CMake](https://cmake.org) 3.10 or above 
+4. [Boost](https://www.boost.org) 1.71 or above 
+5. [OpenSSL](https://www.openssl.org) (optional)
+
+### 1.1.2. Downloading
+Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page to 
+download the source code for the latest Hazelcast C++ client.
+
+The releases page has both `tar.gz` and `zip` archives available. 
+Choose the one which suits your system the best.
+
+Follow the instructions for your platform:
+* [Linux and maxOS](#113-linux-and-macos-users)
+* [Windows](#114-windows-users)
+
+### 1.1.3. Linux and MacOS Users
+Here is how you download and extract version 4.0.0 using the **curl** command:
+```sh
+curl -Lo hazelcast-cpp-client-4.0.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.0.0.tar.gz
+tar xzf hazelcast-cpp-client-4.0.0.tar.gz
+```
+
+Alternatively, you may clone the repository and checkout a specific version:
+```sh
+git clone https://github.com/hazelcast/hazelcast-cpp-client.git
+cd hazelcast-cpp-client
+git checkout v4.0.0
+```
+
+Once you are in the source directory of the Hazelcast C++ client library, 
+create and change into a new directory:
+```sh
+cd hazelcast-cpp-client-4.0.0
+mkdir build
+cd build
+```
+
+Run `cmake` (or `cmake3` if you are on CentOS or RHEL) to configure:
+```sh
+cmake ..
+```
+See the [advanced installation](#115-advanced-installation) section for configuration options.
+
+Run `cmake` again to build and install the library:
+```sh
+cmake --build .
+sudo cmake --build . --target install
+```
+See [this section](#1151-custom-install-location) for information on how to use a different installation location.
+
+### 1.1.4. Windows Users
+Download and extract the release archive from the 
+[releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page.
+
+Open a `cmd` window and change into the folder where you extracted the contents of the release archive. 
+Then create and change into a new directory:
+```bat
+cd hazelcast-cpp-client-4.0.0
+mkdir build
+cd build
+```
+
+Run `cmake` to configure:
+```bat
+cmake ..
+``` 
+See the [advanced installation](#115-advanced-installation) section for configuration options.
+
+Build and install:
+```bat
+cmake --build . --config Release
+cmake --build . --target install --config Release
+```
+The above commands will build and install the library with the `Release` configuration. 
+Make sure you pass the same `--config` option to both commands.
+
+The install command may require administrator privileges depending on your install prefix. 
+See [this section](#1151-custom-install-location) for information on how to use a different installation location.
+
+### 1.1.5. Advanced Installation
+
+#### 1.1.5.1. Custom Install Location
+Pass the argument `-DCMAKE_INSTALL_PREFIX=/path/to/install` the first time you run `cmake` to configure 
+the installation directory:
+```sh
+cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
+```
+
+#### 1.1.5.2. CMake Configuration
+You can provide additional configuration options using the `-DVARIABLE=VALUE` syntax on the command line.
+Here are all the options that are supported:
+* `WITH_OPENSSL` : Set to `ON` to build the library with SSL support.
+This will require [OpenSSL](https://www.openssl.org) to be installed on your system. The default is `OFF`.
+* `BUILD_STATIC_LIB` : Set to `ON` or `OFF` depending on whether you want the static library. The default is `OFF`.
+* `BUILD_SHARED_LIB` : Set to `ON` or `OFF` depending on whether you want the shared library. The default is `ON`.
+* `DISABLE_LOGGING` : Setting this option to `ON` disables logging. The default is `OFF`.
+
+##### 1.1.5.2.1 Example Configuration Commands
+Build only the static library with SSL support:
+```sh
+cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIB=OFF -DBUILD_STATIC_LIB=ON
+```
+Build both the shared and static library without SSL support:
+```sh
+cmake .. -DWITH_OPENSSL=OFF -DBUILD_SHARED_LIB=ON -DBUILD_STATIC_LIB=ON
+```
 
 ## 1.2. Working with Hazelcast IMDG Clusters
 
@@ -229,120 +336,71 @@ If you want to add a `Portable` class, you should use `<portable-factories>` ins
 
 See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
 
-## 1.3. Downloading and Installing
+### 1.3. Compiling Your Project
 
-Note: If you want to compile the library for your specific environment rather than using the release binary, see section [Reproducing Released Libraries From Source](#82-reproducing-released-libraries).
+If you are using CMake, see the section for [CMake users](#131-cmake-users).
 
-Download the latest Hazelcast C++ client library from [Hazelcast C++ Client Website](https://hazelcast.org/clients/cplusplus/). You need to download the zip file for your platform. For Linux and Windows, 32- and 64-bit libraries exist. For MacOS, there is only 64-bit version. 
+If you are not, then read the instructions specific to your platform:
+* [Linux and MacOS](#132-linux-and-macos-users)
+* [Windows](#133-windows-users)
 
-Unzip the file. Following is the directory structure for Linux 64-bit zip. The structure is similar for the other C++ client distributions.
+#### 1.3.1. CMake Users
+A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. 
+If your project is using CMake, you can easily find and link against the client library:
+```cmake
+find_package(hazelcastcxx)
 
-- `hazelcast/Linux_64`
-    - `lib`: Shared and static library directory.
-        - `tls`: Contains the library with TLS (SSL) support enabled.
-    - `include`: Directory you need to include when compiling your project. 
-    - `examples`: Contains various examples for each C++ client feature. Each example produces an executable which you can run in a cluster. You may need to set the server IP addresses for the examples to run.
-    
-### 1.3.1 Compiling Your Project
+target_link_libraries(mytarget PUBLIC hazelcast::hazelcastcxx)
+```  
 
-For compilation, you need to include the `hazelcast/include` directory in your distribution. You also need to link your application to the appropriate static or shared Hazelcast library. e.g. cmake lines needed to include and link to Hazelcast 64-bit library:
-```Cmake
-	include_directories(hazelcast/include)
-    link_directories(hazelcast/lib)
-	link_libraries(HazelcastClient4.0_64)
+The package name depends on the specific library type you want to use. 
+Options are `hazelcastcxx`, `hazelcastcxx_ssl`, `hazelcastcxx_static`, and `hazelcastcxx_ssl_static`.
+
+Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 
+if you are using a custom installation location. 
+
+#### 1.3.2. Linux and MacOS Users
+You can pass the `-lhazelcastcxx` or `-lhazelcastcxx_ssl` option to the compiler to link against 
+the client library. The name of library depends on how it was configured during build time. 
+If the library was built with `-DWITH_OPENSSL=ON`, then the name is `hazelcastcxx_ssl`.
+If it was built with `-DWITH_OPENSSL=OFF`, then the name is `hazelcastcxx`. 
+
+The client library depends on Boost.Thread and Boost.Chrono. 
+You should also link your program against these libraries using `-lboost_thread` and `-lboost_chrono`.
+The Boost.Thread library should be provided with the preprocessor definition `BOOST_THREAD_VERSION=5`
+for necessary features such as futures and future continuations to be enabled. 
+
+Here is how you can compile an example from the examples directory:
+```sh
+g++ -std=c++11 \
+    examples/path/to/example.cpp \
+    -DBOOST_THREAD_VERSION=5 \
+    -lhazelcastcxx -lboost_thread -lboost_chrono
 ``` 
- 
-If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `hazelcast/lib/tls`. If you are using TLS, then you also need to link to OpenSSL libraries. E.g. if you are using cmake, we do the following:
-```Cmake
-    include(FindOpenSSL)
-	find_package(OpenSSL REQUIRED)
-	include_directories(${OPENSSL_INCLUDE_DIR})
-	link_libraries(${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES})
-``` 
 
-Hazelcast also depends on Boost library. We specifically use the chrono and thread libraries. The thread library version also needs to be enough to support the Boost future continuations. Therefore, you can simply define BOOST_THREAD_VERSION=5 which enables all the needed flags. Make sure that you find and include the Boost include directory and also link to the boost thread and chrono libraries. E.g. if you are using cmake for compilation you can do the following:
-```Cmake
-    include(FindBoost)
-    find_package(Boost REQUIRED COMPONENTS thread chrono)
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_libraries(Boost::thread Boost::chrono)
-    add_definitions("-DBOOST_THREAD_VERSION=5")
+If a custom installation directory was used during installation, then you may also need to use the `-L` and `-I`
+options to add the library and include paths to the compiler's search path.
+```
+g++ -std=c++11 \
+    examples/path/to/example.cpp \
+    -I /path/to/install/include -L /path/to/install/lib \
+    -lhazelcastcxx -lboost_thread -lboost_chrono 
 ```
 
-#### 1.3.1.1 Mac Client
+#### 1.3.3. Windows Users
+Provide your compiler with the include directories and library files for the Hazelcast IMDG C++ client and its dependencies.
 
-For Mac, there is only 64-bit binary distribution.
+You also need to pass the preprocessor definition `BOOST_THREAD_VERSION=5`
+for necessary features such as futures and future continuations to be enabled. 
 
-Here is an example script to build with the static library with boost dependencies (assume that ${Boost_INCLUDE_DIR} is the boost include folder path and ${Boost_LIBRARY_DIR} is the path of the folder with the boost libraries):
-
-`c++ main.cpp -Ihazelcast/include -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lboost_thread -lboost_chrono hazelcast/Mac_64/lib/libHazelcast4.0_64.a`
-
-Here is an example script to build with the shared library:
-
-`c++ main.cpp -Ihazelcast/include -Lhazelcast/Mac_64/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
-
-#### 1.3.1.2 Linux Client
-
-For Linux, there are 32- and 64-bit distributions. 
-
-Here is an example script to build with the static library with boost dependencies (assume that ${Boost_INCLUDE_DIR} is the boost include folder path and ${Boost_LIBRARY_DIR} is the path of the folder with the boost libraries):
-
-`g++ main.cpp -o my_app -Ihazelcast/include -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lboost_thread -lboost_chrono hazelcast/lib/libHazelcast4.0_64.a`
-
-Here is an example script to build with the shared library:
-
-`c++ main.cpp -o my_app -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
-
-#### 1.3.1.3 Windows Client
-
-For Windows, there are 32- and 64-bit distributions. The static library is in the `static` directory and the dynamic library (`dll`) is in the `shared` directory.
-
-When compiling for Windows environment, you should specify one of the following flags:
-
-- `HAZELCAST_USE_STATIC`: You want the application to use the static Hazelcast library.
-- `HAZELCAST_USE_SHARED`: You want the application to use the shared Hazelcast library.
-
-### 1.3.2 Building Hazelcast From Source Code
-The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
-
-You also need to install the [Boost library](http://boost.org/)
-
-The simplest way to build the project from source code is to run the script `scripts/build-linux.sh` for Linux and Mac OS, `scripts/build-windows.bat` for windows. The script uses the following parameters:
-
-`scripts/build-linux.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
-
-- Use `32` if you want to generate 32-bit library. 
-- Use `SHARED` if you want to generate SHARED library.
-- Use `STATIC` if you want to generate STATIC library.
-- Use `Debug` if you want to generate Debug version of the library.
-- Use `Release` if you want to generate Release version of the library.
-- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
-
-The exact same options work for the windows batch script `scripts/build-windows.bat`.
-
-The project depends on OpenSSL only if you compile the project enabled with the TLS feature (i.e. if `COMPILE_WITHOUT_SSL` is NOT provided) 
-
-### 1.3.3 Building Hazelcast Tests Source Code
-The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
-
-The test sources depend on the Boost development libraries (thread and chrono), OpenSSL (only needed if compiling with SSL support) and [apache thrift](https://github.com/apache/thrift) (needed for communications to remote controller).
-
-The easiest way to compile and run the tests is to use the test scripts. The scripts are :
-- `testLinuxSingleCase.sh` for linux and MAC OS.
-- `testWindowsSingleCase.bat` for Windows.
-
-The scripts accept the following options:
-
-`testLinuxSingleCase.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
-
-- Use `32` if you want to generate 32-bit library. 
-- Use `SHARED` if you want to generate SHARED library.
-- Use `STATIC` if you want to generate STATIC library.
-- Use `Debug` if you want to generate Debug version of the library.
-- Use `Release` if you want to generate Release version of the library.
-- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
-
-It runs the build script and if successfully builds the project including the examples, it starts the [remote controller](https://github.com/hazelcast/hazelcast-remote-controller) for managing server start and shutdowns during the test, then runs the test binary. The test framework uses [Google test](https://github.com/google/googletest) 
+The following is a command that can be used to compile an example from the examples directory.
+```bat
+cl.exe path\to\example.cpp ^
+    C:\path\to\hazelcast\lib\hazelcastcxx.lib ^
+    C:\path\to\boost\lib\boost_thread.lib C:\path\to\boost\lib\boost_chrono.lib ^
+    /EHsc /DBOOST_THREAD_VERSION=5 ^
+    /I C:\path\to\hazelcast\include /I C:\path\to\boost\include
+```
 
 ## 1.4. Basic Configuration
 
@@ -532,7 +590,7 @@ Let's manipulate a distributed map on a cluster using the client.
 Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
 
 ```C++
-`g++ IT.cpp -o IT  -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
+g++ IT.cpp -o IT -lhazelcastcxx -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 Then, you can run the application using the following command:
  
@@ -587,8 +645,7 @@ Now create a `Sales.cpp` file, compile and run it as shown below.
 **Compile:**
 
 ```C++
-`g++ Sales.cpp -o Sales -Ihazelcast/include -Lhazelcast/lib -I${Boost_INCLUDE_DIR} -L${Boost_LIBRARY_DIR} -lHazelcast4.0_64 -lboost_thread -lboost_chrono`
-
+g++ Sales.cpp -o Sales -lhazelcastcxx -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 **Run**
 
