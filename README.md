@@ -13,10 +13,10 @@
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
-  * [1.3 Compiling Your Project](#13-compiling-your-project)
-      * [1.3.1 CMake Users](#131-cmake-users)
-      * [1.3.2 Linux and MacOS Users](#132-linux-and-macos-users)
-      * [1.3.3 Windows Users](#133-windows-users)
+  * [1.3. Compiling Your Project](#13-compiling-your-project)
+      * [1.3.1. CMake Users](#131-cmake-users)
+      * [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
+      * [1.3.3. Windows Users](#133-windows-users)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
@@ -166,8 +166,8 @@ The releases page has both `tar.gz` and `zip` archives available.
 Choose the one which suits your system the best.
 
 Follow the instructions for your platform:
-* [Linux and maxOS](#linux-and-macos-users)
-* [Windows](#windows-users)
+* [Linux and maxOS](#113-linux-and-macos-users)
+* [Windows](#114-windows-users)
 
 ### 1.1.3. Linux and MacOS users
 Here is how you download and extract version 4.0.0 using the **curl** command:
@@ -195,14 +195,14 @@ Run `cmake` (or `cmake3` if you are on CentOS or RHEL) to configure:
 ```sh
 cmake ..
 ```
-See the [advanced installation](#advanced-installation) section for configuration options.
+See the [advanced installation](#115-advanced-installation) section for configuration options.
 
 Run `cmake` again to build and install the library:
 ```sh
 cmake --build .
 sudo cmake --build . --target install
 ```
-See [this section](#custom-install-location) for information on how to use a different installation location.
+See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
 ### 1.1.4. Windows users
 Download and extract the release archive from the 
@@ -220,7 +220,7 @@ Run `cmake` to configure:
 ```bat
 cmake ..
 ``` 
-See the [advanced installation](#advanced-installation) section for configuration options.
+See the [advanced installation](#115-advanced-installation) section for configuration options.
 
 Build and install:
 ```bat
@@ -231,7 +231,7 @@ The above commands will build and install the library with the `Release` configu
 Make sure you pass the same `--config` option to both commands.
 
 The install command may require administrator privileges depending on your install prefix. 
-See [this section](#custom-install-location) for information on how to use a different installation location.
+See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
 ### 1.1.5. Advanced installation
 
@@ -333,7 +333,7 @@ If you want to add a `Portable` class, you should use `<portable-factories>` ins
 
 See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
 
-### 1.3 Compiling Your Project
+### 1.3. Compiling Your Project
 
 If you are using CMake, see the section for [CMake users](#131-cmake-users).
 
@@ -341,7 +341,7 @@ If you are not, then read the instructions specific to your platform:
 * [Linux and MacOS](#132-linux-and-macos-users)
 * [Windows](#133-windows-users)
 
-#### 1.3.1 CMake users
+#### 1.3.1. CMake users
 A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. 
 If your project is using CMake, you can easily find and link against the client library:
 ```cmake
