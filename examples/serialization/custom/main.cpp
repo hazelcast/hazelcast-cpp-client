@@ -17,8 +17,6 @@
 #include <ostream>
 
 struct Person {
-    friend std::ostream &operator<<(std::ostream &os, const Person &person);
-
     std::string name;
     bool male;
     int32_t age;
@@ -38,13 +36,13 @@ namespace hazelcast {
                     return 3;
                 }
 
-                static void write(const Person &object, hazelcast::client::serialization::object_data_output &out) {
+                static void write(const Person &object, object_data_output &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person read(hazelcast::client::serialization::object_data_input &in) {
+                static Person read(object_data_input &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };

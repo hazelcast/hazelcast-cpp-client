@@ -33,8 +33,8 @@
   * [3.1. Configuration Options](#31-configuration-options)
     * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
 * [4. Serialization](#4-serialization)
-  * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
-  * [4.2. Portable Serialization](#42-portable-serialization)
+  * [4.1. identified_data_serializer Serialization](#41-identifieddataserializable-serialization)
+  * [4.2. portable-serializer Serialization](#42-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. JSON Serialization](#44-json-serialization)
   * [4.5. Global Serialization](#45-global-serialization)
@@ -837,16 +837,18 @@ namespace hazelcast {
 
                 static int32_t get_class_id() noexcept {
                     return 3;
-                }
+}
 
-                static void write_data(const Person &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.name);
+static void write_data(const Person &object, object_data_output &out) {
+out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
-                }
+}
 
-                static Person read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+static Person read_data(object_data_input &in) {
+return Person{
+in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
+};
                 }
             };
         }
@@ -890,16 +892,18 @@ namespace hazelcast {
 
                 static int32_t get_class_id() noexcept {
                     return 3;
-                }
+}
 
-                static void write_portable(const Person &object, hazelcast::client::serialization::portable_writer &out) {
-                    out.write("name", object.name);
+static void write_portable(const Person &object, portable_writer &out) {
+out.write("name", object.name);
                     out.write("gender", object.male);
                     out.write("age", object.age);
-                }
+}
 
-                static Person read_portable(hazelcast::client::serialization::portable_reader &in) {
-                    return Person{in.read<std::string>("name"), in.read<bool>("gender"), in.read<int32_t>("age")};
+static Person read_portable(portable_reader &in) {
+return Person{
+in.read<std::string>("name"), in.read<bool>("gender"), in.read<int32_t>("age")
+};
                 }
             };
         }
@@ -932,16 +936,18 @@ namespace hazelcast {
             struct hz_serializer<Person> : custom_serializer {
                 static constexpr int32_t get_type_id() noexcept {
                     return 3;
-                }
+}
 
-                static void write(const Person &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.name);
+static void write(const Person &object, object_data_output &out) {
+out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
-                }
+}
 
-                static Person read(hazelcast::client::serialization::object_data_input &in) {
-                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+static Person read(object_data_input &in) {
+return Person{
+in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
+};
                 }
             };
         }
@@ -2212,12 +2218,14 @@ namespace hazelcast {
                 }
 
                 static void
-                write_data(const MessagePrinter &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.message);
-                }
+                write_data(const MessagePrinter &object, object_data_output &out) {
+                out.write(object.message);
+}
 
-                static MessagePrinter read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return MessagePrinter{in.read<std::string>()};
+static MessagePrinter read_data(object_data_input &in) {
+return MessagePrinter{
+in.read<std::string>()
+};
                 }
             };
         }
@@ -2452,12 +2460,12 @@ namespace hazelcast {
                 }
 
                 static void
-                write_data(const IdentifiedEntryProcessor &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.name);
-                }
+                write_data(const IdentifiedEntryProcessor &object, object_data_output &out) {
+                out.write(object.name);
+}
 
-                static IdentifiedEntryProcessor read_data(hazelcast::client::serialization::object_data_input &in) {
-                    // no-need to implement here, since we do not expect to receive this object but we only send it to server
+static IdentifiedEntryProcessor read_data(object_data_input &in) {
+// no-need to implement here, since we do not expect to receive this object but we only send it to server
                     assert(0);
                     return IdentifiedEntryProcessor{};
                 }
@@ -2615,16 +2623,18 @@ namespace hazelcast {
 
                 static int32_t get_class_id() noexcept {
                     return 3;
-                }
+}
 
-                static void write_data(const person &object, hazelcast::client::serialization::portable_writer &out) {
-                    out.write(object.name);
+static void write_data(const person &object, portable_writer &out) {
+out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
-                }
+                    }
 
-                static person read_data(hazelcast::client::serialization::portable_reader &in) {
-                    return person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+                    static person read_data(portable_reader &in) {
+                    return person{
+                    in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
+                    };
                 }
             };
         }
@@ -2902,12 +2912,14 @@ namespace hazelcast {
                 }
 
                 static void
-                write_data(const OrderKey &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.order_id_string);
-                }
+                write_data(const OrderKey &object, object_data_output &out) {
+                out.write(object.order_id_string);
+}
 
-                static OrderKey read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return OrderKey{in.read<std::string>()};
+static OrderKey read_data(object_data_input &in) {
+return OrderKey{
+in.read<std::string>()
+};
                 }
             };
         }

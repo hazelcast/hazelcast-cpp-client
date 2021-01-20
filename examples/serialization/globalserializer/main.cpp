@@ -16,8 +16,6 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 struct Person {
-    friend std::ostream &operator<<(std::ostream &os, const Person &person);
-
     std::string name;
     bool male;
     int32_t age;
