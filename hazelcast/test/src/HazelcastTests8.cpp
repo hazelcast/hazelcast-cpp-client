@@ -1465,7 +1465,10 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // start a client
-                hazelcast_client client{new_client(get_config()).get()};
+                auto config = get_config();
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(3));
+                hazelcast_client client{new_client(std::move(config)).get()};
 
                 auto map = client.get_map("Issue221_test_map").get();
 
