@@ -124,8 +124,6 @@
     * [7.10.1 typed_data API](#7101-typeddata-api) 
 * [8. Development and Testing](#8-development-and-testing)
   * [8.1. Testing](#81-testing)
-    * [8.1.1 Tested Platforms](#811-tested-platforms)
-  * [8.2. Reproducing Released Libraries From Source](#82-reproducing-released-libraries)
 * [9. Getting Help](#9-getting-help)
 * [10. Contributing](#10-contributing)
 * [11. License](#11-license)
@@ -1245,69 +1243,70 @@ config.get_network_config().get_ssl_config().set_cipher_list("HIGH");
 ```
 
 The detailed config API is below:
+
 ```
-/**
- * Default protocol is tlsv12 and ssl is disabled by default
- */
-ssl_config ();
-
-/**
- * Returns if this configuration is enabled.
- *
- * @return true if enabled, false otherwise
- */
-bool is_enabled() const;
-
-/**
- * Enables and disables this configuration.
- *
- * @param enabled true to enable, false to disable
- */
-ssl_config  &set_enabled(bool enabled);
-
-/**
- * Sets the ssl protocol to be used for this SSL socket.
- *
- * @param protocol One of the supported protocols
- */
-ssl_config  &set_protocol(ssl_protocol protocol);
-
-/**
- * @return The configured SSL protocol
- */
-ssl_protocol get_protocol() const;
-
-/**
- * @return The list of all configured certificate verify files for the client.
- */
-const std::vector<std::string> &get_verify_files() const;
-
-/**
- * This API calls the OpenSSL SSL_CTX_load_verify_locations method underneath while starting the client
- * with this configuration. The validity of the files are checked only when the client starts. Hence,
- * this call will not do any error checking. Error checking is performed only when the certificates are
- * actually loaded during client start.
- *
- * @param filename the name of a file containing certification authority certificates in PEM format.
- */
-ssl_config  &add_verify_file(const std::string &filename);
-
-/**
- * @return Returns the use configured cipher list string.
- */
-const std::string &get_cipher_list() const;
-
-/**
- * @param ciphers The list of ciphers to be used. During client start, if this API was set then the
- * SSL_CTX_set_cipher_list (https://www.openssl.org/docs/man1.0.2/ssl/SSL_set_cipher_list.html) is
- * called with the provided ciphers string. The values and the format of the ciphers are described here:
- * https://www.openssl.org/docs/man1.0.2/apps/ciphers.html Some examples values for the string are:
- * "HIGH", "MEDIUM", "LOW", etc.
- *
- * If non of the provided ciphers could be selected the client initialization will fail.
- *
- */
-ssl_config  &set_cipher_list(const std::string &ciphers);
+    /**
+     * Default protocol is tlsv12 and ssl is disabled by default
+     */
+    ssl_config ();
+    
+    /**
+     * Returns if this configuration is enabled.
+     *
+     * @return true if enabled, false otherwise
+     */
+    bool is_enabled() const;
+    
+    /**
+     * Enables and disables this configuration.
+     *
+     * @param enabled true to enable, false to disable
+     */
+    ssl_config  &set_enabled(bool enabled);
+    
+    /**
+     * Sets the ssl protocol to be used for this SSL socket.
+     *
+     * @param protocol One of the supported protocols
+     */
+    ssl_config  &set_protocol(ssl_protocol protocol);
+    
+    /**
+     * @return The configured SSL protocol
+     */
+    ssl_protocol get_protocol() const;
+    
+    /**
+     * @return The list of all configured certificate verify files for the client.
+     */
+    const std::vector<std::string> &get_verify_files() const;
+    
+    /**
+     * This API calls the OpenSSL SSL_CTX_load_verify_locations method underneath while starting the client
+     * with this configuration. The validity of the files are checked only when the client starts. Hence,
+     * this call will not do any error checking. Error checking is performed only when the certificates are
+     * actually loaded during client start.
+     *
+     * @param filename the name of a file containing certification authority certificates in PEM format.
+     */
+    ssl_config  &add_verify_file(const std::string &filename);
+    
+    /**
+     * @return Returns the use configured cipher list string.
+     */
+    const std::string &get_cipher_list() const;
+    
+    /**
+     * @param ciphers The list of ciphers to be used. During client start, if this API was set then the
+     * SSL_CTX_set_cipher_list (https://www.openssl.org/docs/man1.0.2/ssl/SSL_set_cipher_list.html) is
+     * called with the provided ciphers string. The values and the format of the ciphers are described here:
+     * https://www.openssl.org/docs/man1.0.2/apps/ciphers.html Some examples values for the string are:
+     * "HIGH", "MEDIUM", "LOW", etc.
+     *
+     * If non of the provided ciphers could be selected the client initialization will fail.
+     *
+     */
+    ssl_config  &set_cipher_list(const std::string &ciphers);
 ```
 
 You can set the protocol as one of the following values:
@@ -1416,7 +1415,7 @@ When a connection problem occurs, an operation is retried if it is certain that 
 When invocation is being retried, the client may wait some time before it retries again. This duration can be configured using the following property:
 
 ```
-config.set_property(“hazelcast.client.invocation.retry.pause.millis”, “500");
+    config.set_property(“hazelcast.client.invocation.retry.pause.millis”, “500");
 ```
 The default retry wait time is 1 second.
 
@@ -1447,7 +1446,7 @@ For details of backpressure, see the [Back Pressure section](https://docs.hazelc
 Hazelcast client-cluster connection and reconnection strategy can be configured. Sometimes, you may not want your application to wait for the client to connect to the cluster, you may just want to get the client and let the client connect in the background. This is configured as follows:
 
 ```
-client_config::get_connection_strategy_config().set_async_start(bool);
+    client_config::get_connection_strategy_config().set_async_start(bool);
 ```
 
 When this configuration is set to true, the client creation won't wait to connect to cluster. The client instance will throw an exception for any request, until it connects to the cluster and become ready.
@@ -1613,69 +1612,69 @@ Hazelcast `reliable_topic` is a distributed topic implementation backed up by th
 A reliable_topic usage example is shown below.
 
 ```C++
-hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
-    using namespace hazelcast::client::topic;
+    hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
+using namespace hazelcast::client::topic;
 
-    return reliable_listener(false, sequence_id)
-        .on_received([&n_received_messages](message &&message){
-            ++n_received_messages;
+return reliable_listener(false, sequence_id)
+.on_received([&n_received_messages](message &&message){
+++n_received_messages;
 
-            auto object = message.get_message_object().get<std::string>();
-            if (object) {
-                std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name();
-            } else {
-                std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
-                message.get_name();
-            }
-        });
+auto object = message.get_message_object().get<std::string>();
+if (object) {
+std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name();
+} else {
+std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
+message.get_name();
+}
+});
 }
 
 void listen_with_default_config() {
-    auto client = hazelcast::new_client().get();
+auto client = hazelcast::new_client().get();
 
 std::string topicName("MyReliableTopic");
-    auto topic = client.get_reliable_topic(topicName).get();
+auto topic = client.get_reliable_topic(topicName).get();
 
-    std::atomic<int> numberOfMessagesReceived{0};
-    auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
+std::atomic<int> numberOfMessagesReceived{ 0 };
+auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
 
-    std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
-    while (numberOfMessagesReceived < 1) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+while (numberOfMessagesReceived < 1) {
+std::this_thread::sleep_for(std::chrono::seconds(1));
+}
 
-    if (topic->remove_message_listener(listenerId)) {
-        std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
-    } else {
-        std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
-    }
+if (topic->remove_message_listener(listenerId)) {
+std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
+} else {
+std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
+}
 }
 
 void listen_with_config() {
-    hazelcast::client::client_config clientConfig;
-    std::string topicName("MyReliableTopic");
-    hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
-    reliableTopicConfig.set_read_batch_size(5);
-    clientConfig.add_reliable_topic_config(reliableTopicConfig);
+hazelcast::client::client_config clientConfig;
+std::string topicName("MyReliableTopic");
+hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
+reliableTopicConfig.set_read_batch_size(5);
+clientConfig.add_reliable_topic_config(reliableTopicConfig);
 auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
 auto topic = client.get_reliable_topic(topicName).get();
 
-    std::atomic<int> numberOfMessagesReceived{0};
-    auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
+std::atomic<int> numberOfMessagesReceived{ 0 };
+auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
 
-    std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
-    while (numberOfMessagesReceived < 1) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+while (numberOfMessagesReceived < 1) {
+std::this_thread::sleep_for(std::chrono::seconds(1));
+}
 
-    if (topic->remove_message_listener(listenerId)) {
-        std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
-    } else {
-        std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
-    }
+if (topic->remove_message_listener(listenerId)) {
+std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
+} else {
+std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
+}
 }
 ```
 
@@ -1690,9 +1689,9 @@ A pn_counter usage example is shown below.
 
 auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
-    std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
+std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 
-    std::cout << "Counter new value after adding is: " << pnCounter->add_and_get(5).get() << std::endl;
+std::cout << "Counter new value after adding is: " << pnCounter->add_and_get(5).get() << std::endl;
 
     std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2).get() << std::endl;
 
@@ -1918,31 +1917,31 @@ Hazelcast C++ client provides transactional operations like beginning transactio
 You can create a `transaction_context` object using the C++ client to begin, commit and rollback a transaction. You can obtain transaction-aware instances of queues, maps, sets, lists and multimaps via the `transaction_context` object, work with them and commit or rollback in one shot. For details, see the [Transactions section](https://docs.hazelcast.org//docs/latest/manual/html-single/index.html#transactions) in the Hazelcast IMDG Reference Manual.
 
 ```C++
-                // Create a Transaction object and begin the transaction
-                auto context = client->new_transaction_context();
-                context.begin_transaction().get();
+      // Create a Transaction object and begin the transaction
+auto context = client->new_transaction_context();
+context.begin_transaction().get();
 
-                // Get transactional distributed data structures
-                auto txnMap = context.get_map("transactional-map").get();
-                auto txnmulti_map = context.get_multi_map("transactional-multimap");
-                auto txnQueue = context.get_queue("transactional-queue");
-                auto txnSet = context.get_set("transactional-set");
+// Get transactional distributed data structures
+auto txnMap = context.get_map("transactional-map").get();
+auto txnmulti_map = context.get_multi_map("transactional-multimap");
+auto txnQueue = context.get_queue("transactional-queue");
+auto txnSet = context.get_set("transactional-set");
 
-                try {
-                    auto obj = txnQueue->poll<std::string>().get();
-                    //process object
-                    txnMap->put<std::string, std::string>( "1", "value1" ).get();
-                    txnmulti_map->put<std::string, std::string>("2", "value2_1").get();
-                    txnmulti_map->put<std::string, std::string>("2", "value2_2").get();
-                    txnSet->add<std::string>( "value" ).get();
-                    //do other things
+try {
+auto obj = txnQueue->poll<std::string>().get();
+//process object
+txnMap->put<std::string, std::string>( "1", "value1" ).get();
+txnmulti_map->put<std::string, std::string>("2", "value2_1").get();
+txnmulti_map->put<std::string, std::string>("2", "value2_2").get();
+txnSet->add<std::string>( "value" ).get();
+//do other things
 
-                    // Commit the above changes done in the cluster.
-                    context.commit_transaction().get();
-                } catch (...) {
-                    context.rollback_transaction().get();
-                    throw;
-                }
+// Commit the above changes done in the cluster.
+context.commit_transaction().get();
+} catch (...) {
+context.rollback_transaction().get();
+throw;
+}
 ```
 
 In a transaction, operations will not be executed immediately. Their changes will be local to the `transaction_context` until committed. However, they will ensure the changes via locks.
@@ -1975,71 +1974,71 @@ You can use `cluster` (`hazelcast_client::hazelcast_client::get_cluster()`) obje
 The following example demonstrates both initial and regular membership listener registrations.
 
 ```C++
-membership_listener make_membership_listener() {
-    return membership_listener()
-        .on_joined([](const hazelcast::client::membership_event &membership_event) {
-            std::cout << "New member joined: "
-                << membership_event.get_member().get_address() << std::endl;
-        })
-        .on_left([](const hazelcast::client::membership_event &membership_event) {
-            std::cout << "Member left: " 
-                << membership_event.get_member().get_address() << std::endl;
-        });
+    membership_listener make_membership_listener() {
+return membership_listener()
+.on_joined([](const hazelcast::client::membership_event &membership_event) {
+std::cout << "New member joined: "
+<< membership_event.get_member().get_address() << std::endl;
+})
+.on_left([](const hazelcast::client::membership_event &membership_event) {
+std::cout << "Member left: "
+<< membership_event.get_member().get_address() << std::endl;
+});
 }
 
 membership_listener make_initial_membership_listener() {
-    return membership_listener()
-        .on_init([](const hazelcast::client::initial_membership_event &event){
-            auto members = event.get_members();
-            std::cout << "The following are the initial members in the cluster:" << std::endl;
-            for (const auto &member : members) {
-                std::cout << member.get_address() << std::endl;
-            }
-        })
-        .on_joined([](const hazelcast::client::membership_event &membership_event) {
-            std::cout << "New member joined: " <<
-            membership_event.get_member().get_address() << std::endl;
-        })
-        .on_left([](const hazelcast::client::membership_event &membership_event) {
-            std::cout << "Member left: " <<
-            membership_event.get_member().get_address() << std::endl;
-        });
+return membership_listener()
+.on_init([](const hazelcast::client::initial_membership_event &event){
+auto members = event.get_members();
+std::cout << "The following are the initial members in the cluster:" << std::endl;
+for (const auto &member : members) {
+std::cout << member.get_address() << std::endl;
+}
+})
+.on_joined([](const hazelcast::client::membership_event &membership_event) {
+std::cout << "New member joined: " <<
+membership_event.get_member().get_address() << std::endl;
+})
+.on_left([](const hazelcast::client::membership_event &membership_event) {
+std::cout << "Member left: " <<
+membership_event.get_member().get_address() << std::endl;
+});
 }
 
 int main() {
-    auto memberListener = make_membership_listener();
-    auto initialMemberListener = make_initial_membership_listener();
+auto memberListener = make_membership_listener();
+auto initialMemberListener = make_initial_membership_listener();
 
-    hazelcast::client::cluster *clusterPtr = nullptr;
-    boost::uuids::uuid listenerId, initialListenerId;
-    try {
-    auto hz = hazelcast::new_client().get();
+hazelcast::client::cluster *clusterPtr = nullptr;
+boost::uuids::uuid listenerId, initialListenerId;
+try {
+auto hz = hazelcast::new_client().get();
 
-    hazelcast::client::cluster &cluster = hz.get_cluster().get();
-        clusterPtr = &cluster;
-        auto members = cluster.get_members();
-        std::cout << "The following are members in the cluster:" << std::endl;
-        for (const auto &member: members) {
-            std::cout << member.get_address() << std::endl;
-        }
+hazelcast::client::cluster &cluster = hz.get_cluster().get();
+clusterPtr = &cluster;
+auto members = cluster.get_members();
+std::cout << "The following are members in the cluster:" << std::endl;
+for (const auto &member: members) {
+std::cout << member.get_address() << std::endl;
+}
 
-        listenerId = cluster.add_membership_listener(std::move(memberListener));
-        initialListenerId = cluster.add_membership_listener(std::move(initialMemberListener));
+listenerId = cluster.add_membership_listener(std::move(memberListener));
+initialListenerId = cluster.add_membership_listener(std::move(initialMemberListener));
 
-        // sleep some time for the events to be delivered before exiting
-        std::this_thread::sleep_for(std::chrono::seconds(3));
+// sleep some time for the events to be delivered before exiting
+std::this_thread::sleep_for(std::chrono::seconds(3));
 
-        cluster.remove_membership_listener(listenerId).get();
-        cluster.remove_membership_listener(initialListenerId).get();
-    } catch (hazelcast::client::exception::iexception &e) {
-        std::cerr << "failed !!! " << e.what() << std::endl;
-        if (nullptr != clusterPtr) {
-            clusterPtr->remove_membership_listener(listenerId).get();
-            clusterPtr->remove_membership_listener(initialListenerId).get();
-        }
-        exit(-1);
-    }
-        ...
+cluster.remove_membership_listener(listenerId).get();
+cluster.remove_membership_listener(initialListenerId).get();
+} catch (hazelcast::client::exception::iexception &e) {
+std::cerr << "failed !!! " << e.what() << std::endl;
+if (nullptr != clusterPtr) {
+clusterPtr->remove_membership_listener(listenerId).get();
+clusterPtr->remove_membership_listener(initialListenerId).get();
+}
+exit(-1);
+}
+...
 ```
 
 #### 7.5.1.3. Listening for Lifecycle Events
@@ -2056,34 +2055,35 @@ The `lifecycle_listener` interface notifies for the following events:
 The following is an example of the `lifecycle_listener` that is added to the `client_config` object and its output.
 
 ```C++
-class ConnectedListener : public hazelcast::client::lifecycle_listener {
+    class ConnectedListener :
+public hazelcast::client::lifecycle_listener {
 public:
-    virtual void stateChanged(const hazelcast::client::lifecycle_event &lifecycleEvent) {
-        if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_CONNECTED) {
-            std::cout << "Client connected to the cluster" << std::endl;
-        } else if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_DISCONNECTED) {
-            std::cout << "Client is disconnected from the cluster" << std::endl;
-        }
-    }
+virtual void stateChanged(const hazelcast::client::lifecycle_event &lifecycleEvent) {
+if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_CONNECTED) {
+std::cout << "Client connected to the cluster" << std::endl;
+} else if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_DISCONNECTED) {
+std::cout << "Client is disconnected from the cluster" << std::endl;
+}
+}
 };
 
 int main() {
-    hazelcast::client::client_config config;
+hazelcast::client::client_config config;
 
-    // Add a lifecycle listener so that we can track when the client is connected/disconnected
-    config.add_listener(
-        hazelcast::client::lifecycle_listener().
-            on_connected([](){
-                std::cout << "Client connected to the cluster" << std::endl;
-            }).on_disconnected([] () {
-                std::cout << "Client is disconnected from the cluster" << std::endl;                
-            });
+// Add a lifecycle listener so that we can track when the client is connected/disconnected
+config.add_listener(
+hazelcast::client::lifecycle_listener().
+on_connected([](){
+std::cout << "Client connected to the cluster" << std::endl;
+}).on_disconnected([] () {
+std::cout << "Client is disconnected from the cluster" << std::endl;
+});
 );
 
 auto hz = hazelcast::new_client(std::move(config)).get();
 
 hz.shutdown().get();
-    return 0;
+return 0;
 }
 ```
 
@@ -2122,29 +2122,29 @@ An entry-based event is fired after operations that affect a specific entry. For
 See the following example.
 
 ```C++
-int main() {
+    int main() {
 auto hz = hazelcast::new_client().get();
 
 auto map = hz.get_map("EntryListenerExampleMap").get();
 
-    auto registrationId = map->add_entry_listener(
-        entry_listener().
-            on_added([](hazelcast::client::EntryEvent &&event) {
-                std::cout << "Entry added:" << event.getKey().get<int>().value() 
-                    << " --> " << event.getValue().get<std::string>().value() << std::endl;
-            }).
-            on_removed([](hazelcast::client::EntryEvent &&event) {
-                std::cout << "Entry removed:" << event.getKey().get<int>().value() 
-                    << " --> " << event.getValue().get<std::string>().value() << std::endl;
-            })
-        , true).get();
-    
-    map->put(1, "My new entry").get();
-    map->remove<int, std::string>(1).get();
-    
-    /* ... */
+auto registrationId = map->add_entry_listener(
+entry_listener().
+on_added([](hazelcast::client::EntryEvent &&event) {
+std::cout << "Entry added:" << event.getKey().get<int>().value()
+<< " --> " << event.getValue().get<std::string>().value() << std::endl;
+}).
+on_removed([](hazelcast::client::EntryEvent &&event) {
+std::cout << "Entry removed:" << event.getKey().get<int>().value()
+<< " --> " << event.getValue().get<std::string>().value() << std::endl;
+})
+, true).get();
 
-    return 0;
+map->put(1, "My new entry").get();
+map->remove<int, std::string>(1).get();
+
+/* ... */
+
+return 0;
 }
 ```
 
@@ -2153,26 +2153,26 @@ A map-wide event is fired as a result of a map-wide operation (e.g.: `imap::clea
 See the example below.
 
 ```C++
-int main() {
+    int main() {
 auto hz = hazelcast::new_client().get();
 
 auto map = hz.get_map("EntryListenerExampleMap").get();
 
-    auto registrationId = map->add_entry_listener(
-        entry_listener().
-            on_map_cleared([](hazelcast::client::map_event &&event) {
-                std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
-            })    
-        , false).get();
+auto registrationId = map->add_entry_listener(
+entry_listener().
+on_map_cleared([](hazelcast::client::map_event &&event) {
+std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
+})
+, false).get();
 
-    map->put(1, "Mali").get();
-    map->put(2, "Ahmet").get();
-    map->put(3, "Furkan").get();
-    map->clear().get();
+map->put(1, "Mali").get();
+map->put(2, "Ahmet").get();
+map->put(3, "Furkan").get();
+map->clear().get();
 
-    /* ... */
+/* ... */
 
-    return 0;
+return 0;
 }
 ```
 
@@ -2200,36 +2200,36 @@ On the server side, when you implement the task as `java.util.concurrent.Callabl
 An example C++ task class implementation is shown below.
 
 ```C++
-struct MessagePrinter {
-    std::string message;
+    struct MessagePrinter {
+std::string message;
 };
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<MessagePrinter> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<MessagePrinter> : identified_data_serializer {
+static int32_t get_factory_id() noexcept {
+return 1;
+}
 
-                static int32_t get_class_id() noexcept {
-                    return 555;
-                }
+static int32_t get_class_id() noexcept {
+return 555;
+}
 
-                static void
-                write_data(const MessagePrinter &object, object_data_output &out) {
-                out.write(object.message);
+static void
+write_data(const MessagePrinter &object, object_data_output &out) {
+out.write(object.message);
 }
 
 static MessagePrinter read_data(object_data_input &in) {
 return MessagePrinter{
-in.read<std::string>()
+in.read<std::string>(); }
+}
+
 };
-                }
-            };
-        }
-    }
+}
+}
 }
 ```
 
@@ -2293,12 +2293,12 @@ An example where `MessagePrinter` task is executed is shown below.
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-    // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
-    // Wait for the result of the submitted task and print the result
-    auto result = result_future.get_future().get();
-    std::cout << "Server result: " << *result << std::endl;
+std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+// Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
+auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{ "message to any node" });
+// Wait for the result of the submitted task and print the result
+auto result = result_future.get_future().get();
+std::cout << "Server result: " << *result << std::endl;
 ```
 
 #### 7.6.1.3 Scaling The Executor Service
@@ -2315,47 +2315,49 @@ The distributed executor service allows you to execute your code in the cluster.
 * `printOnMembers`: On all or a subset of the cluster members with the `iexecutor_service::submit_to_members` method.
 
 ```C++
-void printOnTheMember(const std::string &input, const Member &member) {
+    void printOnTheMember(const std::string &input, const Member &member) {
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-    // Get the first Hazelcast Cluster Member
-    member firstMember = hz.get_cluster().get_members()[0];
-    // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
-    ex->execute_on_member<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, firstMember).get();
+std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+// Get the first Hazelcast Cluster Member
+member firstMember = hz.get_cluster().get_members()[0];
+// Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
+ex->execute_on_member<MessagePrinter>(MessagePrinter{ "message to very first member of the cluster" }, firstMember).get();
 ```
 
 ```C++
-void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
+    void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-    // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
-    ex->execute_on_key_owner<MessagePrinter, std::string>(
-            MessagePrinter{"message to the member that owns the key"}, "key").get();
+std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+// Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
+ex->execute_on_key_owner<MessagePrinter, std::string>(
+MessagePrinter{
+"message to the member that owns the key"
+}, "key").get();
 }
 ```
 
 ```C++
-void printOnSomewhere(const std::string &input) {
+    void printOnSomewhere(const std::string &input) {
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-    // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"}).get();
+std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+// Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
+auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{ "message to any node" }).get();
 }
 ```
 
 ```C++
-void printOnMembers(const std::string input, const std::vector<Member> &members) {
+    void printOnMembers(const std::string input, const std::vector<Member> &members) {
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-    ex->execute_on_members<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, members);
+std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+ex->execute_on_members<MessagePrinter>(MessagePrinter{ "message to very first member of the cluster" }, members);
 }
 ```
 
@@ -2370,20 +2372,20 @@ To cancel a task, you can use the `executor_promise<T>::cancel()` API. This API 
 The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `timeout` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
 
 ```
-                auto service = client->get_executor_service(get_test_name()).get();
+      auto service = client->get_executor_service(get_test_name()).get();
 
-                executor::tasks::CancellationAwareTask task{INT64_MAX};
+      executor::tasks::CancellationAwareTask task{INT64_MAX};
 
-                auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
+      auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
 
-                auto future = promise.get_future();
-                if (future.wait_for(boost::chrono::seconds(3) == boost::future_status::timeout) {
-                    std::cout << "Could not get response back in 3 seconds\n";
-                }
+      auto future = promise.get_future();
+      if (future.wait_for(boost::chrono::seconds(3) == boost::future_status::timeout) {
+          std::cout << "Could not get response back in 3 seconds\n";
+      }
 
-                if (promise.cancel(true)) {
-                    std::cout << "Cancelled the submitted task\n";
-                }
+      if (promise.cancel(true)) {
+          std::cout << "Cancelled the submitted task\n";
+      }
 ```
 
 #### 7.6.1.6 Selecting Members for Task Execution
@@ -2396,16 +2398,17 @@ The `bool select(const Member &member)` method is called for every available mem
 In the simple example shown below, we select the cluster members based on the presence of an attribute.
 
 ```C++
-class MyMemberSelector : public member_selector {
+    class MyMemberSelector :
+public member_selector {
 public:
-    bool select(const member &member) const override {
-        const std::string *attribute = member.get_attribute("my.special.executor");
-        if (attribute == NULL) {
-            return false;
-        }
+bool select(const member &member) const override {
+const std::string *attribute = member.get_attribute("my.special.executor");
+if (attribute == NULL) {
+return false;
+}
 
-        return *attribute == "true";
-    }
+return *attribute == "true";
+}
 };
 ```
 
@@ -2442,37 +2445,38 @@ In the C++ client, an `entry_processor` should be Hazelcast serializable, becaus
 The following is an example for `entry_processor` which is serialized by `identified_data_serializer`.
 
 ```C++
-struct IdentifiedEntryProcessor {
-    std::string name;
+    struct IdentifiedEntryProcessor {
+std::string name;
 };
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<IdentifiedEntryProcessor> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 66;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<IdentifiedEntryProcessor> : identified_data_serializer {
+static int32_t get_factory_id() noexcept {
+return 66;
+}
 
-                static int32_t get_class_id() noexcept {
-                    return 1;
-                }
+static int32_t get_class_id() noexcept {
+return 1;
+}
 
-                static void
-                write_data(const IdentifiedEntryProcessor &object, object_data_output &out) {
-                out.write(object.name);
+static void
+write_data(const IdentifiedEntryProcessor &object, object_data_output &out) {
+out.write(object.name);
 }
 
 static IdentifiedEntryProcessor read_data(object_data_input &in) {
 // no-need to implement here, since we do not expect to receive this object but we only send it to server
-                    assert(0);
-                    return IdentifiedEntryProcessor{};
-                }
-            };
-        }
-    }
-}```
+assert(0);
+return IdentifiedEntryProcessor{};
+}
+};
+}
+}
+}
+```
 
 Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
@@ -2600,45 +2604,43 @@ Assume that you have a `person` map containing the values of `person` objects, a
 
 ```C++
 struct person {
-    friend std::ostream &operator<<(std::ostream &os, const person &person);
-
     std::string name;
     bool male;
     int32_t age;
 };
 
 std::ostream &operator<<(std::ostream &os, const person &obj) {
-    os << "name: " << obj.name << " male: " << obj.male << " age: " << obj.age;
-    return os;
+os << "name: " << obj.name << " male: " << obj.male << " age: " << obj.age;
+return os;
 }
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<person> : portable_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<person> : portable_serializer {
+static int32_t get_factory_id() noexcept {
+return 1;
+}
 
-                static int32_t get_class_id() noexcept {
-                    return 3;
+static int32_t get_class_id() noexcept {
+return 3;
 }
 
 static void write_data(const person &object, portable_writer &out) {
 out.write(object.name);
-                    out.write(object.male);
-                    out.write(object.age);
-                    }
+out.write(object.male);
+out.write(object.age);
+}
 
-                    static person read_data(portable_reader &in) {
-                    return person{
-                    in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
-                    };
-                }
-            };
-        }
-    }
+static person read_data(portable_reader &in) {
+return person{
+in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
+};
+}
+};
+}
+}
 }
 ```
 
@@ -2894,36 +2896,36 @@ struct OrderKey : public hazelcast::client::partition_aware<std::string> {
     }
 
     std::string order_id_string;
-    static const std::string customer_id_string;
+static const std::string customer_id_string;
 };
 const std::string OrderKey::customer_id_string = "My customer id 99";
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<OrderKey> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<OrderKey> : identified_data_serializer {
+static int32_t get_factory_id() noexcept {
+return 1;
+}
 
-                static int32_t get_class_id() noexcept {
-                    return 10;
-                }
+static int32_t get_class_id() noexcept {
+return 10;
+}
 
-                static void
-                write_data(const OrderKey &object, object_data_output &out) {
-                out.write(object.order_id_string);
+static void
+write_data(const OrderKey &object, object_data_output &out) {
+out.write(object.order_id_string);
 }
 
 static OrderKey read_data(object_data_input &in) {
 return OrderKey{
 in.read<std::string>()
 };
-                }
-            };
-        }
-    }
+}
+};
+}
+}
 }
 ```
 
@@ -2974,11 +2976,11 @@ Hazelcast Map can be configured to work with near cache enabled. You can enable 
 
 ```C++
     client_config config;
-    const char *mapName = "EvictionPolicyMap";
-    config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
-    nearCacheConfig.set_invalidate_on_change(false);
-    nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
-            .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
+const char *mapName = "EvictionPolicyMap";
+config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
+nearCacheConfig.set_invalidate_on_change(false);
+nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
+.set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
 config.add_near_cache_config(nearCacheConfig);
 hazelcast_client hz{ new_client(std::move(config)).get() };
 
@@ -3050,15 +3052,15 @@ be made from a single thread. The pipelining is a convenience implementation to 
 the number of inflight operations, and it provides a convenient way to wait for all the results.
 
 ```C++
-            constexpr int depth = 10;
-            auto pipelining = pipelining<std::string>::create(depth);
-            for (int k = 0; k < 100; ++k) {
-                int key = rand() % keyDomain;
-                pipelining->add(map->get(key));
-            }
+      constexpr int depth = 10;
+auto pipelining = pipelining<std::string>::create(depth);
+for (int k = 0; k < 100; ++k) {
+int key = rand() % keyDomain;
+pipelining->add(map->get(key));
+}
 
-            // wait for completion
-            auto results = pipelining->results();
+// wait for completion
+auto results = pipelining->results();
 ```
 
 In the above example, we make 100 asynchronous `map->get()` calls, but the maximum number of inflight calls is 10.
@@ -3109,30 +3111,32 @@ If no logging configuration is made by the user, the client prints log messages 
 
 You can set the minimum level in which the log messages are printed using `logger_config::level`:
 ```c++
-clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
+        clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
 ```
 
 `hazelcast::logger::level::off` and `hazelcast::logger::level::all` can be used to enable or disable all levels:
+
 ```c++
-clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables logging completely
+    clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables logging completely
 clientConfig.getLoggerConfig().level(hazelcast::logger::level::all); // enables all log levels
 ```
 
 You can set a callback function to be called on each log message via `logger_config::handler`:
 ```c++
-clientConfig.getLoggerConfig().handler(my_log_handler);
+    clientConfig.getLoggerConfig().handler(my_log_handler);
 ```
 Setting a log handler will disable the default log handling behavior. 
 
 The handler takes instance name of the client object that emitted the message, cluster name that the client is connected, name of the source code and the line number where the log was produced, the severity level of the log message, and the log message itself. Here is the exact signature for a log handler function:
+
 ```c++
-void my_log_handler(
-    const std::string &instance_name, // instance name of the client
-    const std::string &cluster_name,  // name of the cluster to which the client is connected
-    const char *file_name,            // name of the source file where the log was produced
-    int line,                         // line number where the log was produced
-    level lvl,                        // severity level of the message
-    const std::string &msg);          // the message
+    void my_log_handler(
+const std::string &instance_name, // instance name of the client
+const std::string &cluster_name,  // name of the cluster to which the client is connected
+const char *file_name,            // name of the source file where the log was produced
+int line,                         // line number where the log was produced
+level lvl,                        // severity level of the message
+const std::string &msg);          // the message
 ```
 
 As the callback function is called from multiple threads, it must be thread-safe.
@@ -3146,25 +3150,25 @@ Sometimes, you may need to use Hazelcast data structures with objects of differe
 ### 7.10.1. typed_data API
 
 The typed_data class is a wrapper class for the serialized binary data. It presents the following user APIs:
+
 ```
-            /**
-             *
-             * @return The type of the underlying object for this binary.
-             */
-            serialization::pimpl::object_type get_type() const;
+    /**
+     *
+     * @return The type of the underlying object for this binary.
+     */
+    serialization::pimpl::object_type get_type() const;
 
-            /**
-             * Deserializes the underlying binary data and produces the object of type T.
-             *
-             * <b>CAUTION</b>: The type that you provide should be compatible with what object type is returned with
-             * the get_type API, otherwise you will either get an exception of incorrectly try deserialize the binary data.
-             *
-             * @tparam T The type to be used for deserialization
-             * @return The object instance of type T.
-             */
-            template <typename T>
-            boost::optional<T> get() const;
-
+    /**
+     * Deserializes the underlying binary data and produces the object of type T.
+     *
+     * <b>CAUTION</b>: The type that you provide should be compatible with what object type is returned with
+     * the get_type API, otherwise you will either get an exception of incorrectly try deserialize the binary data.
+     *
+     * @tparam T The type to be used for deserialization
+     * @return The object instance of type T.
+     */
+    template <typename T>
+    boost::optional<T> get() const;
 ```
 
 typed_data does late deserialization of the data only when the get method is called.
@@ -3190,48 +3194,12 @@ In order to test Hazelcast C++ client locally, you will need the following:
 * cmake
 * OpenSSL
 * Boost
+* thrift
 
-You can use the docker configs provided in the `docker` folder of the project. The dockers have all the dependencies installed for building the project.
-
-Following command builds and runs the tests:
-
-* Linux: `./testLinuxSingleCase.sh 64 SHARED Debug`
-* MacOS: `./testLinuxSingleCase.sh 64 SHARED Debug`
-* Windows: `./testWindowsSingleCase.bat 64 SHARED Debug`
-
-## 8.2 Reproducing Released Libraries From Source
-
-Sometimes you may want to reproduce the released library for your own compiler environment. The downloaded zip file contains binary library built using the latest gcc version and it may not be able to compile with your compiler (especially with your libstdc++ version), hence you may want to recompile the project source and build a binary library in your build environment.
-
-You need to run the release script and it will produce a release folder named "cpp".
-
-If you just want to reproduce a shared library or static library, annd copy the library, then you can do the following:
-```shell script
-git clone https://github.com/hazelcast/hazelcast-cpp-client.git
-cd hazelcast-cpp-client
-mkdir build
-cd build
-cmake .. -DHZ_BUILD_EXAMPLES=OFF -DHZ_BUILD_TESTS=OFF -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_COMPILE_WITH_SSL=OFF
-cmake --build . --parallel -v --config Release
-```
-The above code snippet will produce non-SSL 64-bit shared library in folder hazelcast-cpp-client/build. You can link to this directory for your application.
-
-Note: The default release scripts for Windows and macOS require that you have OpenSSL and Boost installed in your development environment. 
-
-## Mac
-
-Run releaseOSX.sh.
-
-## Linux
-
-Run releaseLinux.sh
-
-The Linux build script uses docker for compiling, hence you need docker installed.
-
-## Windows
-
-Run releaseWindows.bat.
-
+You need to enable the examples in the build with the cmake flag `-DBUILD_EXAMPLES=ON`. When you build, the result will
+produce the executable `client_test` on Linux/macOS and `client_test.exe` on Windows. You need to start the remote
+controller first before running this executable by executing `scripts/start-rc.sh` on Linux/macOS
+or `scripts/start-rc.bat` on Windows. Then you can run the test executable.
 
 # 9. Getting Help
 
