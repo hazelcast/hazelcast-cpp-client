@@ -13,13 +13,14 @@
       * [1.1.5.2. CMake Configuration](#1152-cmake-configuration)
         * [1.1.5.2.1. Example Configuration Commands](#11521-example-configuration-commands)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
-    * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
-      * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
-      * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
+    * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
+      * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
+      * [1.2.1.2. Starting Server Using Hazelcast Distribution](#1212-starting-server-using-hazelcast-distribution)
+      * [1.2.1.3. Adding User Java Library to Java CLASSPATH ](#1213-adding-user-java-library-to-java-classpath)
   * [1.3. Compiling Your Project](#13-compiling-your-project)
-      * [1.3.1. CMake Users](#131-cmake-users)
-      * [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
-      * [1.3.3. Windows Users](#133-windows-users)
+    * [1.3.1. CMake Users](#131-cmake-users)
+    * [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
+    * [1.3.3. Windows Users](#133-windows-users)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
@@ -262,34 +263,38 @@ Build both the shared and static library without SSL support:
 cmake .. -DWITH_OPENSSL=OFF -DBUILD_SHARED_LIB=ON -DBUILD_STATIC_LIB=ON
 ```
 
-## 1.2. Working with Hazelcast IMDG Clusters
+## 1.2. Starting Hazelcast IMDG Cluster
 
 Hazelcast C++ client requires a working Hazelcast IMDG cluster to run. This cluster handles storage and manipulation of the user data.
 Clients are a way to connect to the Hazelcast IMDG cluster and access such data.
 
-Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or physical machines
-and are connected to each other via network. Any data put on the cluster is partitioned to multiple members transparent to the user.
-It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast IMDG cluster also offers resilience. Should
-any hardware or software problem causes a crash to any member, the data on that member is recovered from backups and the cluster
-continues to operate without any downtime. Hazelcast clients are an easy way to connect to a Hazelcast IMDG cluster and perform tasks on
-distributed data structures that live on the cluster.
+Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or
+physical machines and are connected to each other via network. Any data put on the cluster is partitioned to multiple
+members transparent to the user. It is therefore very easy to scale the system by adding new members as the data grows.
+Hazelcast IMDG cluster also offers resilience. Should any hardware or software problem causes a crash to any member, the
+data on that member is recovered from backups and the cluster continues to operate without any downtime. Hazelcast
+clients are an easy way to connect to a Hazelcast IMDG cluster and perform tasks on distributed data structures that
+live on the cluster.
 
-In order to use Hazelcast C++ client, we first need to setup a Hazelcast IMDG cluster.
+In order to use Hazelcast C++ client, we first need to setup a Hazelcast IMDG servers.
 
-### 1.2.1. Setting Up a Hazelcast IMDG Cluster
+### 1.2.1. Starting Hazelcast Server
 
-There are following options to start a Hazelcast IMDG cluster easily:
+#### 1.2.1.1. Starting Server Using Hazelcast Docker Images
 
-* You can run standalone members by downloading and running JAR files from the website.
-* You can embed members to your Java projects. 
+The quickest way to start a single member cluster for development purposes is to use our
+[Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
-We are going to download JARs from the website and run a standalone member for this guide.
+```bash
+docker run -p 5701:5701 hazelcast/hazelcast:4.1.1
+```
 
-#### 1.2.1.1. Running Standalone JARs
+#### 1.2.1.2. Starting Server Using Hazelcast Distribution
 
 Follow the instructions below to create a Hazelcast IMDG cluster:
 
-1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
+1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar`
+   distribution of Hazelcast IMDG.
 2. Decompress the contents into any directory that you
 want to run members from.
 3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
@@ -309,7 +314,7 @@ Nov 19, 2020 2:52:59 PM com.hazelcast.core.LifecycleService
 INFO: [192.168.1.112]:5701 [dev] [4.1] [192.168.1.112]:5701 is STARTED
 ```
 
-#### 1.2.1.2. Adding User Library to CLASSPATH
+#### 1.2.1.3. Adding User Java Library to Java CLASSPATH
 
 When you want to use features such as querying and language interoperability, you might need to add your own Java classes to the Hazelcast member in order to use them from your C++ client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). Then, you can start your Hazelcast member by using the start scripts in the `bin` directory. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
 
