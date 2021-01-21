@@ -34,7 +34,7 @@
     * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
 * [4. Serialization](#4-serialization)
   * [4.1. identified_data_serializer Serialization](#41-identifieddataserializable-serialization)
-  * [4.2. portable-serializer Serialization](#42-portable-serialization)
+  * [4.2. portable_serializer Serialization](#42-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
   * [4.4. JSON Serialization](#44-json-serialization)
   * [4.5. Global Serialization](#45-global-serialization)
