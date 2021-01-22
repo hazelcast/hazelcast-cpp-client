@@ -961,14 +961,19 @@ namespace hazelcast {
                     return fail_on_indeterminate_operation_state_;
                 }
 
+                boost::basic_thread_pool &ClientInvocationServiceImpl::get_invocation_thread_pool() {
+                    return invocation_thread_pool_;
+                }
+
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const client_properties &properties,
                                                                        int32_t pool_size,
                                                                        spi::lifecycle_service &service)
-                        : lifecycle_service_(service), client_properties_(properties), user_executor_pool_size_(pool_size) {}
+                        : lifecycle_service_(service), client_properties_(properties) {}
 
                 void ClientExecutionServiceImpl::start() {
-                    int internalPoolSize = client_properties_.get_integer(client_properties_.get_internal_executor_pool_size());
+                    int internalPoolSize = client_properties_.get_integer(
+                            client_properties_.get_internal_executor_pool_size());
                     if (internalPoolSize <= 0) {
                         internalPoolSize = util::IOUtil::to_value<int>(
                                 client_properties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);
@@ -1022,7 +1027,7 @@ namespace hazelcast {
                     call_id_sequence_->next();
                     invoke_on_selection();
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(boost::launch::async,
+                    return invocation_promise_.get_future().then(invocation_service_.get_invocation_thread_pool(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();
@@ -1036,7 +1041,7 @@ namespace hazelcast {
                     call_id_sequence_->force_next();
                     invoke_on_selection();
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(boost::launch::async,
+                    return invocation_promise_.get_future().then(invocation_service_.get_invocation_thread_pool(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();

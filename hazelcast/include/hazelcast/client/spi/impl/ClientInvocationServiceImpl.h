@@ -18,6 +18,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <boost/thread/executors/basic_thread_pool.hpp>
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
@@ -71,6 +72,9 @@ namespace hazelcast {
                     bool fail_on_indeterminate_state() const;
 
                     void add_backup_listener();
+
+                    boost::basic_thread_pool &get_invocation_thread_pool();
+
                 private:
                     class BackupListenerMessageCodec : public ListenerMessageCodec {
                     public:
@@ -94,6 +98,7 @@ namespace hazelcast {
                     bool backup_acks_enabled_;
                     bool fail_on_indeterminate_operation_state_;
                     std::chrono::milliseconds backup_timeout_;
+                    boost::basic_thread_pool invocation_thread_pool_;
 
                     static void write_to_connection(connection::Connection &connection,
                                            const std::shared_ptr<ClientInvocation> &client_invocation);

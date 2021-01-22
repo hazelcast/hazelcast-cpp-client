@@ -73,7 +73,6 @@ namespace hazelcast {
                     std::unique_ptr<hazelcast::util::hz_thread_pool> internal_executor_;
                     spi::lifecycle_service &lifecycle_service_;
                     const client_properties &client_properties_;
-                    int user_executor_pool_size_;
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> schedule_with_repetition_internal(CompletionToken token,
