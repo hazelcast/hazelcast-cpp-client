@@ -102,7 +102,7 @@ namespace hazelcast {
             }
 
             void ProxyManager::destroy() {
-                std::lock_guard<std::mutex> guard(lock_);
+                std::lock_guard<std::recursive_mutex> guard(lock_);
                 for (auto &p : proxies_) {
                     try {
                         auto proxy = p.second.get();
@@ -134,7 +134,7 @@ namespace hazelcast {
                 DefaultObjectNamespace objectNamespace(proxy.get_service_name(), proxy.get_name());
                 std::shared_ptr<ClientProxy> registeredProxy;
                 {
-                    std::lock_guard<std::mutex> guard(lock_);
+                    std::lock_guard<std::recursive_mutex> guard(lock_);
                     auto it = proxies_.find(objectNamespace);
                     registeredProxy = it == proxies_.end() ? nullptr : it->second.get();
                     if (it != proxies_.end()) {
