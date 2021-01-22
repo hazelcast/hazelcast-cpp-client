@@ -572,6 +572,7 @@ namespace hazelcast {
 
                 void ClientInvocationServiceImpl::shutdown() {
                     is_shutdown_.store(true);
+                    invocation_thread_pool_.interrupt_and_join();
                 }
 
                 std::chrono::milliseconds ClientInvocationServiceImpl::get_invocation_timeout() const {
