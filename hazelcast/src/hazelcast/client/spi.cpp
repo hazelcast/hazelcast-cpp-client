@@ -572,7 +572,6 @@ namespace hazelcast {
 
                 void ClientInvocationServiceImpl::shutdown() {
                     is_shutdown_.store(true);
-                    invocation_thread_pool_.interrupt_and_join();
                 }
 
                 std::chrono::milliseconds ClientInvocationServiceImpl::get_invocation_timeout() const {
@@ -962,15 +961,12 @@ namespace hazelcast {
                     return fail_on_indeterminate_operation_state_;
                 }
 
-                boost::basic_thread_pool &ClientInvocationServiceImpl::get_invocation_thread_pool() {
-                    return invocation_thread_pool_;
-                }
-
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const client_properties &properties,
                                                                        int32_t pool_size,
-                                                                       spi::lifecycle_service &service)
-                        : lifecycle_service_(service), client_properties_(properties) {}
+                                                                       spi::lifecycle_service &service,
+                                                                       std::shared_ptr<logger> l)
+                        : lifecycle_service_(service), client_properties_(properties), logger_(std::move(l)) {}
 
                 void ClientExecutionServiceImpl::start() {
                     int internalPoolSize = client_properties_.get_integer(
@@ -985,6 +981,21 @@ namespace hazelcast {
 
                 void ClientExecutionServiceImpl::shutdown() {
                     shutdown_thread_pool(internal_executor_.get());
+
+                    bool more_work = true;
+                    do {
+                        try {
+                            more_work = invocation_thread_pool_.try_executing_one();
+                        } catch (std::exception &e) {
+                            HZ_LOG(*logger_, warning,
+                                   (boost::format("Exception in invocation thread pool task. %1%") % e.what()).str());
+                        }
+                    } while (more_work);
+                    invocation_thread_pool_.interrupt_and_join();
+                }
+
+                boost::basic_thread_pool &ClientExecutionServiceImpl::get_invocation_thread_pool() {
+                    return invocation_thread_pool_;
                 }
 
                 void ClientExecutionServiceImpl::shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool) {
@@ -1027,8 +1038,13 @@ namespace hazelcast {
                     // for back pressure
                     call_id_sequence_->next();
                     invoke_on_selection();
+                    if (!lifecycle_service_.is_running()) {
+                        return invocation_promise_.get_future().then([](boost::future<protocol::ClientMessage> f) {
+                            return f.get();
+                        });
+                    }
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(invocation_service_.get_invocation_thread_pool(),
+                    return invocation_promise_.get_future().then(execution_service_->get_invocation_thread_pool(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();
@@ -1041,8 +1057,13 @@ namespace hazelcast {
                     // for back pressure
                     call_id_sequence_->force_next();
                     invoke_on_selection();
+                    if (!lifecycle_service_.is_running()) {
+                        return invocation_promise_.get_future().then([](boost::future<protocol::ClientMessage> f) {
+                            return f.get();
+                        });
+                    }
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(invocation_service_.get_invocation_thread_pool(),
+                    return invocation_promise_.get_future().then(execution_service_->get_invocation_thread_pool(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();
@@ -1112,12 +1133,12 @@ namespace hazelcast {
                     }
                 }
 
-                void ClientInvocation::set_exception(const exception::iexception &e, boost::exception_ptr exception_ptr) {
+                void ClientInvocation::set_exception(const std::exception &e, boost::exception_ptr exception_ptr) {
                     try {
                         auto send_conn = *send_connection_.load();
                         if (send_conn) {
                             auto call_id = client_message_.load()->get()->get_correlation_id();
-                            boost::asio::post(send_conn->get_socket().get_executor(), [=] () {
+                            boost::asio::post(send_conn->get_socket().get_executor(), [=]() {
                                 send_conn->deregister_invocation(call_id);
                             });
                         }
@@ -1127,7 +1148,7 @@ namespace hazelcast {
                             HZ_LOG(logger_, finest,
                                 boost::str(boost::format("Failed to set the exception for invocation. "
                                                          "%1%, %2% Exception to be set: %3%")
-                                                         % se.what() % *this % e)
+                                           % se.what() % *this % e.what())
                             );
                         }
                     }
@@ -1186,7 +1207,7 @@ namespace hazelcast {
 
                         try {
                             execute();
-                        } catch (exception::iexception &e) {
+                        } catch (std::exception &e) {
                             set_exception(e, boost::current_exception());
                         }
                     } catch (...) {

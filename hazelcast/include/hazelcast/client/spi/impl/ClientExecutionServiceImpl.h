@@ -19,6 +19,7 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/thread/executors/basic_thread_pool.hpp>
 
 #include "hazelcast/client/spi/lifecycle_service.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
@@ -30,6 +31,8 @@
 #endif
 
 namespace hazelcast {
+    class logger;
+
     namespace util {
         class hz_thread_pool;
     }
@@ -43,7 +46,8 @@ namespace hazelcast {
                         public std::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
                     ClientExecutionServiceImpl(const std::string &name, const client_properties &properties,
-                                               int32_t pool_size, spi::lifecycle_service &service);
+                                               int32_t pool_size, spi::lifecycle_service &service,
+                                               std::shared_ptr<logger> l);
 
                     void start();
 
@@ -62,17 +66,22 @@ namespace hazelcast {
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> schedule_with_repetition(CompletionToken token,
-                                                                                      const std::chrono::milliseconds &delay,
-                                                                                      const std::chrono::milliseconds &period) {
+                                                                                        const std::chrono::milliseconds &delay,
+                                                                                        const std::chrono::milliseconds &period) {
                         auto timer = std::make_shared<boost::asio::steady_timer>(internal_executor_->get_executor());
                         return schedule_with_repetition_internal(token, delay, period, timer);
                     }
 
                     static void shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool);
+
+                    boost::basic_thread_pool &get_invocation_thread_pool();
+
                 private:
                     std::unique_ptr<hazelcast::util::hz_thread_pool> internal_executor_;
+                    boost::basic_thread_pool invocation_thread_pool_;
                     spi::lifecycle_service &lifecycle_service_;
                     const client_properties &client_properties_;
+                    std::shared_ptr<logger> logger_;
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> schedule_with_repetition_internal(CompletionToken token,

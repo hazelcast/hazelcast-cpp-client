@@ -1171,6 +1171,8 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
                 client_config config;
                 config.set_cluster_name("invalid cluster");
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(3));
 
                 ASSERT_THROW((hazelcast::new_client(std::move(config)).get()), exception::illegal_state);
             }
