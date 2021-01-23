@@ -964,9 +964,8 @@ namespace hazelcast {
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const client_properties &properties,
                                                                        int32_t pool_size,
-                                                                       spi::lifecycle_service &service,
-                                                                       std::shared_ptr<logger> l)
-                        : lifecycle_service_(service), client_properties_(properties), logger_(std::move(l)) {}
+                                                                       spi::lifecycle_service &service)
+                        : lifecycle_service_(service), client_properties_(properties) {}
 
                 void ClientExecutionServiceImpl::start() {
                     int internalPoolSize = client_properties_.get_integer(
@@ -977,32 +976,24 @@ namespace hazelcast {
                     }
 
                     internal_executor_.reset(new hazelcast::util::hz_thread_pool(internalPoolSize));
+
+                    user_executor_.reset(new hazelcast::util::hz_thread_pool());
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
                     shutdown_thread_pool(internal_executor_.get());
-
-                    bool more_work = true;
-                    do {
-                        try {
-                            more_work = invocation_thread_pool_.try_executing_one();
-                        } catch (std::exception &e) {
-                            HZ_LOG(*logger_, warning,
-                                   (boost::format("Exception in invocation thread pool task. %1%") % e.what()).str());
-                        }
-                    } while (more_work);
-                    invocation_thread_pool_.interrupt_and_join();
+                    shutdown_thread_pool(user_executor_.get());
                 }
 
-                boost::basic_thread_pool &ClientExecutionServiceImpl::get_invocation_thread_pool() {
-                    return invocation_thread_pool_;
+                util::hz_thread_pool &ClientExecutionServiceImpl::get_user_executor() {
+                    return *user_executor_;
                 }
 
                 void ClientExecutionServiceImpl::shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool) {
                     if (!pool) {
                         return;
                     }
-                    pool->shutdown_gracefully();
+                    pool->close();
                 }
 
                 constexpr int ClientInvocation::MAX_FAST_INVOCATION_COUNT;
@@ -1044,7 +1035,7 @@ namespace hazelcast {
                         });
                     }
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(execution_service_->get_invocation_thread_pool(),
+                    return invocation_promise_.get_future().then(execution_service_->get_user_executor(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();
@@ -1063,7 +1054,7 @@ namespace hazelcast {
                         });
                     }
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(execution_service_->get_invocation_thread_pool(),
+                    return invocation_promise_.get_future().then(execution_service_->get_user_executor(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();

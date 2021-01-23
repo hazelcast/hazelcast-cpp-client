@@ -16,6 +16,7 @@
 #pragma once
 
 #include <boost/asio/thread_pool.hpp>
+#include <boost/thread/executors/work.hpp>
 
 #include "hazelcast/util/export.h"
 
@@ -28,13 +29,23 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API hz_thread_pool {
         public:
-            hz_thread_pool(size_t num_threads);
+            explicit hz_thread_pool();
 
-            void shutdown_gracefully();
+            explicit hz_thread_pool(size_t num_threads);
+
+            void close();
+
+            bool closed();
+
+            void submit(boost::executors::work &&closure);
+
+            bool try_executing_one();
 
             boost::asio::thread_pool::executor_type get_executor() const;
+
         private:
             std::unique_ptr<boost::asio::thread_pool> pool_;
+            std::atomic<bool> closed_{false};
         };
     }
 }
