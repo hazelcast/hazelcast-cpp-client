@@ -337,7 +337,7 @@ namespace hazelcast {
         }
 
         boost::future<void> latch::wait() {
-            return to_void_future(wait_for((std::chrono::hours::max)()));
+            return to_void_future(wait_for(std::chrono::milliseconds(INT64_MAX)));
         }
 
         boost::future<std::cv_status> latch::wait_for(std::chrono::milliseconds timeout) {

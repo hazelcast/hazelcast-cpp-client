@@ -204,7 +204,7 @@ namespace hazelcast {
 
                     std::shared_ptr<protocol::ClientMessage> copy_message();
 
-                    void set_exception(const exception::iexception &e, boost::exception_ptr exception_ptr);
+                    void set_exception(const std::exception &e, boost::exception_ptr exception_ptr);
 
                     void log_exception(exception::iexception &e);
 

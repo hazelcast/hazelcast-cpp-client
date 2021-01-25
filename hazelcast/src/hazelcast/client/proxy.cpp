@@ -1367,11 +1367,12 @@ namespace hazelcast {
                                                                                    processor,
                                                                                    key,
                                                                                    util::get_current_thread_id());
-                return invoke_on_partition(request, get_partition_id(key)).then([] (boost::future<protocol::ClientMessage> f) {
-                    auto msg = f.get();
-                    msg.skip_frame();
-                    return msg.get_nullable<serialization::pimpl::data>();
-                });
+                return invoke_on_partition(request, get_partition_id(key)).then(boost::launch::sync,
+                                                                                [](boost::future<protocol::ClientMessage> f) {
+                                                                                    auto msg = f.get();
+                                                                                    msg.skip_frame();
+                                                                                    return msg.get_nullable<serialization::pimpl::data>();
+                                                                                });
             }
 
             boost::future<EntryVector> IMapImpl::execute_on_keys_data(const std::vector<serialization::pimpl::data> &keys,
