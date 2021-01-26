@@ -512,8 +512,8 @@ names as explained in the previous section. If you did, then you need to make ce
 You only need to provide the name of the cluster if it is explicitly configured on the server side (otherwise the default value of `dev` is used).
 
 ```C++
-    hazelcast::client::client_config config;
-    config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
+hazelcast::client::client_config config;
+config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
 ```
 
 ### 1.4.2.2. Network Settings
@@ -521,8 +521,8 @@ You only need to provide the name of the cluster if it is explicitly configured 
 You need to provide the IP address and port of at least one member in your cluster so the client can find it.
 
 ```C++
-    hazelcast::client::client_config config;
-    config.get_network_config().add_address(hazelcast::client::address("your server ip", 5701 /* your server port*/));
+hazelcast::client::client_config config;
+config.get_network_config().add_address(hazelcast::client::address("your server ip", 5701 /* your server port*/));
 ```
 ### 1.4.3. Client System Properties
 
@@ -771,7 +771,7 @@ For programmatic configuration of the Hazelcast C++ client, just instantiate a `
 desired aspects. An example is shown below.
 
 ```C++
-    hazelcast::client::client_config config;
+hazelcast::client::client_config config;
 config.get_network_config().add_address({ "your server ip", 5701 /* your server port*/});
 auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster
 ```
@@ -843,18 +843,16 @@ namespace hazelcast {
 
                 static int32_t get_class_id() noexcept {
                     return 3;
-}
+                }
 
-static void write_data(const Person &object, object_data_output &out) {
-out.write(object.name);
+                static void write_data(const Person &object, object_data_output &out) {
+                    out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
-}
+                }
 
-static Person read_data(object_data_input &in) {
-return Person{
-in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
-};
+                static Person read_data(object_data_input &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
         }
@@ -898,18 +896,16 @@ namespace hazelcast {
 
                 static int32_t get_class_id() noexcept {
                     return 3;
-}
+                }
 
-static void write_portable(const Person &object, portable_writer &out) {
-out.write("name", object.name);
+                static void write_portable(const Person &object, portable_writer &out) {
+                out.write("name", object.name);
                     out.write("gender", object.male);
                     out.write("age", object.age);
-}
+                }
 
-static Person read_portable(portable_reader &in) {
-return Person{
-in.read<std::string>("name"), in.read<bool>("gender"), in.read<int32_t>("age")
-};
+                static Person read_portable(portable_reader &in) {
+                    return Person{in.read<std::string>("name"), in.read<bool>("gender"), in.read<int32_t>("age")};
                 }
             };
         }
@@ -942,18 +938,16 @@ namespace hazelcast {
             struct hz_serializer<Person> : custom_serializer {
                 static constexpr int32_t get_type_id() noexcept {
                     return 3;
-}
+                }
 
-static void write(const Person &object, object_data_output &out) {
-out.write(object.name);
+                static void write(const Person &object, object_data_output &out) {
+                    out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
-}
+                }
 
-static Person read(object_data_input &in) {
-return Person{
-in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
-};
+                static Person read(object_data_input &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
         }
@@ -970,12 +964,12 @@ You can use the JSON formatted strings as objects in Hazelcast cluster. Creating
 In order to use JSON serialization, you should use the `hazelcast_json_value` object for the key or value. Here is an example imap usage:
 
 ```C++
-    auto hz = hazelcast::new_client().get();
+auto hz = hazelcast::new_client().get();
 
 auto map = hz.get_map("map").get();
 
-    map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
-    map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
+map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
+map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
 ```
 
 `hazelcast_json_value` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `hazelcast_json_value` object using the `to_string()` method. 
@@ -985,9 +979,9 @@ You can construct a `hazelcast_json_value` using one of the constructors. All co
 You can query JSON objects in the cluster using the `predicate`s of your choice. An example JSON query for querying the values whose age is less than 6 is shown below:
 
 ```C++
-    // Get the objects whose age is less than 6
-    auto result = map->values<hazelcast::client::hazelcast_json_value>(
-            hazelcast::client::query::greater_less_predicate(hz, "age", 6, false, true)).get();
+// Get the objects whose age is less than 6
+auto result = map->values<hazelcast::client::hazelcast_json_value>(
+hazelcast::client::query::greater_less_predicate(hz, "age", 6, false, true)).get();
 ```
 
 ## 4.5. Global Serialization
@@ -1024,7 +1018,7 @@ As you see fromn the sample, the global serializer class should implement the `h
 You should register the global serializer in the configuration.
 
 ```C++
-    hazelcast::client::client_config config;
+hazelcast::client::client_config config;
 config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
 auto hz = hazelcast::new_client(std::move(config)).get();
 ```
@@ -1038,12 +1032,12 @@ All network related configuration of Hazelcast C++ client is performed programma
 Here is an example of configuring the network for C++ Client programmatically.
 
 ```C++
-    client_config clientConfig;
-    clientConfig.get_network_config().add_addresses({{"10.1.1.21", 5701}, {"10.1.1.22", 5703}});
-    clientConfig.get_network_config().set_smart_routing(true);
-    clientConfig.set_redo_operation(true);
-    clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
-            std::chrono::seconds(30));
+client_config clientConfig;
+clientConfig.get_network_config().add_addresses({{"10.1.1.21", 5701}, {"10.1.1.22", 5703}});
+clientConfig.get_network_config().set_smart_routing(true);
+clientConfig.set_redo_operation(true);
+clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+        std::chrono::seconds(30));
 ```
 
 ## 5.1. Providing Member Addresses
@@ -1053,8 +1047,8 @@ list to find an alive member. Although it may be enough to give only one address
 (since all members communicate with each other), it is recommended that you give the addresses for all the members.
 
 ```C++
-    client_config clientConfig;
-    clientConfig.get_network_config().add_address(address("10.1.1.21", 5701), address("10.1.1.22", 5703));
+client_config clientConfig;
+clientConfig.get_network_config().add_address(address("10.1.1.21", 5701), address("10.1.1.22", 5703));
 ```
 
 The provided list is shuffled and tried in a random order. If no address is added to the `client_network_config`, then `127.0.0.1:5701` is tried by default.
@@ -1067,8 +1061,8 @@ for the description of smart and unisocket modes.
 The following is an example configuration.
 
 ```C++
-    client_config clientConfig;
-    clientConfig.get_network_config().set_smart_routing(true);
+client_config clientConfig;
+clientConfig.get_network_config().set_smart_routing(true);
 ```
 
 Its default value is `true` (smart client mode).
@@ -1078,8 +1072,8 @@ Its default value is `true` (smart client mode).
 It enables/disables redo-able operations. While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redo_operation` to `true`.
 
 ```C++
-    client_config clientConfig;
-    clientConfig.set_redo_operation(true);
+client_config clientConfig;
+clientConfig.set_redo_operation(true);
 ```
 
 Its default value is `false` (disabled).
@@ -1090,7 +1084,7 @@ Cluster connection timeout is the timeout value for which the client tries to co
 The following example shows how you can set the cluster connection timeout to 30 seconds.
 
 ```C++
-    client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(std::chrono::seconds(30));
+client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(std::chrono::seconds(30));
 ```
 
 ## 5.5. Advanced Cluster Connection Retry Configuration
@@ -1101,9 +1095,9 @@ The following is an example configuration.
 Below is an example configuration. It configures a total timeout of 30 seconds to connect to a cluster, by initial backoff time being 100 milliseconds and doubling the time before every try with a jitter of 0.8  up to a maximum of 3 seconds backoff between each try..
 
 ```C++
-    client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
-            std::chrono::seconds(30)).set_multiplier(2.0).set_jitter(0.8).set_initial_backoff_duration(
-            std::chrono::seconds(100)).set_max_backoff_duration(std::chrono::seconds(3));
+client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+        std::chrono::seconds(30)).set_multiplier(2.0).set_jitter(0.8).set_initial_backoff_duration(
+        std::chrono::seconds(100)).set_max_backoff_duration(std::chrono::seconds(3));
 ```
 
 The following are configuration element descriptions:
@@ -1129,8 +1123,8 @@ The following is an example configuration:
 
 ```C++
 clientConfig.get_network_config().get_aws_config().set_enabled(true).
-            set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
-            set_tag_key("aws-test-tag").set_tagValue("aws-tag-value-1").set_security_group_name("MySecureGroup").setRegion("us-east-1");
+        set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
+        set_tag_key("aws-test-tag").set_tagValue("aws-tag-value-1").set_security_group_name("MySecureGroup").setRegion("us-east-1");
 ```
 
 You need to enable the discovery by calling the `set_enabled(true)`. You can set your access key and secret in the configuration as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances will be retrieved from, the default region is `us-east-1`.
@@ -1151,8 +1145,8 @@ If you want to enable authentication, then the client can be configured in one o
 The following is an example configuration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
 
 ```C++
-    hazelcast_client hz(client_config().set_credentials(
-            std::make_shared<security::username_password_credentials>("test-user", "test-pass")));
+hazelcast_client hz(client_config().set_credentials(
+std::make_shared<security::username_password_credentials>("test-user", "test-pass")));
 ```
 
 Note that the server needs to be configured to use the same username and password. An example server xml config is:
@@ -1173,10 +1167,10 @@ Note that the server needs to be configured to use the same username and passwor
 The following is an example configuration where we set the secret token bytes to be used while trying to connect to the cluster:
 
 ```C++
-    std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
+std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
 
-    hazelcast_client hz(client_config().set_credentials(
-            std::make_shared<security::token_credentials>(my_token)));
+hazelcast_client hz(client_config().set_credentials(
+std::make_shared<security::token_credentials>(my_token)));
 ```
 
 Note that the server needs to be configured to use the same token. An example server xml config is:
@@ -1199,9 +1193,8 @@ When an operation with sync backup is sent by a client to the Hazelcast member(s
 To disable backup acknowledgement, you should use the `backup_acks_enabled` configuration option.
 
 ```C++
-    // Disable the default backup ack feature
-    hazelcast_client hz(client_config().backup_acks_enabled(false));
-
+// Disable the default backup ack feature
+hazelcast_client hz(client_config().backup_acks_enabled(false));
 ```
 
 Its default value is `true`. This option has no effect for unisocket clients.
@@ -1244,7 +1237,7 @@ You can set the protocol type. If not set, the configuration uses `tlsv12` (TLSv
 The following is an example configuration.
 
 ```C++
-    config.get_network_config().get_ssl_config().set_enabled(true).add_verify_file(get_ca_file_path());
+config.get_network_config().get_ssl_config().set_enabled(true).add_verify_file(get_ca_file_path());
 
 //Cipher suite is set using a string which is defined by OpenSSL standard at this page: https://www.openssl.org/docs/man1.0.2/apps/ciphers.html An example usage:
 config.get_network_config().get_ssl_config().set_cipher_list("HIGH");
@@ -1340,15 +1333,15 @@ The first step is the configuration. You can configure the C++ client programmat
 The following is an example on how to create a `client_config` object and configure it programmatically:
 
 ```C++
-    client_config clientConfig;
-    clientConfig.set_cluster_name("my test cluster");
-    clientConfig.get_network_config().add_addresses({{"'10.90.0.1", 5701}, {"'10.90.0.2", 5702}});
+client_config clientConfig;
+clientConfig.set_cluster_name("my test cluster");
+clientConfig.get_network_config().add_addresses({{"'10.90.0.1", 5701}, {"'10.90.0.2", 5702}});
 ```
 
 The second step is initializing the `hazelcast_client` to be connected to the cluster:
 
 ```C++
-    auto client = new_client(std::move(clientConfig));
+auto client = new_client(std::move(clientConfig));
 // some operation
 ```
 
@@ -1357,21 +1350,21 @@ The second step is initializing the `hazelcast_client` to be connected to the cl
 Let's create a map and populate it with some data, as shown below.
 
 ```C++
-    // Get the Distributed Map from Cluster.
-    auto map = client.get_map("my-distributed-map").get();
-    //Standard put and get.
-    map->put<std::string, std::string>("key", "value").get();
-    map->get<std::string, std::string>("key").get();
-    //Concurrent Map methods, optimistic updating
-    map->put_if_absent<std::string, std::string>("somekey", "somevalue").get();
-    map->replace<std::string, std::string>("key", "value", "newvalue").get();
+// Get the Distributed Map from Cluster.
+auto map = client.get_map("my-distributed-map").get();
+//Standard put and get.
+map->put<std::string, std::string>("key", "value").get();
+map->get<std::string, std::string>("key").get();
+//Concurrent Map methods, optimistic updating
+map->put_if_absent<std::string, std::string>("somekey", "somevalue").get();
+map->replace<std::string, std::string>("key", "value", "newvalue").get();
  ```
 
 As the final step, if you are done with your client, you can shut it down as shown below. This will release all the used resources and close connections to the cluster.
 
 ```C++
-    // Shutdown this Hazelcast Client
-    client.shutdown().get();
+// Shutdown this Hazelcast Client
+client.shutdown().get();
 ```
 
 The client object destructor also shuts down the client upon destruction if you do not explicitly call the shutdown method.
@@ -1393,7 +1386,7 @@ In the unisocket client mode, the client will only connect to one of the configu
 You can set the unisocket client mode in the `client_config` as shown below.
 
 ```C++
-    clientConfig.get_network_config().set_smart_routing(false);
+clientConfig.get_network_config().set_smart_routing(false);
 ```
 
 ## 7.3. Handling Failures
@@ -1423,7 +1416,7 @@ When a connection problem occurs, an operation is retried if it is certain that 
 When invocation is being retried, the client may wait some time before it retries again. This duration can be configured using the following property:
 
 ```
-    config.set_property(“hazelcast.client.invocation.retry.pause.millis”, “500");
+config.set_property(“hazelcast.client.invocation.retry.pause.millis”, “500");
 ```
 The default retry wait time is 1 second.
 
@@ -1454,7 +1447,7 @@ For details of backpressure, see the [Back Pressure section](https://docs.hazelc
 Hazelcast client-cluster connection and reconnection strategy can be configured. Sometimes, you may not want your application to wait for the client to connect to the cluster, you may just want to get the client and let the client connect in the background. This is configured as follows:
 
 ```
-    client_config::get_connection_strategy_config().set_async_start(bool);
+client_config::get_connection_strategy_config().set_async_start(bool);
 ```
 
 When this configuration is set to true, the client creation won't wait to connect to cluster. The client instance will throw an exception for any request, until it connects to the cluster and become ready.
@@ -1486,14 +1479,14 @@ Hazelcast Map (`imap`) is a distributed map. Through the C++ client, you can per
 A Map usage example is shown below.
 
 ```C++
-    // Get the Distributed Map from Cluster.
-    auto map = hz.get_map("my-distributed-map").get();
-    //Standard Put and Get.
-    map->put<std::string, std::string>("key", "value").get();
-    map->get<std::string, std::string>("key").get();
-    //Concurrent Map methods, optimistic updating
-    map->put_if_absent<std::string, std::string>("somekey", "somevalue").get();
-    map->replace<std::string, std::string>("key", "value", "newvalue").get();
+// Get the Distributed Map from Cluster.
+auto map = hz.get_map("my-distributed-map").get();
+//Standard Put and Get.
+map->put<std::string, std::string>("key", "value").get();
+map->get<std::string, std::string>("key").get();
+//Concurrent Map methods, optimistic updating
+map->put_if_absent<std::string, std::string>("somekey", "somevalue").get();
+map->replace<std::string, std::string>("key", "value", "newvalue").get();
 ```
 
 ### 7.4.2. Using multi_map
@@ -1503,18 +1496,18 @@ Hazelcast `multi_map` is a distributed and specialized map where you can store m
 A multi_map usage example is shown below.
 
 ```C++
-    // Get the Distributed multi_map from Cluster.
-    auto multiMap = hz.get_multi_map("my-distributed-multimap").get();
-    // Put values in the map against the same key
-    multiMap->put<std::string, std::string>("my-key", "value1").get();
-    multiMap->put<std::string, std::string>("my-key", "value2").get();
-    multiMap->put<std::string, std::string>("my-key", "value3").get();
-    // Print out all the values for associated with key called "my-key"
-    for (const auto &value : multiMap->get<std::string, std::string>("my-key").get()) {
-        std::cout << value << std::endl; // will print value1, value2 and value3 each per line.
-    }
-    // remove specific key/value pair
-    multiMap->remove<std::string, std::string>("my-key", "value2").get();    // Shutdown this Hazelcast Client
+// Get the Distributed multi_map from Cluster.
+auto multiMap = hz.get_multi_map("my-distributed-multimap").get();
+// Put values in the map against the same key
+multiMap->put<std::string, std::string>("my-key", "value1").get();
+multiMap->put<std::string, std::string>("my-key", "value2").get();
+multiMap->put<std::string, std::string>("my-key", "value3").get();
+// Print out all the values for associated with key called "my-key"
+for (const auto &value : multiMap->get<std::string, std::string>("my-key").get()) {
+    std::cout << value << std::endl; // will print value1, value2 and value3 each per line.
+}
+// remove specific key/value pair
+multiMap->remove<std::string, std::string>("my-key", "value2").get();
 ```
 
 ### 7.4.3. Using replicated_map
@@ -1524,10 +1517,10 @@ Hazelcast `replicated_map` is a distributed key-value data structure where the d
 A replicated_map usage example is shown below.
 
 ```C++
-    auto replicatedMap = hz.get_replicated_map("myReplicatedMap").get();
-    replicatedMap->put<int, std::string>(1, "Furkan").get();
-    replicatedMap->put<int, std::string>(2, "Ahmet").get();
-    std::cout << "Replicated map value for key 2 is " << *replicatedMap->get<int, std::string>(2).get() << std::endl; // Replicated map value for key 2 is Ahmet
+auto replicatedMap = hz.get_replicated_map("myReplicatedMap").get();
+replicatedMap->put<int, std::string>(1, "Furkan").get();
+replicatedMap->put<int, std::string>(2, "Ahmet").get();
+std::cout << "Replicated map value for key 2 is " << *replicatedMap->get<int, std::string>(2).get() << std::endl; // Replicated map value for key 2 is Ahmet
 ```
 
 ### 7.4.4. Using iqueue
@@ -1537,18 +1530,18 @@ Hazelcast Queue (`iqueue`) is a distributed queue which enables all cluster memb
 A Queue usage example is shown below.
 
 ```C++
-    // Get a Blocking Queue called "my-distributed-queue"
-    auto queue = hz.get_queue("my-distributed-queue").get();
-    // Offer a String into the Distributed Queue
-    queue->offer<std::string>("item").get();
-    // Poll the Distributed Queue and return the String
-    auto item = queue->poll<std::string>().get(); // gets first "item"
-    //Timed blocking Operations
-    queue->offer<std::string>("anotheritem", 500).get();
-    auto anotherItem = queue->poll<std::string>(5 * 1000).get();
-    //Indefinitely blocking Operations
-    queue->put<std::string>("yetanotheritem").get();
-    std::cout << *queue->take<std::string>().get() << std::endl; // Will print yetanotheritem
+// Get a Blocking Queue called "my-distributed-queue"
+auto queue = hz.get_queue("my-distributed-queue").get();
+// Offer a String into the Distributed Queue
+queue->offer<std::string>("item").get();
+// Poll the Distributed Queue and return the String
+auto item = queue->poll<std::string>().get(); // gets first "item"
+//Timed blocking Operations
+queue->offer<std::string>("anotheritem", 500).get();
+auto anotherItem = queue->poll<std::string>(5 * 1000).get();
+//Indefinitely blocking Operations
+queue->put<std::string>("yetanotheritem").get();
+std::cout << *queue->take<std::string>().get() << std::endl; // Will print yetanotheritem
 ```
 
 ### 7.4.5. Using iset
@@ -1558,19 +1551,19 @@ Hazelcast Set (`iset`) is a distributed set which does not allow duplicate eleme
 A Set usage example is shown below.
 
 ```C++
-    // Get the Distributed Set from Cluster.
-    auto set = hz.get_set("my-distributed-set").get();
-    // Add items to the set with duplicates
-    set->add<std::string>("item1").get();
-    set->add<std::string>("item1").get();
-    set->add<std::string>("item2").get();
-    set->add<std::string>("item2").get();
-    set->add<std::string>("item2").get();
-    set->add<std::string>("item3").get();
-    // Get the items. Note that there are no duplicates.
-    for (const auto &value : set->toArray().get()) {
-        std::cout << value << std::endl;
-    }
+// Get the Distributed Set from Cluster.
+auto set = hz.get_set("my-distributed-set").get();
+// Add items to the set with duplicates
+set->add<std::string>("item1").get();
+set->add<std::string>("item1").get();
+set->add<std::string>("item2").get();
+set->add<std::string>("item2").get();
+set->add<std::string>("item2").get();
+set->add<std::string>("item3").get();
+// Get the items. Note that there are no duplicates.
+for (const auto &value : set->toArray().get()) {
+    std::cout << value << std::endl;
+}
 ```
 
 ### 7.4.6. Using ilist
@@ -1580,18 +1573,18 @@ Hazelcast List (`ilist`) is a distributed list which allows duplicate elements a
 A List usage example is shown below.
 
 ```C++
-    // Get the Distributed List from Cluster.
-    auto list = hz.get_list("my-distributed-list").get();
-    // Add elements to the list
-    list->add<std::string>("item1").get();
-    list->add<std::string>("item2").get();
+// Get the Distributed List from Cluster.
+auto list = hz.get_list("my-distributed-list").get();
+// Add elements to the list
+list->add<std::string>("item1").get();
+list->add<std::string>("item2").get();
 
-    // Remove the first element
-    std::cout << "Removed: " << *list.remove<std::string>(0).get();
-    // There is only one element left
-    std::cout << "Current size is " << list.size().get() << std::endl;
-    // Clear the list
-    list.clear().get();
+// Remove the first element
+std::cout << "Removed: " << *list.remove<std::string>(0).get();
+// There is only one element left
+std::cout << "Current size is " << list.size().get() << std::endl;
+// Clear the list
+list.clear().get();
 ```
 
 ### 7.4.7. Using ringbuffer
@@ -1601,16 +1594,16 @@ Hazelcast `ringbuffer` is a replicated but not partitioned data structure that s
 A ringbuffer usage example is shown below.
 
 ```C++
-    auto rb = hz.get_ring_buffer("rb").get();
-    // add two items into ring buffer
-    rb->add(100).get();
-    rb->add(200).get();
-    // we start from the oldest item.
-    // if you want to start from the next item, call rb.tailSequence()+1
-    auto sequence = rb->head_sequence().get();
-    std::cout << *rb->read_one<int>(sequence).get() << std::endl; //
-    sequence++;
-    std::cout << *rb->read_one<int>(sequence).get() << std::endl;
+auto rb = hz.get_ring_buffer("rb").get();
+// add two items into ring buffer
+rb->add(100).get();
+rb->add(200).get();
+// we start from the oldest item.
+// if you want to start from the next item, call rb.tailSequence()+1
+auto sequence = rb->head_sequence().get();
+std::cout << *rb->read_one<int>(sequence).get() << std::endl; //
+sequence++;
+std::cout << *rb->read_one<int>(sequence).get() << std::endl;
 ```
 
 ### 7.4.8. Using reliable_topic
@@ -1620,69 +1613,66 @@ Hazelcast `reliable_topic` is a distributed topic implementation backed up by th
 A reliable_topic usage example is shown below.
 
 ```C++
-    hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
-using namespace hazelcast::client::topic;
-
-return reliable_listener(false, sequence_id)
-.on_received([&n_received_messages](message &&message){
-++n_received_messages;
-
-auto object = message.get_message_object().get<std::string>();
-if (object) {
-std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name();
-} else {
-std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
-message.get_name();
-}
-});
+hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
+  using namespace hazelcast::client::topic;
+  
+  return reliable_listener(false, sequence_id).on_received([&n_received_messages](message &&message){
+      ++n_received_messages;
+      auto object = message.get_message_object().get<std::string>();
+      if (object) {
+        std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name() << std::endl;
+      } else {
+        std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" << message.get_name() << std::endl;
+      }
+  });
 }
 
 void listen_with_default_config() {
-auto client = hazelcast::new_client().get();
-
-std::string topicName("MyReliableTopic");
-auto topic = client.get_reliable_topic(topicName).get();
-
-std::atomic<int> numberOfMessagesReceived{ 0 };
-auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
-
-std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
-
-while (numberOfMessagesReceived < 1) {
-std::this_thread::sleep_for(std::chrono::seconds(1));
-}
-
-if (topic->remove_message_listener(listenerId)) {
-std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
-} else {
-std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
-}
+  auto client = hazelcast::new_client().get();
+  
+  std::string topicName("MyReliableTopic");
+  auto topic = client.get_reliable_topic(topicName).get();
+  
+  std::atomic<int> numberOfMessagesReceived{ 0 };
+  auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
+  
+  std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+  
+  while (numberOfMessagesReceived < 1) {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  
+  if (topic->remove_message_listener(listenerId)) {
+      std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
+  } else {
+      std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
+  }
 }
 
 void listen_with_config() {
-hazelcast::client::client_config clientConfig;
-std::string topicName("MyReliableTopic");
-hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
-reliableTopicConfig.set_read_batch_size(5);
-clientConfig.add_reliable_topic_config(reliableTopicConfig);
-auto client = hazelcast::new_client(std::move(clientConfig)).get();
-
-auto topic = client.get_reliable_topic(topicName).get();
-
-std::atomic<int> numberOfMessagesReceived{ 0 };
-auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
-
-std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
-
-while (numberOfMessagesReceived < 1) {
-std::this_thread::sleep_for(std::chrono::seconds(1));
-}
-
-if (topic->remove_message_listener(listenerId)) {
-std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
-} else {
-std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
-}
+  hazelcast::client::client_config clientConfig;
+  std::string topicName("MyReliableTopic");
+  hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName.c_str());
+  reliableTopicConfig.set_read_batch_size(5);
+  clientConfig.add_reliable_topic_config(reliableTopicConfig);
+  auto client = hazelcast::new_client(std::move(clientConfig)).get();
+  
+  auto topic = client.get_reliable_topic(topicName).get();
+  
+  std::atomic<int> numberOfMessagesReceived{ 0 };
+  auto listenerId = topic->add_message_listener(make_listener(numberOfMessagesReceived));
+  
+  std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+  
+  while (numberOfMessagesReceived < 1) {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+  
+  if (topic->remove_message_listener(listenerId)) {
+    std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
+  } else {
+    std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
+  }
 }
 ```
 
@@ -1693,7 +1683,7 @@ Hazelcast `pn_counter` (Positive-Negative Counter) is a CRDT positive-negative c
 A pn_counter usage example is shown below.
 
 ```C++
-    auto hz = hazelcast::new_client().get();
+auto hz = hazelcast::new_client().get();
 
 auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
@@ -1701,11 +1691,11 @@ std::cout << "Counter started with value:" << pnCounter->get().get() << std::end
 
 std::cout << "Counter new value after adding is: " << pnCounter->add_and_get(5).get() << std::endl;
 
-    std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2).get() << std::endl;
+std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2).get() << std::endl;
 
-    std::cout << "Counter new value is: " << pnCounter->get().get() << std::endl;
+std::cout << "Counter new value is: " << pnCounter->get().get() << std::endl;
 
-    std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get().get() << std::endl;
+std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get().get() << std::endl;
 ```
 
 ### 7.4.10 Using flake_id_generator
@@ -1715,8 +1705,8 @@ Hazelcast `flake_id_generator` is used to generate cluster-wide unique identifie
 A flake_id_generator usage example is shown below.
 
 ```C++
-    auto generator = hz.get_flake_id_generator("flakeIdGenerator").get();
-    std::cout << "Id : " << generator->newId().get() << std::endl; // Id : <some unique number>
+auto generator = hz.get_flake_id_generator("flakeIdGenerator").get();
+std::cout << "Id : " << generator->newId().get() << std::endl; // Id : <some unique number>
 ```
 
 ### 7.4.11. CP Subsystem
@@ -1736,9 +1726,9 @@ Hazelcast `atomic_long` is the distributed implementation of atomic 64-bit integ
 An Atomic Long usage example is shown below.
 
 ```C++
-    // also present the future continuation capability. you can use sync version as well.
-    // Get current value (returns a int64_t)
-    auto future = atomic_counter->get().then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
+// also present the future continuation capability. you can use sync version as well.
+// Get current value (returns a int64_t)
+auto future = atomic_counter->get().then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
         // Prints:
         // Value: 0
         std::cout << "Value: " << f.get() << "\n";
@@ -1752,9 +1742,9 @@ An Atomic Long usage example is shown below.
         std::cout << "result: " << value << "\n";
         // Prints:
         // CAS operation result: 1
-    });
+});
 
-    future.get();
+future.get();
 ```
 
 atomic_long implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see the [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
@@ -1766,17 +1756,17 @@ Hazelcast `fenced_lock` is the distributed implementation of a linearizable lock
 A basic Lock usage example is shown below.
 
 ```C++
-    // Get an fenced_lock named 'my-lock'
-    auto lock = hz.get_cp_subsystem().get_lock("my-lock").get();
+// Get an fenced_lock named 'my-lock'
+auto lock = hz.get_cp_subsystem().get_lock("my-lock").get();
 
-    // Acquire the lock
-    lock->lock().get();
-    try {
-        // Your guarded code goes here
-    } catch (...) {
-            // Make sure to release the lock
-            lock->unlock().get();
-    }
+// Acquire the lock
+lock->lock().get();
+try {
+    // Your guarded code goes here
+} catch (...) {
+    // Make sure to release the lock
+    lock->unlock().get();
+}
 ```
 
 fenced_lock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to the [CP Session](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-sessions) documentation for more information.
@@ -1790,17 +1780,17 @@ You can read more about the fencing token idea in Martin Kleppmann's "How to do 
 As an alternative approach, you can use the `try_lock()` method of fenced_lock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the lock before giving up.
 
 ```C++
-    // Try to acquire the lock
-    auto success = lock->try_lock().get();
-    // Check for valid fencing token
-    if (success) {
-        try {
-            // Your guarded code goes here
-        } catch (...) {
-            // Make sure to release the lock
-            lock->unlock().get();
-        }
-    }
+// Try to acquire the lock
+auto success = lock->try_lock().get();
+// Check for valid fencing token
+if (success) {
+  try {
+      // Your guarded code goes here
+  } catch (...) {
+      // Make sure to release the lock
+      lock->unlock().get();
+  }
+}
 ```
 
 #### 7.4.11.3. Using counting_semaphore
@@ -1812,20 +1802,20 @@ counting_semaphore is a cluster-wide counting semaphore. Conceptually, it mainta
 A basic counting_semaphore usage example is shown below.
 
 ```C++
-    // Get counting_semaphore named 'my-semaphore'
-    auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore").get();
-    // Try to initialize the semaphore
-    // (does nothing if the semaphore is already initialized)
-    semaphore->init(3).get();
-    // Acquire 3 permits out of 3
-    semaphore->acquire(3).get();
-    // Release 2 permits
-    semaphore->release(2).get();
-    // Check available permits
-    auto available = semaphore->available_permits().get();
-    std::cout << "Available:" << available << "\n";
-    // Prints:
-    // Available: 1
+// Get counting_semaphore named 'my-semaphore'
+auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore").get();
+// Try to initialize the semaphore
+// (does nothing if the semaphore is already initialized)
+semaphore->init(3).get();
+// Acquire 3 permits out of 3
+semaphore->acquire(3).get();
+// Release 2 permits
+semaphore->release(2).get();
+// Check available permits
+auto available = semaphore->available_permits().get();
+std::cout << "Available:" << available << "\n";
+// Prints:
+// Available: 1
 ```
 
 Beware of the increased risk of indefinite postponement when using the multiple-permit acquire. If permits are released one by one, a caller waiting for one permit will acquire it before a caller waiting for multiple permits regardless of the call order. Correct usage of a semaphore is established by programming convention in the application.
@@ -1833,17 +1823,17 @@ Beware of the increased risk of indefinite postponement when using the multiple-
 As an alternative, potentially safer approach to the multiple-permit acquire, you can use the `try_acquire()` method of counting_semaphore. It tries to acquire the permits in optimistic manner and immediately returns with a `boolean` operation result. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the permits before giving up.
 
 ```C++
-    // Try to acquire 1 permit
-    auto success = semaphore->try_acquire(1).get();
-    // Check for valid fencing token
-    if (success) {
-        try {
-            // Your guarded code goes here
-        } catch (...) {
-            // Make sure to release the permits
-            semaphore->release(1).get();
-        }
+// Try to acquire 1 permit
+auto success = semaphore->try_acquire(1).get();
+// Check for valid fencing token
+if (success) {
+    try {
+        // Your guarded code goes here
+    } catch (...) {
+        // Make sure to release the permits
+        semaphore->release(1).get();
     }
+}
 ```
 
  counting_semaphore data structure has two variations:
@@ -1858,28 +1848,28 @@ Hazelcast `latch` is the distributed implementation of a linearizable and distri
 A basic latch usage example is shown below.
 
 ```C++
-    // Get a latch called 'my-latch'
-    auto latch = hz.get_cp_subsystem().get_latch("my-latch'").get();
+// Get a latch called 'my-latch'
+auto latch = hz.get_cp_subsystem().get_latch("my-latch'").get();
 
-    // Try to initialize the latch
-    // (does nothing if the count is not zero)
-    auto initialized = latch->try_set_count(1).get();
-    std::cout << "Initialized:" << initialized << "\n";
-    // Check count
-    auto count = latch->get_count().get();
-    std::cout << "Count:" << count << "\n";
-    // Prints:
-    // Count: 1
-    // Bring the count down to zero after 10ms
-    auto f = std::async([=] () {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        latch->count_down().get();
-    });
-    // Wait up to 1 second for the count to become zero up
-    auto status = latch->wait_for(std::chrono::seconds(1)).get();
-    if (status == std::cv_status::no_timeout) {
-        std::cout << "latch is count down\n";
-    }
+// Try to initialize the latch
+// (does nothing if the count is not zero)
+auto initialized = latch->try_set_count(1).get();
+std::cout << "Initialized:" << initialized << "\n";
+// Check count
+auto count = latch->get_count().get();
+std::cout << "Count:" << count << "\n";
+// Prints:
+// Count: 1
+// Bring the count down to zero after 10ms
+auto f = std::async([=] () {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    latch->count_down().get();
+});
+// Wait up to 1 second for the count to become zero up
+auto status = latch->wait_for(std::chrono::seconds(1)).get();
+if (status == std::cv_status::no_timeout) {
+    std::cout << "latch is count down\n";
+}
 ```
 
 > **NOTE: latch count can be reset with `try_set_count()` after a count_down has finished, but not during an active count.**
@@ -1891,22 +1881,22 @@ Hazelcast `atomic_reference` is the distributed implementation of a linearizable
 A basic atomic_reference usage example is shown below.
 
 ```C++
-    // Get an atomic_reference named 'my-ref'
-    auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref'").get();
+// Get an atomic_reference named 'my-ref'
+auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref'").get();
 
-    // Set the value atomically
-    ref->set(42).get();
-    // Read the value
-    auto value = ref->get<int>().get();
-    std::cout << "Value:" << value << "\n";
-    // Prints:
-    // Value: 42
-    // Try to replace the value with 'value'
-    // with a compare-and-set atomic operation
-    auto result = ref->compare_and_set(42, "value").get();
-    std::cout << "CAS result:" << result << "\n";
-    // Prints:
-    // CAS result: 1
+// Set the value atomically
+ref->set(42).get();
+// Read the value
+auto value = ref->get<int>().get();
+std::cout << "Value:" << value << "\n";
+// Prints:
+// Value: 42
+// Try to replace the value with 'value'
+// with a compare-and-set atomic operation
+auto result = ref->compare_and_set(42, "value").get();
+std::cout << "CAS result:" << result << "\n";
+// Prints:
+// CAS result: 1
 ```
 
 The following are some considerations you need to know when you use atomic_reference:
@@ -1925,7 +1915,7 @@ Hazelcast C++ client provides transactional operations like beginning transactio
 You can create a `transaction_context` object using the C++ client to begin, commit and rollback a transaction. You can obtain transaction-aware instances of queues, maps, sets, lists and multimaps via the `transaction_context` object, work with them and commit or rollback in one shot. For details, see the [Transactions section](https://docs.hazelcast.org//docs/latest/manual/html-single/index.html#transactions) in the Hazelcast IMDG Reference Manual.
 
 ```C++
-      // Create a Transaction object and begin the transaction
+  // Create a Transaction object and begin the transaction
 auto context = client->new_transaction_context();
 context.begin_transaction().get();
 
@@ -1982,70 +1972,64 @@ You can use `cluster` (`hazelcast_client::hazelcast_client::get_cluster()`) obje
 The following example demonstrates both initial and regular membership listener registrations.
 
 ```C++
-    membership_listener make_membership_listener() {
-return membership_listener()
-.on_joined([](const hazelcast::client::membership_event &membership_event) {
-std::cout << "New member joined: "
-<< membership_event.get_member().get_address() << std::endl;
-})
-.on_left([](const hazelcast::client::membership_event &membership_event) {
-std::cout << "Member left: "
-<< membership_event.get_member().get_address() << std::endl;
-});
+membership_listener make_membership_listener() {
+    return membership_listener().on_joined([](const hazelcast::client::membership_event &membership_event) {
+      std::cout << "New member joined: "
+      << membership_event.get_member().get_address() << std::endl;
+    }).on_left([](const hazelcast::client::membership_event &membership_event) {
+    std::cout << "Member left: "
+    << membership_event.get_member().get_address() << std::endl;
+    });
 }
 
 membership_listener make_initial_membership_listener() {
-return membership_listener()
-.on_init([](const hazelcast::client::initial_membership_event &event){
-auto members = event.get_members();
-std::cout << "The following are the initial members in the cluster:" << std::endl;
-for (const auto &member : members) {
-std::cout << member.get_address() << std::endl;
-}
-})
-.on_joined([](const hazelcast::client::membership_event &membership_event) {
-std::cout << "New member joined: " <<
-membership_event.get_member().get_address() << std::endl;
-})
-.on_left([](const hazelcast::client::membership_event &membership_event) {
-std::cout << "Member left: " <<
-membership_event.get_member().get_address() << std::endl;
-});
+    return membership_listener().on_init([](const hazelcast::client::initial_membership_event &event){
+      auto members = event.get_members();
+      std::cout << "The following are the initial members in the cluster:" << std::endl;
+      for (const auto &member : members) {
+        std::cout << member.get_address() << std::endl;
+      }
+    }).on_joined([](const hazelcast::client::membership_event &membership_event) {
+      std::cout << "New member joined: " << membership_event.get_member().get_address() << std::endl;
+    }).on_left([](const hazelcast::client::membership_event &membership_event) {
+      std::cout << "Member left: " <<
+      membership_event.get_member().get_address() << std::endl;
+    });
 }
 
 int main() {
-auto memberListener = make_membership_listener();
-auto initialMemberListener = make_initial_membership_listener();
-
-hazelcast::client::cluster *clusterPtr = nullptr;
-boost::uuids::uuid listenerId, initialListenerId;
-try {
-auto hz = hazelcast::new_client().get();
-
-hazelcast::client::cluster &cluster = hz.get_cluster().get();
-clusterPtr = &cluster;
-auto members = cluster.get_members();
-std::cout << "The following are members in the cluster:" << std::endl;
-for (const auto &member: members) {
-std::cout << member.get_address() << std::endl;
-}
-
-listenerId = cluster.add_membership_listener(std::move(memberListener));
-initialListenerId = cluster.add_membership_listener(std::move(initialMemberListener));
-
-// sleep some time for the events to be delivered before exiting
-std::this_thread::sleep_for(std::chrono::seconds(3));
-
-cluster.remove_membership_listener(listenerId).get();
-cluster.remove_membership_listener(initialListenerId).get();
-} catch (hazelcast::client::exception::iexception &e) {
-std::cerr << "failed !!! " << e.what() << std::endl;
-if (nullptr != clusterPtr) {
-clusterPtr->remove_membership_listener(listenerId).get();
-clusterPtr->remove_membership_listener(initialListenerId).get();
-}
-exit(-1);
-}
+  auto memberListener = make_membership_listener();
+  auto initialMemberListener = make_initial_membership_listener();
+  
+  hazelcast::client::cluster *clusterPtr = nullptr;
+  boost::uuids::uuid listenerId, initialListenerId;
+  try {
+    auto hz = hazelcast::new_client().get();
+    
+    hazelcast::client::cluster &cluster = hz.get_cluster().get();
+    clusterPtr = &cluster;
+    auto members = cluster.get_members();
+    std::cout << "The following are members in the cluster:" << std::endl;
+    for (const auto &member: members) {
+        std::cout << member.get_address() << std::endl;
+    }
+    
+    listenerId = cluster.add_membership_listener(std::move(memberListener));
+    initialListenerId = cluster.add_membership_listener(std::move(initialMemberListener));
+    
+    // sleep some time for the events to be delivered before exiting
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    
+    cluster.remove_membership_listener(listenerId).get();
+    cluster.remove_membership_listener(initialListenerId).get();
+  } catch (hazelcast::client::exception::iexception &e) {
+    std::cerr << "failed !!! " << e.what() << std::endl;
+    if (nullptr != clusterPtr) {
+      clusterPtr->remove_membership_listener(listenerId).get();
+      clusterPtr->remove_membership_listener(initialListenerId).get();
+    }
+    exit(-1);
+  }
 ...
 ```
 
@@ -2066,33 +2050,32 @@ The following is an example of the `lifecycle_listener` that is added to the `cl
     class ConnectedListener :
 public hazelcast::client::lifecycle_listener {
 public:
-virtual void stateChanged(const hazelcast::client::lifecycle_event &lifecycleEvent) {
-if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_CONNECTED) {
-std::cout << "Client connected to the cluster" << std::endl;
-} else if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_DISCONNECTED) {
-std::cout << "Client is disconnected from the cluster" << std::endl;
-}
-}
+  virtual void stateChanged(const hazelcast::client::lifecycle_event &lifecycleEvent) {
+      if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_CONNECTED) {
+          std::cout << "Client connected to the cluster" << std::endl;
+      } else if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_DISCONNECTED) {
+          std::cout << "Client is disconnected from the cluster" << std::endl;
+      }
+  }
 };
-
+    
 int main() {
-hazelcast::client::client_config config;
-
-// Add a lifecycle listener so that we can track when the client is connected/disconnected
-config.add_listener(
-hazelcast::client::lifecycle_listener().
-on_connected([](){
-std::cout << "Client connected to the cluster" << std::endl;
-}).on_disconnected([] () {
-std::cout << "Client is disconnected from the cluster" << std::endl;
-});
-);
-
-auto hz = hazelcast::new_client(std::move(config)).get();
-
-hz.shutdown().get();
-return 0;
-}
+    hazelcast::client::client_config config;
+    
+    // Add a lifecycle listener so that we can track when the client is connected/disconnected
+    config.add_listener(
+    hazelcast::client::lifecycle_listener().on_connected([](){
+        std::cout << "Client connected to the cluster" << std::endl;
+      }).on_disconnected([] () {
+          std::cout << "Client is disconnected from the cluster" << std::endl;
+      });
+    );
+    
+    auto hz = hazelcast::new_client(std::move(config)).get();
+    
+    hz.shutdown().get();
+    return 0;
+  }
 ```
 
 **Output:**
@@ -2130,29 +2113,25 @@ An entry-based event is fired after operations that affect a specific entry. For
 See the following example.
 
 ```C++
-    int main() {
-auto hz = hazelcast::new_client().get();
-
-auto map = hz.get_map("EntryListenerExampleMap").get();
-
-auto registrationId = map->add_entry_listener(
-entry_listener().
-on_added([](hazelcast::client::EntryEvent &&event) {
-std::cout << "Entry added:" << event.getKey().get<int>().value()
-<< " --> " << event.getValue().get<std::string>().value() << std::endl;
-}).
-on_removed([](hazelcast::client::EntryEvent &&event) {
-std::cout << "Entry removed:" << event.getKey().get<int>().value()
-<< " --> " << event.getValue().get<std::string>().value() << std::endl;
-})
-, true).get();
-
-map->put(1, "My new entry").get();
-map->remove<int, std::string>(1).get();
-
-/* ... */
-
-return 0;
+int main() {
+  auto hz = hazelcast::new_client().get();
+  
+  auto map = hz.get_map("EntryListenerExampleMap").get();
+  
+  auto registrationId = map->add_entry_listener(
+  entry_listener().on_added([](hazelcast::client::EntryEvent &&event) {
+        std::cout << "Entry added:" << event.getKey().get<int>().value() << " --> " << event.getValue().get<std::string>().value() << std::endl;
+    }).on_removed([](hazelcast::client::EntryEvent &&event) {
+        std::cout << "Entry removed:" << event.getKey().get<int>().value()
+        << " --> " << event.getValue().get<std::string>().value() << std::endl;
+    }), true).get();
+  
+  map->put(1, "My new entry").get();
+  map->remove<int, std::string>(1).get();
+  
+  /* ... */
+  
+  return 0;
 }
 ```
 
@@ -2161,26 +2140,24 @@ A map-wide event is fired as a result of a map-wide operation (e.g.: `imap::clea
 See the example below.
 
 ```C++
-    int main() {
-auto hz = hazelcast::new_client().get();
-
-auto map = hz.get_map("EntryListenerExampleMap").get();
-
-auto registrationId = map->add_entry_listener(
-entry_listener().
-on_map_cleared([](hazelcast::client::map_event &&event) {
-std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
-})
-, false).get();
-
-map->put(1, "Mali").get();
-map->put(2, "Ahmet").get();
-map->put(3, "Furkan").get();
-map->clear().get();
-
-/* ... */
-
-return 0;
+int main() {
+  auto hz = hazelcast::new_client().get();
+  
+  auto map = hz.get_map("EntryListenerExampleMap").get();
+  
+  auto registrationId = map->add_entry_listener(
+  entry_listener().on_map_cleared([](hazelcast::client::map_event &&event) {
+          std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
+      }), false).get();
+  
+  map->put(1, "Mali").get();
+  map->put(2, "Ahmet").get();
+  map->put(3, "Furkan").get();
+  map->clear().get();
+  
+  /* ... */
+  
+  return 0;
 }
 ```
 
@@ -2208,36 +2185,33 @@ On the server side, when you implement the task as `java.util.concurrent.Callabl
 An example C++ task class implementation is shown below.
 
 ```C++
-    struct MessagePrinter {
+struct MessagePrinter {
 std::string message;
 };
 
 namespace hazelcast {
-namespace client {
-namespace serialization {
-template<>
-struct hz_serializer<MessagePrinter> : identified_data_serializer {
-static int32_t get_factory_id() noexcept {
-return 1;
-}
-
-static int32_t get_class_id() noexcept {
-return 555;
-}
-
-static void
-write_data(const MessagePrinter &object, object_data_output &out) {
-out.write(object.message);
-}
-
-static MessagePrinter read_data(object_data_input &in) {
-return MessagePrinter{
-in.read<std::string>(); }
-}
-
-};
-}
-}
+  namespace client {
+    namespace serialization {
+      template<>
+        struct hz_serializer<MessagePrinter> : identified_data_serializer {
+        static int32_t get_factory_id() noexcept {
+            return 1;
+        }
+      
+        static int32_t get_class_id() noexcept {
+        return 555;
+        }
+      
+        static void write_data(const MessagePrinter &object, object_data_output &out) {
+          out.write(object.message);
+        }
+      
+        static MessagePrinter read_data(object_data_input &in) {
+            return MessagePrinter{in.read<std::string>(); }
+        }
+      };
+    }
+  }
 }
 ```
 
@@ -2298,7 +2272,7 @@ To execute a callable task:
 An example where `MessagePrinter` task is executed is shown below.
 
 ```C++
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
 std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
@@ -2323,7 +2297,7 @@ The distributed executor service allows you to execute your code in the cluster.
 * `printOnMembers`: On all or a subset of the cluster members with the `iexecutor_service::submit_to_members` method.
 
 ```C++
-    void printOnTheMember(const std::string &input, const Member &member) {
+void printOnTheMember(const std::string &input, const Member &member) {
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
@@ -2335,37 +2309,34 @@ ex->execute_on_member<MessagePrinter>(MessagePrinter{ "message to very first mem
 ```
 
 ```C++
-    void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-auto hz = hazelcast::new_client().get();
-// Get the Distributed Executor Service
-std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-// Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
-ex->execute_on_key_owner<MessagePrinter, std::string>(
-MessagePrinter{
-"message to the member that owns the key"
-}, "key").get();
+void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
+  // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+  auto hz = hazelcast::new_client().get();
+  // Get the Distributed Executor Service
+  std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+  // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
+  ex->execute_on_key_owner<MessagePrinter, std::string>(MessagePrinter{"message to the member that owns the key"}, "key").get();
 }
 ```
 
 ```C++
-    void printOnSomewhere(const std::string &input) {
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-auto hz = hazelcast::new_client().get();
-// Get the Distributed Executor Service
-std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-// Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{ "message to any node" }).get();
+void printOnSomewhere(const std::string &input) {
+  // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+  auto hz = hazelcast::new_client().get();
+  // Get the Distributed Executor Service
+  std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+  // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
+  auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{ "message to any node" }).get();
 }
 ```
 
 ```C++
-    void printOnMembers(const std::string input, const std::vector<Member> &members) {
-// Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-auto hz = hazelcast::new_client().get();
-// Get the Distributed Executor Service
-std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
-ex->execute_on_members<MessagePrinter>(MessagePrinter{ "message to very first member of the cluster" }, members);
+void printOnMembers(const std::string input, const std::vector<Member> &members) {
+  // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+  auto hz = hazelcast::new_client().get();
+  // Get the Distributed Executor Service
+  std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+  ex->execute_on_members<MessagePrinter>(MessagePrinter{ "message to very first member of the cluster" }, members);
 }
 ```
 
@@ -2380,20 +2351,20 @@ To cancel a task, you can use the `executor_promise<T>::cancel()` API. This API 
 The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `timeout` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
 
 ```
-      auto service = client->get_executor_service(get_test_name()).get();
+auto service = client->get_executor_service(get_test_name()).get();
 
-      executor::tasks::CancellationAwareTask task{INT64_MAX};
+executor::tasks::CancellationAwareTask task{INT64_MAX};
 
-      auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
+auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
 
-      auto future = promise.get_future();
-      if (future.wait_for(boost::chrono::seconds(3) == boost::future_status::timeout) {
-          std::cout << "Could not get response back in 3 seconds\n";
-      }
+auto future = promise.get_future();
+if (future.wait_for(boost::chrono::seconds(3) == boost::future_status::timeout) {
+    std::cout << "Could not get response back in 3 seconds\n";
+}
 
-      if (promise.cancel(true)) {
-          std::cout << "Cancelled the submitted task\n";
-      }
+if (promise.cancel(true)) {
+    std::cout << "Cancelled the submitted task\n";
+}
 ```
 
 #### 7.6.1.6 Selecting Members for Task Execution
@@ -2423,9 +2394,9 @@ return *attribute == "true";
 You can now submit your task using this selector and the task will run on the member whose attribute key "my.special.executor" is set to "true". An example is shown below:
 
 ```
-    // Choose which member to submit the task to using a member selector
-    ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message when using the member selector"},
-                                            MyMemberSelector());
+// Choose which member to submit the task to using a member selector
+ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message when using the member selector"},
+                                       MyMemberSelector());
 ```
 
 ### 7.6.2. Using entry_processor
@@ -2453,36 +2424,36 @@ In the C++ client, an `entry_processor` should be Hazelcast serializable, becaus
 The following is an example for `entry_processor` which is serialized by `identified_data_serializer`.
 
 ```C++
-    struct IdentifiedEntryProcessor {
-std::string name;
+struct IdentifiedEntryProcessor {
+    std::string name;
 };
 
 namespace hazelcast {
-namespace client {
-namespace serialization {
-template<>
-struct hz_serializer<IdentifiedEntryProcessor> : identified_data_serializer {
-static int32_t get_factory_id() noexcept {
-return 66;
-}
-
-static int32_t get_class_id() noexcept {
-return 1;
-}
-
-static void
-write_data(const IdentifiedEntryProcessor &object, object_data_output &out) {
-out.write(object.name);
-}
-
-static IdentifiedEntryProcessor read_data(object_data_input &in) {
-// no-need to implement here, since we do not expect to receive this object but we only send it to server
-assert(0);
-return IdentifiedEntryProcessor{};
-}
-};
-}
-}
+    namespace client {
+      namespace serialization {
+        template<>
+        struct hz_serializer<IdentifiedEntryProcessor> : identified_data_serializer {
+          static int32_t get_factory_id() noexcept {
+              return 66;
+          }
+  
+          static int32_t get_class_id() noexcept {
+              return 1;
+          }
+          
+          static void
+          write_data(const IdentifiedEntryProcessor &object, object_data_output &out) {
+              out.write(object.name);
+          }
+          
+          static IdentifiedEntryProcessor read_data(object_data_input &in) {
+            // no-need to implement here, since we do not expect to receive this object but we only send it to server
+            assert(0);
+            return IdentifiedEntryProcessor{};
+          }
+        };
+      }
+    }
 }
 ```
 
@@ -2563,9 +2534,9 @@ The code that runs on the entries is implemented in Java on the server side. The
 After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `imap` functions. See the following example.
 
 ```C++
-    auto map = hz.get_map("my-distributed-map").get();
-    map->execute_on_key<std::string, IdentifiedEntryProcessor>("key", IdentifiedEntryProcessor("my new name"));
-    std::cout << "Value for 'key' is : '" << *map->get<std::string, std::string>("key").get() << "'" << std::endl; // value for 'key' is 'my new name'
+auto map = hz.get_map("my-distributed-map").get();
+map->execute_on_key<std::string, IdentifiedEntryProcessor>("key", IdentifiedEntryProcessor("my new name"));
+std::cout << "Value for 'key' is : '" << *map->get<std::string, std::string>("key").get() << "'" << std::endl; // value for 'key' is 'my new name'
 ```
 
 ## 7.7. Distributed Query
@@ -2618,37 +2589,35 @@ struct person {
 };
 
 std::ostream &operator<<(std::ostream &os, const person &obj) {
-os << "name: " << obj.name << " male: " << obj.male << " age: " << obj.age;
-return os;
+  os << "name: " << obj.name << " male: " << obj.male << " age: " << obj.age;
+  return os;
 }
 
 namespace hazelcast {
-namespace client {
-namespace serialization {
-template<>
-struct hz_serializer<person> : portable_serializer {
-static int32_t get_factory_id() noexcept {
-return 1;
-}
-
-static int32_t get_class_id() noexcept {
-return 3;
-}
-
-static void write_data(const person &object, portable_writer &out) {
-out.write(object.name);
-out.write(object.male);
-out.write(object.age);
-}
-
-static person read_data(portable_reader &in) {
-return person{
-in.read<std::string>(), in.read<bool>(), in.read<int32_t>()
-};
-}
-};
-}
-}
+    namespace client {
+        namespace serialization {
+          template<>
+          struct hz_serializer<person> : portable_serializer {
+            static int32_t get_factory_id() noexcept {
+              return 1;
+            }
+            
+            static int32_t get_class_id() noexcept {
+              return 3;
+            }
+            
+            static void write_data(const person &object, portable_writer &out) {
+              out.write(object.name);
+              out.write(object.male);
+              out.write(object.age);
+            }
+            
+            static person read_data(portable_reader &in) {
+              return person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+            }
+          };
+        }
+    }
 }
 ```
 
@@ -2664,31 +2633,31 @@ In this case before starting the server, you need to compile the `person` and re
 You can combine predicates by using the `and_predicate`, `or_predicate` and `not_predicate` operators, as shown in the below example.
 
 ```C++
-    // and_predicate
-    // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
-    std::vector<int> inVals{4, 10, 19};
-    values = intMap->values<int>(query::and_predicate(client,
-                                                      query::between_predicate(client,
-                                                                              query::query_constants::KEY_ATTRIBUTE_NAME,
-                                                                              5, 10),
-                                                      query::in_predicate(client,
-                                                                         query::query_constants::THIS_ATTRIBUTE_NAME,
-                                                                         inVals))).get();
+// and_predicate
+// 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
+std::vector<int> inVals{4, 10, 19};
+values = intMap->values<int>(query::and_predicate(client,
+                                                  query::between_predicate(client,
+                                                                          query::query_constants::KEY_ATTRIBUTE_NAME,
+                                                                          5, 10),
+                                                  query::in_predicate(client,
+                                                                     query::query_constants::THIS_ATTRIBUTE_NAME,
+                                                                     inVals))).get();
 
-    // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
-    values = intMap->values<int>(query::or_predicate(client,
-                                                     query::between_predicate(client,
-                                                                             query::query_constants::KEY_ATTRIBUTE_NAME,
-                                                                             5, 10),
-                                                     query::in_predicate(client,
-                                                                        query::query_constants::THIS_ATTRIBUTE_NAME,
-                                                                        inVals))).get();
+// 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
+values = intMap->values<int>(query::or_predicate(client,
+                                                 query::between_predicate(client,
+                                                                         query::query_constants::KEY_ATTRIBUTE_NAME,
+                                                                         5, 10),
+                                                 query::in_predicate(client,
+                                                                    query::query_constants::THIS_ATTRIBUTE_NAME,
+                                                                    inVals))).get();
 
-    // not_predicate
-    // !(5 <= key <= 10)
-    values = intMap->values<int>(query::not_predicate(client, query::between_predicate(client,
-                                                                                       query::query_constants::KEY_ATTRIBUTE_NAME,
-                                                                                       5, 10))).get();
+// not_predicate
+// !(5 <= key <= 10)
+values = intMap->values<int>(query::not_predicate(client, query::between_predicate(client,
+                                                                                   query::query_constants::KEY_ATTRIBUTE_NAME,
+                                                                                   5, 10))).get();
 ```
 See examples/distributed-map/query folder for more examples.
 
@@ -2697,10 +2666,10 @@ See examples/distributed-map/query folder for more examples.
 `sql_predicate` takes the regular SQL `where` clause. See the following example:
 
 ```C++
-    // sql_predicate
-    // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
-    auto sql = (boost::format("%1% BETWEEN 4 and 7") % query::query_constants::KEY_ATTRIBUTE_NAME).str();
-    values = intMap->values<int>(query::sql_predicate(client, sql)).get();
+// sql_predicate
+// __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+auto sql = (boost::format("%1% BETWEEN 4 and 7") % query::query_constants::KEY_ATTRIBUTE_NAME).str();
+values = intMap->values<int>(query::sql_predicate(client, sql)).get();
 ```
 
 ##### 7.7.1.3.1. Supported SQL Syntax
@@ -2755,13 +2724,13 @@ ILIKE is similar to the LIKE predicate but in a case-insensitive manner.
 You can use the `query::query_constants::KEY_ATTRIBUTE_NAME` (`__key`) attribute to perform a predicated search for entry keys. See the following example:
 
 ```C++
-    auto map = hz.get_map("personMap").get();
-    map->put<std::string, int>("Mali", 28).get();
-    map->put<std::string, int>("Ahmet", 30).get();
-    map->put<std::string, int>("Furkan", 23).get();
-    query::sql_predicate sqlPredicate("__key like F%");
-    auto startingWithF = map->entry_set<std::string, int>(sqlPredicate).get();
-    std::cout << "First person:" << startingWithF[0].first << ", age:" << startingWithF[0].second << std::endl;
+auto map = hz.get_map("personMap").get();
+map->put<std::string, int>("Mali", 28).get();
+map->put<std::string, int>("Ahmet", 30).get();
+map->put<std::string, int>("Furkan", 23).get();
+query::sql_predicate sqlPredicate("__key like F%");
+auto startingWithF = map->entry_set<std::string, int>(sqlPredicate).get();
+std::cout << "First person:" << startingWithF[0].first << ", age:" << startingWithF[0].second << std::endl;
 ```
 
 In this example, the code creates a list with the values whose keys start with the letter "F”.
@@ -2769,13 +2738,13 @@ In this example, the code creates a list with the values whose keys start with t
 You can use `query::query_constants::THIS_ATTRIBUTE_NAME` (`this`) attribute to perform a predicated search for entry values. See the following example:
 
 ```C++
-    auto map = hz.get_map("personMap").get();
-    map->put<std::string, int>("Mali", 28).get();
-    map->put<std::string, int>("Ahmet", 30).get();
-    map->put<std::string, int>("Furkan", 23).get();
-    query::greater_less_predicate<int> greaterThan27Predicate(query::query_constants::THIS_ATTRIBUTE_NAME, 27, false, false);
-    std::vector<std::string> olderThan27 = map->keySet<std::string>(greaterThan27Predicate).get();
-    std::cout << "First person:" << olderThan27[0] << ", second person:" << olderThan27[1] << std::endl;
+auto map = hz.get_map("personMap").get();
+map->put<std::string, int>("Mali", 28).get();
+map->put<std::string, int>("Ahmet", 30).get();
+map->put<std::string, int>("Furkan", 23).get();
+query::greater_less_predicate<int> greaterThan27Predicate(query::query_constants::THIS_ATTRIBUTE_NAME, 27, false, false);
+std::vector<std::string> olderThan27 = map->keySet<std::string>(greaterThan27Predicate).get();
+std::cout << "First person:" << olderThan27[0] << ", second person:" << olderThan27[1] << std::endl;
 ```
 
 In this example, the code creates a list with the values greater than or equal to "27".
@@ -2788,17 +2757,17 @@ constructor. You can use ``hazelcast_json_value``s both as keys and values in th
 possible to query these objects using the Hazelcast query methods explained in this section.
 
 ```C++
-    std::string person1 = "{ \"name\": \"John\", \"age\": 35 }";
-    std::string person2 = "{ \"name\": \"Jane\", \"age\": 24 }";
-    std::string person3 = "{ \"name\": \"Trey\", \"age\": 17 }";
+std::string person1 = "{ \"name\": \"John\", \"age\": 35 }";
+std::string person2 = "{ \"name\": \"Jane\", \"age\": 24 }";
+std::string person3 = "{ \"name\": \"Trey\", \"age\": 17 }";
 
-    auto idPersonMap = hz.get_map("jsonValues").get();
+auto idPersonMap = hz.get_map("jsonValues").get();
 
-    idPersonMap->put<int, hazelcast_json_value>(1, hazelcast_json_value(person1)).get();
-    idPersonMap->put<int, hazelcast_json_value>(2, hazelcast_json_value(person2)).get();
-    idPersonMap->put<int, hazelcast_json_value>(3, hazelcast_json_value(person3)).get();
+idPersonMap->put<int, hazelcast_json_value>(1, hazelcast_json_value(person1)).get();
+idPersonMap->put<int, hazelcast_json_value>(2, hazelcast_json_value(person2)).get();
+idPersonMap->put<int, hazelcast_json_value>(3, hazelcast_json_value(person3)).get();
 
-    auto peopleUnder21 = idPersonMap.values(query::greater_less_predicate<int>("age", 21, false, true)).get();
+auto peopleUnder21 = idPersonMap.values(query::greater_less_predicate<int>("age", 21, false, true)).get();
 ```
 
 When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they
@@ -2847,23 +2816,23 @@ whether such an entry is going to be returned or not from a query is not defined
 The C++ client provides paging for defined predicates. With its `paging_predicate` object, you can get a list of keys, values, or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
 ```C++
-    auto map = hz.get_map("personMap").get();
-    // paging_predicate with inner predicate (value < 10)
-    auto predicate = intMap->new_paging_predicate<int, int>(5,
-            query::greater_less_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 10, false, false));
+auto map = hz.get_map("personMap").get();
+// paging_predicate with inner predicate (value < 10)
+auto predicate = intMap->new_paging_predicate<int, int>(5,
+        query::greater_less_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 10, false, false));
 
-    // Set page to retrieve third page
-    pagingPredicate.set_page(3);
-    auto values = map->values(pagingPredicate).get();
-    //...
+// Set page to retrieve third page
+pagingPredicate.set_page(3);
+auto values = map->values(pagingPredicate).get();
+//...
 
-    // Set up next page
-    pagingPredicate.next_page();
-    
-    // Retrieve next page    
-    values = map->values(pagingPredicate).get();
-    
-    //...
+// Set up next page
+pagingPredicate.next_page();
+
+// Retrieve next page    
+values = map->values(pagingPredicate).get();
+
+//...
 ```
 
 If you want to sort the result before paging, you need to specify a comparator object that implements the `query::entry_comparator` interface. Also, this comparator object should be Hazelcast serializable. After implementing After implementing this object in C++, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the C++ side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath). 
@@ -2879,18 +2848,18 @@ Partition Aware ensures that the related entries exist on the same member. If th
 Hazelcast has a standard way of finding out which member owns/manages each key object. The following operations are routed to the same member, since all of them are operating based on the same key `'key1'`.
 
 ```C++
-    hazelcast::client::hazelcast_client hazelcastInstance;
+hazelcast::client::hazelcast_client hazelcastInstance;
 
-    auto mapA = hazelcastInstance.get_map("mapA");
-    auto mapB = hazelcastInstance.get_map("mapB");
-    auto mapC = hazelcastInstance.get_map("mapC");
+auto mapA = hazelcastInstance.get_map("mapA");
+auto mapB = hazelcastInstance.get_map("mapB");
+auto mapC = hazelcastInstance.get_map("mapC");
 
-    // since map names are different, operation will be manipulating
-    // different entries, but the operation will take place on the
-    // same member since the keys ("key1") are the same
-    mapA->put("key1", value);
-    mapB.get("key1");
-    mapC.remove("key1");
+// since map names are different, operation will be manipulating
+// different entries, but the operation will take place on the
+// same member since the keys ("key1") are the same
+mapA->put("key1", value);
+mapB.get("key1");
+mapC.remove("key1");
 ```
 
 When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `orderKey` s `partition_aware`.
@@ -2904,54 +2873,51 @@ struct OrderKey : public hazelcast::client::partition_aware<std::string> {
     }
 
     std::string order_id_string;
-static const std::string customer_id_string;
+    static const std::string customer_id_string;
 };
 const std::string OrderKey::customer_id_string = "My customer id 99";
 
 namespace hazelcast {
-namespace client {
-namespace serialization {
-template<>
-struct hz_serializer<OrderKey> : identified_data_serializer {
-static int32_t get_factory_id() noexcept {
-return 1;
-}
-
-static int32_t get_class_id() noexcept {
-return 10;
-}
-
-static void
-write_data(const OrderKey &object, object_data_output &out) {
-out.write(object.order_id_string);
-}
-
-static OrderKey read_data(object_data_input &in) {
-return OrderKey{
-in.read<std::string>()
-};
-}
-};
-}
-}
+    namespace client {
+        namespace serialization {
+          template<>
+          struct hz_serializer<OrderKey> : identified_data_serializer {
+            static int32_t get_factory_id() noexcept {
+              return 1;
+            }
+            
+            static int32_t get_class_id() noexcept {
+              return 10;
+            }
+            
+            static void write_data(const OrderKey &object, object_data_output &out) {
+              out.write(object.order_id_string);
+            }
+            
+            static OrderKey read_data(object_data_input &in) {
+              return OrderKey{in.read<std::string>()};
+            }
+          };
+        }
+    }
 }
 ```
 
 Notice that `OrderKey` implements `partition_aware` interface and that `get_partition_key()` returns the `OrderKey::customer_id_string`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
 
 ```C++
-    hazelcast::client::hazelcast_client hazelcastInstance;
+hazelcast::client::hazelcast_client hazelcastInstance;
 
-    auto mapCustomers = hazelcastInstance.get_map("customers");
-    auto mapOrders = hazelcastInstance.get_map("orders");
+auto mapCustomers = hazelcastInstance.get_map("customers");
+auto mapOrders = hazelcastInstance.get_map("orders");
 
-    // create the customer entry with customer id = "My customer id 99"
-    mapCustomers->put(OrderKey::customer_id_string, customer).get();
+// create the customer entry with customer id = "My customer id 99"
+mapCustomers->put(OrderKey::customer_id_string, customer).get();
 
-    // now create the orders for this customer
-    mapOrders->put<OrderKey, Order>(OrderKey{"1"}, order1).get();
-    mapOrders->put<OrderKey, Order>(OrderKey{"2"}, order2).get();
-    mapOrders->put<OrderKey, Order>(OrderKey{"3"}, order3).get();
+// now create the orders for this customer
+mapOrders->put<OrderKey, Order>(OrderKey{"1"}, order1).get();
+mapOrders->put<OrderKey, Order>(OrderKey{"2"}, order2).get();
+mapOrders->put<OrderKey, Order>(OrderKey{"3"}, order3).get();
 ```  
 
 For more details, see the [partition_aware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
@@ -2983,7 +2949,7 @@ A Near Cache can have its own `in-memory-format` which is independent of the `in
 Hazelcast Map can be configured to work with near cache enabled. You can enable the Near Cache on a Hazelcast Map by adding its configuration for that map-> An example configuration for `myMap` is shown below.
 
 ```C++
-    client_config config;
+client_config config;
 const char *mapName = "EvictionPolicyMap";
 config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
 nearCacheConfig.set_invalidate_on_change(false);
@@ -3018,10 +2984,10 @@ Following are the descriptions of all configuration elements:
 #### 7.8.2.2. Near Cache Example for Map
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map-> According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 ```C++
-    config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
-    nearCacheConfig.set_invalidate_on_change(false);
-    nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
-            .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
+config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
+nearCacheConfig.set_invalidate_on_change(false);
+nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
+        .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT).set_size(100);
 ```
 
 #### 7.8.2.3. Near Cache Eviction
@@ -3060,11 +3026,11 @@ be made from a single thread. The pipelining is a convenience implementation to 
 the number of inflight operations, and it provides a convenient way to wait for all the results.
 
 ```C++
-      constexpr int depth = 10;
+constexpr int depth = 10;
 auto pipelining = pipelining<std::string>::create(depth);
 for (int k = 0; k < 100; ++k) {
-int key = rand() % keyDomain;
-pipelining->add(map->get(key));
+  int key = rand() % keyDomain;
+  pipelining->add(map->get(key));
 }
 
 // wait for completion
@@ -3104,9 +3070,9 @@ You can enable the client statistics before starting your clients. There are two
 You can enable client statistics and set a non-default period in seconds as follows:
 
 ```C++
-    hazelcast::client::client_config config;
-    config.set_property(hazelcast::client::client_properties::STATISTICS_ENABLED, "true");
-    config.set_property(hazelcast::client::client_properties::STATISTICS_PERIOD_SECONDS, "4");
+hazelcast::client::client_config config;
+config.set_property(hazelcast::client::client_properties::STATISTICS_ENABLED, "true");
+config.set_property(hazelcast::client::client_properties::STATISTICS_PERIOD_SECONDS, "4");
 ```
 
 After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#monitoring-clients) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
@@ -3119,13 +3085,13 @@ If no logging configuration is made by the user, the client prints log messages 
 
 You can set the minimum level in which the log messages are printed using `logger_config::level`:
 ```c++
-        clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
 ```
 
 `hazelcast::logger::level::off` and `hazelcast::logger::level::all` can be used to enable or disable all levels:
 
 ```c++
-    clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables logging completely
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables logging completely
 clientConfig.getLoggerConfig().level(hazelcast::logger::level::all); // enables all log levels
 ```
 
@@ -3138,13 +3104,13 @@ Setting a log handler will disable the default log handling behavior.
 The handler takes instance name of the client object that emitted the message, cluster name that the client is connected, name of the source code and the line number where the log was produced, the severity level of the log message, and the log message itself. Here is the exact signature for a log handler function:
 
 ```c++
-    void my_log_handler(
-const std::string &instance_name, // instance name of the client
-const std::string &cluster_name,  // name of the cluster to which the client is connected
-const char *file_name,            // name of the source file where the log was produced
-int line,                         // line number where the log was produced
-level lvl,                        // severity level of the message
-const std::string &msg);          // the message
+void my_log_handler(
+  const std::string &instance_name, // instance name of the client
+  const std::string &cluster_name,  // name of the cluster to which the client is connected
+  const char *file_name,            // name of the source file where the log was produced
+  int line,                         // line number where the log was produced
+  level lvl,                        // severity level of the message
+  const std::string &msg);          // the message
 ```
 
 As the callback function is called from multiple threads, it must be thread-safe.
@@ -3160,23 +3126,23 @@ Sometimes, you may need to use Hazelcast data structures with objects of differe
 The typed_data class is a wrapper class for the serialized binary data. It presents the following user APIs:
 
 ```
-    /**
-     *
-     * @return The type of the underlying object for this binary.
-     */
-    serialization::pimpl::object_type get_type() const;
+/**
+ *
+ * @return The type of the underlying object for this binary.
+ */
+serialization::pimpl::object_type get_type() const;
 
-    /**
-     * Deserializes the underlying binary data and produces the object of type T.
-     *
-     * <b>CAUTION</b>: The type that you provide should be compatible with what object type is returned with
-     * the get_type API, otherwise you will either get an exception of incorrectly try deserialize the binary data.
-     *
-     * @tparam T The type to be used for deserialization
-     * @return The object instance of type T.
-     */
-    template <typename T>
-    boost::optional<T> get() const;
+/**
+ * Deserializes the underlying binary data and produces the object of type T.
+ *
+ * <b>CAUTION</b>: The type that you provide should be compatible with what object type is returned with
+ * the get_type API, otherwise you will either get an exception of incorrectly try deserialize the binary data.
+ *
+ * @tparam T The type to be used for deserialization
+ * @return The object instance of type T.
+ */
+template <typename T>
+boost::optional<T> get() const;
 ```
 
 typed_data does late deserialization of the data only when the get method is called.
