@@ -116,7 +116,7 @@ namespace hazelcast {
                 static constexpr double JITTER = 0;
                 std::chrono::milliseconds initial_backoff_duration_ = INITIAL_BACKOFF;
                 std::chrono::milliseconds max_backoff_duration_ = MAX_BACKOFF;
-                double multiplier_ = 1;
+                double multiplier_ = 1.05;
                 std::chrono::milliseconds cluster_connect_timeout_ = CLUSTER_CONNECT_TIMEOUT;
                 double jitter_ = JITTER;
             };
