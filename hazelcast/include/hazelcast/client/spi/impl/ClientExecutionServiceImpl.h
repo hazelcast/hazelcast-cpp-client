@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <boost/asio/thread_pool.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/post.hpp>
 
@@ -30,9 +29,7 @@
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class hz_thread_pool;
-    }
+    class logger;
 
     namespace client {
         class client_properties;
@@ -62,24 +59,27 @@ namespace hazelcast {
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> schedule_with_repetition(CompletionToken token,
-                                                                                      const std::chrono::milliseconds &delay,
-                                                                                      const std::chrono::milliseconds &period) {
+                                                                                        const std::chrono::milliseconds &delay,
+                                                                                        const std::chrono::milliseconds &period) {
                         auto timer = std::make_shared<boost::asio::steady_timer>(internal_executor_->get_executor());
                         return schedule_with_repetition_internal(token, delay, period, timer);
                     }
 
                     static void shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool);
+
+                    util::hz_thread_pool &get_user_executor();
+
                 private:
-                    std::unique_ptr<hazelcast::util::hz_thread_pool> internal_executor_;
+                    std::unique_ptr<util::hz_thread_pool> internal_executor_;
+                    std::unique_ptr<util::hz_thread_pool> user_executor_;
                     spi::lifecycle_service &lifecycle_service_;
                     const client_properties &client_properties_;
-                    int user_executor_pool_size_;
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> schedule_with_repetition_internal(CompletionToken token,
-                                                                                              const std::chrono::milliseconds &delay,
-                                                                                              const std::chrono::milliseconds &period,
-                                                                                              std::shared_ptr<boost::asio::steady_timer> timer) {
+                                                                                                 const std::chrono::milliseconds &delay,
+                                                                                                 const std::chrono::milliseconds &period,
+                                                                                                 std::shared_ptr<boost::asio::steady_timer> timer) {
                         if (delay.count() > 0) {
                             timer->expires_from_now(delay);
                         } else {

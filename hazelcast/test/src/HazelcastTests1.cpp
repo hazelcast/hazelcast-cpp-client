@@ -958,12 +958,18 @@ namespace hazelcast {
             };
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
-                ASSERT_THROW(hazelcast::new_client(GetParam()()).get(), exception::illegal_state);
+                auto c = GetParam()();
+                c.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(3));
+                ASSERT_THROW(hazelcast::new_client(std::move(c)).get(), exception::illegal_state);
             }
 
             TEST_P(ClusterTest, testDummyClientBehaviourWhenClusterNotFound) {
                 auto clientConfig = GetParam()();
                 clientConfig.get_network_config().set_smart_routing(false);
+                auto c = GetParam()();
+                clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(3));
                 ASSERT_THROW(hazelcast::new_client(std::move(clientConfig)).get(), exception::illegal_state);
             }
 
@@ -1022,9 +1028,11 @@ namespace hazelcast {
                 boost::latch shuttingDownLatch(1);
                 boost::latch shutdownLatch(1);
                 auto listener = make_all_states_listener(startingLatch, startedLatch, connectedLatch, disconnectedLatch,
-                                                      shuttingDownLatch, shutdownLatch);
+                                                         shuttingDownLatch, shutdownLatch);
                 clientConfig.add_listener(std::move(listener));
 
+                clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(3));
                 auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
                 ASSERT_OPEN_EVENTUALLY(startingLatch);
@@ -1171,6 +1179,8 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
                 client_config config;
                 config.set_cluster_name("invalid cluster");
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(3));
 
                 ASSERT_THROW((hazelcast::new_client(std::move(config)).get()), exception::illegal_state);
             }
@@ -2617,7 +2627,7 @@ namespace hazelcast {
                     ASSERT_EQ(INT64_C(0x9C9B9A9078563412), dataInput.read<int64_t>());
                 }
 
-                TEST_F(DataInputTest, testReadUTF) {
+                TEST_F(DataInputTest, testReadString) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
                     serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ("bdfh", dataInput.read<std::string>());
@@ -2818,7 +2828,7 @@ namespace hazelcast {
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
-                TEST_F(DataOutputTest, testWriteUTF) {
+                TEST_F(DataOutputTest, testWriteString) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
                     serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     std::string value("bdfh");

@@ -61,12 +61,14 @@ namespace hazelcast {
                             if (ec == boost::asio::error::operation_aborted) {
                                 return;
                             }
+                            resolver_.cancel();
                             close();
                             return;
                         });
                         try {
-                            auto addresses = resolver_.resolve(remote_endpoint_.get_host(),
-                                                               std::to_string(remote_endpoint_.get_port()));
+                            auto addresses = resolver_.async_resolve(remote_endpoint_.get_host(),
+                                                                     std::to_string(remote_endpoint_.get_port()),
+                                                                     boost::asio::use_future).get();
                             boost::asio::async_connect(socket_.lowest_layer(), addresses,
                                                        boost::asio::use_future).get();
                             post_connect();

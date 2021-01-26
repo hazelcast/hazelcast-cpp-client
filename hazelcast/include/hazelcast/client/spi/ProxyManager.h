@@ -46,7 +46,7 @@ namespace hazelcast {
                 boost::shared_future<std::shared_ptr<T>> get_or_create_proxy(const std::string &service, const std::string &id) {
                     DefaultObjectNamespace ns(service, id);
 
-                    std::lock_guard<std::mutex> guard(lock_);
+                    std::lock_guard<std::recursive_mutex> guard(lock_);
                     auto it = proxies_.find(ns);
                     if (it != proxies_.end()) {
                         auto proxy_future = it->second;
@@ -60,7 +60,7 @@ namespace hazelcast {
                             f.get();
                             return client_proxy;
                         } catch (...) {
-                            std::lock_guard<std::mutex> guard(lock_);
+                            std::lock_guard<std::recursive_mutex> guard(lock_);
                             proxies_.erase(ns);
                             throw;
                         }
@@ -103,7 +103,7 @@ namespace hazelcast {
                 }
 
                 proxy_map proxies_;
-                std::mutex lock_;
+                std::recursive_mutex lock_;
                 ClientContext &client_;
             };
         }

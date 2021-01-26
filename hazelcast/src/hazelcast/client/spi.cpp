@@ -102,7 +102,7 @@ namespace hazelcast {
             }
 
             void ProxyManager::destroy() {
-                std::lock_guard<std::mutex> guard(lock_);
+                std::lock_guard<std::recursive_mutex> guard(lock_);
                 for (auto &p : proxies_) {
                     try {
                         auto proxy = p.second.get();
@@ -134,7 +134,7 @@ namespace hazelcast {
                 DefaultObjectNamespace objectNamespace(proxy.get_service_name(), proxy.get_name());
                 std::shared_ptr<ClientProxy> registeredProxy;
                 {
-                    std::lock_guard<std::mutex> guard(lock_);
+                    std::lock_guard<std::recursive_mutex> guard(lock_);
                     auto it = proxies_.find(objectNamespace);
                     registeredProxy = it == proxies_.end() ? nullptr : it->second.get();
                     if (it != proxies_.end()) {
@@ -965,27 +965,35 @@ namespace hazelcast {
                                                                        const client_properties &properties,
                                                                        int32_t pool_size,
                                                                        spi::lifecycle_service &service)
-                        : lifecycle_service_(service), client_properties_(properties), user_executor_pool_size_(pool_size) {}
+                        : lifecycle_service_(service), client_properties_(properties) {}
 
                 void ClientExecutionServiceImpl::start() {
-                    int internalPoolSize = client_properties_.get_integer(client_properties_.get_internal_executor_pool_size());
+                    int internalPoolSize = client_properties_.get_integer(
+                            client_properties_.get_internal_executor_pool_size());
                     if (internalPoolSize <= 0) {
                         internalPoolSize = util::IOUtil::to_value<int>(
                                 client_properties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);
                     }
 
                     internal_executor_.reset(new hazelcast::util::hz_thread_pool(internalPoolSize));
+
+                    user_executor_.reset(new hazelcast::util::hz_thread_pool());
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
                     shutdown_thread_pool(internal_executor_.get());
+                    shutdown_thread_pool(user_executor_.get());
+                }
+
+                util::hz_thread_pool &ClientExecutionServiceImpl::get_user_executor() {
+                    return *user_executor_;
                 }
 
                 void ClientExecutionServiceImpl::shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool) {
                     if (!pool) {
                         return;
                     }
-                    pool->shutdown_gracefully();
+                    pool->close();
                 }
 
                 constexpr int ClientInvocation::MAX_FAST_INVOCATION_COUNT;
@@ -1021,8 +1029,13 @@ namespace hazelcast {
                     // for back pressure
                     call_id_sequence_->next();
                     invoke_on_selection();
+                    if (!lifecycle_service_.is_running()) {
+                        return invocation_promise_.get_future().then([](boost::future<protocol::ClientMessage> f) {
+                            return f.get();
+                        });
+                    }
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(boost::launch::async,
+                    return invocation_promise_.get_future().then(execution_service_->get_user_executor(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();
@@ -1035,8 +1048,13 @@ namespace hazelcast {
                     // for back pressure
                     call_id_sequence_->force_next();
                     invoke_on_selection();
+                    if (!lifecycle_service_.is_running()) {
+                        return invocation_promise_.get_future().then([](boost::future<protocol::ClientMessage> f) {
+                            return f.get();
+                        });
+                    }
                     auto id_seq = call_id_sequence_;
-                    return invocation_promise_.get_future().then(boost::launch::async,
+                    return invocation_promise_.get_future().then(execution_service_->get_user_executor(),
                                                                  [=](boost::future<protocol::ClientMessage> f) {
                                                                      id_seq->complete();
                                                                      return f.get();
@@ -1106,12 +1124,12 @@ namespace hazelcast {
                     }
                 }
 
-                void ClientInvocation::set_exception(const exception::iexception &e, boost::exception_ptr exception_ptr) {
+                void ClientInvocation::set_exception(const std::exception &e, boost::exception_ptr exception_ptr) {
                     try {
                         auto send_conn = *send_connection_.load();
                         if (send_conn) {
                             auto call_id = client_message_.load()->get()->get_correlation_id();
-                            boost::asio::post(send_conn->get_socket().get_executor(), [=] () {
+                            boost::asio::post(send_conn->get_socket().get_executor(), [=]() {
                                 send_conn->deregister_invocation(call_id);
                             });
                         }
@@ -1121,7 +1139,7 @@ namespace hazelcast {
                             HZ_LOG(logger_, finest,
                                 boost::str(boost::format("Failed to set the exception for invocation. "
                                                          "%1%, %2% Exception to be set: %3%")
-                                                         % se.what() % *this % e)
+                                           % se.what() % *this % e.what())
                             );
                         }
                     }
@@ -1180,7 +1198,7 @@ namespace hazelcast {
 
                         try {
                             execute();
-                        } catch (exception::iexception &e) {
+                        } catch (std::exception &e) {
                             set_exception(e, boost::current_exception());
                         }
                     } catch (...) {

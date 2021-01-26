@@ -98,7 +98,7 @@ void logger::default_handler(const std::string &instance_name,
     {
         static std::mutex cout_lock;
         std::lock_guard<std::mutex> g(cout_lock);
-        std::cout << sstrm.str(); // TODO should we flush or not ?
+        std::cout << sstrm.str() << std::flush;
     }
 } 
 

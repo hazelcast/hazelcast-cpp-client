@@ -1019,10 +1019,28 @@ namespace hazelcast {
             pos_ += t;
         }
 
+        hz_thread_pool::hz_thread_pool() : pool_(new boost::asio::thread_pool()) {}
+
         hz_thread_pool::hz_thread_pool(size_t num_threads) : pool_(new boost::asio::thread_pool(num_threads)) {}
 
-        void hz_thread_pool::shutdown_gracefully() {
+        void hz_thread_pool::close() {
+            bool expected = false;
+            if (!closed_.compare_exchange_strong(expected, true)) {
+                return;
+            }
             pool_->join();
+        }
+
+        bool hz_thread_pool::closed() {
+            return closed_;
+        }
+
+        void hz_thread_pool::submit(boost::executors::work &&closure) {
+            boost::asio::post(*pool_, closure);
+        }
+
+        bool hz_thread_pool::try_executing_one() {
+            return true;
         }
 
         boost::asio::thread_pool::executor_type hz_thread_pool::get_executor() const {
