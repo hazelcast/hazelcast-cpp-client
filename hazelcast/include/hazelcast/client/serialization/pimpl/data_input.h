@@ -168,7 +168,7 @@ namespace hazelcast {
                             BOOST_THROW_EXCEPTION(exception::io("DataInput::read()", "Null string!!!"));
                         }
 
-                        return read_utf(charCount);
+                        return read_string(charCount);
                     }
 
                     template<typename T>
@@ -185,7 +185,7 @@ namespace hazelcast {
                             return boost::none;
                         }
 
-                        return boost::make_optional(read_utf(charCount));
+                        return boost::make_optional(read_string(charCount));
                     }
 
                     template<typename T>
@@ -266,9 +266,9 @@ namespace hazelcast {
                         }
                     }
 
-                    inline std::string read_utf(size_t byte_count) {
+                    inline std::string read_string(size_t byte_count) {
                         check_available(byte_count);
-                        std::string value(reinterpret_cast<const char *>(&buffer_[pos_]),  byte_count);
+                        std::string value(reinterpret_cast<const char *>(&buffer_[pos_]), byte_count);
                         pos_ += byte_count;
                         return value;
                     }

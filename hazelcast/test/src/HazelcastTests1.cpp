@@ -2627,7 +2627,7 @@ namespace hazelcast {
                     ASSERT_EQ(INT64_C(0x9C9B9A9078563412), dataInput.read<int64_t>());
                 }
 
-                TEST_F(DataInputTest, testReadUTF) {
+                TEST_F(DataInputTest, testReadString) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
                     serialization::pimpl::data_input<std::vector<byte>> dataInput(boost::endian::order::big, bytes);
                     ASSERT_EQ("bdfh", dataInput.read<std::string>());
@@ -2828,7 +2828,7 @@ namespace hazelcast {
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
-                TEST_F(DataOutputTest, testWriteUTF) {
+                TEST_F(DataOutputTest, testWriteString) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
                     serialization::pimpl::data_output dataOutput(boost::endian::order::big);
                     std::string value("bdfh");
