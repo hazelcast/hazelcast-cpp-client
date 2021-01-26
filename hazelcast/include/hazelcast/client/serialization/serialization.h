@@ -400,7 +400,7 @@ namespace hazelcast {
                 TYPE_LONG = 6,
                 TYPE_FLOAT = 7,
                 TYPE_DOUBLE = 8,
-                TYPE_UTF = 9,
+                TYPE_STRING = 9,
                 TYPE_PORTABLE_ARRAY = 10,
                 TYPE_BYTE_ARRAY = 11,
                 TYPE_BOOLEAN_ARRAY = 12,
@@ -410,7 +410,7 @@ namespace hazelcast {
                 TYPE_LONG_ARRAY = 16,
                 TYPE_FLOAT_ARRAY = 17,
                 TYPE_DOUBLE_ARRAY = 18,
-                TYPE_UTF_ARRAY = 19
+                TYPE_STRING_ARRAY = 19
             };
 
             /**
@@ -837,7 +837,7 @@ namespace hazelcast {
 
                     template<typename T>
                     typename std::enable_if<std::is_same<std::string, typename std::remove_cv<T>::type>::value, field_type>::type
-                    static get_type() { return field_type::TYPE_UTF; }
+                    static get_type() { return field_type::TYPE_STRING; }
 
 
                     template<typename T>
@@ -874,7 +874,7 @@ namespace hazelcast {
 
                     template<typename T>
                     typename std::enable_if<std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, field_type>::type
-                    static get_type() { return field_type::TYPE_UTF_ARRAY; }
+                    static get_type() { return field_type::TYPE_STRING_ARRAY; }
 
                 private:
                     PortableContext(const PortableContext &) = delete;
