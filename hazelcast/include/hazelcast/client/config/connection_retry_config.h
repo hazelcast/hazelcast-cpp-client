@@ -112,11 +112,11 @@ namespace hazelcast {
             private:
                 static constexpr std::chrono::milliseconds INITIAL_BACKOFF{1000};
                 static constexpr std::chrono::milliseconds MAX_BACKOFF{30000};
-                static constexpr std::chrono::milliseconds CLUSTER_CONNECT_TIMEOUT{120000};
+                static constexpr std::chrono::milliseconds CLUSTER_CONNECT_TIMEOUT{(std::chrono::milliseconds::max)()};
                 static constexpr double JITTER = 0;
                 std::chrono::milliseconds initial_backoff_duration_ = INITIAL_BACKOFF;
                 std::chrono::milliseconds max_backoff_duration_ = MAX_BACKOFF;
-                double multiplier_ = 1;
+                double multiplier_ = 1.05;
                 std::chrono::milliseconds cluster_connect_timeout_ = CLUSTER_CONNECT_TIMEOUT;
                 double jitter_ = JITTER;
             };
@@ -128,4 +128,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
