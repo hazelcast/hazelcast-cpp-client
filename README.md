@@ -3169,8 +3169,9 @@ In order to test Hazelcast C++ client locally, you will need the following:
 * OpenSSL
 * Boost
 * thrift
+* Bash (on platforms other than Windows)
 
-You need to enable the examples in the build with the cmake flag `-DBUILD_EXAMPLES=ON`. When you build, the result will
+You need to enable tests in the build with the cmake flag `-DBUILD_TESTS=ON`. When you build, the result will
 produce the executable `client_test` on Linux/macOS and `client_test.exe` on Windows. You need to start the remote
 controller first before running this executable by executing `scripts/start-rc.sh` on Linux/macOS
 or `scripts/start-rc.bat` on Windows. Then you can run the test executable.

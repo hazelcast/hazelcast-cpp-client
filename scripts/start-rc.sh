@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function cleanup {
     echo "cleanup is being performed."
