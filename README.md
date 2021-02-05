@@ -3164,17 +3164,45 @@ tweak the implementation to your application's needs, you can follow the steps i
 In order to test Hazelcast C++ client locally, you will need the following:
 
 * Java 8 or newer (for server)
-* Maven
-* cmake
-* OpenSSL
-* Boost
-* thrift
+* Maven 3 or newer (for server)
+* cmake 3.10 or newer
+* OpenSSL 1.0.2 or newer
+* Boost >= 1.71
+* thrift 0.13
 * Bash (on platforms other than Windows)
+* Hazelcast Enterprise license
+
+set max files limit ulimit -n
 
 You need to enable tests in the build with the cmake flag `-DBUILD_TESTS=ON`. When you build, the result will
 produce the executable `client_test` on Linux/macOS and `client_test.exe` on Windows. You need to start the remote
 controller first before running this executable by executing `scripts/start-rc.sh` on Linux/macOS
 or `scripts/start-rc.bat` on Windows. Then you can run the test executable.
+
+### 8.1.1 Testing on Linux/MacOS
+
+1. First, make sure you have all the requirements are met.
+2. Make sure open files limit is set to a reasonably high value in all the terminals you run the test and Hazelcast Remote Control.
+   `10000` seems to be a good value. On Linux, you can use `ulimit -n 10000`.
+3. Start Hazelcast Remote Control.
+   Note that, currently we require Hazelcast Enterprise for the tests, so `HAZELCAST_ENTERPRISE_KEY` environment key should exist with an invalid key.
+   ```
+   HAZELCAST_ENTERPRISE_KEY=... ./scripts/start-rc.sh&
+   ```
+4. Create the build directory for testing and switch to that directory:
+   ```
+   mkdir build-test && cd $_
+   ```
+5. Run `cmake` with `-DBUILD_TESTS=ON` and any other options specific to your build:
+   ```
+   cmake -DBUILD_TESTS=ON ..  
+   ```
+6. Run `make` to create the test executable. Built test executable is at `${PROJECT_DIR}/built-test/hazelcast/test/src/client_test`.
+7. Switch back to the project directory and run the test executable:
+   ```
+   cd ..
+   ./built-test/hazelcast/test/src/client_test
+   ```
 
 # 9. Getting Help
 
