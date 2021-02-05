@@ -1,67 +1,39 @@
 cmake_minimum_required (VERSION 3.10)
 
-FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
-FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")
-
-set(GOOGLETEST_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/hazelcast/test/googletest/googletest/include)
-
-add_executable(client_test ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS})
-
 message(STATUS "${LIBRARY_FOR_TESTS} will be tested.")
-target_link_libraries(client_test PRIVATE ${LIBRARY_FOR_TESTS} gtest)
 
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    find_package(Thrift QUIET)
-    IF (NOT Thrift_FOUND)
-        set(THRIFT_INCLUDE_DIR /usr/include)
-        set(THRIFT_LIB_DIR /usr/lib64)
-    ENDIF(NOT Thrift_FOUND)
-    message(STATUS "Using THRIFT_INCLUDE_DIR: ${THRIFT_INCLUDE_DIR}")
-    message(STATUS "Using THRIFT_LIB_DIR: ${THRIFT_LIB_DIR}")
-    include_directories(${THRIFT_INCLUDE_DIR})
-    target_link_directories(client_test PRIVATE ${THRIFT_LIB_DIR})
-    target_link_libraries(client_test PRIVATE thrift)
+FILE(GLOB_RECURSE TEST_SOURCES "./*cpp")
+FILE(GLOB_RECURSE TEST_HEADERS "./*h")
 
-    set_target_properties(client_test PROPERTIES COMPILE_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}" LINK_FLAGS "${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_LINK_FLAGS} ${HZ_VALGRIND_LINK_FLAGS} -Wl,--no-as-needed -ldl")
-ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+add_executable(client_test ${TEST_SOURCES} ${TEST_HEADERS})
 
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    find_package(Thrift QUIET)
-    IF (Thrift_FOUND)
-        include_directories(${THRIFT_INCLUDE_DIR})
-        link_directories(${THRIFT_LIBRARIES})
-        target_link_libraries(client_test PRIVATE ${THRIFT_LIBRARIES})
-        message(STATUS "Using THRIFT_INCLUDE_DIR: ${THRIFT_INCLUDE_DIR}")
-        message(STATUS "Using THRIFT_LIBRARIES: ${THRIFT_LIBRARIES}")
-    ELSE (Thrift_FOUND)
-        set(THRIFT_INCLUDE_DIR /usr/local/opt/thrift/include)
-        set(THRIFT_LIB_DIR /usr/local/opt/thrift/lib)
-        include_directories(${THRIFT_INCLUDE_DIR})
-        target_link_directories(client_test PRIVATE ${THRIFT_LIB_DIR})
-        target_link_libraries(client_test PRIVATE thrift)
-        message(STATUS "Using THRIFT_INCLUDE_DIR: ${THRIFT_INCLUDE_DIR}")
-        message(STATUS "Using THRIFT_LIB_DIR: ${THRIFT_LIB_DIR}")
-    ENDIF(Thrift_FOUND)
-ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    find_package(Thrift REQUIRED)
-    set(THRIFT_INCLUDE_DIR ${THRIFT_INCLUDE_DIR}/..)
-    message(STATUS "Using THRIFT_INCLUDE_DIR: ${THRIFT_INCLUDE_DIR}")
-    message(STATUS "Using THRIFT_LIBRARIES: ${THRIFT_LIBRARIES}")
-    include_directories(${THRIFT_INCLUDE_DIR})
-    target_link_libraries(client_test PRIVATE ${THRIFT_LIBRARIES})
-
-    set_target_properties(client_test PROPERTIES COMPILE_FLAGS " /EHsc ")
-ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-target_include_directories(
+target_compile_definitions(
     client_test
-    PRIVATE ${CMAKE_SOURCE_DIR}/hazelcast/test/src
+    PRIVATE HAZELCAST_VERSION="${PROJECT_VERSION}"
 )
 
 if (MSVC)
     target_compile_options(client_test PRIVATE /bigobj)
 endif()
 
-target_compile_definitions(client_test PRIVATE HAZELCAST_VERSION="${PROJECT_VERSION}")
+target_link_libraries(
+    client_test
+    PRIVATE ${LIBRARY_FOR_TESTS} gtest
+)
+
+# First, try to find Thrift using find_package
+# The Thrift library itself doesn't support CMake for users
+# but package managers like Vcpkg and Conan provide package config files.
+find_package(Thrift QUIET)
+if (Thrift_FOUND)
+    # If found, the necessary include and library directories
+    # will be inferred from the target "thrift::thrift".
+    target_link_libraries(client_test PRIVATE thrift::thrift)
+else()
+    # If find_package fails, we fallback to use the thrift library on
+    # system's default paths. (e.g. /usr/lib64, /usr/local/lib)
+    # This library is likely to be installed using the system's
+    # package manager (e.g. apt, yum, brew) and its include and library
+    # paths will be already in the compiler's search path.
+    target_link_libraries(client_test PRIVATE thrift)
+endif()

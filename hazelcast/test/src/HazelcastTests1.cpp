@@ -13,62 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
-#include <vector>
+
+
 #include <chrono>
-#include "hazelcast/client/lifecycle_event.h"
-#include "hazelcast/logger.h"
-#include "ringbuffer/StartsWithStringFilter.h"
-#include "ClientTestSupportBase.h"
-#include <hazelcast/client/client_config.h>
-#include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/impl/Partition.h>
-#include <gtest/gtest.h>
-#include <thread>
-#include <hazelcast/client/spi/ClientContext.h>
-#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/connection/Connection.h>
-#include <memory>
-#include <hazelcast/client/proxy/PNCounterImpl.h>
-#include <hazelcast/client/serialization/pimpl/data_input.h>
-#include <hazelcast/util/AddressUtil.h>
-#include <hazelcast/client/serialization/pimpl/data_output.h>
-#include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/util/Util.h>
-#include <TestHelperFunctions.h>
-#include <ostream>
-#include <hazelcast/client/lifecycle_listener.h>
-#include "serialization/Serializables.h"
-#include <unordered_set>
 #include <cmath>
 #include <iostream>
-#include <boost/asio.hpp>
-#include <boost/thread/future.hpp>
+#include <memory>
+#include <ostream>
+#include <thread>
+#include <unordered_set>
+#include <vector>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/future.hpp>
+
+#include <gtest/gtest.h>
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/crypto.h>
 #endif
 
-#include "hazelcast/client/exception/protocol_exceptions.h"
-#include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/membership_listener.h"
-#include "hazelcast/client/initial_membership_event.h"
-#include "hazelcast/client/socket_interceptor.h"
-#include "hazelcast/client/socket.h"
-#include "hazelcast/client/cluster.h"
-#include "hazelcast/client/imap.h"
-#include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/itopic.h"
-#include "hazelcast/client/multi_map.h"
-#include "hazelcast/client/entry_event.h"
-#include "hazelcast/client/reliable_topic.h"
+#include <hazelcast/client/client_config.h>
+#include <hazelcast/client/cluster.h>
+#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
+#include <hazelcast/client/connection/Connection.h>
+#include <hazelcast/client/entry_event.h>
+#include <hazelcast/client/exception/protocol_exceptions.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/imap.h>
+#include <hazelcast/client/impl/Partition.h>
+#include <hazelcast/client/initial_membership_event.h>
+#include <hazelcast/client/internal/socket/SSLSocket.h>
+#include <hazelcast/client/itopic.h>
+#include <hazelcast/client/lifecycle_event.h>
+#include <hazelcast/client/lifecycle_listener.h>
+#include <hazelcast/client/membership_listener.h>
+#include <hazelcast/client/multi_map.h>
+#include <hazelcast/client/proxy/PNCounterImpl.h>
+#include <hazelcast/client/reliable_topic.h>
+#include <hazelcast/client/serialization/pimpl/data_input.h>
+#include <hazelcast/client/serialization/pimpl/data_output.h>
+#include <hazelcast/client/serialization/serialization.h>
+#include <hazelcast/client/socket_interceptor.h>
+#include <hazelcast/client/socket.h>
+#include <hazelcast/client/spi/ClientContext.h>
+#include <hazelcast/logger.h>
+#include <hazelcast/util/AddressHelper.h>
+#include <hazelcast/util/AddressUtil.h>
+#include <hazelcast/util/MurmurHash3.h>
+#include <hazelcast/util/SyncHttpsClient.h>
+#include <hazelcast/util/Util.h>
+
+#include "ClientTestSupport.h"
+#include "ClientTestSupportBase.h"
+#include "HazelcastServer.h"
+#include "HazelcastServerFactory.h"
+#include "ringbuffer/StartsWithStringFilter.h"
+#include "serialization/Serializables.h"
+#include "TestHelperFunctions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

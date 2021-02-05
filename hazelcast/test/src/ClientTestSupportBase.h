@@ -17,15 +17,16 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
-#include <thread>
 #include <string>
-#include <stdint.h>
+#include <thread>
 
-#include <TestHelperFunctions.h>
 #include <hazelcast/client/member.h>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/logger.h>
+
+#include "TestHelperFunctions.h"
 
 namespace hazelcast {
     namespace client {
