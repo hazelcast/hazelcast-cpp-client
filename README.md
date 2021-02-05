@@ -3170,7 +3170,7 @@ In order to test Hazelcast C++ client locally, you will need the following:
 * Boost >= 1.71
 * thrift 0.13
 * Bash (on platforms other than Windows)
-* Hazelcast Enterprise license
+* Hazelcast Enterprise license (required only for running the tests)
 
 set max files limit ulimit -n
 
@@ -3184,7 +3184,7 @@ or `scripts/start-rc.bat` on Windows. Then you can run the test executable.
 1. First, make sure you have all the requirements satisfied.
 2. Make sure open files limit is set to a reasonably high value in all the terminals you run the test and Hazelcast Remote Control.
    `10000` seems to be a good value. On Linux, you can use `ulimit -n 10000`.
-3. Start Hazelcast Remote Control.
+3. Start Hazelcast Remote Controller.
    Note that, currently we require Hazelcast Enterprise for the tests, so `HAZELCAST_ENTERPRISE_KEY` environment key should exist with an invalid key.
    ```
    HAZELCAST_ENTERPRISE_KEY=... ./scripts/start-rc.sh&
