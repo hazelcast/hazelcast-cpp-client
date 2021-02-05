@@ -3181,7 +3181,7 @@ or `scripts/start-rc.bat` on Windows. Then you can run the test executable.
 
 ### 8.1.1 Testing on Linux/MacOS
 
-1. First, make sure you have all the requirements are met.
+1. First, make sure you have all the requirements satisfied.
 2. Make sure open files limit is set to a reasonably high value in all the terminals you run the test and Hazelcast Remote Control.
    `10000` seems to be a good value. On Linux, you can use `ulimit -n 10000`.
 3. Start Hazelcast Remote Control.
