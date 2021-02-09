@@ -236,8 +236,8 @@ function(add_hazelcast_library name type)
     # install -config.cmake and -config-version.cmake files
     install(
         FILES
-            ${CMAKE_BINARY_DIR}/${name}-config.cmake
-            ${CMAKE_BINARY_DIR}/${name}-config-version.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/${name}-config.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/${name}-config-version.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}
     )
 endfunction()
