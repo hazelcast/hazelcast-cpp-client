@@ -606,7 +606,7 @@ namespace hazelcast {
                     instance1 = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                     client = new hazelcast_client{new_client(get_config()).get()};
-                    client2 = new hazelcast_client{new_client(std::move(get_config())).get()};
+                    client2 = new hazelcast_client{new_client(get_config()).get()};
                 }
 
                 static void TearDownTestCase() {
@@ -820,7 +820,7 @@ namespace hazelcast {
 
                 void create_no_near_cache_context() {
                     client_ = std::unique_ptr<hazelcast_client>(
-                            new hazelcast_client{new_client(std::move(get_config())).get()});
+                            new hazelcast_client{new_client(get_config()).get()});
                     no_near_cache_map_ = client_->get_replicated_map(get_test_name()).get();
                 }
 

@@ -56,7 +56,7 @@ option(WITH_OPENSSL
        "Build with OpenSSL. Setting this option to ON enables SSL-related features."
        OFF)
 
-option(BUILD_SHARED_LIB
+option(BUILD_SHARED_LIBS
        "Build shared library."
        ON)
 
@@ -233,7 +233,7 @@ function(add_hazelcast_library type)
 endfunction()
 
 # add library
-if (BUILD_SHARED_LIB)
+if (BUILD_SHARED_LIBS)
     set(LIB_TYPE SHARED)
 else()
     set(LIB_TYPE STATIC)
@@ -252,16 +252,10 @@ install(
     FILES_MATCHING PATTERN "*.h"
 )
 
-set(DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES ${PROJECT_NAME})
-
 if (BUILD_TESTS)
-    set(LIBRARY_FOR_TESTS ${PROJECT_NAME})
-
     add_subdirectory(hazelcast/test)
 endif ()
 
 if (BUILD_EXAMPLES)
-    set(LIBRARY_FOR_EXAMPLES ${PROJECT_NAME})
-
     add_subdirectory(examples)
 endif ()

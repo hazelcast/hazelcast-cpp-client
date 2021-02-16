@@ -25,23 +25,18 @@ project (hazelcast-cpp-client-examples
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (NOT LIBRARY_FOR_EXAMPLES)
-    message(FATAL_ERROR "Specify LIBRARY_FOR_EXAMPLES")
-endif()
+set(LIBRARY_FOR_EXAMPLES "hazelcast-cpp-client")
 
 if (NOT TARGET ${LIBRARY_FOR_EXAMPLES})
     message(STATUS "${LIBRARY_FOR_EXAMPLES} is not a valid target, using find_package to find it.")
-    find_package(${LIBRARY_FOR_EXAMPLES} REQUIRED)
-    # the found target will have the namespace hazelcast::
-    set(LIBRARY_FOR_EXAMPLES hazelcast::${LIBRARY_FOR_EXAMPLES})
+    find_package(${LIBRARY_FOR_EXAMPLES} CONFIG REQUIRED)
 endif()
 
 if (MSVC)
     add_compile_options(/bigobj)
 endif()
 
-message(STATUS "Examples will be built with ${LIBRARY_FOR_EXAMPLES}")
-link_libraries(${LIBRARY_FOR_EXAMPLES}) # TODO find a better way to do this
+link_libraries(hazelcast-cpp-client::hazelcast-cpp-client) # TODO find a better way to do this
 
 add_subdirectory(transactions)
 add_subdirectory(spi)
@@ -64,7 +59,7 @@ add_subdirectory(authentication)
 add_subdirectory(cp)
 add_subdirectory(soak-test)
 
-if (${LIBRARY_FOR_EXAMPLES} MATCHES "_ssl")
+if (${WITH_OPENSSL})
     add_subdirectory(tls)
     add_subdirectory(aws)
 endif ()
