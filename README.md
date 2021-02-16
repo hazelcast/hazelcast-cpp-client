@@ -355,7 +355,7 @@ If your project is using CMake, you can easily find and link against the client 
 ```cmake
 find_package(hazelcast-cpp-client CONFIG REQUIRED)
 
-target_link_libraries(mytarget PRIVATE hazelcast-cpp-client::hazelcast-cpp-client)
+target_link_libraries(mytarget PRIVATE hazelcast-cpp-client)
 ```
 
 Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 

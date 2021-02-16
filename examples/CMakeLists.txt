@@ -25,18 +25,17 @@ project (hazelcast-cpp-client-examples
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(LIBRARY_FOR_EXAMPLES "hazelcast-cpp-client")
-
-if (NOT TARGET ${LIBRARY_FOR_EXAMPLES})
-    message(STATUS "${LIBRARY_FOR_EXAMPLES} is not a valid target, using find_package to find it.")
-    find_package(${LIBRARY_FOR_EXAMPLES} CONFIG REQUIRED)
+if (NOT TARGET hazelcast-cpp-client)
+    message(STATUS "hazelcast-cpp-client is not a valid target, using find_package to find it.")
+    find_package(hazelcast-cpp-client REQUIRED)
+    link_libraries(hazelcast-cpp-client::hazelcast-cpp-client) # TODO find a better way to do this
+else()
+    link_libraries(hazelcast-cpp-client) # TODO find a better way to do this
 endif()
 
 if (MSVC)
     add_compile_options(/bigobj)
 endif()
-
-link_libraries(hazelcast-cpp-client::hazelcast-cpp-client) # TODO find a better way to do this
 
 add_subdirectory(transactions)
 add_subdirectory(spi)

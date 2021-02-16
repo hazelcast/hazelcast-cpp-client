@@ -203,7 +203,7 @@ function(add_hazelcast_library type)
         EXPORT ${PROJECT_NAME}-targets
         FILE ${PROJECT_NAME}-targets.cmake
         NAMESPACE ${PROJECT_NAME}::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 
     # configure -config-version.cmake file
@@ -219,7 +219,7 @@ function(add_hazelcast_library type)
     configure_package_config_file(
         cmake/config.cmake.in
         ${PROJECT_NAME}-config.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR
     )
 
@@ -228,7 +228,7 @@ function(add_hazelcast_library type)
         FILES
             ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 endfunction()
 
