@@ -6,7 +6,7 @@ C++11 support. Detailed requirements can be found at [Requirements](Reference_Ma
 The library can be installed using package managers ([Conan](Reference_Manual.md#113-conan-users)) or directly [from source code](Reference_Manual.md#112-install-from-source-code-using-cmake) using [CMake](https://cmake.org/).
 
 * [Hazelcast Community Slack](https://slack.hazelcast.com/)
-* Hazelcast Hazelcast channel on [Gitter](https://gitter.im/hazelcast/hazelcast)
+* Hazelcast channel on [Gitter](https://gitter.im/hazelcast/hazelcast)
   [![Join the chat at https://gitter.im/hazelcast/hazelcast](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/hazelcast/hazelcast?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * Google Groups: https://groups.google.com/forum/#!forum/hazelcast
 * Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
