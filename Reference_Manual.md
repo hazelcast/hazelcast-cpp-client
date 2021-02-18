@@ -5,16 +5,16 @@
 * [Release Notes](#release-notes)
 * [1. Getting Started](#1-getting-started)
   * [1.1. Installing](#11-installing)
-    * [1.1.1. Requirements](#111-requirements)
+    * [1.1.1. Conan Users](#111-conan-users)
     * [1.1.2. Install From Source Code Using CMake](#112-install-from-source-code-using-cmake)
-      * [1.1.2.1. Downloading Source Code](#1121-downloading-source-code)
-      * [1.1.2.2. Linux and MacOS Users](#1122-linux-and-macos-users)
-      * [1.1.2.3. Windows Users](#1123-windows-users)
-      * [1.1.2.4. Advanced Installation](#1124-advanced-installation)
-        * [1.1.2.4.1. Custom Install Location](#11241-custom-install-location)
-        * [1.1.2.4.2. CMake Configuration](#11242-cmake-configuration)
-          * [1.1.2.4.2.1. Example Configuration Commands](#112421-example-configuration-commands)
-    * [1.1.3. Conan Users](#113-conan-users)
+      * [1.1.2.1. Requirements](#1121-requirements)
+      * [1.1.2.2. Downloading Source Code](#1122-downloading-source-code)
+      * [1.1.2.3. Linux and MacOS Users](#1123-linux-and-macos-users)
+      * [1.1.2.4. Windows Users](#1124-windows-users)
+      * [1.1.2.5. Advanced Installation](#1125-advanced-installation)
+        * [1.1.2.5.1. Custom Install Location](#11251-custom-install-location)
+        * [1.1.2.5.2. CMake Configuration](#11252-cmake-configuration)
+          * [1.1.2.5.2.1. Example Configuration Commands](#112521-example-configuration-commands)
   * [1.2. Starting Hazelcast IMDG Cluster](#12-starting-hazelcast-imdg-cluster)
     * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
       * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
@@ -157,15 +157,38 @@ This chapter provides information on how to get started with your Hazelcast C++ 
 
 ## 1.1. Installing
 
-### 1.1.1. Requirements
-1. Linux, macOS or Windows
-2. A compiler that supports C++11
-3. [CMake](https://cmake.org) 3.10 or above 
-4. [Boost](https://www.boost.org) 1.71 or above 
-5. [OpenSSL](https://www.openssl.org) (optional)
+### 1.1.1. Conan Users
+Hazelcast C++ client package is indexed at [Conan Center Index](https://conan.io/center/hazelcast-cpp-client). You can
+use [Conan package manager](https://conan.io/) to install Hazelcast C++ client. The package name is `hazelcast-cpp-client`.
+
+Please see [example instructions](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries)
+on how to use conan package manager with your application. In summary,
+
+- You need to put the following lines to your `conanfile.txt`:
+```
+[requires]
+hazelcast-cpp-client/4.0.0
+
+[generators]
+cmake
+```
+- Then, you execute the following
+```
+$ mkdir build && cd build
+$ conan install ..
+```
+This generates the `conanbuildinfo.cmake` file to be included in your CMakelists.txt. Please follow the instructions at
+the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
 
 ### 1.1.2. Install From Source Code Using CMake
-#### 1.1.2.1. Downloading Source Code
+#### 1.1.2.1. Requirements
+1. Linux, macOS or Windows
+2. A compiler that supports C++11
+3. [CMake](https://cmake.org) 3.10 or above
+4. [Boost](https://www.boost.org) 1.71 or above
+5. [OpenSSL](https://www.openssl.org) (optional)
+
+#### 1.1.2.2. Downloading Source Code
 Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page to 
 download the source code for the latest Hazelcast C++ client.
 
@@ -176,7 +199,7 @@ Follow the instructions for your platform:
 * [Linux and maxOS](#1122-linux-and-macos-users)
 * [Windows](#1123-windows-users)
 
-#### 1.1.2.2. Linux and MacOS Users
+#### 1.1.2.3. Linux and MacOS Users
 Here is how you download and extract version 4.0.0 using the **curl** command:
 ```sh
 curl -Lo hazelcast-cpp-client-4.0.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.0.0.tar.gz
@@ -211,7 +234,7 @@ sudo cmake --build . --target install
 ```
 See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
-#### 1.1.2.3. Windows Users
+#### 1.1.2.4. Windows Users
 Download and extract the release archive from the 
 [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page.
 
@@ -240,16 +263,16 @@ Make sure you pass the same `--config` option to both commands.
 The install command may require administrator privileges depending on your install prefix. 
 See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
-#### 1.1.2.4. Advanced Installation
+#### 1.1.2.5. Advanced Installation
 
-##### 1.1.2.4.1. Custom Install Location
+##### 1.1.2.5.1. Custom Install Location
 Pass the argument `-DCMAKE_INSTALL_PREFIX=/path/to/install` the first time you run `cmake` to configure 
 the installation directory:
 ```sh
 cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
 ```
 
-##### 1.1.2.4.2. CMake Configuration
+##### 1.1.2.5.2. CMake Configuration
 You can provide additional configuration options using the `-DVARIABLE=VALUE` syntax on the command line.
 Here are all the options that are supported:
 * `WITH_OPENSSL` : Set to `ON` to build the library with SSL support.
@@ -258,7 +281,7 @@ This will require [OpenSSL](https://www.openssl.org) to be installed on your sys
 * `BUILD_SHARED_LIB` : Set to `ON` or `OFF` depending on whether you want the shared library. The default is `ON`.
 * `DISABLE_LOGGING` : Setting this option to `ON` disables logging. The default is `OFF`.
 
-###### 1.1.2.4.2.1. Example Configuration Commands
+###### 1.1.2.5.2.1. Example Configuration Commands
 Build only the static library with SSL support:
 ```sh
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIB=OFF -DBUILD_STATIC_LIB=ON
@@ -267,28 +290,6 @@ Build both the shared and static library without SSL support:
 ```sh
 cmake .. -DWITH_OPENSSL=OFF -DBUILD_SHARED_LIB=ON -DBUILD_STATIC_LIB=ON
 ```
-### 1.1.3. Conan Users
-Hazelcast C++ client package is indexed at [Conan Center Index](https://conan.io/center/hazelcast-cpp-client). You can 
-use [Conan package manager](https://conan.io/) to install Hazelcast C++ client. The package name is `hazelcast-cpp-client`. 
-
-Please see [example instructions](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) 
-on how to use conan package manager with your application. In summary, 
-
-- You need to put the following lines to your `conanfile.txt`:
-```
-[requires]
-hazelcast-cpp-client/4.0.0
-
-[generators]
-cmake
-```
-- Then, you execute the following 
-```
-$ mkdir build && cd build
-$ conan install ..
-```
-This generates the `conanbuildinfo.cmake` file to be included in your CMakelists.txt. Please follow the instructions at 
-the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
 
 ## 1.2. Starting Hazelcast IMDG Cluster
 
