@@ -12,8 +12,11 @@ The library can be installed using package managers ([Conan](Reference_Manual.md
 * Google Groups: https://groups.google.com/forum/#!forum/hazelcast
 * Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
 
+## Documentation
+
+You can find the detailed documentation at [Reference Manual](Reference_Manual.md).
+
 ## License
 
-[Apache 2 License](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/LICENSE).
+hazelcast-cpp-client library is an open source project using the [Apache 2 License](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/LICENSE).
 
-## [Reference Manual](Reference_Manual.md)
