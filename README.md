@@ -13,7 +13,6 @@
     * [1.1.5. Advanced Installation](#115-advanced-installation)
       * [1.1.5.1. Custom Install Location](#1151-custom-install-location)
       * [1.1.5.2. CMake Configuration](#1152-cmake-configuration)
-        * [1.1.5.2.1 Example Configuration Commands](#11521-example-configuration-commands)
   * [1.2. Starting Hazelcast IMDG Cluster](#12-starting-hazelcast-imdg-cluster)
     * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
       * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
@@ -255,14 +254,9 @@ This will require [OpenSSL](https://www.openssl.org) to be installed on your sys
 * `BUILD_SHARED_LIBS` : Set to `ON` or `OFF` depending on whether you want the shared(ON) or static(OFF) library. The default is `ON`.
 * `DISABLE_LOGGING` : Setting this option to `ON` disables logging. The default is `OFF`.
 
-##### 1.1.5.2.1 Example Configuration Commands
-Build only the static library with SSL support:
+For example, if you want to build the static library with SSL support, you can use the following command:
 ```sh
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
-```
-Build both the shared library without SSL support:
-```sh
-cmake .. -DWITH_OPENSSL=OFF 
 ```
 
 ## 1.2. Starting Hazelcast IMDG Cluster
@@ -355,7 +349,7 @@ If your project is using CMake, you can easily find and link against the client 
 ```cmake
 find_package(hazelcast-cpp-client CONFIG REQUIRED)
 
-target_link_libraries(mytarget PRIVATE hazelcast-cpp-client)
+target_link_libraries(mytarget PRIVATE hazelcast-cpp-client::hazelcast-cpp-client)
 ```
 
 Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 
