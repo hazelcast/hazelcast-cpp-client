@@ -33,7 +33,7 @@ fi
 ./scripts/build-unix.sh                      \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE           \
     -DCMAKE_INSTALL_PREFIX=$DESTINATION      \
-    -DBUILD_SHARED_LIBS=$BUILD_SHARED_LIBS     \
+    -DBUILD_SHARED_LIBS=$BUILD_SHARED_LIBS   \
     -DWITH_OPENSSL=$WITH_OPENSSL             \
     -DBUILD_TESTS=ON                         \
     -DBUILD_EXAMPLES=OFF

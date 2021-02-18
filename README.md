@@ -357,7 +357,7 @@ if you are using a custom installation location.
 
 #### 1.3.2. Linux and MacOS Users
 You can pass the `-lhazelcast-cpp-client` option to the compiler to link against 
-the client library. The name of library depends on how it was configured during build time. 
+the client library.
 
 The client library depends on Boost.Thread and Boost.Chrono. 
 You should also link your program against these libraries using `-lboost_thread` and `-lboost_chrono`.
