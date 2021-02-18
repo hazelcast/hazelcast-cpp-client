@@ -18,7 +18,7 @@ endif()
 
 target_link_libraries(
     client_test
-    PRIVATE ${LIBRARY_FOR_TESTS} gtest
+    PRIVATE ${LIBRARY_FOR_TESTS} ${GTEST_TARGET}
 )
 
 # First, try to find Thrift using find_package
