@@ -56,7 +56,7 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct HAZELCAST_API hz_serializer<topic::impl::reliable::ReliableTopicMessage> : public identified_data_serializer {
-                static constexpr int32_t F_ID = -18;
+                static constexpr int32_t F_ID = -9;
                 static constexpr int32_t RELIABLE_TOPIC_MESSAGE = 2;
 
                 static int32_t get_factory_id();
