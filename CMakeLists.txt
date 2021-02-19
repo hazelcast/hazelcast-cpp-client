@@ -56,11 +56,7 @@ option(WITH_OPENSSL
        "Build with OpenSSL. Setting this option to ON enables SSL-related features."
        OFF)
 
-option(BUILD_STATIC_LIB
-       "Build static library."
-       OFF)
-
-option(BUILD_SHARED_LIB
+option(BUILD_SHARED_LIBS
        "Build shared library."
        ON)
 
@@ -75,12 +71,6 @@ option(BUILD_TESTS
 option(BUILD_EXAMPLES
        "Build examples."
        OFF)
-
-# exit with an error message if none of BUILD_SHARED_LIB and BUILD_STATIC_LIB was set.
-if ((NOT BUILD_SHARED_LIB) AND (NOT BUILD_STATIC_LIB))
-    message(FATAL_ERROR
-            "Set at least one of BUILD_SHARED_LIB and BUILD_STATIC_LIB to ON.")
-endif ()
 
 # find dependencies
 
@@ -102,167 +92,149 @@ if (WITH_OPENSSL)
     find_package(OpenSSL REQUIRED)
 endif ()
 
+# add library
+if (BUILD_SHARED_LIBS)
+    set(LIB_TYPE SHARED)
+else()
+    set(LIB_TYPE STATIC)
+endif()
 
-function(add_hazelcast_library name type)
-    # add the library target
-    add_library(
-        ${name}
-        ${type}
+# add the library target
+add_library(
+        ${PROJECT_NAME}
+        ${LIB_TYPE}
         ${SOURCE_FILES} ${HEADER_FILES}
-    )
+)
 
-    # set library's version and soversion
-    set_target_properties(
-        ${name}
+# set library's version and soversion
+set_target_properties(
+        ${PROJECT_NAME}
         PROPERTIES
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION}
-    )
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION}
+)
 
-    # library requires c++11
-    target_compile_features(
-        ${name}
+# library requires c++11
+target_compile_features(
+        ${PROJECT_NAME}
         PUBLIC cxx_std_11
-    )
+)
 
-    # links the library against the system's thread library
-    target_link_libraries(${name} PUBLIC Threads::Threads)
+# links the library against the system's thread library
+target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
 
-    # add Boost::thread and Boost::chrono as dependencies
-    target_link_libraries(
-        ${name}
+# add Boost::thread and Boost::chrono as dependencies
+target_link_libraries(
+        ${PROJECT_NAME}
         PUBLIC Boost::boost Boost::thread Boost::chrono
-    )
-    # set the Boost thread version
-    target_compile_definitions(
-        ${name}
+)
+# set the Boost thread version
+target_compile_definitions(
+        ${PROJECT_NAME}
         PUBLIC BOOST_THREAD_VERSION=5
-    )
+)
 
-    # If building WITH_OPENSSL, add OpenSSL::SSL and OpenSSL::Crypto as dependencies
-    # Both we and the user defines HZ_BUILD_WITH_SSL.
-    if (WITH_OPENSSL)
-        target_compile_definitions(
-            ${name}
-            PUBLIC HZ_BUILD_WITH_SSL
-        )
-        target_link_libraries(${name} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
-    endif()
-
-    # MSVC-specific compiler flags
-    if (MSVC)
-      target_compile_options(${name} PRIVATE /bigobj)
-    endif ()
-
-    # windows-specific compile flags
-    if (WIN32)
-        # speeds the build process
-        target_compile_definitions(${name} PRIVATE WIN32_LEAN_AND_MEAN)
-    endif ()
-
-    # add include directories
-    target_include_directories(
-        ${name}
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    )
-
-    # add compile flags for version and git commit information
+# If building WITH_OPENSSL, add OpenSSL::SSL and OpenSSL::Crypto as dependencies
+# Both we and the user defines HZ_BUILD_WITH_SSL.
+if (WITH_OPENSSL)
     target_compile_definitions(
-        ${name}
-        PRIVATE
-            HAZELCAST_VERSION="${PROJECT_VERSION}"
-            HAZELCAST_GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
-            HAZELCAST_GIT_COMMIT_ID=${GIT_COMMIT_ID}
+            ${PROJECT_NAME}
+            PUBLIC HZ_BUILD_WITH_SSL
     )
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+endif()
 
-    if (DISABLE_LOGGING)
-        target_compile_definitions(${name} PUBLIC HZ_LOGGING_DISABLED)
-    endif ()
+# MSVC-specific compiler flags
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+endif ()
 
-    set_target_properties(${name} PROPERTIES DEFINE_SYMBOL HAZELCAST_EXPORTS)
+# windows-specific compile flags
+if (WIN32)
+    # speeds the build process
+    target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32_LEAN_AND_MEAN)
+endif ()
 
-    generate_export_header(
-        ${name}
+# add include directories
+target_include_directories(
+        ${PROJECT_NAME}
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+# add compile flags for version and git commit information
+target_compile_definitions(
+        ${PROJECT_NAME}
+        PRIVATE
+        HAZELCAST_VERSION="${PROJECT_VERSION}"
+        HAZELCAST_GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+        HAZELCAST_GIT_COMMIT_ID=${GIT_COMMIT_ID}
+)
+
+if (DISABLE_LOGGING)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC HZ_LOGGING_DISABLED)
+endif ()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES DEFINE_SYMBOL HAZELCAST_EXPORTS)
+
+generate_export_header(
+        ${PROJECT_NAME}
         BASE_NAME hazelcast
         EXPORT_MACRO_NAME HAZELCAST_API
         EXPORT_FILE_NAME include/hazelcast/util/export.h
         NO_EXPORT_MACRO_NAME HAZELCAST_PRIVATE
         STATIC_DEFINE HAZELCAST_USE_STATIC
-    )
+)
 
-    if (type STREQUAL "STATIC")
-        target_compile_definitions(${name} PUBLIC HAZELCAST_USE_STATIC)
-    endif()
+if (type STREQUAL "STATIC")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC HAZELCAST_USE_STATIC)
+endif()
 
-    # install library target
-    install(
-        TARGETS ${name}
-        EXPORT ${name}-targets
+# install library target
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}-targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
+)
 
-    # install the -targets.cmake file
-    install(
-        EXPORT ${name}-targets
-        FILE ${name}-targets.cmake
-        NAMESPACE hazelcast::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}
-    )
+# install the -targets.cmake file
+install(
+        EXPORT ${PROJECT_NAME}-targets
+        FILE ${PROJECT_NAME}-targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
 
-    # configure -config-version.cmake file
-    write_basic_package_version_file(
-        ${name}-config-version.cmake
+# configure -config-version.cmake file
+write_basic_package_version_file(
+        ${PROJECT_NAME}-config-version.cmake
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion
-    )
+)
 
-    # configure -config.cmake file
-    set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
-    set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
-    configure_package_config_file(
+# configure -config.cmake file
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+configure_package_config_file(
         cmake/config.cmake.in
-        ${name}-config.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}
+        ${PROJECT_NAME}-config.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR
-    )
+)
 
-    # install -config.cmake and -config-version.cmake files
-    install(
+# install -config.cmake and -config-version.cmake files
+install(
         FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/${name}-config.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/${name}-config-version.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${name}
-    )
-endfunction()
-
-# the base name for shared and static libraries
-set(BASE_LIBRARY_NAME hazelcastcxx)
-# add the _ssl suffix to the base name if building WITH_OPENSSL
-if (WITH_OPENSSL)
-    set(BASE_LIBRARY_NAME ${BASE_LIBRARY_NAME}_ssl)
-endif()
-
-# set the names for the shared and static libraries
-set(SHARED_LIBRARY_NAME ${BASE_LIBRARY_NAME})
-set(STATIC_LIBRARY_NAME ${BASE_LIBRARY_NAME}_static)
-
-# add static library if requested
-if (BUILD_STATIC_LIB)
-    add_hazelcast_library(${STATIC_LIBRARY_NAME} STATIC)
-endif()
-
-# add shared library if requested
-if (BUILD_SHARED_LIB)
-    add_hazelcast_library(${SHARED_LIBRARY_NAME} SHARED)
-endif()
-
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
 
 # install header files, this applies both to the shared and the static library
 install(
@@ -275,23 +247,10 @@ install(
     FILES_MATCHING PATTERN "*.h"
 )
 
-# since shared and static libraries can be requested for the build at the same time,
-# we need a default one to use for tests and examples.
-# the static library is preferred to the shared library, because it is OFF by default.
-if (BUILD_STATIC_LIB)
-    set(DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES ${STATIC_LIBRARY_NAME})
-else ()
-    set(DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES ${SHARED_LIBRARY_NAME})
-endif ()
-
 if (BUILD_TESTS)
-    set(LIBRARY_FOR_TESTS ${DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES})
-
     add_subdirectory(hazelcast/test)
 endif ()
 
 if (BUILD_EXAMPLES)
-    set(LIBRARY_FOR_EXAMPLES ${DEFAULT_LIBRARY_FOR_TESTS_AND_EXAMPLES})
-
     add_subdirectory(examples)
 endif ()

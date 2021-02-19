@@ -13,7 +13,6 @@
     * [1.1.5. Advanced Installation](#115-advanced-installation)
       * [1.1.5.1. Custom Install Location](#1151-custom-install-location)
       * [1.1.5.2. CMake Configuration](#1152-cmake-configuration)
-        * [1.1.5.2.1 Example Configuration Commands](#11521-example-configuration-commands)
   * [1.2. Starting Hazelcast IMDG Cluster](#12-starting-hazelcast-imdg-cluster)
     * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
       * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
@@ -252,18 +251,12 @@ You can provide additional configuration options using the `-DVARIABLE=VALUE` sy
 Here are all the options that are supported:
 * `WITH_OPENSSL` : Set to `ON` to build the library with SSL support.
 This will require [OpenSSL](https://www.openssl.org) to be installed on your system. The default is `OFF`.
-* `BUILD_STATIC_LIB` : Set to `ON` or `OFF` depending on whether you want the static library. The default is `OFF`.
-* `BUILD_SHARED_LIB` : Set to `ON` or `OFF` depending on whether you want the shared library. The default is `ON`.
+* `BUILD_SHARED_LIBS` : Set to `ON` or `OFF` depending on whether you want the shared(ON) or static(OFF) library. The default is `ON`.
 * `DISABLE_LOGGING` : Setting this option to `ON` disables logging. The default is `OFF`.
 
-##### 1.1.5.2.1 Example Configuration Commands
-Build only the static library with SSL support:
+For example, if you want to build the static library with SSL support, you can use the following command:
 ```sh
-cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIB=OFF -DBUILD_STATIC_LIB=ON
-```
-Build both the shared and static library without SSL support:
-```sh
-cmake .. -DWITH_OPENSSL=OFF -DBUILD_SHARED_LIB=ON -DBUILD_STATIC_LIB=ON
+cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
 ```
 
 ## 1.2. Starting Hazelcast IMDG Cluster
@@ -354,22 +347,17 @@ If you are not, then read the instructions specific to your platform:
 A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. 
 If your project is using CMake, you can easily find and link against the client library:
 ```cmake
-find_package(hazelcastcxx)
+find_package(hazelcast-cpp-client CONFIG REQUIRED)
 
-target_link_libraries(mytarget PUBLIC hazelcast::hazelcastcxx)
-```  
-
-The package name depends on the specific library type you want to use. 
-Options are `hazelcastcxx`, `hazelcastcxx_ssl`, `hazelcastcxx_static`, and `hazelcastcxx_ssl_static`.
+target_link_libraries(mytarget PRIVATE hazelcast-cpp-client::hazelcast-cpp-client)
+```
 
 Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 
 if you are using a custom installation location. 
 
 #### 1.3.2. Linux and MacOS Users
-You can pass the `-lhazelcastcxx` or `-lhazelcastcxx_ssl` option to the compiler to link against 
-the client library. The name of library depends on how it was configured during build time. 
-If the library was built with `-DWITH_OPENSSL=ON`, then the name is `hazelcastcxx_ssl`.
-If it was built with `-DWITH_OPENSSL=OFF`, then the name is `hazelcastcxx`. 
+You can pass the `-lhazelcast-cpp-client` option to the compiler to link against 
+the client library.
 
 The client library depends on Boost.Thread and Boost.Chrono. 
 You should also link your program against these libraries using `-lboost_thread` and `-lboost_chrono`.
@@ -381,7 +369,7 @@ Here is how you can compile an example from the examples directory:
 g++ -std=c++11 \
     examples/path/to/example.cpp \
     -DBOOST_THREAD_VERSION=5 \
-    -lhazelcastcxx -lboost_thread -lboost_chrono
+    -lhazelcast-cpp-client -lboost_thread -lboost_chrono
 ``` 
 
 If a custom installation directory was used during installation, then you may also need to use the `-L` and `-I`
@@ -390,7 +378,7 @@ options to add the library and include paths to the compiler's search path.
 g++ -std=c++11 \
     examples/path/to/example.cpp \
     -I /path/to/install/include -L /path/to/install/lib \
-    -lhazelcastcxx -lboost_thread -lboost_chrono 
+    -lhazelcast-cpp-client -lboost_thread -lboost_chrono 
 ```
 
 #### 1.3.3. Windows Users
@@ -402,7 +390,7 @@ for necessary features such as futures and future continuations to be enabled.
 The following is a command that can be used to compile an example from the examples directory.
 ```bat
 cl.exe path\to\example.cpp ^
-    C:\path\to\hazelcast\lib\hazelcastcxx.lib ^
+    C:\path\to\hazelcast\lib\hazelcast-cpp-client.lib ^
     C:\path\to\boost\lib\boost_thread.lib C:\path\to\boost\lib\boost_chrono.lib ^
     /EHsc /DBOOST_THREAD_VERSION=5 ^
     /I C:\path\to\hazelcast\include /I C:\path\to\boost\include
@@ -596,7 +584,7 @@ Let's manipulate a distributed map on a cluster using the client.
 Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
 
 ```C++
-g++ IT.cpp -o IT -lhazelcastcxx -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
+g++ IT.cpp -o IT -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 Then, you can run the application using the following command:
  
@@ -651,7 +639,7 @@ Now create a `Sales.cpp` file, compile and run it as shown below.
 **Compile:**
 
 ```C++
-g++ Sales.cpp -o Sales -lhazelcastcxx -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
+g++ Sales.cpp -o Sales -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 **Run**
 

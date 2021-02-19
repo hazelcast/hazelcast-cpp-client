@@ -7,8 +7,7 @@ set(GOOGLETEST_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/hazelcast/test/googletest/googlet
 
 add_executable(client_test ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS})
 
-message(STATUS "${LIBRARY_FOR_TESTS} will be tested.")
-target_link_libraries(client_test PRIVATE ${LIBRARY_FOR_TESTS} gtest)
+target_link_libraries(client_test PRIVATE hazelcast-cpp-client gtest)
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     find_package(Thrift QUIET)
