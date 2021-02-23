@@ -14,7 +14,7 @@ function cleanup {
         echo "Killing client with pid ${testPid}"
         kill -9 ${testPid}
         echo "Killing start-rc.sh with pid ${rcPid}"
-        kill ${rcPid}
+        kill -9 ${rcPid}
     fi
     exit
 }

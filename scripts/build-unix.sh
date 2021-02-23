@@ -50,15 +50,18 @@ echo "CXXFLAGS    = $CXXFLAGS"
 # export flags variable to be used by CMake
 export CXXFLAGS
 
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+
 echo "Configuring..."
-cmake -S . -B "$BUILD_DIR" "$@"
+cmake .. "$@"
 
 echo "Building..."
-cmake --build "$BUILD_DIR" --verbose --parallel 8
+cmake --build . --verbose --parallel 2
 
 if [ "$INSTALL" = "ON" ]; then
   echo "Installing..."
-  cmake --install "$BUILD_DIR"
+  cmake --build . --target install
 fi
 
 

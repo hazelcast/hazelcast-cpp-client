@@ -1,0 +1,67 @@
+name: nightly-Ubuntu-i386
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 22 * * *'
+
+jobs:
+  nightly-Ubuntu-i386:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [ Debug, Release ]
+        library_type: [ SHARED, STATIC ]
+        with_openssl: [ OFF, ON ]
+
+    runs-on: ubuntu-latest
+    container: i386/ubuntu
+
+    steps:
+      - name: Install Necessary Packages
+        run: |
+          apt-get update
+          apt-get install -y net-tools build-essential libssl-dev curl automake m4 git maven openjdk-11-jre-headless
+
+      - name: Make sure the target architecture is 32 bit
+        run: |
+          echo 'int main() { return sizeof(void*) != 4; }' > test.c
+          gcc test.c -oa
+          ./a
+          rm a test.c
+
+      - name: Install CMake
+        run: |
+          curl -Lo cmake-3.19.5.tar.gz \
+                   https://github.com/Kitware/CMake/releases/download/v3.19.5/cmake-3.19.5.tar.gz
+          tar xzf cmake-3.19.5.tar.gz
+          rm cmake-3.19.5.tar.gz
+          cd cmake-3.19.5
+          ./bootstrap
+          make
+          make install
+          cd ..
+          rm -rf cmake-3.19.5
+
+      - uses: actions/checkout@v1
+
+      - name: Install Boost
+        run: |
+          ./scripts/install-boost.sh 1.75.0
+
+      - name: Install Thrift
+        run: |
+          ./scripts/install-thrift.sh 0.13.0
+
+      - name: Build, Install, Test & Verify
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          LIBRARY_TYPE: ${{ matrix.library_type }}
+          WITH_OPENSSL: ${{ matrix.with_openssl }}
+          COVERAGE: OFF
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        run: |
+          ./scripts/do-all-unix.sh
