@@ -19,7 +19,6 @@ cmake_minimum_required(VERSION 3.10)
 project(hazelcast-cpp-client
         VERSION 4.0.1
         DESCRIPTION "Hazelcast C++ Client"
-        HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
         LANGUAGES CXX)
 
 # Set the C++ standard
@@ -33,10 +32,12 @@ if ((NOT is_multi_config) AND (NOT CMAKE_BUILD_TYPE))
     set(CMAKE_BUILD_TYPE Release)
 endif ()
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(GenerateExportHeader)
-include(./cmake/utils.cmake)
+include(utils)
 
 # get and set Git commit date and id
 get_commit_date_and_id(GIT_COMMIT_DATE GIT_COMMIT_ID)
@@ -243,7 +244,7 @@ install(
         hazelcast/generated-sources/src/
         ${CMAKE_CURRENT_BINARY_DIR}/include/
 
-    TYPE INCLUDE
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.h"
 )
 
