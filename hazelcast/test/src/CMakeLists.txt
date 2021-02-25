@@ -18,5 +18,5 @@ find_package(Thrift 0.13.0 REQUIRED)
 
 target_link_libraries(
     client_test
-    PRIVATE hazelcast-cpp-client ${GTEST_TARGET} Thrift::thrift
+    PRIVATE hazelcast-cpp-client ${GTEST_TARGET} thrift::thrift
 )

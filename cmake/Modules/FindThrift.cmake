@@ -23,7 +23,7 @@ Imported Targets
 
 This module provides the following imported targets, if found:
 
-``Thrift::thrift``
+``thrift::thrift``
   The Apache Thrift library
 
 Result Variables
@@ -35,10 +35,6 @@ This will define the following variables:
   True if the system has the Thrift library.
 ``Thrift_VERSION``
   The version of the Thrift library which was found.
-``Thrift_INCLUDE_DIRS``
-  Include directories needed to use Thrift.
-``Thrift_LIBRARIES``
-  Libraries needed to link to Thrift.
 
 Cache Variables
 ^^^^^^^^^^^^^^^
@@ -51,6 +47,15 @@ The following cache variables may also be set:
   The path to the Thrift library.
 
 #]=======================================================================]
+
+include(FindPackageHandleStandardArgs)
+
+find_package(Thrift QUIET NO_MODULE)
+
+if (Thrift_FOUND)
+    find_package_handle_standard_args(Thrift CONFIG_MODE)
+    return()
+endif()
 
 find_path(
     Thrift_INCLUDE_DIR
@@ -68,12 +73,12 @@ if (Thrift_INCLUDE_DIR)
     file(
         STRINGS ${Thrift_INCLUDE_DIR}/thrift/config.h
         _Thrift_config_version_line
-        REGEX "#define PACKAGE_VERSION[ \t]+\"([0-9\\.]+)\""
+        REGEX "#define PACKAGE_VERSION "
     )
     string(REGEX MATCH "[0-9\\.]+" Thrift_VERSION "${_Thrift_config_version_line}")
+    unset(_Thrift_config_version_line)
 endif()
 
-include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     Thrift
     FOUND_VAR Thrift_FOUND
@@ -83,10 +88,10 @@ find_package_handle_standard_args(
     VERSION_VAR Thrift_VERSION
 )
 
-if(Thrift_FOUND AND NOT TARGET Thrift::thrift)
-    add_library(Thrift::thrift UNKNOWN IMPORTED)
+if(Thrift_FOUND AND NOT TARGET thrift::thrift)
+    add_library(thrift::thrift UNKNOWN IMPORTED)
     set_target_properties(
-        Thrift::thrift PROPERTIES
+        thrift::thrift PROPERTIES
         IMPORTED_LOCATION "${Thrift_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${Thrift_INCLUDE_DIR}"
     )
@@ -96,5 +101,3 @@ mark_as_advanced(
     Thrift_INCLUDE_DIR
     Thrift_LIBRARY
 )
-
-set(Thrift_VERSION_STRING ${Thrift_VERSION})
