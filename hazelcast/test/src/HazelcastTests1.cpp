@@ -492,7 +492,7 @@ namespace hazelcast {
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
                         client = new hazelcast_client{new_client(get_config()).get()};
-                        client2 = new hazelcast_client{new_client(std::move(get_config())).get()};
+                        client2 = new hazelcast_client{new_client(get_config()).get()};
                     }
 
                     static void TearDownTestCase() {

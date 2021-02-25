@@ -233,7 +233,7 @@ namespace hazelcast {
 
                 void create_no_near_cache_context() {
                     client_ = std::unique_ptr<hazelcast_client>(
-                            new hazelcast_client{new_client(std::move(get_config())).get()});
+                            new hazelcast_client{new_client(get_config()).get()});
                     no_near_cache_map_ = client_->get_map(get_test_name()).get();
                 }
 

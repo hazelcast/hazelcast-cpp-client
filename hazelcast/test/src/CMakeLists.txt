@@ -1,7 +1,5 @@
 cmake_minimum_required (VERSION 3.10)
 
-message(STATUS "${LIBRARY_FOR_TESTS} will be tested.")
-
 FILE(GLOB_RECURSE TEST_SOURCES "./*cpp")
 FILE(GLOB_RECURSE TEST_HEADERS "./*h")
 
@@ -18,7 +16,7 @@ endif()
 
 target_link_libraries(
     client_test
-    PRIVATE ${LIBRARY_FOR_TESTS} ${GTEST_TARGET}
+    PRIVATE hazelcast-cpp-client ${GTEST_TARGET}
 )
 
 # First, try to find Thrift using find_package
