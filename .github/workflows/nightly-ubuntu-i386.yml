@@ -79,13 +79,13 @@ jobs:
 
       - name: Build & Install
         run: |
-          ./scripts/build-unix.sh                                 \
-           -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}       \
-           -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX                 \
-           -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}   \
-           -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}       \
-           -DBUILD_TESTS=ON                                       \
-           -DBUILD_EXAMPLES=OFF
+          ./scripts/build-unix.sh                                    \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}       \
+              -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX                 \
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}   \
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}       \
+              -DBUILD_TESTS=ON                                       \
+              -DBUILD_EXAMPLES=OFF
 
       - name: Test
         env:
