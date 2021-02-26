@@ -10,11 +10,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type: [ Debug, Release ]
-        library_type: [ SHARED, STATIC ]
-        with_openssl: [ OFF, ON ]
+        build_type:
+          - type: Debug
+            warn_as_err: ON
+          - type: Release
+            warn_as_err: OFF
+
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
 
     runs-on: macos-latest
+
+    name: >-
+      nightly-macOS-x86_64
+      (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+
+    env:
+      BUILD_DIR: build
+      INSTALL: ON
+      INSTALL_PREFIX: ${{ github.workspace }}/destination
+      WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
+      OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
       - name: Install Dependencies
@@ -23,16 +48,27 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - name: Build, Install, Test & Verify
+      - name: Build & Install
+        run: |
+          ./scripts/build-unix.sh                                    \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}       \
+              -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX                 \
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}   \
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}       \
+              -DBUILD_TESTS=ON                                       \
+              -DBUILD_EXAMPLES=OFF
+
+      - name: Test
         env:
-          BUILD_TYPE: ${{ matrix.build_type }}
-          LIBRARY_TYPE: ${{ matrix.library_type }}
-          WITH_OPENSSL: ${{ matrix.with_openssl }}
-          OPENSSL_ROOT_DIR: '/usr/local/opt/openssl/'
-          COVERAGE: OFF
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
         run: |
-          ./scripts/do-all-unix.sh
+          ./scripts/test-unix.sh
+
+      - name: Verify Installation
+        run: |
+          ./scripts/verify-installation-unix.sh                 \
+              -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX               \
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
