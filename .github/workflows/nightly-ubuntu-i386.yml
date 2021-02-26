@@ -32,7 +32,7 @@ jobs:
     container: i386/ubuntu
 
     name: >-
-      nightly-Ubuntu-i386
+      Ubuntu-i386
       (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     env:
