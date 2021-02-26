@@ -21,7 +21,7 @@ cd thrift-$1
             --without-nodejs --without-nodets --without-lua --without-py3 --without-ruby \
             --without-go --without-cl --without-haxe --without-dotnetcore --without-d \
             --without-zlib --without-libevent
-make -j
+make -j 2
 make install
 cd ..
 rm -rf thrift-$1
