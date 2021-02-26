@@ -89,30 +89,52 @@ namespace hazelcast {
             ssl_config::ssl_config() : enabled_(false), ssl_protocol_(tlsv12) {
             }
 
+            ssl_config &ssl_config::set_context(boost::asio::ssl::context ctx) {
+                util::Preconditions::check_ssl("ssl_config::set_context");
+                if (enabled_) {
+                    throw exception::illegal_argument(
+                            "You should either use the deprecated methods or this method to enable ssl. You already used the deprecated way.");
+                }
+                ssl_context_ = std::make_shared<boost::asio::ssl::context>(std::move(ctx));
+                return *this;
+            }
+
             bool ssl_config::is_enabled() const {
-                return enabled_;
+                return ssl_context_ || enabled_;
             }
 
             ssl_config &ssl_config::set_enabled(bool is_enabled) {
-                util::Preconditions::check_ssl("get_aws_config");
+                util::Preconditions::check_ssl("ssl_config::set_enabled");
+                check_context_enabled_already();
+
                 this->enabled_ = is_enabled;
                 return *this;
             }
 
+            void ssl_config::check_context_enabled_already() const {
+                if (ssl_context_) {
+                    throw exception::illegal_argument("You should either use set_context or this method.");
+                }
+            }
+
             ssl_config &ssl_config::set_protocol(ssl_protocol protocol) {
+                check_context_enabled_already();
                 this->ssl_protocol_ = protocol;
                 return *this;
             }
 
             ssl_protocol ssl_config::get_protocol() const {
+                check_context_enabled_already();
                 return ssl_protocol_;
             }
 
             const std::vector<std::string> &ssl_config::get_verify_files() const {
+                check_context_enabled_already();
                 return client_verify_files_;
             }
 
             ssl_config &ssl_config::add_verify_file(const std::string &filename) {
+                check_context_enabled_already();
                 this->client_verify_files_.push_back(filename);
                 return *this;
             }

@@ -824,22 +824,515 @@ namespace hazelcast {
     }
 }
 
-
-#ifdef HZ_BUILD_WITH_SSL
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientConnectionTest : public ClientTestSupport {
-            protected:
 #ifdef HZ_BUILD_WITH_SSL
-                std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> get_ciphers(client_config config) {
-                    hazelcast_client hz{hazelcast::new_client(std::move(config)).get()};
-                    spi::ClientContext context(hz);
-                    std::vector<std::shared_ptr<connection::Connection> > conns = context.get_connection_manager().get_active_connections();
-                    EXPECT_GT(conns.size(), (size_t) 0);
-                    std::shared_ptr<connection::Connection> aConnection = conns[0];
+
+            class mutual_authentication_test : public ClientTestSupport {
+            };
+
+            TEST_F(mutual_authentication_test, testClientThrowsExceptionIfNodesAreUsingSSLButClientIsNot
+            ) {
+            HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
+            HazelcastServer instance(sslFactory);
+            client_config config;
+            config.
+
+            get_connection_strategy_config()
+
+            .
+
+            get_retry_config()
+
+            .
+            set_cluster_connect_timeout(std::chrono::seconds(0)
+            );
+
+            // Client by default does not use ssl
+            ASSERT_THROW (new_client(std::move(config))
+
+            .
+
+            get(), exception::illegal_state
+
+            );
+        }
+
+        TEST_F(mutual_authentication_test, testServerSSLEngine
+        ) {
+        HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
+        HazelcastServer instance(sslFactory);
+        client_config config;
+        config.
+
+        get_connection_strategy_config()
+
+        .
+
+        get_retry_config()
+
+        .
+        set_cluster_connect_timeout(
+                std::chrono::seconds(10)
+        ).
+        set_initial_backoff_duration(std::chrono::milliseconds(100)
+        );
+        config.
+
+        set_cluster_name (get_ssl_cluster_name());
+
+        boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+        ctx.
+
+        load_verify_file (get_ca_file_path());
+
+        config.
+
+        get_network_config()
+
+        .
+
+        get_ssl_config()
+
+        .
+        set_context(std::move(ctx)
+        );
+
+        auto client = new_client(std::move(config)).get();
+        auto map = client.get_map("test").get();
+        std::vector<byte> value(1024);
+        for (
+        int i = 0;
+        i < 100; ++i) {
+        map->
+        put(i
+        % 100, value).
+
+        get();
+    }
+}
+
+TEST_F(mutual_authentication_test, ma_required_client_and_server_authenticated
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-required.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server1-cert.pem");
+ctx.use_certificate_file("hazelcast/test/resources/client1-cert.pem", boost::asio::ssl::context::pem);
+ctx.use_private_key_file("hazelcast/test/resources/client1-key.pem", boost::asio::ssl::context::pem);
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+auto client = new_client(std::move(config)).get();
+auto map = client.get_map("test").get();
+ASSERT_NO_THROW(map
+->put(5, std::vector<byte>(1024)).
+
+get()
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_required_server_not_authenticated
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-required.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+config.
+
+get_connection_strategy_config()
+
+.
+
+get_retry_config()
+
+.
+set_cluster_connect_timeout(std::chrono::seconds(0)
+);
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server2-cert.pem");
+ctx.use_certificate_file("hazelcast/test/resources/client1-cert.pem", boost::asio::ssl::context::pem);
+ctx.use_private_key_file("hazelcast/test/resources/client1-key.pem", boost::asio::ssl::context::pem);
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+ASSERT_THROW (new_client(std::move(config))
+
+.
+
+get(), exception::illegal_state
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_required_client_and_server_not_authenticated
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-required.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+config.
+
+get_connection_strategy_config()
+
+.
+
+get_retry_config()
+
+.
+set_cluster_connect_timeout(std::chrono::seconds(0)
+);
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server2-cert.pem");
+ctx.use_certificate_file("hazelcast/test/resources/client2-cert.pem", boost::asio::ssl::context::pem);
+ctx.use_private_key_file("hazelcast/test/resources/client2-key.pem", boost::asio::ssl::context::pem);
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+ASSERT_THROW (new_client(std::move(config))
+
+.
+
+get(), exception::illegal_state
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_optional_client_and_server_authenticated
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-optional.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server1-cert.pem");
+ctx.use_certificate_file("hazelcast/test/resources/client1-cert.pem", boost::asio::ssl::context::pem);
+ctx.use_private_key_file("hazelcast/test/resources/client1-key.pem", boost::asio::ssl::context::pem);
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+auto client = new_client(std::move(config)).get();
+auto map = client.get_map("test").get();
+ASSERT_NO_THROW(map
+->put(5, std::vector<byte>(1024)).
+
+get()
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_optional_server_not_authenticated
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-optional.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+config.
+
+get_connection_strategy_config()
+
+.
+
+get_retry_config()
+
+.
+set_cluster_connect_timeout(std::chrono::seconds(0)
+);
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server2-cert.pem");
+ctx.use_certificate_file("hazelcast/test/resources/client1-cert.pem", boost::asio::ssl::context::pem);
+ctx.use_private_key_file("hazelcast/test/resources/client1-key.pem", boost::asio::ssl::context::pem);
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+ASSERT_THROW (new_client(std::move(config))
+
+.
+
+get(), exception::illegal_state
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_optional_client_not_authenticated
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-optional.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+config.
+
+get_connection_strategy_config()
+
+.
+
+get_retry_config()
+
+.
+set_cluster_connect_timeout(std::chrono::seconds(0)
+);
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server1-cert.pem");
+ctx.use_certificate_file("hazelcast/test/resources/client2-cert.pem", boost::asio::ssl::context::pem);
+ctx.use_private_key_file("hazelcast/test/resources/client2-key.pem", boost::asio::ssl::context::pem);
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+ASSERT_THROW (new_client(std::move(config))
+
+.
+
+get(), exception::illegal_state
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_optional_client_and_server_not_authenticated
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-optional.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+config.
+
+get_connection_strategy_config()
+
+.
+
+get_retry_config()
+
+.
+set_cluster_connect_timeout(std::chrono::seconds(0)
+);
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server2-cert.pem");
+ctx.use_certificate_file("hazelcast/test/resources/client2-cert.pem", boost::asio::ssl::context::pem);
+ctx.use_private_key_file("hazelcast/test/resources/client2-key.pem", boost::asio::ssl::context::pem);
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+ASSERT_THROW (new_client(std::move(config))
+
+.
+
+get(), exception::illegal_state
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_required_with_no_cert_file
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-required.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+config.
+
+get_connection_strategy_config()
+
+.
+
+get_retry_config()
+
+.
+set_cluster_connect_timeout(std::chrono::seconds(0)
+);
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server1-cert.pem");
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+ASSERT_THROW (new_client(std::move(config))
+
+.
+
+get(), exception::illegal_state
+
+);
+}
+
+TEST_F(mutual_authentication_test, ma_optional_with_no_cert_file
+) {
+HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(),
+                                  "hazelcast/test/resources/hazelcast-ma-optional.xml");
+HazelcastServer instance(sslFactory);
+client_config config;
+config.
+
+set_cluster_name (get_ssl_cluster_name());
+
+config.
+
+get_connection_strategy_config()
+
+.
+
+get_retry_config()
+
+.
+set_cluster_connect_timeout(std::chrono::seconds(0)
+);
+
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+
+ctx.load_verify_file("hazelcast/test/resources/server1-cert.pem");
+config.
+
+get_network_config()
+
+.
+
+get_ssl_config()
+
+.
+set_context(std::move(ctx)
+);
+
+auto client = new_client(std::move(config)).get();
+auto map = client.get_map("test").get();
+ASSERT_NO_THROW(map
+->put(5, std::vector<byte>(1024)).
+
+get()
+
+);
+}
+
+#endif // HZ_BUILD_WITH_SSL
+
+class ClientConnectionTest : public ClientTestSupport {
+protected:
+#ifdef HZ_BUILD_WITH_SSL
+
+    std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> get_ciphers(client_config config) {
+        hazelcast_client hz{hazelcast::new_client(std::move(config)).get()};
+        spi::ClientContext context(hz);
+        std::vector<std::shared_ptr<connection::Connection> > conns = context.get_connection_manager().get_active_connections();
+        EXPECT_GT(conns.size(), (size_t) 0);
+        std::shared_ptr<connection::Connection> aConnection = conns[0];
                     hazelcast::client::internal::socket::SSLSocket &socket = (hazelcast::client::internal::socket::SSLSocket &) aConnection->get_socket();
                     return socket.get_ciphers();
                 }
