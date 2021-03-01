@@ -166,7 +166,7 @@ on how to use conan package manager with your application. In summary,
 - You need to put the following lines to your `conanfile.txt`:
 ```
 [requires]
-hazelcast-cpp-client/4.0.0
+hazelcast-cpp-client/4.0.1
 
 [generators]
 cmake
@@ -199,23 +199,23 @@ Follow the instructions for your platform:
 * [Windows](#1123-windows-users)
 
 #### 1.1.2.3. Linux and MacOS Users
-Here is how you download and extract version 4.0.0 using the **curl** command:
+Here is how you download and extract version 4.0.1 using the **curl** command:
 ```sh
-curl -Lo hazelcast-cpp-client-4.0.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.0.0.tar.gz
-tar xzf hazelcast-cpp-client-4.0.0.tar.gz
+curl -Lo hazelcast-cpp-client-4.0.1.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.0.1.tar.gz
+tar xzf hazelcast-cpp-client-4.0.1.tar.gz
 ```
 
 Alternatively, you may clone the repository and checkout a specific version:
 ```sh
 git clone https://github.com/hazelcast/hazelcast-cpp-client.git
 cd hazelcast-cpp-client
-git checkout v4.0.0
+git checkout v4.0.1
 ```
 
 Once you are in the source directory of the Hazelcast C++ client library, 
 create and change into a new directory:
 ```sh
-cd hazelcast-cpp-client-4.0.0
+cd hazelcast-cpp-client-4.0.1
 mkdir build
 cd build
 ```
@@ -240,7 +240,7 @@ Download and extract the release archive from the
 Open a `cmd` window and change into the folder where you extracted the contents of the release archive. 
 Then create and change into a new directory:
 ```bat
-cd hazelcast-cpp-client-4.0.0
+cd hazelcast-cpp-client-4.0.1
 mkdir build
 cd build
 ```
