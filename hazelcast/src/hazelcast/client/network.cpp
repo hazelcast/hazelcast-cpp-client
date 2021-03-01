@@ -1199,6 +1199,8 @@ namespace hazelcast {
                             ssl_context_ = std::make_shared<boost::asio::ssl::context>(
                                     (boost::asio::ssl::context_base::method) sslConfig.get_protocol());
 
+                            ssl_context_->set_default_verify_paths();
+
                             const std::vector<std::string> &verifyFiles = sslConfig.get_verify_files();
                             bool success = true;
                             logger &lg = client_context_.get_logger();
