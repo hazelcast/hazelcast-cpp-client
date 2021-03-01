@@ -6,14 +6,15 @@
 * [1. Getting Started](#1-getting-started)
   * [1.1. Installing](#11-installing)
     * [1.1.1. Conan Users](#111-conan-users)
-    * [1.1.2. Install From Source Code Using CMake](#112-install-from-source-code-using-cmake)
-      * [1.1.2.1. Requirements](#1121-requirements)
-      * [1.1.2.2. Downloading Source Code](#1122-downloading-source-code)
-      * [1.1.2.3. Linux and MacOS Users](#1123-linux-and-macos-users)
-      * [1.1.2.4. Windows Users](#1124-windows-users)
-      * [1.1.2.5. Advanced Installation](#1125-advanced-installation)
-        * [1.1.2.5.1. Custom Install Location](#11251-custom-install-location)
-        * [1.1.2.5.2. CMake Configuration](#11252-cmake-configuration)
+    * [1.1.2. Vcpkg Users](#112-vcpkg-users)
+    * [1.1.3. Install From Source Code Using CMake](#113-install-from-source-code-using-cmake)
+      * [1.1.3.1. Requirements](#1131-requirements)
+      * [1.1.3.2. Downloading Source Code](#1132-downloading-source-code)
+      * [1.1.3.3. Linux and MacOS Users](#1133-linux-and-macos-users)
+      * [1.1.3.4. Windows Users](#1134-windows-users)
+      * [1.1.3.5. Advanced Installation](#1135-advanced-installation)
+        * [1.1.3.5.1. Custom Install Location](#11351-custom-install-location)
+        * [1.1.3.5.2. CMake Configuration](#11352-cmake-configuration)
   * [1.2. Starting Hazelcast IMDG Cluster](#12-starting-hazelcast-imdg-cluster)
     * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
       * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
@@ -179,15 +180,44 @@ $ conan install ..
 This generates the `conanbuildinfo.cmake` file to be included in your CMakelists.txt. Please follow the instructions at
 the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
 
-### 1.1.2. Install From Source Code Using CMake
-#### 1.1.2.1. Requirements
+### 1.1.2. Vcpkg Users
+Hazelcast C++ client package is available for [Vckg](https://github.com/microsoft/vcpkg) users. The port name is `hazelcast-cpp-client`.
+
+Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started)
+on how to use Vcpkg package manager with your application. In summary,
+
+```commandline
+> git clone https://github.com/microsoft/vcpkg
+> .\vcpkg\bootstrap-vcpkg.bat
+> .\vcpkg\vcpkg install hazelcast-cpp-client
+``` 
+The above code snippet will install `hazelcast-cpp-client` with its `boost` dependencies.
+
+After the installation, the library is available for usage. For example, if you are using CMake for your builds, 
+you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
+```commandline
+> cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+> cmake --build [build directory]
+```
+
+You can find more details on using a Vcpkg installed package from different IDEs ot tools in your projects from the 
+[Vcpkg Official Getting Started](https://github.com/microsoft/vcpkg#getting-started) documentation.
+
+If you need to use `openssl` feature, then you need to install using the following command:
+```commandline
+> .\vcpkg\vcpkg install hazelcast-cpp-client[openssl]
+```
+The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
+
+### 1.1.3. Install From Source Code Using CMake
+#### 1.1.3.1. Requirements
 1. Linux, macOS or Windows
 2. A compiler that supports C++11
 3. [CMake](https://cmake.org) 3.10 or above
 4. [Boost](https://www.boost.org) 1.71 or above
 5. [OpenSSL](https://www.openssl.org) (optional)
 
-#### 1.1.2.2. Downloading Source Code
+#### 1.1.3.2. Downloading Source Code
 Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page to 
 download the source code for the latest Hazelcast C++ client.
 
@@ -195,10 +225,10 @@ The releases page has both `tar.gz` and `zip` archives available.
 Choose the one which suits your system the best.
 
 Follow the instructions for your platform:
-* [Linux and maxOS](#1122-linux-and-macos-users)
-* [Windows](#1123-windows-users)
+* [Linux and maxOS](#1132-linux-and-macos-users)
+* [Windows](#1133-windows-users)
 
-#### 1.1.2.3. Linux and MacOS Users
+#### 1.1.3.3. Linux and MacOS Users
 Here is how you download and extract version 4.0.1 using the **curl** command:
 ```sh
 curl -Lo hazelcast-cpp-client-4.0.1.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.0.1.tar.gz
@@ -233,7 +263,7 @@ sudo cmake --build . --target install
 ```
 See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
-#### 1.1.2.4. Windows Users
+#### 1.1.3.4. Windows Users
 Download and extract the release archive from the 
 [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page.
 
@@ -262,16 +292,16 @@ Make sure you pass the same `--config` option to both commands.
 The install command may require administrator privileges depending on your install prefix. 
 See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
-#### 1.1.2.5. Advanced Installation
+#### 1.1.3.5. Advanced Installation
 
-##### 1.1.2.5.1. Custom Install Location
+##### 1.1.3.5.1. Custom Install Location
 Pass the argument `-DCMAKE_INSTALL_PREFIX=/path/to/install` the first time you run `cmake` to configure 
 the installation directory:
 ```sh
 cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
 ```
 
-##### 1.1.2.5.2. CMake Configuration
+##### 1.1.3.5.2. CMake Configuration
 You can provide additional configuration options using the `-DVARIABLE=VALUE` syntax on the command line.
 Here are all the options that are supported:
 * `WITH_OPENSSL` : Set to `ON` to build the library with SSL support.
