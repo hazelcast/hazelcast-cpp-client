@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
 
     name: >-
-      Ubuntu-i386
+      Ubuntu-x86_64
       (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
