@@ -86,9 +86,13 @@ namespace hazelcast {
         }
 
         namespace config {
-            ssl_config::ssl_config() : enabled_(false), ssl_protocol_(tlsv12) {
-            }
+            ssl_config::ssl_config()
+#ifdef HZ_BUILD_WITH_SSL
+            : enabled_(false), ssl_protocol_(tlsv12)
+#endif
+            {}
 
+#ifdef HZ_BUILD_WITH_SSL
             ssl_config &ssl_config::set_context(boost::asio::ssl::context ctx) {
                 util::Preconditions::check_ssl("ssl_config::set_context");
                 if (enabled_) {
@@ -147,6 +151,7 @@ namespace hazelcast {
                 this->cipher_list_ = ciphers;
                 return *this;
             }
+#endif
 
             constexpr int64_t client_flake_id_generator_config::DEFAULT_PREFETCH_VALIDITY_MILLIS;
 

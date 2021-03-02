@@ -722,6 +722,7 @@ namespace hazelcast {
             hazelcast::client::client_config ClientTestSupportBase::get_config(bool ssl_enabled, bool smart) {
                 client_config clientConfig;
                 clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
+#ifdef HZ_BUILD_WITH_SSL
                 if (ssl_enabled) {
                     clientConfig.set_cluster_name(get_ssl_cluster_name());
                     boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
@@ -730,6 +731,7 @@ namespace hazelcast {
 
                     clientConfig.get_network_config().get_ssl_config().set_context(std::move(ctx));
                 }
+#endif
                 clientConfig.get_network_config().set_smart_routing(smart);
                 return clientConfig;
             }
@@ -838,7 +840,7 @@ namespace hazelcast {
                 static constexpr const char *server1_ssl_xml = "hazelcast/test/resources/hazelcast-ssl-server1.xml";
                 static constexpr const char *default_ca_xml = "hazelcast/test/resources/hazelcast-default-ca.xml";
 
-                virtual client_config new_ssl_client_config() = 0;
+                virtual client_config new_ssl_client_config(bool set_different_protocol = false) = 0;
 
                 static client_config new_client_config() {
                     client_config config;
@@ -884,9 +886,7 @@ namespace hazelcast {
                 void test_ssl_enabled_with_protocol_mismatch() {
                     HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
                     HazelcastServer instance(f);
-                    auto config = new_client_config();
-                    boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
-                    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+                    auto config = new_ssl_client_config(true);
                     ASSERT_THROW(new_client(std::move(config)).get(), exception::illegal_state);
                 }
 
@@ -894,10 +894,15 @@ namespace hazelcast {
 
             class ssl_deprecated_api_test : public ssl_test_base {
             protected:
-                client_config new_ssl_client_config() override {
+                client_config new_ssl_client_config(bool set_different_protocol) override {
                     auto config = new_client_config();
-                    config.get_network_config().get_ssl_config().set_enabled(true).set_protocol(
-                            config::ssl_protocol::tlsv12);
+                    config::ssl_config &sslConfig = config.get_network_config().get_ssl_config();
+                    sslConfig.set_enabled(true);
+                    if (set_different_protocol) {
+                        sslConfig.set_protocol(config::ssl_protocol::sslv23);
+                    } else {
+                        sslConfig.set_protocol(config::ssl_protocol::tlsv12);
+                    }
                     return config;
                 }
             };
@@ -943,9 +948,14 @@ namespace hazelcast {
 
             class ssl_test : public ssl_test_base {
             protected:
-                client_config new_ssl_client_config() override {
+                client_config new_ssl_client_config(bool set_different_protocol) override {
                     auto config = new_client_config();
-                    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                    boost::asio::ssl::context::method method = set_different_protocol
+                                                              ? boost::asio::ssl::context::method::sslv23
+                                                              : boost::asio::ssl::context::method::tlsv12_client;
+                    boost::asio::ssl::context ctx(method);
+                    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer |
+                                        boost::asio::ssl::context::verify_fail_if_no_peer_cert);
                     ctx.set_default_verify_paths();
                     config.get_network_config().get_ssl_config().set_context(std::move(ctx));
                     return config;
@@ -1220,11 +1230,12 @@ namespace hazelcast {
                 }
                 
                 std::unique_ptr<HazelcastServer> start_server(client_config &client_config) {
+#ifdef HZ_BUILD_WITH_SSL
                     if (client_config.get_network_config().get_ssl_config().is_enabled()) {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(ssl_factory_));
-                    } else {
-                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                     }
+#endif
+                    return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                 }
 
             private:

@@ -1199,6 +1199,7 @@ namespace hazelcast {
                             ssl_context_ = std::make_shared<boost::asio::ssl::context>(
                                     (boost::asio::ssl::context_base::method) sslConfig.get_protocol());
 
+                            ssl_context_->set_verify_mode(boost::asio::ssl::verify_peer | boost::asio::ssl::verify_fail_if_no_peer_cert);
                             ssl_context_->set_default_verify_paths();
 
                             const std::vector<std::string> &verifyFiles = sslConfig.get_verify_files();
@@ -1293,8 +1294,6 @@ namespace hazelcast {
                 }
 
                 void SSLSocket::post_connect() {
-                    socket_.set_verify_mode(
-                            boost::asio::ssl::verify_peer | boost::asio::ssl::verify_fail_if_no_peer_cert);
                     socket_.handshake(boost::asio::ssl::stream_base::client);
                 }
 

@@ -18,7 +18,9 @@
 #include <string>
 #include <vector>
 
+#ifdef HZ_BUILD_WITH_SSL
 #include <boost/asio/ssl/context.hpp>
+#endif
 
 #include "hazelcast/util/export.h"
 
@@ -31,6 +33,7 @@ namespace hazelcast {
     namespace client {
         namespace internal { namespace socket { class SocketFactory; }}
         namespace config {
+#ifdef HZ_BUILD_WITH_SSL
             /** @deprecated Use ssl_config::set_context method instead. */
             enum HAZELCAST_API ssl_protocol {
                 /// Generic SSL version 2.
@@ -51,14 +54,15 @@ namespace hazelcast {
                 /// Generic TLS version 1.2.
                 tlsv12 = 15, // boost::asio::ssl::context_base::tlsv12
             };
-
+#endif
             /**
-             * Contains configuration parameters for client network related behaviour
+             * Contains configuration parameters for ssl related behaviour
              */
             class HAZELCAST_API ssl_config {
             public:
                 ssl_config();
 
+#ifdef HZ_BUILD_WITH_SSL
                 /**
                  *
                  * @param context The ssl context to be used.
@@ -142,8 +146,8 @@ namespace hazelcast {
                 std::vector<std::string> client_verify_files_;
                 std::string cipher_list_;
                 std::shared_ptr<boost::asio::ssl::context> ssl_context_;
-
                 void check_context_enabled_already() const;
+#endif
             };
         }
     }
