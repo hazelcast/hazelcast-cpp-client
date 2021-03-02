@@ -983,6 +983,15 @@ namespace hazelcast {
                 test_ssl_enabled_with_protocol_mismatch();
             }
 
+            TEST_F(ssl_test, connect_without_any_certificate_if_no_verify_none) {
+                HazelcastServerFactory f(g_srvFactory->get_server_address(), default_ca_xml);
+                HazelcastServer instance(f);
+                auto config = new_client_config();
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv12);
+                config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+                start_and_verify_client(std::move(config));
+            }
+
             class mutual_authentication_test : public ssl_test {
             protected:
                 static HazelcastServerFactory get_server_factory(bool required) {
