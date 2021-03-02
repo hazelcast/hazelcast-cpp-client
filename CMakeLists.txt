@@ -37,7 +37,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(GenerateExportHeader)
-include(utils)
+include(./cmake/utils.cmake)
 
 # get and set Git commit date and id
 get_commit_date_and_id(GIT_COMMIT_DATE GIT_COMMIT_ID)
