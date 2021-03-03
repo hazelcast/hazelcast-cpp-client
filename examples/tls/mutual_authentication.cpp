@@ -26,13 +26,15 @@ int main() {
     boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
     ctx.set_verify_mode(boost::asio::ssl::verify_peer);
     ctx.set_default_verify_paths();
+
+    // This config is to validate the server certificate if server does not have a CA signed certificate
     ctx.load_verify_file("/path/to/my/server/public/certificate");
 
-    config.get_network_config().get_ssl_config().
-            set_context(std::move(ctx)).   // mandatory to enable ssl
-            set_cipher_list("HIGH");     // optional setting (values for string are described at
-                                                // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html and
-                                                // https://www.openssl.org/docs/man1.1.1/man1/ciphers.html)
+    // The following two lines configure the client to use the client certificate to introduce itself to the server
+    ctx.use_certificate_file("/path/to/my/client/public/certificate", boost::asio::ssl::context::pem);
+    ctx.use_private_key_file("/path/to/my/client/private/certificate", boost::asio::ssl::context::pem);
+
+    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
     
     auto hz = hazelcast::new_client(std::move(config)).get();
 

@@ -57,7 +57,10 @@
 * [6. Securing Client Connection](#6-securing-client-connection)
   * [6.1. TLS/SSL](#61-tls/ssl)
     * [6.1.1. TLS/SSL for Hazelcast Members](#611-tls/ssl-for-hazelcast-members)
-    * [6.1.2. TLS/SSL for Hazelcast C++ Clients](#612-tls/ssl-for-hazelcast-c++-clients)
+    * [6.1.2. TLS/SSL for Hazelcast C++ Client](#612-tls/ssl-for-hazelcast-c++-client)
+      * [6.1.2.1. Enabling Validation Of Server Certificate](#6121-enabling-validation-of-server-certificate)
+      * [6.1.2.2. Mutual Authentication (Two Way Authentication)](#6122-mutual-authentication-two-way-handshake)
+      * [6.1.2.3. Constraining The Used Cipher List](#6123-constraining-the-used-cipher-list)
 * [7. Using C++ Client with Hazelcast IMDG](#7-using-c++-client-with-hazelcast-imdg)
   * [7.1. C++ Client API Overview](#71-c++-client-api-overview)
   * [7.2. C++ Client Operation Modes](#72-c++-client-operation-modes)
@@ -175,7 +178,7 @@ cmake
 $ mkdir build && cd build
 $ conan install ..
 ```
-This generates the `conanbuildinfo.cmake` file to be included in your CMakelists.txt. Please follow the instructions at the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
+This generates the `conanbuildinfo.cmake` file to be included in your CMakeLists.txt. Please follow the instructions at the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
 
 ### 1.1.2. Vcpkg Users
 Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The port name is `hazelcast-cpp-client`.
@@ -489,7 +492,7 @@ You can configure Hazelcast C++ Client programatically.
 
 You can start the client with no custom configuration like this:
 
-```C++
+```c++
     auto hz = hazelcast::new_client().get(); // Connects to the cluster
 ```
 
@@ -497,7 +500,7 @@ This section describes some network configuration settings to cover common use c
 
 An easy way to configure your Hazelcast C++ Client is to create a `client_config` object and set the appropriate options. Then you need to pass this object to the client when starting it, as shown below.
 
-```C++
+```c++
     hazelcast::client::client_config config;
     config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
     config.get_network_config().add_address(address("192.168.1.10", 5701));
@@ -510,7 +513,7 @@ If you run the Hazelcast IMDG members in a different server than the client, you
 
 You only need to provide the name of the cluster if it is explicitly configured on the server side (otherwise the default value of `dev` is used).
 
-```C++
+```c++
 hazelcast::client::client_config config;
 config.set_cluster_name("my-cluster"); // the server is configured to use the `my_cluster` as the cluster name hence we need to match it to be able to connect to the server.
 ```
@@ -519,7 +522,7 @@ config.set_cluster_name("my-cluster"); // the server is configured to use the `m
 
 You need to provide the IP address and port of at least one member in your cluster so the client can find it.
 
-```C++
+```c++
 hazelcast::client::client_config config;
 config.get_network_config().add_address(hazelcast::client::address("your server ip", 5701 /* your server port*/));
 ```
@@ -535,19 +538,19 @@ See the following for an example client system property configuration:
 
 **Programmatically:**
 
-```C++
+```c++
 config.set_property(hazelcast::client::client_properties::INVOCATION_TIMEOUT_SECONDS, "2") // Sets invocation timeout as 2 seconds
 ```
 
 or 
 
-```C++
+```c++
 config.set_property("hazelcast.client.invocation.timeout.seconds", "2") // Sets invocation timeout as 2 seconds
 ```
 
 **By using an environment variable on Linux:** 
 
-```C++
+```c++
 export hazelcast.client.invocation.timeout.seconds=2
 ```
 
@@ -561,7 +564,7 @@ Now that we have a working cluster and we know how to configure both our cluster
 
 The following example first creates a programmatic configuration object. Then, it starts a client.
 
-```C++
+```c++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
     auto hz = hazelcast::new_client().get(); // Connects to the cluster
@@ -593,7 +596,7 @@ Let's manipulate a distributed map on a cluster using the client.
 
 Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
 
-```C++
+```c++
 g++ IT.cpp -o IT -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 Then, you can run the application using the following command:
@@ -604,7 +607,7 @@ Then, you can run the application using the following command:
 
 **main.cpp**
 
-```C++
+```c++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
     auto hz = hazelcast::new_client().get(); // Connects to the cluster
@@ -648,7 +651,7 @@ Now create a `Sales.cpp` file, compile and run it as shown below.
 
 **Compile:**
 
-```C++
+```c++
 g++ Sales.cpp -o Sales -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
 ```
 **Run**
@@ -661,7 +664,7 @@ Then, you can run the application using the following command:
 
 **Sales.cpp**
 
-```C++
+```c++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
 auto hz = hazelcast::new_client().get(); // Connects to the cluster
@@ -766,7 +769,7 @@ You can configure Hazelcast C++ client programmatically (API).
 
 For programmatic configuration of the Hazelcast C++ client, just instantiate a `client_config` object and configure the desired aspects. An example is shown below.
 
-```C++
+```c++
 hazelcast::client::client_config config;
 config.get_network_config().add_address({ "your server ip", 5701 /* your server port*/});
 auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster
@@ -820,7 +823,7 @@ You can also configure a global serializer in case non-of the above serializatio
 
 For a faster serialization of objects, Hazelcast recommends to implement the `identified_data_serializer` interface. The following is an example of a `hz_serializer` implementing this interface:
 
-```C++
+```c++
 struct Person {
     std::string name;
     bool male;
@@ -873,7 +876,7 @@ Also note that portable serialization is totally language independent and is use
 
 A sample portable_serializer implementation of a `Person` class looks like the following:
 
-```C++
+```c++
 struct Person {
     std::string name;
     bool male;
@@ -919,7 +922,7 @@ Hazelcast lets you plug a custom serializer to be used for serialization of obje
 
 A sample custom_serializer implementation of a `Person` class looks like the following:
 
-```C++
+```c++
 struct Person {
     std::string name;
     bool male;
@@ -958,7 +961,7 @@ You can use the JSON formatted strings as objects in Hazelcast cluster. Creating
 
 In order to use JSON serialization, you should use the `hazelcast_json_value` object for the key or value. Here is an example imap usage:
 
-```C++
+```c++
 auto hz = hazelcast::new_client().get();
 
 auto map = hz.get_map("map").get();
@@ -973,7 +976,7 @@ You can construct a `hazelcast_json_value` using one of the constructors. All co
 
 You can query JSON objects in the cluster using the `predicate`s of your choice. An example JSON query for querying the values whose age is less than 6 is shown below:
 
-```C++
+```c++
 // Get the objects whose age is less than 6
 auto result = map->values<hazelcast::client::hazelcast_json_value>(
 hazelcast::client::query::greater_less_predicate(hz, "age", 6, false, true)).get();
@@ -992,7 +995,7 @@ By default, global serializer is used if there are no specialization `hz_seriali
 
 A sample global serializer that integrates with a third party serializer is shown below.
 
-```C++
+```c++
 class MyGlobalSerializer : public hazelcast::client::serialization::global_serializer {
 public:
     void write(const boost::any &obj, hazelcast::client::serialization::object_data_output &out) override {
@@ -1012,7 +1015,7 @@ As you see fromn the sample, the global serializer class should implement the `h
 
 You should register the global serializer in the configuration.
 
-```C++
+```c++
 hazelcast::client::client_config config;
 config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
 auto hz = hazelcast::new_client(std::move(config)).get();
@@ -1026,7 +1029,7 @@ All network related configuration of Hazelcast C++ client is performed programma
 
 Here is an example of configuring the network for C++ Client programmatically.
 
-```C++
+```c++
 client_config clientConfig;
 clientConfig.get_network_config().add_addresses({{"10.1.1.21", 5701}, {"10.1.1.22", 5703}});
 clientConfig.get_network_config().set_smart_routing(true);
@@ -1041,7 +1044,7 @@ Address list is the initial list of cluster addresses which the client will conn
 list to find an alive member. Although it may be enough to give only one address of a member in the cluster
 (since all members communicate with each other), it is recommended that you give the addresses for all the members.
 
-```C++
+```c++
 client_config clientConfig;
 clientConfig.get_network_config().add_address(address("10.1.1.21", 5701), address("10.1.1.22", 5703));
 ```
@@ -1055,7 +1058,7 @@ for the description of smart and unisocket modes.
  
 The following is an example configuration.
 
-```C++
+```c++
 client_config clientConfig;
 clientConfig.get_network_config().set_smart_routing(true);
 ```
@@ -1066,7 +1069,7 @@ Its default value is `true` (smart client mode).
 
 It enables/disables redo-able operations. While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redo_operation` to `true`.
 
-```C++
+```c++
 client_config clientConfig;
 clientConfig.set_redo_operation(true);
 ```
@@ -1078,7 +1081,7 @@ Cluster connection timeout is the timeout value for which the client tries to co
  
 The following example shows how you can set the cluster connection timeout to 30 seconds.
 
-```C++
+```c++
 client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(std::chrono::seconds(30));
 ```
 
@@ -1089,7 +1092,7 @@ The following is an example configuration.
 
 Below is an example configuration. It configures a total timeout of 30 seconds to connect to a cluster, by initial backoff time being 100 milliseconds and doubling the time before every try with a jitter of 0.8  up to a maximum of 3 seconds backoff between each try..
 
-```C++
+```c++
 client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
         std::chrono::seconds(30)).set_multiplier(2.0).set_jitter(0.8).set_initial_backoff_duration(
         std::chrono::seconds(100)).set_max_backoff_duration(std::chrono::seconds(3));
@@ -1116,7 +1119,7 @@ The C++ client can discover the existing Hazelcast servers in the Amazon AWS env
  
 The following is an example configuration:
 
-```C++
+```c++
 clientConfig.get_network_config().get_aws_config().set_enabled(true).
         set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
         set_tag_key("aws-test-tag").set_tagValue("aws-tag-value-1").set_security_group_name("MySecureGroup").setRegion("us-east-1");
@@ -1139,7 +1142,7 @@ If you want to enable authentication, then the client can be configured in one o
 
 The following is an example configuration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
 
-```C++
+```c++
 hazelcast_client hz(client_config().set_credentials(
 std::make_shared<security::username_password_credentials>("test-user", "test-pass")));
 ```
@@ -1161,7 +1164,7 @@ Note that the server needs to be configured to use the same username and passwor
 
 The following is an example configuration where we set the secret token bytes to be used while trying to connect to the cluster:
 
-```C++
+```c++
 std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
 
 hazelcast_client hz(client_config().set_credentials(
@@ -1187,7 +1190,7 @@ When an operation with sync backup is sent by a client to the Hazelcast member(s
 
 To disable backup acknowledgement, you should use the `backup_acks_enabled` configuration option.
 
-```C++
+```c++
 // Disable the default backup ack feature
 hazelcast_client hz(client_config().backup_acks_enabled(false));
 ```
@@ -1202,24 +1205,26 @@ You can also fine-tune this feature using `client_config::set_protperty` API as 
 
 # 6. Securing Client Connection
 
-This chapter describes the security features of Hazelcast C++ client. These include using TLS/SSL for connections between members and between clients and members. These security features require **Hazelcast IMDG Enterprise** edition.
+This chapter describes the security features of Hazelcast C++ client. These include using TLS/SSL for connections between members and between clients and members. These security features require **Hazelcast IMDG Enterprise** server cluster.
 
 ## 6.1. TLS/SSL
 
-One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication across your cluster with key stores and trust stores.
+One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication between the client and the server.
 
-* A Java `keyStore` is a file that includes a private key and a public certificate.
-* A Java `trustStore` is a file that includes a list of certificates trusted by your application which is named as  "certificate authority".
-
-You should set `keyStore` and `trustStore` before starting the members. See the next section on setting `keyStore` and `trustStore` on the server side.
-
-#### 6.1.1. TLS/SSL for Hazelcast Members
+### 6.1.1. TLS/SSL for Hazelcast Members
 
 Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members) in the Hazelcast IMDG Reference Manual.
 
-#### 6.1.2. TLS/SSL for Hazelcast C++ Clients
+### 6.1.2. TLS/SSL for Hazelcast C++ Client
 
-To use TLS/SSL with your Hazelcast C++ client, you should perform the following:
+The Hazelcast C++ client uses [Boost Asio](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio.html) library for networking and secure communication. 
+
+To use TLS/SSL with your Hazelcast C++ client, you should build the library with OpenSSL feature turned on. By default, this feature ios not turned on. Here are different ways to install the library with SSL support:
+
+* CMake Users: Provide flag `-DWITH_OPENSSL` flag when configuring the cmake. Please note that the CMake `find_package` should be able to locate the OpenSSL installation, otherwise the cmake config will fail. The rest is as usual [installation with cmake](#131-cmake-users).
+* Conan Users: Use option `with_openssl` while installing the conan project. An example command you can use in the build folder of your project with conan: `conan install -o hazelcast-cpp-client:with_openssl=True .. --build=hazelcast-cpp-client`. This command will install the `hazelcast-cpp-client` with the OpenSSL support.
+
+Once the library is installed properly, you can enable the ssl feature in the client config.  
 
 * Provide the compile flag **`-DHZ_BUILD_WITH_SSL`** when compiling, since the TLS feature depends on OpenSSL library.
 * Install the OpenSSL library to your development environment.
@@ -1227,89 +1232,89 @@ To use TLS/SSL with your Hazelcast C++ client, you should perform the following:
 * Specify the correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory.
 * If needed, set the cipher suite to be used via the SSL configuration.
 
-You can set the protocol type. If not set, the configuration uses `tlsv12` (TLSv1.2) as the default protocol type and version..
+You can set the protocol type. If not set, the configuration uses `tlsv12` (TLSv1.2) as the default protocol type and version.
 
-The following is an example configuration.
+There may be different ways to configure ssl communication at the client side. We utilize the `boost::asio::ssl::context` for various configuration possibilities. You can set the verify mode rto ignore or verify the server certificate, you can set the used ssl protocol, you can add verify callbacks, and such. The details can be found at the [Boost asio ssl context documentation](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html).
 
-```C++
-config.get_network_config().get_ssl_config().set_enabled(true).add_verify_file(get_ca_file_path());
+Here is the most basic way to enable ssl at the client:
 
-//Cipher suite is set using a string which is defined by OpenSSL standard at this page: https://www.openssl.org/docs/man1.0.2/apps/ciphers.html An example usage:
-config.get_network_config().get_ssl_config().set_cipher_list("HIGH");
+```c++
+hazelcast::client::client_config config;
+boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+auto hz = hazelcast::new_client(std::move(config)).get();
 ```
 
-The detailed config API is below:
+Once, we set the ssl context, the client will start with ssl enabled and try to connect to the server using the provided context.
 
-```
-    /**
-     * Default protocol is tlsv12 and ssl is disabled by default
-     */
-    ssl_config ();
-    
-    /**
-     * Returns if this configuration is enabled.
-     *
-     * @return true if enabled, false otherwise
-     */
-    bool is_enabled() const;
-    
-    /**
-     * Enables and disables this configuration.
-     *
-     * @param enabled true to enable, false to disable
-     */
-    ssl_config  &set_enabled(bool enabled);
-    
-    /**
-     * Sets the ssl protocol to be used for this SSL socket.
-     *
-     * @param protocol One of the supported protocols
-     */
-    ssl_config  &set_protocol(ssl_protocol protocol);
-    
-    /**
-     * @return The configured SSL protocol
-     */
-    ssl_protocol get_protocol() const;
-    
-    /**
-     * @return The list of all configured certificate verify files for the client.
-     */
-    const std::vector<std::string> &get_verify_files() const;
-    
-    /**
-     * This API calls the OpenSSL SSL_CTX_load_verify_locations method underneath while starting the client
-     * with this configuration. The validity of the files are checked only when the client starts. Hence,
-     * this call will not do any error checking. Error checking is performed only when the certificates are
-     * actually loaded during client start.
-     *
-     * @param filename the name of a file containing certification authority certificates in PEM format.
-     */
-    ssl_config  &add_verify_file(const std::string &filename);
-    
-    /**
-     * @return Returns the use configured cipher list string.
-     */
-    const std::string &get_cipher_list() const;
-    
-    /**
-     * @param ciphers The list of ciphers to be used. During client start, if this API was set then the
-     * SSL_CTX_set_cipher_list (https://www.openssl.org/docs/man1.0.2/ssl/SSL_set_cipher_list.html) is
-     * called with the provided ciphers string. The values and the format of the ciphers are described here:
-     * https://www.openssl.org/docs/man1.0.2/apps/ciphers.html Some examples values for the string are:
-     * "HIGH", "MEDIUM", "LOW", etc.
-     *
-     * If non of the provided ciphers could be selected the client initialization will fail.
-     *
-     */
-    ssl_config  &set_cipher_list(const std::string &ciphers);
+#### 6.1.2.1. Enabling Validation Of Server Certificate
+If you want to enable the validation of server certificate at the client side and disable any connection without a valid certificate, you can use the [context::set_verify_mode](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context/set_verify_mode.html) API. Here is an example:
+
+```c++
+    hazelcast::client::client_config config;
+
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+    ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+    ctx.set_default_verify_paths();
+
+    config.get_network_config().get_ssl_config().set_context(std::move(ctx));    
+    auto hz = hazelcast::new_client(std::move(config)).get();
 ```
 
-You can set the protocol as one of the following values:
+The client will connect if the server has a certificate which is properly signed by wel known Certificate Authorities(CA). On Windows, you may need to set the well known CA Authorities file path since OpenSSL may not find the well known certifite authorities file. This can be solved by providing the [SSL_CERT_FILE](https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set_default_verify_paths.html) environment variable set to point a file path that has all the needed well known certificate authorities. For example, you can get such a file maintained by Mozilla at https://curl.se/docs/caextract.html.
+
+If the server is using a user generated certificate file which is not signed by the well known CA authorities, then you can use the public certificate of the server to configure the client to connect and verify the server. Here is an example configuration for this:
+
+```c++
+    hazelcast::client::client_config config;
+
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+    ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+    ctx.set_default_verify_paths();
+    ctx.load_verify_file("/path/to/my/server/public/certificate");
+
+    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 ```
-sslv2, sslv3, tlsv1, sslv23, tlsv11, tlsv12
+
+As you can see in this code snippet, we add the server public certificate using [context::load_verify_file](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context/load_verify_file.html) as a verify file so that the client can validate the server certificate as valid and connect to the server. There are also other ways to load verify files and use verify directories. You can find the details at [Boost Asio ssl context documentation](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html). 
+
+You can check `BasicTLSClient.cpp` example for a full featured example.
+
+#### 6.1.2.2. Mutual Authentication (Two Way Authentication) 
+[Mutual Authentication](https://en.wikipedia.org/wiki/Mutual_authentication) is the process where the client verifies the identity of the server via server's certificate (either self-signed or signed by a CA authority) and the server verifies the client identity cia the client provided certificate (either self-signed or signed by a CA authority). If the Hazelcast server is configured for [mutual authentication](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members) as **REQUIRED**, then we can use the [ssl::context::use_xxx](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html) methods to add the clients public and private certificates and use them during its authentication to the server. An example configuration is as follows:
+```c++
+    hazelcast::client::client_config config;
+
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+    ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+    ctx.set_default_verify_paths();
+    
+    // This config is to validate the server certificate if server does not have a CA signed certificate
+    ctx.load_verify_file("/path/to/my/server/public/certificate");
+    
+    // The following two lines configure the client to use the client certificate to introduce itself to the server
+    ctx.use_certificate_file("/path/to/my/client/public/certificate", boost::asio::ssl::context::pem);
+    ctx.use_private_key_file("/path/to/my/client/private/certificate", boost::asio::ssl::context::pem);
+
+    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+    auto hz = hazelcast::new_client(std::move(config)).get();
 ```
-The `ssl_config.set_enabled` method should be called explicitly to enable the SSL. The path of the certificate should be correctly provided. 
+
+With the above configuration, both the client and the server authenticate each other mutually. The client validates server certificate and the server validates the client with the client certificate.
+
+You can check `mutual_authentication.cpp` example for a full featured example.
+
+#### 6.1.2.3. Constraining The Used Cipher List
+In some cases, you may want to limit the cipher suites allowed for a client to while communicating the server. This can also be configured using the `ssl_config`. Here is an example configuration to enable cipher list which only allow "HIGH" ciphers.
+```c++
+    config.get_network_config().get_ssl_config().
+            set_cipher_list("HIGH");     // optional setting (values for string are described at
+                                                // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html and
+                                                // https://www.openssl.org/docs/man1.1.1/man1/ciphers.html
+```
+
+Cipher list string format and the details can be found at the official [OpenSSL Documentation](https://www.openssl.org/docs/man1.1.1/man1/ciphers.html).
 
 # 7. Using C++ Client with Hazelcast IMDG
 
@@ -1327,7 +1332,7 @@ The first step is the configuration. You can configure the C++ client programmat
 
 The following is an example on how to create a `client_config` object and configure it programmatically:
 
-```C++
+```c++
 client_config clientConfig;
 clientConfig.set_cluster_name("my test cluster");
 clientConfig.get_network_config().add_addresses({{"'10.90.0.1", 5701}, {"'10.90.0.2", 5702}});
@@ -1335,7 +1340,7 @@ clientConfig.get_network_config().add_addresses({{"'10.90.0.1", 5701}, {"'10.90.
 
 The second step is initializing the `hazelcast_client` to be connected to the cluster:
 
-```C++
+```c++
 auto client = new_client(std::move(clientConfig));
 // some operation
 ```
@@ -1344,7 +1349,7 @@ auto client = new_client(std::move(clientConfig));
 
 Let's create a map and populate it with some data, as shown below.
 
-```C++
+```c++
 // Get the Distributed Map from Cluster.
 auto map = client.get_map("my-distributed-map").get();
 //Standard put and get.
@@ -1357,7 +1362,7 @@ map->replace<std::string, std::string>("key", "value", "newvalue").get();
 
 As the final step, if you are done with your client, you can shut it down as shown below. This will release all the used resources and close connections to the cluster.
 
-```C++
+```c++
 // Shutdown this Hazelcast Client
 client.shutdown().get();
 ```
@@ -1380,7 +1385,7 @@ In the unisocket client mode, the client will only connect to one of the configu
 
 You can set the unisocket client mode in the `client_config` as shown below.
 
-```C++
+```c++
 clientConfig.get_network_config().set_smart_routing(false);
 ```
 
@@ -1473,7 +1478,7 @@ Hazelcast Map (`imap`) is a distributed map. Through the C++ client, you can per
 
 A Map usage example is shown below.
 
-```C++
+```c++
 // Get the Distributed Map from Cluster.
 auto map = hz.get_map("my-distributed-map").get();
 //Standard Put and Get.
@@ -1490,7 +1495,7 @@ Hazelcast `multi_map` is a distributed and specialized map where you can store m
 
 A multi_map usage example is shown below.
 
-```C++
+```c++
 // Get the Distributed multi_map from Cluster.
 auto multiMap = hz.get_multi_map("my-distributed-multimap").get();
 // Put values in the map against the same key
@@ -1511,7 +1516,7 @@ Hazelcast `replicated_map` is a distributed key-value data structure where the d
 
 A replicated_map usage example is shown below.
 
-```C++
+```c++
 auto replicatedMap = hz.get_replicated_map("myReplicatedMap").get();
 replicatedMap->put<int, std::string>(1, "Furkan").get();
 replicatedMap->put<int, std::string>(2, "Ahmet").get();
@@ -1524,7 +1529,7 @@ Hazelcast Queue (`iqueue`) is a distributed queue which enables all cluster memb
 
 A Queue usage example is shown below.
 
-```C++
+```c++
 // Get a Blocking Queue called "my-distributed-queue"
 auto queue = hz.get_queue("my-distributed-queue").get();
 // Offer a String into the Distributed Queue
@@ -1545,7 +1550,7 @@ Hazelcast Set (`iset`) is a distributed set which does not allow duplicate eleme
 
 A Set usage example is shown below.
 
-```C++
+```c++
 // Get the Distributed Set from Cluster.
 auto set = hz.get_set("my-distributed-set").get();
 // Add items to the set with duplicates
@@ -1567,7 +1572,7 @@ Hazelcast List (`ilist`) is a distributed list which allows duplicate elements a
 
 A List usage example is shown below.
 
-```C++
+```c++
 // Get the Distributed List from Cluster.
 auto list = hz.get_list("my-distributed-list").get();
 // Add elements to the list
@@ -1588,7 +1593,7 @@ Hazelcast `ringbuffer` is a replicated but not partitioned data structure that s
 
 A ringbuffer usage example is shown below.
 
-```C++
+```c++
 auto rb = hz.get_ring_buffer("rb").get();
 // add two items into ring buffer
 rb->add(100).get();
@@ -1607,7 +1612,7 @@ Hazelcast `reliable_topic` is a distributed topic implementation backed up by th
 
 A reliable_topic usage example is shown below.
 
-```C++
+```c++
 hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
   using namespace hazelcast::client::topic;
   
@@ -1677,7 +1682,7 @@ Hazelcast `pn_counter` (Positive-Negative Counter) is a CRDT positive-negative c
 
 A pn_counter usage example is shown below.
 
-```C++
+```c++
 auto hz = hazelcast::new_client().get();
 
 auto pnCounter = hz.get_pn_counter("pncounterexample").get();
@@ -1699,7 +1704,7 @@ Hazelcast `flake_id_generator` is used to generate cluster-wide unique identifie
 
 A flake_id_generator usage example is shown below.
 
-```C++
+```c++
 auto generator = hz.get_flake_id_generator("flakeIdGenerator").get();
 std::cout << "Id : " << generator->newId().get() << std::endl; // Id : <some unique number>
 ```
@@ -1720,7 +1725,7 @@ Hazelcast `atomic_long` is the distributed implementation of atomic 64-bit integ
 
 An Atomic Long usage example is shown below.
 
-```C++
+```c++
 // also present the future continuation capability. you can use sync version as well.
 // Get current value (returns a int64_t)
 auto future = atomic_counter->get().then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
@@ -1750,7 +1755,7 @@ Hazelcast `fenced_lock` is the distributed implementation of a linearizable lock
 
 A basic Lock usage example is shown below.
 
-```C++
+```c++
 // Get an fenced_lock named 'my-lock'
 auto lock = hz.get_cp_subsystem().get_lock("my-lock").get();
 
@@ -1774,7 +1779,7 @@ You can read more about the fencing token idea in Martin Kleppmann's "How to do 
 
 As an alternative approach, you can use the `try_lock()` method of fenced_lock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the lock before giving up.
 
-```C++
+```c++
 // Try to acquire the lock
 auto success = lock->try_lock().get();
 // Check for valid fencing token
@@ -1796,7 +1801,7 @@ counting_semaphore is a cluster-wide counting semaphore. Conceptually, it mainta
 
 A basic counting_semaphore usage example is shown below.
 
-```C++
+```c++
 // Get counting_semaphore named 'my-semaphore'
 auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore").get();
 // Try to initialize the semaphore
@@ -1817,7 +1822,7 @@ Beware of the increased risk of indefinite postponement when using the multiple-
 
 As an alternative, potentially safer approach to the multiple-permit acquire, you can use the `try_acquire()` method of counting_semaphore. It tries to acquire the permits in optimistic manner and immediately returns with a `boolean` operation result. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the permits before giving up.
 
-```C++
+```c++
 // Try to acquire 1 permit
 auto success = semaphore->try_acquire(1).get();
 // Check for valid fencing token
@@ -1842,7 +1847,7 @@ Hazelcast `latch` is the distributed implementation of a linearizable and distri
 
 A basic latch usage example is shown below.
 
-```C++
+```c++
 // Get a latch called 'my-latch'
 auto latch = hz.get_cp_subsystem().get_latch("my-latch'").get();
 
@@ -1875,7 +1880,7 @@ Hazelcast `atomic_reference` is the distributed implementation of a linearizable
 
 A basic atomic_reference usage example is shown below.
 
-```C++
+```c++
 // Get an atomic_reference named 'my-ref'
 auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref'").get();
 
@@ -1909,7 +1914,7 @@ Hazelcast C++ client provides transactional operations like beginning transactio
 
 You can create a `transaction_context` object using the C++ client to begin, commit and rollback a transaction. You can obtain transaction-aware instances of queues, maps, sets, lists and multimaps via the `transaction_context` object, work with them and commit or rollback in one shot. For details, see the [Transactions section](https://docs.hazelcast.org//docs/latest/manual/html-single/index.html#transactions) in the Hazelcast IMDG Reference Manual.
 
-```C++
+```c++
   // Create a Transaction object and begin the transaction
 auto context = client->new_transaction_context();
 context.begin_transaction().get();
@@ -1966,7 +1971,7 @@ You can use `cluster` (`hazelcast_client::hazelcast_client::get_cluster()`) obje
 
 The following example demonstrates both initial and regular membership listener registrations.
 
-```C++
+```c++
 membership_listener make_membership_listener() {
     return membership_listener().on_joined([](const hazelcast::client::membership_event &membership_event) {
       std::cout << "New member joined: "
@@ -2041,7 +2046,7 @@ The `lifecycle_listener` interface notifies for the following events:
 
 The following is an example of the `lifecycle_listener` that is added to the `client_config` object and its output.
 
-```C++
+```c++
     class ConnectedListener :
 public hazelcast::client::lifecycle_listener {
 public:
@@ -2107,7 +2112,7 @@ An entry-based event is fired after operations that affect a specific entry. For
 
 See the following example.
 
-```C++
+```c++
 int main() {
   auto hz = hazelcast::new_client().get();
   
@@ -2134,7 +2139,7 @@ A map-wide event is fired as a result of a map-wide operation (e.g.: `imap::clea
 
 See the example below.
 
-```C++
+```c++
 int main() {
   auto hz = hazelcast::new_client().get();
   
@@ -2179,7 +2184,7 @@ On the server side, when you implement the task as `java.util.concurrent.Callabl
 
 An example C++ task class implementation is shown below.
 
-```C++
+```c++
 struct MessagePrinter {
 std::string message;
 };
@@ -2266,7 +2271,7 @@ To execute a callable task:
 
 An example where `MessagePrinter` task is executed is shown below.
 
-```C++
+```c++
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
 // Get the Distributed Executor Service
@@ -2291,7 +2296,7 @@ The distributed executor service allows you to execute your code in the cluster.
 * `printOnSomewhere`: On the member Hazelcast picks with the `iexecutor_service::submit` method.
 * `printOnMembers`: On all or a subset of the cluster members with the `iexecutor_service::submit_to_members` method.
 
-```C++
+```c++
 void printOnTheMember(const std::string &input, const Member &member) {
 // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
 auto hz = hazelcast::new_client().get();
@@ -2303,7 +2308,7 @@ member firstMember = hz.get_cluster().get_members()[0];
 ex->execute_on_member<MessagePrinter>(MessagePrinter{ "message to very first member of the cluster" }, firstMember).get();
 ```
 
-```C++
+```c++
 void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
   // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
   auto hz = hazelcast::new_client().get();
@@ -2314,7 +2319,7 @@ void printOnTheMemberOwningTheKey(const std::string &input, const std::string &k
 }
 ```
 
-```C++
+```c++
 void printOnSomewhere(const std::string &input) {
   // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
   auto hz = hazelcast::new_client().get();
@@ -2325,7 +2330,7 @@ void printOnSomewhere(const std::string &input) {
 }
 ```
 
-```C++
+```c++
 void printOnMembers(const std::string input, const std::vector<Member> &members) {
   // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
   auto hz = hazelcast::new_client().get();
@@ -2371,7 +2376,7 @@ The `bool select(const Member &member)` method is called for every available mem
 
 In the simple example shown below, we select the cluster members based on the presence of an attribute.
 
-```C++
+```c++
     class MyMemberSelector :
 public member_selector {
 public:
@@ -2418,7 +2423,7 @@ In the C++ client, an `entry_processor` should be Hazelcast serializable, becaus
 
 The following is an example for `entry_processor` which is serialized by `identified_data_serializer`.
 
-```C++
+```c++
 struct IdentifiedEntryProcessor {
     std::string name;
 };
@@ -2528,7 +2533,7 @@ The code that runs on the entries is implemented in Java on the server side. The
 
 After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `imap` functions. See the following example.
 
-```C++
+```c++
 auto map = hz.get_map("my-distributed-map").get();
 map->execute_on_key<std::string, IdentifiedEntryProcessor>("key", IdentifiedEntryProcessor("my new name"));
 std::cout << "Value for 'key' is : '" << *map->get<std::string, std::string>("key").get() << "'" << std::endl; // value for 'key' is 'my new name'
@@ -2576,7 +2581,7 @@ Hazelcast offers the following ways for distributed query purposes:
 
 Assume that you have a `person` map containing the values of `person` objects, as coded below. 
 
-```C++
+```c++
 struct person {
     std::string name;
     bool male;
@@ -2627,7 +2632,7 @@ In this case before starting the server, you need to compile the `person` and re
 
 You can combine predicates by using the `and_predicate`, `or_predicate` and `not_predicate` operators, as shown in the below example.
 
-```C++
+```c++
 // and_predicate
 // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
 std::vector<int> inVals{4, 10, 19};
@@ -2660,7 +2665,7 @@ See examples/distributed-map/query folder for more examples.
 
 `sql_predicate` takes the regular SQL `where` clause. See the following example:
 
-```C++
+```c++
 // sql_predicate
 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
 auto sql = (boost::format("%1% BETWEEN 4 and 7") % query::query_constants::KEY_ATTRIBUTE_NAME).str();
@@ -2718,7 +2723,7 @@ ILIKE is similar to the LIKE predicate but in a case-insensitive manner.
 
 You can use the `query::query_constants::KEY_ATTRIBUTE_NAME` (`__key`) attribute to perform a predicated search for entry keys. See the following example:
 
-```C++
+```c++
 auto map = hz.get_map("personMap").get();
 map->put<std::string, int>("Mali", 28).get();
 map->put<std::string, int>("Ahmet", 30).get();
@@ -2732,7 +2737,7 @@ In this example, the code creates a list with the values whose keys start with t
 
 You can use `query::query_constants::THIS_ATTRIBUTE_NAME` (`this`) attribute to perform a predicated search for entry values. See the following example:
 
-```C++
+```c++
 auto map = hz.get_map("personMap").get();
 map->put<std::string, int>("Mali", 28).get();
 map->put<std::string, int>("Ahmet", 30).get();
@@ -2751,7 +2756,7 @@ you first need to create a `hazelcast_json_value` from the JSON string using the
 constructor. You can use ``hazelcast_json_value``s both as keys and values in the distributed data structures. Then, it is
 possible to query these objects using the Hazelcast query methods explained in this section.
 
-```C++
+```c++
 std::string person1 = "{ \"name\": \"John\", \"age\": 35 }";
 std::string person2 = "{ \"name\": \"Jane\", \"age\": 24 }";
 std::string person3 = "{ \"name\": \"Trey\", \"age\": 17 }";
@@ -2774,7 +2779,7 @@ can be represented by a `long`. Otherwise, ``number``s are treated as ``double``
 It is possible to query nested attributes and arrays in the JSON documents. The query syntax is the same
 as querying other Hazelcast objects using the ``predicate``s.
 
-```C++
+```c++
 /**
  * Sample JSON object
  *
@@ -2810,7 +2815,7 @@ whether such an entry is going to be returned or not from a query is not defined
 
 The C++ client provides paging for defined predicates. With its `paging_predicate` object, you can get a list of keys, values, or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
-```C++
+```c++
 auto map = hz.get_map("personMap").get();
 // paging_predicate with inner predicate (value < 10)
 auto predicate = intMap->new_paging_predicate<int, int>(5,
@@ -2842,7 +2847,7 @@ Partition Aware ensures that the related entries exist on the same member. If th
 
 Hazelcast has a standard way of finding out which member owns/manages each key object. The following operations are routed to the same member, since all of them are operating based on the same key `'key1'`.
 
-```C++
+```c++
 hazelcast::client::hazelcast_client hazelcastInstance;
 
 auto mapA = hazelcastInstance.get_map("mapA");
@@ -2859,7 +2864,7 @@ mapC.remove("key1");
 
 When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `orderKey` s `partition_aware`.
 
-```C++
+```c++
 struct OrderKey : public hazelcast::client::partition_aware<std::string> {
     OrderKey(const std::string &order_id_string) : order_id_string(order_id_string) {}
 
@@ -2900,7 +2905,7 @@ namespace hazelcast {
 
 Notice that `OrderKey` implements `partition_aware` interface and that `get_partition_key()` returns the `OrderKey::customer_id_string`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
 
-```C++
+```c++
 hazelcast::client::hazelcast_client hazelcastInstance;
 
 auto mapCustomers = hazelcastInstance.get_map("customers");
@@ -2943,7 +2948,7 @@ A Near Cache can have its own `in-memory-format` which is independent of the `in
 
 Hazelcast Map can be configured to work with near cache enabled. You can enable the Near Cache on a Hazelcast Map by adding its configuration for that map-> An example configuration for `myMap` is shown below.
 
-```C++
+```c++
 client_config config;
 const char *mapName = "EvictionPolicyMap";
 config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
@@ -2978,7 +2983,7 @@ Following are the descriptions of all configuration elements:
 
 #### 7.8.2.2. Near Cache Example for Map
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map-> According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
-```C++
+```c++
 config::near_cache_config nearCacheConfig(mapName, config::OBJECT);
 nearCacheConfig.set_invalidate_on_change(false);
 nearCacheConfig.get_eviction_config().set_eviction_policy(config::LRU)
@@ -3020,7 +3025,7 @@ then the maximum throughput is 2*(1/001) = 2000 operations/second. Therefore, to
 be made from a single thread. The pipelining is a convenience implementation to provide back pressure, i.e., controlling
 the number of inflight operations, and it provides a convenient way to wait for all the results.
 
-```C++
+```c++
 constexpr int depth = 10;
 auto pipelining = pipelining<std::string>::create(depth);
 for (int k = 0; k < 100; ++k) {
@@ -3064,7 +3069,7 @@ You can enable the client statistics before starting your clients. There are two
 
 You can enable client statistics and set a non-default period in seconds as follows:
 
-```C++
+```c++
 hazelcast::client::client_config config;
 config.set_property(hazelcast::client::client_properties::STATISTICS_ENABLED, "true");
 config.set_property(hazelcast::client::client_properties::STATISTICS_PERIOD_SECONDS, "4");
