@@ -36,7 +36,7 @@ timeout=${RC_START_TIMEOUT_IN_SECS}
 echo "Waiting for remote-controller to start..."
 
 while [ ${timeout} -gt 0 ]; do
-  netstat -an | grep "$RC_PORT"
+  netstat -an | grep "[^0-9]$RC_PORT[^0-9]" | grep LISTEN
   if [ $? -eq 0 ]; then
     break
   fi

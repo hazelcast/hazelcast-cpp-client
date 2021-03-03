@@ -94,7 +94,7 @@ namespace hazelcast {
             }
 
             ssl_config &ssl_config::set_enabled(bool is_enabled) {
-                util::Preconditions::check_ssl("get_aws_config");
+                util::Preconditions::check_ssl("ssl_config::set_enabled");
                 this->enabled_ = is_enabled;
                 return *this;
             }
