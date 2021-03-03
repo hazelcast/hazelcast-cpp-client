@@ -1156,8 +1156,6 @@ namespace hazelcast {
                 config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
                         std::chrono::seconds(2)).set_initial_backoff_duration(std::chrono::milliseconds(100));
                 boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
-                ctx.set_default_verify_paths();
-                ctx.load_verify_file(get_ca_file_path());
 
                 config.set_cluster_name(get_ssl_cluster_name()).get_network_config().add_address(
                         address("8.8.8.8", 5701)).get_ssl_config().set_context(std::move(ctx));
