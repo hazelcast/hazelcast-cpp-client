@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include <string>
+#include <memory>
+
+#include <hazelcast/client/hazelcast_client.h>
+
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 #include "IdentifiedSerializables.h"
-
-#include <hazelcast/client/hazelcast_client.h>
 
 namespace hazelcast {
     namespace client {
