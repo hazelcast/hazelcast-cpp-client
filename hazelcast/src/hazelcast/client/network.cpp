@@ -1191,42 +1191,49 @@ namespace hazelcast {
 
                 bool SocketFactory::start() {
 #ifdef HZ_BUILD_WITH_SSL
-                    const client::config::ssl_config &sslConfig = client_context_.get_client_config().get_network_config().get_ssl_config();
+                    auto &sslConfig = client_context_.get_client_config().get_network_config().get_ssl_config();
                     if (sslConfig.is_enabled()) {
-                        ssl_context_ = std::unique_ptr<boost::asio::ssl::context>(new boost::asio::ssl::context(
-                                (boost::asio::ssl::context_base::method) sslConfig.get_protocol()));
+                        if (sslConfig.ssl_context_) {
+                            ssl_context_ = sslConfig.ssl_context_;
+                        } else {
+                            ssl_context_ = std::make_shared<boost::asio::ssl::context>(
+                                    (boost::asio::ssl::context_base::method) sslConfig.get_protocol());
 
-                        const std::vector<std::string> &verifyFiles = sslConfig.get_verify_files();
-                        bool success = true;
-                        logger &lg = client_context_.get_logger();
-                        for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
-                             ++it) {
-                            boost::system::error_code ec;
-                            ssl_context_->load_verify_file(*it, ec);
-                            if (ec) {
-                                HZ_LOG(lg, warning, 
-                                    boost::str(boost::format("SocketFactory::start: Failed to load CA "
-                                                             "verify file at %1% %2%")
-                                                             % *it % ec.message())
-                                );
-                                success = false;
+                            ssl_context_->set_verify_mode(boost::asio::ssl::verify_peer);
+                            ssl_context_->set_default_verify_paths();
+
+                            const std::vector<std::string> &verifyFiles = sslConfig.get_verify_files();
+                            bool success = true;
+                            logger &lg = client_context_.get_logger();
+                            for (const auto &f : verifyFiles) {
+                                boost::system::error_code ec;
+                                ssl_context_->load_verify_file(f, ec);
+                                if (ec) {
+                                    HZ_LOG(lg, warning,
+                                           boost::str(boost::format("SocketFactory::start: Failed to load CA "
+                                                                    "verify file at %1% %2%")
+                                                      % f % ec.message())
+                                    );
+                                    success = false;
+                                }
                             }
-                        }
 
-                        if (!success) {
-                            ssl_context_.reset();
-                            HZ_LOG(lg, warning,
-                                "SocketFactory::start: Failed to load one or more "
-                                "configured CA verify files (PEM files). Please "
-                                "correct the files and retry."
-                            );
-                            return false;
+                            if (!success) {
+                                ssl_context_.reset();
+                                HZ_LOG(lg, warning,
+                                       "SocketFactory::start: Failed to load one or more "
+                                       "configured CA verify files (PEM files). Please "
+                                       "correct the files and retry."
+                                );
+                                return false;
+                            }
                         }
 
                         // set cipher list if the list is set
                         const std::string &cipherList = sslConfig.get_cipher_list();
                         if (!cipherList.empty()) {
                             if (!SSL_CTX_set_cipher_list(ssl_context_->native_handle(), cipherList.c_str())) {
+                                logger &lg = client_context_.get_logger();
                                 HZ_LOG(lg, warning, 
                                     std::string("SocketFactory::start: Could not load any "
                                                 "of the ciphers in the config provided "
@@ -1324,5 +1331,4 @@ namespace std {
         return std::abs(conn->get_connection_id());
     }
 }
-
 

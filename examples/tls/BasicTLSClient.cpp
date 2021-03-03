@@ -23,9 +23,13 @@ int main() {
     hazelcast::client::address serverAddress("127.0.0.1", 5701);
     config.get_network_config().add_address(serverAddress);
 
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+    ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+    ctx.set_default_verify_paths();
+    ctx.load_verify_file("/path/to/my/server/public/certificate");
+
     config.get_network_config().get_ssl_config().
-            set_enabled(true).          // Mandatory setting
-            add_verify_file("MyCAFile"). // Mandatory setting
+            set_context(std::move(ctx)).   // mandatory to enable ssl
             set_cipher_list("HIGH");     // optional setting (values for string are described at
                                        // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html)
     

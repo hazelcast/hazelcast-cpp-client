@@ -65,7 +65,21 @@ else
         exit 1
     fi
 fi
-CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
+if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar" ]; then
+echo "hazelcast-enterprise-tests.jar already exists, not downloading from maven."
+else
+    echo "Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar:tests"
+    mvn -q dependency:get -DrepoUrl=${ENTERPRISE_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar:tests -Ddest=hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar
+    if [ $? -ne 0 ]; then
+        echo "Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar:tests"
+        exit 1
+    fi
+fi
+CLASSPATH="\
+hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:\
+hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:\
+hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar:\
+hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
 echo "Starting Remote Controller ... enterprise ..."
 
 java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} -Dhazelcast.phone.home.enabled=false com.hazelcast.remotecontroller.Main --use-simple-server &
