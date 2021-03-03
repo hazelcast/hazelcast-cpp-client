@@ -954,8 +954,7 @@ namespace hazelcast {
                                                               ? boost::asio::ssl::context::method::sslv23
                                                               : boost::asio::ssl::context::method::tlsv12_client;
                     boost::asio::ssl::context ctx(method);
-                    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer |
-                                        boost::asio::ssl::context::verify_fail_if_no_peer_cert);
+                    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer);
                     ctx.set_default_verify_paths();
                     config.get_network_config().get_ssl_config().set_context(std::move(ctx));
                     return config;
@@ -1002,8 +1001,7 @@ namespace hazelcast {
 
                 client_config new_ssl_client_config(boost::asio::ssl::context ctx) {
                     auto config = new_client_config();
-                    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer |
-                                        boost::asio::ssl::context::verify_fail_if_no_peer_cert);
+                    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer);
                     ctx.set_default_verify_paths();
                     config.get_network_config().get_ssl_config().set_context(std::move(ctx));
                     return config;
