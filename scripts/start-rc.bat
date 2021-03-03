@@ -50,7 +50,17 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar" (
     )
 )
 
-set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar"
+if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar" (
+    echo "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar already exists, not downloading from maven."
+) else (
+    echo "Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests"
+    call mvn -q dependency:get -DrepoUrl=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar || (
+        echo "Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests"
+        exit /b 1
+    )
+)
+
+set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar"
 echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 
 echo "Starting hazelcast-remote-controller"

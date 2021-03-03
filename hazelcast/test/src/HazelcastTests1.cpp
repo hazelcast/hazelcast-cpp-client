@@ -726,10 +726,16 @@ namespace hazelcast {
             hazelcast::client::client_config ClientTestSupportBase::get_config(bool ssl_enabled, bool smart) {
                 client_config clientConfig;
                 clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
+#ifdef HZ_BUILD_WITH_SSL
                 if (ssl_enabled) {
                     clientConfig.set_cluster_name(get_ssl_cluster_name());
-                    clientConfig.get_network_config().get_ssl_config().set_enabled(true).add_verify_file(get_ca_file_path());
+                    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                    ctx.set_default_verify_paths();
+                    ctx.load_verify_file(get_ca_file_path());
+
+                    clientConfig.get_network_config().get_ssl_config().set_context(std::move(ctx));
                 }
+#endif
                 clientConfig.get_network_config().set_smart_routing(smart);
                 return clientConfig;
             }
@@ -828,13 +834,298 @@ namespace hazelcast {
     }
 }
 
-
-#ifdef HZ_BUILD_WITH_SSL
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace test {
+#ifdef HZ_BUILD_WITH_SSL
+            class ssl_test_base : public ClientTestSupport {
+            protected:
+                static constexpr const char *server1_public_key = "hazelcast/test/resources/server1-cert.pem";
+                static constexpr const char *server1_ssl_xml = "hazelcast/test/resources/hazelcast-ssl-server1.xml";
+                static constexpr const char *default_ca_xml = "hazelcast/test/resources/hazelcast-default-ca.xml";
+
+                virtual client_config new_ssl_client_config(bool set_different_protocol = false) = 0;
+
+                static client_config new_client_config() {
+                    client_config config;
+                    config.set_cluster_name(get_ssl_cluster_name());
+                    config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(std::chrono::seconds(0));
+                    return config;
+                }
+
+                void start_and_verify_client(client_config config = new_client_config()) {
+                    auto client = new_client(std::move(config)).get();
+                    auto map = client.get_map("test").get();
+                    ASSERT_NO_THROW(map->put(5, std::vector<byte>(1024)).get());
+                }
+
+                void test_ssl_disabled() {
+                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServer instance(f);
+                    ASSERT_THROW(new_client(new_client_config()).get(), exception::illegal_state);
+                }
+
+                void test_ssl_enabled_is_client_live() {
+                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServer instance(f);
+                    auto config = new_client_config();
+                    config.get_network_config().get_ssl_config().set_enabled(true).set_protocol(
+                            config::ssl_protocol::tlsv12).add_verify_file(server1_public_key);
+
+                    start_and_verify_client(std::move(config));
+                }
+
+                void test_ssl_enabled_trust_default_certificates() {
+                    HazelcastServerFactory f(g_srvFactory->get_server_address(), default_ca_xml);
+                    HazelcastServer instance(f);
+                    start_and_verify_client(new_ssl_client_config());
+                }
+
+                void test_ssl_enabled_dont_trust_self_signed_certificates() {
+                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServer instance(f);
+                    ASSERT_THROW(new_client(new_ssl_client_config()).get(), exception::illegal_state);
+                }
+
+                void test_ssl_enabled_with_protocol_mismatch() {
+                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServer instance(f);
+                    auto config = new_ssl_client_config(true);
+                    ASSERT_THROW(new_client(std::move(config)).get(), exception::illegal_state);
+                }
+
+            };
+
+            class ssl_deprecated_api_test : public ssl_test_base {
+            protected:
+                client_config new_ssl_client_config(bool set_different_protocol) override {
+                    auto config = new_client_config();
+                    config::ssl_config &sslConfig = config.get_network_config().get_ssl_config();
+                    sslConfig.set_enabled(true);
+                    if (set_different_protocol) {
+                        sslConfig.set_protocol(config::ssl_protocol::sslv23);
+                    } else {
+                        sslConfig.set_protocol(config::ssl_protocol::tlsv12);
+                    }
+                    return config;
+                }
+            };
+
+            TEST_F(ssl_deprecated_api_test, try_deprecated_api_when_new_api_is_used) {
+                config::ssl_config c;
+                c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
+                ASSERT_TRUE(c.is_enabled());
+                ASSERT_THROW(c.set_enabled(true), exception::illegal_argument);
+                ASSERT_THROW(c.set_enabled(false), exception::illegal_argument);
+                ASSERT_THROW(c.add_verify_file("dummy"), exception::illegal_argument);
+                ASSERT_THROW(c.set_protocol(config::sslv23), exception::illegal_argument);
+                ASSERT_NO_THROW(c.set_cipher_list("dummy_ciphers"));
+                ASSERT_EQ("dummy_ciphers", c.get_cipher_list());
+            }
+
+            TEST_F(ssl_deprecated_api_test, try_new_api_when_deprecated_api_is_used) {
+                config::ssl_config c;
+                c.set_enabled(true);
+                ASSERT_THROW(c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23)),
+                             exception::illegal_argument);
+            }
+
+            TEST_F(ssl_deprecated_api_test, ssl_disabled) {
+                test_ssl_disabled();
+            }
+
+            TEST_F(ssl_deprecated_api_test, ssl_enabled_is_client_live) {
+                test_ssl_enabled_is_client_live();
+            }
+
+            TEST_F(ssl_deprecated_api_test, ssl_enabled_trust_default_certificates) {
+                test_ssl_enabled_trust_default_certificates();
+            }
+
+            TEST_F(ssl_deprecated_api_test, ssl_enabled_dont_trust_self_signed_certificates) {
+                test_ssl_enabled_dont_trust_self_signed_certificates();
+            }
+
+            TEST_F(ssl_deprecated_api_test, ssl_enabled_with_protocol_mismatch) {
+                test_ssl_enabled_with_protocol_mismatch();
+            }
+
+            class ssl_test : public ssl_test_base {
+            protected:
+                client_config new_ssl_client_config(bool set_different_protocol) override {
+                    auto config = new_client_config();
+                    boost::asio::ssl::context::method method = set_different_protocol
+                                                              ? boost::asio::ssl::context::method::sslv23
+                                                              : boost::asio::ssl::context::method::tlsv12_client;
+                    boost::asio::ssl::context ctx(method);
+                    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer);
+                    ctx.set_default_verify_paths();
+                    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+                    return config;
+                }
+
+            };
+
+            TEST_F(ssl_test, ssl_disabled) {
+                test_ssl_disabled();
+            }
+
+            TEST_F(ssl_test, ssl_enabled_is_client_live) {
+                test_ssl_enabled_is_client_live();
+            }
+
+            TEST_F(ssl_test, ssl_enabled_trust_default_certificates) {
+                test_ssl_enabled_trust_default_certificates();
+            }
+
+            TEST_F(ssl_test, ssl_enabled_dont_trust_self_signed_certificates) {
+                test_ssl_enabled_dont_trust_self_signed_certificates();
+            }
+
+            TEST_F(ssl_test, ssl_enabled_with_protocol_mismatch) {
+                test_ssl_enabled_with_protocol_mismatch();
+            }
+
+            TEST_F(ssl_test, connect_without_any_certificate_if_no_verify_none) {
+                HazelcastServerFactory f(g_srvFactory->get_server_address(), default_ca_xml);
+                HazelcastServer instance(f);
+                auto config = new_client_config();
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv12);
+                config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+                start_and_verify_client(std::move(config));
+            }
+
+            class mutual_authentication_test : public ssl_test {
+            protected:
+                static HazelcastServerFactory get_server_factory(bool required) {
+                    return HazelcastServerFactory(g_srvFactory->get_server_address(),
+                                                  std::string("hazelcast/test/resources/hazelcast-ma-") +
+                                                  (required ? "required" : "optional") + ".xml");
+                }
+
+                client_config new_ssl_client_config(boost::asio::ssl::context ctx) {
+                    auto config = new_client_config();
+                    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer);
+                    ctx.set_default_verify_paths();
+                    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+                    return config;
+                }
+
+                static constexpr const char *server2_public_key = "hazelcast/test/resources/server2-cert.pem";
+                static constexpr const char *client1_public_key = "hazelcast/test/resources/client1-cert.pem";
+                static constexpr const char *client1_private_key = "hazelcast/test/resources/client1-key.pem";
+                static constexpr const char *client2_public_key = "hazelcast/test/resources/client2-cert.pem";
+                static constexpr const char *client2_private_key = "hazelcast/test/resources/client2-key.pem";
+            };
+
+            TEST_F(mutual_authentication_test, ma_required_client_and_server_authenticated) {
+                auto f = get_server_factory(true);
+                HazelcastServer instance(f);
+                client_config config = new_client_config();
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server1_public_key);
+                ctx.use_certificate_file(client1_public_key, boost::asio::ssl::context::pem);
+                ctx.use_private_key_file(client1_private_key, boost::asio::ssl::context::pem);
+                config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+
+                start_and_verify_client(std::move(config));
+            }
+
+            TEST_F(mutual_authentication_test, ma_required_server_not_authenticated) {
+                auto f = get_server_factory(true);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server2_public_key);
+                ctx.use_certificate_file(client1_public_key, boost::asio::ssl::context::pem);
+                ctx.use_private_key_file(client1_private_key, boost::asio::ssl::context::pem);
+
+                ASSERT_THROW(new_client(new_ssl_client_config(std::move(ctx))).get(), exception::illegal_state);
+            }
+
+            TEST_F(mutual_authentication_test, ma_required_client_and_server_not_authenticated) {
+                auto f = get_server_factory(true);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server2_public_key);
+                ctx.use_certificate_file(client2_public_key, boost::asio::ssl::context::pem);
+                ctx.use_private_key_file(client2_private_key, boost::asio::ssl::context::pem);
+
+                ASSERT_THROW(new_client(new_ssl_client_config(std::move(ctx))).get(), exception::illegal_state);
+            }
+
+            TEST_F(mutual_authentication_test, ma_optional_client_and_server_authenticated) {
+                auto f = get_server_factory(false);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server1_public_key);
+                ctx.use_certificate_file(client1_public_key, boost::asio::ssl::context::pem);
+                ctx.use_private_key_file(client1_private_key, boost::asio::ssl::context::pem);
+
+                start_and_verify_client(new_ssl_client_config(std::move(ctx)));
+            }
+
+            TEST_F(mutual_authentication_test, ma_optional_server_not_authenticated) {
+                auto f = get_server_factory(false);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server2_public_key);
+                ctx.use_certificate_file(client1_public_key, boost::asio::ssl::context::pem);
+                ctx.use_private_key_file(client1_private_key, boost::asio::ssl::context::pem);
+
+                ASSERT_THROW(new_client(new_ssl_client_config(std::move(ctx))).get(), exception::illegal_state);
+            }
+
+            TEST_F(mutual_authentication_test, ma_optional_client_not_authenticated) {
+                auto f = get_server_factory(false);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server1_public_key);
+                ctx.use_certificate_file(client2_public_key, boost::asio::ssl::context::pem);
+                ctx.use_private_key_file(client2_private_key, boost::asio::ssl::context::pem);
+
+                ASSERT_THROW(new_client(new_ssl_client_config(std::move(ctx))).get(), exception::illegal_state);
+            }
+
+            TEST_F(mutual_authentication_test, ma_optional_client_and_server_not_authenticated) {
+                auto f = get_server_factory(false);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server2_public_key);
+                ctx.use_certificate_file(client2_public_key, boost::asio::ssl::context::pem);
+                ctx.use_private_key_file(client2_private_key, boost::asio::ssl::context::pem);
+
+                ASSERT_THROW(new_client(new_ssl_client_config(std::move(ctx))).get(), exception::illegal_state);
+            }
+
+            TEST_F(mutual_authentication_test, ma_required_with_no_cert_file) {
+                auto f = get_server_factory(true);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server1_public_key);
+
+                ASSERT_THROW(new_client(new_ssl_client_config(std::move(ctx))).get(), exception::illegal_state);
+            }
+
+            TEST_F(mutual_authentication_test, ma_optional_with_no_cert_file) {
+                auto f = get_server_factory(false);
+                HazelcastServer instance(f);
+
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+                ctx.load_verify_file(server1_public_key);
+
+                start_and_verify_client(new_ssl_client_config(std::move(ctx)));
+            }
+
+#endif // HZ_BUILD_WITH_SSL
+
             class ClientConnectionTest : public ClientTestSupport {
             protected:
 #ifdef HZ_BUILD_WITH_SSL
@@ -868,19 +1159,10 @@ namespace hazelcast {
                 client_config config;
                 config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
                         std::chrono::seconds(2)).set_initial_backoff_duration(std::chrono::milliseconds(100));
-                config.set_cluster_name(get_ssl_cluster_name()).get_network_config().add_address(
-                        address("8.8.8.8", 5701)).get_ssl_config().set_enabled(true).add_verify_file(
-                        get_ca_file_path());
-                ASSERT_THROW(hazelcast_client client{new_client(std::move(config)).get()},
-                             exception::illegal_state);
-            }
+                boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
 
-            TEST_F(ClientConnectionTest, testSSLWrongCAFilePath) {
-                HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
-                HazelcastServer instance(sslFactory);
-                client_config config = get_config();
-                config.set_cluster_name(get_ssl_cluster_name());
-                config.get_network_config().get_ssl_config().set_enabled(true).add_verify_file("abc");
+                config.set_cluster_name(get_ssl_cluster_name()).get_network_config().add_address(
+                        address("8.8.8.8", 5701)).get_ssl_config().set_context(std::move(ctx));
                 ASSERT_THROW(hazelcast_client client{new_client(std::move(config)).get()},
                              exception::illegal_state);
             }
@@ -950,11 +1232,12 @@ namespace hazelcast {
                 }
                 
                 std::unique_ptr<HazelcastServer> start_server(client_config &client_config) {
+#ifdef HZ_BUILD_WITH_SSL
                     if (client_config.get_network_config().get_ssl_config().is_enabled()) {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(ssl_factory_));
-                    } else {
-                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                     }
+#endif
+                    return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                 }
 
             private:
