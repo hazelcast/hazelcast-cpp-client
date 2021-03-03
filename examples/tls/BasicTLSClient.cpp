@@ -24,6 +24,8 @@ int main() {
     config.get_network_config().add_address(serverAddress);
 
     boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+    ctx.set_verify_mode(boost::asio::ssl::context::verify_peer |
+                        boost::asio::ssl::context::verify_fail_if_no_peer_cert);
     ctx.set_default_verify_paths();
     ctx.load_verify_file("/path/to/my/server/public/certificate");
 
