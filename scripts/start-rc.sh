@@ -5,7 +5,7 @@ function cleanup {
     if [ "x${rcPid}" != "x" ]
     then
         echo "Killing remote controller server with pid ${rcPid}"
-        kill -9 ${rcPid}
+        kill -9 ${rcPid} || true
     fi
     exit
 }

@@ -12,9 +12,9 @@ function cleanup {
     if [ "x${rcPid}" != "x" ]
     then
         echo "Killing client with pid ${testPid}"
-        kill -9 ${testPid}
+        kill -9 ${testPid} || true
         echo "Killing start-rc.sh with pid ${rcPid}"
-        kill -9 ${rcPid}
+        kill -9 ${rcPid} || true
     fi
     exit
 }
