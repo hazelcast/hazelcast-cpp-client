@@ -19,18 +19,23 @@ if [ -n "$BIT_VERSION" ]; then
   CXXFLAGS="$CXXFLAGS -m$BIT_VERSION"
 fi
 
+# export flags variable to be used by CMake
+export CXXFLAGS
+
 # remove the given build directory if already exists
 if [ -d "$BUILD_DIR" ]; then
   echo "Given build directory $BUILD_DIR exists. Removing for a clean build."
   rm -rf $BUILD_DIR
 fi
 
-# export flags variable to be used by CMake
-export CXXFLAGS
+SOURCE_DIR=$(pwd)/examples
+
+mkdir $BUILD_DIR
+cd $BUILD_DIR
 
 echo "Configuring..."
-cmake -S ./examples -B "$BUILD_DIR" "$@"
+cmake $SOURCE_DIR "$@"
 
 echo "Building..."
-cmake --build "$BUILD_DIR" --verbose --parallel 8
+VERBOSE=1 cmake --build .
 
