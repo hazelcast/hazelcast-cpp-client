@@ -27,15 +27,16 @@ jobs:
       Windows
       (${{ matrix.arch }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
+    env:
+      VCPKG_DEFAULT_TRIPLET: x86-windows
+
     steps:
       - uses: actions/checkout@v2
 
       - name: Install Boost
-        shell: bash
         run: |
-          ./scripts/install-boost.sh 1.75.0
+          vcpkg install boost
 
       - name: Install Thrift
-        shell: bash
         run: |
-          ./scripts/install-thrift.sh 0.13.0
+          vcpkg install boost
