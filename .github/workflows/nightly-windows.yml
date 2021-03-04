@@ -1,0 +1,41 @@
+name: nightly-Windows
+
+on: [ push ]
+
+jobs:
+  nightly-Windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ Win32, x64 ]
+        build_type:
+          - Debug
+#          - Release
+        shared_libs:
+          - toggle: OFF
+            name: Static
+#          - toggle: ON
+#            name: Shared
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+#          - toggle: ON
+#            name: 'SSL'
+
+    runs-on: windows-latest
+    name: >-
+      Windows
+      (${{ matrix.arch }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Boost
+        shell: bash
+        run: |
+          ./scripts/install-boost.sh 1.75.0
+
+      - name: Install Thrift
+        shell: bash
+        run: |
+          ./scripts/install-thrift.sh 0.13.0
