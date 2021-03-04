@@ -39,7 +39,7 @@ jobs:
 
       - name: Install Boost
         run: |
-          vcpkg install boost
+          choco install boost-msvc-14.2
 
       - name: Install Thrift
         run: |
