@@ -7,7 +7,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [ Win32, x64 ]
+        arch:
+          - cmake: Win32
+            vcpkg_triplet: x86-windows
+          - cmake: x64
+            vcpkg_triplet: x64-windows
         build_type:
           - Debug
 #          - Release
@@ -25,10 +29,10 @@ jobs:
     runs-on: windows-latest
     name: >-
       Windows
-      (${{ matrix.arch }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.arch.cmake }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     env:
-      VCPKG_DEFAULT_TRIPLET: x86-windows
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch.vcpkg_triplet }}
 
     steps:
       - uses: actions/checkout@v2
