@@ -553,7 +553,7 @@ config.set_property("hazelcast.client.invocation.timeout.seconds", "2") // Sets 
 
 **By using an environment variable on Linux:** 
 
-```c++
+```sh
 export hazelcast.client.invocation.timeout.seconds=2
 ```
 
@@ -1222,22 +1222,17 @@ Hazelcast allows you to encrypt socket level communication between Hazelcast mem
 
 The Hazelcast C++ client uses [Boost Asio](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio.html) library for networking and secure communication. 
 
-To use TLS/SSL with your Hazelcast C++ client, you should build the library with OpenSSL feature turned on. By default, this feature ios not turned on. Here are different ways to install the library with SSL support:
+To use TLS/SSL with your Hazelcast C++ client, you should build the library with OpenSSL feature turned on. By default, this feature is not turned on. Here are different ways to install the library with SSL support:
 
-* CMake Users: Provide flag `-DWITH_OPENSSL` flag when configuring the cmake. Please note that the CMake `find_package` should be able to locate the OpenSSL installation, otherwise the cmake config will fail. The rest is as usual [installation with cmake](#131-cmake-users).
+* CMake Users: Provide flag `-DWITH_OPENSSL=ON` flag when configuring. Please note that the CMake `find_package` should be able to locate the OpenSSL installation, otherwise the cmake config will fail. The rest is as usual [installation with cmake](#131-cmake-users).
 * Conan Users: Use option `with_openssl` while installing the conan project. An example command you can use in the build folder of your project with conan: `conan install -o hazelcast-cpp-client:with_openssl=True .. --build=hazelcast-cpp-client`. This command will install the `hazelcast-cpp-client` with the OpenSSL support.
 
 Once the library is installed properly, you can enable the ssl feature in the client config.  
 
-* Provide the compile flag **`-DHZ_BUILD_WITH_SSL`** when compiling, since the TLS feature depends on OpenSSL library.
-* Install the OpenSSL library to your development environment.
-* Enable the SSL in the client network configuration.
-* Specify the correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory.
-* If needed, set the cipher suite to be used via the SSL configuration.
 
 You can set the protocol type. If not set, the configuration uses `tlsv12` (TLSv1.2) as the default protocol type and version.
 
-There may be different ways to configure ssl communication at the client side. We utilize the `boost::asio::ssl::context` for various configuration possibilities. You can set the verify mode rto ignore or verify the server certificate, you can set the used ssl protocol, you can add verify callbacks, and such. The details can be found at the [Boost asio ssl context documentation](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html).
+There may be different ways to configure ssl communication at the client side. We utilize the `boost::asio::ssl::context` for various configuration possibilities. You can set the verify mode to ignore or verify the server certificate, you can set the used ssl protocol, you can add verify callbacks, and such. The details can be found at the [Boost asio ssl context documentation](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html).
 
 Here is the most basic way to enable ssl at the client:
 
@@ -1264,7 +1259,7 @@ If you want to enable the validation of server certificate at the client side an
     auto hz = hazelcast::new_client(std::move(config)).get();
 ```
 
-The client will connect if the server has a certificate which is properly signed by wel known Certificate Authorities(CA). On Windows, you may need to set the well known CA Authorities file path since OpenSSL may not find the well known certifite authorities file. This can be solved by providing the [SSL_CERT_FILE](https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set_default_verify_paths.html) environment variable set to point a file path that has all the needed well known certificate authorities. For example, you can get such a file maintained by Mozilla at https://curl.se/docs/caextract.html.
+The client will connect if the server has a certificate which is properly signed by well known Certificate Authorities(CA). On Windows, you may need to set the well known CA Authorities file path since OpenSSL may not find the well known certifite authorities file. This can be solved by providing the [SSL_CERT_FILE](https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set_default_verify_paths.html) environment variable set to point a file path that has all the needed well known certificate authorities. For example, you can get such a file maintained by Mozilla at https://curl.se/docs/caextract.html.
 
 If the server is using a user generated certificate file which is not signed by the well known CA authorities, then you can use the public certificate of the server to configure the client to connect and verify the server. Here is an example configuration for this:
 
@@ -1285,7 +1280,7 @@ As you can see in this code snippet, we add the server public certificate using 
 You can check `BasicTLSClient.cpp` example for a full featured example.
 
 #### 6.1.2.2. Mutual Authentication (Two Way Authentication) 
-[Mutual Authentication](https://en.wikipedia.org/wiki/Mutual_authentication) is the process where the client verifies the identity of the server via server's certificate (either self-signed or signed by a CA authority) and the server verifies the client identity cia the client provided certificate (either self-signed or signed by a CA authority). If the Hazelcast server is configured for [mutual authentication](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members) as **REQUIRED**, then we can use the [ssl::context::use_xxx](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html) methods to add the clients public and private certificates and use them during its authentication to the server. An example configuration is as follows:
+[Mutual Authentication](https://en.wikipedia.org/wiki/Mutual_authentication) is the process where the client verifies the identity of the server via server's certificate (either self-signed or signed by a CA authority) and the server verifies the client identity cia the client provided certificate (either self-signed or signed by a CA authority). If the Hazelcast server is configured for [mutual authentication](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members) as **REQUIRED**, then we can use the [ssl::context::use_xxx](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html) methods to add the client's public and private certificates and use them during its authentication to the server. An example configuration is as follows:
 ```c++
     hazelcast::client::client_config config;
 

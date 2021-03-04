@@ -31,8 +31,8 @@ int main() {
     ctx.load_verify_file("/path/to/my/server/public/certificate");
 
     // The following two lines configure the client to use the client certificate to introduce itself to the server
-    ctx.use_certificate_file("/path/to/my/client/public/certificate", boost::asio::ssl::context::pem);
-    ctx.use_private_key_file("/path/to/my/client/private/certificate", boost::asio::ssl::context::pem);
+    ctx.use_certificate_file("/path/to/certificate", boost::asio::ssl::context::pem);
+    ctx.use_private_key_file("/path/to/private_key", boost::asio::ssl::context::pem);
 
     config.get_network_config().get_ssl_config().set_context(std::move(ctx));
     
