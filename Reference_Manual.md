@@ -2045,18 +2045,6 @@ The `lifecycle_listener` interface notifies for the following events:
 The following is an example of the `lifecycle_listener` that is added to the `client_config` object and its output.
 
 ```c++
-    class ConnectedListener :
-public hazelcast::client::lifecycle_listener {
-public:
-  virtual void stateChanged(const hazelcast::client::lifecycle_event &lifecycleEvent) {
-      if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_CONNECTED) {
-          std::cout << "Client connected to the cluster" << std::endl;
-      } else if (lifecycleEvent.getState() == hazelcast::client::lifecycle_event::CLIENT_DISCONNECTED) {
-          std::cout << "Client is disconnected from the cluster" << std::endl;
-      }
-  }
-};
-    
 int main() {
     hazelcast::client::client_config config;
     
