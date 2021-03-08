@@ -158,11 +158,9 @@ This chapter provides information on how to get started with your Hazelcast C++ 
 ## 1.1. Installing
 
 ### 1.1.1. Conan Users
-Hazelcast C++ client package is indexed at [Conan Center Index](https://conan.io/center/hazelcast-cpp-client). You can
-use [Conan package manager](https://conan.io/) to install Hazelcast C++ client. The package name is `hazelcast-cpp-client`.
+Hazelcast C++ client package is indexed at [Conan Center Index](https://conan.io/center/hazelcast-cpp-client). You can use [Conan package manager](https://conan.io/) to install Hazelcast C++ client. The package name is `hazelcast-cpp-client`.
 
-Please see [example instructions](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries)
-on how to use conan package manager with your application. In summary,
+Please see [example instructions](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) on how to use conan package manager with your application. In summary,
 
 - You need to put the following lines to your `conanfile.txt`:
 ```
@@ -177,14 +175,12 @@ cmake
 $ mkdir build && cd build
 $ conan install ..
 ```
-This generates the `conanbuildinfo.cmake` file to be included in your CMakelists.txt. Please follow the instructions at
-the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
+This generates the `conanbuildinfo.cmake` file to be included in your CMakelists.txt. Please follow the instructions at the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
 
 ### 1.1.2. Vcpkg Users
-Hazelcast C++ client package is available for [Vckg](https://github.com/microsoft/vcpkg) users. The port name is `hazelcast-cpp-client`.
+Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The port name is `hazelcast-cpp-client`.
 
-Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started)
-on how to use Vcpkg package manager with your application. In summary,
+Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
 
 ```commandline
 > git clone https://github.com/microsoft/vcpkg
@@ -193,15 +189,13 @@ on how to use Vcpkg package manager with your application. In summary,
 ``` 
 The above code snippet will install `hazelcast-cpp-client` with its `boost` dependencies.
 
-After the installation, the library is available for usage. For example, if you are using CMake for your builds, 
-you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
+After the installation, the library is available for usage. For example, if you are using CMake for your builds, you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
 ```commandline
 > cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
 > cmake --build [build directory]
 ```
 
-You can find more details on using a Vcpkg installed package from different IDEs ot tools in your projects from the 
-[Vcpkg Official Getting Started](https://github.com/microsoft/vcpkg#getting-started) documentation.
+You can find more details on using a Vcpkg installed package from different IDEs in your projects from the [Vcpkg Official Getting Started](https://github.com/microsoft/vcpkg#getting-started) documentation.
 
 If you need to use `openssl` feature, then you need to install using the following command:
 ```commandline
@@ -218,14 +212,12 @@ The above code will install `hazelcast-cpp-client` with its `boost` and `openssl
 5. [OpenSSL](https://www.openssl.org) (optional)
 
 #### 1.1.3.2. Downloading Source Code
-Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page to 
-download the source code for the latest Hazelcast C++ client.
+Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page to download the source code for the latest Hazelcast C++ client.
 
-The releases page has both `tar.gz` and `zip` archives available. 
-Choose the one which suits your system the best.
+The releases page has both `tar.gz` and `zip` archives available. Choose the one which suits your system the best.
 
 Follow the instructions for your platform:
-* [Linux and maxOS](#1132-linux-and-macos-users)
+* [Linux and MacOS](#1132-linux-and-macos-users)
 * [Windows](#1133-windows-users)
 
 #### 1.1.3.3. Linux and MacOS Users
@@ -242,8 +234,7 @@ cd hazelcast-cpp-client
 git checkout v4.0.1
 ```
 
-Once you are in the source directory of the Hazelcast C++ client library, 
-create and change into a new directory:
+Once you are in the source directory of the Hazelcast C++ client library, create and change into a new directory:
 ```sh
 cd hazelcast-cpp-client-4.0.1
 mkdir build
@@ -267,8 +258,7 @@ See [this section](#1151-custom-install-location) for information on how to use 
 Download and extract the release archive from the 
 [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page.
 
-Open a `cmd` window and change into the folder where you extracted the contents of the release archive. 
-Then create and change into a new directory:
+Open a `cmd` window and change into the folder where you extracted the contents of the release archive. Then create and change into a new directory:
 ```bat
 cd hazelcast-cpp-client-4.0.1
 mkdir build
@@ -286,24 +276,20 @@ Build and install:
 cmake --build . --config Release
 cmake --build . --target install --config Release
 ```
-The above commands will build and install the library with the `Release` configuration. 
-Make sure you pass the same `--config` option to both commands.
+The above commands will build and install the library with the `Release` configuration. Make sure you pass the same `--config` option to both commands.
 
-The install command may require administrator privileges depending on your install prefix. 
-See [this section](#1151-custom-install-location) for information on how to use a different installation location.
+The install command may require administrator privileges depending on your install prefix. See [this section](#1151-custom-install-location) for information on how to use a different installation location.
 
 #### 1.1.3.5. Advanced Installation
 
 ##### 1.1.3.5.1. Custom Install Location
-Pass the argument `-DCMAKE_INSTALL_PREFIX=/path/to/install` the first time you run `cmake` to configure 
-the installation directory:
+Pass the argument `-DCMAKE_INSTALL_PREFIX=/path/to/install` the first time you run `cmake` to configure the installation directory:
 ```sh
 cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
 ```
 
 ##### 1.1.3.5.2. CMake Configuration
-You can provide additional configuration options using the `-DVARIABLE=VALUE` syntax on the command line.
-Here are all the options that are supported:
+You can provide additional configuration options using the `-DVARIABLE=VALUE` syntax on the command line. Here are all the options that are supported:
 * `WITH_OPENSSL` : Set to `ON` to build the library with SSL support.
 This will require [OpenSSL](https://www.openssl.org) to be installed on your system. The default is `OFF`.
 * `BUILD_SHARED_LIBS` : Set to `ON` or `OFF` depending on whether you want the shared(ON) or static(OFF) library. The default is `ON`.
@@ -317,16 +303,9 @@ cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
 
 ## 1.2. Starting Hazelcast IMDG Cluster
 
-Hazelcast C++ client requires a working Hazelcast IMDG cluster to run. This cluster handles storage and manipulation of the user data.
-Clients are a way to connect to the Hazelcast IMDG cluster and access such data.
+Hazelcast C++ client requires a working Hazelcast IMDG cluster to run. This cluster handles storage and manipulation of the user data. Clients are a way to connect to the Hazelcast IMDG cluster and access such data.
 
-Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or
-physical machines and are connected to each other via network. Any data put on the cluster is partitioned to multiple
-members transparent to the user. It is therefore very easy to scale the system by adding new members as the data grows.
-Hazelcast IMDG cluster also offers resilience. Should any hardware or software problem causes a crash to any member, the
-data on that member is recovered from backups and the cluster continues to operate without any downtime. Hazelcast
-clients are an easy way to connect to a Hazelcast IMDG cluster and perform tasks on distributed data structures that
-live on the cluster.
+Hazelcast IMDG cluster consists of one or more cluster members. These members generally run on multiple virtual or physical machines and are connected to each other via network. Any data put on the cluster is partitioned to multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast IMDG cluster also offers resilience. Should any hardware or software problem causes a crash to any member, the data on that member is recovered from backups and the cluster continues to operate without any downtime. Hazelcast clients are an easy way to connect to a Hazelcast IMDG cluster and perform tasks on distributed data structures that live on the cluster.
 
 In order to use Hazelcast C++ client, we first need to setup a Hazelcast IMDG servers.
 
@@ -334,8 +313,7 @@ In order to use Hazelcast C++ client, we first need to setup a Hazelcast IMDG se
 
 #### 1.2.1.1. Starting Server Using Hazelcast Docker Images
 
-The quickest way to start a single member cluster for development purposes is to use our
-[Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
+The quickest way to start a single member cluster for development purposes is to use our [Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
 
 ```bash
 docker run -p 5701:5701 hazelcast/hazelcast:4.1.1
@@ -345,10 +323,8 @@ docker run -p 5701:5701 hazelcast/hazelcast:4.1.1
 
 Follow the instructions below to create a Hazelcast IMDG cluster:
 
-1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar`
-   distribution of Hazelcast IMDG.
-2. Decompress the contents into any directory that you
-want to run members from.
+1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
+2. Decompress the contents into any directory that you want to run members from.
 3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
 4. Use either `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see the Hazelcast IMDG logs in the terminal.
 
@@ -400,25 +376,19 @@ If you are not, then read the instructions specific to your platform:
 * [Windows](#133-windows-users)
 
 #### 1.3.1. CMake Users
-A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. 
-If your project is using CMake, you can easily find and link against the client library:
+A Hazelcast IMDG C++ client installation comes with package configuration files for CMake. If your project is using CMake, you can easily find and link against the client library:
 ```cmake
 find_package(hazelcast-cpp-client CONFIG REQUIRED)
 
 target_link_libraries(mytarget PRIVATE hazelcast-cpp-client::hazelcast-cpp-client)
 ```
 
-Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` 
-if you are using a custom installation location. 
+Make sure you add the installation prefix of the client library to `CMAKE_PREFIX_PATH` if you are using a custom installation location. 
 
 #### 1.3.2. Linux and MacOS Users
-You can pass the `-lhazelcast-cpp-client` option to the compiler to link against
-the client library. 
+You can pass the `-lhazelcast-cpp-client` option to the compiler to link against the client library. 
 
-The client library depends on Boost.Thread and Boost.Chrono. 
-You should also link your program against these libraries using `-lboost_thread` and `-lboost_chrono`.
-The Boost.Thread library should be provided with the preprocessor definition `BOOST_THREAD_VERSION=5`
-for necessary features such as futures and future continuations to be enabled. 
+The client library depends on Boost.Thread and Boost.Chrono. You should also link your program against these libraries using `-lboost_thread` and `-lboost_chrono`. The Boost.Thread library should be provided with the preprocessor definition `BOOST_THREAD_VERSION=5` for necessary features such as futures and future continuations to be enabled. 
 
 Here is how you can compile an example from the examples directory:
 ```sh
@@ -428,8 +398,7 @@ g++ -std=c++11 \
     -lhazelcast-cpp-client -lboost_thread -lboost_chrono
 ``` 
 
-If a custom installation directory was used during installation, then you may also need to use the `-L` and `-I`
-options to add the library and include paths to the compiler's search path.
+If a custom installation directory was used during installation, then you may also need to use the `-L` and `-I` options to add the library and include paths to the compiler's search path.
 ```
 g++ -std=c++11 \
     examples/path/to/example.cpp \
@@ -440,8 +409,7 @@ g++ -std=c++11 \
 #### 1.3.3. Windows Users
 Provide your compiler with the include directories and library files for the Hazelcast IMDG C++ client and its dependencies.
 
-You also need to pass the preprocessor definition `BOOST_THREAD_VERSION=5`
-for necessary features such as futures and future continuations to be enabled. 
+You also need to pass the preprocessor definition `BOOST_THREAD_VERSION=5` for necessary features such as futures and future continuations to be enabled. 
 
 The following is a command that can be used to compile an example from the examples directory.
 ```bat
@@ -454,22 +422,17 @@ cl.exe path\to\example.cpp ^
 
 ## 1.4. Basic Configuration
 
-If you are using Hazelcast IMDG and C++ Client on the same computer, generally the default configuration should be fine. This is great for
-trying out the client. However, if you run the client on a different computer than any of the cluster members, you may
-need to do some simple configurations such as specifying the member addresses.
+If you are using Hazelcast IMDG and C++ Client on the same computer, generally the default configuration should be fine. This is great for trying out the client. However, if you run the client on a different computer than any of the cluster members, you may need to do some simple configurations such as specifying the member addresses.
 
 The Hazelcast IMDG members and clients have their own configuration options. You may need to reflect some of the member side configurations on the client side to properly connect to the cluster.
 
-This section describes the most common configuration elements to get you started in no time.
-It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options
-regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the C++ client are discussed in the following sections.
+This section describes the most common configuration elements to get you started in no time. It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the C++ client are discussed in the following sections.
 
 See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#3-configuration-overview) for more information.
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
-Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
-you may have to configure your Hazelcast IMDG members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
+Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However if you have limitations on your network such as multicast being disabled, you may have to configure your Hazelcast IMDG members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
 
 You can use the following options to configure Hazelcast IMDG:
 
@@ -512,16 +475,11 @@ We will go over some important configuration elements in the rest of this sectio
 - `<cluster-name>`: Specifies which cluster this member belongs to. 
 
 - `<network>`
-    - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701. You can specify another port number, and if
-     you set `auto-increment` to `true`, then Hazelcast will try the subsequent ports until it finds an available port or the `port-count` is reached.
+    - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701. You can specify another port number, and if you set `auto-increment` to `true`, then Hazelcast will try the subsequent ports until it finds an available port or the `port-count` is reached.
     - `<join>`: Specifies the strategies to be used by the member to find other cluster members. Choose which strategy you want to
     use by setting its `enabled` attribute to `true` and the others to `false`.
-        - `<multicast>`: Members find each other by sending multicast requests to the specified address and port. It is very useful if IP addresses
-        of the members are not static.
-        - `<tcp>`: This strategy uses a pre-configured list of known members to find an already existing cluster. It is enough for a member to
-        find only one cluster member to connect to the cluster. The rest of the member list is automatically retrieved from that member. We recommend
-        putting multiple known member addresses there to avoid disconnectivity should one of the members in the list is unavailable at the time
-        of connection.
+        - `<multicast>`: Members find each other by sending multicast requests to the specified address and port. It is very useful if IP addresses of the members are not static.
+        - `<tcp>`: This strategy uses a pre-configured list of known members to find an already existing cluster. It is enough for a member to find only one cluster member to connect to the cluster. The rest of the member list is automatically retrieved from that member. We recommend putting multiple known member addresses there to avoid disconnectivity should one of the members in the list is unavailable at the time of connection.
 
 These configuration elements are enough for most connection scenarios. Now we will move onto the configuration of the C++ client.
 
@@ -535,11 +493,9 @@ You can start the client with no custom configuration like this:
     auto hz = hazelcast::new_client().get(); // Connects to the cluster
 ```
 
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview)
-and the following sections for information about detailed network configurations and/or additional features of Hazelcast C++ client configuration.
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview) and the following sections for information about detailed network configurations and/or additional features of Hazelcast C++ client configuration.
 
-An easy way to configure your Hazelcast C++ Client is to create a `client_config` object and set the appropriate options. Then you need to
-pass this object to the client when starting it, as shown below.
+An easy way to configure your Hazelcast C++ Client is to create a `client_config` object and set the appropriate options. Then you need to pass this object to the client when starting it, as shown below.
 
 ```C++
     hazelcast::client::client_config config;
@@ -548,8 +504,7 @@ pass this object to the client when starting it, as shown below.
     auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
 ```
 
-If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
-names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
+If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
 
 ### 1.4.2.1 Cluster Name
 
@@ -570,8 +525,7 @@ config.get_network_config().add_address(hazelcast::client::address("your server 
 ```
 ### 1.4.3. Client System Properties
 
-While configuring your C++ client, you can use various system properties provided by Hazelcast to tune its clients. These properties can be set programmatically through `config.set_property` or by using an environment variable.
-The value of this property will be:
+While configuring your C++ client, you can use various system properties provided by Hazelcast to tune its clients. These properties can be set programmatically through `config.set_property` or by using an environment variable. The value of this property will be:
 
 * the programmatically configured value, if programmatically set,
 * the environment variable value, if the environment variable is set,
@@ -749,8 +703,7 @@ Bob is in IT department
 Clark is in IT department
 ```
 
-You will see this time we add only the sales employees but we get the list all known employees including the ones in IT.
-That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
+You will see this time we add only the sales employees but we get the list all known employees including the ones in IT. That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
 
 ## 1.6. Code Samples
 
@@ -811,8 +764,7 @@ You can configure Hazelcast C++ client programmatically (API).
 
 ### 3.1.1. Programmatic Configuration
 
-For programmatic configuration of the Hazelcast C++ client, just instantiate a `client_config` object and configure the
-desired aspects. An example is shown below.
+For programmatic configuration of the Hazelcast C++ client, just instantiate a `client_config` object and configure the desired aspects. An example is shown below.
 
 ```C++
 hazelcast::client::client_config config;
@@ -825,7 +777,6 @@ See the `client_config` class reference at the Hazelcast C++ client API Document
 # 4. Serialization
 
 Serialization is the process of converting an object into a stream of bytes to store the object in the memory, a file or database, or transmit it through the network. Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization. Hazelcast offers you its own native serialization methods. You will see these methods throughout this chapter.
-
 
 Hazelcast serializes all your objects before sending them to the server. The `unsigned char` (`byte`), `bool`, `char`, `short`, `int32_t`, `int64_t`, `float`, `double`, `std::string` types are serialized natively and you cannot override this behavior. The following table is the conversion of types for Java server side.
 
