@@ -1,4 +1,4 @@
-#Hazelcast C++ Client Library
+# Hazelcast C++ Client Library
 <!--ts-->
    * [Introduction](#introduction)
    * [Resources](#resources)
@@ -6,14 +6,15 @@
    * [1. Getting Started](#1-getting-started)
       * [1.1. Installing](#11-installing)
          * [1.1.1. Conan Users](#111-conan-users)
-         * [1.1.2. Install From Source Code Using CMake](#112-install-from-source-code-using-cmake)
-            * [1.1.2.1. Requirements](#1121-requirements)
-            * [1.1.2.2. Downloading Source Code](#1122-downloading-source-code)
-            * [1.1.2.3. Linux and MacOS Users](#1123-linux-and-macos-users)
-            * [1.1.2.4. Windows Users](#1124-windows-users)
-            * [1.1.2.5. Advanced Installation](#1125-advanced-installation)
-               * [1.1.2.5.1. Custom Install Location](#11251-custom-install-location)
-               * [1.1.2.5.2. CMake Configuration](#11252-cmake-configuration)
+         * [1.1.2. Vcpkg Users](#112-vcpkg-users)
+         * [1.1.3. Install From Source Code Using CMake](#113-install-from-source-code-using-cmake)
+            * [1.1.3.1. Requirements](#1131-requirements)
+            * [1.1.3.2. Downloading Source Code](#1132-downloading-source-code)
+            * [1.1.3.3. Linux and MacOS Users](#1133-linux-and-macos-users)
+            * [1.1.3.4. Windows Users](#1134-windows-users)
+            * [1.1.3.5. Advanced Installation](#1135-advanced-installation)
+               * [1.1.3.5.1. Custom Install Location](#11351-custom-install-location)
+               * [1.1.3.5.2. CMake Configuration](#11352-cmake-configuration)
       * [1.2. Starting Hazelcast IMDG Cluster](#12-starting-hazelcast-imdg-cluster)
          * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
             * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
@@ -136,7 +137,7 @@
    * [11. License](#11-license)
    * [12. Copyright](#12-copyright)
 
-<!-- Added by: ihsan, at: Thu Mar  4 22:52:30 +03 2021 -->
+<!-- Added by: ihsan, at: Mon Mar  8 16:30:15 +03 2021 -->
 
 <!--te-->
 
