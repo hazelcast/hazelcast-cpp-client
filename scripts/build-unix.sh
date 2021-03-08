@@ -41,11 +41,12 @@ if [ -d "$BUILD_DIR" ]; then
 fi
 
 # print variables for debugging
-echo "BUILD_DIR   = $BUILD_DIR"
-echo "BIT_VERSION = $BIT_VERSION"
-echo "COVERAGE    = $COVERAGE"
-echo "INSTALL     = $INSTALL"
-echo "CXXFLAGS    = $CXXFLAGS"
+echo "BUILD_DIR       = $BUILD_DIR"
+echo "BIT_VERSION     = $BIT_VERSION"
+echo "COVERAGE        = $COVERAGE"
+echo "INSTALL         = $INSTALL"
+echo "CXXFLAGS        = $CXXFLAGS"
+echo "CMake arguments = $@"
 
 # export flags variable to be used by CMake
 export CXXFLAGS
