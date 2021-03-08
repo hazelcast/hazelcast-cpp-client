@@ -19,7 +19,6 @@ cmake_minimum_required (VERSION 3.10)
 project (hazelcast-cpp-client-examples
          VERSION 4.0.1
          DESCRIPTION "Hazelcast C++ Client Code Examples"
-         HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
          LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)

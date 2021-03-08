@@ -1,12 +1,11 @@
-#include <chrono>
+#include <cstdio>
 #include <string>
 #include <sstream>
-#include <cstdio>
 #include <thread>
 
 #include <gtest/gtest.h>
 
-#include "hazelcast/logger.h"
+#include <hazelcast/logger.h>
 
 using hazelcast::logger;
 

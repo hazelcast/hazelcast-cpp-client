@@ -57,7 +57,7 @@ namespace hazelcast {
                     boost::asio::io_context &io_;
                     boost::asio::ip::tcp::resolver &io_resolver_;
 #ifdef HZ_BUILD_WITH_SSL
-                    std::unique_ptr<boost::asio::ssl::context> ssl_context_;
+                    std::shared_ptr<boost::asio::ssl::context> ssl_context_;
 #endif
                 };
             }

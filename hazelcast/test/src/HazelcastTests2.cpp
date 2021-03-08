@@ -13,58 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
-#include <vector>
-#include "ClientTestSupportBase.h"
-#include <hazelcast/client/client_config.h>
-#include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/impl/Partition.h>
-#include <gtest/gtest.h>
-#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/connection/Connection.h>
-#include <hazelcast/client/serialization/pimpl/data_input.h>
-#include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/util/Util.h>
-#include <TestHelperFunctions.h>
-#include <ostream>
-#include <ctime>
-#include <errno.h>
-#include <hazelcast/client/lifecycle_listener.h>
-#include "hazelcast/client/lifecycle_event.h"
-#include "serialization/Serializables.h"
-#include <hazelcast/client/serialization_config.h>
-#include <hazelcast/client/hazelcast_json_value.h>
-#include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <cmath>
-#include <iostream>
-#include <string>
 #include <atomic>
-#include <stdlib.h>
+#include <cerrno>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
 #include <fstream>
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
+
 #include <boost/asio.hpp>
 #include <boost/thread/barrier.hpp>
+#include <gtest/gtest.h>
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/crypto.h>
 #endif
 
-#include "hazelcast/client/exception/protocol_exceptions.h"
-#include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/initial_membership_event.h"
-#include "hazelcast/client/socket_interceptor.h"
-#include "hazelcast/client/imap.h"
-#include "hazelcast/util/Bits.h"
-#include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/client/pipelining.h"
-#include "hazelcast/util/MurmurHash3.h"
+#include <hazelcast/client/lifecycle_event.h>
+#include <hazelcast/client/client_config.h>
+#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
+#include <hazelcast/client/connection/Connection.h>
+#include <hazelcast/client/exception/protocol_exceptions.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/hazelcast_json_value.h>
+#include <hazelcast/client/imap.h>
+#include <hazelcast/client/impl/Partition.h>
+#include <hazelcast/client/initial_membership_event.h>
+#include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
+#include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
+#include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
+#include <hazelcast/client/internal/socket/SSLSocket.h>
+#include <hazelcast/client/lifecycle_listener.h>
+#include <hazelcast/client/pipelining.h>
+#include <hazelcast/client/serialization_config.h>
+#include <hazelcast/client/serialization/pimpl/data_input.h>
+#include <hazelcast/client/serialization/serialization.h>
+#include <hazelcast/client/socket_interceptor.h>
+#include <hazelcast/util/AddressHelper.h>
+#include <hazelcast/util/Bits.h>
+#include <hazelcast/util/BlockingConcurrentQueue.h>
+#include <hazelcast/util/concurrent/locks/LockSupport.h>
+#include <hazelcast/util/ConcurrentQueue.h>
+#include <hazelcast/util/MurmurHash3.h>
+#include <hazelcast/util/SyncHttpsClient.h>
+#include <hazelcast/util/Util.h>
+
+#include "ClientTestSupport.h"
+#include "ClientTestSupportBase.h"
+#include "HazelcastServer.h"
+#include "HazelcastServerFactory.h"
+#include "serialization/Serializables.h"
+#include "TestHelperFunctions.h"
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
