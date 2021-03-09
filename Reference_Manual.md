@@ -1223,7 +1223,7 @@ Hazelcast allows you to encrypt socket level communication between Hazelcast mem
 
 The Hazelcast C++ client uses [Boost Asio](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio.html) library for networking and secure communication. 
 
-To use TLS/SSL with your Hazelcast C++ client, you should build the library with OpenSSL feature turned on. By default, this feature is not turned off. Here are the different ways to install the library with SSL support:
+To use TLS/SSL with your Hazelcast C++ client, you should build the library with OpenSSL feature turned on. By default, this feature is turned off. Here are the different ways to install the library with SSL support:
 
 * CMake Users: Provide flag `-DWITH_OPENSSL=ON` flag when configuring. Please note that the CMake `find_package` should be able to locate the OpenSSL installation, otherwise the cmake config will fail. The rest is as usual with the [installation with cmake](#131-cmake-users).
 * Conan Users: Use option `with_openssl` while installing the conan project. An example command you can use in the build folder of your project with conan: `conan install -o hazelcast-cpp-client:with_openssl=True .. --build=hazelcast-cpp-client`. This command will install the `hazelcast-cpp-client` with the OpenSSL support.
