@@ -1003,6 +1003,8 @@ namespace hazelcast {
                                                   (required ? "required" : "optional") + ".xml");
                 }
 
+                using ssl_test::new_ssl_client_config;
+
                 client_config new_ssl_client_config(boost::asio::ssl::context ctx) {
                     auto config = new_client_config();
                     ctx.set_verify_mode(boost::asio::ssl::context::verify_peer);
