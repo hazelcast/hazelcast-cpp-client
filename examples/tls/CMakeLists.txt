@@ -14,3 +14,4 @@
 # limitations under the License.
 #
 add_executable(basicTLSClient ./BasicTLSClient.cpp)
+add_executable(mutual_authentication ./mutual_authentication.cpp)
