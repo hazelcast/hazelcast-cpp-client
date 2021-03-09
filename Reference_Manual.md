@@ -1304,7 +1304,7 @@ With the above configuration, both the client and server authenticate each other
 You can check `mutual_authentication.cpp` for a full featured example.
 
 #### 6.1.2.3. Constraining The Used Cipher List
-In some cases, you may want to limit the cipher suites allowed for a client while communicating with the server. This can also be configured using `ssl_config`. Here is an example configuration to enable cipher list which only allow only "HIGH" ciphers.
+In some cases, you may want to limit the cipher suites allowed for a client while communicating with the server. This can also be configured using `ssl_config`. Here is an example configuration to enable cipher list which allow only "HIGH" ciphers.
 ```c++
     config.get_network_config().get_ssl_config().
             set_cipher_list("HIGH");     // optional setting (values for string are described at
