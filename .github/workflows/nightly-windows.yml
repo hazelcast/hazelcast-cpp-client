@@ -23,8 +23,8 @@ jobs:
           - toggle: ON
             name: Shared
         with_openssl:
-          #- toggle: OFF
-          #  name: 'noSSL'
+          - toggle: OFF
+            name: 'noSSL'
           - toggle: ON
             name: 'SSL'
 
@@ -35,6 +35,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install OpenSSL
+        if: matrix.with_openssl.toggle == 'ON'
+        run: |
+          choco install openssl
 
       - name: Install Boost
         run: |
