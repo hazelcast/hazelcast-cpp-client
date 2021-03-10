@@ -33,9 +33,6 @@ jobs:
       Windows
       (${{ matrix.arch.cmake }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
-    env:
-      BOOST_ROOT: C:\Boost
-
     steps:
       - uses: actions/checkout@v2
 
@@ -62,8 +59,9 @@ jobs:
                    -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
                    -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
                    -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
-                   -DWITH_QT5=OFF
+                   -DWITH_QT5=OFF -DCMAKE_INSTALL_PREFIX=C:\Thrift
           cmake --build . --target install --config Release
+          mkdir C:\Thrift\bin
 
       - name: Build & Install
         env:
@@ -73,6 +71,7 @@ jobs:
           INSTALL: ON
         run: |
           ./scripts/build-windows.bat `
+              -DCMAKE_PREFIX_PATH=C:\Boost;C:\Thrift
               -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
               -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
               -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
