@@ -34,7 +34,7 @@ jobs:
       (${{ matrix.arch.cmake }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     env:
-      VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch.vcpkg_triplet }}
+      BOOST_ROOT: C:\Boost
 
     steps:
       - uses: actions/checkout@v2
@@ -45,7 +45,6 @@ jobs:
           Invoke-WebRequest `
               "https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz" `
               -OutFile "boost_1_75_0.tar.gz"
-
           tar xzf boost_1_75_0.tar.gz
           cd boost_1_75_0
           .\bootstrap.bat
@@ -54,4 +53,28 @@ jobs:
 
       - name: Install Thrift
         run: |
-          vcpkg install thrift
+          Invoke-WebRequest `
+              "https://archive.apache.org/dist/thrift/0.13.0/thrift-0.13.0.tar.gz" `
+              -OutFile "thrift-0.13.0.tar.gz"
+          tar xzf thrift-0.13.0.tar.gz
+          cd thrift-0.13.0\build
+          cmake .. -A ${{ matrix.arch.cmake }} `
+                   -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
+                   -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
+                   -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
+                   -DWITH_QT5=OFF
+          cmake --build . --target install --config Release
+
+      - name: Build & Install
+        env:
+          BUILD_DIR: build
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          BIT_VERSION: ${{ matrix.arch.address_model }}
+          INSTALL: ON
+        run: |
+          ./scripts/build-windows.bat `
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
+              -DBUILD_TESTS=ON `
+              -DBUILD_EXAMPLES=OFF
