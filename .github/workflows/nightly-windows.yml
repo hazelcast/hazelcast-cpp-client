@@ -9,10 +9,10 @@ jobs:
       matrix:
         arch:
           - cmake: Win32
-            vcpkg_triplet: x86-windows
+            choco_options: '--x86'
             address_model: 32
           - cmake: x64
-            vcpkg_triplet: x64-windows
+            choco_options: ''
             address_model: 64
         build_type:
           - Debug
@@ -31,7 +31,7 @@ jobs:
     runs-on: windows-latest
     name: >-
       Windows
-      (${{ matrix.arch.cmake }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
       - uses: actions/checkout@v2
@@ -39,7 +39,7 @@ jobs:
       - name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
         run: |
-          choco install openssl
+          choco install openssl ${{ matrix.arch.choco_options }}
 
       - name: Install Boost
         run: |
