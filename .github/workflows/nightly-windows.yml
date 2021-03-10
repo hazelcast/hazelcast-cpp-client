@@ -71,7 +71,7 @@ jobs:
           INSTALL: ON
         run: |
           ./scripts/build-windows.bat `
-              -DCMAKE_PREFIX_PATH=C:\Boost;C:\Thrift
+              -DCMAKE_PREFIX_PATH=C:\Boost;C:\Thrift `
               -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
               -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
               -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
