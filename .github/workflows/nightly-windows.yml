@@ -68,6 +68,7 @@ jobs:
           BUILD_CONFIGURATION: ${{ matrix.build_type }}
           BIT_VERSION: ${{ matrix.arch.address_model }}
           INSTALL: ON
+          CXXFLAGS: '/I C:\Thrift\include\'
         run: |
           .\scripts\build-windows.bat `
               -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
@@ -95,5 +96,5 @@ jobs:
           BIT_VERSION: ${{ matrix.arch.address_model }}
         run: |
           .\scripts\verify-installation-windows.bat `
-              -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift;${{ github.workspace }}\destination" `
+              -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
               -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
