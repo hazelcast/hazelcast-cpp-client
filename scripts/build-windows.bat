@@ -34,7 +34,7 @@ cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_CONFIGURATION% ||
 
 if "%INSTALL%" == "ON" (
     @echo Installing...
-    cmake --install %BUILD_DIR% || exit /b 1
+    cmake --install %BUILD_DIR% --config %BUILD_CONFIGURATION% || exit /b 1
 )
 
 
