@@ -23,10 +23,10 @@ jobs:
           - toggle: ON
             name: Shared
         with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          # - toggle: ON
-          #   name: 'SSL'
+          #- toggle: OFF
+          #  name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
 
     runs-on: windows-latest
     name: >-
