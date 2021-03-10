@@ -16,17 +16,17 @@ jobs:
             address_model: 64
         build_type:
           - Debug
-#          - Release
+          - Release
         shared_libs:
           - toggle: OFF
             name: Static
-#          - toggle: ON
-#            name: Shared
+          - toggle: ON
+            name: Shared
         with_openssl:
           - toggle: OFF
             name: 'noSSL'
-#          - toggle: ON
-#            name: 'SSL'
+          # - toggle: ON
+          #   name: 'SSL'
 
     runs-on: windows-latest
     name: >-
@@ -37,7 +37,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install Boost
-        shell: pwsh
         run: |
           Invoke-WebRequest `
               "https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz" `
@@ -60,7 +59,7 @@ jobs:
                    -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
                    -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
                    -DWITH_QT5=OFF -DCMAKE_INSTALL_PREFIX=C:\Thrift
-          cmake --build . --target install --config Release
+          cmake --build . --target install --config ${{ matrix.build_type }}
           mkdir C:\Thrift\bin
 
       - name: Build & Install
@@ -70,10 +69,31 @@ jobs:
           BIT_VERSION: ${{ matrix.arch.address_model }}
           INSTALL: ON
         run: |
-          ./scripts/build-windows.bat `
+          .\scripts\build-windows.bat `
               -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
               -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
               -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
               -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
               -DBUILD_TESTS=ON `
               -DBUILD_EXAMPLES=OFF
+
+      - name: Test
+        env:
+          BUILD_DIR: build
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        run: |
+          .\scripts\test-windows.bat
+
+      - name: Verify Installation
+        env:
+          BUILD_DIR: build-examples
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          BIT_VERSION: ${{ matrix.arch.address_model }}
+        run: |
+          .\scripts\verify-installation-windows.bat `
+              -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift;${{ github.workspace }}\destination" `
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
