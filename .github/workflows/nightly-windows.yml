@@ -10,8 +10,10 @@ jobs:
         arch:
           - cmake: Win32
             vcpkg_triplet: x86-windows
+            address_model: 32
           - cmake: x64
             vcpkg_triplet: x64-windows
+            address_model: 64
         build_type:
           - Debug
 #          - Release
@@ -38,9 +40,18 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install Boost
+        shell: pwsh
         run: |
-          choco install boost-msvc-14.2
+          Invoke-WebRequest `
+              "https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz" `
+              -OutFile "boost_1_75_0.tar.gz"
+
+          tar xzf boost_1_75_0.tar.gz
+          cd boost_1_75_0
+          .\bootstrap.bat
+          .\b2 address-model=${{ matrix.arch.address_model }} --with-thread --with-chrono install
+
 
       - name: Install Thrift
         run: |
-          vcpkg install boost
+          vcpkg install thrift
