@@ -190,7 +190,7 @@ generate_export_header(
         STATIC_DEFINE HAZELCAST_USE_STATIC
 )
 
-if (type STREQUAL "STATIC")
+if (NOT BUILD_SHARED_LIBS)
     target_compile_definitions(${PROJECT_NAME} PUBLIC HAZELCAST_USE_STATIC)
 endif()
 
