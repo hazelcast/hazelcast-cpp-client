@@ -179,20 +179,13 @@ if (DISABLE_LOGGING)
     target_compile_definitions(${PROJECT_NAME} PUBLIC HZ_LOGGING_DISABLED)
 endif ()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEFINE_SYMBOL HAZELCAST_EXPORTS)
-
 generate_export_header(
         ${PROJECT_NAME}
         BASE_NAME hazelcast
         EXPORT_MACRO_NAME HAZELCAST_API
         EXPORT_FILE_NAME include/hazelcast/util/export.h
         NO_EXPORT_MACRO_NAME HAZELCAST_PRIVATE
-        STATIC_DEFINE HAZELCAST_USE_STATIC
 )
-
-if (type STREQUAL "STATIC")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC HAZELCAST_USE_STATIC)
-endif()
 
 # install library target
 install(
