@@ -55,6 +55,9 @@ echo %TEST_EXECUTABLE%
 set result=%errorlevel%
 echo result = %result%
 
+type rclog.txt
+
 taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
+
 
 exit /b %result%

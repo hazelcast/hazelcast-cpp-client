@@ -64,4 +64,4 @@ set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-
 echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 
 echo "Starting hazelcast-remote-controller"
-start "hazelcast-remote-controller" /MIN cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -Dhazelcast.phone.home.enabled=false -cp %CLASSPATH% com.hazelcast.remotecontroller.Main --use-simple-server"
+start "hazelcast-remote-controller" /MIN cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -Dhazelcast.phone.home.enabled=false -cp %CLASSPATH% com.hazelcast.remotecontroller.Main --use-simple-server 1> rclog.txt 2>&1"
