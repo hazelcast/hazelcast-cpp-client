@@ -95,6 +95,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
           SSL_CERT_FILE: 'C:\cacert.pem'
+        shell: cmd
         run: |
           .\scripts\test-windows.bat
 

@@ -53,6 +53,7 @@ set PATH=%BUILD_DIR%\%BUILD_CONFIGURATION%;%BUILD_DIR%\bin\%BUILD_CONFIGURATION%
 echo %TEST_EXECUTABLE%
 %TEST_EXECUTABLE% --gtest_output="xml:CPP_Client_Test_Report.xml" --gtest_filter=-*ReplicatedMap*:*AwsClient*:*ClientMapTest*
 set result=%errorlevel%
+echo result = %result%
 
 taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
 
