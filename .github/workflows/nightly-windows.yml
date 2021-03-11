@@ -40,6 +40,9 @@ jobs:
         if: matrix.with_openssl.toggle == 'ON'
         run: |
           choco install openssl ${{ matrix.arch.choco_options }}
+          Invoke-WebRequest `
+              "https://curl.se/ca/cacert.pem" `
+              -OutFile "C:\cacert.pem"
 
       - name: Install Boost
         run: |
@@ -73,8 +76,7 @@ jobs:
           BUILD_CONFIGURATION: ${{ matrix.build_type }}
           BIT_VERSION: ${{ matrix.arch.address_model }}
           INSTALL: ON
-          CXXFLAGS: '/I C:\Thrift\include\ /fsanitize=address'
-          LDFLAGS: '/fsanitize=address'
+          CXXFLAGS: '/I C:\Thrift\include\'
         run: |
           .\scripts\build-windows.bat `
               -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
@@ -92,6 +94,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+          SSL_CERT_FILE: 'C:\cacert.pem'
         run: |
           .\scripts\test-windows.bat
 
