@@ -1,0 +1,97 @@
+name: Nightly
+
+on: [ push ]
+
+jobs:
+  build-unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+        arch: [ 64 ]
+        build_type: [ Debug, Release ]
+        library_type: [ SHARED, STATIC ]
+        with_openssl: [ OFF ]  # TODO add ON after adding aws key
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install system dependencies for Ubuntu
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install net-tools
+
+      - name: Install system dependencies for macOS
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          brew install bison
+
+      - uses: actions/checkout@v2
+
+      - name: Cache vcpkg
+        id: cache-vcpkg
+        uses: actions/cache@v2
+        with:
+          path: vcpkg
+          key: ${{ runner.os }}-vcpkg  # TODO this will probably need arch as well.
+
+      - name: Download vcpkg and install dependencies
+        if: ${{ steps.cache-vcpkg.outputs.cache-hit != 'true' }}
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          ./vcpkg/bootstrap-vcpkg.sh
+          ./vcpkg/vcpkg install boost openssl thrift
+          rm -rf ./vcpkg/buildtrees/ ./vcpkg/downloads
+
+      - name: Build, Install, Test & Verify
+        env:
+          BIT_VERSION: ${{ matrix.arch }}
+          BUILD_TYPE: ${{ matrix.build_type }}
+          LIBRARY_TYPE: ${{ matrix.library_type }}
+          WITH_OPENSSL: ${{ matrix.with_openssl }}
+          COVERAGE: OFF
+          TOOLCHAIN: ${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+        run: ./scripts/do-all-unix.sh
+#
+#  build-windows:
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        arch: [ 32 ]
+#        build_type: [ Debug, Release ]
+#        library_type: [ SHARED ]
+#        with_openssl: [ OFF ]  # TODO add ON after adding aws key
+#
+#    runs-on: windows-latest
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - name: Cache vcpkg
+#        id: cache-vcpkg
+#        uses: actions/cache@v2
+#        with:
+#          path: vcpkg
+#          key: ${{ runner.os }}-new-vcpkg
+#
+#      - name: Download vcpkg and install dependencies
+#        if: ${{ steps.cache-vcpkg.outputs.cache-hit != 'true' }}
+#        shell: bash
+#        run: |
+#          git clone https://github.com/microsoft/vcpkg
+#          ./vcpkg/bootstrap-vcpkg.sh
+#          ./vcpkg/vcpkg install boost openssl thrift --triplet=x86-windows
+#          ./vcpkg/vcpkg install boost openssl thrift --triplet=x64-windows
+#          rm -rf ./vcpkg/buildtrees/ ./vcpkg/downloads
+#
+#      - name: Build, Install, Test & Verify
+#        env:
+#          VCPKG_ROOT: ${{ github.workspace }}\vcpkg
+#          BIT_VERSION: ${{ matrix.arch }}
+#          BUILD_TYPE: ${{ matrix.build_type }}
+#          LIBRARY_TYPE: ${{ matrix.library_type }}
+#          WITH_OPENSSL: ${{ matrix.with_openssl }}
+#          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+#        run: .\scripts\do-all-windows.bat
