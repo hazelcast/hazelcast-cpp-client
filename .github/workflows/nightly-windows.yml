@@ -73,7 +73,7 @@ jobs:
           BUILD_CONFIGURATION: ${{ matrix.build_type }}
           BIT_VERSION: ${{ matrix.arch.address_model }}
           INSTALL: ON
-          CXXFLAGS: '/I C:\Thrift\include\'
+          CXXFLAGS: '/I C:\Thrift\include\ /fsanitize=address'
         run: |
           .\scripts\build-windows.bat `
               -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
