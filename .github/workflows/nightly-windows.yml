@@ -38,8 +38,9 @@ jobs:
 
       - name: Enable core dumping
         run: |
+          Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpCount"
           Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpFolder" -Value "C:\CrashDumps"
-          
+
       - name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
         run: |
