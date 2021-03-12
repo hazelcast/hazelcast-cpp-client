@@ -51,6 +51,8 @@ int main(int argc, char **argv) {
     const char *serverAddress = "127.0.0.1";
     int port = 9701;
 
+    *((int*)(123)) = 5;
+
     auto transport = std::make_shared<TBufferedTransport>(std::make_shared<TSocket>(serverAddress, port));
     try {
         transport->open();
