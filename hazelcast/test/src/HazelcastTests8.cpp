@@ -1533,14 +1533,18 @@ namespace hazelcast {
             }
 
             bool HazelcastServer::shutdown() {
+                std::cout << "shutdown() started" << std::endl;
                 bool expected = false;
                 if (!is_shutdown_.compare_exchange_strong(expected, true)) {
                     return false;
                 }
+                std::cout << "here 1" << std::endl;
 
                 if (!is_started_) {
                     return true;
                 }
+
+                std::cout << "calling factory shutdown" << std::endl;
 
                 if (!factory_.shutdown_server(member_)) {
                     return false;
@@ -1569,7 +1573,9 @@ namespace hazelcast {
             }
 
             HazelcastServer::~HazelcastServer() {
+                std::cout << "~HazelcastServer() started" << std::endl;
                 shutdown();
+                std::cout << "~HazelcastServer() finished" << std::endl;
             }
 
             const remote::Member &HazelcastServer::get_member() const {
