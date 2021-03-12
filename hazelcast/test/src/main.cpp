@@ -74,6 +74,10 @@ int main(int argc, char **argv) {
 
     testing::InitGoogleTest(&argc, argv);
 
-    return RUN_ALL_TESTS();
+    int retcode = RUN_ALL_TESTS();
+
+    std::cerr << "retcode: " << recode << std::endl;
+
+    return retcode;
 }
 
