@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 
     int retcode = RUN_ALL_TESTS();
 
-    std::cerr << "retcode: " << recode << std::endl;
+    std::cerr << "retcode: " << retcode << std::endl;
 
     return retcode;
 }
