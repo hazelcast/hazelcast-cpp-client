@@ -11,15 +11,15 @@ jobs:
           - cmake: Win32
             choco_options: '--x86'
             address_model: 32
-          - cmake: x64
-            choco_options: ''
-            address_model: 64
+          # - cmake: x64
+          #   choco_options: ''
+          #   address_model: 64
         build_type:
           - Debug
-          - Release
+          # - Release
         shared_libs:
-          - toggle: OFF
-            name: Static
+          # - toggle: OFF
+          #   name: Static
           - toggle: ON
             name: Shared
         with_openssl:
@@ -35,6 +35,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Enable core dumping
+        run: |
+          New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "LocalDumps"
+          New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpFolder" -Value "C:\CrashDumps" -PropertyType "ExpandString"
+          New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpCount" -Value 10 -PropertyType DWord
 
       - name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
@@ -96,15 +102,18 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
           SSL_CERT_FILE: 'C:\cacert.pem'
         shell: cmd
+        continue-on-error: true
         run: |
           .\scripts\test-windows.bat
 
-      - name: Verify Installation
-        env:
-          BUILD_DIR: build-examples
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
-          BIT_VERSION: ${{ matrix.arch.address_model }}
-        run: |
-          .\scripts\verify-installation-windows.bat `
-              -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: CrashDumps
+          path: C:\CrashDumps
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Build
+          path: ${{ github.workspace }}\build
+
+      
