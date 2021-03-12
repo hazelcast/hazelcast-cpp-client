@@ -51,7 +51,7 @@ echo "Starting the client test now."
 set PATH=%BUILD_DIR%\%BUILD_CONFIGURATION%;%BUILD_DIR%\bin\%BUILD_CONFIGURATION%;%PATH%
 
 echo %TEST_EXECUTABLE%
-%TEST_EXECUTABLE% --gtest_output="xml:CPP_Client_Test_Report.xml" --gtest_filter=-*AwsClient*
+%TEST_EXECUTABLE% --gtest_output="xml:CPP_Client_Test_Report.xml" --gtest_filter=*BasicClientReplicatedMapNearCacheTest.whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnNearCacheAdapter/1
 set result=%errorlevel%
 echo result = %result%
 
