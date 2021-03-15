@@ -17,12 +17,9 @@
 #pragma once
 
 #include <unordered_map>
+#include <hazelcast/client/config/cloud_config.h>
 
-#include "hazelcast/client/aws/aws_client.h"
-#include "hazelcast/util/Sync.h"
 #include "hazelcast/util/export.h"
-#include "hazelcast/client/connection/AddressProvider.h"
-#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,29 +28,28 @@
 
 namespace hazelcast {
     namespace client {
-        namespace config {
-            class client_network_config;
-        }
         namespace spi {
             namespace impl {
-                class HAZELCAST_API AwsAddressProvider : public connection::AddressProvider {
-                public:
-                    AwsAddressProvider(config::client_aws_config &aws_config, int aws_member_port, logger &lg);
+                namespace discovery {
+                    class cloud_discovery {
+                    public:
+                        static constexpr const char *CLOUD_SERVER = "coordinator.hazelcast.cloud";
+                        static constexpr const char *CLOUD_URL_PATH = "/cluster/discovery?token=";
+                        static constexpr const char *PRIVATE_ADDRESS_PROPERTY = "private-address";
+                        static constexpr const char *PUBLIC_ADDRESS_PROPERTY = "public-address";
 
-                    ~AwsAddressProvider() override;
+                        cloud_discovery(config::cloud_config &config);
 
-                    std::vector<address> load_addresses() override;
+                        std::unordered_map<address, address> get_addresses();
 
-                private:
-                    std::string aws_member_port_;
-                    logger &logger_;
-                    aws::aws_client aws_client_;
-                    util::Sync<std::unordered_map<std::string, std::string> > private_to_public_;
+                    private:
+                        config::cloud_config &cloud_config_;
 
-                    void update_lookup_table();
+                        std::unordered_map<address, address> parse_json_response(std::istream &conn_stream);
 
-                    std::unordered_map<std::string, std::string> get_lookup_table();
-                };
+                        address create_address(const std::string &hostname, int default_port);
+                    };
+                }
             }
         }
     }

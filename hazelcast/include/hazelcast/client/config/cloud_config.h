@@ -13,37 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #pragma once
 
-#include "hazelcast/client/address.h"
+#include "hazelcast/util/export.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
-#pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class HAZELCAST_API AddressTranslator {
-            public:
-                virtual ~AddressTranslator() = default;
-
-                /**
-                 * Translates the given address to another address specific to
-                 * network or service
-                 *
-                 * @param address
-                 * @return new address if given address is known, otherwise return null
-                 */
-                virtual address translate(const address &address) = 0;
-
-                /**
-                 * Refreshes the internal lookup table if necessary.
-                 */
-                virtual void refresh() = 0;
+        namespace config {
+            /**
+             * hazelcast.cloud configuration to let the client connect the cluster via hazelcast.cloud
+             */
+            struct HAZELCAST_API cloud_config {
+                std::string discovery_token;
+                bool enabled{false};
             };
         }
     }
@@ -52,6 +39,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 
 

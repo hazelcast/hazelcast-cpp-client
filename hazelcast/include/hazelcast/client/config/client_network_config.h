@@ -15,13 +15,11 @@
  */
 #pragma once
 
-#include <memory>
-#include <stdint.h>
-
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/config/socket_options.h"
+#include "hazelcast/client/config/cloud_config.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -92,6 +90,13 @@ namespace hazelcast {
                 client_aws_config &get_aws_config();
 
                 /**
+                 * Returns the current cloud_config.
+                 *
+                 * @return cloud_config
+                 */
+                cloud_config &get_cloud_config();
+
+                /**
                  * See client_network_config#setSmartRouting(boolean)  for details
                  *
                  * @return true if client is smart
@@ -150,6 +155,7 @@ namespace hazelcast {
             private:
                 config::ssl_config ssl_config_;
                 config::client_aws_config client_aws_config_;
+                config::cloud_config cloud_config_;
 
                 std::chrono::milliseconds connection_timeout_;
                 bool smart_routing_;

@@ -16,7 +16,12 @@
 
 #pragma once
 
-#include "hazelcast/client/connection/AddressTranslator.h"
+#include <functional>
+#include <unordered_map>
+#include <mutex>
+
+#include "hazelcast/util/export.h"
+#include "hazelcast/client/connection/AddressProvider.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -27,12 +32,23 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
-                class HAZELCAST_API DefaultAddressTranslator : public connection::AddressTranslator {
-                public:
-                    address translate(const address &address) override;
+                namespace discovery {
+                    class remote_address_provider : public connection::AddressProvider {
+                    public:
+                        remote_address_provider(std::function<std::unordered_map<address, address>()> addr_map_method,
+                                                bool use_public);
 
-                    void refresh() override;
-                };
+                        std::vector<address> load_addresses() override;
+
+                        boost::optional<address> translate(const address &addr) override;
+
+                    private:
+                        std::function<std::unordered_map<address, address>()> refresh_address_map_;
+                        const bool use_public_;
+                        std::mutex lock_;
+                        std::unordered_map<address, address> private_to_public_;
+                    };
+                }
             }
         }
     }

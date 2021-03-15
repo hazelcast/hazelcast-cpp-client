@@ -1387,7 +1387,7 @@ namespace hazelcast {
                             set_security_group_name("launch-wizard-147");
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                                                                                                                                            // The access key and secret will be retrieved from default IAM role at windows machine
+                    // The access key and secret will be retrieved from default IAM role at windows machine
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
 #else
                     clientConfig.get_network_config().get_aws_config().set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).

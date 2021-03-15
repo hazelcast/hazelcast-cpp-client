@@ -41,11 +41,12 @@
 #include "hazelcast/client/aws/utility/aws_url_encoder.h"
 #include "hazelcast/client/aws/impl/Constants.h"
 #include "hazelcast/client/config/client_aws_config.h"
+#include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/aws/security/ec2_request_signer.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/aws/impl/Filter.h"
-#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
+#include "hazelcast/client/aws/aws_client.h"
 #include "hazelcast/client/aws/utility/cloud_utility.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/SyncHttpClient.h"
@@ -316,65 +317,6 @@ namespace hazelcast {
                     return filters_;
                 }
 
-                AwsAddressTranslator::AwsAddressTranslator(config::client_aws_config &aws_config, logger &lg)
-                        : logger_(lg) {
-                    if (aws_config.is_enabled() && !aws_config.is_inside_aws()) {
-                        aws_client_ = std::unique_ptr<aws_client>(new aws_client(aws_config, lg));
-                    }
-                }
-
-                address AwsAddressTranslator::translate(const address &addr) {
-                    // if no translation is needed just return the address as it is
-                    if (NULL == aws_client_.get()) {
-                        return addr;
-                    }
-
-                    address translatedAddress = addr;
-
-                    if (find_from_cache(addr, translatedAddress)) {
-                        return translatedAddress;
-                    }
-
-                    refresh();
-
-                    if (find_from_cache(addr, translatedAddress)) {
-                        return translatedAddress;
-                    }
-
-                    std::stringstream out;
-                    out << "No translation is found for private ip:" << addr;
-                    BOOST_THROW_EXCEPTION(exception::io("AwsAddressTranslator::translate", out.str()));
-                }
-
-                void AwsAddressTranslator::refresh() {
-                    try {
-                        private_to_public_ = std::shared_ptr<std::unordered_map<std::string, std::string> >(
-                                new std::unordered_map<std::string, std::string>(aws_client_->get_addresses()));
-                    } catch (exception::iexception &e) {
-                        HZ_LOG(logger_, warning,
-                            boost::str(boost::format("AWS addresses failed to load: %1%") % e.what()));
-                    }
-                }
-
-                bool AwsAddressTranslator::find_from_cache(const address &addr, address &translated_address) {
-                    std::shared_ptr<std::unordered_map<std::string, std::string> > mapping = private_to_public_;
-                    if (mapping.get() == NULL) {
-                        return false;
-                    }
-
-                    std::unordered_map<std::string, std::string>::const_iterator publicAddressIt = mapping->find(
-                            addr.get_host());
-                    if (publicAddressIt != mapping->end()) {
-                        const std::string &publicIp = (*publicAddressIt).second;
-                        if (!publicIp.empty()) {
-                            translated_address = address((*publicAddressIt).second, addr.get_port());
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-
                 const std::string DescribeInstances::QUERY_PREFIX = "/?";
                 const std::string DescribeInstances::IAM_ROLE_ENDPOINT = "169.254.169.254";
                 const std::string DescribeInstances::IAM_ROLE_QUERY = "/latest/meta-data/iam/security-credentials/";
@@ -610,20 +552,36 @@ namespace hazelcast {
 
             }
 
-            aws_client::aws_client(config::client_aws_config &aws_config, logger &lg) : aws_config_(aws_config),
-                                                                                        logger_(lg) {
+            aws_client::aws_client(config::client_aws_config &aws_config, const client_properties &client_properties,
+                                   logger &lg) : aws_config_(aws_config), logger_(lg) {
                 this->endpoint_ = aws_config.get_host_header();
                 if (!aws_config.get_region().empty() && aws_config.get_region().length() > 0) {
                     if (aws_config.get_host_header().find("ec2.") != 0) {
-                        BOOST_THROW_EXCEPTION(exception::invalid_configuration("AWSClient::AWSClient",
-                                                                                       "HostHeader should start with \"ec2.\" prefix"));
+                        BOOST_THROW_EXCEPTION(exception::invalid_configuration("aws_client::aws_client",
+                                                                               "HostHeader should start with \"ec2.\" prefix"));
                     }
                     boost::replace_all(this->endpoint_, "ec2.", std::string("ec2.") + aws_config.get_region() + ".");
                 }
+
+                aws_member_port_ = client_properties.get_integer(client_properties.get_aws_member_port());
+                if (aws_member_port_ < 0 || aws_member_port_ > 65535) {
+                    BOOST_THROW_EXCEPTION(
+                            exception::invalid_configuration("aws_client::aws_client",
+                                                             (boost::format("Configured aws member port %1% is not "
+                                                                            "a valid port number. It should be between 0-65535 inclusive.")
+                                                              % aws_member_port_).str()));
+                }
             }
 
-            std::unordered_map<std::string, std::string> aws_client::get_addresses() {
-                return impl::DescribeInstances(aws_config_, endpoint_, logger_).execute();
+            std::unordered_map<address, address> aws_client::get_addresses() {
+                auto addr_pair_map = impl::DescribeInstances(aws_config_, endpoint_, logger_).execute();
+                std::unordered_map<address, address> addr_map;
+                addr_map.reserve(addr_pair_map.size());
+                for (const auto &addr_pair : addr_pair_map) {
+                    addr_map.emplace(address{addr_pair.first, aws_member_port_},
+                                     address{addr_pair.second, aws_member_port_});
+                }
+                return addr_map;
             }
 
         }
