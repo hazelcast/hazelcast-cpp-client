@@ -41,24 +41,28 @@ if [ -d "$BUILD_DIR" ]; then
 fi
 
 # print variables for debugging
-echo "BUILD_DIR   = $BUILD_DIR"
-echo "BIT_VERSION = $BIT_VERSION"
-echo "COVERAGE    = $COVERAGE"
-echo "INSTALL     = $INSTALL"
-echo "CXXFLAGS    = $CXXFLAGS"
+echo "BUILD_DIR       = $BUILD_DIR"
+echo "BIT_VERSION     = $BIT_VERSION"
+echo "COVERAGE        = $COVERAGE"
+echo "INSTALL         = $INSTALL"
+echo "CXXFLAGS        = $CXXFLAGS"
+echo "CMake arguments = $@"
 
 # export flags variable to be used by CMake
 export CXXFLAGS
 
+SOURCE_DIR=$(pwd)
+
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+
 echo "Configuring..."
-cmake -S . -B "$BUILD_DIR" "$@"
+cmake $SOURCE_DIR "$@"
 
 echo "Building..."
-cmake --build "$BUILD_DIR" --verbose --parallel 8
+VERBOSE=1 cmake --build .
 
 if [ "$INSTALL" = "ON" ]; then
   echo "Installing..."
-  cmake --install "$BUILD_DIR"
+  cmake --build . --target install
 fi
-
-
