@@ -17,8 +17,8 @@
 #pragma once
 
 #include <unordered_map>
-#include <hazelcast/client/config/cloud_config.h>
 
+#include "hazelcast/client/config/cloud_config.h"
 #include "hazelcast/util/export.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -31,7 +31,7 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 namespace discovery {
-                    class cloud_discovery {
+                    class HAZELCAST_API cloud_discovery {
                     public:
                         static constexpr const char *CLOUD_SERVER = "coordinator.hazelcast.cloud";
                         static constexpr const char *CLOUD_URL_PATH = "/cluster/discovery?token=";

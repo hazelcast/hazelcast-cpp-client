@@ -33,7 +33,7 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 namespace discovery {
-                    class remote_address_provider : public connection::AddressProvider {
+                    class HAZELCAST_API remote_address_provider : public connection::AddressProvider {
                     public:
                         remote_address_provider(std::function<std::unordered_map<address, address>()> addr_map_method,
                                                 bool use_public);
