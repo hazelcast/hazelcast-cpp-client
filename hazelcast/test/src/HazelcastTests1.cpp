@@ -725,7 +725,6 @@ namespace hazelcast {
 
             hazelcast::client::client_config ClientTestSupportBase::get_config(bool ssl_enabled, bool smart) {
                 client_config clientConfig;
-                clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
 #ifdef HZ_BUILD_WITH_SSL
                 if (ssl_enabled) {
                     clientConfig.set_cluster_name(get_ssl_cluster_name());

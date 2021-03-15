@@ -29,8 +29,8 @@ namespace hazelcast {
              * hazelcast.cloud configuration to let the client connect the cluster via hazelcast.cloud
              */
             struct HAZELCAST_API cloud_config {
-                std::string discovery_token;
                 bool enabled{false};
+                std::string discovery_token;
             };
         }
     }

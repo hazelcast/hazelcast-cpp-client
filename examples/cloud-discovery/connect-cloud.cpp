@@ -15,7 +15,14 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
+// USAGE: connect-cloud <Cluster group name> <Cluster discovery token>
 int main(int argc, char **argv) {
+    constexpr const char *USAGE = "USAGE: connect-cloud <Cluster group name> <Cluster discovery token>";
+    if (argc != 3) {
+        std::cerr << USAGE << std::endl;
+        return -1;
+    }
+
     hazelcast::client::client_config config;
     config.set_cluster_name(argv[1]);
     auto &cloud_configuration = config.get_network_config().get_cloud_config();

@@ -42,12 +42,13 @@ namespace hazelcast {
 
                         std::unordered_map<address, address> get_addresses();
 
+                        // This method is public for testing
+                        static std::unordered_map<address, address> parse_json_response(std::istream &conn_stream);
+
                     private:
                         config::cloud_config &cloud_config_;
 
-                        std::unordered_map<address, address> parse_json_response(std::istream &conn_stream);
-
-                        address create_address(const std::string &hostname, int default_port);
+                        static address create_address(const std::string &hostname, int default_port);
                     };
                 }
             }
