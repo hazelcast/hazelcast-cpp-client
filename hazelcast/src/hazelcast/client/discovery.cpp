@@ -322,9 +322,10 @@ namespace hazelcast {
                 const std::string DescribeInstances::IAM_ROLE_QUERY = "/latest/meta-data/iam/security-credentials/";
                 const std::string DescribeInstances::IAM_TASK_ROLE_ENDPOINT = "169.254.170.2";
 
-                DescribeInstances::DescribeInstances(config::client_aws_config &aws_config, const std::string &endpoint,
-                                                     logger &lg) : aws_config_(aws_config), endpoint_(endpoint),
-                                                                              logger_(lg) {
+                DescribeInstances::DescribeInstances(std::chrono::steady_clock::duration timeout,
+                                                     config::client_aws_config &aws_config, const std::string &endpoint,
+                                                     logger &lg) : timeout_(timeout), aws_config_(aws_config),
+                                                     endpoint_(endpoint), logger_(lg) {
                     check_keys_from_iam_roles();
 
                     std::string timeStamp = get_formatted_timestamp();
@@ -364,8 +365,8 @@ namespace hazelcast {
                 std::istream &DescribeInstances::call_service() {
                     std::string query = rs_->get_canonicalized_query_string(attributes_);
                     https_client_ = std::unique_ptr<util::SyncHttpsClient>(
-                            new util::SyncHttpsClient(endpoint_.c_str(), QUERY_PREFIX + query));
-                    return https_client_->open_connection();
+                            new util::SyncHttpsClient(endpoint_.c_str(), QUERY_PREFIX + query, timeout_));
+                    return https_client_->connect_and_get_response();
                 }
 
                 void DescribeInstances::check_keys_from_iam_roles() {
@@ -552,8 +553,9 @@ namespace hazelcast {
 
             }
 
-            aws_client::aws_client(config::client_aws_config &aws_config, const client_properties &client_properties,
-                                   logger &lg) : aws_config_(aws_config), logger_(lg) {
+            aws_client::aws_client(std::chrono::steady_clock::duration timeout, config::client_aws_config &aws_config,
+                                   const client_properties &client_properties, logger &lg) : timeout_(timeout),
+                                   aws_config_(aws_config), logger_(lg) {
                 this->endpoint_ = aws_config.get_host_header();
                 if (!aws_config.get_region().empty() && aws_config.get_region().length() > 0) {
                     if (aws_config.get_host_header().find("ec2.") != 0) {
@@ -574,7 +576,7 @@ namespace hazelcast {
             }
 
             std::unordered_map<address, address> aws_client::get_addresses() {
-                auto addr_pair_map = impl::DescribeInstances(aws_config_, endpoint_, logger_).execute();
+                auto addr_pair_map = impl::DescribeInstances(timeout_,aws_config_, endpoint_, logger_).execute();
                 std::unordered_map<address, address> addr_map;
                 addr_map.reserve(addr_pair_map.size());
                 for (const auto &addr_pair : addr_pair_map) {

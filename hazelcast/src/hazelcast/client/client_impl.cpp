@@ -282,8 +282,10 @@ namespace hazelcast {
 
                 check_discovery_configuration_consistency(addressListProvided, awsDiscoveryEnabled, cloud_enabled);
 
+                auto connect_timeout = networkConfig.get_connection_timeout();
                 if (cloud_enabled) {
-                    auto cloud_provider = std::make_shared<spi::impl::discovery::cloud_discovery>(cloudConfig);
+                    auto cloud_provider = std::make_shared<spi::impl::discovery::cloud_discovery>(cloudConfig,
+                                                                                                  connect_timeout);
                     return std::unique_ptr<connection::AddressProvider>(
                             new spi::impl::discovery::remote_address_provider([=]() {
                                 return cloud_provider->get_addresses();
@@ -291,7 +293,8 @@ namespace hazelcast {
                 }
 
                 if (awsDiscoveryEnabled) {
-                    auto aws_addr_provider = std::make_shared<aws::aws_client>(awsConfig, client_properties_, *logger_);
+                    auto aws_addr_provider = std::make_shared<aws::aws_client>(connect_timeout, awsConfig,
+                                                                               client_properties_, *logger_);
                     return std::unique_ptr<connection::AddressProvider>(
                             new spi::impl::discovery::remote_address_provider([=]() {
                                 return aws_addr_provider->get_addresses();

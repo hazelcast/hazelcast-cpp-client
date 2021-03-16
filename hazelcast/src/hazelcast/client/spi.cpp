@@ -2292,13 +2292,15 @@ namespace hazelcast {
                         return boost::none;
                     }
 
-                    cloud_discovery::cloud_discovery(config::cloud_config &config) : cloud_config_(config) {}
+                    cloud_discovery::cloud_discovery(config::cloud_config &config,
+                                                     std::chrono::steady_clock::duration timeout)
+                                                     : cloud_config_(config), timeout_(timeout) {}
 
                     std::unordered_map<address, address> cloud_discovery::get_addresses() {
                         try {
                             util::SyncHttpsClient httpsConnection(CLOUD_SERVER, std::string(CLOUD_URL_PATH) +
-                                                                                cloud_config_.discovery_token);
-                            auto &conn_stream = httpsConnection.open_connection();
+                                                                                cloud_config_.discovery_token, timeout_);
+                            auto &conn_stream = httpsConnection.connect_and_get_response();
                             return parse_json_response(conn_stream);
                         } catch (std::exception &e) {
                             std::throw_with_nested(boost::enable_current_exception(

@@ -36,14 +36,17 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API SyncHttpsClient {
         public:
-            SyncHttpsClient(const std::string &server_ip, const std::string &uri_path);
+            SyncHttpsClient(const std::string &server_ip, const std::string &uri_path,
+                            std::chrono::steady_clock::duration timeout);
 
-            std::istream &open_connection();
+            std::istream &connect_and_get_response();
         private:
             std::string server_;
             std::string uri_path_;
+            std::chrono::steady_clock::duration timeout_;
 
             boost::asio::io_service io_service_;
+            boost::asio::ip::tcp::resolver resolver_;
 
             #ifdef HZ_BUILD_WITH_SSL
             boost::asio::ssl::context ssl_context_;
@@ -52,6 +55,10 @@ namespace hazelcast {
 
             boost::asio::streambuf response_;
             std::istream response_stream_;
+
+            void run(boost::system::error_code &error, std::chrono::steady_clock::duration timeout);
+
+            void close();
         };
     }
 }

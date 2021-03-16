@@ -36,12 +36,13 @@ namespace hazelcast {
         namespace aws {
             class HAZELCAST_API aws_client {
             public:
-                aws_client(config::client_aws_config &aws_config, const client_properties &client_properties,
-                           logger &lg);
+                aws_client(std::chrono::steady_clock::duration timeout, config::client_aws_config &aws_config,
+                           const client_properties &client_properties, logger &lg);
 
                 std::unordered_map<address, address> get_addresses();
 
             private:
+                std::chrono::steady_clock::duration timeout_;
                 config::client_aws_config &aws_config_;
                 std::string endpoint_;
                 logger &logger_;

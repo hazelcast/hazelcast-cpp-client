@@ -135,18 +135,20 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        SyncHttpsClient::SyncHttpsClient(const std::string &server_ip, const std::string &uri_path)
-            : server_(server_ip), uri_path_(uri_path),
+        SyncHttpsClient::SyncHttpsClient(const std::string &server_ip, const std::string &uri_path,
+                                         std::chrono::steady_clock::duration timeout)
+                : server_(server_ip), uri_path_(uri_path), timeout_(timeout), resolver_(io_service_),
 #ifdef HZ_BUILD_WITH_SSL
-            ssl_context_(boost::asio::ssl::context::tlsv12),
+                  ssl_context_(boost::asio::ssl::context::tlsv12),
 #endif
-            response_stream_(&response_) {
+                  response_stream_(&response_) {
             util::Preconditions::check_ssl("SyncHttpsClient::SyncHttpsClient");
 
 #ifdef HZ_BUILD_WITH_SSL
             ssl_context_.set_default_verify_paths();
-            ssl_context_.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
-                                   boost::asio::ssl::context::single_dh_use);
+            ssl_context_.set_options(
+                    boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
+                    boost::asio::ssl::context::single_dh_use);
 
             ssl_context_.set_verify_mode(boost::asio::ssl::verify_peer);
             ssl_context_.set_verify_callback(boost::asio::ssl::host_name_verification(server_));
@@ -155,17 +157,28 @@ namespace hazelcast {
 #endif // HZ_BUILD_WITH_SSL
         }
 
-        std::istream &SyncHttpsClient::open_connection() {
+        std::istream &SyncHttpsClient::connect_and_get_response() {
             util::Preconditions::check_ssl("SyncHttpsClient::openConnection");
 
 #ifdef HZ_BUILD_WITH_SSL
+            std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now() + timeout_;
             try {
-                // Get a list of endpoints corresponding to the server name.
-                boost::asio::ip::tcp::resolver resolver(io_service_);
-                boost::asio::ip::tcp::resolver::query query(server_, "https");
-                boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+                boost::system::error_code error;
+                boost::asio::ip::tcp::resolver::results_type addresses;
+                resolver_.async_resolve(server_, "https",
+                                        [&](const boost::system::error_code &ec,
+                                            boost::asio::ip::tcp::resolver::results_type results) {
+                                            error = ec;
+                                            addresses = results;
+                                        });
 
-                boost::asio::connect(socket_->lowest_layer(), endpoint_iterator);
+                run(error, end_time - std::chrono::steady_clock::now());
+
+                boost::asio::async_connect(socket_->lowest_layer(), addresses,
+                                           [&](const boost::system::error_code &ec,
+                                               const boost::asio::ip::tcp::endpoint &endpoint) { error = ec; });
+
+                run(error, end_time - std::chrono::steady_clock::now());
 
                 socket_->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
 
@@ -173,10 +186,14 @@ namespace hazelcast {
                 if (!SSL_set_tlsext_host_name(socket_->native_handle(), server_.c_str())) {
                     boost::system::error_code ec{static_cast<int>(::ERR_get_error()),
                                                  boost::asio::error::get_ssl_category()};
-                    throw boost::system::system_error{ec};
+                    throw std::system_error{ec};
                 }
 
-                socket_->handshake(boost::asio::ssl::stream_base::client);
+                socket_->async_handshake(boost::asio::ssl::stream_base::client,
+                                         [&](const boost::system::error_code &ec) { error = ec; });
+                run(error, end_time - std::chrono::steady_clock::now());
+
+                socket_->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
 
                 // Form the request. We specify the "Connection: close" header so that the
                 // server will close the socket after transmitting the response. This will
@@ -189,22 +206,27 @@ namespace hazelcast {
                 request_stream << "Connection: close\r\n\r\n";
 
                 // Send the request.
-                boost::asio::write(*socket_, request.data());
+                boost::asio::async_write(*socket_, request.data(),
+                                         [&](const boost::system::error_code &ec, std::size_t) { error = ec; });
+                run(error, timeout_);
 
                 // Read the response status line. The response streambuf will automatically
                 // grow to accommodate the entire line. The growth may be limited by passing
                 // a maximum size to the streambuf constructor.
                 // Read until EOF
-                boost::system::error_code error;
-                size_t bytesRead;
-                while ((bytesRead = boost::asio::read(*socket_, response_.prepare(1024),
-                                                      boost::asio::transfer_at_least(1), error))) {
-                    response_.commit(bytesRead);
-                }
+                end_time = std::chrono::steady_clock::now() + timeout_;
+                while (!error) {
+                    boost::asio::async_read(*socket_, response_.prepare(1024),
+                                            boost::asio::transfer_at_least(1),
+                                            [&](const boost::system::error_code &ec, std::size_t bytes_read) {
+                                                error = ec;
+                                                if (error) {
+                                                    return;
+                                                }
+                                                response_.commit(bytes_read);
+                                            });
 
-                if (error.value() != boost::asio::error::eof &&
-                    error.value() != boost::asio::ssl::error::stream_truncated) {
-                    throw boost::system::system_error(error);
+                    run(error, end_time - std::chrono::steady_clock::now());
                 }
 
                 // Check that response is OK.
@@ -227,18 +249,51 @@ namespace hazelcast {
                 std::string header;
                 while (std::getline(response_stream_, header) && header != "\r");
 
-            } catch (boost::system::system_error &e) {
-                std::ostringstream out;
-                out << "Could not retrieve response from https://" << server_ << uri_path_ << " Error:" << e.what();
-                throw client::exception::io("SyncHttpsClient::openConnection", out.str());
+            } catch (std::exception &e) {
+                close();
+                throw client::exception::io("SyncHttpsClient::openConnection", (boost::format(
+                        "Could not retrieve response from https://%1%%2%. Error:%3%") % server_ % uri_path_ %
+                                                                                e.what()).str());
             }
 #endif // HZ_BUILD_WITH_SSL
 
             return response_stream_;
         }
+
+        void SyncHttpsClient::run(boost::system::error_code &error, std::chrono::steady_clock::duration timeout) {
+            // Restart the io_context, as it may have been left in the "stopped" state
+            // by a previous operation.
+            io_service_.restart();
+
+            // Block until the asynchronous operation has completed, or timed out. If
+            // the pending asynchronous operation is a composed operation, the deadline
+            // applies to the entire operation, rather than individual operations on
+            // the socket.
+            io_service_.run_for(timeout);
+
+            // If the asynchronous operation completed successfully then the io_context
+            // would have been stopped due to running out of work. If it was not
+            // stopped, then the io_context::run_for call must have timed out.
+            if (!io_service_.stopped()) {
+                // Close the socket to cancel the outstanding asynchronous operation.
+                socket_->lowest_layer().close();
+
+                // Run the io_context again until the operation completes.
+                io_service_.run();
+            }
+
+            if (error && (error.value() != boost::asio::error::eof &&
+                          error.value() != boost::asio::ssl::error::stream_truncated)) {
+                throw std::system_error(error);
+            }
+        }
+
+        void SyncHttpsClient::close() {
+            boost::system::error_code ignored;
+            socket_->lowest_layer().close(ignored);
+        }
     }
 }
-
 
 namespace hazelcast {
     namespace util {

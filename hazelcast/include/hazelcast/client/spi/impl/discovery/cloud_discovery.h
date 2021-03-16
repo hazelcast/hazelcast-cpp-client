@@ -38,7 +38,7 @@ namespace hazelcast {
                         static constexpr const char *PRIVATE_ADDRESS_PROPERTY = "private-address";
                         static constexpr const char *PUBLIC_ADDRESS_PROPERTY = "public-address";
 
-                        cloud_discovery(config::cloud_config &config);
+                        cloud_discovery(config::cloud_config &config, std::chrono::steady_clock::duration timeout);
 
                         std::unordered_map<address, address> get_addresses();
 
@@ -47,6 +47,7 @@ namespace hazelcast {
 
                     private:
                         config::cloud_config &cloud_config_;
+                        std::chrono::steady_clock::duration timeout_;
 
                         static address create_address(const std::string &hostname, int default_port);
                     };
