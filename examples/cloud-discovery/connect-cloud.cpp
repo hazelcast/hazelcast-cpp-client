@@ -41,13 +41,6 @@ int main(int argc, char **argv) {
         std::cout << "Value for key 1 is " << value.value() << std::endl;
     }
 
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        auto key = rand() % 100;
-        map->put(key, key).get();
-        std::cout << "Put key " << key << std::endl;
-    }
-
     std::cout << "Finished" << std::endl;
 
     return 0;
