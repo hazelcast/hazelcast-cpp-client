@@ -14,3 +14,4 @@
 # limitations under the License.
 #
 add_executable(connect-cloud connect-cloud.cpp)
+add_executable(ssl-connect-cloud ssl-connect-cloud.cpp)

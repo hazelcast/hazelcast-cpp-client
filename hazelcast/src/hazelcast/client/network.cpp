@@ -567,7 +567,7 @@ namespace hazelcast {
                     std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
                     check_partition_count(response.partition_count);
                     connection->set_connected_server_version(response.server_version);
-                    connection->set_remote_address(std::move(response.server_address));
+                    connection->set_remote_address(response.server_address);
                     connection->set_remote_uuid(response.member_uuid);
 
                     auto existing_connection = active_connections_.get(response.member_uuid);
@@ -576,7 +576,6 @@ namespace hazelcast {
                                            boost::uuids::to_string(response.member_uuid)).str());
                         return existing_connection;
                     }
-
 
                     auto new_cluster_id = response.cluster_id;
                     boost::uuids::uuid current_cluster_id = cluster_id_;

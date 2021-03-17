@@ -51,6 +51,7 @@
       * [5.6. Enabling Client TLS/SSL](#56-enabling-client-tlsssl)
       * [5.7. Enabling Hazelcast AWS Discovery](#57-enabling-hazelcast-aws-discovery)
       * [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
+      * [5.8.1. Cloud Discovery With SSL Enabled](#581-cloud-discovery-with-ssl-enabled)
       * [5.9. Authentication](#59-authentication)
       * [5.9.1. Username Password Authentication](#591-username-password-authentication)
       * [5.9.2. Token Authentication](#592-token-authentication)
@@ -138,7 +139,7 @@
    * [11. License](#11-license)
    * [12. Copyright](#12-copyright)
 
-<!-- Added by: ihsan, at: Tue Mar 16 16:59:36 +03 2021 -->
+<!-- Added by: ihsan, at: Wed Mar 17 13:59:21 +03 2021 -->
 
 <!--te-->
 
@@ -1148,7 +1149,41 @@ If you are using [Hazelcast Cloud Service](https://cloud.hazelcast.com) and you 
 
 That is all the configuration you will need. The client will query the hazelcast coordinator service located at "https://coordinator.hazelcast.cloud/cluster/discovery?token=my_token" with the token you configured and will get a list of available server ip port combinations to connect to. The client will always use the public ip to connect to the cluster. The network connection timeout (`client_network_config::set_connection_timeout(const std::chrono::milliseconds &timeout)`) is used as the timeout value for connecting the coordinator and retrieving the cluster member list (change this setting if you have any timeout problems).
 
-Please check the code sample at examples/cloud-discovery for a full featured cloud discovery example.
+Please check the code sample at `examples/cloud-discovery/connect-cloud.cpp` for a full featured cloud discovery example.
+
+## 5.8.1. Cloud Discovery With SSL Enabled
+You can create a Hazelcast cluster in the cloud with "[Enable Encryption](https://docs.cloud.hazelcast.com/docs/encryption)" option. When this option is selected the cluster requires the clients to connect using the SSL connection and the client should be configured to do [mutual authentication](#6122-mutual-authentication-two-way-authentication). The required certificate authority file, client certificate, client key file, client key file and the key file PEM pass phrase are located at the Hazelcast cloud web site cluster configuration `Configure Clients` page. Download the keystore file and unzip it (it will be folder such as `hzcloud_xxx_keys` where `xxx` is the cluster number), this zip includes all the required files. Also, copy the `Keystore and truststore password` which is the client key PEM file pass phrase. Once, you have all this information in hand, you can configure the client as in the following code snippet:
+```c++
+    std::string cluster_name = "my_cluster";
+    std::string cloud_token = "my cloud token for the cluster";
+    std::string ca_file_path = "/path/to/hzcloud_xxx_keys/ca.pem";
+    std::string client_certificate = "/path/to/hzcloud_xxx_keys/cert.pem";
+    std::string client_key = "/path/to/hzcloud_xxx_keys/key.pem";
+    std::string client_key_pem_pass_phrase = "Keystore and truststore password";
+
+    hazelcast::client::client_config config;
+    config.set_cluster_name(cluster_name);
+    auto &cloud_configuration = config.get_network_config().get_cloud_config();
+    cloud_configuration.enabled = true;
+    cloud_configuration.discovery_token = cloud_token;
+
+    // ssl configuration
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv12);
+    ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+    ctx.load_verify_file(ca_file_path);
+    ctx.use_certificate_file(client_certificate, boost::asio::ssl::context::pem);
+    ctx.set_password_callback([&] (std::size_t max_length, boost::asio::ssl::context::password_purpose purpose) {
+        return client_key_pem_pass_phrase;
+    });
+    ctx.use_private_key_file(client_key, boost::asio::ssl::context::pem);
+    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+
+    auto hz = hazelcast::new_client(std::move(config)).get();
+```
+
+As you see in the code snippet, we provide a `boost::asio::ssl::context` in the client configuration in addition to the cloud token and cluster name configurations. It uses mutual authentication (two-way handshake).
+
+Please check the code sample at `examples/cloud-discovery/ssl-connect-cloud.cpp` for a full featured cloud discovery with SSL example.
 
 ## 5.9. Authentication
 
