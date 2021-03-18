@@ -44,7 +44,6 @@
 #include <boost/asio/ssl/host_name_verification.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/system_error.hpp>
-
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/IOUtil.h"
@@ -52,10 +51,8 @@
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/Clearable.h"
 #include "hazelcast/util/hz_thread_pool.h"
-
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/util/SyncHttpClient.h"
@@ -67,6 +64,10 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/exception_util.h"
 #include "hazelcast/logger.h"
+
+#ifdef HZ_BUILD_WITH_SSL
+#include <hazelcast/util/SyncHttpsClient.h>
+#endif //HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -133,18 +134,16 @@ namespace hazelcast {
     }
 }
 
+#ifdef HZ_BUILD_WITH_SSL
 namespace hazelcast {
     namespace util {
         SyncHttpsClient::SyncHttpsClient(const std::string &server_ip, const std::string &uri_path,
                                          std::chrono::steady_clock::duration timeout)
                 : server_(server_ip), uri_path_(uri_path), timeout_(timeout), resolver_(io_service_),
-#ifdef HZ_BUILD_WITH_SSL
                   ssl_context_(boost::asio::ssl::context::tlsv12),
-#endif
                   response_stream_(&response_) {
             util::Preconditions::check_ssl("SyncHttpsClient::SyncHttpsClient");
 
-#ifdef HZ_BUILD_WITH_SSL
             ssl_context_.set_default_verify_paths();
             ssl_context_.set_options(
                     boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
@@ -154,13 +153,11 @@ namespace hazelcast {
             ssl_context_.set_verify_callback(boost::asio::ssl::host_name_verification(server_));
             socket_ = std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >(
                     new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(io_service_, ssl_context_));
-#endif // HZ_BUILD_WITH_SSL
         }
 
         std::istream &SyncHttpsClient::connect_and_get_response() {
             util::Preconditions::check_ssl("SyncHttpsClient::openConnection");
 
-#ifdef HZ_BUILD_WITH_SSL
             std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now() + timeout_;
             try {
                 boost::system::error_code error;
@@ -255,8 +252,6 @@ namespace hazelcast {
                         "Could not retrieve response from https://%1%%2%. Error:%3%") % server_ % uri_path_ %
                                                                                 e.what()).str());
             }
-#endif // HZ_BUILD_WITH_SSL
-
             return response_stream_;
         }
 
@@ -294,6 +289,7 @@ namespace hazelcast {
         }
     }
 }
+#endif // HZ_BUILD_WITH_SSL
 
 namespace hazelcast {
     namespace util {

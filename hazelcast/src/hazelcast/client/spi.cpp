@@ -44,7 +44,6 @@
 #include <hazelcast/client/spi/impl/listener/listener_service_impl.h>
 #include <hazelcast/client/spi/impl/discovery/remote_address_provider.h>
 #include <hazelcast/client/spi/impl/discovery/cloud_discovery.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/AddressUtil.h>
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/lifecycle_event.h"
@@ -67,6 +66,9 @@
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
+#ifdef HZ_BUILD_WITH_SSL
+#include <hazelcast/util/SyncHttpsClient.h>
+#endif //HZ_BUILD_WITH_SSL
 
 namespace hazelcast {
     namespace client {
@@ -2297,6 +2299,7 @@ namespace hazelcast {
                                                      : cloud_config_(config), timeout_(timeout) {}
 
                     std::unordered_map<address, address> cloud_discovery::get_addresses() {
+#ifdef HZ_BUILD_WITH_SSL
                         try {
                             util::SyncHttpsClient httpsConnection(CLOUD_SERVER, std::string(CLOUD_URL_PATH) +
                                                                                 cloud_config_.discovery_token, timeout_);
@@ -2307,6 +2310,10 @@ namespace hazelcast {
                                     exception::hazelcast_("cloud_discovery::get_addresses",
                                                           e.what())));
                         }
+#else
+                        util::Preconditions::check_ssl("cloud_discovery::get_addresses");
+                        return {};
+#endif
                     }
 
                     std::unordered_map<address, address>

@@ -15,14 +15,11 @@
  */
 #pragma once
 
-
 #include <string>
 #include <boost/asio.hpp>
 
-#ifdef HZ_BUILD_WITH_SSL
 #include <boost/asio/ssl/context.hpp>
 #include <boost/asio/ssl/stream.hpp>
-#endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/export.h"
 
@@ -48,10 +45,8 @@ namespace hazelcast {
             boost::asio::io_service io_service_;
             boost::asio::ip::tcp::resolver resolver_;
 
-            #ifdef HZ_BUILD_WITH_SSL
             boost::asio::ssl::context ssl_context_;
             std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > socket_;
-            #endif // HZ_BUILD_WITH_SSL
 
             boost::asio::streambuf response_;
             std::istream response_stream_;

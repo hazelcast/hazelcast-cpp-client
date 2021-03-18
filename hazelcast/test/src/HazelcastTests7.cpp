@@ -38,8 +38,11 @@
 #include <openssl/crypto.h>
 #endif
 
+#ifdef HZ_BUILD_WITH_SSL
 #include <hazelcast/client/aws/impl/DescribeInstances.h>
 #include <hazelcast/client/aws/utility/cloud_utility.h>
+#endif //HZ_BUILD_WITH_SSL
+
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/client_properties.h>
 #include <hazelcast/client/config/client_aws_config.h>

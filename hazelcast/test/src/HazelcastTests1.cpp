@@ -63,8 +63,12 @@
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/Util.h>
+
+#ifdef HZ_BUILD_WITH_SSL
+#include <hazelcast/util/SyncHttpsClient.h>
+#endif //HZ_BUILD_WITH_SSL
+
 
 #include "ClientTestSupport.h"
 #include "ClientTestSupportBase.h"

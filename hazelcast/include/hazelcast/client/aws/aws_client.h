@@ -30,6 +30,7 @@ namespace hazelcast {
     class logger;
 
     namespace client {
+        class client_properties;
         namespace config {
             class client_aws_config;
         }
