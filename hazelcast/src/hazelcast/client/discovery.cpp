@@ -588,11 +588,10 @@ namespace hazelcast {
                 }
 
                 std::unordered_map<address, address> aws_client::get_addresses() {
-                    util::Preconditions::check_ssl("aws_client::aws_client");
+                    util::Preconditions::check_ssl("aws_client::get_addresses");
                     return {};
                 }
         }
     }
 }
 #endif //HZ_BUILD_WITH_SSL
-
