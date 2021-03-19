@@ -32,7 +32,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/client/connection/AddressTranslator.h"
 #include "hazelcast/client/connection/ConnectionListenable.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
 #include "hazelcast/client/config/client_connection_strategy_config.h"
@@ -77,8 +76,6 @@ namespace hazelcast {
 
             class ConnectionListener;
 
-            class ConnectionFuture;
-
             class AddressProvider;
 
             /**
@@ -88,8 +85,7 @@ namespace hazelcast {
                     : public ConnectionListenable, public std::enable_shared_from_this<ClientConnectionManagerImpl> {
             public:
                 ClientConnectionManagerImpl(spi::ClientContext &client,
-                                            const std::shared_ptr<AddressTranslator> &address_translator,
-                                            const std::vector<std::shared_ptr<AddressProvider> > &address_providers);
+                                            std::unique_ptr<AddressProvider> address_provider);
 
                 virtual ~ClientConnectionManagerImpl();
 
@@ -201,14 +197,12 @@ namespace hazelcast {
                 spi::ClientContext &client_;
                 std::unique_ptr<boost::asio::io_context> io_context_;
                 socket_interceptor socket_interceptor_;
-                std::shared_ptr<AddressTranslator> translator_;
-                util::SynchronizedMap<address, std::mutex> conn_locks_;
                 util::SynchronizedMap<address, bool> connecting_addresses_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connection_listeners_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
                 bool shuffle_member_list_;
-                std::vector<std::shared_ptr<AddressProvider> > address_providers_;
+                std::unique_ptr<AddressProvider> address_provider_;
                 std::atomic<int32_t> connection_id_gen_;
                 std::unique_ptr<boost::asio::ip::tcp::resolver> io_resolver_;
                 std::unique_ptr<internal::socket::SocketFactory> socket_factory_;

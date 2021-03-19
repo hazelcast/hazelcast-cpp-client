@@ -19,6 +19,7 @@
 #include <unordered_map>
 
 #include "hazelcast/util/export.h"
+#include "hazelcast/client/address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,20 +30,24 @@ namespace hazelcast {
     class logger;
 
     namespace client {
+        class client_properties;
         namespace config {
             class client_aws_config;
         }
         namespace aws {
             class HAZELCAST_API aws_client {
             public:
-                aws_client(config::client_aws_config &aws_config, logger &lg);
+                aws_client(std::chrono::steady_clock::duration timeout, config::client_aws_config &aws_config,
+                           const client_properties &client_properties, logger &lg);
 
-                std::unordered_map<std::string, std::string> get_addresses();
+                std::unordered_map<address, address> get_addresses();
 
             private:
+                std::chrono::steady_clock::duration timeout_;
                 config::client_aws_config &aws_config_;
                 std::string endpoint_;
                 logger &logger_;
+                int aws_member_port_;
             };
         }
     }

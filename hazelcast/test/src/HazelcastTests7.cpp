@@ -38,8 +38,11 @@
 #include <openssl/crypto.h>
 #endif
 
+#ifdef HZ_BUILD_WITH_SSL
 #include <hazelcast/client/aws/impl/DescribeInstances.h>
 #include <hazelcast/client/aws/utility/cloud_utility.h>
+#endif //HZ_BUILD_WITH_SSL
+
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/client_properties.h>
 #include <hazelcast/client/config/client_aws_config.h>
@@ -83,6 +86,7 @@
 #include <hazelcast/util/IOUtil.h>
 #include <hazelcast/util/Sync.h>
 #include <hazelcast/util/Util.h>
+#include <hazelcast/client/spi/impl/discovery/cloud_discovery.h>
 
 #include "ClientTestSupport.h"
 #include "ClientTestSupportBase.h"
@@ -1342,20 +1346,7 @@ namespace hazelcast {
                     ASSERT_THROW(hazelcast::new_client(std::move(clientConfig)).get(),
                                  exception::invalid_configuration);
                 }
-            }
-        }
-    }
-}
 
-#endif // HZ_BUILD_WITH_SSL
-
-
-#ifdef HZ_BUILD_WITH_SSL
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            namespace aws {
                 class AwsClientTest : public ClientTestSupport {
                 };
 
@@ -1387,7 +1378,7 @@ namespace hazelcast {
                             set_security_group_name("launch-wizard-147");
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                                                                                                                                            // The access key and secret will be retrieved from default IAM role at windows machine
+                    // The access key and secret will be retrieved from default IAM role at windows machine
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
 #else
                     clientConfig.get_network_config().get_aws_config().set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).
@@ -1404,7 +1395,7 @@ namespace hazelcast {
 
                 // FIPS_mode_set is not available for Mac OS X built-in openssl library
 #ifndef __APPLE__
-                    TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
+                TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
                     client_config clientConfig = get_config();
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
@@ -1454,28 +1445,23 @@ namespace hazelcast {
                     auto  hazelcastClient = new_client(std::move(clientConfig)).get();
                 }
 #endif
-            }
-        }
-    }
-}
 
-#endif // HZ_BUILD_WITH_SSL
+                TEST(sync_https_client, timeout_test) {
+                    util::SyncHttpsClient c("8.8.5.8", "/abc", std::chrono::seconds(1));
+                    ASSERT_THROW(c.connect_and_get_response(), exception::io);
+                }
 
-
-#ifdef HZ_BUILD_WITH_SSL
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            namespace aws {
                 class DescribeInstancesTest : public ClientTestSupport {
                 };
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
-                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value(
+                            "aws-tag-value-1");
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1486,7 +1472,9 @@ namespace hazelcast {
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value(
                             "non-existent-value");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
@@ -1495,7 +1483,9 @@ namespace hazelcast {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1505,16 +1495,20 @@ namespace hazelcast {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("non-existent-tag");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
-                    client::config::client_aws_config awsConfig;
+                    config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("aws-tag-value-1");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1524,7 +1518,9 @@ namespace hazelcast {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("non-existent-value");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
@@ -1533,7 +1529,9 @@ namespace hazelcast {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("launch-wizard-147");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1543,26 +1541,14 @@ namespace hazelcast {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("non-existent-group");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
+                    client::aws::impl::DescribeInstances desc(
+                            client_config().get_network_config().get_connection_timeout(), awsConfig,
+                            awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
-
             }
-        }
-    }
-}
-
-#endif //HZ_BUILD_WITH_SSL
-
-#ifdef HZ_BUILD_WITH_SSL
-
-namespace awsutil = hazelcast::client::aws::utility;
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            namespace aws {
+            namespace cloud {
                 class CloudUtilityTest : public ClientTestSupport {
                 };
 
@@ -1584,12 +1570,78 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find("172.30.4.118"));
                     ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
                 }
+
+                class cloud_discovery_test : public ClientTestSupport {
+                protected:
+                    void check_address_exist(const std::unordered_map<address, address> &addresses,
+                                             const std::string &private_ip, const std::string &public_ip, int port) {
+                        auto found = addresses.find(address{private_ip, port});
+                        ASSERT_NE(addresses.end(), found);
+                        ASSERT_EQ((address{public_ip, port}), found->second);
+                    }
+                };
+
+                TEST_F(cloud_discovery_test, invalid_token) {
+                    auto config = get_config();
+                    config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                            std::chrono::milliseconds(100));
+                    auto cloudConfig = config.get_network_config().get_cloud_config();
+                    cloudConfig.enabled = true;
+                    cloudConfig.discovery_token = "invalid_discovery_token";
+                    ASSERT_THROW(hazelcast::new_client(std::move(config)).get(), exception::illegal_state);
+                }
+
+                TEST_F(cloud_discovery_test, parse_json) {
+                    config::cloud_config config;
+                    config. enabled = true;
+                    config .discovery_token = "my_token";
+                    spi::impl::discovery::cloud_discovery d(config, std::chrono::seconds(1));
+                    auto test_stream = std::istringstream(
+                            R"([{"private-address":"100.103.97.89","public-address":"3.92.127.167:30964"},{"private-address":"100.97.31.19","public-address":"54.227.206.253:30964"},{"private-address":"100.127.33.250","public-address":"54.80.210.250:30964"}])");
+                    auto addresses = d.parse_json_response(test_stream);
+                    ASSERT_EQ(3, addresses.size());
+                    check_address_exist(addresses, "100.103.97.89", "3.92.127.167", 30964);
+                    check_address_exist(addresses, "100.97.31.19", "54.227.206.253", 30964);
+                    check_address_exist(addresses, "100.127.33.250", "54.80.210.250", 30964);
+                }
+
+                class discovery_config_mismatches_test : public ClientTestSupport {
+                };
+
+                TEST_F(discovery_config_mismatches_test, do_not_permit_aws_and_cloud) {
+                    auto config = get_config();
+                    auto &networkConfig = config.get_network_config();
+                    networkConfig.get_cloud_config().enabled = true;
+                    networkConfig.get_aws_config().set_enabled(true);
+                    ASSERT_THROW(hazelcast::new_client(std::move(config)).get(), exception::illegal_state);
+                }
+
+                TEST_F(discovery_config_mismatches_test, do_not_permit_aws_and_address) {
+                    auto config = get_config();
+                    auto &networkConfig = config.get_network_config();
+                    networkConfig.get_aws_config().set_enabled(true);
+                    networkConfig.add_address({"127.0.0.1", 5703});
+                    ASSERT_THROW(hazelcast::new_client(std::move(config)).get(), exception::illegal_state);
+                }
+
+                TEST_F(discovery_config_mismatches_test, do_not_permit_cloud_and_address) {
+                    auto config = get_config();
+                    auto &networkConfig = config.get_network_config();
+                    networkConfig.get_cloud_config().enabled = true;
+                    networkConfig.add_address({"127.0.0.1", 5703});
+                    ASSERT_THROW(hazelcast::new_client(std::move(config)).get(), exception::illegal_state);
+                }
+
+                TEST_F(discovery_config_mismatches_test, cloud_discovery_disabled_by_default) {
+                    auto config = get_config();
+                    ASSERT_FALSE(config.get_network_config().get_cloud_config().enabled);
+                }
+
             }
         }
     }
 }
-
-#endif //HZ_BUILD_WITH_SSL
+#endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)

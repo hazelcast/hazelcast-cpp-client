@@ -29,7 +29,7 @@
 int main() {
     hazelcast::client::client_config clientConfig;
 
-    // The default is to use port 5701 if this is not explicitely set. You can enable the below line if your hazelcast
+    // The default is to use port 5701 if this is not explicitly set. You can enable the below line if your hazelcast
     // server is running on another port.
     //clientConfig.setProperty(hazelcast::client::ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
 

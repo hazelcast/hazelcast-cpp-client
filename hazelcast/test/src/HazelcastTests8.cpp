@@ -33,7 +33,6 @@
 #include <openssl/crypto.h>
 #endif
 
-#include <hazelcast/client/aws/impl/DescribeInstances.h>
 #include <hazelcast/client/aws/utility/cloud_utility.h>
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/client_properties.h>
@@ -77,7 +76,6 @@
 #include <hazelcast/util/ConcurrentQueue.h>
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Sync.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/Util.h>
 
 #include "ClientTestSupport.h"

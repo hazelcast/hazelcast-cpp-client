@@ -49,11 +49,13 @@
       * [5.4. Setting Cluster Connection Timeout](#54-setting-cluster-connection-timeout)
       * [5.5. Advanced Cluster Connection Retry Configuration](#55-advanced-cluster-connection-retry-configuration)
       * [5.6. Enabling Client TLS/SSL](#56-enabling-client-tlsssl)
-      * [5.7. Enabling Hazelcast AWS Cloud Discovery](#57-enabling-hazelcast-aws-cloud-discovery)
-      * [5.8. Authentication](#58-authentication)
-      * [5.8.1. Username Password Authentication](#581-username-password-authentication)
-      * [5.8.2. Token Authentication](#582-token-authentication)
-      * [5.9. Configuring Backup Acknowledgment](#59-configuring-backup-acknowledgment)
+      * [5.7. Enabling Hazelcast AWS Discovery](#57-enabling-hazelcast-aws-discovery)
+      * [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
+      * [5.8.1. Cloud Discovery With SSL Enabled](#581-cloud-discovery-with-ssl-enabled)
+      * [5.9. Authentication](#59-authentication)
+      * [5.9.1. Username Password Authentication](#591-username-password-authentication)
+      * [5.9.2. Token Authentication](#592-token-authentication)
+      * [5.10. Configuring Backup Acknowledgment](#510-configuring-backup-acknowledgment)
    * [6. Securing Client Connection](#6-securing-client-connection)
       * [6.1. TLS/SSL](#61-tlsssl)
          * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
@@ -137,7 +139,7 @@
    * [11. License](#11-license)
    * [12. Copyright](#12-copyright)
 
-<!-- Added by: ihsan, at: Mon Mar  8 16:30:15 +03 2021 -->
+<!-- Added by: ihsan, at: Wed Mar 17 13:59:21 +03 2021 -->
 
 <!--te-->
 
@@ -1117,7 +1119,7 @@ for the client-cluster connection, you should set an SSL configuration. Please s
 
 As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast C++ clients have certificate authorities used to define which members they can trust. 
 
-## 5.7. Enabling Hazelcast AWS Cloud Discovery
+## 5.7. Enabling Hazelcast AWS Discovery
 
 The C++ client can discover the existing Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the [describe-instances] (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html) query of AWS. The client finds only the up and running instances and filters them based on the filter config provided at the `client_aws_config` configuration.
  
@@ -1133,7 +1135,57 @@ You need to enable the discovery by calling the `set_enabled(true)`. You can set
  
 The C++ client works the same way as the Java client. For details, see [aws_client Configuration] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#awsclient-configuration) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
 
-## 5.8. Authentication
+## 5.8. Enabling Hazelcast Cloud Discovery
+If you are using [Hazelcast Cloud Service](https://cloud.hazelcast.com) and you want to write an application that will utilize the Hazelcast cloud database service, you can use the C++ client. The configuration is very simple, you just need to set the cluster name, discovery token and enable the cloud discovery on network settings. Here is an example configuration:
+
+```c++
+    hazelcast::client::client_config config;
+    config.set_cluster_name("my_cluster(should match with the same cluster name at the cloud web site)");
+    auto &cloud_configuration = config.get_network_config().get_cloud_config();
+    cloud_configuration.enabled = true;
+    cloud_configuration.discovery_token = "My token for the cluster (you can get from the cloud web site)";
+    auto hz = hazelcast::new_client(std::move(config)).get();
+```
+
+That is all the configuration you will need. The client will query the hazelcast coordinator service located at "https://coordinator.hazelcast.cloud/cluster/discovery?token=my_token" with the token you configured and will get a list of available server ip port combinations to connect to. The client will always use the public ip to connect to the cluster. The network connection timeout (`client_network_config::set_connection_timeout(const std::chrono::milliseconds &timeout)`) is used as the timeout value for connecting the coordinator and retrieving the cluster member list (change this setting if you have any timeout problems).
+
+Please check the code sample at `examples/cloud-discovery/connect-cloud.cpp` for a full featured cloud discovery example.
+
+## 5.8.1. Cloud Discovery With SSL Enabled
+You can create a Hazelcast cluster in the cloud with "[Enable Encryption](https://docs.cloud.hazelcast.com/docs/encryption)" option. When this option is selected the cluster requires the clients to connect using the SSL connection and the client should be configured to do [mutual authentication](#6122-mutual-authentication-two-way-authentication). The required certificate authority file, client certificate, client key file and key file PEM pass phrase are located at the Hazelcast cloud web site cluster configuration `Configure Clients` page. Download the keystore file and unzip it (it will be folder such as `hzcloud_xxx_keys` where `xxx` is the cluster number), this zip includes all the required files. Also, copy the `Keystore and truststore password` which is the client key PEM file pass phrase. Once, you have all this information in hand, you can configure the client as in the following code snippet:
+```c++
+    std::string cluster_name = "my_cluster";
+    std::string cloud_token = "my cloud token for the cluster";
+    std::string ca_file_path = "/path/to/hzcloud_xxx_keys/ca.pem";
+    std::string client_certificate = "/path/to/hzcloud_xxx_keys/cert.pem";
+    std::string client_key = "/path/to/hzcloud_xxx_keys/key.pem";
+    std::string client_key_pem_pass_phrase = "Keystore and truststore password";
+
+    hazelcast::client::client_config config;
+    config.set_cluster_name(cluster_name);
+    auto &cloud_configuration = config.get_network_config().get_cloud_config();
+    cloud_configuration.enabled = true;
+    cloud_configuration.discovery_token = cloud_token;
+
+    // ssl configuration
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv12);
+    ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+    ctx.load_verify_file(ca_file_path);
+    ctx.use_certificate_file(client_certificate, boost::asio::ssl::context::pem);
+    ctx.set_password_callback([&] (std::size_t max_length, boost::asio::ssl::context::password_purpose purpose) {
+        return client_key_pem_pass_phrase;
+    });
+    ctx.use_private_key_file(client_key, boost::asio::ssl::context::pem);
+    config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+
+    auto hz = hazelcast::new_client(std::move(config)).get();
+```
+
+As you see in the code snippet, we provide a `boost::asio::ssl::context` in the client configuration in addition to the cloud token and cluster name configurations. It uses mutual authentication (two-way handshake).
+
+Please check the code sample at `examples/cloud-discovery/ssl-connect-cloud.cpp` for a full featured cloud discovery with SSL example.
+
+## 5.9. Authentication
 
 By default, the client does not use any authentication method and just uses the cluster "dev" to connect to. You can change which cluster to connect by using the configuration API `client_config::set_cluster_name`. This way, you can have multiple clusters in the network but the client will only be able to connect to the cluster with the correct cluster name (server should also be started with the cluster name configured to the same cluster name).
 
@@ -1142,7 +1194,7 @@ If you want to enable authentication, then the client can be configured in one o
 * Username password based authentication
 * Token based authentication
 
-## 5.8.1. Username Password Authentication
+## 5.9.1. Username Password Authentication
 
 The following is an example configuration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
 
@@ -1164,7 +1216,7 @@ Note that the server needs to be configured to use the same username and passwor
     </security>
 ```
 
-## 5.8.2. Token Authentication
+## 5.9.2. Token Authentication
 
 The following is an example configuration where we set the secret token bytes to be used while trying to connect to the cluster:
 
@@ -1188,7 +1240,7 @@ Note that the server needs to be configured to use the same token. An example se
     </security>
 ```
 
-## 5.9. Configuring Backup Acknowledgment
+## 5.10. Configuring Backup Acknowledgment
 
 When an operation with sync backup is sent by a client to the Hazelcast member(s), the acknowledgment of the operation's backup is sent to the client by the backup replica member(s). This improves the performance of the client operations.
 
