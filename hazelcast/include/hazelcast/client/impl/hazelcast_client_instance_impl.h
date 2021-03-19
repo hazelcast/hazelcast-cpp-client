@@ -239,18 +239,18 @@ namespace hazelcast {
 
                 hazelcast_client_instance_impl(const hazelcast_client_instance_impl& rhs) = delete;
 
-                void operator=(const hazelcast_client_instance_impl& rhs) = delete;
+                void operator=(const hazelcast_client_instance_impl &rhs) = delete;
 
                 std::shared_ptr<spi::impl::listener::listener_service_impl> init_listener_service();
 
                 std::shared_ptr<spi::impl::ClientExecutionServiceImpl> init_execution_service();
 
-                std::shared_ptr<connection::ClientConnectionManagerImpl> init_connection_manager_service(
-                        const std::vector<std::shared_ptr<connection::AddressProvider> > &address_providers);
-
-                std::vector<std::shared_ptr<connection::AddressProvider> > create_address_providers();
+                std::unique_ptr<connection::AddressProvider> create_address_provider();
 
                 void initalize_near_cache_manager();
+
+                void check_discovery_configuration_consistency(bool address_list_provided, bool aws_enabled,
+                                                               bool cloud_enabled);
             };
 
             template<>

@@ -29,17 +29,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-// required due to issue at asio https://github.com/chriskohlhoff/asio/issues/431
-#include <boost/asio/detail/win_iocp_io_context.hpp>
-#endif
-
 #include <utility>
 
-#include <boost/range/algorithm/find_if.hpp>
 #include <boost/uuid/uuid_hash.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "hazelcast/client/hazelcast_client.h"
 #include <hazelcast/client/protocol/codec/ErrorCodec.h>
@@ -47,6 +42,9 @@
 #include <hazelcast/client/spi/impl/ClientClusterServiceImpl.h>
 #include <hazelcast/client/spi/impl/listener/cluster_view_listener.h>
 #include <hazelcast/client/spi/impl/listener/listener_service_impl.h>
+#include <hazelcast/client/spi/impl/discovery/remote_address_provider.h>
+#include <hazelcast/client/spi/impl/discovery/cloud_discovery.h>
+#include <hazelcast/util/AddressUtil.h>
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/client/initial_membership_event.h"
@@ -60,8 +58,6 @@
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
-#include "hazelcast/client/spi/impl/AwsAddressProvider.h"
-#include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h"
 #include "hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h"
@@ -70,7 +66,9 @@
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
-#include "hazelcast/client/member_selectors.h"
+#ifdef HZ_BUILD_WITH_SSL
+#include <hazelcast/util/SyncHttpsClient.h>
+#endif //HZ_BUILD_WITH_SSL
 
 namespace hazelcast {
     namespace client {
@@ -641,14 +639,12 @@ namespace hazelcast {
                     return send(invocation, connection);
                 }
 
-                DefaultAddressProvider::DefaultAddressProvider(config::client_network_config &network_config,
-                                                               bool no_other_address_provider_exist) : network_config_(
-                        network_config), no_other_address_provider_exist_(no_other_address_provider_exist) {
-                }
+                DefaultAddressProvider::DefaultAddressProvider(config::client_network_config &network_config)
+                        : network_config_(network_config) {}
 
                 std::vector<address> DefaultAddressProvider::load_addresses() {
                     std::vector<address> addresses = network_config_.get_addresses();
-                    if (addresses.empty() && no_other_address_provider_exist_) {
+                    if (addresses.empty()) {
                         addresses.emplace_back("127.0.0.1", 5701);
                     }
 
@@ -657,14 +653,19 @@ namespace hazelcast {
                     return addresses;
                 }
 
+                boost::optional<address> DefaultAddressProvider::translate(const address &addr) {
+                    return addr;
+                }
+
                 const boost::shared_ptr<ClientClusterServiceImpl::member_list_snapshot> ClientClusterServiceImpl::EMPTY_SNAPSHOT(
                         new ClientClusterServiceImpl::member_list_snapshot{-1});
 
                 constexpr boost::chrono::milliseconds ClientClusterServiceImpl::INITIAL_MEMBERS_TIMEOUT;
 
                 ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
-                        : client_(client), member_list_snapshot_(EMPTY_SNAPSHOT), labels_(client.get_client_config().get_labels()),
-                        initial_list_fetched_latch_(1) {
+                        : client_(client), member_list_snapshot_(EMPTY_SNAPSHOT),
+                          labels_(client.get_client_config().get_labels()),
+                          initial_list_fetched_latch_(1) {
                 }
 
                 boost::uuids::uuid ClientClusterServiceImpl::add_membership_listener_without_init(
@@ -1592,50 +1593,6 @@ namespace hazelcast {
                                                   "No active connection is found"));
                 }
 
-                AwsAddressProvider::AwsAddressProvider(config::client_aws_config &aws_config, int aws_member_port,
-                                                       logger &lg) : aws_member_port_(
-                        util::IOUtil::to_string<int>(aws_member_port)), logger_(lg), aws_client_(aws_config, lg) {
-                }
-
-                std::vector<address> AwsAddressProvider::load_addresses() {
-                    update_lookup_table();
-                    std::unordered_map<std::string, std::string> lookupTable = get_lookup_table();
-                    std::vector<address> addresses;
-
-                    typedef std::unordered_map<std::string, std::string> LookupTable;
-                    for (const LookupTable::value_type &privateAddress : lookupTable) {
-                        std::vector<address> possibleAddresses = util::AddressHelper::get_socket_addresses(
-                                privateAddress.first + ":" + aws_member_port_, logger_);
-                        addresses.insert(addresses.begin(), possibleAddresses.begin(),
-                                         possibleAddresses.end());
-                    }
-                    return addresses;
-                }
-
-                void AwsAddressProvider::update_lookup_table() {
-                    try {
-                        private_to_public_ = aws_client_.get_addresses();
-                    } catch (exception::iexception &e) {
-                        HZ_LOG(logger_, warning,
-                            boost::str(boost::format("Aws addresses failed to load: %1%") % e.get_message())
-                        );
-                    }
-                }
-
-                std::unordered_map<std::string, std::string> AwsAddressProvider::get_lookup_table() {
-                    return private_to_public_;
-                }
-
-                AwsAddressProvider::~AwsAddressProvider() = default;
-
-                address DefaultAddressTranslator::translate(const address &address) {
-                    return address;
-                }
-
-                void DefaultAddressTranslator::refresh() {
-                }
-
-
                 ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client)
                         : client_(client), logger_(client.get_logger()), partition_count_(0),
                         partition_table_(boost::shared_ptr<partition_table>(new partition_table{nullptr, -1})) {
@@ -2290,6 +2247,101 @@ namespace hazelcast {
                 void ClientInvocationServiceImpl::noop_backup_event_handler::handle_backup(
                         int64_t source_invocation_correlation_id) {
                     assert(0);
+                }
+
+                namespace discovery {
+                    remote_address_provider::remote_address_provider(
+                            std::function<std::unordered_map<address, address>()> addr_map_method,
+                            bool use_public) : refresh_address_map_(std::move(addr_map_method)),
+                                               use_public_(use_public) {}
+
+                    std::vector<address> remote_address_provider::load_addresses() {
+                        auto address_map = refresh_address_map_();
+                        std::lock_guard<std::mutex> guard(lock_);
+                        private_to_public_ = address_map;
+                        std::vector<address> addresses;
+                        addresses.reserve(address_map.size());
+                        for (const auto &addr_pair : address_map) {
+                            addresses.push_back(addr_pair.first);
+                        }
+                        return addresses;
+                    }
+
+                    boost::optional<address> remote_address_provider::translate(const address &addr) {
+                        // if it is inside cloud, return private address otherwise we need to translate it.
+                        if (!use_public_) {
+                            return addr;
+                        }
+
+                        {
+                            std::lock_guard<std::mutex> guard(lock_);
+                            auto found = private_to_public_.find(addr);
+                            if (found != private_to_public_.end()) {
+                                return found->second;
+                            }
+                        }
+
+                        auto address_map = refresh_address_map_();
+
+                        std::lock_guard<std::mutex> guard(lock_);
+                        private_to_public_ = address_map;
+
+                        auto found = private_to_public_.find(addr);
+                        if (found != private_to_public_.end()) {
+                            return found->second;
+                        }
+
+                        return boost::none;
+                    }
+
+                    cloud_discovery::cloud_discovery(config::cloud_config &config,
+                                                     std::chrono::steady_clock::duration timeout)
+                                                     : cloud_config_(config), timeout_(timeout) {}
+
+                    std::unordered_map<address, address> cloud_discovery::get_addresses() {
+#ifdef HZ_BUILD_WITH_SSL
+                        try {
+                            util::SyncHttpsClient httpsConnection(CLOUD_SERVER, std::string(CLOUD_URL_PATH) +
+                                                                                cloud_config_.discovery_token, timeout_);
+                            auto &conn_stream = httpsConnection.connect_and_get_response();
+                            return parse_json_response(conn_stream);
+                        } catch (std::exception &e) {
+                            std::throw_with_nested(boost::enable_current_exception(
+                                    exception::hazelcast_("cloud_discovery::get_addresses",
+                                                          e.what())));
+                        }
+#else
+                        util::Preconditions::check_ssl("cloud_discovery::get_addresses");
+                        return {};
+#endif
+                    }
+
+                    std::unordered_map<address, address>
+                    cloud_discovery::parse_json_response(std::istream &conn_stream) {
+                        namespace pt = boost::property_tree;
+
+                        pt::ptree root;
+                        pt::read_json(conn_stream, root);
+
+                        std::unordered_map<address, address> addresses;
+                        for (const auto &item : root) {
+                            auto private_address = item.second.get<std::string>(PRIVATE_ADDRESS_PROPERTY);
+                            auto public_address = item.second.get<std::string>(PUBLIC_ADDRESS_PROPERTY);
+
+                            address public_addr = create_address(public_address, -1);
+                            //if it is not explicitly given, create the private address with public addresses port
+                            auto private_addr = create_address(private_address, public_addr.get_port());
+                            addresses.emplace(std::move(private_addr), std::move(public_addr));
+                        }
+
+                        return addresses;
+                    }
+
+                    address cloud_discovery::create_address(const std::string &hostname, int default_port) {
+                        auto address_holder = util::AddressUtil::get_address_holder(hostname, default_port);
+                        auto scoped_hostname = util::AddressHelper::get_scoped_hostname(address_holder);
+                        return address(std::move(scoped_hostname), address_holder.get_port());
+                    }
                 }
             }
         }

@@ -59,6 +59,9 @@ namespace hazelcast {
         class HAZELCAST_API AddressHelper {
         public:
             static std::vector<client::address> get_socket_addresses(const std::string &address, logger &lg);
+
+            static std::string get_scoped_hostname(const AddressHolder &addressHolder);
+
         private:
             static const int MAX_PORT_TRIES;
             static const int INITIAL_FIRST_PORT;

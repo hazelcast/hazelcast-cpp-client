@@ -58,7 +58,6 @@
 #include <hazelcast/util/concurrent/locks/LockSupport.h>
 #include <hazelcast/util/ConcurrentQueue.h>
 #include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/Util.h>
 
 #include "ClientTestSupport.h"

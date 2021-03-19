@@ -56,7 +56,6 @@
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/Util.h>
 
 #include "ClientTestSupport.h"

@@ -33,15 +33,14 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API DefaultAddressProvider : public connection::AddressProvider {
                 public:
-                    DefaultAddressProvider(config::client_network_config &network_config,
-                                           bool no_other_address_provider_exist);
+                    DefaultAddressProvider(config::client_network_config &network_config);
 
                     std::vector<address> load_addresses() override;
 
+                    boost::optional<address> translate(const address &addr) override;
+
                 private:
                     config::client_network_config &network_config_;
-                    bool no_other_address_provider_exist_;
-
                 };
             }
         }

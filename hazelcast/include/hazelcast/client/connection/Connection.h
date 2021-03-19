@@ -58,8 +58,6 @@ namespace hazelcast {
         class socket_interceptor;
 
         namespace connection {
-            class ConnectionFuture;
-
             class ClientConnectionManagerImpl;
 
             class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {

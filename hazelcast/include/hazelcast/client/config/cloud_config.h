@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #pragma once
 
-#include "hazelcast/client/connection/AddressTranslator.h"
+#include "hazelcast/util/export.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -25,15 +24,14 @@
 
 namespace hazelcast {
     namespace client {
-        namespace spi {
-            namespace impl {
-                class HAZELCAST_API DefaultAddressTranslator : public connection::AddressTranslator {
-                public:
-                    address translate(const address &address) override;
-
-                    void refresh() override;
-                };
-            }
+        namespace config {
+            /**
+             * hazelcast.cloud configuration to let the client connect the cluster via hazelcast.cloud
+             */
+            struct HAZELCAST_API cloud_config {
+                bool enabled{false};
+                std::string discovery_token;
+            };
         }
     }
 }

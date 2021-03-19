@@ -43,7 +43,8 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API DescribeInstances {
                 public:
-                    DescribeInstances(config::client_aws_config &aws_config, const std::string &endpoint,
+                    DescribeInstances(std::chrono::steady_clock::duration timeout,
+                                      config::client_aws_config &aws_config, const std::string &endpoint,
                                       logger &lg);
 
                     virtual ~DescribeInstances();
@@ -73,6 +74,7 @@ namespace hazelcast {
                      */
                     void add_filters();
 
+                    std::chrono::steady_clock::duration timeout_;
                     std::unique_ptr<security::ec2_request_signer> rs_;
                     config::client_aws_config &aws_config_;
                     const std::string &endpoint_;
