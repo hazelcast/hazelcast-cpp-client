@@ -1409,17 +1409,17 @@ namespace hazelcast {
             TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart) {
                 HazelcastServer server(*g_srvFactory);
 
-                // 2. Start a client
+                // Start a client
                 client_config clientConfig = get_config();
                 clientConfig.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
                         std::chrono::seconds(10));
 
                 auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
-                // 3. Get a map
+                // Get a map
                 auto map = client.get_map("IssueTest_map").get();
 
-                // 4. Subscribe client to entry added event
+                // Subscribe client to entry added event
                 map->add_entry_listener(std::move(issue864_map_listener_), true).get();
 
                 // Put a key, value to the map
@@ -1427,19 +1427,20 @@ namespace hazelcast {
 
                 ASSERT_OPEN_EVENTUALLY(latch1_);
 
-                // 5. Restart the server
+                // Restart the server
                 ASSERT_TRUE(server.shutdown());
                 HazelcastServer server2(*g_srvFactory);
 
-                std::thread([=] () {
-                    // 7. Put a 2nd entry to the map
-                    ASSERT_NO_THROW(map->put(2, 20).get());
-                }).detach();
+                // Put a 2nd entry to the map
+                auto result = map->put(2, 20);
 
-                // 6. Verify that the 2nd entry is received by the listener
+                // Verify that the 2nd entry is received by the listener
                 ASSERT_OPEN_EVENTUALLY(latch2_);
 
-                // 7. Shut down the server
+                // Wait for the put operation
+                ASSERT_NO_THROW(result.get());
+
+                // Shut down the server
                 ASSERT_TRUE(server2.shutdown());
             }
 
