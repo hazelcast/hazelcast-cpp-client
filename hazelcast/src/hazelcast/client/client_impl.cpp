@@ -60,6 +60,7 @@
 #include "hazelcast/client/proxy/flake_id_generator_impl.h"
 #include "hazelcast/logger.h"
 #include "hazelcast/client/member_selectors.h"
+#include "hazelcast/client/client_properties.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -285,6 +286,7 @@ namespace hazelcast {
                 auto connect_timeout = networkConfig.get_connection_timeout();
                 if (cloud_enabled) {
                     auto cloud_provider = std::make_shared<spi::impl::discovery::cloud_discovery>(cloudConfig,
+                                                                                                  client_properties_.get_string(client_properties_.cloud_base_url()),
                                                                                                   connect_timeout);
                     return std::unique_ptr<connection::AddressProvider>(
                             new spi::impl::discovery::remote_address_provider([=]() {
@@ -583,9 +585,6 @@ namespace hazelcast {
         const std::string client_properties::PROP_AWS_MEMBER_PORT = "hz-port";
         const std::string client_properties::PROP_AWS_MEMBER_PORT_DEFAULT = "5701";
 
-        const std::string client_properties::CLEAN_RESOURCES_PERIOD_MILLIS = "hazelcast.client.internal.clean.resources.millis";
-        const std::string client_properties::CLEAN_RESOURCES_PERIOD_MILLIS_DEFAULT = "100";
-
         const std::string client_properties::INVOCATION_RETRY_PAUSE_MILLIS = "hazelcast.client.invocation.retry.pause.millis";
         const std::string client_properties::INVOCATION_RETRY_PAUSE_MILLIS_DEFAULT = "1000";
 
@@ -643,8 +642,6 @@ namespace hazelcast {
                   retry_count_(PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT),
                   retry_wait_time_(PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT),
                   aws_member_port_(PROP_AWS_MEMBER_PORT, PROP_AWS_MEMBER_PORT_DEFAULT),
-                  clean_resources_period_(CLEAN_RESOURCES_PERIOD_MILLIS,
-                                          CLEAN_RESOURCES_PERIOD_MILLIS_DEFAULT),
                   invocation_retry_pause_millis_(INVOCATION_RETRY_PAUSE_MILLIS,
                                                  INVOCATION_RETRY_PAUSE_MILLIS_DEFAULT),
                   invocation_timeout_seconds_(INVOCATION_TIMEOUT_SECONDS,
@@ -662,6 +659,7 @@ namespace hazelcast {
                   backup_timeout_millis_(OPERATION_BACKUP_TIMEOUT_MILLIS, OPERATION_BACKUP_TIMEOUT_MILLIS_DEFAULT),
                   fail_on_indeterminate_state_(FAIL_ON_INDETERMINATE_OPERATION_STATE,
                                                FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT),
+                  cloud_base_url_(CLOUD_URL_BASE, CLOUD_URL_BASE_DEFAULT),
                   properties_map_(properties) {
         }
 
@@ -675,10 +673,6 @@ namespace hazelcast {
 
         const client_property &client_properties::get_aws_member_port() const {
             return aws_member_port_;
-        }
-
-        const client_property &client_properties::get_clean_resources_period_millis() const {
-            return clean_resources_period_;
         }
 
         const client_property &client_properties::get_invocation_retry_pause_millis() const {
@@ -750,6 +744,10 @@ namespace hazelcast {
 
         const client_property &client_properties::fail_on_indeterminate_state() const {
             return fail_on_indeterminate_state_;
+        }
+
+        const client_property &client_properties::cloud_base_url() const {
+            return cloud_base_url_;
         }
 
         namespace exception {

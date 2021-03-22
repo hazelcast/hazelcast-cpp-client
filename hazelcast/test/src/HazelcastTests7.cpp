@@ -1585,17 +1585,29 @@ namespace hazelcast {
                     auto config = get_config();
                     config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
                             std::chrono::milliseconds(100));
-                    auto cloudConfig = config.get_network_config().get_cloud_config();
+                    auto &cloudConfig = config.get_network_config().get_cloud_config();
                     cloudConfig.enabled = true;
                     cloudConfig.discovery_token = "invalid_discovery_token";
                     ASSERT_THROW(hazelcast::new_client(std::move(config)).get(), exception::illegal_state);
                 }
 
+                TEST_F(cloud_discovery_test, non_existent_base_url) {
+                    auto config = get_config();
+                    config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                            std::chrono::milliseconds(100));
+                    auto &cloudConfig = config.get_network_config().get_cloud_config();
+                    config.set_property(client_properties::CLOUD_URL_BASE, "https://my.url.com");
+                    cloudConfig.enabled = true;
+                    cloudConfig.discovery_token = "abc";
+                    ASSERT_THROW(hazelcast::new_client(std::move(config)).get(), exception::illegal_state);
+                }
+
                 TEST_F(cloud_discovery_test, parse_json) {
                     config::cloud_config config;
-                    config. enabled = true;
-                    config .discovery_token = "my_token";
-                    spi::impl::discovery::cloud_discovery d(config, std::chrono::seconds(1));
+                    config.enabled = true;
+                    config.discovery_token = "my_token";
+                    spi::impl::discovery::cloud_discovery d(config, client_properties::CLOUD_URL_BASE_DEFAULT,
+                                                            std::chrono::seconds(1));
                     auto test_stream = std::istringstream(
                             R"([{"private-address":"100.103.97.89","public-address":"3.92.127.167:30964"},{"private-address":"100.97.31.19","public-address":"54.227.206.253:30964"},{"private-address":"100.127.33.250","public-address":"54.80.210.250:30964"}])");
                     auto addresses = d.parse_json_response(test_stream);
