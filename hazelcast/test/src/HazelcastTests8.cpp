@@ -1586,19 +1586,18 @@ namespace hazelcast {
     namespace client {
         namespace test {
             ClientTestSupport::ClientTestSupport() {
-                const testing::TestInfo *testInfo = testing::UnitTest::GetInstance()->current_test_info();
-                std::ostringstream out;
-                out << testInfo->test_case_name() << "_" << testInfo->name();
-                test_name_ = out.str();
-                logger_ = std::make_shared<logger>("Test", test_name_, logger::level::info, logger::default_handler);
+                logger_ = std::make_shared<logger>("Test", get_test_name(), logger::level::info, logger::default_handler);
             }
 
             logger &ClientTestSupport::get_logger() {
                 return *logger_;
             }
 
-            const std::string &ClientTestSupport::get_test_name() const {
-                return test_name_;
+            std::string ClientTestSupport::get_test_name() {
+                const auto *info = testing::UnitTest::GetInstance()->current_test_info();
+                std::ostringstream out;
+                out << info->test_case_name() << "_" << info->name();
+                return out.str();
             }
 
             CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {
