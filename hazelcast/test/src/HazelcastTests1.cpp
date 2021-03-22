@@ -103,8 +103,15 @@ namespace hazelcast {
                 }
 
                 static Response get_client_stats_from_server() {
-                    const char *script = "client0=instance_0.getClientService().getConnectedClients()."
-                                         "toArray()[0]\nresult=client0.getClientAttributes();";
+                    constexpr const char* script_template = (
+                        "clients = instance_0.getClientService().getConnectedClients()\n"
+                        "for client in clients:\n"
+                        "    if client.getName() == '%1%':\n"
+                        "        result = client.getClientAttributes()\n"
+                        "        break\n"
+                    );
+
+                    std::string script = boost::str(boost::format(script_template) % get_test_name());
 
                     Response response;
                     remoteController->executeOnController(response, g_srvFactory->get_cluster_id(), script, Lang::PYTHON);
@@ -154,6 +161,9 @@ namespace hazelcast {
 
                 std::unique_ptr<hazelcast_client> create_hazelcast_client() {
                     client_config clientConfig;
+
+                    clientConfig.set_instance_name(get_test_name());
+
                     clientConfig.set_property(client_properties::STATISTICS_ENABLED, "true")
                             .set_property(client_properties::STATISTICS_PERIOD_SECONDS,
                                           std::to_string(STATS_PERIOD_SECONDS))
@@ -271,15 +281,16 @@ namespace hazelcast {
 
             TEST_F(ClientStatisticsTest, testClientStatisticsContent) {
                 client_config clientConfig;
-                std::string mapName = get_test_name();
-                clientConfig.add_near_cache_config(config::near_cache_config(mapName));
+                std::string test_name = get_test_name();
+                clientConfig.set_instance_name(test_name);
+                clientConfig.add_near_cache_config(config::near_cache_config(test_name));
                 clientConfig.set_property(client_properties::STATISTICS_ENABLED, "true").set_property(
                         client_properties::STATISTICS_PERIOD_SECONDS, "1");
 
                 auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
                 // initialize near cache
-                client.get_map(mapName).get();
+                client.get_map(test_name).get();
 
                 // sleep twice the collection period
                 sleep_seconds(2);
@@ -303,36 +314,36 @@ namespace hazelcast {
                           statsFromServer.result.find(std::string("clientAddress=") + localAddress));
 
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "creationTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "creationTime"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "evictions"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "evictions"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "hits"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "hits"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "lastPersistenceDuration"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "lastPersistenceDuration"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "lastPersistenceKeyCount"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "lastPersistenceKeyCount"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "lastPersistenceTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "lastPersistenceTime"));
                 ASSERT_NE(std::string::npos,
                           statsFromServer.result.find(
-                                  std::string("nc.") + mapName + "." + "lastPersistenceWrittenBytes"));
+                                  std::string("nc.") + test_name + "." + "lastPersistenceWrittenBytes"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "misses"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "misses"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "ownedEntryCount"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "ownedEntryCount"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "expirations"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "expirations"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "invalidations"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "invalidations"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "invalidationRequests"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "invalidationRequests"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "ownedEntryMemoryCost"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "ownedEntryMemoryCost"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "creationTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "creationTime"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "creationTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "creationTime"));
             }
 
             TEST_F(ClientStatisticsTest, testStatisticsCollectionNonDefaultPeriod) {
