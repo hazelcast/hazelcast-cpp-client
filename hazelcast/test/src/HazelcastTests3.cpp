@@ -105,7 +105,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapTest : public ClientTestSupport {
+            class ClientReplicatedMapTestBase : public ClientTestSupport {
             public:
                 struct SamplePortable {
                     int32_t a;
@@ -133,7 +133,7 @@ namespace hazelcast {
                         ASSERT_EQ("bar", val.value());
                     }
                 }
-                
+
                 void get_and_verify_entries_in_map(const std::shared_ptr<replicated_map> &map) {
                     get_and_verify_entries_in_map(map, "bar");
                 }
@@ -168,7 +168,7 @@ namespace hazelcast {
                 void put_entries_into_map(const std::shared_ptr<replicated_map> &map, const std::string value) {
                     execute_for_each([&] (size_t i) {
                         map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
-                                                                           value).get();
+                                                           value).get();
                     });
                 }
 
@@ -195,17 +195,28 @@ namespace hazelcast {
                     return testValues;
                 }
 
+                static hazelcast_client* create_client() {
+                    auto config = get_config();
+                    config.set_cluster_name("replicated-map-binary-test");
+                    return new hazelcast_client(new_client(std::move(config)).get());
+                }
+
+                static client_config get_client_config_with_near_cache_invalidation_enabled() {
+                    config::near_cache_config nearCacheConfig;
+                    nearCacheConfig.set_invalidate_on_change(true).set_in_memory_format(config::BINARY);
+                    return std::move(get_config().set_cluster_name("replicated-map-binary-test").add_near_cache_config(nearCacheConfig));
+                }
+            };
+
+            constexpr size_t ClientReplicatedMapTestBase::OPERATION_COUNT;
+
+            class ClientReplicatedMapTest : public ClientReplicatedMapTestBase {
+            protected:
                 virtual void SetUp() {
                     ASSERT_TRUE(factory);
                     ASSERT_TRUE(instance1);
                     ASSERT_TRUE(client);
                     ASSERT_TRUE(client2);
-                }
-
-                static hazelcast_client* create_client() {
-                    auto config = get_config();
-                    config.set_cluster_name("replicated-map-binary-test");
-                    return new hazelcast_client(new_client(std::move(config)).get());
                 }
 
                 static void SetUpTestCase() {
@@ -229,12 +240,6 @@ namespace hazelcast {
                     factory = nullptr;
                 }
 
-                static client_config get_client_config_with_near_cache_invalidation_enabled() {
-                    config::near_cache_config nearCacheConfig;
-                    nearCacheConfig.set_invalidate_on_change(true).set_in_memory_format(config::BINARY);
-                    return std::move(get_config().set_cluster_name("replicated-map-binary-test").add_near_cache_config(nearCacheConfig));
-                }
-
                 static HazelcastServer *instance1;
                 static hazelcast_client *client;
                 static hazelcast_client *client2;
@@ -245,7 +250,6 @@ namespace hazelcast {
             hazelcast_client *ClientReplicatedMapTest::client = nullptr;
             hazelcast_client *ClientReplicatedMapTest::client2 = nullptr;
             HazelcastServerFactory *ClientReplicatedMapTest::factory = nullptr;
-            constexpr size_t ClientReplicatedMapTest::OPERATION_COUNT;
 
             TEST_F(ClientReplicatedMapTest, testEmptyMapIsEmpty) {
                 std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name()).get();
@@ -484,7 +488,22 @@ namespace hazelcast {
                 ASSERT_FALSE(value.has_value()) << "No entry with key foo should exist";
             }
 
-            TEST_F(ClientReplicatedMapTest, testNearCacheInvalidation) {
+            TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode) {
+                auto sampleMap = client->get_replicated_map(get_test_name()).get();
+                sampleMap->put(1, SamplePortable{666});
+                auto samplePortable = sampleMap->get<int, SamplePortable>(1).get();
+                ASSERT_TRUE(samplePortable.has_value());
+                ASSERT_EQ(666, samplePortable->a);
+            }
+
+            class ClientReplicatedMapInvalidation : public ClientReplicatedMapTestBase {
+            };
+
+            TEST_F(ClientReplicatedMapInvalidation, testNearCacheInvalidation) {
+                HazelcastServerFactory factory(g_srvFactory->get_server_address(),
+                                               "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                HazelcastServer server(factory);
+
                 std::string mapName = random_string();
 
                 hazelcast_client client1(new_client(get_client_config_with_near_cache_invalidation_enabled()).get());
@@ -493,23 +512,16 @@ namespace hazelcast {
                 auto replicatedMap1 = client1.get_replicated_map(mapName).get();
 
                 replicatedMap1->put(1, 1).get();
-// puts key 1 to Near Cache
+                // puts key 1 to Near Cache
                 replicatedMap1->get<int, int>(1).get();
 
                 auto replicatedMap2 = client2.get_replicated_map(mapName).get();
-// this should invalidate Near Cache of replicatedMap1
+                // this should invalidate Near Cache of replicatedMap1
                 replicatedMap2->clear().get();
 
                 ASSERT_FALSE_EVENTUALLY((replicatedMap1->get<int, int>(1).get().has_value()));
             }
 
-            TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode) {
-                auto sampleMap = client->get_replicated_map(get_test_name()).get();
-                sampleMap->put(1, SamplePortable{666});
-                auto samplePortable = sampleMap->get<int, SamplePortable>(1).get();
-                ASSERT_TRUE(samplePortable.has_value());
-                ASSERT_EQ(666, samplePortable->a);
-            }
         }
 
         namespace serialization {
