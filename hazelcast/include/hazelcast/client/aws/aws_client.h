@@ -43,11 +43,13 @@ namespace hazelcast {
                 std::unordered_map<address, address> get_addresses();
 
             private:
+#ifdef HZ_BUILD_WITH_SSL
                 std::chrono::steady_clock::duration timeout_;
                 config::client_aws_config &aws_config_;
                 std::string endpoint_;
                 logger &logger_;
                 int aws_member_port_;
+#endif // HZ_BUILD_WITH_SSL
             };
         }
     }
