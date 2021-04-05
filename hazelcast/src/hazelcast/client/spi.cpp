@@ -2294,9 +2294,14 @@ namespace hazelcast {
                         return boost::none;
                     }
 
+#ifdef HZ_BUILD_WITH_SSL
                     cloud_discovery::cloud_discovery(config::cloud_config &config, std::string cloud_base_url,
                                                      std::chrono::steady_clock::duration timeout)
                             : cloud_config_(config), cloud_base_url_(cloud_base_url), timeout_(timeout) {}
+#else
+                    cloud_discovery::cloud_discovery(config::cloud_config &config, std::string cloud_base_url,
+                                                     std::chrono::steady_clock::duration timeout) {}
+#endif // HZ_BUILD_WITH_SSL
 
                     std::unordered_map<address, address> cloud_discovery::get_addresses() {
 #ifdef HZ_BUILD_WITH_SSL

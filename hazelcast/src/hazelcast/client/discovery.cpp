@@ -582,9 +582,8 @@ namespace hazelcast {
     namespace client {
         namespace aws {
                 aws_client::aws_client(std::chrono::steady_clock::duration timeout, config::client_aws_config &aws_config,
-                                   const client_properties &client_properties, logger &lg) : timeout_(timeout),
-                                   aws_config_(aws_config), logger_(lg) {
-                            util::Preconditions::check_ssl("aws_client::aws_client");
+                                       const client_properties &client_properties, logger &lg) {
+                    util::Preconditions::check_ssl("aws_client::aws_client");
                 }
 
                 std::unordered_map<address, address> aws_client::get_addresses() {

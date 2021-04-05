@@ -46,9 +46,11 @@ namespace hazelcast {
                         static std::unordered_map<address, address> parse_json_response(std::istream &conn_stream);
 
                     private:
+#ifdef HZ_BUILD_WITH_SSL
                         config::cloud_config &cloud_config_;
                         std::string cloud_base_url_;
                         std::chrono::steady_clock::duration timeout_;
+#endif // HZ_BUILD_WITH_SSL
 
                         static address create_address(const std::string &hostname, int default_port);
                     };
