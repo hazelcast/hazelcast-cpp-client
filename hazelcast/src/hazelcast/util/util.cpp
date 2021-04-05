@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-#include <cmath>
-#include <cassert>
-#include <cerrno>
-#include <cstdlib>
-#include <climits>
-#include <limits>
-#include <iosfwd>
-#include <string.h>
-#include <sstream>
-#include <chrono>
 #include <algorithm>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <thread>
+#include <cassert>
+#include <chrono>
+#include <climits>
+#include <cstdarg>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <iomanip>
+#include <limits>
 #include <mutex>
-#include <stdlib.h>
-#include <time.h>
+#include <sstream>
+#include <thread>
 
 #include <boost/concept_check.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -41,7 +37,7 @@
 #ifdef HZ_BUILD_WITH_SSL
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/basic_resolver.hpp>
-#include <boost/asio/ssl/host_name_verification.hpp>
+#include <boost/asio/ssl/rfc2818_verification.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/system_error.hpp>
 #endif // HZ_BUILD_WITH_SSL
@@ -150,7 +146,7 @@ namespace hazelcast {
                     boost::asio::ssl::context::single_dh_use);
 
             ssl_context_.set_verify_mode(boost::asio::ssl::verify_peer);
-            ssl_context_.set_verify_callback(boost::asio::ssl::host_name_verification(server_));
+            ssl_context_.set_verify_callback(boost::asio::ssl::rfc2818_verification(server_));
             socket_ = std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >(
                     new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(io_service_, ssl_context_));
         }
