@@ -267,8 +267,8 @@ namespace hazelcast {
                        "Clearing local state of the client, because of a cluster restart");
 
                 near_cache_manager_->clear_all_near_caches();
-                //clear the member list version
-                cluster_service_.clear_member_list_version();
+                //clear the member list
+                cluster_service_.clear_member_list();
             }
 
             std::unique_ptr<connection::AddressProvider> hazelcast_client_instance_impl::create_address_provider() {
