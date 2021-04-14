@@ -259,10 +259,9 @@ namespace hazelcast {
                     std::chrono::milliseconds connect_timeout_;
                     boost::asio::ip::tcp::resolver &resolver_;
                     T socket_;
-                    int32_t call_id_counter_;
+                    int32_t call_id_counter_{0};
                 };
             }
         }
     }
 }
-
