@@ -89,7 +89,7 @@ namespace hazelcast {
                 int id = ++runner_counter_;
                 std::shared_ptr<MessageRunner < Listener>>
                 runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer_, get_name(),
-                                                   get_serialization_service(), config_, logger_));
+                                                   get_serialization_service(), batch_size_, logger_));
                 runners_map_.put(id, runner);
                 runner->next();
                 return std::to_string(id);
@@ -119,10 +119,10 @@ namespace hazelcast {
             public:
                 MessageRunner(int id, Listener &&listener, const std::shared_ptr<ringbuffer> &rb,
                               const std::string &topic_name, serialization::pimpl::SerializationService &service,
-                              const config::reliable_topic_config &reliable_topic_config, logger &lg)
+                              int batch_size, logger &lg)
                         : listener_(listener), id_(id), ringbuffer_(rb), cancelled_(false), logger_(lg),
                         name_(topic_name), executor_(rb, lg), serialization_service_(service),
-                        config_(reliable_topic_config) {
+                        batch_size_(batch_size) {
                     // we are going to listen to next publication. We don't care about what already has been published.
                     int64_t initialSequence = listener.initial_sequence_id_;
                     if (initialSequence == -1) {
@@ -142,7 +142,7 @@ namespace hazelcast {
                     m.type = topic::impl::reliable::ReliableTopicExecutor::GET_ONE_MESSAGE;
                     m.callback = this->shared_from_this();
                     m.sequence = sequence_;
-                    m.max_count = config_.get_read_batch_size();
+                    m.max_count = batch_size_;
                     executor_.execute(std::move(m));
                 }
 
@@ -311,7 +311,7 @@ namespace hazelcast {
                 const std::string &name_;
                 topic::impl::reliable::ReliableTopicExecutor executor_;
                 serialization::pimpl::SerializationService &serialization_service_;
-                const config::reliable_topic_config &config_;
+                int batch_size_;
             };
 
             util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;

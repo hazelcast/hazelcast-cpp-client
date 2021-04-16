@@ -291,8 +291,13 @@ namespace hazelcast {
             ReliableTopicImpl::ReliableTopicImpl(std::shared_ptr<ringbuffer> rb, const std::string &instance_name,
                                                  spi::ClientContext *context)
                     : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context), ringbuffer_(rb),
-                      logger_(context->get_logger()),
-                      config_(context->get_client_config().get_reliable_topic_config(instance_name)) {
+                      logger_(context->get_logger()) {
+                auto reliable_config = context->get_client_config().find_reliable_topic_config(instance_name);
+                if (reliable_config) {
+                    batch_size_ = reliable_config->get_read_batch_size();
+                } else {
+                    batch_size_ = config::reliable_topic_config::DEFAULT_READ_BATCH_SIZE;
+                }
             }
 
             boost::future<void> ReliableTopicImpl::publish(serialization::pimpl::data &&data) {

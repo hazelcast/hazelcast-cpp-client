@@ -51,6 +51,8 @@ namespace hazelcast {
              class ClientConnectionManagerImpl;
         };
 
+        namespace proxy { class ReliableTopicImpl; };
+
         namespace security {
             class HAZELCAST_API credentials {
             public:
@@ -423,6 +425,10 @@ namespace hazelcast {
             bool backup_acks_enabled();
 
         private:
+            friend class proxy::ReliableTopicImpl;
+
+            const config::reliable_topic_config *find_reliable_topic_config(const std::string &name) const;
+
             std::string cluster_name_;
 
             config::client_network_config network_config_;

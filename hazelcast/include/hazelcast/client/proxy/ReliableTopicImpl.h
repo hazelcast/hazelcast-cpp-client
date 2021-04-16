@@ -38,7 +38,7 @@ namespace hazelcast {
 
                 std::shared_ptr<ringbuffer> ringbuffer_;
                 logger &logger_;
-                const config::reliable_topic_config config_;
+                int batch_size_;
             };
         }
     }
