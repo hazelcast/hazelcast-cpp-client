@@ -292,7 +292,7 @@ namespace hazelcast {
                                                  spi::ClientContext *context)
                     : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context), ringbuffer_(rb),
                       logger_(context->get_logger()) {
-                auto reliable_config = context->get_client_config().find_reliable_topic_config(instance_name);
+                auto reliable_config = context->get_client_config().lookup_reliable_topic_config(instance_name);
                 if (reliable_config) {
                     batch_size_ = reliable_config->get_read_batch_size();
                 } else {

@@ -427,7 +427,7 @@ namespace hazelcast {
         private:
             friend class proxy::ReliableTopicImpl;
 
-            const config::reliable_topic_config *find_reliable_topic_config(const std::string &name) const;
+            const config::reliable_topic_config *lookup_reliable_topic_config(const std::string &name) const;
 
             std::string cluster_name_;
 
