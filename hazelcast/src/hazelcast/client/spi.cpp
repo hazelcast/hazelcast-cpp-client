@@ -1070,10 +1070,20 @@ namespace hazelcast {
                         }
 
                         if (is_bind_to_single_connection()) {
-                            auto invoked = invocation_service_.invoke_on_connection(shared_from_this(), connection_);
+                            bool invoked = false;
+                            auto conn = connection_.lock();
+                            if (conn) {
+                                invoked = invocation_service_.invoke_on_connection(shared_from_this(), conn);
+                            }
                             if (!invoked) {
-                                notify_exception(std::make_exception_ptr(exception::io("", (boost::format(
-                                        "Could not invoke on connection %1%") % *connection_).str())));
+                                std::string message;
+                                if (conn) {
+                                    message = (boost::format("Could not invoke on connection %1%") % *conn).str();
+                                } else {
+                                    message = "Could not invoke. Bound to a connection that is deleted already.";
+                                }
+                                notify_exception(std::make_exception_ptr(
+                                        exception::io("ClientInvocation::invoke_on_selection", message)));
                             }
                             return;
                         }
@@ -1104,7 +1114,8 @@ namespace hazelcast {
                 }
 
                 bool ClientInvocation::is_bind_to_single_connection() const {
-                    return connection_ != nullptr;
+                    auto conn = connection_.lock();
+                    return conn != nullptr;
                 }
 
                 void ClientInvocation::run() {
@@ -1127,12 +1138,15 @@ namespace hazelcast {
 
                 void ClientInvocation::set_exception(const std::exception &e, boost::exception_ptr exception_ptr) {
                     try {
-                        auto send_conn = *send_connection_.load();
+                        auto send_conn = send_connection_.load();
                         if (send_conn) {
-                            auto call_id = client_message_.load()->get()->get_correlation_id();
-                            boost::asio::post(send_conn->get_socket().get_executor(), [=]() {
-                                send_conn->deregister_invocation(call_id);
-                            });
+                            auto connection = send_conn->lock();
+                            if (connection) {
+                                auto call_id = client_message_.load()->get()->get_correlation_id();
+                                boost::asio::post(connection->get_socket().get_executor(), [=]() {
+                                    connection->deregister_invocation(call_id);
+                                });
+                            }
                         }
                         invocation_promise_.set_exception(std::move(exception_ptr));
                     } catch (boost::promise_already_satisfied &se) {
@@ -1244,7 +1258,10 @@ namespace hazelcast {
                 std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation) {
                     std::ostringstream target;
                     if (invocation.is_bind_to_single_connection()) {
-                        target << "connection " << *invocation.connection_;
+                        auto conn = invocation.connection_.lock();
+                        if (conn) {
+                            target << "connection " << conn;
+                        }
                     } else if (invocation.partition_id_ != -1) {
                         target << "partition " << invocation.partition_id_;
                     } else if (!invocation.uuid_.is_nil()) {
@@ -1325,22 +1342,29 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<connection::Connection> ClientInvocation::get_send_connection() const {
-                    return *send_connection_.load();
+                    return send_connection_.load()->lock();
                 }
 
                 std::shared_ptr<connection::Connection> ClientInvocation::get_send_connection_or_wait() const {
-                    while (!(*send_connection_.load()) && lifecycle_service_.is_running()) {
-                        std::this_thread::yield();
-                    }
+                    std::shared_ptr<connection::Connection> connection;
+                    do {
+                        auto loaded_conn = send_connection_.load();
+                        if (loaded_conn) {
+                            connection = loaded_conn->lock();
+                        }
+                        if (!connection) {
+                            std::this_thread::yield();
+                        }
+                    } while (lifecycle_service_.is_running() && !connection);
                     if (!lifecycle_service_.is_running()) {
                         BOOST_THROW_EXCEPTION(exception::illegal_argument("Client is being shut down!"));
                     }
-                    return *send_connection_.load();
+                    return connection;
                 }
 
                 void
                 ClientInvocation::set_send_connection(const std::shared_ptr<connection::Connection> &conn) {
-                    send_connection_.store(boost::make_shared<std::shared_ptr<connection::Connection>>(conn));
+                    send_connection_.store(boost::make_shared<std::weak_ptr<connection::Connection>>(conn));
                 }
 
                 void ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage> &msg) {
@@ -2207,24 +2231,33 @@ namespace hazelcast {
                     void
                     cluster_view_listener::event_handler::handle_partitionsview(int32_t version,
                                                                                 const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
-                        view_listener.client_context_.get_partition_service().handle_event(connection, version, partitions);
+                        auto conn = connection.lock();
+                        view_listener.client_context_.get_partition_service().handle_event(conn, version, partitions);
                     }
 
                     void cluster_view_listener::event_handler::before_listener_register() {
                         view_listener.client_context_.get_client_cluster_service().clear_member_list_version();
                         auto &lg = view_listener.client_context_.get_logger();
-                        HZ_LOG(lg, finest,
-                            boost::str(boost::format("Register attempt of ClusterViewListenerHandler to %1%")
-                                                    % *connection)
-                        );
+                        auto conn = connection.lock();
+                        if (conn) {
+                            HZ_LOG(lg, finest,
+                                   boost::str(boost::format("Register attempt of cluster_view_listener::event_handler to %1%")
+                                              % *conn));
+                        } else {
+                            HZ_LOG(lg, finest, "Register attempt of cluster_view_listener::event_handler failed");
+                        }
                     }
 
                     void cluster_view_listener::event_handler::on_listener_register() {
                         auto &lg = view_listener.client_context_.get_logger();
-                        HZ_LOG(lg, finest,
-                            boost::str(boost::format("Registered ClusterViewListenerHandler to %1%") 
-                                                     % *connection)
-                        );
+                        auto conn = connection.lock();
+                        if (conn) {
+                            HZ_LOG(lg, finest,
+                                   boost::str(boost::format("Registered cluster_view_listener::event_handler to %1%")
+                                              % *conn));
+                        } else {
+                            HZ_LOG(lg, finest, "cluster_view_listener::event_handler but connection is deleted already!");
+                        }
                     }
 
                     cluster_view_listener::event_handler::event_handler(
