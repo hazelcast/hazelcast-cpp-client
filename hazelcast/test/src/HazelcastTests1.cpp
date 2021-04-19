@@ -45,9 +45,7 @@
 #include <hazelcast/client/imap.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/initial_membership_event.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
 #include <hazelcast/client/itopic.h>
-#include <hazelcast/client/lifecycle_event.h>
 #include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/membership_listener.h>
 #include <hazelcast/client/multi_map.h>
@@ -66,9 +64,9 @@
 #include <hazelcast/util/Util.h>
 
 #ifdef HZ_BUILD_WITH_SSL
+#include <hazelcast/client/internal/socket/SSLSocket.h>
 #include <hazelcast/util/SyncHttpsClient.h>
 #endif //HZ_BUILD_WITH_SSL
-
 
 #include "ClientTestSupport.h"
 #include "ClientTestSupportBase.h"

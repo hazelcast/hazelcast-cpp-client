@@ -51,12 +51,9 @@
 #include <hazelcast/client/serialization_config.h>
 #include <hazelcast/client/serialization/pimpl/data_input.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/socket_interceptor.h>
 #include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/util/Bits.h>
 #include <hazelcast/util/BlockingConcurrentQueue.h>
 #include <hazelcast/util/concurrent/locks/LockSupport.h>
-#include <hazelcast/util/ConcurrentQueue.h>
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
@@ -226,125 +223,6 @@ namespace hazelcast {
                     ASSERT_THROW(q.pop(), client::exception::interrupted);
                     finished = true;
                     t.join();
-                }
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            namespace util {
-                class ConcurentQueueTest : public ClientTestSupport
-                {
-                protected:
-                    class ConcurrentQueueTask {
-                    public:
-                        ConcurrentQueueTask(hazelcast::util::ConcurrentQueue<int> &q,
-                                            boost::latch &start_latch,
-                                            boost::latch &start_remove_latch, int removal_value) : q_(q),
-                                                                                                start_latch_(
-                                                                                                        start_latch),
-                                                                                                start_remove_latch_(
-                                                                                                        start_remove_latch),
-                                                                                                removal_value_(
-                                                                                                        removal_value) {}
-
-                        virtual void run() {
-                            int numItems = 1000;
-
-                            std::vector<int> values((size_t) numItems);
-
-                            start_latch_.count_down();
-
-                            ASSERT_OPEN_EVENTUALLY(start_latch_);
-
-                            // insert items
-                            for (int i = 0; i < numItems; ++i) {
-                                values[i] = i;
-                                q_.offer(&values[i]);
-                            }
-
-                            q_.offer(&removal_value_);
-                            start_remove_latch_.count_down();
-
-                            // poll items
-                            for (int i = 0; i < numItems; ++i) {
-                                values[i] = i;
-                                ASSERT_NE((int *) nullptr, q_.poll());
-                            }
-                        }
-
-                        virtual const std::string get_name() const {
-                            return "ConcurrentQueueTask";
-                        }
-
-                    private:
-                        hazelcast::util::ConcurrentQueue<int> &q_;
-                        boost::latch &start_latch_;
-                        boost::latch &start_remove_latch_;
-                        int removal_value_;
-                    };
-                };
-
-                TEST_F(ConcurentQueueTest, testSingleThread) {
-                    hazelcast::util::ConcurrentQueue<int> q;
-
-                    ASSERT_EQ((int *) nullptr, q.poll());
-
-                    int val1, val2;
-
-                    q.offer(&val1);
-
-                    ASSERT_EQ(&val1, q.poll());
-
-                    ASSERT_EQ((int *) nullptr, q.poll());
-
-                    q.offer(&val1);
-                    q.offer(&val2);
-                    q.offer(&val2);
-                    q.offer(&val1);
-
-                    ASSERT_EQ(2, q.remove_all(&val2));
-                    ASSERT_EQ(0, q.remove_all(&val2));
-
-                    ASSERT_EQ(&val1, q.poll());
-                    ASSERT_EQ(&val1, q.poll());
-
-                    ASSERT_EQ((int *) nullptr, q.poll());
-                }
-
-                TEST_F(ConcurentQueueTest, testMultiThread) {
-                    constexpr int numThreads = 40;
-
-                    boost::latch startLatch(numThreads);
-
-                    boost::latch startRemoveLatch(numThreads);
-
-                    hazelcast::util::ConcurrentQueue<int> q;
-
-                    int removalValue = 10;
-
-                    std::array<std::future<void>, numThreads> allFutures;
-                    for (int i = 0; i < numThreads; i++) {
-                        allFutures[i] = std::async([&]() {
-                            ConcurrentQueueTask(q, startLatch, startRemoveLatch, removalValue).run();
-                        });
-                    }
-
-                    // wait for the remove start
-                    ASSERT_OPEN_EVENTUALLY(startRemoveLatch);
-
-                    int numRemoved = q.remove_all(&removalValue);
-
-                    int numRemaining = numThreads - numRemoved;
-
-                    for (int j = 0; j < numRemaining; ++j) {
-                        ASSERT_NE((int *) nullptr, q.poll());
-                    }
-                    ASSERT_EQ(0, q.remove_all(&removalValue));
-
                 }
             }
         }
@@ -937,7 +815,10 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService ss2(serializationConfig2);
 
                 //make sure ss2 cached class definition of Child
-                ss2.to_data<Child>(new Child("sancar"));
+                {
+                    Child child("sancar");
+                    ss2.to_data<Child>(&child);
+                }
 
                 //serialized parent from ss1
                 Parent parent(Child("sancar"));
@@ -1713,12 +1594,16 @@ namespace hazelcast {
             class serialization_with_server : public ClientTestSupport, 
                     public ::testing::WithParamInterface<boost::endian::order> {
             protected:
-                void SetUp() override {
-                    if (!server_) {
-                        little_endian_server_factory_ = new HazelcastServerFactory(
-                                "hazelcast/test/resources/hazelcast-serialization-little-endian.xml");
-                    }
+                static void SetUpTestCase() {
+                    little_endian_server_factory_ = new HazelcastServerFactory(
+                            "hazelcast/test/resources/hazelcast-serialization-little-endian.xml");
+                }
 
+                static void TearDownTestCase() {
+                    delete little_endian_server_factory_;
+                }
+
+                void SetUp() override {
                     server_.reset(new HazelcastServer(
                             *(boost::endian::order::little == GetParam() ? little_endian_server_factory_
                                                                          : g_srvFactory)));
@@ -1730,10 +1615,6 @@ namespace hazelcast {
 
                     client_.reset(new hazelcast_client(new_client(std::move(config)).get()));
                     map_ = client_->get_map("serialization_with_server_map").get();
-                }
-
-                static void TearDownTestCase() {
-                    delete little_endian_server_factory_;
                 }
 
             protected:
@@ -2298,9 +2179,8 @@ namespace hazelcast {
                         }
 
                         std::shared_ptr<serialization::pimpl::data> get_shared_value(int value) const {
-                            char buf[30];
-                            hazelcast::util::hz_snprintf(buf, 30, "Record-%ld", value);
-                            return ss_->to_shared_data(new std::string(buf));
+                            std::string s = "Record-" + std::to_string(value);
+                            return ss_->to_shared_data(&s);
                         }
 
                         std::shared_ptr<serialization::pimpl::data> get_shared_key(int value) {

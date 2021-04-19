@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include <cmath>
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -33,19 +32,13 @@
 #include <openssl/crypto.h>
 #endif
 
-#include <hazelcast/client/aws/utility/cloud_utility.h>
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/client_properties.h>
-#include <hazelcast/client/cluster.h>
-#include <hazelcast/client/config/client_aws_config.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/client/entry_event.h>
 #include <hazelcast/client/exception/protocol_exceptions.h>
-#include <hazelcast/client/execution_callback.h>
 #include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/hazelcast_json_value.h>
-#include <hazelcast/client/ilist.h>
 #include <hazelcast/client/imap.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/initial_membership_event.h>
@@ -55,31 +48,20 @@
 #include <hazelcast/client/iset.h>
 #include <hazelcast/client/item_listener.h>
 #include <hazelcast/client/itopic.h>
-#include <hazelcast/client/lifecycle_listener.h>
-#include <hazelcast/client/membership_listener.h>
 #include <hazelcast/client/multi_map.h>
 #include <hazelcast/client/pipelining.h>
 #include <hazelcast/client/protocol/ClientMessage.h>
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
 #include <hazelcast/client/reliable_topic.h>
 #include <hazelcast/client/serialization_config.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/socket_interceptor.h>
-#include <hazelcast/client/socket.h>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/client/topic/reliable_listener.h>
 #include <hazelcast/logger.h>
 #include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/util/Bits.h>
-#include <hazelcast/util/BlockingConcurrentQueue.h>
-#include <hazelcast/util/concurrent/locks/LockSupport.h>
-#include <hazelcast/util/ConcurrentQueue.h>
 #include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/Sync.h>
 #include <hazelcast/util/Util.h>
 
 #include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Serializables.h"
@@ -921,23 +903,18 @@ namespace hazelcast {
             class ReliableTopicTest : public ClientTestSupport {
             protected:
                 struct ListenerState {
-                    ListenerState(int latch_count, int64_t start_sequence) : latch1(latch_count),
-                                                                           start_sequence(start_sequence),
-                                                                           number_of_messages_received(0) {}
-
-                    explicit ListenerState(int latch_count) : ListenerState(latch_count, -1) {}
+                    explicit ListenerState(int latch_count, int64_t start_sequence = -1)
+                            : latch1(latch_count), start_sequence(start_sequence) {}
 
                     boost::latch latch1;
                     int64_t start_sequence;
-                    std::atomic<int> number_of_messages_received;
-                    hazelcast::util::ConcurrentQueue<topic::message> messages;
+                    std::vector<topic::message> messages;
                 };
 
                 topic::reliable_listener make_listener(std::shared_ptr<ListenerState> state) {
                     return topic::reliable_listener(false, state->start_sequence)
                         .on_received([state](topic::message &&message){
-                            ++state->number_of_messages_received;
-                            state->messages.offer(new topic::message(std::move(message)));
+                            state->messages.push_back(std::move(message));
                             state->latch1.count_down();
                         });
                 }
@@ -982,8 +959,8 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic_->publish(empl1).get());
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(1, state->number_of_messages_received);
-                auto e = state->messages.poll()->get_message_object().template get<employee>();
+                ASSERT_EQ(1, state->messages.size());
+                auto e = state->messages[0].get_message_object().get<employee>();
                 ASSERT_TRUE(e.has_value());
                 ASSERT_EQ(empl1, e.value());
 
@@ -1005,8 +982,8 @@ namespace hazelcast {
                 ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(make_listener(state)));
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(1, state->number_of_messages_received);
-                auto e = state->messages.poll()->get_message_object().template get<employee>();
+                ASSERT_EQ(1, state->messages.size());
+                auto e = state->messages[0].get_message_object().get<employee>();
                 ASSERT_TRUE(e.has_value());
                 ASSERT_EQ(empl2, e.value());
 
@@ -1028,7 +1005,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic_->publish(empl1).get());
 
                 ASSERT_EQ(boost::cv_status::timeout, state->latch1.wait_for(boost::chrono::seconds(2)));
-                ASSERT_EQ(0, state->number_of_messages_received);
+                ASSERT_EQ(0, state->messages.size());
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenNonExisting) {
@@ -1052,10 +1029,10 @@ namespace hazelcast {
                 }
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(5, state->number_of_messages_received);
-                hazelcast::util::ConcurrentQueue<topic::message> &queue = state->messages;
+                ASSERT_EQ(5, state->messages.size());
                 for (int k = 0; k < 5; k++) {
-                    auto val = queue.poll()->get_message_object().get<std::string>();
+                    const auto &msg = state->messages[k];
+                    auto val = msg.get_message_object().get<std::string>();
                     ASSERT_TRUE(val.has_value());
                     ASSERT_EQ(items[k], val.value());
                 }
@@ -1084,10 +1061,10 @@ namespace hazelcast {
                 }
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(5, state->number_of_messages_received);
-                hazelcast::util::ConcurrentQueue<topic::message> &queue = state->messages;
+                ASSERT_EQ(5, state->messages.size());
                 for (int k = 0; k < 5; k++) {
-                    auto val = queue.poll()->get_message_object().get<std::string>();
+                    const auto &msg = state->messages[k];
+                    auto val = msg.get_message_object().get<std::string>();
                     ASSERT_TRUE(val.has_value());
                     ASSERT_EQ(items[k], val.value());
                 }
@@ -1106,16 +1083,16 @@ namespace hazelcast {
                 topic_->publish<int>(3).get();
                 auto timeAfterPublish = std::chrono::system_clock::now();
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ(1, state->number_of_messages_received);
-                auto message = state->messages.poll();
-                auto val = message->get_message_object().get<int>();
+                ASSERT_EQ(1, state->messages.size());
+                const auto &msg = state->messages[0];
+                auto val = msg.get_message_object().get<int>();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ(3, val.value());
 
-                ASSERT_LE(timeBeforePublish, message->get_publish_time());
-                ASSERT_GE(timeAfterPublish, message->get_publish_time());
-                ASSERT_EQ(topic_->get_name(), message->get_source());
-                ASSERT_EQ(nullptr, message->get_publishing_member());
+                ASSERT_LE(timeBeforePublish, msg.get_publish_time());
+                ASSERT_GE(timeAfterPublish, msg.get_publish_time());
+                ASSERT_EQ(topic_->get_name(), msg.get_source());
+                ASSERT_EQ(nullptr, msg.get_publishing_member());
 
                 ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
             }
@@ -1138,13 +1115,13 @@ namespace hazelcast {
                 }).detach();
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
-                ASSERT_EQ((int) expectedValues.size(), state->number_of_messages_received);
-                auto &objects = state->messages;
+                ASSERT_EQ(expectedValues.size(), state->messages.size());
 
-                for (auto &val : expectedValues) {
-                    auto receivedValue = objects.poll()->get_message_object().get<int>();
-                    ASSERT_TRUE(receivedValue.has_value());
-                    ASSERT_EQ(val, receivedValue.value());
+                for (int i = 0; i < expectedValues.size(); i++) {
+                    auto received_val = state->messages[i].get_message_object().get<int>();
+                    auto expected_val = expectedValues[i];
+                    ASSERT_TRUE(received_val.has_value());
+                    ASSERT_EQ(expected_val, received_val.value());
                 }
 
                 ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
