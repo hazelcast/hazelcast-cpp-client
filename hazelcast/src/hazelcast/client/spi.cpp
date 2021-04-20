@@ -1611,10 +1611,10 @@ namespace hazelcast {
 
                 ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client)
                         : client_(client), logger_(client.get_logger()), partition_count_(0),
-                        partition_table_(boost::shared_ptr<partition_table>(new partition_table{nullptr, -1})) {
+                        partition_table_(boost::shared_ptr<partition_table>(new partition_table{0, -1})) {
                 }
 
-                void ClientPartitionServiceImpl::handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
+                void ClientPartitionServiceImpl::handle_event(int32_t connection_id, int32_t version,
                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
                     HZ_LOG(logger_, finest,
                         boost::str(boost::format("Handling new partition table with partitionStateVersion: %1%") % version)
@@ -1622,11 +1622,11 @@ namespace hazelcast {
 
                     while (true) {
                         auto current = partition_table_.load();
-                        if (!should_be_applied(connection, version, partitions, *current)) {
+                        if (!should_be_applied(connection_id, version, partitions, *current)) {
                             return;
                         }
                         if (partition_table_.compare_exchange_strong(current, boost::shared_ptr<partition_table>(
-                                new partition_table{connection, version, convert_to_map(partitions)}))) {
+                                new partition_table{connection_id, version, convert_to_map(partitions)}))) {
                             HZ_LOG(logger_, finest,
                                 boost::str(boost::format("Applied partition table with partitionStateVersion : %1%") % version)
                             );
@@ -1671,30 +1671,29 @@ namespace hazelcast {
                 }
 
                 bool
-                ClientPartitionServiceImpl::should_be_applied(const std::shared_ptr<connection::Connection> &connection,
-                                                              int32_t version,
+                ClientPartitionServiceImpl::should_be_applied(int32_t connection_id, int32_t version,
                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions,
                                                               const partition_table &current) {
                     auto &lg = client_.get_logger();
                     if (partitions.empty()) {
                         if (logger_.enabled(logger::level::finest)) {
-                            log_failure(connection, version, current, "response is empty");
+                            log_failure(connection_id, version, current, "response is empty");
                         }
                         return false;
                     }
-                    if (!current.connection || *connection != *current.connection) {
+                    if (!current.connection_id || connection_id != current.connection_id) {
                         HZ_LOG(lg, finest, 
-                            ([&current, &connection](){
-                                auto frmt = boost::format("Event coming from a new connection. Old connection: %1%, "
+                            ([&current, connection_id](){
+                                auto frmt = boost::format("Event coming from a new connection. Old connection id: %1%, "
                                                           "new connection %2%");
 
-                                if (current.connection) {
-                                    frmt = frmt % *current.connection;
+                                if (current.connection_id) {
+                                    frmt = frmt % current.connection_id;
                                 } else {
-                                    frmt = frmt % "nullptr";
+                                    frmt = frmt % "none";
                                 }
 
-                                return boost::str(frmt % *connection);
+                                return boost::str(frmt % connection_id);
                             })()
                         );
                         
@@ -1702,28 +1701,28 @@ namespace hazelcast {
                     }
                     if (version <= current.version) {
                         if (lg.enabled(logger::level::finest)) {
-                            log_failure(connection, version, current, "response state version is old");
+                            log_failure(connection_id, version, current, "response state version is old");
                         }
                         return false;
                     }
                     return true;
                 }
 
-                void ClientPartitionServiceImpl::log_failure(const std::shared_ptr<connection::Connection> &connection,
-                                                             int32_t version,
+                void ClientPartitionServiceImpl::log_failure(int32_t connection_id, int32_t version,
                                                              const ClientPartitionServiceImpl::partition_table &current,
                                                              const std::string &cause) {
                     HZ_LOG(logger_, finest,
                         [&](){
                             auto frmt = boost::format(" We will not apply the response, since %1% ."
-                                                      " Response is from %2%. "
-                                                      "Current connection %3%, response state version:%4%. "
+                                                      " Response is from connection with id %2%. "
+                                                      "Current connection id is %3%, response state version:%4%. "
                                                       "Current state version: %5%");
-                            if (current.connection) {
-                                return boost::str(frmt % cause % *connection % *current.connection % version % current.version);
+                            if (current.connection_id) {
+                                return boost::str(frmt % cause % connection_id % current.connection_id % version %
+                                                  current.version);
                             }
                             else {
-                                return boost::str(frmt % cause % *connection % "nullptr" % version % current.version);
+                                return boost::str(frmt % cause % connection_id % "nullptr" % version % current.version);
                             }
                         }()
                     );
@@ -2184,7 +2183,7 @@ namespace hazelcast {
                                  std::make_shared<protocol::ClientMessage>(
                                  protocol::codec::client_addclusterviewlistener_encode()), "", connection);
 
-                        auto handler = std::shared_ptr<event_handler>(new event_handler(connection, *this));
+                        auto handler = std::make_shared<event_handler>(connection->get_connection_id(), *this);
                         invocation->set_event_handler(handler);
                         handler->before_listener_register();
 
@@ -2223,33 +2222,29 @@ namespace hazelcast {
                     void
                     cluster_view_listener::event_handler::handle_partitionsview(int32_t version,
                                                                                 const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
-                        auto conn = connection.lock();
-                        if (!conn) {
-                            // connection is already destroyed, just ignore the event
-                            return;
-                        }
-                        view_listener.client_context_.get_partition_service().handle_event(conn, version, partitions);
+                        view_listener.client_context_.get_partition_service().handle_event(connection_id, version, partitions);
                     }
 
                     void cluster_view_listener::event_handler::before_listener_register() {
                         view_listener.client_context_.get_client_cluster_service().clear_member_list_version();
                         auto &lg = view_listener.client_context_.get_logger();
                         HZ_LOG(lg, finest,
-                               boost::str(boost::format("Register attempt of cluster_view_listener::event_handler to %1%")
-                                          % *connection.lock()));
+                               boost::str(boost::format(
+                                       "Register attempt of cluster_view_listener::event_handler to connection with id %1%") %
+                                          connection_id));
                     }
 
                     void cluster_view_listener::event_handler::on_listener_register() {
                         auto &lg = view_listener.client_context_.get_logger();
                         HZ_LOG(lg, finest,
-                               boost::str(boost::format("Registered cluster_view_listener::event_handler to %1%")
-                                          % *connection.lock()));
+                               boost::str(boost::format(
+                                       "Registered cluster_view_listener::event_handler to connection with id %1%") %
+                                          connection_id));
                     }
 
-                    cluster_view_listener::event_handler::event_handler(
-                            const std::shared_ptr<connection::Connection> &connection,
-                            cluster_view_listener &view_listener) : connection(connection),
-                                                                   view_listener(view_listener) {}
+                    cluster_view_listener::event_handler::event_handler(int connectionId,
+                                                                        cluster_view_listener &viewListener)
+                            : connection_id(connectionId), view_listener(viewListener) {}
                 }
 
                 protocol::ClientMessage
@@ -2367,6 +2362,10 @@ namespace hazelcast {
                         return address(std::move(scoped_hostname), address_holder.get_port());
                     }
                 }
+
+                ClientPartitionServiceImpl::partition_table::partition_table(int32_t connectionId, int32_t version,
+                                                                             const std::unordered_map<int32_t, boost::uuids::uuid> &partitions)
+                        : connection_id(connectionId), version(version), partitions(partitions) {}
             }
         }
     }
