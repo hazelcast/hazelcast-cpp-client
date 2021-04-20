@@ -121,7 +121,7 @@ namespace hazelcast {
 
                     std::shared_ptr<connection::Connection> get_send_connection() const;
 
-                    std::shared_ptr<connection::Connection> get_send_connection_or_wait() const;
+                    void wait_invoked() const;
 
                     void
                     set_send_connection(const std::shared_ptr<connection::Connection> &send_connection);
@@ -153,6 +153,7 @@ namespace hazelcast {
                     std::chrono::milliseconds retry_pause_;
                     std::string object_name_;
                     std::weak_ptr<connection::Connection> connection_;
+                    bool bound_to_single_connection_{false};
                     boost::atomic_shared_ptr<std::weak_ptr<connection::Connection>> send_connection_;
                     std::shared_ptr<EventHandler < protocol::ClientMessage>> event_handler_;
                     std::atomic<int64_t> invoke_count_;
