@@ -1117,7 +1117,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ(expectedValues.size(), state->messages.size());
 
-                for (int i = 0; i < expectedValues.size(); i++) {
+                for (std::size_t i = 0; i < expectedValues.size(); i++) {
                     auto received_val = state->messages[i].get_message_object().get<int>();
                     auto expected_val = expectedValues[i];
                     ASSERT_TRUE(received_val.has_value());
