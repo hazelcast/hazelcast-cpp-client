@@ -1346,9 +1346,15 @@ namespace hazelcast {
 
                 void ClientInvocation::wait_invoked() const {
                     // wait until the send_connection is set
-                    while (!send_connection_.load() && lifecycle_service_.is_running()) {
+                    do {
+                        auto conn_ptr = send_connection_.load();
+                        auto sent_conn = conn_ptr->lock();
+                        if (sent_conn) {
+                            break;
+                        }
                         std::this_thread::yield();
-                    }
+                    } while (lifecycle_service_.is_running());
+
                     if (!lifecycle_service_.is_running()) {
                         BOOST_THROW_EXCEPTION(exception::illegal_argument("Client is being shut down!"));
                     }
