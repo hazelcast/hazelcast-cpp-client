@@ -354,7 +354,8 @@ namespace hazelcast {
 
             reliable_topic_config::reliable_topic_config() = default;
 
-            reliable_topic_config::reliable_topic_config(const std::string topic_name) : read_batch_size_(DEFAULT_READ_BATCH_SIZE),
+            reliable_topic_config::reliable_topic_config(std::string topic_name) : read_batch_size_(DEFAULT_READ_BATCH_SIZE),
+
                                                                                    name_(std::move(topic_name)) {
             }
 
@@ -855,7 +856,7 @@ namespace hazelcast {
                 return it->second;
             }
 
-            return reliable_topic_config_map_.emplace(name, config::reliable_topic_config(name)).first->second;
+            return reliable_topic_config_map_.emplace(name, name).first->second;
         }
 
         const config::reliable_topic_config *client_config::lookup_reliable_topic_config(const std::string &name) const {
