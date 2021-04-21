@@ -1728,9 +1728,7 @@ namespace hazelcast {
                         m.callback = nullptr;
                         m.sequence = -1;
                         execute(m);
-                        if (std::this_thread::get_id() != runner_thread_.get_id()) {
-                            runner_thread_.join();
-                        }
+                        runner_thread_.join();
                         return true;
                     }
 

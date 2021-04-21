@@ -59,7 +59,7 @@ namespace hazelcast {
                     // wait for notEmpty condition
                     not_empty_.wait(lock);
                 }
-                T element = internal_queue_.front();
+                T element(std::move(internal_queue_.front()));
                 internal_queue_.pop_front();
                 not_full_.notify_one();
                 return element;
