@@ -1260,7 +1260,7 @@ namespace hazelcast {
                     if (invocation.is_bind_to_single_connection()) {
                         auto conn = invocation.connection_.lock();
                         if (conn) {
-                            target << "connection " << conn;
+                            target << "connection " << *conn;
                         }
                     } else if (invocation.partition_id_ != -1) {
                         target << "partition " << invocation.partition_id_;
@@ -2392,6 +2392,5 @@ namespace std {
         return std::hash<std::string>()(k.get_service_name() + k.get_object_name());
     }
 }
-
 
 
