@@ -154,6 +154,7 @@ namespace hazelcast {
                     std::string object_name_;
                     std::weak_ptr<connection::Connection> connection_;
                     bool bound_to_single_connection_{false};
+                    std::atomic_bool invoked_or_exception_set_{false};
                     boost::atomic_shared_ptr<std::weak_ptr<connection::Connection>> send_connection_;
                     std::shared_ptr<EventHandler < protocol::ClientMessage>> event_handler_;
                     std::atomic<int64_t> invoke_count_;

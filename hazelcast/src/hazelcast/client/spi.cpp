@@ -1136,6 +1136,7 @@ namespace hazelcast {
                 }
 
                 void ClientInvocation::set_exception(const std::exception &e, boost::exception_ptr exception_ptr) {
+                    invoked_or_exception_set_.store(true);
                     try {
                         auto send_conn = send_connection_.load();
                         if (send_conn) {
@@ -1345,24 +1346,16 @@ namespace hazelcast {
                 }
 
                 void ClientInvocation::wait_invoked() const {
-                    // wait until the send_connection is set
-                    do {
-                        auto conn_ptr = send_connection_.load();
-                        auto sent_conn = conn_ptr->lock();
-                        if (sent_conn) {
-                            break;
-                        }
-                        std::this_thread::yield();
-                    } while (lifecycle_service_.is_running());
-
-                    if (!lifecycle_service_.is_running()) {
-                        BOOST_THROW_EXCEPTION(exception::illegal_argument("Client is being shut down!"));
+                    //it could be either invoked or cancelled before invoked
+                    while (!invoked_or_exception_set_) {
+                        std::this_thread::sleep_for(retry_pause_);
                     }
                 }
 
                 void
                 ClientInvocation::set_send_connection(const std::shared_ptr<connection::Connection> &conn) {
                     send_connection_.store(boost::make_shared<std::weak_ptr<connection::Connection>>(conn));
+                    invoked_or_exception_set_.store(true);
                 }
 
                 void ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage> &msg) {
