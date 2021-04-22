@@ -606,16 +606,16 @@ namespace hazelcast {
                     if (local_address) {
                         HZ_LOG(logger_, info,
                                boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
-                                                        "local address: %4%")
+                                                        "local address: %4%. %5%")
                                           % response.server_address % response.member_uuid
-                                          % response.server_version % *local_address)
+                                          % response.server_version % *local_address % *connection)
                         );
                     } else {
                         HZ_LOG(logger_, info,
                                boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
-                                                        "no local address: (connection disconnected ?)")
+                                                        "no local address: (connection disconnected ?). %5%")
                                           % response.server_address % response.member_uuid
-                                          % response.server_version)
+                                          % response.server_version % *connection)
                         );
                     }
 

@@ -1016,7 +1016,7 @@ namespace hazelcast {
                         start_time_(std::chrono::steady_clock::now()),
                         retry_pause_(invocation_service_.get_invocation_retry_pause()),
                         object_name_(name),
-                        connection_(conn),
+                        connection_(conn), bound_to_single_connection_(conn != nullptr),
                         invoke_count_(0), urgent_(false), smart_routing_(invocation_service_.is_smart_routing()) {
                     message->set_partition_id(partition_id_);
                     client_message_ = boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(message);
@@ -1070,10 +1070,20 @@ namespace hazelcast {
                         }
 
                         if (is_bind_to_single_connection()) {
-                            auto invoked = invocation_service_.invoke_on_connection(shared_from_this(), connection_);
+                            bool invoked = false;
+                            auto conn = connection_.lock();
+                            if (conn) {
+                                invoked = invocation_service_.invoke_on_connection(shared_from_this(), conn);
+                            }
                             if (!invoked) {
-                                notify_exception(std::make_exception_ptr(exception::io("", (boost::format(
-                                        "Could not invoke on connection %1%") % *connection_).str())));
+                                std::string message;
+                                if (conn) {
+                                    message = (boost::format("Could not invoke on connection %1%") % *conn).str();
+                                } else {
+                                    message = "Could not invoke. Bound to a connection that is deleted already.";
+                                }
+                                notify_exception(std::make_exception_ptr(
+                                        exception::io("ClientInvocation::invoke_on_selection", message)));
                             }
                             return;
                         }
@@ -1104,7 +1114,7 @@ namespace hazelcast {
                 }
 
                 bool ClientInvocation::is_bind_to_single_connection() const {
-                    return connection_ != nullptr;
+                    return bound_to_single_connection_;
                 }
 
                 void ClientInvocation::run() {
@@ -1126,13 +1136,17 @@ namespace hazelcast {
                 }
 
                 void ClientInvocation::set_exception(const std::exception &e, boost::exception_ptr exception_ptr) {
+                    invoked_or_exception_set_.store(true);
                     try {
-                        auto send_conn = *send_connection_.load();
+                        auto send_conn = send_connection_.load();
                         if (send_conn) {
-                            auto call_id = client_message_.load()->get()->get_correlation_id();
-                            boost::asio::post(send_conn->get_socket().get_executor(), [=]() {
-                                send_conn->deregister_invocation(call_id);
-                            });
+                            auto connection = send_conn->lock();
+                            if (connection) {
+                                auto call_id = client_message_.load()->get()->get_correlation_id();
+                                boost::asio::post(connection->get_socket().get_executor(), [=]() {
+                                    connection->deregister_invocation(call_id);
+                                });
+                            }
                         }
                         invocation_promise_.set_exception(std::move(exception_ptr));
                     } catch (boost::promise_already_satisfied &se) {
@@ -1244,7 +1258,10 @@ namespace hazelcast {
                 std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation) {
                     std::ostringstream target;
                     if (invocation.is_bind_to_single_connection()) {
-                        target << "connection " << *invocation.connection_;
+                        auto conn = invocation.connection_.lock();
+                        if (conn) {
+                            target << "connection " << *conn;
+                        }
                     } else if (invocation.partition_id_ != -1) {
                         target << "partition " << invocation.partition_id_;
                     } else if (!invocation.uuid_.is_nil()) {
@@ -1325,22 +1342,20 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<connection::Connection> ClientInvocation::get_send_connection() const {
-                    return *send_connection_.load();
+                    return send_connection_.load()->lock();
                 }
 
-                std::shared_ptr<connection::Connection> ClientInvocation::get_send_connection_or_wait() const {
-                    while (!(*send_connection_.load()) && lifecycle_service_.is_running()) {
-                        std::this_thread::yield();
+                void ClientInvocation::wait_invoked() const {
+                    //it could be either invoked or cancelled before invoked
+                    while (!invoked_or_exception_set_) {
+                        std::this_thread::sleep_for(retry_pause_);
                     }
-                    if (!lifecycle_service_.is_running()) {
-                        BOOST_THROW_EXCEPTION(exception::illegal_argument("Client is being shut down!"));
-                    }
-                    return *send_connection_.load();
                 }
 
                 void
                 ClientInvocation::set_send_connection(const std::shared_ptr<connection::Connection> &conn) {
-                    send_connection_.store(boost::make_shared<std::shared_ptr<connection::Connection>>(conn));
+                    send_connection_.store(boost::make_shared<std::weak_ptr<connection::Connection>>(conn));
+                    invoked_or_exception_set_.store(true);
                 }
 
                 void ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage> &msg) {
@@ -1595,10 +1610,10 @@ namespace hazelcast {
 
                 ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client)
                         : client_(client), logger_(client.get_logger()), partition_count_(0),
-                        partition_table_(boost::shared_ptr<partition_table>(new partition_table{nullptr, -1})) {
+                        partition_table_(boost::shared_ptr<partition_table>(new partition_table{0, -1})) {
                 }
 
-                void ClientPartitionServiceImpl::handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
+                void ClientPartitionServiceImpl::handle_event(int32_t connection_id, int32_t version,
                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
                     HZ_LOG(logger_, finest,
                         boost::str(boost::format("Handling new partition table with partitionStateVersion: %1%") % version)
@@ -1606,11 +1621,11 @@ namespace hazelcast {
 
                     while (true) {
                         auto current = partition_table_.load();
-                        if (!should_be_applied(connection, version, partitions, *current)) {
+                        if (!should_be_applied(connection_id, version, partitions, *current)) {
                             return;
                         }
                         if (partition_table_.compare_exchange_strong(current, boost::shared_ptr<partition_table>(
-                                new partition_table{connection, version, convert_to_map(partitions)}))) {
+                                new partition_table{connection_id, version, convert_to_map(partitions)}))) {
                             HZ_LOG(logger_, finest,
                                 boost::str(boost::format("Applied partition table with partitionStateVersion : %1%") % version)
                             );
@@ -1655,30 +1670,29 @@ namespace hazelcast {
                 }
 
                 bool
-                ClientPartitionServiceImpl::should_be_applied(const std::shared_ptr<connection::Connection> &connection,
-                                                              int32_t version,
+                ClientPartitionServiceImpl::should_be_applied(int32_t connection_id, int32_t version,
                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions,
                                                               const partition_table &current) {
                     auto &lg = client_.get_logger();
                     if (partitions.empty()) {
                         if (logger_.enabled(logger::level::finest)) {
-                            log_failure(connection, version, current, "response is empty");
+                            log_failure(connection_id, version, current, "response is empty");
                         }
                         return false;
                     }
-                    if (!current.connection || *connection != *current.connection) {
+                    if (!current.connection_id || connection_id != current.connection_id) {
                         HZ_LOG(lg, finest, 
-                            ([&current, &connection](){
-                                auto frmt = boost::format("Event coming from a new connection. Old connection: %1%, "
+                            ([&current, connection_id](){
+                                auto frmt = boost::format("Event coming from a new connection. Old connection id: %1%, "
                                                           "new connection %2%");
 
-                                if (current.connection) {
-                                    frmt = frmt % *current.connection;
+                                if (current.connection_id) {
+                                    frmt = frmt % current.connection_id;
                                 } else {
-                                    frmt = frmt % "nullptr";
+                                    frmt = frmt % "none";
                                 }
 
-                                return boost::str(frmt % *connection);
+                                return boost::str(frmt % connection_id);
                             })()
                         );
                         
@@ -1686,28 +1700,28 @@ namespace hazelcast {
                     }
                     if (version <= current.version) {
                         if (lg.enabled(logger::level::finest)) {
-                            log_failure(connection, version, current, "response state version is old");
+                            log_failure(connection_id, version, current, "response state version is old");
                         }
                         return false;
                     }
                     return true;
                 }
 
-                void ClientPartitionServiceImpl::log_failure(const std::shared_ptr<connection::Connection> &connection,
-                                                             int32_t version,
+                void ClientPartitionServiceImpl::log_failure(int32_t connection_id, int32_t version,
                                                              const ClientPartitionServiceImpl::partition_table &current,
                                                              const std::string &cause) {
                     HZ_LOG(logger_, finest,
                         [&](){
                             auto frmt = boost::format(" We will not apply the response, since %1% ."
-                                                      " Response is from %2%. "
-                                                      "Current connection %3%, response state version:%4%. "
+                                                      " Response is from connection with id %2%. "
+                                                      "Current connection id is %3%, response state version:%4%. "
                                                       "Current state version: %5%");
-                            if (current.connection) {
-                                return boost::str(frmt % cause % *connection % *current.connection % version % current.version);
+                            if (current.connection_id) {
+                                return boost::str(frmt % cause % connection_id % current.connection_id % version %
+                                                  current.version);
                             }
                             else {
-                                return boost::str(frmt % cause % *connection % "nullptr" % version % current.version);
+                                return boost::str(frmt % cause % connection_id % "nullptr" % version % current.version);
                             }
                         }()
                     );
@@ -2168,7 +2182,7 @@ namespace hazelcast {
                                  std::make_shared<protocol::ClientMessage>(
                                  protocol::codec::client_addclusterviewlistener_encode()), "", connection);
 
-                        auto handler = std::shared_ptr<event_handler>(new event_handler(connection, *this));
+                        auto handler = std::make_shared<event_handler>(connection->get_connection_id(), *this);
                         invocation->set_event_handler(handler);
                         handler->before_listener_register();
 
@@ -2207,30 +2221,29 @@ namespace hazelcast {
                     void
                     cluster_view_listener::event_handler::handle_partitionsview(int32_t version,
                                                                                 const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
-                        view_listener.client_context_.get_partition_service().handle_event(connection, version, partitions);
+                        view_listener.client_context_.get_partition_service().handle_event(connection_id, version, partitions);
                     }
 
                     void cluster_view_listener::event_handler::before_listener_register() {
                         view_listener.client_context_.get_client_cluster_service().clear_member_list_version();
                         auto &lg = view_listener.client_context_.get_logger();
                         HZ_LOG(lg, finest,
-                            boost::str(boost::format("Register attempt of ClusterViewListenerHandler to %1%")
-                                                    % *connection)
-                        );
+                               boost::str(boost::format(
+                                       "Register attempt of cluster_view_listener::event_handler to connection with id %1%") %
+                                          connection_id));
                     }
 
                     void cluster_view_listener::event_handler::on_listener_register() {
                         auto &lg = view_listener.client_context_.get_logger();
                         HZ_LOG(lg, finest,
-                            boost::str(boost::format("Registered ClusterViewListenerHandler to %1%") 
-                                                     % *connection)
-                        );
+                               boost::str(boost::format(
+                                       "Registered cluster_view_listener::event_handler to connection with id %1%") %
+                                          connection_id));
                     }
 
-                    cluster_view_listener::event_handler::event_handler(
-                            const std::shared_ptr<connection::Connection> &connection,
-                            cluster_view_listener &view_listener) : connection(connection),
-                                                                   view_listener(view_listener) {}
+                    cluster_view_listener::event_handler::event_handler(int connectionId,
+                                                                        cluster_view_listener &viewListener)
+                            : connection_id(connectionId), view_listener(viewListener) {}
                 }
 
                 protocol::ClientMessage
@@ -2348,6 +2361,10 @@ namespace hazelcast {
                         return address(std::move(scoped_hostname), address_holder.get_port());
                     }
                 }
+
+                ClientPartitionServiceImpl::partition_table::partition_table(int32_t connectionId, int32_t version,
+                                                                             const std::unordered_map<int32_t, boost::uuids::uuid> &partitions)
+                        : connection_id(connectionId), version(version), partitions(partitions) {}
             }
         }
     }
@@ -2375,6 +2392,5 @@ namespace std {
         return std::hash<std::string>()(k.get_service_name() + k.get_object_name());
     }
 }
-
 
 
