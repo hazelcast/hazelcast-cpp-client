@@ -48,7 +48,7 @@ namespace hazelcast {
                     /**
                      * The partitions can be empty on the response, client will not apply the empty partition table,
                      */
-                    void handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
+                    void handle_event(int32_t connection_id, int32_t version,
                                       const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
                     boost::uuids::uuid get_partition_owner(int partition_id);
@@ -64,7 +64,10 @@ namespace hazelcast {
                     void reset();
                 private:
                     struct partition_table {
-                        std::shared_ptr<connection::Connection> connection;
+                        partition_table(int32_t connectionId = 0, int32_t version = -1,
+                                        const std::unordered_map<int32_t, boost::uuids::uuid> &partitions = {});
+
+                        int32_t connection_id{0};
                         int32_t version;
                         std::unordered_map<int32_t, boost::uuids::uuid> partitions;
                     };
@@ -84,12 +87,12 @@ namespace hazelcast {
                         ClientPartitionServiceImpl &partition_service_;
                     };
 
-                    bool should_be_applied(const std::shared_ptr<connection::Connection>& connection, int32_t version,
+                    bool should_be_applied(int32_t connection_id, int32_t version,
                                            const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions,
                                            const partition_table &current);
 
-                    void log_failure(const std::shared_ptr<connection::Connection> &connection, int32_t version,
-                                     const partition_table &current, const std::string &cause);
+                    void log_failure(int32_t connection_id, int32_t version, const partition_table &current,
+                                     const std::string &cause);
 
                     std::unordered_map<int32_t, boost::uuids::uuid>
                     convert_to_map(const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);

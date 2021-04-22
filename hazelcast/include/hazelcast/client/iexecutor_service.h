@@ -89,7 +89,7 @@ namespace hazelcast {
                 std::shared_ptr<spi::impl::ClientInvocation> invocation_;
 
                 bool invoke_cancel_request(bool may_interrupt_if_running) {
-                    invocation_->get_send_connection_or_wait();
+                    invocation_->wait_invoked();
 
                     if (partition_id_ > -1) {
                         auto request = protocol::codec::executorservice_cancelonpartition_encode(uuid_, may_interrupt_if_running);
