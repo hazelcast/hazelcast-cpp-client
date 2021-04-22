@@ -1727,18 +1727,18 @@ namespace hazelcast {
                         m.type = topic::impl::reliable::ReliableTopicExecutor::CANCEL;
                         m.callback = nullptr;
                         m.sequence = -1;
-                        execute(m);
+                        execute(std::move(m));
                         runner_thread_.join();
                         return true;
                     }
 
                     void ReliableTopicExecutor::execute(Message m) {
-                        q_.push(m);
+                        q_.push(std::move(m));
                     }
 
                     void ReliableTopicExecutor::Task::run() {
                         while (!shutdown_) {
-                            Message m = q_.pop();
+                            Message m(std::move(q_.pop()));
                             if (CANCEL == m.type) {
                                 // exit the thread
                                 return;

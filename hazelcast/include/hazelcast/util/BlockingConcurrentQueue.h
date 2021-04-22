@@ -37,7 +37,7 @@ namespace hazelcast {
             BlockingConcurrentQueue(size_t max_queue_capacity) : capacity_(max_queue_capacity), is_interrupted_(false) {
             }
 
-            void push(const T &e) {
+            void push(const T e) {
                 std::unique_lock<std::mutex> lock(m_);
                 while (internal_queue_.size() == capacity_) {
                     if (is_interrupted_) {
@@ -46,7 +46,7 @@ namespace hazelcast {
                     // wait on condition
                     not_full_.wait(lock);
                 }
-                internal_queue_.push_back(e);
+                internal_queue_.emplace_back(std::move(e));
                 not_empty_.notify_one();
             }
 
