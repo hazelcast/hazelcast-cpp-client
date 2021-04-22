@@ -40,8 +40,10 @@ namespace hazelcast {
 
                     private:
                         struct event_handler : public protocol::codec::client_addclusterviewlistener_handler {
-                            event_handler(const std::shared_ptr <connection::Connection> &connection,
-                                          cluster_view_listener &view_listener);
+                            int connection_id;
+                            cluster_view_listener &view_listener;
+
+                            event_handler(int connectionId, cluster_view_listener &viewListener);
 
                             virtual void before_listener_register();
 
@@ -52,9 +54,6 @@ namespace hazelcast {
 
                             virtual void handle_partitionsview(int32_t version,
                                                                const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
-
-                            std::shared_ptr<connection::Connection> connection;
-                            cluster_view_listener &view_listener;
                         };
 
                         void try_register(std::shared_ptr<connection::Connection> connection);
