@@ -93,17 +93,9 @@ if (WITH_OPENSSL)
     find_package(OpenSSL REQUIRED)
 endif ()
 
-# add library
-if (BUILD_SHARED_LIBS)
-    set(LIB_TYPE SHARED)
-else()
-    set(LIB_TYPE STATIC)
-endif()
-
 # add the library target
 add_library(
         ${PROJECT_NAME}
-        ${LIB_TYPE}
         ${SOURCE_FILES} ${HEADER_FILES}
 )
 
