@@ -80,9 +80,18 @@ hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar:\
 hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
-echo "Starting Remote Controller ... enterprise ..."
 
-java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} -Dhazelcast.phone.home.enabled=false com.hazelcast.remotecontroller.Main --use-simple-server &
+# necessary arguments for Java 9+
+if ! java -version 2>&1 | grep -E "java version \"1\." > /dev/null; then
+    MODULE_ARGUMENTS="--add-exports java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED"
+fi
+
+echo "Starting Remote Controller ... enterprise ..."
+java -cp ${CLASSPATH} \
+     -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} \
+     -Dhazelcast.phone.home.enabled=false \
+     $MODULE_ARGUMENTS \
+     com.hazelcast.remotecontroller.Main --use-simple-server &
 rcPid=$!
 wait ${rcPid}
 exit $?
