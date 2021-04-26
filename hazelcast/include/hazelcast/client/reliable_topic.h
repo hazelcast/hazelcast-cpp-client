@@ -160,10 +160,10 @@ namespace hazelcast {
                             }
 
                             auto const &items = result.get_items();
-                            for (int i = 0; i < items.size(); i++) {
+                            for (size_t i = 0; i < items.size(); i++) {
                                 auto const &message = items[i];
                                 try {
-                                    runner->listener_.store_sequence_id_(result.get_sequence(i));
+                                    runner->listener_.store_sequence_id_(result.get_sequence(static_cast<int>(i)));
                                     auto rel_msg = message.get<topic::impl::reliable::ReliableTopicMessage>();
                                     runner->process(*rel_msg);
                                 } catch (exception::iexception &e) {
