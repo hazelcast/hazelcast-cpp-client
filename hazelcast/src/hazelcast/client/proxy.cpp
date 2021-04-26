@@ -39,24 +39,32 @@
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/proxy/flake_id_generator_impl.h"
 #include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
-#include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/map/data_entry_view.h"
-#include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/impl/vector_clock.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/impl/vector_clock.h"
 #include "hazelcast/client/topic/reliable_listener.h"
 
 namespace hazelcast {
     namespace client {
         constexpr std::chrono::milliseconds imap::UNSET;
 
-        reliable_topic::reliable_topic(std::shared_ptr<ringbuffer> rb, const std::string &instance_name,
-                spi::ClientContext *context) : proxy::ReliableTopicImpl(rb, instance_name, context) {}
+        reliable_topic::reliable_topic(const std::string &instance_name, spi::ClientContext *context)
+                : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context),
+                executor_(context->get_client_execution_service().get_user_executor()), logger_(context->get_logger()) {
+            auto reliable_config = context->get_client_config().lookup_reliable_topic_config(instance_name);
+            if (reliable_config) {
+                batch_size_ = reliable_config->get_read_batch_size();
+            } else {
+                batch_size_ = config::reliable_topic_config::DEFAULT_READ_BATCH_SIZE;
+            }
+
+            ringbuffer_ = context->get_hazelcast_client_implementation()->get_distributed_object<ringbuffer>(
+                    std::string(reliable_topic::TOPIC_RB_PREFIX) + instance_name);
+        }
 
         bool reliable_topic::remove_message_listener(const std::string &registration_id) {
             int id = util::IOUtil::to_value<int>(registration_id);
@@ -65,7 +73,6 @@ namespace hazelcast {
                 return false;
             }
             runner->cancel();
-            runners_map_.remove(id);
             return true;
         }
 
@@ -74,9 +81,11 @@ namespace hazelcast {
             for (auto &entry : runners_map_.clear()) {
                 entry.second->cancel();
             }
+        }
 
+        void reliable_topic::post_destroy() {
             // destroy the underlying ringbuffer
-            ringbuffer_->destroy();
+            ringbuffer_.get()->destroy().get();
         }
 
         namespace topic {
@@ -286,24 +295,6 @@ namespace hazelcast {
                                                                                            bool include_value,
                                                                                            serialization::pimpl::data &&key)
                     : name_(std::move(name)), include_value_(include_value), key_(std::move(key)) {}
-
-
-            ReliableTopicImpl::ReliableTopicImpl(std::shared_ptr<ringbuffer> rb, const std::string &instance_name,
-                                                 spi::ClientContext *context)
-                    : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context), ringbuffer_(rb),
-                      logger_(context->get_logger()) {
-                auto reliable_config = context->get_client_config().lookup_reliable_topic_config(instance_name);
-                if (reliable_config) {
-                    batch_size_ = reliable_config->get_read_batch_size();
-                } else {
-                    batch_size_ = config::reliable_topic_config::DEFAULT_READ_BATCH_SIZE;
-                }
-            }
-
-            boost::future<void> ReliableTopicImpl::publish(serialization::pimpl::data &&data) {
-                topic::impl::reliable::ReliableTopicMessage message(std::move(data), nullptr);
-                return to_void_future(ringbuffer_->add(message));
-            }
 
             const std::shared_ptr<std::unordered_set<member> > PNCounterImpl::EMPTY_ADDRESS_LIST(
                     new std::unordered_set<member>());
@@ -1705,65 +1696,6 @@ namespace hazelcast {
         namespace topic {
             namespace impl {
                 namespace reliable {
-                    ReliableTopicExecutor::ReliableTopicExecutor(std::shared_ptr<ringbuffer> rb,
-                                                                 logger &lg)
-                            : ringbuffer_(std::move(rb)), q_(10), shutdown_(false) {
-                        runner_thread_ = std::thread([&]() { Task(ringbuffer_, q_, shutdown_).run(); });
-                    }
-
-                    ReliableTopicExecutor::~ReliableTopicExecutor() {
-                        stop();
-                    }
-
-                    void ReliableTopicExecutor::start() {}
-
-                    bool ReliableTopicExecutor::stop() {
-                        bool expected = false;
-                        if (!shutdown_.compare_exchange_strong(expected, true)) {
-                            return false;
-                        }
-
-                        topic::impl::reliable::ReliableTopicExecutor::Message m;
-                        m.type = topic::impl::reliable::ReliableTopicExecutor::CANCEL;
-                        m.callback = nullptr;
-                        m.sequence = -1;
-                        execute(std::move(m));
-                        runner_thread_.join();
-                        return true;
-                    }
-
-                    void ReliableTopicExecutor::execute(Message m) {
-                        q_.push(std::move(m));
-                    }
-
-                    void ReliableTopicExecutor::Task::run() {
-                        while (!shutdown_) {
-                            Message m(std::move(q_.pop()));
-                            if (CANCEL == m.type) {
-                                // exit the thread
-                                return;
-                            }
-                            try {
-                                auto f = rb_->read_many(m.sequence, 1, m.max_count);
-                                while (!shutdown_ && f.wait_for(boost::chrono::seconds(1)) != boost::future_status::ready) {}
-                                if (f.is_ready()) {
-                                    m.callback->on_response(boost::make_optional<rb::read_result_set>(f.get()));
-                                }
-                            } catch (exception::iexception &) {
-                                m.callback->on_failure(std::current_exception());
-                            }
-                        }
-                    }
-
-                    std::string ReliableTopicExecutor::Task::get_name() const {
-                        return "ReliableTopicExecutor Task";
-                    }
-
-                    ReliableTopicExecutor::Task::Task(std::shared_ptr<ringbuffer> rb,
-                                                      util::BlockingConcurrentQueue<ReliableTopicExecutor::Message> &q,
-                                                      std::atomic<bool> &shutdown) : rb_(std::move(rb)), q_(q),
-                                                                                       shutdown_(shutdown) {}
-
                     ReliableTopicMessage::ReliableTopicMessage() : publish_time_(std::chrono::system_clock::now()) {}
 
                     ReliableTopicMessage::ReliableTopicMessage(
