@@ -1676,6 +1676,47 @@ namespace hazelcast {
     }
 }
 
+namespace hazelcast {
+    namespace client {
+        namespace test {
+
+            TEST(hot_restart_test, test_membership_events) {
+                HazelcastServerFactory server_factory("hazelcast/test/resources/hot-restart.xml");
+                HazelcastServer server(server_factory);
+
+                client_config conf;
+                conf.set_cluster_name("hot-restart-test");
+
+                auto client = new_client(std::move(conf)).get();
+
+                boost::latch join{1}, leave{1};
+
+                client.get_cluster().add_membership_listener(
+                        membership_listener()
+                                .on_joined([&join](const membership_event &ev) {
+                                    join.count_down();
+                                })
+                                .on_left([&leave](const membership_event &ev) {
+                                    leave.count_down();
+                                })
+                );
+
+                auto old_uuid = server.get_member().uuid;
+
+                ASSERT_TRUE(server.shutdown());
+                ASSERT_TRUE(server.start());
+
+                ASSERT_EQ(old_uuid, server.get_member().uuid);
+
+                ASSERT_TRUE_EVENTUALLY(client.get_lifecycle_service().is_running());
+
+                ASSERT_OPEN_EVENTUALLY(leave);
+                ASSERT_OPEN_EVENTUALLY(join);
+            }
+        }
+    }
+}
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif

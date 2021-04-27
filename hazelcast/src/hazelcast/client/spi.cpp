@@ -779,6 +779,25 @@ namespace hazelcast {
                     }
                 }
 
+                std::vector<membership_event> ClientClusterServiceImpl::clear_member_list_and_return_events() {
+                    std::lock_guard<std::mutex> g(cluster_view_lock_);
+
+                    auto &lg = client_.get_logger();
+                    HZ_LOG(lg, finest, "Resetting the member list");
+
+                    auto previous_list = member_list_snapshot_.load()->members;
+
+                    member_list_snapshot_.store(
+                            boost::shared_ptr<member_list_snapshot>(new member_list_snapshot{0, {}}));
+
+                    return detect_membership_events(previous_list, {});
+                }
+
+                void ClientClusterServiceImpl::clear_member_list() {
+                    auto events = clear_member_list_and_return_events();
+                    fire_events(std::move(events));
+                }
+
                 void
                 ClientClusterServiceImpl::handle_event(int32_t version, const std::vector<member> &member_infos) {
                     auto &lg = client_.get_logger();
