@@ -37,7 +37,7 @@ namespace hazelcast {
             BlockingConcurrentQueue(size_t max_queue_capacity) : capacity_(max_queue_capacity), is_interrupted_(false) {
             }
 
-            void push(const T e) {
+            void push(T e) {
                 std::unique_lock<std::mutex> lock(m_);
                 while (internal_queue_.size() == capacity_) {
                     if (is_interrupted_) {
@@ -110,6 +110,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif 
-
 
 
