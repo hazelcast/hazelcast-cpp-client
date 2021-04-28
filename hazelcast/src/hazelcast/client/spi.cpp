@@ -2209,16 +2209,17 @@ namespace hazelcast {
                         connection::Connection *raw_conn = connection.get();
                         invocation->invoke_urgent().then(
                                 [weak_self, handler, raw_conn](boost::future<protocol::ClientMessage> f) {
-                            if (f.has_value()) {
-                                handler->on_listener_register();
-                                return;
-                            }
-                            //completes with exception, listener needs to be reregistered
-                            auto self = weak_self.lock();
-                            if (self) {
-                                self->try_reregister_to_random_connection(raw_conn);
-                            }
-                        });
+                                    auto self = weak_self.lock();
+                                    if (!self)
+                                        return;
+
+                                    if (f.has_value()) {
+                                        handler->on_listener_register();
+                                        return;
+                                    }
+                                    //completes with exception, listener needs to be reregistered
+                                    self->try_reregister_to_random_connection(raw_conn);
+                                });
 
                     }
 
