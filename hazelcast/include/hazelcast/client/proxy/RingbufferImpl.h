@@ -187,9 +187,9 @@ namespace hazelcast {
                 read_many_data(int64_t start_sequence, int32_t min_count, int32_t max_count,
                              serialization::pimpl::data *filter_data) {
                     check_sequence(start_sequence);
-                    util::Preconditions::check_not_negative(min_count, "minCount can't be smaller than 0");
+                    util::Preconditions::check_not_negative(min_count, (boost::format("min_count (%1%) can't be smaller than 0") %min_count).str());
                     util::Preconditions::check_true(max_count >= min_count,
-                                                   "maxCount should be equal or larger than minCount");
+                                                    (boost::format("max_count (%1%) should be equal or larger than min_count(%2%)") %max_count %min_count).str());
                     try {
                         capacity().get();
                     } catch (exception::iexception &) {
@@ -203,9 +203,11 @@ namespace hazelcast {
                         }
                     }
 
-                    util::Preconditions::check_true(max_count <= buffer_capacity_.get(),
-                                                   "the maxCount should be smaller than or equal to the capacity");
-                    util::Preconditions::check_max(max_count, RingbufferImpl::MAX_BATCH_SIZE, "maxCount");
+                    auto capacity = buffer_capacity_.get();
+                    util::Preconditions::check_true(max_count <= capacity, (boost::format(
+                            "the max_count(%1%) should be smaller than or equal to the capacity(%2%)") % max_count %
+                                                                            capacity).str());
+                    util::Preconditions::check_max(max_count, RingbufferImpl::MAX_BATCH_SIZE, "max_count");
 
                     auto request = protocol::codec::ringbuffer_readmany_encode(
                             name_,

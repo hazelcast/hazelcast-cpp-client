@@ -423,6 +423,10 @@ namespace hazelcast {
             bool backup_acks_enabled();
 
         private:
+            friend class reliable_topic;
+
+            const config::reliable_topic_config *lookup_reliable_topic_config(const std::string &name) const;
+
             std::string cluster_name_;
 
             config::client_network_config network_config_;
