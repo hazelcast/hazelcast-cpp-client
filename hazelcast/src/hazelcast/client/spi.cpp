@@ -2207,6 +2207,7 @@ namespace hazelcast {
 
                         std::weak_ptr<cluster_view_listener> weak_self = shared_from_this();
                         connection::Connection *raw_conn = connection.get();
+
                         invocation->invoke_urgent().then(
                                 [weak_self, handler, raw_conn](boost::future<protocol::ClientMessage> f) {
                                     auto self = weak_self.lock();
@@ -2217,6 +2218,7 @@ namespace hazelcast {
                                         handler->on_listener_register();
                                         return;
                                     }
+
                                     //completes with exception, listener needs to be reregistered
                                     self->try_reregister_to_random_connection(raw_conn);
                                 });
