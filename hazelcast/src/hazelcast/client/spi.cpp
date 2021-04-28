@@ -2184,16 +2184,17 @@ namespace hazelcast {
                     }
 
                     void cluster_view_listener::connection_removed(const std::shared_ptr<connection::Connection> connection) {
-                        try_reregister_to_random_connection(connection.get());
+                        try_reregister_to_random_connection(connection->get_connection_id());
                     }
 
                     cluster_view_listener::cluster_view_listener(ClientContext &client_context) : client_context_(
-                            client_context), listener_added_connection_(nullptr) {}
+                            client_context) {}
 
                     void cluster_view_listener::try_register(std::shared_ptr<connection::Connection> connection) {
-                        connection::Connection *expected = nullptr;
-                        if (!listener_added_connection_.compare_exchange_strong(expected, connection.get())) {
-                            //already registering/registered to another connection
+                        int32_t expected_id = -1;
+                        if (!listener_added_connection_id_.compare_exchange_strong(expected_id,
+                                                                                   connection->get_connection_id())) {
+                            // already registering/registered to another connection
                             return;
                         }
 
@@ -2206,10 +2207,10 @@ namespace hazelcast {
                         handler->before_listener_register();
 
                         std::weak_ptr<cluster_view_listener> weak_self = shared_from_this();
-                        connection::Connection *raw_conn = connection.get();
+                        auto conn_id = connection->get_connection_id();
 
                         invocation->invoke_urgent().then(
-                                [weak_self, handler, raw_conn](boost::future<protocol::ClientMessage> f) {
+                                [weak_self, handler, conn_id](boost::future<protocol::ClientMessage> f) {
                                     auto self = weak_self.lock();
                                     if (!self)
                                         return;
@@ -2220,14 +2221,13 @@ namespace hazelcast {
                                     }
 
                                     //completes with exception, listener needs to be reregistered
-                                    self->try_reregister_to_random_connection(raw_conn);
+                                    self->try_reregister_to_random_connection(conn_id);
                                 });
 
                     }
 
-                    void cluster_view_listener::try_reregister_to_random_connection(
-                            connection::Connection *old_connection) {
-                        if (!listener_added_connection_.compare_exchange_strong(old_connection, nullptr)) {
+                    void cluster_view_listener::try_reregister_to_random_connection(int32_t old_connection_id) {
+                        if (!listener_added_connection_id_.compare_exchange_strong(old_connection_id, -1)) {
                             //somebody else already trying to reregister
                             return;
                         }
