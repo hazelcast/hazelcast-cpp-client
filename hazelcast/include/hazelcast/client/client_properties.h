@@ -73,8 +73,6 @@ namespace hazelcast {
 
             const client_property& get_aws_member_port() const;
 
-            const client_property &get_clean_resources_period_millis() const;
-
             const client_property &get_invocation_retry_pause_millis() const;
 
             const client_property &get_invocation_timeout_seconds() const;
@@ -96,6 +94,8 @@ namespace hazelcast {
             const client_property &backup_timeout_millis() const;
 
             const client_property &fail_on_indeterminate_state() const;
+
+            const client_property &cloud_base_url() const;
 
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
@@ -148,12 +148,6 @@ namespace hazelcast {
              */
             static const std::string PROP_AWS_MEMBER_PORT;
             static const std::string PROP_AWS_MEMBER_PORT_DEFAULT;
-
-            /**
-             * The period in milliseconds at which the resource cleaning is run (e.g. invocations).
-             */
-            static const std::string CLEAN_RESOURCES_PERIOD_MILLIS;
-            static const std::string CLEAN_RESOURCES_PERIOD_MILLIS_DEFAULT;
 
             /**
              * Pause time between each retry cycle of an invocation in milliseconds.
@@ -249,6 +243,13 @@ namespace hazelcast {
             static constexpr const char * FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT = "false";
 
             /**
+             * Internal client property to change base url of cloud discovery endpoint.
+             * Used for testing cloud discovery.
+             */
+            static constexpr const char * CLOUD_URL_BASE = "hazelcast.client.cloud.url";
+            static constexpr const char * CLOUD_URL_BASE_DEFAULT = "coordinator.hazelcast.cloud";
+
+            /**
              * Returns the configured boolean value of a {@link ClientProperty}.
              *
              * @param property the {@link ClientProperty} to get the value from
@@ -286,7 +287,6 @@ namespace hazelcast {
             client_property retry_count_;
             client_property retry_wait_time_;
             client_property aws_member_port_;
-            client_property clean_resources_period_;
             client_property invocation_retry_pause_millis_;
             client_property invocation_timeout_seconds_;
             client_property event_thread_count_;
@@ -298,6 +298,7 @@ namespace hazelcast {
             client_property statistics_period_seconds_;
             client_property backup_timeout_millis_;
             client_property fail_on_indeterminate_state_;
+            client_property cloud_base_url_;
 
             std::unordered_map<std::string, std::string> properties_map_;
         };

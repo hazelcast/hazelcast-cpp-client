@@ -13,31 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling.
- */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int main(int argc, char **argv) {
+    constexpr const char *USAGE = "USAGE: connect-cloud <Cluster group name> <Cluster discovery token>";
+    if (argc != 3) {
+        std::cerr << USAGE << std::endl;
+        return -1;
+    }
+
+    std::string cluster_name = argv[1];
+    std::string cloud_token = argv[2];
+
     hazelcast::client::client_config config;
-    hazelcast::client::address serverAddress("127.0.0.1", 5701);
-    config.get_network_config().add_address(serverAddress);
-
-    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
-    ctx.set_verify_mode(boost::asio::ssl::verify_peer);
-    ctx.set_default_verify_paths();
-    ctx.load_verify_file("/path/to/my/server/public/certificate");
-
-    config.get_network_config().get_ssl_config().
-            set_context(std::move(ctx)).   // mandatory to enable ssl
-            set_cipher_list("HIGH");     // optional setting (values for string are described at
-                                                // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html and
-                                                // https://www.openssl.org/docs/man1.1.1/man1/ciphers.html)
-    
+    config.set_cluster_name(cluster_name);
+    auto &cloud_configuration = config.get_network_config().get_cloud_config();
+    cloud_configuration.enabled = true;
+    cloud_configuration.discovery_token = cloud_token;
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(1, 100).get();
     map->put(2, 200).get();
 

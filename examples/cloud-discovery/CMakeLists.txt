@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(basicTLSClient ./BasicTLSClient.cpp)
-add_executable(mutual_authentication ./mutual_authentication.cpp)
+add_executable(connect-cloud connect-cloud.cpp)
+add_executable(ssl-connect-cloud ssl-connect-cloud.cpp)

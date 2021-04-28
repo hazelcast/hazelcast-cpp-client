@@ -277,6 +277,10 @@ namespace hazelcast {
                 return client_aws_config_;
             }
 
+            cloud_config &client_network_config::get_cloud_config() {
+                return cloud_config_;
+            }
+
             bool client_network_config::is_smart_routing() const {
                 return smart_routing_;
             }

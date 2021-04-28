@@ -69,13 +69,11 @@ namespace hazelcast {
             constexpr size_t ClientConnectionManagerImpl::EXECUTOR_CORE_POOL_SIZE;
 
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
-                                                                     const std::shared_ptr<AddressTranslator> &address_translator,
-                                                                     const std::vector<std::shared_ptr<AddressProvider> > &address_providers)
+                                                                     std::unique_ptr<AddressProvider> address_provider)
                     : alive_(false), logger_(client.get_logger()),
-                      connection_timeout_millis_((std::chrono::milliseconds::max)()),
-                      client_(client),
-                      socket_interceptor_(client.get_client_config().get_socket_interceptor()),
-                      translator_(address_translator), connection_id_gen_(0),
+                      connection_timeout_millis_((std::chrono::milliseconds::max) ()),
+                      client_(client), socket_interceptor_(client.get_client_config().get_socket_interceptor()),
+                      address_provider_(std::move(address_provider)), connection_id_gen_(0),
                       heartbeat_(client, *this),
                       async_start_(client.get_client_config().get_connection_strategy_config().is_async_start()),
                       reconnect_mode_(client.get_client_config().get_connection_strategy_config().get_reconnect_mode()),
@@ -95,8 +93,6 @@ namespace hazelcast {
 
                 client_properties &clientProperties = client.get_client_properties();
                 shuffle_member_list_ = clientProperties.get_boolean(clientProperties.get_shuffle_member_list());
-
-                ClientConnectionManagerImpl::address_providers_ = address_providers;
             }
 
             bool ClientConnectionManagerImpl::start() {
@@ -480,11 +476,7 @@ namespace hazelcast {
                     shuffle(addresses);
                 }
 
-                std::vector<address> provided_addresses;
-                for (auto &addressProvider : address_providers_) {
-                    auto addrList = addressProvider->load_addresses();
-                    provided_addresses.insert(provided_addresses.end(), addrList.begin(), addrList.end());
-                }
+                std::vector<address> provided_addresses = address_provider_->load_addresses();
 
                 if (shuffle_member_list_) {
                     shuffle(provided_addresses);
@@ -575,7 +567,7 @@ namespace hazelcast {
                     std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
                     check_partition_count(response.partition_count);
                     connection->set_connected_server_version(response.server_version);
-                    connection->set_remote_address(std::move(response.server_address));
+                    connection->set_remote_address(response.server_address);
                     connection->set_remote_uuid(response.member_uuid);
 
                     auto existing_connection = active_connections_.get(response.member_uuid);
@@ -584,7 +576,6 @@ namespace hazelcast {
                                            boost::uuids::to_string(response.member_uuid)).str());
                         return existing_connection;
                     }
-
 
                     auto new_cluster_id = response.cluster_id;
                     boost::uuids::uuid current_cluster_id = cluster_id_;
@@ -615,16 +606,16 @@ namespace hazelcast {
                     if (local_address) {
                         HZ_LOG(logger_, info,
                                boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
-                                                        "local address: %4%")
+                                                        "local address: %4%. %5%")
                                           % response.server_address % response.member_uuid
-                                          % response.server_version % *local_address)
+                                          % response.server_version % *local_address % *connection)
                         );
                     } else {
                         HZ_LOG(logger_, info,
                                boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
-                                                        "no local address: (connection disconnected ?)")
+                                                        "no local address: (connection disconnected ?). %5%")
                                           % response.server_address % response.member_uuid
-                                          % response.server_version)
+                                          % response.server_version % *connection)
                         );
                     }
 
@@ -748,7 +739,7 @@ namespace hazelcast {
                 if (!connection) {
                     return;
                 }
-                boost::asio::post(connection->get_socket().get_executor(), [=] () {
+                boost::asio::post(connection->get_socket().get_executor(), [=]() {
                     auto invocation_it = connection->invocations.find(call_id);
                     if (invocation_it != connection->invocations.end()) {
                         invocation_it->second->notify_backup();
@@ -756,13 +747,18 @@ namespace hazelcast {
                 });
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &address) {
-                auto target = translator_->translate(address);
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &addr) {
+                auto target = address_provider_->translate(addr);
+                if (!target) {
+                    BOOST_THROW_EXCEPTION(exception::null_pointer("ClientConnectionManagerImpl::connect",
+                                                                  (boost::format("Address Provider could not translate "
+                                                                                 "address %2%") % target).str()));
+                }
                 HZ_LOG(logger_, info, boost::str(
-                        boost::format("Trying to connect to %1%. Translated address:%2%.") % address % target));
+                        boost::format("Trying to connect to %1%. Translated address:%2%.") % addr % target));
 
-                auto connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
-                                                          *socket_factory_, *this, connection_timeout_millis_);
+                auto connection = std::make_shared<Connection>(*target, client_, ++connection_id_gen_,
+                                                               *socket_factory_, *this, connection_timeout_millis_);
                 connection->connect();
 
                 // call the interceptor from user thread

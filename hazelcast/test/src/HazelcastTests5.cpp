@@ -42,21 +42,16 @@
 #include <hazelcast/client/initial_membership_event.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
 #include <hazelcast/client/internal/socket/SSLSocket.h>
-#include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/multi_map.h>
 #include <hazelcast/client/pipelining.h>
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
 #include <hazelcast/client/proxy/PNCounterImpl.h>
 #include <hazelcast/client/query/predicates.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/socket_interceptor.h>
-#include <hazelcast/client/socket.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/Util.h>
 
 #include "ClientTestSupport.h"

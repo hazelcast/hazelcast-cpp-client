@@ -14,9 +14,7 @@ TARBALL_NAME=boost_$(echo "$1" | tr . _)
 
 curl --silent -Lo $TARBALL_NAME.tar.gz https://dl.bintray.com/boostorg/release/$1/source/$TARBALL_NAME.tar.gz
 tar xzf $TARBALL_NAME.tar.gz
-rm $TARBALL_NAME.tar.gz
 cd $TARBALL_NAME
 ./bootstrap.sh
 ./b2 --with-thread --with-chrono install
 cd ..
-rm -rf $TARBALL_NAME

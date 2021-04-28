@@ -93,17 +93,9 @@ if (WITH_OPENSSL)
     find_package(OpenSSL REQUIRED)
 endif ()
 
-# add library
-if (BUILD_SHARED_LIBS)
-    set(LIB_TYPE SHARED)
-else()
-    set(LIB_TYPE STATIC)
-endif()
-
 # add the library target
 add_library(
         ${PROJECT_NAME}
-        ${LIB_TYPE}
         ${SOURCE_FILES} ${HEADER_FILES}
 )
 
@@ -179,20 +171,13 @@ if (DISABLE_LOGGING)
     target_compile_definitions(${PROJECT_NAME} PUBLIC HZ_LOGGING_DISABLED)
 endif ()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES DEFINE_SYMBOL HAZELCAST_EXPORTS)
-
 generate_export_header(
         ${PROJECT_NAME}
         BASE_NAME hazelcast
         EXPORT_MACRO_NAME HAZELCAST_API
         EXPORT_FILE_NAME include/hazelcast/util/export.h
         NO_EXPORT_MACRO_NAME HAZELCAST_PRIVATE
-        STATIC_DEFINE HAZELCAST_USE_STATIC
 )
-
-if (type STREQUAL "STATIC")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC HAZELCAST_USE_STATIC)
-endif()
 
 # install library target
 install(
@@ -255,3 +240,14 @@ endif ()
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()
+
+message(STATUS "Configuration summary:")
+if (NOT is_multi_config)
+    message(STATUS "  CMAKE_BUILD_TYPE =      ${CMAKE_BUILD_TYPE}")
+endif()
+message(STATUS "  BUILD_SHARED_LIBS =     ${BUILD_SHARED_LIBS}")
+message(STATUS "  WITH_OPENSSL =          ${WITH_OPENSSL}")
+message(STATUS "  DISABLE_LOGGING =       ${DISABLE_LOGGING}")
+message(STATUS "  CMAKE_INSTALL_PREFIX =  ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  BUILD_TESTS =           ${BUILD_TESTS}")
+message(STATUS "  BUILD_EXAMPLES =        ${BUILD_EXAMPLES}")

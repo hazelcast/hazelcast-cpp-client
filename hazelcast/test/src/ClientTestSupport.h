@@ -47,11 +47,10 @@ namespace hazelcast {
             protected:
                 logger &get_logger();
 
-                const std::string &get_test_name() const;
+                static std::string get_test_name();
 
             private:
                 std::shared_ptr<logger> logger_;
-                std::string test_name_;
             };
 
             class CountDownLatchWaiter {

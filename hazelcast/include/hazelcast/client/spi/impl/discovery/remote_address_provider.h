@@ -16,13 +16,12 @@
 
 #pragma once
 
+#include <functional>
 #include <unordered_map>
+#include <mutex>
 
-#include "hazelcast/client/aws/aws_client.h"
-#include "hazelcast/util/Sync.h"
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/connection/AddressProvider.h"
-#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,29 +30,25 @@
 
 namespace hazelcast {
     namespace client {
-        namespace config {
-            class client_network_config;
-        }
         namespace spi {
             namespace impl {
-                class HAZELCAST_API AwsAddressProvider : public connection::AddressProvider {
-                public:
-                    AwsAddressProvider(config::client_aws_config &aws_config, int aws_member_port, logger &lg);
+                namespace discovery {
+                    class HAZELCAST_API remote_address_provider : public connection::AddressProvider {
+                    public:
+                        remote_address_provider(std::function<std::unordered_map<address, address>()> addr_map_method,
+                                                bool use_public);
 
-                    ~AwsAddressProvider() override;
+                        std::vector<address> load_addresses() override;
 
-                    std::vector<address> load_addresses() override;
+                        boost::optional<address> translate(const address &addr) override;
 
-                private:
-                    std::string aws_member_port_;
-                    logger &logger_;
-                    aws::aws_client aws_client_;
-                    util::Sync<std::unordered_map<std::string, std::string> > private_to_public_;
-
-                    void update_lookup_table();
-
-                    std::unordered_map<std::string, std::string> get_lookup_table();
-                };
+                    private:
+                        std::function<std::unordered_map<address, address>()> refresh_address_map_;
+                        const bool use_public_;
+                        std::mutex lock_;
+                        std::unordered_map<address, address> private_to_public_;
+                    };
+                }
             }
         }
     }

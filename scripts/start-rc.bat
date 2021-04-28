@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set HZ_VERSION=4.1
+set HZ_VERSION=4.1.4-SNAPSHOT
 set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
 set HAZELCAST_RC_VERSION="0.8-SNAPSHOT"
@@ -34,7 +34,7 @@ if exist  "hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar" (
     echo "hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast test jar com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests"
-    call mvn -q dependency:get -DrepoUrl=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar || (
+    call mvn -q dependency:get -Dtransitive=false -DrepoUrl=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar || (
         echo "Failed download hazelcast test jar com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests"
         exit /b 1
     )
@@ -44,7 +44,7 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar" (
     echo "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%"
-    call mvn -q dependency:get -DrepoUrl=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION% -Ddest=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar || (
+    call mvn -q dependency:get -Dtransitive=false -DrepoUrl=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION% -Ddest=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar || (
         echo "Failed download hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%"
         exit /b 1
     )
@@ -54,7 +54,7 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar" (
     echo "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests"
-    call mvn -q dependency:get -DrepoUrl=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar || (
+    call mvn -q dependency:get -Dtransitive=false -DrepoUrl=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests -Ddest=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar || (
         echo "Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%:jar:tests"
         exit /b 1
     )

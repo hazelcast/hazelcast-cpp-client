@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-#include <cassert>
-#include <cerrno>
 #include <cmath>
-#include <cstdlib>
 #include <ctime>
 #include <fstream>
-#include <iostream>
 #include <memory>
-#include <ostream>
 #include <regex>
 #include <thread>
 #include <vector>
@@ -30,73 +25,31 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/asio.hpp>
-
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/crypto.h>
 #endif
 
-#include <hazelcast/client/aws/impl/DescribeInstances.h>
-#include <hazelcast/client/aws/utility/cloud_utility.h>
 #include <hazelcast/client/client_config.h>
-#include <hazelcast/client/client_properties.h>
-#include <hazelcast/client/cluster.h>
-#include <hazelcast/client/config/client_aws_config.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/client/entry_event.h>
-#include <hazelcast/client/exception/protocol_exceptions.h>
-#include <hazelcast/client/execution_callback.h>
 #include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/hazelcast_json_value.h>
-#include <hazelcast/client/ilist.h>
-#include <hazelcast/client/imap.h>
 #include <hazelcast/client/impl/Partition.h>
-#include <hazelcast/client/initial_membership_event.h>
-#include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
 #include <hazelcast/client/internal/socket/SSLSocket.h>
-#include <hazelcast/client/iqueue.h>
-#include <hazelcast/client/iset.h>
 #include <hazelcast/client/itopic.h>
-#include <hazelcast/client/lifecycle_listener.h>
-#include <hazelcast/client/membership_listener.h>
 #include <hazelcast/client/multi_map.h>
 #include <hazelcast/client/pipelining.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/client/protocol/ClientMessage.h>
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
-#include <hazelcast/client/proxy/PNCounterImpl.h>
-#include <hazelcast/client/reliable_topic.h>
-#include <hazelcast/client/serialization_config.h>
-#include <hazelcast/client/serialization/pimpl/data_input.h>
-#include <hazelcast/client/serialization/pimpl/data_output.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/socket_interceptor.h>
-#include <hazelcast/client/socket.h>
 #include <hazelcast/client/spi/ClientContext.h>
-#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
-#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
-#include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/util/AddressUtil.h>
-#include <hazelcast/util/Bits.h>
 #include <hazelcast/util/BlockingConcurrentQueue.h>
-#include <hazelcast/util/concurrent/locks/LockSupport.h>
-#include <hazelcast/util/ConcurrentQueue.h>
-#include <hazelcast/util/IOUtil.h>
 #include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/Sync.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/Util.h>
 
 #include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
-#include "ringbuffer/StartsWithStringFilter.h"
-#include "serialization/Serializables.h"
 #include "TestHelperFunctions.h"
 
 
@@ -108,7 +61,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapTest : public ClientTestSupport {
+            class ClientReplicatedMapTestBase : public ClientTestSupport {
             public:
                 struct SamplePortable {
                     int32_t a;
@@ -136,7 +89,7 @@ namespace hazelcast {
                         ASSERT_EQ("bar", val.value());
                     }
                 }
-                
+
                 void get_and_verify_entries_in_map(const std::shared_ptr<replicated_map> &map) {
                     get_and_verify_entries_in_map(map, "bar");
                 }
@@ -171,7 +124,7 @@ namespace hazelcast {
                 void put_entries_into_map(const std::shared_ptr<replicated_map> &map, const std::string value) {
                     execute_for_each([&] (size_t i) {
                         map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
-                                                                           value).get();
+                                                           value).get();
                     });
                 }
 
@@ -198,17 +151,28 @@ namespace hazelcast {
                     return testValues;
                 }
 
+                static hazelcast_client* create_client() {
+                    auto config = get_config();
+                    config.set_cluster_name("replicated-map-binary-test");
+                    return new hazelcast_client(new_client(std::move(config)).get());
+                }
+
+                static client_config get_client_config_with_near_cache_invalidation_enabled() {
+                    config::near_cache_config nearCacheConfig;
+                    nearCacheConfig.set_invalidate_on_change(true).set_in_memory_format(config::BINARY);
+                    return std::move(get_config().set_cluster_name("replicated-map-binary-test").add_near_cache_config(nearCacheConfig));
+                }
+            };
+
+            constexpr size_t ClientReplicatedMapTestBase::OPERATION_COUNT;
+
+            class ClientReplicatedMapTest : public ClientReplicatedMapTestBase {
+            protected:
                 virtual void SetUp() {
                     ASSERT_TRUE(factory);
                     ASSERT_TRUE(instance1);
                     ASSERT_TRUE(client);
                     ASSERT_TRUE(client2);
-                }
-
-                static hazelcast_client* create_client() {
-                    auto config = get_config();
-                    config.set_cluster_name("replicated-map-binary-test");
-                    return new hazelcast_client(new_client(std::move(config)).get());
                 }
 
                 static void SetUpTestCase() {
@@ -232,12 +196,6 @@ namespace hazelcast {
                     factory = nullptr;
                 }
 
-                static client_config get_client_config_with_near_cache_invalidation_enabled() {
-                    config::near_cache_config nearCacheConfig;
-                    nearCacheConfig.set_invalidate_on_change(true).set_in_memory_format(config::BINARY);
-                    return std::move(get_config().set_cluster_name("replicated-map-binary-test").add_near_cache_config(nearCacheConfig));
-                }
-
                 static HazelcastServer *instance1;
                 static hazelcast_client *client;
                 static hazelcast_client *client2;
@@ -248,7 +206,6 @@ namespace hazelcast {
             hazelcast_client *ClientReplicatedMapTest::client = nullptr;
             hazelcast_client *ClientReplicatedMapTest::client2 = nullptr;
             HazelcastServerFactory *ClientReplicatedMapTest::factory = nullptr;
-            constexpr size_t ClientReplicatedMapTest::OPERATION_COUNT;
 
             TEST_F(ClientReplicatedMapTest, testEmptyMapIsEmpty) {
                 std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name()).get();
@@ -487,7 +444,22 @@ namespace hazelcast {
                 ASSERT_FALSE(value.has_value()) << "No entry with key foo should exist";
             }
 
-            TEST_F(ClientReplicatedMapTest, testNearCacheInvalidation) {
+            TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode) {
+                auto sampleMap = client->get_replicated_map(get_test_name()).get();
+                sampleMap->put(1, SamplePortable{666});
+                auto samplePortable = sampleMap->get<int, SamplePortable>(1).get();
+                ASSERT_TRUE(samplePortable.has_value());
+                ASSERT_EQ(666, samplePortable->a);
+            }
+
+            class ClientReplicatedMapInvalidation : public ClientReplicatedMapTestBase {
+            };
+
+            TEST_F(ClientReplicatedMapInvalidation, testNearCacheInvalidation) {
+                HazelcastServerFactory factory(g_srvFactory->get_server_address(),
+                                               "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                HazelcastServer server(factory);
+
                 std::string mapName = random_string();
 
                 hazelcast_client client1(new_client(get_client_config_with_near_cache_invalidation_enabled()).get());
@@ -496,23 +468,16 @@ namespace hazelcast {
                 auto replicatedMap1 = client1.get_replicated_map(mapName).get();
 
                 replicatedMap1->put(1, 1).get();
-// puts key 1 to Near Cache
+                // puts key 1 to Near Cache
                 replicatedMap1->get<int, int>(1).get();
 
                 auto replicatedMap2 = client2.get_replicated_map(mapName).get();
-// this should invalidate Near Cache of replicatedMap1
+                // this should invalidate Near Cache of replicatedMap1
                 replicatedMap2->clear().get();
 
                 ASSERT_FALSE_EVENTUALLY((replicatedMap1->get<int, int>(1).get().has_value()));
             }
 
-            TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode) {
-                auto sampleMap = client->get_replicated_map(get_test_name()).get();
-                sampleMap->put(1, SamplePortable{666});
-                auto samplePortable = sampleMap->get<int, SamplePortable>(1).get();
-                ASSERT_TRUE(samplePortable.has_value());
-                ASSERT_EQ(666, samplePortable->a);
-            }
         }
 
         namespace serialization {

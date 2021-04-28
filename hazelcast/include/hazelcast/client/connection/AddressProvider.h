@@ -34,6 +34,15 @@ namespace hazelcast {
                  */
                 virtual std::vector<address> load_addresses() = 0;
 
+                /**
+                 * Translates the given address to another address specific to
+                 * network or service
+                 *
+                 * @param address to be translated
+                 * @return translated address or boost::none if no translation is found.
+                 */
+                virtual boost::optional<address> translate(const address &addr) = 0;
+
                 virtual ~AddressProvider() = default;
             };
         }

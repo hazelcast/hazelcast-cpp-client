@@ -45,9 +45,7 @@
 #include <hazelcast/client/imap.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/initial_membership_event.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
 #include <hazelcast/client/itopic.h>
-#include <hazelcast/client/lifecycle_event.h>
 #include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/membership_listener.h>
 #include <hazelcast/client/multi_map.h>
@@ -63,8 +61,12 @@
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/SyncHttpsClient.h>
 #include <hazelcast/util/Util.h>
+
+#ifdef HZ_BUILD_WITH_SSL
+#include <hazelcast/client/internal/socket/SSLSocket.h>
+#include <hazelcast/util/SyncHttpsClient.h>
+#endif //HZ_BUILD_WITH_SSL
 
 #include "ClientTestSupport.h"
 #include "ClientTestSupportBase.h"
@@ -99,8 +101,15 @@ namespace hazelcast {
                 }
 
                 static Response get_client_stats_from_server() {
-                    const char *script = "client0=instance_0.getClientService().getConnectedClients()."
-                                         "toArray()[0]\nresult=client0.getClientAttributes();";
+                    constexpr const char* script_template = (
+                        "clients = instance_0.getClientService().getConnectedClients()\n"
+                        "for client in clients:\n"
+                        "    if client.getName() == '%1%':\n"
+                        "        result = client.getClientAttributes()\n"
+                        "        break\n"
+                    );
+
+                    std::string script = boost::str(boost::format(script_template) % get_test_name());
 
                     Response response;
                     remoteController->executeOnController(response, g_srvFactory->get_cluster_id(), script, Lang::PYTHON);
@@ -150,6 +159,9 @@ namespace hazelcast {
 
                 std::unique_ptr<hazelcast_client> create_hazelcast_client() {
                     client_config clientConfig;
+
+                    clientConfig.set_instance_name(get_test_name());
+
                     clientConfig.set_property(client_properties::STATISTICS_ENABLED, "true")
                             .set_property(client_properties::STATISTICS_PERIOD_SECONDS,
                                           std::to_string(STATS_PERIOD_SECONDS))
@@ -267,15 +279,16 @@ namespace hazelcast {
 
             TEST_F(ClientStatisticsTest, testClientStatisticsContent) {
                 client_config clientConfig;
-                std::string mapName = get_test_name();
-                clientConfig.add_near_cache_config(config::near_cache_config(mapName));
+                std::string test_name = get_test_name();
+                clientConfig.set_instance_name(test_name);
+                clientConfig.add_near_cache_config(config::near_cache_config(test_name));
                 clientConfig.set_property(client_properties::STATISTICS_ENABLED, "true").set_property(
                         client_properties::STATISTICS_PERIOD_SECONDS, "1");
 
                 auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
                 // initialize near cache
-                client.get_map(mapName).get();
+                client.get_map(test_name).get();
 
                 // sleep twice the collection period
                 sleep_seconds(2);
@@ -299,36 +312,36 @@ namespace hazelcast {
                           statsFromServer.result.find(std::string("clientAddress=") + localAddress));
 
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "creationTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "creationTime"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "evictions"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "evictions"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "hits"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "hits"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "lastPersistenceDuration"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "lastPersistenceDuration"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "lastPersistenceKeyCount"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "lastPersistenceKeyCount"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "lastPersistenceTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "lastPersistenceTime"));
                 ASSERT_NE(std::string::npos,
                           statsFromServer.result.find(
-                                  std::string("nc.") + mapName + "." + "lastPersistenceWrittenBytes"));
+                                  std::string("nc.") + test_name + "." + "lastPersistenceWrittenBytes"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "misses"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "misses"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "ownedEntryCount"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "ownedEntryCount"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "expirations"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "expirations"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "invalidations"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "invalidations"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "invalidationRequests"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "invalidationRequests"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "ownedEntryMemoryCost"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "ownedEntryMemoryCost"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "creationTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "creationTime"));
                 ASSERT_NE(std::string::npos,
-                          statsFromServer.result.find(std::string("nc.") + mapName + "." + "creationTime"));
+                          statsFromServer.result.find(std::string("nc.") + test_name + "." + "creationTime"));
             }
 
             TEST_F(ClientStatisticsTest, testStatisticsCollectionNonDefaultPeriod) {
@@ -725,7 +738,6 @@ namespace hazelcast {
 
             hazelcast::client::client_config ClientTestSupportBase::get_config(bool ssl_enabled, bool smart) {
                 client_config clientConfig;
-                clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
 #ifdef HZ_BUILD_WITH_SSL
                 if (ssl_enabled) {
                     clientConfig.set_cluster_name(get_ssl_cluster_name());
@@ -1002,6 +1014,8 @@ namespace hazelcast {
                                                   std::string("hazelcast/test/resources/hazelcast-ma-") +
                                                   (required ? "required" : "optional") + ".xml");
                 }
+
+                using ssl_test::new_ssl_client_config;
 
                 client_config new_ssl_client_config(boost::asio::ssl::context ctx) {
                     auto config = new_client_config();
@@ -3188,20 +3202,22 @@ namespace hazelcast {
             };
 
             TEST_F(HttpsClientTest, testConnect) {
-                hazelcast::util::SyncHttpsClient httpsClient("localhost", "non_existentURL/no_page");
-                ASSERT_THROW(httpsClient.open_connection(), client::exception::io);
+                hazelcast::util::SyncHttpsClient httpsClient("localhost", "non_existentURL/no_page",
+                                                             std::chrono::seconds(5));
+                ASSERT_THROW(httpsClient.connect_and_get_response(), client::exception::io);
             }
 
             TEST_F(HttpsClientTest, testConnectToGithub) {
                 hazelcast::util::SyncHttpsClient httpsClient("ec2.us-east-1.amazonaws.com",
-                                                             "/?Action=DescribeInstances&Version=2014-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIU5IAVNR6X75ARYQ%2F20170413%2Fus-east-1%2Fec2%2Faws4_request&X-Amz-Date=20170413T083821Z&X-Amz-Expires=30&X-Amz-Signature=dff261333170c81ecb21f3a0d5820147233197a32c&X-Amz-SignedHeaders=host");
+                                                             "/?Action=DescribeInstances&Version=2014-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIU5IAVNR6X75ARYQ%2F20170413%2Fus-east-1%2Fec2%2Faws4_request&X-Amz-Date=20170413T083821Z&X-Amz-Expires=30&X-Amz-Signature=dff261333170c81ecb21f3a0d5820147233197a32c&X-Amz-SignedHeaders=host",
+                                                             std::chrono::seconds (5));
                 try {
-                    httpsClient.open_connection();
+                    httpsClient.connect_and_get_response();
                 } catch (exception::iexception &e) {
                     const std::string &msg = e.get_message();
                     ASSERT_NE(std::string::npos, msg.find("status: 401"));
                 }
-                ASSERT_THROW(httpsClient.open_connection(), exception::io);
+                ASSERT_THROW(httpsClient.connect_and_get_response(), exception::io);
             }
         }
     }

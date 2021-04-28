@@ -37,7 +37,7 @@ namespace hazelcast {
             friend struct serialization::hz_serializer<address>;
             friend struct std::hash<hazelcast::client::address>;
         public:
-            address(const std::string &hostname, int port, unsigned long scope_id);
+            address(std::string hostname, int port, unsigned long scope_id);
 
             static constexpr int ID = 0;
 
@@ -46,7 +46,7 @@ namespace hazelcast {
              */
             address();
 
-            address(const std::string &url, int port);
+            address(std::string url, int port);
 
             /**
              * @param address to be compared.
