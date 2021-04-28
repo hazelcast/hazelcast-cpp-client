@@ -19,14 +19,12 @@
 #include <memory>
 #include <atomic>
 
-#include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/ringbuffer.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/util/concurrent/Cancellable.h"
 #include "hazelcast/logger.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
-#include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,11 +46,11 @@ namespace hazelcast {
         * and process m1, m2, m3...mn in order.
         *
         */
-        class HAZELCAST_API reliable_topic : public proxy::ReliableTopicImpl {
+        class HAZELCAST_API reliable_topic : public proxy::ProxyImpl {
             friend class spi::ProxyManager;
             friend class hazelcast_client;
         public:
-            static constexpr const char *SERVICE_NAME = "hz:impl:topicService";
+            static constexpr const char *SERVICE_NAME = "hz:impl:reliableTopicService";
 
             /**
             * Publishes the message to all subscribers of this topic
@@ -64,7 +62,8 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<void> publish(const E &message) {
-                return proxy::ReliableTopicImpl::publish(to_data(message));
+                topic::impl::reliable::ReliableTopicMessage reliable_message(to_data(message), nullptr);
+                return to_void_future(ringbuffer_.get()->add(reliable_message));
             }
 
             /**
@@ -88,8 +87,9 @@ namespace hazelcast {
             std::string add_message_listener(Listener &&listener) {
                 int id = ++runner_counter_;
                 std::shared_ptr<MessageRunner < Listener>>
-                runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer_, get_name(),
-                                                   get_serialization_service(), config_, logger_));
+                runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer_.get(), get_name(),
+                                                   get_serialization_service(), batch_size_, logger_, executor_,
+                                                   runners_map_));
                 runners_map_.put(id, runner);
                 runner->next();
                 return std::to_string(id);
@@ -107,22 +107,25 @@ namespace hazelcast {
         protected:
             void on_destroy() override;
 
+            void post_destroy() override;
+
         private:
-            reliable_topic(std::shared_ptr<ringbuffer> rb, const std::string &instance_name,
-                           spi::ClientContext *context);
+            static constexpr const char *TOPIC_RB_PREFIX = "_hz_rb_";
+
+            reliable_topic(const std::string &instance_name, spi::ClientContext *context);
 
             template<typename Listener>
             class MessageRunner
-                    : public execution_callback<rb::read_result_set>,
-                      public std::enable_shared_from_this<MessageRunner<Listener>>,
+                    : public std::enable_shared_from_this<MessageRunner<Listener>>,
                       public util::concurrent::Cancellable {
             public:
                 MessageRunner(int id, Listener &&listener, const std::shared_ptr<ringbuffer> &rb,
                               const std::string &topic_name, serialization::pimpl::SerializationService &service,
-                              const config::reliable_topic_config &reliable_topic_config, logger &lg)
+                              int batch_size, logger &lg, util::hz_thread_pool &executor,
+                              util::SynchronizedMap<int, util::concurrent::Cancellable> &runners_map)
                         : listener_(listener), id_(id), ringbuffer_(rb), cancelled_(false), logger_(lg),
-                        name_(topic_name), executor_(rb, lg), serialization_service_(service),
-                        config_(reliable_topic_config) {
+                        name_(topic_name), executor_(executor), serialization_service_(service),
+                        batch_size_(batch_size), runners_map_(runners_map) {
                     // we are going to listen to next publication. We don't care about what already has been published.
                     int64_t initialSequence = listener.initial_sequence_id_;
                     if (initialSequence == -1) {
@@ -131,141 +134,158 @@ namespace hazelcast {
                     sequence_ = initialSequence;
                 }
 
-                ~MessageRunner() override = default;
+                virtual ~MessageRunner() = default;
 
                 void next() {
                     if (cancelled_) {
                         return;
                     }
 
-                    topic::impl::reliable::ReliableTopicExecutor::Message m;
-                    m.type = topic::impl::reliable::ReliableTopicExecutor::GET_ONE_MESSAGE;
-                    m.callback = this->shared_from_this();
-                    m.sequence = sequence_;
-                    m.max_count = config_.get_read_batch_size();
-                    executor_.execute(std::move(m));
-                }
-
-                // This method is called from the provided executor.
-                void on_response(const boost::optional<rb::read_result_set> &all_messages) override {
-                    if (cancelled_) {
-                        return;
-                    }
-
-                    // we process all messages in batch. So we don't release the thread and reschedule ourselves;
-                    // but we'll process whatever was received in 1 go.
-                    for (auto &item : all_messages->get_items()) {
-                        try {
-                            listener_.store_sequence_id_(sequence_);
-                            process(item.get<topic::impl::reliable::ReliableTopicMessage>().get_ptr());
-                        } catch (exception::iexception &e) {
-                            if (terminate(e)) {
-                                cancel();
-                                return;
-                            }
-                        }
-
-                        sequence_++;
-                    }
-
-                    next();
-                }
-
-                // This method is called from the provided executor.
-                void on_failure(std::exception_ptr throwable) override {
-                    if (cancelled_) {
-                        return;
-                    }
-
-                    try {
-                        std::rethrow_exception(throwable);
-                    } catch (exception::iexception &ie) {
-                        int32_t err = ie.get_error_code();
-                        int32_t causeErrorCode = protocol::UNDEFINED;
-                        try {
-                            std::rethrow_if_nested(ie);
-                        } catch (exception::iexception &causeException) {
-                            causeErrorCode = causeException.get_error_code();
-                        }
-                        if (protocol::TIMEOUT == err) {
-                            HZ_LOG(logger_, finest, 
-                                boost::str(boost::format("MessageListener on topic: %1% timed out. "
-                                                         "Continuing from last known sequence: %2%")
-                                                         % name_ % sequence_)
-                            );
-                            next();
+                    auto runner = this->shared_from_this();
+                    ringbuffer_->read_many(sequence_, 1, batch_size_).then(executor_, [runner](
+                            boost::future<rb::read_result_set> f) {
+                        if (runner->cancelled_) {
                             return;
-                        } else if (protocol::EXECUTION == err &&
-                                   protocol::STALE_SEQUENCE == causeErrorCode) {
-                            // stale_sequence_exception.getHeadSeq() is not available on the client-side, see #7317
-                            int64_t remoteHeadSeq = ringbuffer_->head_sequence().get();
+                        }
 
-                            if (listener_.loss_tolerant_) {
-                                HZ_LOG(logger_, finest, 
-                                    boost::str(boost::format("MessageListener %1% on topic: %2% "
-                                                             "ran into a stale sequence. "
-                                                             "Jumping from old sequence: %3% "
-                                                             "to sequence: %4%")
-                                                             % id_ % name_ % sequence_ % remoteHeadSeq)
-                                );
-                                sequence_ = remoteHeadSeq;
-                                next();
+                        try {
+                            auto result = f.get();
+
+                            // we process all messages in batch. So we don't release the thread and reschedule ourselves;
+                            // but we'll process whatever was received in 1 go.
+                            auto lost_count = result.get_next_sequence_to_read_from() - result.read_count() - runner->sequence_;
+                            if (lost_count != 0 && !runner->listener_.loss_tolerant_) {
+                                runner->cancel();
                                 return;
                             }
 
-                            HZ_LOG(logger_, warning,
-                                boost::str(boost::format("Terminating MessageListener: %1% on topic: %2%"
-                                                         "Reason: The listener was too slow or the retention "
-                                                         "period of the message has been violated. "
-                                                         "head: %3% sequence: %4%")
-                                                         % id_ % name_ % remoteHeadSeq % sequence_)
-                            );
-                        } else if (protocol::HAZELCAST_INSTANCE_NOT_ACTIVE == err) {
-                            HZ_LOG(logger_, finest, 
-                                boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
-                                                         "Reason: HazelcastInstance is shutting down")
-                                                         % id_ % name_)
-                            );
-                        } else if (protocol::DISTRIBUTED_OBJECT_DESTROYED == err) {
-                            HZ_LOG(logger_, finest, 
-                                boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
-                                                         "Reason: Topic is destroyed")
-                                                         % id_ % name_)
-                            );
-                        } else {
-                            HZ_LOG(logger_, warning, 
-                                boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
-                                                         "Reason: Unhandled exception, details: %3%")
-                                                         % id_ % name_ % ie.what())
-                            );
+                            auto const &items = result.get_items();
+                            for (size_t i = 0; i < items.size(); i++) {
+                                auto const &message = items[i];
+                                try {
+                                    runner->listener_.store_sequence_id_(result.get_sequence(static_cast<int>(i)));
+                                    auto rel_msg = message.get<topic::impl::reliable::ReliableTopicMessage>();
+                                    runner->process(*rel_msg);
+                                } catch (exception::iexception &e) {
+                                    if (runner->terminate(e)) {
+                                        runner->cancel();
+                                        return;
+                                    }
+                                }
+                            }
+
+                            runner->sequence_ = result.get_next_sequence_to_read_from();
+                            runner->next();
+                        } catch (exception::iexception &ie) {
+                            if (runner->handle_internal_exception(ie)) {
+                                runner->next();
+                            } else {
+                                runner->cancel();
+                            }
                         }
 
-                        cancel();
+                    });
+                }
+
+                bool handle_operation_timeout_exception() {
+                    HZ_LOG(logger_, finest,
+                           boost::str(boost::format("MessageListener on topic: %1% timed out. "
+                                                    "Continuing from last known sequence: %2%")
+                                      % name_ % sequence_)
+                    );
+
+                    return true;
+                }
+
+                /**
+                 * Handles the \illegal_argument_exception associated with requesting
+                 * a sequence larger than the tail_sequence() + 1.
+                 * This may indicate that an entire partition or an entire ringbuffer was
+                 * lost.
+                 *
+                 * @param e the exception
+                 * @return if the exception was handled and the listener may continue reading
+                 */
+                bool handle_illegal_argument_exception(exception::iexception &e) {
+                    // stale_sequence_exception.getHeadSeq() is not available on the client-side, see #7317
+                    int64_t remoteHeadSeq = ringbuffer_->head_sequence().get();
+
+                    if (listener_.loss_tolerant_) {
+                        HZ_LOG(logger_, finest,
+                               boost::str(boost::format("Terminating MessageListener: %1% on topic: %2% ."
+                                                        "Reason: Underlying ring buffer data related to reliable topic is lost.")
+                                          % id_ % name_ %e.what() % sequence_ % remoteHeadSeq)
+                        );
+                        sequence_ = remoteHeadSeq;
+                        return true;
                     }
+
+                    HZ_LOG(logger_, warning,
+                           boost::str(boost::format("Terminating MessageListener: %1% on topic: %2%"
+                                                    "Reason: The listener was too slow or the retention "
+                                                    "period of the message has been violated. "
+                                                    "head: %3% sequence: %4%")
+                                      % id_ % name_ % remoteHeadSeq % sequence_)
+                    );
+                    return false;
+                }
+
+                /**
+                 * @param ie exception to check if it is terminal or can be handled so that topic can continue
+                 * @return true if the exception was handled and the listener may continue reading
+                 */
+                bool handle_internal_exception(exception::iexception &ie) {
+                    int32_t err = ie.get_error_code();
+
+                    switch(err) {
+                        case protocol::TIMEOUT:
+                            return handle_operation_timeout_exception();
+                        case protocol::ILLEGAL_ARGUMENT:
+                            return handle_illegal_argument_exception(ie);
+                        case protocol::HAZELCAST_INSTANCE_NOT_ACTIVE:
+                            HZ_LOG(logger_, finest,
+                                   boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
+                                                            "Reason: HazelcastInstance is shutting down")
+                                              % id_ % name_)
+                            );
+                        case protocol::DISTRIBUTED_OBJECT_DESTROYED:
+                            HZ_LOG(logger_, finest,
+                                   boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
+                                                            "Reason: Topic is destroyed")
+                                              % id_ % name_)
+                            );
+                        default:
+                            HZ_LOG(logger_, warning,
+                                   boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
+                                                            "Reason: Unhandled exception, details: %3%")
+                                              % id_ % name_ % ie.what())
+                            );
+                    }
+                    return false;
                 }
 
                 bool cancel() override {
                     cancelled_.store(true);
-                    return executor_.stop();
+                    runners_map_.remove(id_);
+                    return true;
                 }
 
                 bool is_cancelled() override {
                     return cancelled_.load();
                 }
             private:
-                void process(topic::impl::reliable::ReliableTopicMessage *message) {
-                    //  proxy.localTopicStats.incrementReceives();
+                void process(topic::impl::reliable::ReliableTopicMessage &message) {
                     listener_.received_(to_message(message));
                 }
 
-                topic::message to_message(topic::impl::reliable::ReliableTopicMessage *message) {
+                topic::message to_message(topic::impl::reliable::ReliableTopicMessage &message) {
                     boost::optional<member> m;
-                    auto &addr = message->get_publisher_address();
+                    auto &addr = message.get_publisher_address();
                     if (addr.has_value()) {
                         m = boost::make_optional<member>(addr.value());
                     }
-                    return topic::message(name_, typed_data(std::move(message->get_payload()), serialization_service_),
-                                          message->get_publish_time(), std::move(m));
+                    return topic::message(name_, typed_data(std::move(message.get_payload()), serialization_service_),
+                                          message.get_publish_time(), std::move(m));
                 }
 
                 bool terminate(const exception::iexception &failure) {
@@ -309,13 +329,18 @@ namespace hazelcast {
                 std::atomic<bool> cancelled_;
                 logger &logger_;
                 const std::string &name_;
-                topic::impl::reliable::ReliableTopicExecutor executor_;
+                util::hz_thread_pool &executor_;
                 serialization::pimpl::SerializationService &serialization_service_;
-                const config::reliable_topic_config &config_;
+                int batch_size_;
+                util::SynchronizedMap<int, util::concurrent::Cancellable> &runners_map_;
             };
 
             util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;
             std::atomic<int> runner_counter_{ 0 };
+            util::hz_thread_pool &executor_;
+            logger &logger_;
+            int batch_size_;
+            boost::shared_future<std::shared_ptr<ringbuffer>> ringbuffer_;
         };
     }
 }

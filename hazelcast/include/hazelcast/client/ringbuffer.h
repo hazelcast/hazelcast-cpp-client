@@ -230,7 +230,7 @@ namespace hazelcast {
             boost::future<rb::read_result_set>
             read_many(int64_t start_sequence, int32_t min_count, int32_t max_count, const IFUNCTION *filter = nullptr) {
                 auto filter_data = to_data<IFUNCTION>(filter);
-                return read_many_data(start_sequence, min_count, max_count, &filter_data).then([=] (boost::future<protocol::ClientMessage> f) {
+                return read_many_data(start_sequence, min_count, max_count, &filter_data).then(boost::launch::sync, [=] (boost::future<protocol::ClientMessage> f) {
                     return get_result_set(std::move(f));
                 });
             }
@@ -254,7 +254,7 @@ namespace hazelcast {
 
             boost::future<rb::read_result_set>
             read_many(int64_t start_sequence, int32_t min_count, int32_t max_count) {
-                return read_many_data(start_sequence, min_count, max_count, nullptr).then([=] (boost::future<protocol::ClientMessage> f) {
+                return read_many_data(start_sequence, min_count, max_count, nullptr).then(boost::launch::sync, [=] (boost::future<protocol::ClientMessage> f) {
                     return get_result_set(std::move(f));
                 });
             }

@@ -163,11 +163,7 @@ namespace hazelcast {
             * @return distributed topic instance with the specified name
             */
             boost::shared_future<std::shared_ptr<reliable_topic>> get_reliable_topic(const std::string &name) {
-                return get_distributed_object<ringbuffer>(std::string(reliable_topic::TOPIC_RB_PREFIX) + name).then(
-                        boost::launch::sync, [=](boost::shared_future<std::shared_ptr<ringbuffer>> f) {
-                            auto rb = f.get();
-                            return std::shared_ptr<reliable_topic>(new reliable_topic(rb, name, &rb->get_context()));
-                        });
+                return client_impl_->get_distributed_object<reliable_topic>(name);
             }
 
             /**
