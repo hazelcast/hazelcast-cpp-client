@@ -57,7 +57,7 @@ namespace hazelcast {
                         };
 
                         void try_register(std::shared_ptr<connection::Connection> connection);
-                        void try_reregister_to_random_connection(std::shared_ptr<connection::Connection> old_connection);
+                        void try_reregister_to_random_connection(connection::Connection* old_connection);
 
                         spi::ClientContext &client_context_;
                         std::atomic<connection::Connection *> listener_added_connection_;

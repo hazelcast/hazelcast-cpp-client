@@ -2184,7 +2184,7 @@ namespace hazelcast {
                     }
 
                     void cluster_view_listener::connection_removed(const std::shared_ptr<connection::Connection> connection) {
-                        try_reregister_to_random_connection(connection);
+                        try_reregister_to_random_connection(connection.get());
                     }
 
                     cluster_view_listener::cluster_view_listener(ClientContext &client_context) : client_context_(
@@ -2205,21 +2205,26 @@ namespace hazelcast {
                         invocation->set_event_handler(handler);
                         handler->before_listener_register();
 
-                        invocation->invoke_urgent().then([=] (boost::future<protocol::ClientMessage> f) {
+                        std::weak_ptr<cluster_view_listener> weak_self = shared_from_this();
+                        connection::Connection *raw_conn = connection.get();
+                        invocation->invoke_urgent().then(
+                                [weak_self, handler, raw_conn](boost::future<protocol::ClientMessage> f) {
                             if (f.has_value()) {
                                 handler->on_listener_register();
                                 return;
                             }
                             //completes with exception, listener needs to be reregistered
-                            try_reregister_to_random_connection(connection);
+                            auto self = weak_self.lock();
+                            if (self) {
+                                self->try_reregister_to_random_connection(raw_conn);
+                            }
                         });
 
                     }
 
                     void cluster_view_listener::try_reregister_to_random_connection(
-                            std::shared_ptr<connection::Connection> old_connection) {
-                        auto conn_ptr = old_connection.get();
-                        if (!listener_added_connection_.compare_exchange_strong(conn_ptr, nullptr)) {
+                            connection::Connection *old_connection) {
+                        if (!listener_added_connection_.compare_exchange_strong(old_connection, nullptr)) {
                             //somebody else already trying to reregister
                             return;
                         }
