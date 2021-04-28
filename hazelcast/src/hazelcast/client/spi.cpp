@@ -2186,15 +2186,16 @@ namespace hazelcast {
                         invocation->set_event_handler(handler);
                         handler->before_listener_register();
 
-                        invocation->invoke_urgent().then([=] (boost::future<protocol::ClientMessage> f) {
-                            if (f.has_value()) {
-                                handler->on_listener_register();
-                                return;
-                            }
-                            //completes with exception, listener needs to be reregistered
-                            try_reregister_to_random_connection(connection);
-                        });
-
+                        auto this_view_listener = shared_from_this();
+                        invocation->invoke_urgent().then(
+                                [this_view_listener, handler, connection](boost::future<protocol::ClientMessage> f) {
+                                    if (f.has_value()) {
+                                        handler->on_listener_register();
+                                        return;
+                                    }
+                                    //completes with exception, listener needs to be re-registered
+                                    this_view_listener->try_reregister_to_random_connection(connection);
+                                });
                     }
 
                     void cluster_view_listener::try_reregister_to_random_connection(
