@@ -105,6 +105,8 @@ namespace hazelcast {
             */
             bool remove_message_listener(const std::string &registration_id);
         protected:
+            void on_shutdown() override;
+
             void on_destroy() override;
 
             void post_destroy() override;
