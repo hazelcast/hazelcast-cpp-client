@@ -23,10 +23,10 @@ jobs:
           - toggle: ON
             name: Shared
         with_openssl:
-#          - toggle: OFF
-#            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+          - toggle: OFF
+            name: 'noSSL'
+#          - toggle: ON
+#            name: 'SSL'
 
     runs-on: windows-latest
     name: >-
@@ -35,15 +35,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Enable core dumping
-        run: |
-          New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpCount" -Value 10 -PropertyType DWord
-          Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpFolder" -Value "C:\CrashDumps"
-
-          Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpCount"
-          Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" -Name "DumpFolder"
-
 
       - name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
@@ -62,7 +53,6 @@ jobs:
           cd boost_1_75_0
           .\bootstrap.bat
           .\b2 address-model=${{ matrix.arch.address_model }} --with-thread --with-chrono install
-
 
       - name: Install Thrift
         run: |
@@ -105,18 +95,5 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
           SSL_CERT_FILE: 'C:\cacert.pem'
         shell: cmd
-        continue-on-error: true
         run: |
           .\scripts\test-windows.bat
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: CrashDumps
-          path: C:\CrashDumps
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: Build
-          path: ${{ github.workspace }}\build
-
-      
