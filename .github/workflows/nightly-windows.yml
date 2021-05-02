@@ -18,8 +18,8 @@ jobs:
           - Debug
           - Release
         shared_libs:
-          - toggle: OFF
-            name: Static
+#          - toggle: OFF
+#            name: Static
           - toggle: ON
             name: Shared
         with_openssl:
@@ -47,7 +47,7 @@ jobs:
       - name: Install Boost
         run: |
           Invoke-WebRequest `
-              "https://boostorg.jfrog.io/artifactory/main/release/1.75.0/boost_1_75_0.tar.gz" `
+              "https://boostorg.jfrog.io/artifactory/main/release/1.75.0/source/boost_1_75_0.tar.gz" `
               -OutFile "boost_1_75_0.tar.gz"
           tar xzf boost_1_75_0.tar.gz
           cd boost_1_75_0
