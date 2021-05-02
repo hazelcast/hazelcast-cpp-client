@@ -47,7 +47,7 @@ jobs:
       - name: Install Boost
         run: |
           Invoke-WebRequest `
-              "https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz" `
+              "https://netix.dl.sourceforge.net/project/boost/boost/1.75.0/boost_1_75_0.tar.gz" `
               -OutFile "boost_1_75_0.tar.gz"
           tar xzf boost_1_75_0.tar.gz
           cd boost_1_75_0
