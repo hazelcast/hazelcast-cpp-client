@@ -97,3 +97,13 @@ jobs:
         shell: cmd
         run: |
           .\scripts\test-windows.bat
+
+      - name: Verify Installation
+        env:
+          BUILD_DIR: build-examples
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          BIT_VERSION: ${{ matrix.arch.address_model }}
+        run: |
+          .\scripts\verify-installation-windows.bat `
+              -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
