@@ -32,7 +32,7 @@ namespace hazelcast {
 
                 reliable_topic_config();
 
-                reliable_topic_config(const char *topic_name);
+                explicit reliable_topic_config(std::string topic_name);
 
                 /**
                  * Gets the name of the reliable topic.

@@ -354,9 +354,9 @@ namespace hazelcast {
 
             reliable_topic_config::reliable_topic_config() = default;
 
-            reliable_topic_config::reliable_topic_config(const char *topic_name) : read_batch_size_(
-                    DEFAULT_READ_BATCH_SIZE),
-                                                                                   name_(topic_name) {
+            reliable_topic_config::reliable_topic_config(std::string topic_name) : read_batch_size_(DEFAULT_READ_BATCH_SIZE),
+
+                                                                                   name_(std::move(topic_name)) {
             }
 
             const std::string &reliable_topic_config::get_name() const {
@@ -852,11 +852,20 @@ namespace hazelcast {
 
         const config::reliable_topic_config &client_config::get_reliable_topic_config(const std::string &name) {
             auto it = reliable_topic_config_map_.find(name);
-            if (reliable_topic_config_map_.end() == it) {
-                reliable_topic_config_map_[name] = config::reliable_topic_config(name.c_str());
+            if (it != reliable_topic_config_map_.end()) {
+                return it->second;
             }
 
-            return reliable_topic_config_map_[name];
+            return reliable_topic_config_map_.emplace(name, name).first->second;
+        }
+
+        const config::reliable_topic_config *client_config::lookup_reliable_topic_config(const std::string &name) const {
+            auto it = reliable_topic_config_map_.find(name);
+            if (it != reliable_topic_config_map_.end()) {
+                return &it->second;
+            }
+
+            return nullptr;
         }
 
         config::client_network_config &client_config::get_network_config() {
