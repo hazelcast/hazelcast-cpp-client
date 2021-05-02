@@ -48,12 +48,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    printf("%d\n", _getmaxstdio());
-
-    _setmaxstdio(8192);
-
-    printf("%d\n", _getmaxstdio());
-
     const char *serverAddress = "127.0.0.1";
     int port = 9701;
 
@@ -74,10 +68,6 @@ int main(int argc, char **argv) {
 
     testing::InitGoogleTest(&argc, argv);
 
-    int retcode = RUN_ALL_TESTS();
-
-    std::cerr << "retcode: " << retcode << std::endl;
-
-    return retcode;
+    return RUN_ALL_TESTS();
 }
 

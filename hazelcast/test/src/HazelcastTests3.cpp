@@ -21,7 +21,6 @@
 #include <regex>
 #include <thread>
 #include <vector>
-#include <iostream>
 
 #include <gtest/gtest.h>
 
@@ -645,20 +644,10 @@ namespace hazelcast {
                 }
 
                 static void TearDownTestSuite() {
-                    std::cout << "TearDownTestSuite() starting" << std::endl;
-                    if (instance2) {
-                        std::cout << "deleting instance2" << std::endl;
-                        delete instance2;
-                        std::cout << "deleted instance2" << std::endl;
-                    }
-                    if (instance) {
-                        std::cout << "deleting instance" << std::endl;
-                        delete instance;
-                        std::cout << "deleted instance" << std::endl;
-                    }
+                    delete instance2;
+                    delete instance;
                     instance2 = nullptr;
                     instance = nullptr;
-                    std::cout << "TearDownTestSuite() finished" << std::endl;
                 }
 
                 void SetUp() override {
@@ -666,7 +655,6 @@ namespace hazelcast {
                 }
 
                 void TearDown() override {
-                    std::cout << "TearDown() started" << std::endl;
                     if (near_cached_map_) {
                         near_cached_map_->destroy().get();
                     }
@@ -679,7 +667,6 @@ namespace hazelcast {
                     if (near_cached_client_) {
                         near_cached_client_->shutdown().get();
                     }
-                    std::cout << "TearDown() finished" << std::endl;
                 }
 
             protected:

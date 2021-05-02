@@ -17,4 +17,3 @@ tar xzf $TARBALL_NAME.tar.gz
 cd $TARBALL_NAME
 ./bootstrap.sh
 ./b2 --with-thread --with-chrono install
-cd ..

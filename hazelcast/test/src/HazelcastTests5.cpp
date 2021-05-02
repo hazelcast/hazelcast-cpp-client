@@ -321,7 +321,6 @@ namespace hazelcast {
             }
 
             bool HazelcastServerFactory::shutdown_server(const remote::Member &member) {
-                std::cout << "shutdown_server()" << std::endl;
                 return remoteController->shutdownMember(cluster_id_, member.uuid);
             }
 
