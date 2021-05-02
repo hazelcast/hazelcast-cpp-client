@@ -43,7 +43,6 @@
 #include <hazelcast/client/protocol/ClientMessage.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/spi/ClientContext.h>
-#include <hazelcast/util/BlockingConcurrentQueue.h>
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
@@ -508,17 +507,25 @@ namespace hazelcast {
         namespace test {
             class ClientReplicatedMapListenerTest : public ClientTestSupport {
             protected:
-                
                 struct ListenerState {
-                    ListenerState() : keys(UINT_MAX) {}
-                    hazelcast::util::BlockingConcurrentQueue<int> keys;
+                    std::mutex lock;
+                    std::vector<int> keys;
                     std::atomic<int> add_count{ 0 }, remove_count{ 0 }, update_count{ 0 }, evict_count{ 0 },
                     map_clear_count{ 0 }, map_evict_count{ 0 };
+
+                    bool has_only_added_value(int value) {
+                        std::lock_guard<std::mutex> g(lock);
+                        if (keys.size() != 1) {
+                            return false;
+                        }
+                        return keys[0] == value && add_count.load() == 1;
+                    }
                 };
 
                 entry_listener make_event_counting_listener(ListenerState &state) {
                     const auto pushKey = [&state](const entry_event &event) {
-                        state.keys.push(event.get_key().get<int>().value());
+                        std::lock_guard<std::mutex> g(state.lock);
+                        state.keys.emplace_back(event.get_key().get<int>().value());
                     };
 
                     return entry_listener().
@@ -613,8 +620,7 @@ namespace hazelcast {
                 replicatedMap->add_entry_listener(make_event_counting_listener(state_), 1).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->put(2, 2).get();
-                ASSERT_TRUE_EVENTUALLY(
-                        state_.keys.size() == 1U && state_.keys.pop() == 1 && state_.add_count.load() == 1);
+                ASSERT_TRUE_EVENTUALLY(state_.has_only_added_value(1));
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {

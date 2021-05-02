@@ -144,8 +144,8 @@ namespace hazelcast {
             static void check_max(const T &actual_size, const T &expected_maximum, const std::string &variable_name) {
                 if (actual_size > expected_maximum) {
                     throw (client::exception::exception_builder<client::exception::illegal_argument>(
-                            "Preconditions::checkNotNegative") << variable_name << " can't be larger than "
-                                                               << expected_maximum).build();
+                            "Preconditions::check_max") << variable_name << "(" << actual_size << ")"
+                                                        << " can't be larger than " << expected_maximum).build();
                 }
             }
 

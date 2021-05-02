@@ -12,7 +12,7 @@ The library can be installed using package managers [Conan](Reference_Manual.md#
 
 ## Documentation
 
-You can find the detailed documentation at the [documentation site](https://hazelcast.github.io/hazelcast-cpp-client/) and the [Reference Manual](Reference_Manual.md).
+You can find the detailed documentation at the [documentation site](https://hazelcast.github.io/hazelcast-cpp-client/doc-index.html) and the [API reference](https://hazelcast.github.io/hazelcast-cpp-client/api-index.html).
 
 ## License
 
