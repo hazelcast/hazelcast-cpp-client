@@ -76,6 +76,13 @@ namespace hazelcast {
             return true;
         }
 
+        void reliable_topic::on_shutdown() {
+            // cancel all runners
+            for (auto &entry : runners_map_.clear()) {
+                entry.second->cancel();
+            }
+        }
+
         void reliable_topic::on_destroy() {
             // cancel all runners
             for (auto &entry : runners_map_.clear()) {
