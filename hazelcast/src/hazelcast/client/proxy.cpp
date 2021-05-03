@@ -81,8 +81,6 @@ namespace hazelcast {
             for (auto &entry : runners_map_.clear()) {
                 entry.second->cancel();
             }
-            // destroy the underlying ringbuffer
-            ringbuffer_.get()->destroy().get();
         }
 
         void reliable_topic::on_destroy() {
