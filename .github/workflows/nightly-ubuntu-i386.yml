@@ -52,7 +52,7 @@ jobs:
 
       - name: Install Boost
         run: |
-          ./scripts/install-boost.sh 1.75.0
+          ./scripts/install-boost.sh 1.76.0
 
       - name: Install Thrift
         run: |
