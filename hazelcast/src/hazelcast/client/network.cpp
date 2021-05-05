@@ -165,12 +165,8 @@ namespace hazelcast {
 
                 spi::impl::ClientExecutionServiceImpl::shutdown_thread_pool(executor_.get());
 
+                // release the guard so that the io thread can stop gracefully
                 io_guard_.reset();
-/*
-                io_context_->stop();
-                boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(
-                        *io_context_).shutdown();
-*/
                 io_thread_.join();
 
                 connection_listeners_.clear();
