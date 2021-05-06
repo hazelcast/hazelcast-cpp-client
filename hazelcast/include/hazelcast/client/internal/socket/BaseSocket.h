@@ -116,22 +116,10 @@ namespace hazelcast {
                             auto handler = [=](const boost::system::error_code &ec,
                                                std::size_t bytes_written) {
                                 if (ec) {
-                                    auto invocationIt = connection->invocations.find(message_call_id);
-
-                                    assert(invocationIt != connection->invocations.end());
-
                                     auto message = (boost::format{
                                             "Error %1% during invocation write for %2% on connection %3%"} %
                                                     ec % *invocation % *connection).str();
-                                    invocationIt->second->notify_exception(
-                                            boost::enable_current_exception(
-                                                    std::make_exception_ptr(
-                                                            exception::io(
-                                                                    "Connection::write",
-                                                                    message))));
-
                                     connection->close(message);
-                                    connection->invocations.erase(invocationIt);
                                 }
                             };
 
