@@ -48,6 +48,7 @@ namespace hazelcast {
                 std::chrono::milliseconds cluster_connect_timeout_millis_{0};
                 std::chrono::steady_clock::time_point cluster_connect_attempt_begin_{
                         std::chrono::steady_clock::now()};
+                std::string cluster_connect_timeout_text_;
             };
         }
     }

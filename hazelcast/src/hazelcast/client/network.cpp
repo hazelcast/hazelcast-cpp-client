@@ -1139,7 +1139,14 @@ namespace hazelcast {
                     : initial_backoff_millis_(retry_config.get_initial_backoff_duration()),
                       max_backoff_millis_(retry_config.get_max_backoff_duration()),
                       multiplier_(retry_config.get_multiplier()), jitter_(retry_config.get_jitter()), logger_(log),
-                      cluster_connect_timeout_millis_(retry_config.get_cluster_connect_timeout()) {}
+                      cluster_connect_timeout_millis_(retry_config.get_cluster_connect_timeout()) {
+                if (cluster_connect_timeout_millis_ == std::chrono::milliseconds::max()) {
+                    cluster_connect_timeout_text_ = "INFINITE";
+                } else {
+                    cluster_connect_timeout_text_ = (boost::format("%1% msecs")
+                                                    %cluster_connect_timeout_millis_.count()).str();
+                }
+            }
 
             bool wait_strategy::sleep() {
                 attempt_++;
@@ -1148,9 +1155,8 @@ namespace hazelcast {
                 auto time_passed = duration_cast<milliseconds>(current_time - cluster_connect_attempt_begin_);
                 if (time_passed > cluster_connect_timeout_millis_) {
                     HZ_LOG(logger_, warning, (boost::format(
-                            "Unable to get live cluster connection, cluster connect timeout (%1% millis) is reached. Attempt %2%.") %
-                                              duration_cast<milliseconds>(cluster_connect_timeout_millis_).count() %
-                                              attempt_).str());
+                            "Unable to get live cluster connection, cluster connect timeout (%1%) is reached. Attempt %2%.")
+                            %cluster_connect_timeout_text_ %attempt_).str());
                     return false;
                 }
 
@@ -1162,9 +1168,9 @@ namespace hazelcast {
                 actual_sleep_time = (std::min)(actual_sleep_time, cluster_connect_timeout_millis_ - time_passed);
 
                 HZ_LOG(logger_, warning, (boost::format(
-                        "Unable to get live cluster connection, retry in %1% ms, attempt: %2% , cluster connect timeout: %3% seconds , max backoff millis: %4%") %
+                        "Unable to get live cluster connection, retry in %1% ms, attempt: %2% , cluster connect timeout: %3% , max backoff millis: %4%") %
                                           actual_sleep_time.count() % attempt_ %
-                                          cluster_connect_timeout_millis_.count() %
+                                          cluster_connect_timeout_text_ %
                                           max_backoff_millis_.count()).str());
 
                 std::this_thread::sleep_for(actual_sleep_time);
