@@ -6,7 +6,7 @@
 #Build Instructions:
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/path/to/boost/install/dir;/path/to/hazelcast-cpp-client/install/dir
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/boost/install/dir;/path/to/hazelcast-cpp-client/install/dir
 make
 
 #Running Instructions
