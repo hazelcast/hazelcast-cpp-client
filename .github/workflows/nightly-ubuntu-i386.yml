@@ -29,7 +29,9 @@ jobs:
             name: 'SSL'
 
     runs-on: ubuntu-latest
-    container: i386/ubuntu
+    container:
+      image: i386/ubuntu
+      options: --privileged
 
     name: >-
       Ubuntu-i386
@@ -39,7 +41,7 @@ jobs:
       - name: Install Necessary Packages
         run: |
           apt-get update
-          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-11-jre-headless
+          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-11-jre-headless gdb
 
       - name: Make sure the target architecture is 32 bit
         run: |
@@ -80,6 +82,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
         run: |
+          ulimit -c unlimited
+          echo 'core' > /proc/sys/kernel/core_pattern
+          echo '1' > /proc/sys/kernel/core_uses_pid
+
           ./scripts/test-unix.sh
 
       - name: Verify Installation
