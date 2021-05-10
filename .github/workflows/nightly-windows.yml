@@ -50,9 +50,12 @@ jobs:
               "https://boostorg.jfrog.io/artifactory/main/release/1.75.0/source/boost_1_75_0.tar.gz" `
               -OutFile "boost_1_75_0.tar.gz"
           tar xzf boost_1_75_0.tar.gz
+          rm boost_1_75_0.tar.gz
           cd boost_1_75_0
           .\bootstrap.bat
           .\b2 address-model=${{ matrix.arch.address_model }} --with-thread --with-chrono install
+          cd ..
+          Remove-Item boost_1_75_0 -Recurse -Force
 
       - name: Install Thrift
         run: |
@@ -60,6 +63,7 @@ jobs:
               "https://archive.apache.org/dist/thrift/0.13.0/thrift-0.13.0.tar.gz" `
               -OutFile "thrift-0.13.0.tar.gz"
           tar xzf thrift-0.13.0.tar.gz
+          rm thrift-0.13.0.tar.gz
           cd thrift-0.13.0\build
           cmake .. -A ${{ matrix.arch.cmake }} `
                    -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
@@ -68,6 +72,8 @@ jobs:
                    -DWITH_QT5=OFF -DCMAKE_INSTALL_PREFIX=C:\Thrift
           cmake --build . --target install --config ${{ matrix.build_type }}
           mkdir C:\Thrift\bin
+          cd ../..
+          Remove-Item thrift-0.13.0 -Recurse -Force
 
       - name: Build & Install
         env:
@@ -99,7 +105,7 @@ jobs:
 
       - name: Verify Installation
         env:
-          BUILD_DIR: build-examples
+          BUILD_DIR: build
           BUILD_CONFIGURATION: ${{ matrix.build_type }}
           BIT_VERSION: ${{ matrix.arch.address_model }}
         run: |
