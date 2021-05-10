@@ -38,13 +38,13 @@ jobs:
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev
+          sudo apt-get install -y net-tools libssl-dev gdb
 
       - uses: actions/checkout@v2
 
       - name: Install Boost
         run: |
-          sudo ./scripts/install-boost.sh 1.75.0
+          sudo ./scripts/install-boost.sh 1.76.0
 
       - name: Install Thrift
         run: |
@@ -72,6 +72,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
         run: |
+          ulimit -c unlimited
+          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+
           ./scripts/test-unix.sh
 
       - name: Verify Installation

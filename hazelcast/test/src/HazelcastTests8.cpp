@@ -1438,6 +1438,35 @@ namespace hazelcast {
                 ASSERT_THROW((map->get<int, int>(1).get()), exception::hazelcast_client_not_active);
             }
 
+            TEST_F(IssueTest, invocation_should_not_block_indefinitely_during_client_shutdown) {
+                HazelcastServer server(*g_srvFactory);
+                auto hz = new_client().get();
+                auto map = hz.get_map("my_map").get();
+
+                ASSERT_NO_THROW(map->put(1, 5).get());
+
+                std::thread t([&] () {
+                   hz.shutdown();
+                });
+
+                try {
+                    int i = 0;
+                    while (true) {
+                        map->put(++i, 5).get();
+                    }
+                } catch (std::exception &) {
+                    // ignore
+                }
+
+                try {
+                    map->put(10, 5).get();
+                } catch (std::exception &) {
+                    // ignore
+                }
+
+                t.join();
+            }
+
             TEST_F(IssueTest, testIssue753) {
                 HazelcastServer server(*g_srvFactory);
 
