@@ -102,6 +102,7 @@ jobs:
           SSL_CERT_FILE: 'C:\cacert.pem'
         run: |
           .\scripts\test-windows.bat
+          rm *.jar
 
       - name: Verify Installation
         env:
