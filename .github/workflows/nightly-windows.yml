@@ -18,8 +18,8 @@ jobs:
           - Debug
           - Release
         shared_libs:
-#          - toggle: OFF
-#            name: Static
+          - toggle: OFF
+            name: Static
           - toggle: ON
             name: Shared
         with_openssl:
