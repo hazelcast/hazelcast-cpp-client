@@ -1,6 +1,9 @@
 name: nightly-Windows
 
-on: [ push ]
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
 
 jobs:
   nightly-Windows:
