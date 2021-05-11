@@ -64,10 +64,7 @@ namespace hazelcast {
                     void reset();
                 private:
                     struct partition_table {
-                        partition_table(int32_t connectionId = 0, int32_t version = -1,
-                                        const std::unordered_map<int32_t, boost::uuids::uuid> &partitions = {});
-
-                        int32_t connection_id{0};
+                        int32_t connection_id;
                         int32_t version;
                         std::unordered_map<int32_t, boost::uuids::uuid> partitions;
                     };
