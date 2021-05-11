@@ -1322,12 +1322,8 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
                             set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY")).
                             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
-#else
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
-#endif
+
                     auto hazelcastClient = new_client(std::move(clientConfig)).get();
                     auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20).get();
@@ -1341,14 +1337,8 @@ namespace hazelcast {
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
                             set_security_group_name("launch-wizard-147");
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    // The access key and secret will be retrieved from default IAM role at windows machine
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
-#else
                     clientConfig.get_network_config().get_aws_config().set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).
                             set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY"));
-#endif
 
                     auto hazelcastClient = new_client(std::move(clientConfig)).get();
                     auto map = hazelcastClient.get_map("myMap").get();
@@ -1367,12 +1357,7 @@ namespace hazelcast {
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
                             set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
                             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
-
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
-                    #else
                     clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
-                    #endif
 
                     // Turn Fips mode on
                     FIPS_mode_set(1);
