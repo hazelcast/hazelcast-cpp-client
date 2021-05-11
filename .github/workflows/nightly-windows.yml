@@ -91,18 +91,18 @@ jobs:
               -DBUILD_TESTS=ON `
               -DBUILD_EXAMPLES=OFF
 
-      - name: Test
-        env:
-          BUILD_DIR: build
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
-          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-          SSL_CERT_FILE: 'C:\cacert.pem'
-        run: |
-          .\scripts\test-windows.bat
-          rm *.jar
+      # - name: Test
+      #   env:
+      #     BUILD_DIR: build
+      #     BUILD_CONFIGURATION: ${{ matrix.build_type }}
+      #     HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+      #     SSL_CERT_FILE: 'C:\cacert.pem'
+      #   run: |
+      #     .\scripts\test-windows.bat
+      #     rm *.jar
 
       - name: Verify Installation
         env:
@@ -110,6 +110,22 @@ jobs:
           BUILD_CONFIGURATION: ${{ matrix.build_type }}
           BIT_VERSION: ${{ matrix.arch.address_model }}
         run: |
-          .\scripts\verify-installation-windows.bat `
-              -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
+          cmake -S .\examples -B build-examples `
+                -A ${{ matrix.arch.cmake }} `
+                -DCMAKE_CONFIGURATION_TYPES=${{ matrix.build_type }} `
+                -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
+                -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
+
+          cd build-examples
+
+          Get-ChildItem -Recurse *.vcxproj | 
+          Where-Object { 
+            $_.FullName -notmatch "CMakeFile|ZERO_CHECK|ALL_BUILD" 
+          } |
+          ForEach-Object { 
+            $_.Name.Replace('.vcxproj', '') 
+          } |
+          ForEach-Object {
+            cmake --build . --config ${{ matrix.build_type }} --target $_ 
+            cmake --build . --config ${{ matrix.build_type }} --target clean 
+          }
