@@ -788,9 +788,10 @@ namespace hazelcast {
                     auto previous_list = member_list_snapshot_.load()->members;
 
                     member_list_snapshot_.store(
-                            boost::shared_ptr<member_list_snapshot>(new member_list_snapshot{0, {}}));
+                            boost::shared_ptr<member_list_snapshot>(new member_list_snapshot{0}));
 
-                    return detect_membership_events(previous_list, {});
+                    return detect_membership_events(previous_list,
+                                                    std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>>());
                 }
 
                 void ClientClusterServiceImpl::clear_member_list() {
@@ -2357,7 +2358,7 @@ namespace hazelcast {
                         }
 #else
                         util::Preconditions::check_ssl("cloud_discovery::get_addresses");
-                        return {};
+                        return std::unordered_map<address, address>();
 #endif
                     }
 
@@ -2388,10 +2389,6 @@ namespace hazelcast {
                         return address(std::move(scoped_hostname), address_holder.get_port());
                     }
                 }
-
-                ClientPartitionServiceImpl::partition_table::partition_table(int32_t connectionId, int32_t version,
-                                                                             const std::unordered_map<int32_t, boost::uuids::uuid> &partitions)
-                        : connection_id(connectionId), version(version), partitions(partitions) {}
             }
         }
     }
