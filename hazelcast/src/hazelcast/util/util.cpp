@@ -145,8 +145,6 @@ namespace hazelcast {
                     boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
                     boost::asio::ssl::context::single_dh_use);
 
-            ssl_context_.set_verify_mode(boost::asio::ssl::verify_peer);
-            ssl_context_.set_verify_callback(boost::asio::ssl::rfc2818_verification(server_));
             socket_ = std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >(
                     new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(io_service_, ssl_context_));
         }
