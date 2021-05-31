@@ -72,7 +72,7 @@ jobs:
                    -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
                    -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
                    -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
-                   -DWITH_QT5=OFF -DCMAKE_INSTALL_PREFIX=C:\Thrift
+                   -DWITH_QT5=OFF -DCMAKE_PREFIX_PATH=C:\Boost -DCMAKE_INSTALL_PREFIX=C:\Thrift
           cmake --build . --target install --config ${{ matrix.build_type }}
           mkdir C:\Thrift\bin
           cd ../..
