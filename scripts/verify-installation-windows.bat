@@ -18,6 +18,7 @@ REM remove the given build directory if already exists
 echo "Configuring..."
 cmake -S .\examples -B %BUILD_DIR% ^
       -G %SOLUTION_TYPE% -A %PLATFORM% ^
+      -DCMAKE_CONFIGURATION_TYPES=%BUILD_CONFIGURATION%  ^
       -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake ^
       %* ^
       || exit /b 1
