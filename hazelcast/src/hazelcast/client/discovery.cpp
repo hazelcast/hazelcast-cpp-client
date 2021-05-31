@@ -588,7 +588,7 @@ namespace hazelcast {
 
                 std::unordered_map<address, address> aws_client::get_addresses() {
                     util::Preconditions::check_ssl("aws_client::get_addresses");
-                    return {};
+                    return std::unordered_map<address, address>();
                 }
         }
     }

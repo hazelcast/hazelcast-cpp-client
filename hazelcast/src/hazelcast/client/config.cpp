@@ -856,7 +856,7 @@ namespace hazelcast {
                 return it->second;
             }
 
-            return reliable_topic_config_map_.emplace(name, name).first->second;
+            return reliable_topic_config_map_.emplace(name, config::reliable_topic_config{name}).first->second;
         }
 
         const config::reliable_topic_config *client_config::lookup_reliable_topic_config(const std::string &name) const {
