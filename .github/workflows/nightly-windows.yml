@@ -1,0 +1,129 @@
+name: nightly-Windows
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  nightly-Windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - cmake: Win32
+            choco_options: '--x86'
+            address_model: 32
+          - cmake: x64
+            choco_options: ''
+            address_model: 64
+        build_type:
+          - Debug
+          - Release
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
+
+    runs-on: windows-latest
+    name: >-
+      Windows
+      (${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install OpenSSL
+        if: matrix.with_openssl.toggle == 'ON'
+        run: |
+          choco install openssl ${{ matrix.arch.choco_options }}
+          Invoke-WebRequest `
+              "https://curl.se/ca/cacert.pem" `
+              -OutFile "C:\cacert.pem"
+
+      - name: Install Boost
+        run: |
+          Invoke-WebRequest `
+              "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz" `
+              -OutFile "boost_1_76_0.tar.gz"
+          tar xzf boost_1_76_0.tar.gz
+          rm boost_1_76_0.tar.gz
+          cd boost_1_76_0
+          .\bootstrap.bat
+          .\b2 address-model=${{ matrix.arch.address_model }} --with-thread --with-chrono install
+          cd ..
+          Remove-Item boost_1_76_0 -Recurse -Force
+
+      - name: Install Thrift
+        run: |
+          Invoke-WebRequest `
+              "https://archive.apache.org/dist/thrift/0.13.0/thrift-0.13.0.tar.gz" `
+              -OutFile "thrift-0.13.0.tar.gz"
+          tar xzf thrift-0.13.0.tar.gz
+          rm thrift-0.13.0.tar.gz
+          cd thrift-0.13.0\build
+          cmake .. -A ${{ matrix.arch.cmake }} `
+                   -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
+                   -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
+                   -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
+                   -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=C:\Boost\include\boost-1_76 -DCMAKE_INSTALL_PREFIX=C:\Thrift
+          cmake --build . --target install --config ${{ matrix.build_type }}
+          mkdir C:\Thrift\bin
+          cd ../..
+          Remove-Item thrift-0.13.0 -Recurse -Force
+
+      - name: Build & Install
+        env:
+          BUILD_DIR: build
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          BIT_VERSION: ${{ matrix.arch.address_model }}
+          INSTALL: ON
+          CXXFLAGS: '/I C:\Thrift\include\'
+        run: |
+          .\scripts\build-windows.bat `
+              -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
+              -DBUILD_TESTS=ON `
+              -DBUILD_EXAMPLES=OFF
+
+      - name: Test
+        env:
+          BUILD_DIR: build
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+          SSL_CERT_FILE: 'C:\cacert.pem'
+        run: |
+          .\scripts\test-windows.bat
+
+      - name: Verify Installation
+        run: |
+          cmake -S .\examples -B build-examples `
+                -A ${{ matrix.arch.cmake }} `
+                -DCMAKE_CONFIGURATION_TYPES=${{ matrix.build_type }} `
+                -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
+                -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
+
+          cd build-examples
+
+          Get-ChildItem -Recurse *.vcxproj | 
+          Where-Object { 
+            $_.FullName -notmatch "CMakeFile|ZERO_CHECK|ALL_BUILD" 
+          } |
+          ForEach-Object { 
+            $_.Name.Replace('.vcxproj', '') 
+          } |
+          ForEach-Object {
+            cmake --build . --config ${{ matrix.build_type }} --target $_ 
+            cmake --build . --config ${{ matrix.build_type }} --target clean 
+          }

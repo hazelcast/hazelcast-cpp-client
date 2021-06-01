@@ -24,7 +24,7 @@ REM remove the given build directory if already exists
 @echo Configuring...
 cmake -S . -B %BUILD_DIR% ^
       -G %SOLUTION_TYPE% -A %PLATFORM% ^
-      -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake ^
+      -DCMAKE_CONFIGURATION_TYPES=%BUILD_CONFIGURATION%  ^
       %* ^
       || exit /b 1 
 
@@ -34,7 +34,7 @@ cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_CONFIGURATION% ||
 
 if "%INSTALL%" == "ON" (
     @echo Installing...
-    cmake --install %BUILD_DIR% || exit /b 1
+    cmake --install %BUILD_DIR% --config %BUILD_CONFIGURATION% || exit /b 1
 )
 
 

@@ -1312,10 +1312,16 @@ namespace hazelcast {
                                  exception::invalid_configuration);
                 }
 
-                class AwsClientTest : public ClientTestSupport {
+                class AwsClientTest
+                        : public ClientTestSupport,
+                          public ::testing::WithParamInterface<bool> {
                 };
 
-                TEST_F (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
+                TEST_P (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
+                    if (GetParam() && !std::getenv("INSIDE_AWS")) {
+                        GTEST_SKIP();
+                    }
+
                     client_config clientConfig;
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
@@ -1323,11 +1329,8 @@ namespace hazelcast {
                             set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY")).
                             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
-#else
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
-#endif
+                    clientConfig.get_network_config().get_aws_config().set_inside_aws(GetParam());
+
                     auto hazelcastClient = new_client(std::move(clientConfig)).get();
                     auto map = hazelcastClient.get_map("myMap").get();
                     map->put(5, 20).get();
@@ -1336,19 +1339,22 @@ namespace hazelcast {
                     ASSERT_EQ(20, val.value());
                 }
 
-                TEST_F (AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole) {
+                TEST_P (AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole) {
+                    if (GetParam() && !std::getenv("INSIDE_AWS")) {
+                        GTEST_SKIP();
+                    }
+
                     client_config clientConfig;
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
                             set_security_group_name("launch-wizard-147");
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    // The access key and secret will be retrieved from default IAM role at windows machine
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
-#else
-                    clientConfig.get_network_config().get_aws_config().set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).
-                            set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY"));
-#endif
+                    if (GetParam()) {
+                        clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
+                    } else {
+                        clientConfig.get_network_config().get_aws_config().set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).
+                                set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY"));
+                    }
 
                     auto hazelcastClient = new_client(std::move(clientConfig)).get();
                     auto map = hazelcastClient.get_map("myMap").get();
@@ -1358,9 +1364,11 @@ namespace hazelcast {
                     ASSERT_EQ(20, val.value());
                 }
 
-                // FIPS_mode_set is not available for Mac OS X built-in openssl library
-#ifndef __APPLE__
-                TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
+                TEST_P (AwsClientTest, testFipsEnabledAwsDiscovery) {
+                    if (GetParam() && !std::getenv("INSIDE_AWS")) {
+                        GTEST_SKIP();
+                    }
+
                     client_config clientConfig = get_config();
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
@@ -1368,11 +1376,7 @@ namespace hazelcast {
                             set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
                             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
 
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(true);
-                    #else
-                    clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
-                    #endif
+                    clientConfig.get_network_config().get_aws_config().set_inside_aws(GetParam());
 
                     // Turn Fips mode on
                     FIPS_mode_set(1);
@@ -1384,13 +1388,13 @@ namespace hazelcast {
                     ASSERT_TRUE(val);
                     ASSERT_EQ(20, *val);
                 }
-#endif // ifndef __APPLE__
 
-                /**
-                 * Following test can only run from inside the AWS network
-                 */
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
+                    // This test can only run inside the AWS network
+                    if (!std::getenv("INSIDE_AWS")) {
+                        GTEST_SKIP();
+                    }
+
                     client_config clientConfig = get_config();
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
@@ -1401,6 +1405,11 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
+                    // This test can only run inside the AWS network
+                    if (!std::getenv("INSIDE_AWS")) {
+                        GTEST_SKIP();
+                    }
+
                     client_config clientConfig = get_config();
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "60000");
@@ -1409,7 +1418,9 @@ namespace hazelcast {
 
                     auto  hazelcastClient = new_client(std::move(clientConfig)).get();
                 }
-#endif
+
+                INSTANTIATE_TEST_SUITE_P(AwsClientTest, AwsClientTest, testing::Values(false, true));
+
 
                 TEST(sync_https_client, timeout_test) {
                     util::SyncHttpsClient c("8.8.5.8", "/abc", std::chrono::seconds(1));
