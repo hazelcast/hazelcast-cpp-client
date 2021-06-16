@@ -3118,7 +3118,7 @@ config.set_property(hazelcast::client::client_properties::STATISTICS_ENABLED, "t
 config.set_property(hazelcast::client::client_properties::STATISTICS_PERIOD_SECONDS, "4");
 ```
 
-After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#monitoring-clients) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
+After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.com/management-center/latest/monitor-imdg/monitor-clients.html) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
 
 ### 7.9.2. Logging Configuration
 
