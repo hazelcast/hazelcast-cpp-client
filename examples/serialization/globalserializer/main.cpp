@@ -15,39 +15,49 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-struct Person {
+struct Person
+{
     std::string name;
     bool male;
     int32_t age;
 };
 
-std::ostream &operator<<(std::ostream &os, const Person &person) {
+std::ostream&
+operator<<(std::ostream& os, const Person& person)
+{
     os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
     return os;
 }
 
-class MyGlobalSerializer : public hazelcast::client::serialization::global_serializer {
+class MyGlobalSerializer : public hazelcast::client::serialization::global_serializer
+{
 public:
-    void write(const boost::any &obj, hazelcast::client::serialization::object_data_output &out) override {
-        auto const &object = boost::any_cast<Person>(obj);
+    void write(const boost::any& obj,
+               hazelcast::client::serialization::object_data_output& out) override
+    {
+        auto const& object = boost::any_cast<Person>(obj);
         out.write(object.name);
         out.write(object.male);
         out.write(object.age);
     }
 
-    boost::any read(hazelcast::client::serialization::object_data_input &in) override {
-        return boost::any(Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()});
+    boost::any read(hazelcast::client::serialization::object_data_input& in) override
+    {
+        return boost::any(Person{ in.read<std::string>(), in.read<bool>(), in.read<int32_t>() });
     }
 };
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
     config.get_serialization_config().set_global_serializer(std::make_shared<MyGlobalSerializer>());
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("map").get();
-    map->put("foo", Person{"first last name", false, 19}).get();
-    std::cout << "Got value \"" << *(map->get<std::string, Person>("foo").get()) << "\" from the map->" << std::endl;
+    map->put("foo", Person{ "first last name", false, 19 }).get();
+    std::cout << "Got value \"" << *(map->get<std::string, Person>("foo").get())
+              << "\" from the map->" << std::endl;
     std::cout << "Finished" << std::endl;
 
     return 0;

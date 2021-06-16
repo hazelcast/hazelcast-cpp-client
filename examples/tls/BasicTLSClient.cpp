@@ -18,7 +18,9 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
     hazelcast::client::address serverAddress("127.0.0.1", 5701);
     config.get_network_config().add_address(serverAddress);
@@ -28,16 +30,18 @@ int main() {
     ctx.set_default_verify_paths();
     ctx.load_verify_file("/path/to/my/server/public/certificate");
 
-    config.get_network_config().get_ssl_config().
-            set_context(std::move(ctx)).   // mandatory to enable ssl
-            set_cipher_list("HIGH");     // optional setting (values for string are described at
-                                                // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html and
-                                                // https://www.openssl.org/docs/man1.1.1/man1/ciphers.html)
-    
+    config.get_network_config()
+      .get_ssl_config()
+      .set_context(std::move(ctx))
+      .                        // mandatory to enable ssl
+      set_cipher_list("HIGH"); // optional setting (values for string are described at
+                               // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html and
+                               // https://www.openssl.org/docs/man1.1.1/man1/ciphers.html)
+
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(1, 100).get();
     map->put(2, 200).get();
 

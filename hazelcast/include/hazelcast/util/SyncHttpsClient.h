@@ -23,44 +23,45 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
+#pragma warning(disable : 4251) // for dll export
+#pragma warning(                                                                                   \
+  disable : 4003) // for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API SyncHttpsClient {
-        public:
-            SyncHttpsClient(const std::string &server_ip, const std::string &uri_path,
-                            std::chrono::steady_clock::duration timeout);
+namespace util {
+class HAZELCAST_API SyncHttpsClient
+{
+public:
+    SyncHttpsClient(const std::string& server_ip,
+                    const std::string& uri_path,
+                    std::chrono::steady_clock::duration timeout);
 
-            std::istream &connect_and_get_response();
-        private:
-            std::string server_;
-            std::string uri_path_;
-            std::chrono::steady_clock::duration timeout_;
+    std::istream& connect_and_get_response();
 
-            boost::asio::io_service io_service_;
-            boost::asio::ip::tcp::resolver resolver_;
+private:
+    std::string server_;
+    std::string uri_path_;
+    std::chrono::steady_clock::duration timeout_;
 
-            boost::asio::ssl::context ssl_context_;
-            std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > socket_;
+    boost::asio::io_service io_service_;
+    boost::asio::ip::tcp::resolver resolver_;
 
-            boost::asio::streambuf response_;
-            std::istream response_stream_;
+    boost::asio::ssl::context ssl_context_;
+    std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> socket_;
 
-            void run(boost::system::error_code &error, std::chrono::steady_clock::duration timeout);
+    boost::asio::streambuf response_;
+    std::istream response_stream_;
 
-            void close();
-        };
-    }
-}
+    void run(boost::system::error_code& error, std::chrono::steady_clock::duration timeout);
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    void close();
+};
+} // namespace util
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

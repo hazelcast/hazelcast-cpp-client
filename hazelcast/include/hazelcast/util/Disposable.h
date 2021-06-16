@@ -19,24 +19,22 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace util {
-        /**
-         * A {@code Disposable} is a container of data and/or resources that can be disposed.
-         * {@link #dispose()} method is called to dispose contained data and/or resources.
-         */
-        class HAZELCAST_API Disposable {
-        public:
-            virtual ~Disposable() = default;
+namespace util {
+/**
+ * A {@code Disposable} is a container of data and/or resources that can be disposed.
+ * {@link #dispose()} method is called to dispose contained data and/or resources.
+ */
+class HAZELCAST_API Disposable
+{
+public:
+    virtual ~Disposable() = default;
 
-            /**
-             * Disposes this object and releases any data and/or resources associated
-             * with it. If this object is already disposed then invoking this
-             * method has no effect.
-             */
-                virtual void dispose() = 0;
-        };
-    }
-}
-
-
-
+    /**
+     * Disposes this object and releases any data and/or resources associated
+     * with it. If this object is already disposed then invoking this
+     * method has no effect.
+     */
+    virtual void dispose() = 0;
+};
+} // namespace util
+} // namespace hazelcast

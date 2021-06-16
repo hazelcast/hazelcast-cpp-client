@@ -19,12 +19,14 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace util {
-        /**
-        * void no-operation function
-        * \tparam Args argument types
-        */
-        template<typename ...Args>
-        inline void noop(Args...) {}
-    }
-}
+namespace util {
+/**
+ * void no-operation function
+ * \tparam Args argument types
+ */
+template<typename... Args>
+inline void
+noop(Args...)
+{}
+} // namespace util
+} // namespace hazelcast

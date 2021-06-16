@@ -20,51 +20,52 @@
 
 #include "hazelcast/client/internal/eviction/EvictableEntryView.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                /**
-                 * Interface for entries, records or whatever that can be evictable via its accessor (key or id).
-                 *
-                 * @param <A> Type of the accessor
-                 * @param <E> Type of the {@link Evictable} value
-                 */
-                template <typename MAPKEY, typename MAPVALUE, typename A, typename E>
-                class EvictionCandidate : public EvictableEntryView<MAPKEY, MAPVALUE> {
-                public:
-                    /**
-                     * The accessor (key or id) of {@link Evictable} entry or record or whatever.
-                     *
-                     * @return the accessor (key or id) of {@link Evictable} entry or record or whatever
-                     */
-                    virtual std::shared_ptr<A> get_accessor() const {
-                        assert(0);
-                        return std::shared_ptr<A>();
-                    }
+namespace client {
+namespace internal {
+namespace eviction {
+/**
+ * Interface for entries, records or whatever that can be evictable via its accessor (key or id).
+ *
+ * @param <A> Type of the accessor
+ * @param <E> Type of the {@link Evictable} value
+ */
+template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
+class EvictionCandidate : public EvictableEntryView<MAPKEY, MAPVALUE>
+{
+public:
+    /**
+     * The accessor (key or id) of {@link Evictable} entry or record or whatever.
+     *
+     * @return the accessor (key or id) of {@link Evictable} entry or record or whatever
+     */
+    virtual std::shared_ptr<A> get_accessor() const
+    {
+        assert(0);
+        return std::shared_ptr<A>();
+    }
 
-                    /**
-                     * The value of {@link Evictable} entry or record or whatever.
-                     *
-                     * @return the value of {@link Evictable} entry or record or whatever
-                     */
-                    virtual std::shared_ptr<E> get_evictable() const {
-                        assert(0);
-                        return std::shared_ptr<E>();
-                    }
-                };
-            }
-        }
+    /**
+     * The value of {@link Evictable} entry or record or whatever.
+     *
+     * @return the value of {@link Evictable} entry or record or whatever
+     */
+    virtual std::shared_ptr<E> get_evictable() const
+    {
+        assert(0);
+        return std::shared_ptr<E>();
     }
 };
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
-
+#endif

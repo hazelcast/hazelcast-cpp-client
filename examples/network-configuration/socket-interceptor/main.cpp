@@ -16,15 +16,14 @@
 
 #include <hazelcast/client/hazelcast.h>
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
-    config.set_socket_interceptor(
-            hazelcast::client::socket_interceptor()
-                    .on_connect([](const hazelcast::client::socket &connected_socket) {
-                        std::cout << "Connected to remote host "
-                                  << connected_socket.get_address() << std::endl;
-                    })
-    );
+    config.set_socket_interceptor(hazelcast::client::socket_interceptor().on_connect(
+      [](const hazelcast::client::socket& connected_socket) {
+          std::cout << "Connected to remote host " << connected_socket.get_address() << std::endl;
+      }));
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
@@ -32,4 +31,3 @@ int main() {
 
     return 0;
 }
-

@@ -16,7 +16,9 @@
 #include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
-int main() {
+int
+main()
+{
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     // Get the Distributed Set from Cluster.
@@ -29,11 +31,12 @@ int main() {
     set->add("item2").get();
     set->add("item3").get();
     // Get the items. Note that there are no duplicates.
-    auto future = set->to_array<std::string>().then(boost::launch::deferred, [] (boost::future<std::vector<std::string>> f) {
-        for(auto &v : f.get()) {
-            std::cout << v << '\n';
-        }
-    });
+    auto future = set->to_array<std::string>().then(boost::launch::deferred,
+                                                    [](boost::future<std::vector<std::string>> f) {
+                                                        for (auto& v : f.get()) {
+                                                            std::cout << v << '\n';
+                                                        }
+                                                    });
 
     // do something else
     //...

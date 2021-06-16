@@ -21,42 +21,43 @@
 #include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace config {
-                /**
-                 * Utility class to access configuration.
-                 */
-                class ConfigUtils {
-                public:
-                    template<typename T>
-                    static const T *
-                    lookup_by_pattern(const client::config::config_pattern_matcher &config_pattern_matcher,
-                                    const std::unordered_map<std::string, T> &config_patterns, const std::string &item_name) {
-                        auto candidate = config_patterns.find(item_name);
-                        if (candidate != config_patterns.end()) {
-                            return &candidate->second;
-                        }
-                        auto size = config_patterns.size();
-                        std::vector<std::string> keys(size);
-                        size_t index = 0;
-                        for (const auto &e : config_patterns) {
-                            keys[index] = e.first;
-                        }
-                        std::shared_ptr<std::string> configPatternKey = config_pattern_matcher.matches(
-                                keys, item_name);
-                        if (configPatternKey) {
-                            candidate = config_patterns.find(*configPatternKey);
-                            if (candidate != config_patterns.end()) {
-                                return &candidate->second;
-                            }
-                        }
-                        return nullptr;
-                    }
-                };
+namespace client {
+namespace internal {
+namespace config {
+/**
+ * Utility class to access configuration.
+ */
+class ConfigUtils
+{
+public:
+    template<typename T>
+    static const T* lookup_by_pattern(
+      const client::config::config_pattern_matcher& config_pattern_matcher,
+      const std::unordered_map<std::string, T>& config_patterns,
+      const std::string& item_name)
+    {
+        auto candidate = config_patterns.find(item_name);
+        if (candidate != config_patterns.end()) {
+            return &candidate->second;
+        }
+        auto size = config_patterns.size();
+        std::vector<std::string> keys(size);
+        size_t index = 0;
+        for (const auto& e : config_patterns) {
+            keys[index] = e.first;
+        }
+        std::shared_ptr<std::string> configPatternKey =
+          config_pattern_matcher.matches(keys, item_name);
+        if (configPatternKey) {
+            candidate = config_patterns.find(*configPatternKey);
+            if (candidate != config_patterns.end()) {
+                return &candidate->second;
             }
         }
+        return nullptr;
     }
 };
-
-
+} // namespace config
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast

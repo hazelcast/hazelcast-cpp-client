@@ -21,18 +21,20 @@
 #include <hazelcast/client/lifecycle_listener.h>
 #include "hazelcast/client/lifecycle_event.h"
 
-
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
 
     /**
-     * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
-     * custom implementations may ignore it if configured.
-     * default value is {@link ReconnectMode#ON}
+     * How a client reconnect to cluster after a disconnect can be configured. This parameter is
+     * used by default strategy and custom implementations may ignore it if configured. default
+     * value is {@link ReconnectMode#ON}
      *
      * This example forces client NOT to reconnect if it ever disconnects from the cluster.
      */
-    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::client_connection_strategy_config::OFF);
+    config.get_connection_strategy_config().set_reconnect_mode(
+      hazelcast::client::config::client_connection_strategy_config::OFF);
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
@@ -42,15 +44,9 @@ int main() {
 
     std::promise<void> disconnected, connected;
 
-    hz.add_lifecycle_listener(
-        hazelcast::client::lifecycle_listener()
-            .on_connected([&connected](){
-                connected.set_value();
-            })
-            .on_disconnected([&disconnected](){
-                disconnected.set_value();
-            })
-    );
+    hz.add_lifecycle_listener(hazelcast::client::lifecycle_listener()
+                                .on_connected([&connected]() { connected.set_value(); })
+                                .on_disconnected([&disconnected]() { disconnected.set_value(); }));
 
     // Please shut down the cluster at this point.
     disconnected.get_future().wait();
@@ -59,7 +55,9 @@ int main() {
 
     auto connection_future = connected.get_future();
     if (connection_future.wait_for(std::chrono::seconds(10)) != std::future_status::ready) {
-        std::cout << "The client did not connect to the cluster 10 seconds after disconnection as expected." << std::endl;
+        std::cout
+          << "The client did not connect to the cluster 10 seconds after disconnection as expected."
+          << std::endl;
     }
 
     hz.shutdown().get();
@@ -67,4 +65,3 @@ int main() {
 
     return 0;
 }
-

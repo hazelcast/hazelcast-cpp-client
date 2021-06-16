@@ -23,47 +23,49 @@
 #include "hazelcast/util/exception_util.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            class ClientMessage;
-        }
-
-        namespace spi {
-            class ClientContext;
-        }
-
-        namespace connection {
-            class Connection;
-        }
-        namespace txn {
-            /**
-             * Contains static method that is used from client transaction classes.
-             */
-            class client_transaction_util {
-            public:
-                /**
-                 * Handles the invocation exception for transactions so that users will not see internal exceptions.
-                 * <p>
-                 * More specifically io , because in case of a IO problem in ClientInvocation that send to a connection
-                 * sends io to user. This wraps that exception into a transaction_exception.
-                 */
-                static boost::future<protocol::ClientMessage>
-                invoke(protocol::ClientMessage &request, const std::string &object_name,
-                       spi::ClientContext &client, const std::shared_ptr<connection::Connection> &connection);
-
-                static const std::shared_ptr<util::exception_util::runtime_exception_factory> &
-                transaction_exception_factory();
-
-            private:
-                class transaction_exception_factory : public util::exception_util::runtime_exception_factory {
-                public:
-                    void rethrow(std::exception_ptr throwable, const std::string &message) override;
-                };
-
-                static const std::shared_ptr<util::exception_util::runtime_exception_factory> exceptionFactory;
-            };
-        }
-    }
+namespace client {
+namespace protocol {
+class ClientMessage;
 }
 
+namespace spi {
+class ClientContext;
+}
 
+namespace connection {
+class Connection;
+}
+namespace txn {
+/**
+ * Contains static method that is used from client transaction classes.
+ */
+class client_transaction_util
+{
+public:
+    /**
+     * Handles the invocation exception for transactions so that users will not see internal
+     * exceptions. <p> More specifically io , because in case of a IO problem in ClientInvocation
+     * that send to a connection sends io to user. This wraps that exception into a
+     * transaction_exception.
+     */
+    static boost::future<protocol::ClientMessage> invoke(
+      protocol::ClientMessage& request,
+      const std::string& object_name,
+      spi::ClientContext& client,
+      const std::shared_ptr<connection::Connection>& connection);
+
+    static const std::shared_ptr<util::exception_util::runtime_exception_factory>&
+    transaction_exception_factory();
+
+private:
+    class transaction_exception_factory : public util::exception_util::runtime_exception_factory
+    {
+    public:
+        void rethrow(std::exception_ptr throwable, const std::string& message) override;
+    };
+
+    static const std::shared_ptr<util::exception_util::runtime_exception_factory> exceptionFactory;
+};
+} // namespace txn
+} // namespace client
+} // namespace hazelcast

@@ -15,7 +15,9 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("map").get();
@@ -31,7 +33,8 @@ int main() {
 
     auto valueFromMap = binaryMap->get<int32_t, std::vector<char>>(3).get();
     if (valueFromMap) {
-        std::cout << "The binary map returned a binary array of size " << valueFromMap->size() << std::endl;
+        std::cout << "The binary map returned a binary array of size " << valueFromMap->size()
+                  << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

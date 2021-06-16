@@ -27,42 +27,45 @@
 using namespace hazelcast::client::test;
 
 namespace hazelcast {
-    namespace client {
-        namespace test {
-            HazelcastServerFactory *g_srvFactory = nullptr;
-            std::shared_ptr<RemoteControllerClient> remoteController;
-        }
-    }
-}
+namespace client {
+namespace test {
+HazelcastServerFactory* g_srvFactory = nullptr;
+std::shared_ptr<RemoteControllerClient> remoteController;
+} // namespace test
+} // namespace client
+} // namespace hazelcast
 
-class ServerFactoryEnvironment : public ::testing::Environment {
+class ServerFactoryEnvironment : public ::testing::Environment
+{
 public:
     ServerFactoryEnvironment() = default;
 
-    void SetUp() override {
-    }
+    void SetUp() override {}
 
-    void TearDown() override {
-        delete hazelcast::client::test::g_srvFactory;
-    }
+    void TearDown() override { delete hazelcast::client::test::g_srvFactory; }
 };
 
-int main(int argc, char **argv) {
-    const char *serverAddress = "127.0.0.1";
+int
+main(int argc, char** argv)
+{
+    const char* serverAddress = "127.0.0.1";
     int port = 9701;
 
-    auto transport = std::make_shared<TBufferedTransport>(std::make_shared<TSocket>(serverAddress, port));
+    auto transport =
+      std::make_shared<TBufferedTransport>(std::make_shared<TSocket>(serverAddress, port));
     try {
         transport->open();
-    } catch (apache::thrift::transport::TTransportException &e) {
-        std::cerr << "Failed to open connection to remote controller server at address " << serverAddress << ":"
-                  << port << ". The exception: " << e.what() << std::endl;
+    } catch (apache::thrift::transport::TTransportException& e) {
+        std::cerr << "Failed to open connection to remote controller server at address "
+                  << serverAddress << ":" << port << ". The exception: " << e.what() << std::endl;
         exit(-1);
     }
 
-    remoteController = std::make_shared<RemoteControllerClient>(std::make_shared<TBinaryProtocol>(transport));
+    remoteController =
+      std::make_shared<RemoteControllerClient>(std::make_shared<TBinaryProtocol>(transport));
 
-    g_srvFactory = new HazelcastServerFactory(serverAddress,"hazelcast/test/resources/hazelcast.xml");
+    g_srvFactory =
+      new HazelcastServerFactory(serverAddress, "hazelcast/test/resources/hazelcast.xml");
 
     ::testing::AddGlobalTestEnvironment(new ServerFactoryEnvironment);
 
@@ -70,4 +73,3 @@ int main(int argc, char **argv) {
 
     return RUN_ALL_TESTS();
 }
-

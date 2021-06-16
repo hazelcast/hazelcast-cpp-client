@@ -21,24 +21,23 @@
 #include "hazelcast/util/Iterator.h"
 
 namespace hazelcast {
-    namespace util {
-        template <typename T>
-        class Iterable {
-        public:
-            virtual ~Iterable() = default;
+namespace util {
+template<typename T>
+class Iterable
+{
+public:
+    virtual ~Iterable() = default;
 
-            /**
-             * Returns an iterator over a set of elements of type T.
-             *
-             * @return an Iterator.
-             */
-            virtual Iterator<T> *iterator() {
-                assert(0);
-                return NULL;
-            }
-        };
+    /**
+     * Returns an iterator over a set of elements of type T.
+     *
+     * @return an Iterator.
+     */
+    virtual Iterator<T>* iterator()
+    {
+        assert(0);
+        return NULL;
     }
-}
-
-
-
+};
+} // namespace util
+} // namespace hazelcast

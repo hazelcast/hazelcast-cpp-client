@@ -18,23 +18,24 @@
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace proxy {
-            class HAZELCAST_API TransactionalSetImpl : public TransactionalObject {
-            public:
-                /**
-                * Returns the size of the set
-                * @return size
-                */
-                boost::future<int> size();
+namespace client {
+namespace proxy {
+class HAZELCAST_API TransactionalSetImpl : public TransactionalObject
+{
+public:
+    /**
+     * Returns the size of the set
+     * @return size
+     */
+    boost::future<int> size();
 
-            public:
-                TransactionalSetImpl(const std::string& name, txn::TransactionProxy &transaction_proxy);
+public:
+    TransactionalSetImpl(const std::string& name, txn::TransactionProxy& transaction_proxy);
 
-                boost::future<bool> add_data(const serialization::pimpl::data& e);
+    boost::future<bool> add_data(const serialization::pimpl::data& e);
 
-                boost::future<bool> remove_data(const serialization::pimpl::data& e);
-            };
-        }
-    }
-}
+    boost::future<bool> remove_data(const serialization::pimpl::data& e);
+};
+} // namespace proxy
+} // namespace client
+} // namespace hazelcast

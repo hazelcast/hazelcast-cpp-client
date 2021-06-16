@@ -24,113 +24,113 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace monitor {
-            namespace impl {
-                class HAZELCAST_API NearCacheStatsImpl : public near_cache_stats {
-                public:
-                    NearCacheStatsImpl();
+namespace client {
+namespace monitor {
+namespace impl {
+class HAZELCAST_API NearCacheStatsImpl : public near_cache_stats
+{
+public:
+    NearCacheStatsImpl();
 
-                    int64_t get_creation_time() override;
+    int64_t get_creation_time() override;
 
-                    int64_t get_owned_entry_count() override;
+    int64_t get_owned_entry_count() override;
 
-                    void set_owned_entry_count(int64_t owned_entry_count);
+    void set_owned_entry_count(int64_t owned_entry_count);
 
-                    void increment_owned_entry_count();
-                    void decrement_owned_entry_count();
+    void increment_owned_entry_count();
+    void decrement_owned_entry_count();
 
-                    int64_t get_owned_entry_memory_cost() override;
+    int64_t get_owned_entry_memory_cost() override;
 
-                    void set_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
+    void set_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    void increment_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
+    void increment_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    void decrement_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
+    void decrement_owned_entry_memory_cost(int64_t owned_entry_memory_cost);
 
-                    int64_t get_hits() override;
+    int64_t get_hits() override;
 
-                    // just for testing
-                    void set_hits(int64_t hits);
+    // just for testing
+    void set_hits(int64_t hits);
 
-                    void increment_hits();
+    void increment_hits();
 
-                    int64_t get_misses() override;
+    int64_t get_misses() override;
 
-                    // just for testing
-                    void set_misses(int64_t misses);
+    // just for testing
+    void set_misses(int64_t misses);
 
-                    void increment_misses();
+    void increment_misses();
 
-                    double get_ratio() override;
+    double get_ratio() override;
 
-                    int64_t get_evictions() override;
+    int64_t get_evictions() override;
 
-                    void increment_evictions();
+    void increment_evictions();
 
-                    int64_t get_expirations() override;
+    int64_t get_expirations() override;
 
-                    void increment_expirations();
+    void increment_expirations();
 
-                    int64_t get_invalidations() override;
+    int64_t get_invalidations() override;
 
-                    void increment_invalidations();
+    void increment_invalidations();
 
-                    int64_t get_invalidation_requests();
+    int64_t get_invalidation_requests();
 
-                    void increment_invalidation_requests();
+    void increment_invalidation_requests();
 
-                    void reset_invalidation_events();
+    void reset_invalidation_events();
 
-                    int64_t get_persistence_count() override;
+    int64_t get_persistence_count() override;
 
-                    void add_persistence(int64_t duration, int32_t written_bytes, int32_t key_count);
+    void add_persistence(int64_t duration, int32_t written_bytes, int32_t key_count);
 
-                    int64_t get_last_persistence_time() override;
+    int64_t get_last_persistence_time() override;
 
-                    int64_t get_last_persistence_duration() override;
+    int64_t get_last_persistence_duration() override;
 
-                    int64_t get_last_persistence_written_bytes() override;
+    int64_t get_last_persistence_written_bytes() override;
 
-                    int64_t get_last_persistence_key_count() override;
+    int64_t get_last_persistence_key_count() override;
 
-                    std::string get_last_persistence_failure() override;
+    std::string get_last_persistence_failure() override;
 
-                    std::string to_string() override;
+    std::string to_string() override;
 
-                private:
-                    std::atomic<int64_t> creation_time_;
-                    std::atomic<int64_t> owned_entry_count_;
-                    std::atomic<int64_t> owned_entry_memory_cost_;
-                    std::atomic<int64_t> hits_;
-                    std::atomic<int64_t> misses_;
-                    std::atomic<int64_t> evictions_;
-                    std::atomic<int64_t> expirations_;
+private:
+    std::atomic<int64_t> creation_time_;
+    std::atomic<int64_t> owned_entry_count_;
+    std::atomic<int64_t> owned_entry_memory_cost_;
+    std::atomic<int64_t> hits_;
+    std::atomic<int64_t> misses_;
+    std::atomic<int64_t> evictions_;
+    std::atomic<int64_t> expirations_;
 
-                    std::atomic<int64_t> invalidations_;
-                    std::atomic<int64_t> invalidation_requests_;
+    std::atomic<int64_t> invalidations_;
+    std::atomic<int64_t> invalidation_requests_;
 
-                    std::atomic<int64_t> persistence_count_;
-                    std::atomic<int64_t> last_persistence_time_;
-                    std::atomic<int64_t> last_persistence_duration_;
-                    std::atomic<int64_t> last_persistence_written_bytes_;
-                    std::atomic<int64_t> last_persistence_key_count_;
-                    util::Sync<std::string> last_persistence_failure_;
+    std::atomic<int64_t> persistence_count_;
+    std::atomic<int64_t> last_persistence_time_;
+    std::atomic<int64_t> last_persistence_duration_;
+    std::atomic<int64_t> last_persistence_written_bytes_;
+    std::atomic<int64_t> last_persistence_key_count_;
+    util::Sync<std::string> last_persistence_failure_;
 
-                    static const double PERCENTAGE;
-                };
-            }
-        }
-    }
-}
+    static const double PERCENTAGE;
+};
+} // namespace impl
+} // namespace monitor
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

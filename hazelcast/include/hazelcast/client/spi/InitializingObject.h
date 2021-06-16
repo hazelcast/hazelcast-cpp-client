@@ -17,30 +17,28 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            /**
-             * Can be implemented by DistributedObject (proxies) to indicate that they want to be initialized.
-             */
-            class HAZELCAST_API InitializingObject {
-            public:
-                virtual ~InitializingObject() = default;
+namespace client {
+namespace spi {
+/**
+ * Can be implemented by DistributedObject (proxies) to indicate that they want to be initialized.
+ */
+class HAZELCAST_API InitializingObject
+{
+public:
+    virtual ~InitializingObject() = default;
 
-                virtual void initialize() = 0;
-            };
-        }
-    }
-}
+    virtual void initialize() = 0;
+};
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

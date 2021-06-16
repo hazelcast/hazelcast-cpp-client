@@ -17,18 +17,21 @@
 
 using namespace hazelcast::client;
 
-int main() {
+int
+main()
+{
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     // Get a Topic called "my-distributed-topic"
     auto topic = hz.get_topic("my-distributed-topic").get();
     // Add a Listener to the Topic
-    topic->add_message_listener(
-        topic::listener().
-            on_received([](topic::message &&message) {
-                std::cout << "Got message " << message.get_message_object().get<std::string>().value_or("null") << std::endl;
-            })
-    ).get();
+    topic
+      ->add_message_listener(topic::listener().on_received([](topic::message&& message) {
+          std::cout << "Got message "
+                    << message.get_message_object().get<std::string>().value_or("null")
+                    << std::endl;
+      }))
+      .get();
     // Publish a message to the Topic
     topic->publish("Hello to distributed world").get();
     // Shutdown this Hazelcast Client

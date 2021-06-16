@@ -20,49 +20,47 @@
 
 #include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
 
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace nearcache {
-                namespace impl {
-                    class HAZELCAST_API KeyStateMarkerImpl : public map::impl::nearcache::KeyStateMarker {
-                    public:
-                        KeyStateMarkerImpl(int count);
+namespace client {
+namespace internal {
+namespace nearcache {
+namespace impl {
+class HAZELCAST_API KeyStateMarkerImpl : public map::impl::nearcache::KeyStateMarker
+{
+public:
+    KeyStateMarkerImpl(int count);
 
-                        ~KeyStateMarkerImpl() override;
+    ~KeyStateMarkerImpl() override;
 
-                        bool try_mark(const serialization::pimpl::data &key) override;
+    bool try_mark(const serialization::pimpl::data& key) override;
 
-                        bool try_unmark(const serialization::pimpl::data &key) override;
+    bool try_unmark(const serialization::pimpl::data& key) override;
 
-                        bool try_remove(const serialization::pimpl::data &key) override;
+    bool try_remove(const serialization::pimpl::data& key) override;
 
-                        void force_unmark(const serialization::pimpl::data &key) override;
+    void force_unmark(const serialization::pimpl::data& key) override;
 
-                        void init() override;
-                    private:
-                        bool cas_state(const serialization::pimpl::data &key, state expect, state update);
+    void init() override;
 
-                        int get_slot(const serialization::pimpl::data &key);
+private:
+    bool cas_state(const serialization::pimpl::data& key, state expect, state update);
 
-                        const int mark_count_;
-                        std::atomic<int32_t> *marks_;
-                    };
-                }
-            }
-        }
-    }
-}
+    int get_slot(const serialization::pimpl::data& key);
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    const int mark_count_;
+    std::atomic<int32_t>* marks_;
+};
+} // namespace impl
+} // namespace nearcache
+} // namespace internal
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

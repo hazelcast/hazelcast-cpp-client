@@ -16,7 +16,9 @@
 #include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
-int main() {
+int
+main()
+{
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     // Get the Distributed List from Cluster.
@@ -24,11 +26,11 @@ int main() {
     // Add elements to the list
     list->add("item1").get();
     // Using future continuation here so that the calls are not blocking
-    auto f = list->add("item2").then(boost::launch::deferred, [=] (boost::future<bool> f) {
-       if (!f.get()) {
-           std::cerr << "Element 2 could not be added !!!\n";
-           return;
-       }
+    auto f = list->add("item2").then(boost::launch::deferred, [=](boost::future<bool> f) {
+        if (!f.get()) {
+            std::cerr << "Element 2 could not be added !!!\n";
+            return;
+        }
 
         std::cout << std::boolalpha;
         // Remove the first element

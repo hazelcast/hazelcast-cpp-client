@@ -15,20 +15,25 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto pnCounter = hz.get_pn_counter("pncounterexample").get();
 
     std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 
-    std::cout << "Counter new value after adding is: " << pnCounter->add_and_get(5).get() << std::endl;
+    std::cout << "Counter new value after adding is: " << pnCounter->add_and_get(5).get()
+              << std::endl;
 
-    std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2).get() << std::endl;
+    std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2).get()
+              << std::endl;
 
     std::cout << "Counter new value is: " << pnCounter->get().get() << std::endl;
 
-    std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get().get() << std::endl;
+    std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get().get()
+              << std::endl;
 
     std::cout << "Finished" << std::endl;
 

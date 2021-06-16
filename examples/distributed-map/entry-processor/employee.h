@@ -17,52 +17,53 @@
 
 #include <hazelcast/client/serialization/serialization.h>
 
-struct employee {
+struct employee
+{
     int32_t salary;
 };
 
-struct employee_raise_entry_processor {};
+struct employee_raise_entry_processor
+{};
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<employee> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<employee> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
 
-                static int32_t get_class_id() noexcept {
-                    return 5;
-                }
+    static int32_t get_class_id() noexcept { return 5; }
 
-                static void write_data(const employee &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.salary);
-                }
-
-                static employee read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return employee{in.read<int32_t>()};
-                }
-            };
-
-            template<>
-            struct hz_serializer<employee_raise_entry_processor> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
-
-                static int32_t get_class_id() noexcept {
-                    return 6;
-                }
-
-                static void write_data(const employee_raise_entry_processor &object, hazelcast::client::serialization::object_data_output &out) {
-                }
-
-                employee_raise_entry_processor read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return employee_raise_entry_processor{};
-                }
-            };
-        }
+    static void write_data(const employee& object,
+                           hazelcast::client::serialization::object_data_output& out)
+    {
+        out.write(object.salary);
     }
-}
 
+    static employee read_data(hazelcast::client::serialization::object_data_input& in)
+    {
+        return employee{ in.read<int32_t>() };
+    }
+};
+
+template<>
+struct hz_serializer<employee_raise_entry_processor> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
+
+    static int32_t get_class_id() noexcept { return 6; }
+
+    static void write_data(const employee_raise_entry_processor& object,
+                           hazelcast::client::serialization::object_data_output& out)
+    {}
+
+    employee_raise_entry_processor read_data(
+      hazelcast::client::serialization::object_data_input& in)
+    {
+        return employee_raise_entry_processor{};
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

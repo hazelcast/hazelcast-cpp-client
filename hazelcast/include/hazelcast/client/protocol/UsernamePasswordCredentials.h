@@ -20,40 +20,37 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
+#pragma warning(disable : 4251) // for dll export
+#endif
 
 namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            /**
-             * Credentials is a container object for endpoint (Members and Clients)
-             * security attributes.
-             *
-             * It is used on authentication process.
-             */
-            class HAZELCAST_API UsernamePasswordCredentials {
-            public:
-                UsernamePasswordCredentials(const std::string &principal, const std::string &password);
+namespace client {
+namespace protocol {
+/**
+ * Credentials is a container object for endpoint (Members and Clients)
+ * security attributes.
+ *
+ * It is used on authentication process.
+ */
+class HAZELCAST_API UsernamePasswordCredentials
+{
+public:
+    UsernamePasswordCredentials(const std::string& principal, const std::string& password);
 
-                const std::string &get_name() const;
+    const std::string& get_name() const;
 
-                const std::string &get_password() const;
+    const std::string& get_password() const;
 
-            private:
-                std::string name_;
-                std::string password_;
-            };
-        }
-    }
-}
+private:
+    std::string name_;
+    std::string password_;
+};
+} // namespace protocol
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
-
-
-
+#endif

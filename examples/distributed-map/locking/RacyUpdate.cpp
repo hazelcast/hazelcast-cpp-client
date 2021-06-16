@@ -16,38 +16,41 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-struct Value {
+struct Value
+{
     int32_t amount;
     int32_t version;
 };
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<Value> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<Value> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
 
-                static int32_t get_class_id() noexcept {
-                    return 6;
-                }
+    static int32_t get_class_id() noexcept { return 6; }
 
-                static void write_data(const Value &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.amount);
-                    out.write(object.version);
-                }
-
-                static Value read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return Value{in.read<int32_t>(), in.read<int32_t>()};
-                }
-            };
-        }
+    static void write_data(const Value& object,
+                           hazelcast::client::serialization::object_data_output& out)
+    {
+        out.write(object.amount);
+        out.write(object.version);
     }
-}
 
-int main() {
+    static Value read_data(hazelcast::client::serialization::object_data_input& in)
+    {
+        return Value{ in.read<int32_t>(), in.read<int32_t>() };
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("map").get();
@@ -65,7 +68,8 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         map->put(key, *oldValue).get();
     }
-    std::cout << "Finished! Result = " << map->get<std::string, Value>(key).get()->amount << std::endl;
+    std::cout << "Finished! Result = " << map->get<std::string, Value>(key).get()->amount
+              << std::endl;
 
     std::cout << "Finished" << std::endl;
 

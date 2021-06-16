@@ -20,12 +20,15 @@
 using namespace hazelcast::client;
 
 /**
- * Important note: Please make sure a cluster is running and management center is enabled at the members and url's
- * point to the management center url where the management center is started. See the example configuration file
- * `hazelcast-management-center-enabled.xml` for member configuration.
+ * Important note: Please make sure a cluster is running and management center is enabled at the
+ * members and url's point to the management center url where the management center is started. See
+ * the example configuration file `hazelcast-management-center-enabled.xml` for member
+ * configuration.
  *
  */
-int main() {
+int
+main()
+{
     client_config config;
 
     config.set_property("hazelcast.client.statistics.enabled", "true");
@@ -39,7 +42,7 @@ int main() {
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(2, 500).get();
 
     // generate a near-cache miss
@@ -49,8 +52,8 @@ int main() {
     map->get<int, int>(2).get();
     map->get<int, int>(2).get();
 
-    // sleep more than the statistics collection time and keep the client running. Statistics is now populated at the
-    // member side, so you can see them at the Management Center.
+    // sleep more than the statistics collection time and keep the client running. Statistics is now
+    // populated at the member side, so you can see them at the Management Center.
     std::this_thread::sleep_for(std::chrono::seconds(100));
 
     std::cout << "Finished" << std::endl;

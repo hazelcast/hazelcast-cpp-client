@@ -17,37 +17,36 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                /**
-                 * Interface for implementations of {@link com.hazelcast.config.EvictionConfig.MaxSizePolicy}.
-                 */
-                class HAZELCAST_API MaxSizeChecker {
-                public:
-                    virtual ~MaxSizeChecker() = default;
+namespace client {
+namespace internal {
+namespace eviction {
+/**
+ * Interface for implementations of {@link com.hazelcast.config.EvictionConfig.MaxSizePolicy}.
+ */
+class HAZELCAST_API MaxSizeChecker
+{
+public:
+    virtual ~MaxSizeChecker() = default;
 
-                    /**
-                     * Checks the state to see if it has reached its maximum configured size
-                     * {@link com.hazelcast.config.EvictionConfig.MaxSizePolicy}
-                     *
-                     * @return <code>true</code> if maximum size has been reached, <code>false</code> otherwise
-                     */
-                    virtual bool is_reached_to_max_size() const = 0;
-                };
-            }
-        }
-    }
+    /**
+     * Checks the state to see if it has reached its maximum configured size
+     * {@link com.hazelcast.config.EvictionConfig.MaxSizePolicy}
+     *
+     * @return <code>true</code> if maximum size has been reached, <code>false</code> otherwise
+     */
+    virtual bool is_reached_to_max_size() const = 0;
 };
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
-
+#endif

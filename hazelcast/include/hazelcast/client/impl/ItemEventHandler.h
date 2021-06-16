@@ -23,41 +23,48 @@
 #include "hazelcast/client/impl/BaseEventHandler.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace impl {
-            template<typename BaseType>
-            class item_event_handler : public BaseType {
-            public:
-                item_event_handler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
-                                   serialization::pimpl::SerializationService &serialization_service,
-                                   item_listener &&listener, bool include_value)
-                        : instance_name_(instance_name), cluster_service_(cluster_service),
-                          serialization_service_(serialization_service), listener_(std::move(listener)), include_value_(include_value) {};
+namespace client {
+namespace impl {
+template<typename BaseType>
+class item_event_handler : public BaseType
+{
+public:
+    item_event_handler(const std::string& instance_name,
+                       spi::impl::ClientClusterServiceImpl& cluster_service,
+                       serialization::pimpl::SerializationService& serialization_service,
+                       item_listener&& listener,
+                       bool include_value)
+      : instance_name_(instance_name)
+      , cluster_service_(cluster_service)
+      , serialization_service_(serialization_service)
+      , listener_(std::move(listener))
+      , include_value_(include_value){};
 
-                void handle_item(const boost::optional<serialization::pimpl::data> &item, boost::uuids::uuid uuid,
-                                        int32_t event_type) override {
-                    typed_data val;
-                    if (include_value_) {
-                        val = typed_data(std::move(*item), serialization_service_);
-                    }
-                    auto member = cluster_service_.get_member(uuid);
-                    item_event_type type(static_cast<item_event_type>(event_type));
-                    item_event itemEvent(instance_name_, type, std::move(val), std::move(member).value());
-                    if (type == item_event_type::ADDED) {
-                        listener_.added_(std::move(itemEvent));
-                    } else if (type == item_event_type::REMOVED) {
-                        listener_.removed_(std::move(itemEvent));
-                    }
-                }
-
-            private:
-                const std::string &instance_name_;
-                spi::impl::ClientClusterServiceImpl &cluster_service_;
-                serialization::pimpl::SerializationService &serialization_service_;
-                item_listener listener_;
-                bool include_value_;
-            };
+    void handle_item(const boost::optional<serialization::pimpl::data>& item,
+                     boost::uuids::uuid uuid,
+                     int32_t event_type) override
+    {
+        typed_data val;
+        if (include_value_) {
+            val = typed_data(std::move(*item), serialization_service_);
+        }
+        auto member = cluster_service_.get_member(uuid);
+        item_event_type type(static_cast<item_event_type>(event_type));
+        item_event itemEvent(instance_name_, type, std::move(val), std::move(member).value());
+        if (type == item_event_type::ADDED) {
+            listener_.added_(std::move(itemEvent));
+        } else if (type == item_event_type::REMOVED) {
+            listener_.removed_(std::move(itemEvent));
         }
     }
-}
 
+private:
+    const std::string& instance_name_;
+    spi::impl::ClientClusterServiceImpl& cluster_service_;
+    serialization::pimpl::SerializationService& serialization_service_;
+    item_listener listener_;
+    bool include_value_;
+};
+} // namespace impl
+} // namespace client
+} // namespace hazelcast

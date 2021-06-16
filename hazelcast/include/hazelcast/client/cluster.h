@@ -21,69 +21,69 @@
 #include "hazelcast/client/member.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                class ClientClusterServiceImpl;
-            }
-        }
-
-        class membership_listener;
-
-        /**
-         * Hazelcast cluster interface.
-         */
-        class HAZELCAST_API cluster {
-        public:
-            /**
-             * Constructor
-             */
-            cluster(spi::impl::ClientClusterServiceImpl &cluster_service);
-
-            /**
-             * Adds membership_listener to listen for membership updates.
-             * <p>
-             * The add_membership_listener method returns a registeration ID. This ID is needed to remove the membership_listener using the
-             * Cluster::removemembership_listener method.
-             * <p>
-             *
-             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
-             * otherwise it will slow down the system.
-             *
-             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
-             * \see hz_cluster::remove_membership_listener
-
-             * \param listener membership_listener
-             * \return registration id 
-             */
-            boost::uuids::uuid add_membership_listener(membership_listener &&listener);
-
-            /**
-             * Removes the specified membership_listener.
-             * <p>
-             * 
-             * @see #add_membership_listener(const std::shared_ptr<membership_listener> &)
-             * \param registrationId the registrationId of membership_listener to remove
-             * \return true if the registration is removed, false otherwise
-             * 
-             */
-            bool remove_membership_listener(boost::uuids::uuid registration_id);
-
-            /**
-             * Set of current members of the cluster.
-             * Returning set instance is not modifiable.
-             * Every member in the cluster has the same member list in the same
-             * order. First member is the oldest member.
-             *
-             * @return current members of the cluster
-             */
-            std::vector<member> get_members();
-
-        private:
-            spi::impl::ClientClusterServiceImpl &cluster_service_;
-        };
-    }
+namespace client {
+namespace spi {
+namespace impl {
+class ClientClusterServiceImpl;
 }
+} // namespace spi
 
+class membership_listener;
 
+/**
+ * Hazelcast cluster interface.
+ */
+class HAZELCAST_API cluster
+{
+public:
+    /**
+     * Constructor
+     */
+    cluster(spi::impl::ClientClusterServiceImpl& cluster_service);
 
+    /**
+     * Adds membership_listener to listen for membership updates.
+     * <p>
+     * The add_membership_listener method returns a registeration ID. This ID is needed to remove
+     the membership_listener using the
+     * Cluster::removemembership_listener method.
+     * <p>
+     *
+     * Warning 1: If listener should do a time consuming operation, off-load the operation to
+     another thread.
+     * otherwise it will slow down the system.
+     *
+     * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+     * \see hz_cluster::remove_membership_listener
+
+     * \param listener membership_listener
+     * \return registration id
+     */
+    boost::uuids::uuid add_membership_listener(membership_listener&& listener);
+
+    /**
+     * Removes the specified membership_listener.
+     * <p>
+     *
+     * @see #add_membership_listener(const std::shared_ptr<membership_listener> &)
+     * \param registrationId the registrationId of membership_listener to remove
+     * \return true if the registration is removed, false otherwise
+     *
+     */
+    bool remove_membership_listener(boost::uuids::uuid registration_id);
+
+    /**
+     * Set of current members of the cluster.
+     * Returning set instance is not modifiable.
+     * Every member in the cluster has the same member list in the same
+     * order. First member is the oldest member.
+     *
+     * @return current members of the cluster
+     */
+    std::vector<member> get_members();
+
+private:
+    spi::impl::ClientClusterServiceImpl& cluster_service_;
+};
+} // namespace client
+} // namespace hazelcast

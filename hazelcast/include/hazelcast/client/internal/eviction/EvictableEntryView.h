@@ -20,74 +20,75 @@
 
 #include <memory>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                /**
-                * Contract point (from the end user perspective) for serving/accessing entries that can be evicted.
-                *
-                * @param <K> the type of the key
-                * @param <V> the type of the value
-                */
-                template <typename K, typename V>
-                class EvictableEntryView {
-                public:
-                    virtual ~EvictableEntryView() = default;
+namespace client {
+namespace internal {
+namespace eviction {
+/**
+ * Contract point (from the end user perspective) for serving/accessing entries that can be evicted.
+ *
+ * @param <K> the type of the key
+ * @param <V> the type of the value
+ */
+template<typename K, typename V>
+class EvictableEntryView
+{
+public:
+    virtual ~EvictableEntryView() = default;
 
-                    /**
-                     * Gets the creation time of this {@link EvictableEntryView} in milliseconds.
-                     *
-                     * @return the creation time of this {@link EvictableEntryView} in milliseconds
-                     */
-                    virtual int64_t get_creation_time() const = 0;
+    /**
+     * Gets the creation time of this {@link EvictableEntryView} in milliseconds.
+     *
+     * @return the creation time of this {@link EvictableEntryView} in milliseconds
+     */
+    virtual int64_t get_creation_time() const = 0;
 
-                    /**
-                     * Gets the latest access time difference of this {@link EvictableEntryView} in milliseconds.
-                     *
-                     * @return the latest access time of this {@link EvictableEntryView} in milliseconds
-                     */
-                    virtual int64_t get_last_access_time() const = 0;
+    /**
+     * Gets the latest access time difference of this {@link EvictableEntryView} in milliseconds.
+     *
+     * @return the latest access time of this {@link EvictableEntryView} in milliseconds
+     */
+    virtual int64_t get_last_access_time() const = 0;
 
-                    /**
-                     * Gets the access hit count of this {@link EvictableEntryView}.
-                     *
-                     * @return the access hit count of this {@link EvictableEntryView}
-                     */
-                    virtual int64_t get_access_hit() const = 0;
+    /**
+     * Gets the access hit count of this {@link EvictableEntryView}.
+     *
+     * @return the access hit count of this {@link EvictableEntryView}
+     */
+    virtual int64_t get_access_hit() const = 0;
 
-                    /**
-                     * Gets the key of the entry.
-                     *
-                     * @return the key of the entry
-                     */
-                    virtual std::shared_ptr<K> get_key() const {
-                        assert(0);
-                        return std::shared_ptr<K>();
-                    }
+    /**
+     * Gets the key of the entry.
+     *
+     * @return the key of the entry
+     */
+    virtual std::shared_ptr<K> get_key() const
+    {
+        assert(0);
+        return std::shared_ptr<K>();
+    }
 
-                    /**
-                     * Gets the value of the entry.
-                     *
-                     * @return the value of the entry
-                     */
-                    virtual std::shared_ptr<V> get_value() const {
-                        assert(0);
-                        return std::shared_ptr<V>();
-                    }
-                };
-            }
-        }
+    /**
+     * Gets the value of the entry.
+     *
+     * @return the value of the entry
+     */
+    virtual std::shared_ptr<V> get_value() const
+    {
+        assert(0);
+        return std::shared_ptr<V>();
     }
 };
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
-
+#endif

@@ -30,40 +30,44 @@
 #define assertOpenEventually ASSERT_OPEN_EVENTUALLY
 
 namespace hazelcast {
-    namespace client {
-        class client_config;
+namespace client {
+class client_config;
 
-        class hazelcast_client;
+class hazelcast_client;
 
-        namespace test {
-            class HazelcastServerFactory;
+namespace test {
+class HazelcastServerFactory;
 
-            extern HazelcastServerFactory *g_srvFactory;
+extern HazelcastServerFactory* g_srvFactory;
 
-            class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
-            public:
-                ClientTestSupport();
+class ClientTestSupport
+  : public ClientTestSupportBase
+  , public ::testing::Test
+{
+public:
+    ClientTestSupport();
 
-            protected:
-                logger &get_logger();
+protected:
+    logger& get_logger();
 
-                static std::string get_test_name();
+    static std::string get_test_name();
 
-            private:
-                std::shared_ptr<logger> logger_;
-            };
+private:
+    std::shared_ptr<logger> logger_;
+};
 
-            class CountDownLatchWaiter {
-            public:
-                CountDownLatchWaiter &add(boost::latch &latch1);
+class CountDownLatchWaiter
+{
+public:
+    CountDownLatchWaiter& add(boost::latch& latch1);
 
-                boost::cv_status wait_for(boost::chrono::steady_clock::duration duration);
+    boost::cv_status wait_for(boost::chrono::steady_clock::duration duration);
 
-                void reset();
+    void reset();
 
-            private:
-                std::vector<boost::latch *> latches_;
-            };
-        }
-    }
-}
+private:
+    std::vector<boost::latch*> latches_;
+};
+} // namespace test
+} // namespace client
+} // namespace hazelcast

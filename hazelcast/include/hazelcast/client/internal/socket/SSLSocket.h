@@ -22,49 +22,53 @@
 
 #include "hazelcast/client/internal/socket/BaseSocket.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
+#pragma warning(disable : 4251) // for dll export
+#pragma warning(                                                                                   \
+  disable : 4003) // for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace socket {
-                class HAZELCAST_API SSLSocket
-                        : public BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> {
-                public:
-                    struct CipherInfo {
-                        std::string name;
-                        int number_of_bits;
-                        std::string version;
-                        std::string description;
-                    };
+namespace client {
+namespace internal {
+namespace socket {
+class HAZELCAST_API SSLSocket
+  : public BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>
+{
+public:
+    struct CipherInfo
+    {
+        std::string name;
+        int number_of_bits;
+        std::string version;
+        std::string description;
+    };
 
-                    SSLSocket(boost::asio::io_context &io_service, boost::asio::ssl::context &context,
-                              const client::address &address, client::config::socket_options &socket_options,
-                              std::chrono::milliseconds &connect_timeout_in_millis,
-                              boost::asio::ip::tcp::resolver &resolver);
+    SSLSocket(boost::asio::io_context& io_service,
+              boost::asio::ssl::context& context,
+              const client::address& address,
+              client::config::socket_options& socket_options,
+              std::chrono::milliseconds& connect_timeout_in_millis,
+              boost::asio::ip::tcp::resolver& resolver);
 
-                    /**
-                     * @return Returns the supported ciphers. Uses SSL_get_ciphers.
-                     */
-                    std::vector<SSLSocket::CipherInfo> get_ciphers();
+    /**
+     * @return Returns the supported ciphers. Uses SSL_get_ciphers.
+     */
+    std::vector<SSLSocket::CipherInfo> get_ciphers();
 
-                    void post_connect() override;
-                };
+    void post_connect() override;
+};
 
-                std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);
-            }
-        }
-    }
-}
+std::ostream&
+operator<<(std::ostream& out, const SSLSocket::CipherInfo& info);
+} // namespace socket
+} // namespace internal
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
 
 #endif /* HZ_BUILD_WITH_SSL */
-
-

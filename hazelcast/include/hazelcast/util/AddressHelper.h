@@ -22,59 +22,61 @@
 #include "hazelcast/client/address.h"
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    class logger;
+class logger;
 
-    namespace util {
-        /**
-         * Holds address
-         */
-        class HAZELCAST_API AddressHolder {
-        public:
-            AddressHolder(const std::string &address, const std::string &scope_id, int port);
+namespace util {
+/**
+ * Holds address
+ */
+class HAZELCAST_API AddressHolder
+{
+public:
+    AddressHolder(const std::string& address, const std::string& scope_id, int port);
 
-            const std::string &get_address() const;
+    const std::string& get_address() const;
 
-            const std::string &get_scope_id() const;
+    const std::string& get_scope_id() const;
 
-            int get_port() const;
+    int get_port() const;
 
-            friend std::ostream &operator<<(std::ostream &os, const AddressHolder &holder);
+    friend std::ostream& operator<<(std::ostream& os, const AddressHolder& holder);
 
-        private:
-            std::string address_;
-            std::string scope_id_;
-            int port_;
-        };
+private:
+    std::string address_;
+    std::string scope_id_;
+    int port_;
+};
 
+/**
+ * This is a client side utility class for working with addresses and cluster connections
+ */
+class HAZELCAST_API AddressHelper
+{
+public:
+    static std::vector<client::address> get_socket_addresses(const std::string& address,
+                                                             logger& lg);
 
-        /**
-         * This is a client side utility class for working with addresses and cluster connections
-         */
-        class HAZELCAST_API AddressHelper {
-        public:
-            static std::vector<client::address> get_socket_addresses(const std::string &address, logger &lg);
+    static std::string get_scoped_hostname(const AddressHolder& addressHolder);
 
-            static std::string get_scoped_hostname(const AddressHolder &addressHolder);
+private:
+    static const int MAX_PORT_TRIES;
+    static const int INITIAL_FIRST_PORT;
 
-        private:
-            static const int MAX_PORT_TRIES;
-            static const int INITIAL_FIRST_PORT;
+    static std::vector<client::address> get_possible_socket_addresses(
+      int port,
+      const std::string& scoped_address,
+      int port_try_count,
+      logger& lg);
+};
+} // namespace util
+} // namespace hazelcast
 
-            static std::vector<client::address>
-            get_possible_socket_addresses(int port, const std::string &scoped_address, int port_try_count, logger &lg);
-        };
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

@@ -18,61 +18,61 @@
 #include <string>
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            /**
-             * An ObjectNamespace that makes identification of object within a service possible.
-             */
-            class HAZELCAST_API DefaultObjectNamespace {
-            public:
-                DefaultObjectNamespace(const std::string &service, const std::string &object);
+namespace client {
+namespace spi {
+/**
+ * An ObjectNamespace that makes identification of object within a service possible.
+ */
+class HAZELCAST_API DefaultObjectNamespace
+{
+public:
+    DefaultObjectNamespace(const std::string& service, const std::string& object);
 
-                /**
-                 * Gets the service name.
-                 *
-                 * @return the service name
-                 */
-                const std::string &get_service_name() const;
+    /**
+     * Gets the service name.
+     *
+     * @return the service name
+     */
+    const std::string& get_service_name() const;
 
-                /**
-                 * Gets the object name within the service.
-                 *
-                 * @return the object name within the service
-                 */
-                const std::string &get_object_name() const;
+    /**
+     * Gets the object name within the service.
+     *
+     * @return the object name within the service
+     */
+    const std::string& get_object_name() const;
 
-                bool operator==(const DefaultObjectNamespace &rhs) const;
+    bool operator==(const DefaultObjectNamespace& rhs) const;
 
-            private:
-                std::string service_name_;
-                std::string object_name_;
-            };
-        }
-    }
-}
+private:
+    std::string service_name_;
+    std::string object_name_;
+};
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
 namespace std {
-    template<>
-    struct less<hazelcast::client::spi::DefaultObjectNamespace> {
-        bool operator()(const hazelcast::client::spi::DefaultObjectNamespace &lhs,
-                        const hazelcast::client::spi::DefaultObjectNamespace &rhs) const;
-    };
+template<>
+struct less<hazelcast::client::spi::DefaultObjectNamespace>
+{
+    bool operator()(const hazelcast::client::spi::DefaultObjectNamespace& lhs,
+                    const hazelcast::client::spi::DefaultObjectNamespace& rhs) const;
+};
 
-    template<>
-    struct HAZELCAST_API hash<hazelcast::client::spi::DefaultObjectNamespace> {
-        std::size_t operator()(const hazelcast::client::spi::DefaultObjectNamespace &k) const noexcept;
-    };
-}
+template<>
+struct HAZELCAST_API hash<hazelcast::client::spi::DefaultObjectNamespace>
+{
+    std::size_t operator()(const hazelcast::client::spi::DefaultObjectNamespace& k) const noexcept;
+};
+} // namespace std
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

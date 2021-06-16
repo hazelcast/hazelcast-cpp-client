@@ -19,38 +19,38 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace util {
-        namespace concurrent {
-            /**
-             * Idle strategy for use by threads when then they don't have work to do.
-             */
-            class HAZELCAST_API IdleStrategy {
-            public:
-                /**
-                 * Destructor
-                 */
-                virtual ~IdleStrategy() = default;
+namespace util {
+namespace concurrent {
+/**
+ * Idle strategy for use by threads when then they don't have work to do.
+ */
+class HAZELCAST_API IdleStrategy
+{
+public:
+    /**
+     * Destructor
+     */
+    virtual ~IdleStrategy() = default;
 
-                /**
-                 * Perform current idle strategy's step <i>n</i>.
-                 *
-                 * @param n number of times this method has been previously called with no intervening work done.
-                 * @return whether the strategy has reached the longest pause time.
-                 */
-                virtual bool idle(int64_t n) = 0;
-            };
-        }
-    }
-}
+    /**
+     * Perform current idle strategy's step <i>n</i>.
+     *
+     * @param n number of times this method has been previously called with no intervening work
+     * done.
+     * @return whether the strategy has reached the longest pause time.
+     */
+    virtual bool idle(int64_t n) = 0;
+};
+} // namespace concurrent
+} // namespace util
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

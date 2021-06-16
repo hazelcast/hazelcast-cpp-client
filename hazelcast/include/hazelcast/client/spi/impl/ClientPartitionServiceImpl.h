@@ -24,88 +24,98 @@
 #include "hazelcast/client/impl/Partition.h"
 #include "hazelcast/logger.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace connection {
-            class Connection;
-        }
-        namespace protocol {
-            class ClientMessage;
-        }
-        namespace spi {
-            class ClientContext;
-
-            namespace impl {
-                class HAZELCAST_API ClientPartitionServiceImpl : public std::enable_shared_from_this<ClientPartitionServiceImpl> {
-                public:
-                    ClientPartitionServiceImpl(ClientContext &client);
-
-                    /**
-                     * The partitions can be empty on the response, client will not apply the empty partition table,
-                     */
-                    void handle_event(int32_t connection_id, int32_t version,
-                                      const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
-
-                    boost::uuids::uuid get_partition_owner(int partition_id);
-
-                    int32_t get_partition_id(const serialization::pimpl::data &key);
-
-                    int32_t get_partition_count();
-
-                    std::shared_ptr<client::impl::Partition> get_partition(int32_t partition_id);
-
-                    bool check_and_set_partition_count(int32_t new_partition_count);
-
-                    void reset();
-                private:
-                    struct partition_table {
-                        int32_t connection_id;
-                        int32_t version;
-                        std::unordered_map<int32_t, boost::uuids::uuid> partitions;
-                    };
-
-                    class PartitionImpl : public client::impl::Partition {
-                    public:
-                        PartitionImpl(int partition_id, ClientContext &client,
-                                      ClientPartitionServiceImpl &partition_service);
-
-                        int get_partition_id() const override;
-
-                        boost::optional<member> get_owner() const override;
-
-                    private:
-                        int partition_id_;
-                        ClientContext &client_;
-                        ClientPartitionServiceImpl &partition_service_;
-                    };
-
-                    bool should_be_applied(int32_t connection_id, int32_t version,
-                                           const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions,
-                                           const partition_table &current);
-
-                    void log_failure(int32_t connection_id, int32_t version, const partition_table &current,
-                                     const std::string &cause);
-
-                    std::unordered_map<int32_t, boost::uuids::uuid>
-                    convert_to_map(const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
-
-                    ClientContext &client_;
-                    logger &logger_;
-                    std::atomic<int32_t> partition_count_;
-                    boost::atomic_shared_ptr<partition_table> partition_table_;
-                };
-            }
-        }
-    }
+namespace client {
+namespace connection {
+class Connection;
 }
+namespace protocol {
+class ClientMessage;
+}
+namespace spi {
+class ClientContext;
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+namespace impl {
+class HAZELCAST_API ClientPartitionServiceImpl
+  : public std::enable_shared_from_this<ClientPartitionServiceImpl>
+{
+public:
+    ClientPartitionServiceImpl(ClientContext& client);
+
+    /**
+     * The partitions can be empty on the response, client will not apply the empty partition table,
+     */
+    void handle_event(
+      int32_t connection_id,
+      int32_t version,
+      const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>>& partitions);
+
+    boost::uuids::uuid get_partition_owner(int partition_id);
+
+    int32_t get_partition_id(const serialization::pimpl::data& key);
+
+    int32_t get_partition_count();
+
+    std::shared_ptr<client::impl::Partition> get_partition(int32_t partition_id);
+
+    bool check_and_set_partition_count(int32_t new_partition_count);
+
+    void reset();
+
+private:
+    struct partition_table
+    {
+        int32_t connection_id;
+        int32_t version;
+        std::unordered_map<int32_t, boost::uuids::uuid> partitions;
+    };
+
+    class PartitionImpl : public client::impl::Partition
+    {
+    public:
+        PartitionImpl(int partition_id,
+                      ClientContext& client,
+                      ClientPartitionServiceImpl& partition_service);
+
+        int get_partition_id() const override;
+
+        boost::optional<member> get_owner() const override;
+
+    private:
+        int partition_id_;
+        ClientContext& client_;
+        ClientPartitionServiceImpl& partition_service_;
+    };
+
+    bool should_be_applied(
+      int32_t connection_id,
+      int32_t version,
+      const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>>& partitions,
+      const partition_table& current);
+
+    void log_failure(int32_t connection_id,
+                     int32_t version,
+                     const partition_table& current,
+                     const std::string& cause);
+
+    std::unordered_map<int32_t, boost::uuids::uuid> convert_to_map(
+      const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>>& partitions);
+
+    ClientContext& client_;
+    logger& logger_;
+    std::atomic<int32_t> partition_count_;
+    boost::atomic_shared_ptr<partition_table> partition_table_;
+};
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

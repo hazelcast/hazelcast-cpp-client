@@ -16,32 +16,35 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-class MapInterceptor {};
+class MapInterceptor
+{};
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<MapInterceptor> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<MapInterceptor> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
 
-                static int32_t get_class_id() noexcept {
-                    return 7;
-                }
+    static int32_t get_class_id() noexcept { return 7; }
 
-                static void write_data(const MapInterceptor &object, hazelcast::client::serialization::object_data_output &out) {}
+    static void write_data(const MapInterceptor& object,
+                           hazelcast::client::serialization::object_data_output& out)
+    {}
 
-                static MapInterceptor read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return MapInterceptor{};
-                }
-            };
-        }
+    static MapInterceptor read_data(hazelcast::client::serialization::object_data_input& in)
+    {
+        return MapInterceptor{};
     }
-}
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("themap").get();
@@ -50,7 +53,8 @@ int main() {
 
     map->put<std::string, std::string>("1", "1").get();
 
-    std::cout << "The modified value (modified by the interceptor) at the server:" << *map->get<std::string, std::string>("1").get() << std::endl;
+    std::cout << "The modified value (modified by the interceptor) at the server:"
+              << *map->get<std::string, std::string>("1").get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

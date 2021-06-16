@@ -16,7 +16,9 @@
 #include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
-int main() {
+int
+main()
+{
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     // Get the Distributed MultiMap from Cluster.
@@ -26,12 +28,14 @@ int main() {
     multiMap->put("my-key", "value2").get();
     multiMap->put("my-key", "value3").get();
     // Print out all the values for associated with key called "my-key"
-    multiMap->get<std::string, std::string>("my-key").then(boost::launch::deferred,
-                                                           [](boost::future<std::vector<std::string>> f) {
-                                                               for (auto &value : f.get()) {
-                                                                   std::cout << value << '\n';
-                                                               }
-                                                           }).get();
+    multiMap->get<std::string, std::string>("my-key")
+      .then(boost::launch::deferred,
+            [](boost::future<std::vector<std::string>> f) {
+                for (auto& value : f.get()) {
+                    std::cout << value << '\n';
+                }
+            })
+      .get();
     // remove specific key/value pair
     multiMap->remove("my-key", "value2").get();
     // Shutdown this Hazelcast Client

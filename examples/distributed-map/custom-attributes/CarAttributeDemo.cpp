@@ -19,16 +19,19 @@
 #include <map>
 #include <ostream>
 
-struct Car {
+struct Car
+{
     Car() = default;
 
-    explicit Car(const char *name) {
+    explicit Car(const char* name)
+    {
         attributes["name"] = name;
         attributes["tripStart"] = "0";
         attributes["tripStop"] = "0";
     }
 
-    Car(const char *name, int break_horse_power, int mileage) {
+    Car(const char* name, int break_horse_power, int mileage)
+    {
         attributes["name"] = name;
         attributes["tripStart"] = "0";
         attributes["tripStop"] = "0";
@@ -36,9 +39,10 @@ struct Car {
         attributes["mileage"] = std::to_string(mileage);
     }
 
-    friend std::ostream &operator<<(std::ostream &os, const Car &car) {
+    friend std::ostream& operator<<(std::ostream& os, const Car& car)
+    {
         os << "attributes: {";
-        for (auto &entry : car.attributes) {
+        for (auto& entry : car.attributes) {
             os << "(" << entry.first << ": " << entry.second << "), ";
         }
         os << "}";
@@ -49,42 +53,44 @@ struct Car {
 };
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<Car> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<Car> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
 
-                static int32_t get_class_id() noexcept {
-                    return 4;
-                }
+    static int32_t get_class_id() noexcept { return 4; }
 
-                static void write_data(const Car &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(static_cast<int32_t>(object.attributes.size()));
-                    for (auto &entry : object.attributes) {
-                        out.write(entry.first);
-                        out.write(entry.second);
-                    }
-                }
-
-                static Car read_data(hazelcast::client::serialization::object_data_input &in) {
-                    Car object;
-                    int32_t size = in.read<int32_t>();
-                    if (size > 0) {
-                        for (int32_t i = 0; i < size; ++i) {
-                            object.attributes[in.read<std::string>()] = in.read<std::string>();
-                        }
-                    }
-                    return object;
-                }
-            };
+    static void write_data(const Car& object,
+                           hazelcast::client::serialization::object_data_output& out)
+    {
+        out.write(static_cast<int32_t>(object.attributes.size()));
+        for (auto& entry : object.attributes) {
+            out.write(entry.first);
+            out.write(entry.second);
         }
     }
-}
 
-int main() {
+    static Car read_data(hazelcast::client::serialization::object_data_input& in)
+    {
+        Car object;
+        int32_t size = in.read<int32_t>();
+        if (size > 0) {
+            for (int32_t i = 0; i < size; ++i) {
+                object.attributes[in.read<std::string>()] = in.read<std::string>();
+            }
+        }
+        return object;
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("cars").get();
@@ -93,12 +99,12 @@ int main() {
     map->put(2, Car("BMW X5", 312, 34000)).get();
     map->put(3, Car("Porsche Cayenne", 408, 57000)).get();
 
-    // we're using a custom attribute called 'attribute' which is provided by the 'CarAttributeExtractor'
-    // we are also passing an argument 'mileage' to the extractor
+    // we're using a custom attribute called 'attribute' which is provided by the
+    // 'CarAttributeExtractor' we are also passing an argument 'mileage' to the extractor
     hazelcast::client::query::sql_predicate criteria(hz, "attribute[mileage] < 30000");
     auto cars = map->values<Car>(criteria).get();
 
-    for (const auto &car : cars) {
+    for (const auto& car : cars) {
         std::cout << car << '\n';
     }
 
@@ -106,4 +112,3 @@ int main() {
 
     return 0;
 }
-

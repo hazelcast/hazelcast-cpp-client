@@ -21,30 +21,27 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                class ClientInvocation;
-            }
-        }
+namespace client {
+namespace spi {
+namespace impl {
+class ClientInvocation;
+}
+} // namespace spi
 
-        namespace connection {
-            class Connection;
-        }
-
-        namespace protocol {
-            class HAZELCAST_API IMessageHandler {
-            public:
-                virtual ~IMessageHandler() = default;
-
-                virtual void handle_client_message(const std::shared_ptr<spi::impl::ClientInvocation> &invocation,
-                                                 const std::shared_ptr<ClientMessage> &response) = 0;
-            };
-        }
-    }
+namespace connection {
+class Connection;
 }
 
+namespace protocol {
+class HAZELCAST_API IMessageHandler
+{
+public:
+    virtual ~IMessageHandler() = default;
 
-
-
-
+    virtual void handle_client_message(
+      const std::shared_ptr<spi::impl::ClientInvocation>& invocation,
+      const std::shared_ptr<ClientMessage>& response) = 0;
+};
+} // namespace protocol
+} // namespace client
+} // namespace hazelcast

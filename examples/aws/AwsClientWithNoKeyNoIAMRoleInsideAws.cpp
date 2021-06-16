@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 /**
- * You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since Aws depends on openssl library.
+ * You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since Aws depends on openssl
+ * library.
  *
  * DO NOT FORGET to make sure that openssl is installed.
  *
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config clientConfig;
 
-    // Your instance should be inside AWS and the instance profile should have an instance profile associated for
-    // a valid IAM role. See http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html
-    clientConfig.get_network_config().get_aws_config().set_enabled(true).set_tag_key("aws-test-tag").
-        set_tag_value("aws-tag-value-1").set_inside_aws(true);
-    
+    // Your instance should be inside AWS and the instance profile should have an instance profile
+    // associated for a valid IAM role. See
+    // http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html
+    clientConfig.get_network_config()
+      .get_aws_config()
+      .set_enabled(true)
+      .set_tag_key("aws-test-tag")
+      .set_tag_value("aws-tag-value-1")
+      .set_inside_aws(true);
+
     auto hz = hazelcast::new_client(std::move(clientConfig)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(1, 100).get();
     map->put(2, 200).get();
 

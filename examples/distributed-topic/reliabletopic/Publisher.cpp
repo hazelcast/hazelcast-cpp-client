@@ -15,14 +15,18 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-void publish_with_default_config() {
+void
+publish_with_default_config()
+{
     auto client = hazelcast::new_client().get();
 
     auto topic = client.get_reliable_topic("MyReliableTopic").get();
     topic->publish(std::string("My first message")).get();
 }
 
-void publish_with_non_default_config() {
+void
+publish_with_non_default_config()
+{
     hazelcast::client::client_config clientConfig;
     std::string topicName("MyReliableTopic");
     hazelcast::client::config::reliable_topic_config reliableTopicConfig(topicName);
@@ -35,8 +39,9 @@ void publish_with_non_default_config() {
     topic->publish(std::string("My first message")).get();
 }
 
-
-int main() {
+int
+main()
+{
     publish_with_default_config();
 
     publish_with_non_default_config();
@@ -45,4 +50,3 @@ int main() {
 
     return 0;
 }
-

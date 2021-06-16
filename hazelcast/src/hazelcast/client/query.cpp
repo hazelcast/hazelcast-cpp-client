@@ -34,48 +34,65 @@
 #include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace query {
-            constexpr const char *query_constants::KEY_ATTRIBUTE_NAME;
-            constexpr const char *query_constants::THIS_ATTRIBUTE_NAME;
+namespace client {
+namespace query {
+constexpr const char* query_constants::KEY_ATTRIBUTE_NAME;
+constexpr const char* query_constants::THIS_ATTRIBUTE_NAME;
 
-            base_predicate::base_predicate(hazelcast_client &client) : out_stream(spi::ClientContext(
-                    client).get_serialization_service().new_output_stream()) {}
+base_predicate::base_predicate(hazelcast_client& client)
+  : out_stream(spi::ClientContext(client).get_serialization_service().new_output_stream())
+{}
 
-            named_predicate::named_predicate(hazelcast_client &client, const std::string &attribute_name) : base_predicate(
-                    client) {
-                out_stream.write(attribute_name);
-            }
-
-            instance_of_predicate::instance_of_predicate(hazelcast_client &client, const std::string &java_class_name)
-                    : base_predicate(client) {
-                out_stream.write(java_class_name);
-            }
-
-            sql_predicate::sql_predicate(hazelcast_client &client, const std::string &sql)
-                    : base_predicate(client) {
-                out_stream.write(sql);
-            }
-
-            like_predicate::like_predicate(hazelcast_client &client, const std::string &attribute,
-                                           const std::string &expression) : named_predicate(client, attribute) {
-                out_stream.write(expression);
-            }
-
-            ilike_predicate::ilike_predicate(hazelcast_client &client, const std::string &attribute,
-                                             const std::string &expression) : named_predicate(client, attribute) {
-                out_stream.write(expression);
-            }
-
-            regex_predicate::regex_predicate(hazelcast_client &client, const std::string &attribute,
-                                             const std::string &expression) : named_predicate(client, attribute) {
-                out_stream.write(expression);
-            }
-
-            true_predicate::true_predicate(hazelcast_client &client) : base_predicate(client) {}
-
-            false_predicate::false_predicate(hazelcast_client &client) : base_predicate(client) {}
-        }
-    }
+named_predicate::named_predicate(hazelcast_client& client, const std::string& attribute_name)
+  : base_predicate(client)
+{
+    out_stream.write(attribute_name);
 }
 
+instance_of_predicate::instance_of_predicate(hazelcast_client& client,
+                                             const std::string& java_class_name)
+  : base_predicate(client)
+{
+    out_stream.write(java_class_name);
+}
+
+sql_predicate::sql_predicate(hazelcast_client& client, const std::string& sql)
+  : base_predicate(client)
+{
+    out_stream.write(sql);
+}
+
+like_predicate::like_predicate(hazelcast_client& client,
+                               const std::string& attribute,
+                               const std::string& expression)
+  : named_predicate(client, attribute)
+{
+    out_stream.write(expression);
+}
+
+ilike_predicate::ilike_predicate(hazelcast_client& client,
+                                 const std::string& attribute,
+                                 const std::string& expression)
+  : named_predicate(client, attribute)
+{
+    out_stream.write(expression);
+}
+
+regex_predicate::regex_predicate(hazelcast_client& client,
+                                 const std::string& attribute,
+                                 const std::string& expression)
+  : named_predicate(client, attribute)
+{
+    out_stream.write(expression);
+}
+
+true_predicate::true_predicate(hazelcast_client& client)
+  : base_predicate(client)
+{}
+
+false_predicate::false_predicate(hazelcast_client& client)
+  : base_predicate(client)
+{}
+} // namespace query
+} // namespace client
+} // namespace hazelcast

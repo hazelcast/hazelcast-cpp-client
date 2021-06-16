@@ -19,49 +19,47 @@
 #include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
 #include "hazelcast/util/concurrent/IdleStrategy.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                namespace sequence {
-                    /**
-                     * A {@link CallIdSequence} that provides backpressure by taking
-                     * the number of in-flight operations into account when before creating a new call-id.
-                     * <p>
-                     * It is possible to temporarily create more concurrent invocations than the declared capacity due to:
-                     * <ul>
-                     *     <li>system operations</li>
-                     *     <li>the racy nature of checking if space is available and getting the next sequence. </li>
-                     * </ul>
-                     * The latter cause is not a problem since the capacity is exceeded temporarily and it isn't sustainable.
-                     * So perhaps there are a few threads that at the same time see that the there is space and do a next.
-                     * But any following invocation needs to wait till there is is capacity.
-                     */
-                    class HAZELCAST_API CallIdSequenceWithBackpressure : public AbstractCallIdSequence {
-                    public:
-                        CallIdSequenceWithBackpressure(int32_t max_concurrent_invocations, int64_t backoff_timeout_ms);
+namespace client {
+namespace spi {
+namespace impl {
+namespace sequence {
+/**
+ * A {@link CallIdSequence} that provides backpressure by taking
+ * the number of in-flight operations into account when before creating a new call-id.
+ * <p>
+ * It is possible to temporarily create more concurrent invocations than the declared capacity due
+ * to: <ul> <li>system operations</li> <li>the racy nature of checking if space is available and
+ * getting the next sequence. </li>
+ * </ul>
+ * The latter cause is not a problem since the capacity is exceeded temporarily and it isn't
+ * sustainable. So perhaps there are a few threads that at the same time see that the there is space
+ * and do a next. But any following invocation needs to wait till there is is capacity.
+ */
+class HAZELCAST_API CallIdSequenceWithBackpressure : public AbstractCallIdSequence
+{
+public:
+    CallIdSequenceWithBackpressure(int32_t max_concurrent_invocations, int64_t backoff_timeout_ms);
 
-                    protected:
-                        void handle_no_space_left() override;
+protected:
+    void handle_no_space_left() override;
 
-                    private:
-                        int64_t backoff_timeout_nanos_;
-                        static const int MAX_DELAY_MS = 500;
-                        static const std::unique_ptr<util::concurrent::IdleStrategy> IDLER;
-                    };
-                }
-            }
-        }
-    }
-}
+private:
+    int64_t backoff_timeout_nanos_;
+    static const int MAX_DELAY_MS = 500;
+    static const std::unique_ptr<util::concurrent::IdleStrategy> IDLER;
+};
+} // namespace sequence
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

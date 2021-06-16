@@ -16,7 +16,9 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     // Get an AtomicLong called 'my-atomic-long'
@@ -24,21 +26,22 @@ int main() {
 
     // also present the future continuation capability. you can use sync version as well.
     // Get current value (returns a int64_t)
-    auto future = atomic_counter->get().then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
-        // Prints:
-        // Value: 0
-        std::cout << "Value: " << f.get() << "\n";
+    auto future =
+      atomic_counter->get().then(boost::launch::deferred, [=](boost::future<int64_t> f) {
+          // Prints:
+          // Value: 0
+          std::cout << "Value: " << f.get() << "\n";
 
-        // Increment by 42
-        auto value = atomic_counter->add_and_get(42).get();
-        std::cout << "New value: " << value << "\n";
+          // Increment by 42
+          auto value = atomic_counter->add_and_get(42).get();
+          std::cout << "New value: " << value << "\n";
 
-        // Set to 0 atomically if the current value is 42
-        auto result = atomic_counter->compare_and_set(42, 0).get();
-        std::cout << "result: " << result << "\n";
-        // Prints:
-        // CAS operation result: 1
-    });
+          // Set to 0 atomically if the current value is 42
+          auto result = atomic_counter->compare_and_set(42, 0).get();
+          std::cout << "result: " << result << "\n";
+          // Prints:
+          // CAS operation result: 1
+      });
 
     future.get();
 

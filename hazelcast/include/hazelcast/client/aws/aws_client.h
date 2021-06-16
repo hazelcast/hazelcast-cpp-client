@@ -21,42 +21,43 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/address.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    class logger;
+class logger;
 
-    namespace client {
-        class client_properties;
-        namespace config {
-            class client_aws_config;
-        }
-        namespace aws {
-            class HAZELCAST_API aws_client {
-            public:
-                aws_client(std::chrono::steady_clock::duration timeout, config::client_aws_config &aws_config,
-                           const client_properties &client_properties, logger &lg);
-
-                std::unordered_map<address, address> get_addresses();
-
-            private:
-#ifdef HZ_BUILD_WITH_SSL
-                std::chrono::steady_clock::duration timeout_;
-                config::client_aws_config &aws_config_;
-                std::string endpoint_;
-                logger &logger_;
-                int aws_member_port_;
-#endif // HZ_BUILD_WITH_SSL
-            };
-        }
-    }
+namespace client {
+class client_properties;
+namespace config {
+class client_aws_config;
 }
+namespace aws {
+class HAZELCAST_API aws_client
+{
+public:
+    aws_client(std::chrono::steady_clock::duration timeout,
+               config::client_aws_config& aws_config,
+               const client_properties& client_properties,
+               logger& lg);
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    std::unordered_map<address, address> get_addresses();
+
+private:
+#ifdef HZ_BUILD_WITH_SSL
+    std::chrono::steady_clock::duration timeout_;
+    config::client_aws_config& aws_config_;
+    std::string endpoint_;
+    logger& logger_;
+    int aws_member_port_;
+#endif // HZ_BUILD_WITH_SSL
+};
+} // namespace aws
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
