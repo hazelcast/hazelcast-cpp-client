@@ -17,42 +17,45 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace config {
-            /**
-             * Interface for configuration information about eviction.
-             */
-            enum class HAZELCAST_API eviction_strategy_type {
-                /**
-                 * Sampling based eviction strategy type
-                 */
-                SAMPLING_BASED_EVICTION,
+namespace client {
+namespace config {
+/**
+ * Interface for configuration information about eviction.
+ */
+enum class HAZELCAST_API eviction_strategy_type
+{
+    /**
+     * Sampling based eviction strategy type
+     */
+    SAMPLING_BASED_EVICTION,
 
-                /**
-                 * Default value
-                 */
-                DEFAULT_EVICTION_STRATEGY = SAMPLING_BASED_EVICTION
-            };
-        }
-    }
-}
+    /**
+     * Default value
+     */
+    DEFAULT_EVICTION_STRATEGY = SAMPLING_BASED_EVICTION
+};
+} // namespace config
+} // namespace client
+} // namespace hazelcast
 
 namespace std {
-    template<> struct hash<hazelcast::client::config::eviction_strategy_type> {
-        std::size_t operator()(const hazelcast::client::config::eviction_strategy_type &object) const noexcept {
-            return std::hash<int>{}(static_cast<int>(object));
-        }
-    };
-}
+template<>
+struct hash<hazelcast::client::config::eviction_strategy_type>
+{
+    std::size_t operator()(
+      const hazelcast::client::config::eviction_strategy_type& object) const noexcept
+    {
+        return std::hash<int>{}(static_cast<int>(object));
+    }
+};
+} // namespace std
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

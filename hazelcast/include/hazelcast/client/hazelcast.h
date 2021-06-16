@@ -51,4 +51,3 @@
 #include "hazelcast/client/monitor/near_cache_stats.h"
 #include "hazelcast/client/partition_aware.h"
 #include <hazelcast/client/member_selectors.h>
-

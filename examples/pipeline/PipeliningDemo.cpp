@@ -28,21 +28,28 @@ using namespace hazelcast::util;
  * For the benchmark we compare simple imap::get calls with a pipelined approach.
  */
 
-class PipeliningDemo {
+class PipeliningDemo
+{
 public:
-    PipeliningDemo() : client_(hazelcast::new_client().get()), map_(client_.get_map("map").get()), gen_(rd_()) {}
+    PipeliningDemo()
+      : client_(hazelcast::new_client().get())
+      , map_(client_.get_map("map").get())
+      , gen_(rd_())
+    {}
 
-    void init() {
+    void init()
+    {
         for (int l = 0; l < keyDomain; l++) {
             map_->put(l, std::to_string(l)).get();
         }
     }
 
-    void pipelined(int depth) {
+    void pipelined(int depth)
+    {
         cout << "Starting pipelined with depth:" << depth << endl;
         int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
-            std::shared_ptr<pipelining<string> > p = pipelining<string>::create(depth);
+            std::shared_ptr<pipelining<string>> p = pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
                 int key = dist_(gen_) % keyDomain;
                 p->add(map_->get<int, std::string>(key));
@@ -51,15 +58,18 @@ public:
             // wait for completion
             auto results = p->results();
             // and verification we got the appropriate number of results.
-            if ((int) results.size() != getsPerIteration) {
-                throw hazelcast::client::exception::illegal_state("pipelined", "Incorrect number of results");
+            if ((int)results.size() != getsPerIteration) {
+                throw hazelcast::client::exception::illegal_state("pipelined",
+                                                                  "Incorrect number of results");
             }
         }
         int64_t endMs = current_time_millis();
-        cout << "Pipelined with depth:" << depth << ", duration:" << (endMs - startMs) << " ms" << endl;
+        cout << "Pipelined with depth:" << depth << ", duration:" << (endMs - startMs) << " ms"
+             << endl;
     }
 
-    void non_pipelined() {
+    void non_pipelined()
+    {
         cout << "Starting non pipelined" << endl;
         int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
@@ -83,7 +93,9 @@ private:
     std::uniform_int_distribution<int> dist_;
 };
 
-int main() {
+int
+main()
+{
     PipeliningDemo main;
     main.init();
     main.pipelined(5);

@@ -18,47 +18,48 @@
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/proxy/SerializingProxy.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace connection {
-            class Connection;
-        }
-
-        namespace proxy {
-            class HAZELCAST_API TransactionalObject : public proxy::SerializingProxy {
-            public:
-                TransactionalObject(const std::string &service_name, const std::string &object_name,
-                                    txn::TransactionProxy &context);
-
-                virtual ~TransactionalObject();
-
-                const std::string &get_service_name();
-
-                const std::string &get_name();
-
-                boost::future<void> destroy();
-
-            protected:
-                virtual void on_destroy();
-
-                boost::uuids::uuid get_transaction_id() const;
-
-                std::chrono::milliseconds get_timeout() const;
-
-                const std::string service_name_;
-                const std::string name_;
-                txn::TransactionProxy &context_;
-            };
-        }
-    }
+namespace client {
+namespace connection {
+class Connection;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+namespace proxy {
+class HAZELCAST_API TransactionalObject : public proxy::SerializingProxy
+{
+public:
+    TransactionalObject(const std::string& service_name,
+                        const std::string& object_name,
+                        txn::TransactionProxy& context);
+
+    virtual ~TransactionalObject();
+
+    const std::string& get_service_name();
+
+    const std::string& get_name();
+
+    boost::future<void> destroy();
+
+protected:
+    virtual void on_destroy();
+
+    boost::uuids::uuid get_transaction_id() const;
+
+    std::chrono::milliseconds get_timeout() const;
+
+    const std::string service_name_;
+    const std::string name_;
+    txn::TransactionProxy& context_;
+};
+} // namespace proxy
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

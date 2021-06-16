@@ -21,47 +21,47 @@
 #include "hazelcast/client/config/cloud_config.h"
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                namespace discovery {
-                    class HAZELCAST_API cloud_discovery {
-                    public:
-                        static constexpr const char *CLOUD_URL_PATH = "/cluster/discovery?token=";
-                        static constexpr const char *PRIVATE_ADDRESS_PROPERTY = "private-address";
-                        static constexpr const char *PUBLIC_ADDRESS_PROPERTY = "public-address";
+namespace client {
+namespace spi {
+namespace impl {
+namespace discovery {
+class HAZELCAST_API cloud_discovery
+{
+public:
+    static constexpr const char* CLOUD_URL_PATH = "/cluster/discovery?token=";
+    static constexpr const char* PRIVATE_ADDRESS_PROPERTY = "private-address";
+    static constexpr const char* PUBLIC_ADDRESS_PROPERTY = "public-address";
 
-                        cloud_discovery(config::cloud_config &config, std::string cloud_base_url,
-                                        std::chrono::steady_clock::duration timeout);
+    cloud_discovery(config::cloud_config& config,
+                    std::string cloud_base_url,
+                    std::chrono::steady_clock::duration timeout);
 
-                        std::unordered_map<address, address> get_addresses();
+    std::unordered_map<address, address> get_addresses();
 
-                        // This method is public for testing
-                        static std::unordered_map<address, address> parse_json_response(std::istream &conn_stream);
+    // This method is public for testing
+    static std::unordered_map<address, address> parse_json_response(std::istream& conn_stream);
 
-                    private:
+private:
 #ifdef HZ_BUILD_WITH_SSL
-                        config::cloud_config &cloud_config_;
-                        std::string cloud_base_url_;
-                        std::chrono::steady_clock::duration timeout_;
+    config::cloud_config& cloud_config_;
+    std::string cloud_base_url_;
+    std::chrono::steady_clock::duration timeout_;
 #endif // HZ_BUILD_WITH_SSL
 
-                        static address create_address(const std::string &hostname, int default_port);
-                    };
-                }
-            }
-        }
-    }
-}
+    static address create_address(const std::string& hostname, int default_port);
+};
+} // namespace discovery
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

@@ -17,35 +17,35 @@
 
 #include "hazelcast/client/endpoint.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        /**
-         * The Client interface allows to get information about
-         * a connected client's socket address, type and UUID.
-         *
-         */
-        class HAZELCAST_API local_endpoint : public endpoint {
-        public:
-            local_endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address, std::string name,
-                           std::unordered_set<std::string> labels);
+namespace client {
+/**
+ * The Client interface allows to get information about
+ * a connected client's socket address, type and UUID.
+ *
+ */
+class HAZELCAST_API local_endpoint : public endpoint
+{
+public:
+    local_endpoint(boost::uuids::uuid uuid,
+                   boost::optional<address> socket_address,
+                   std::string name,
+                   std::unordered_set<std::string> labels);
 
-            const std::string &get_name() const;
+    const std::string& get_name() const;
 
-        private:
-            std::string name_;
-            std::unordered_set<std::string> labels_;
-        };
-    }
-}
+private:
+    std::string name_;
+    std::unordered_set<std::string> labels_;
+};
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

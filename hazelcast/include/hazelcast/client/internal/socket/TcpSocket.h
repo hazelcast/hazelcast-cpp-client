@@ -19,29 +19,29 @@
 
 #include "hazelcast/client/internal/socket/BaseSocket.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace socket {
-                class HAZELCAST_API TcpSocket : public BaseSocket<boost::asio::ip::tcp::socket> {
-                public:
-                    TcpSocket(boost::asio::io_context &io, const address &address,
-                              client::config::socket_options &socket_options,
-                              std::chrono::milliseconds &connect_timeout_in_millis,
-                              boost::asio::ip::tcp::resolver &resolver);
-                };
-            }
-        }
-    }
-}
+namespace client {
+namespace internal {
+namespace socket {
+class HAZELCAST_API TcpSocket : public BaseSocket<boost::asio::ip::tcp::socket>
+{
+public:
+    TcpSocket(boost::asio::io_context& io,
+              const address& address,
+              client::config::socket_options& socket_options,
+              std::chrono::milliseconds& connect_timeout_in_millis,
+              boost::asio::ip::tcp::resolver& resolver);
+};
+} // namespace socket
+} // namespace internal
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

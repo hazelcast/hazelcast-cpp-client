@@ -18,61 +18,65 @@
 #include "hazelcast/client/proxy/TransactionalQueueImpl.h"
 
 namespace hazelcast {
-    namespace client {
-        /**
-        * Transactional implementation of iqueue.
-        *
-        * @see iqueue
-        */
-        class HAZELCAST_API transactional_queue : public proxy::TransactionalQueueImpl {
-            friend class transaction_context;
-        public:
-            /**
-            * Transactional implementation of iqueue::offer(const E &e)
-            *
-            * @see iqueue::offer(const E &e)
-            */
-            template<typename E>
-            boost::future<bool> offer(const E &e) {
-                return offer(e, std::chrono::milliseconds::zero());
-            }
+namespace client {
+/**
+ * Transactional implementation of iqueue.
+ *
+ * @see iqueue
+ */
+class HAZELCAST_API transactional_queue : public proxy::TransactionalQueueImpl
+{
+    friend class transaction_context;
 
-            /**
-            * Transactional implementation of iqueue::offer(const E &e, std::chrono::milliseconds timeout)
-            *
-            * @see iqueue::offer(const E &e, std::chrono::milliseconds timeout)
-            */
-            template<typename E>
-            boost::future<bool> offer(const E &e, std::chrono::milliseconds timeout) {
-                return proxy::TransactionalQueueImpl::offer(to_data(e), timeout);
-            }
-
-            /**
-            * Transactional implementation of iqueue::poll()
-            *
-            * @see iqueue::poll()
-            */
-            template<typename E>
-            boost::future<boost::optional<E>> poll() {
-                return poll<E>(std::chrono::milliseconds::zero());
-            }
-
-            /**
-            * Transactional implementation of iqueue::poll(std::chrono::milliseconds timeout)
-            *
-            * @see iqueue::poll(std::chrono::milliseconds timeout)
-            */
-            template<typename E>
-            boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout) {
-                return to_object<E>(proxy::TransactionalQueueImpl::poll_data(timeout));
-            }
-
-        private:
-            transactional_queue(const std::string &name, txn::TransactionProxy &transaction_proxy)
-                    : proxy::TransactionalQueueImpl(name, transaction_proxy) {
-
-            }
-        };
+public:
+    /**
+     * Transactional implementation of iqueue::offer(const E &e)
+     *
+     * @see iqueue::offer(const E &e)
+     */
+    template<typename E>
+    boost::future<bool> offer(const E& e)
+    {
+        return offer(e, std::chrono::milliseconds::zero());
     }
-}
 
+    /**
+     * Transactional implementation of iqueue::offer(const E &e, std::chrono::milliseconds timeout)
+     *
+     * @see iqueue::offer(const E &e, std::chrono::milliseconds timeout)
+     */
+    template<typename E>
+    boost::future<bool> offer(const E& e, std::chrono::milliseconds timeout)
+    {
+        return proxy::TransactionalQueueImpl::offer(to_data(e), timeout);
+    }
+
+    /**
+     * Transactional implementation of iqueue::poll()
+     *
+     * @see iqueue::poll()
+     */
+    template<typename E>
+    boost::future<boost::optional<E>> poll()
+    {
+        return poll<E>(std::chrono::milliseconds::zero());
+    }
+
+    /**
+     * Transactional implementation of iqueue::poll(std::chrono::milliseconds timeout)
+     *
+     * @see iqueue::poll(std::chrono::milliseconds timeout)
+     */
+    template<typename E>
+    boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout)
+    {
+        return to_object<E>(proxy::TransactionalQueueImpl::poll_data(timeout));
+    }
+
+private:
+    transactional_queue(const std::string& name, txn::TransactionProxy& transaction_proxy)
+      : proxy::TransactionalQueueImpl(name, transaction_proxy)
+    {}
+};
+} // namespace client
+} // namespace hazelcast

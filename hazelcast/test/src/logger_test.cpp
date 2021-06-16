@@ -9,7 +9,8 @@
 
 using hazelcast::logger;
 
-TEST(log_level_test, test_ordering) {
+TEST(log_level_test, test_ordering)
+{
     ASSERT_LT(logger::level::all, logger::level::finest);
     ASSERT_LT(logger::level::finest, logger::level::finer);
     ASSERT_LT(logger::level::finer, logger::level::fine);
@@ -19,7 +20,8 @@ TEST(log_level_test, test_ordering) {
     ASSERT_LT(logger::level::severe, logger::level::off);
 }
 
-TEST(log_level_test, test_output_operator) {
+TEST(log_level_test, test_output_operator)
+{
     auto to_str = [](logger::level lvl) {
         std::ostringstream os;
         os << lvl;
@@ -35,7 +37,8 @@ TEST(log_level_test, test_output_operator) {
     ASSERT_EQ("123", to_str(static_cast<logger::level>(123)));
 }
 
-TEST(logger_test, test_enabled) {
+TEST(logger_test, test_enabled)
+{
     std::ostringstream os;
 
     logger lg{ "", "", logger::level::info, nullptr };
@@ -48,7 +51,8 @@ TEST(logger_test, test_enabled) {
     ASSERT_TRUE(lg.enabled(logger::level::severe));
 }
 
-TEST(logger_test, test_enabled_when_off) {
+TEST(logger_test, test_enabled_when_off)
+{
     std::ostringstream os;
 
     logger lg{ "", "", logger::level::off, nullptr };
@@ -61,19 +65,20 @@ TEST(logger_test, test_enabled_when_off) {
     ASSERT_FALSE(lg.enabled(logger::level::severe));
 }
 
-TEST(logger_test, test_log) {
-    struct {
+TEST(logger_test, test_log)
+{
+    struct
+    {
         std::string instance_name;
         std::string cluster_name;
         logger::level level;
         std::string msg;
     } results;
 
-    auto mock_handler = [&results](const std::string &instance_name,
-                                   const std::string &cluster_name,
-                                   logger::level level, 
-                                   const std::string &msg) 
-    {
+    auto mock_handler = [&results](const std::string& instance_name,
+                                   const std::string& cluster_name,
+                                   logger::level level,
+                                   const std::string& msg) {
         results.instance_name = instance_name;
         results.cluster_name = cluster_name;
         results.level = level;
@@ -90,22 +95,23 @@ TEST(logger_test, test_log) {
     ASSERT_EQ("message", results.msg);
 }
 
-class default_log_handler_test : public ::testing::Test {
+class default_log_handler_test : public ::testing::Test
+{
 protected:
-    void SetUp() override {
+    void SetUp() override
+    {
         old_buffer_ = std::cout.rdbuf();
         std::cout.rdbuf(sstrm_.rdbuf());
     }
 
-    void TearDown() override {
-        std::cout.rdbuf(old_buffer_);
-    }
+    void TearDown() override { std::cout.rdbuf(old_buffer_); }
 
-    std::streambuf *old_buffer_;
+    std::streambuf* old_buffer_;
     std::stringstream sstrm_;
 };
 
-TEST_F(default_log_handler_test, test_format) {
+TEST_F(default_log_handler_test, test_format)
+{
     logger::default_handler("instance0", "cluster0", logger::level::warning, "message");
 
     int day, mon, year, hr, mn, sec, ms;
@@ -113,7 +119,18 @@ TEST_F(default_log_handler_test, test_format) {
 
     int read = std::sscanf(sstrm_.str().c_str(),
                            "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s\n",
-                           &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, msg);
+                           &day,
+                           &mon,
+                           &year,
+                           &hr,
+                           &mn,
+                           &sec,
+                           &ms,
+                           lev,
+                           tid,
+                           ins_grp,
+                           ver,
+                           msg);
 
     ASSERT_EQ(12, read);
 
@@ -133,16 +150,17 @@ TEST_F(default_log_handler_test, test_format) {
     ASSERT_EQ("message", std::string(msg));
 }
 
-TEST(log_macro_test, test_log_when_enabled) {
-    struct mock_logger {
+TEST(log_macro_test, test_log_when_enabled)
+{
+    struct mock_logger
+    {
         bool called{ false };
         logger::level level;
         std::string msg;
 
-        bool enabled(logger::level) {
-            return true;
-        }
-        void log(logger::level l, const std::string &m) {
+        bool enabled(logger::level) { return true; }
+        void log(logger::level l, const std::string& m)
+        {
             called = true;
             this->level = l;
             this->msg = m;
@@ -151,23 +169,21 @@ TEST(log_macro_test, test_log_when_enabled) {
 
     mock_logger lg;
 
-    HZ_LOG(lg, warning, "message"); 
+    HZ_LOG(lg, warning, "message");
 
     ASSERT_TRUE(lg.called);
     ASSERT_EQ(logger::level::warning, lg.level);
     ASSERT_EQ("message", lg.msg);
 }
 
-TEST(log_macro_test, test_log_when_disabled) {
-    struct mock_logger {
+TEST(log_macro_test, test_log_when_disabled)
+{
+    struct mock_logger
+    {
         bool called{ false };
 
-        bool enabled(logger::level level) {
-            return false;
-        }
-        void log(...) {
-            called = true;
-        }
+        bool enabled(logger::level level) { return false; }
+        void log(...) { called = true; }
     };
 
     mock_logger lg;

@@ -19,31 +19,28 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            HAZELCAST_API enum ResponseMessageConst {
-                //VOID = 100,
-                BOOLEAN = 101,
-                INTEGER = 102,
-                LONG = 103,
-                STRING = 104,
-                DATA = 105,
-                LIST_DATA = 106,
-                AUTHENTICATION = 107,
-                PARTITIONS = 108,
-                EXCEPTION = 109,
-                SET_DISTRIBUTED_OBJECT = 110,
-                ENTRY_VIEW = 111,
-                JOB_PROCESS_INFO = 112,
-                SET_DATA = 113,
-                SET_ENTRY = 114,
-                READ_RESULT_SET = 115,
-                CACHE_KEY_ITERATOR_RESULT = 116,
-                LIST_ENTRY = 117
-            };
-        }
-    }
+namespace client {
+namespace protocol {
+HAZELCAST_API enum ResponseMessageConst {
+    // VOID = 100,
+    BOOLEAN = 101,
+    INTEGER = 102,
+    LONG = 103,
+    STRING = 104,
+    DATA = 105,
+    LIST_DATA = 106,
+    AUTHENTICATION = 107,
+    PARTITIONS = 108,
+    EXCEPTION = 109,
+    SET_DISTRIBUTED_OBJECT = 110,
+    ENTRY_VIEW = 111,
+    JOB_PROCESS_INFO = 112,
+    SET_DATA = 113,
+    SET_ENTRY = 114,
+    READ_RESULT_SET = 115,
+    CACHE_KEY_ITERATOR_RESULT = 116,
+    LIST_ENTRY = 117
+};
 }
-
-
-
+} // namespace client
+} // namespace hazelcast

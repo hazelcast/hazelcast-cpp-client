@@ -22,47 +22,48 @@
 #include "hazelcast/client/internal/eviction/EvictableStore.h"
 #include "hazelcast/util/Iterable.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                namespace impl {
-                    namespace strategy {
-                        namespace sampling {
-                            /**
-                             * Interface for sampleable store implementations that holds {@link Evictable} entries to evict.
-                             */
-                            template <typename K, typename V, typename A, typename E>
-                            class SampleableEvictableStore : public EvictableStore<K, V, A, E> {
-                                /**
-                                 * The sample method is used to sample a number of entries (defined by the samples parameter) from
-                                 * the internal data structure. This method should be executed in a constant time to deliver predictable
-                                 * timing results of the eviction system.
-                                 *
-                                 * @param sampleCount Entry count to be sampled
-                                 *
-                                 * @return Multiple {@link EvictionCandidate} to be evicted
-                                 */
-                                std::unique_ptr<util::Iterable<EvictionCandidate<K, V, A, E> > > sample(int32_t sample_count) const {
-                                    assert(0);
-                                    return std::unique_ptr<util::Iterable<EvictionCandidate<K, V, A, E> > >();
-                                }
-                            };
-                        }
-                    }
-                }
-            }
-        }
+namespace client {
+namespace internal {
+namespace eviction {
+namespace impl {
+namespace strategy {
+namespace sampling {
+/**
+ * Interface for sampleable store implementations that holds {@link Evictable} entries to evict.
+ */
+template<typename K, typename V, typename A, typename E>
+class SampleableEvictableStore : public EvictableStore<K, V, A, E>
+{
+    /**
+     * The sample method is used to sample a number of entries (defined by the samples parameter)
+     * from the internal data structure. This method should be executed in a constant time to
+     * deliver predictable timing results of the eviction system.
+     *
+     * @param sampleCount Entry count to be sampled
+     *
+     * @return Multiple {@link EvictionCandidate} to be evicted
+     */
+    std::unique_ptr<util::Iterable<EvictionCandidate<K, V, A, E>>> sample(
+      int32_t sample_count) const
+    {
+        assert(0);
+        return std::unique_ptr<util::Iterable<EvictionCandidate<K, V, A, E>>>();
     }
 };
+} // namespace sampling
+} // namespace strategy
+} // namespace impl
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
-
+#endif

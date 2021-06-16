@@ -15,8 +15,11 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main(int argc, char **argv) {
-    constexpr const char *USAGE = "USAGE: connect-cloud <Cluster group name> <Cluster discovery token>";
+int
+main(int argc, char** argv)
+{
+    constexpr const char* USAGE =
+      "USAGE: connect-cloud <Cluster group name> <Cluster discovery token>";
     if (argc != 3) {
         std::cerr << USAGE << std::endl;
         return -1;
@@ -27,7 +30,7 @@ int main(int argc, char **argv) {
 
     hazelcast::client::client_config config;
     config.set_cluster_name(cluster_name);
-    auto &cloud_configuration = config.get_network_config().get_cloud_config();
+    auto& cloud_configuration = config.get_network_config().get_cloud_config();
     cloud_configuration.enabled = true;
     cloud_configuration.discovery_token = cloud_token;
     auto hz = hazelcast::new_client(std::move(config)).get();

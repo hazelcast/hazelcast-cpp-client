@@ -35,33 +35,42 @@
 
 using namespace hazelcast::client;
 
-static auto client{hazelcast::new_client().get()};
+static auto client{ hazelcast::new_client().get() };
 static auto bm_map = client.get_map("map_put").get();
 
-static void map_put(benchmark::State &state) {
+static void
+map_put(benchmark::State& state)
+{
     int number_of_puts = 0;
     for (auto _ : state) {
         auto key = rand() % 10000;
         bm_map->put(key, key).get();
-        state.counters["Put Rate"] = benchmark::Counter(++number_of_puts, benchmark::Counter::kIsRate);
+        state.counters["Put Rate"] =
+          benchmark::Counter(++number_of_puts, benchmark::Counter::kIsRate);
     }
 }
 
-static void map_get(benchmark::State &state) {
+static void
+map_get(benchmark::State& state)
+{
     int number_of_puts = 0;
     for (auto _ : state) {
         auto key = rand() % 10000;
         bm_map->get<int, int>(key).get();
-        state.counters["Get Rate"] = benchmark::Counter(++number_of_puts, benchmark::Counter::kIsRate);
+        state.counters["Get Rate"] =
+          benchmark::Counter(++number_of_puts, benchmark::Counter::kIsRate);
     }
 }
 
-static void map_remove(benchmark::State &state) {
+static void
+map_remove(benchmark::State& state)
+{
     int number_of_puts = 0;
     for (auto _ : state) {
         auto key = rand() % 10000;
         bm_map->remove<int, int>(key).get();
-        state.counters["Remove Rate"] = benchmark::Counter(++number_of_puts, benchmark::Counter::kIsRate);
+        state.counters["Remove Rate"] =
+          benchmark::Counter(++number_of_puts, benchmark::Counter::kIsRate);
     }
 }
 

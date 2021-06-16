@@ -17,44 +17,48 @@
 
 using namespace hazelcast::client;
 
-struct PortableSerializableSample {
+struct PortableSerializableSample
+{
     std::string name;
     int32_t id;
     int64_t last_order;
 };
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<PortableSerializableSample> : portable_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<PortableSerializableSample> : portable_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
 
-                static int32_t get_class_id() noexcept {
-                    return 1;
-                }
+    static int32_t get_class_id() noexcept { return 1; }
 
-                static void write_portable(const PortableSerializableSample &object,
-                                          hazelcast::client::serialization::portable_writer &out) {
-                    out.write("name", object.name);
-                    out.write("id", object.id);
-                    out.write("lastOrder", object.last_order);
-                }
-
-                static PortableSerializableSample read_portable(hazelcast::client::serialization::portable_reader &in) {
-                    return PortableSerializableSample{in.read<std::string>("name"), in.read<int32_t>("id"),
-                                                      in.read<int64_t>("lastOrder")};
-                }
-            };
-        }
+    static void write_portable(const PortableSerializableSample& object,
+                               hazelcast::client::serialization::portable_writer& out)
+    {
+        out.write("name", object.name);
+        out.write("id", object.id);
+        out.write("lastOrder", object.last_order);
     }
-}
 
-int main() {
+    static PortableSerializableSample read_portable(
+      hazelcast::client::serialization::portable_reader& in)
+    {
+        return PortableSerializableSample{ in.read<std::string>("name"),
+                                           in.read<int32_t>("id"),
+                                           in.read<int64_t>("lastOrder") };
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
-    //PortableSerializableSample can be used here
+    // PortableSerializableSample can be used here
     hz.shutdown().get();
 
     return 0;

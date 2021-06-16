@@ -18,49 +18,50 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace client {
-        /**
-         * Event to be fired when lifecycle states are changed.
-         *
-         *      enum LifeCycleState {
-         *          STARTING,
-         *          STARTED,
-         *          SHUTTING_DOWN,
-         *          SHUTDOWN,
-         *          CLIENT_CONNECTED,
-         *          CLIENT_DISCONNECTED
-         *      };
-         *
-         * \see HazelcastInstance::getLifecycleService
-         * \see LifecycleService::addlifecycle_listener
-         */
-        class HAZELCAST_API lifecycle_event {
-        public:
-            /**
-             * State enum.
-             */
-            enum lifecycle_state {
-                STARTING,
-                STARTED,
-                SHUTTING_DOWN,
-                SHUTDOWN,
-                CLIENT_CONNECTED,
-                CLIENT_DISCONNECTED
-            };
+namespace client {
+/**
+ * Event to be fired when lifecycle states are changed.
+ *
+ *      enum LifeCycleState {
+ *          STARTING,
+ *          STARTED,
+ *          SHUTTING_DOWN,
+ *          SHUTDOWN,
+ *          CLIENT_CONNECTED,
+ *          CLIENT_DISCONNECTED
+ *      };
+ *
+ * \see HazelcastInstance::getLifecycleService
+ * \see LifecycleService::addlifecycle_listener
+ */
+class HAZELCAST_API lifecycle_event
+{
+public:
+    /**
+     * State enum.
+     */
+    enum lifecycle_state
+    {
+        STARTING,
+        STARTED,
+        SHUTTING_DOWN,
+        SHUTDOWN,
+        CLIENT_CONNECTED,
+        CLIENT_DISCONNECTED
+    };
 
-            /**
-             * Constructor
-             */
-            lifecycle_event(lifecycle_state state);
+    /**
+     * Constructor
+     */
+    lifecycle_event(lifecycle_state state);
 
-            /**
-             * @return State;
-             */
-            lifecycle_state get_state() const;
+    /**
+     * @return State;
+     */
+    lifecycle_state get_state() const;
 
-        private:
-            lifecycle_state state_;
-        };
-    }
-}
-
+private:
+    lifecycle_state state_;
+};
+} // namespace client
+} // namespace hazelcast

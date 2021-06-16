@@ -22,27 +22,28 @@
 #include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/lifecycle_event.h>
 
-hazelcast::client::lifecycle_listener make_connection_listener(std::promise<void> &connected, std::promise<void> &disconnected) {
+hazelcast::client::lifecycle_listener
+make_connection_listener(std::promise<void>& connected, std::promise<void>& disconnected)
+{
     return hazelcast::client::lifecycle_listener()
-        .on_connected([&connected](){
-            connected.set_value();
-        })
-        .on_disconnected([&disconnected](){
-            disconnected.set_value();
-        });
+      .on_connected([&connected]() { connected.set_value(); })
+      .on_disconnected([&disconnected]() { disconnected.set_value(); });
 }
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
 
     /**
-     * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
-     * custom implementations may ignore it if configured.
-     * default value is {@link ReconnectMode#ON}
+     * How a client reconnect to cluster after a disconnect can be configured. This parameter is
+     * used by default strategy and custom implementations may ignore it if configured. default
+     * value is {@link ReconnectMode#ON}
      *
      * This example forces client to reconnect to the cluster in an async manner.
      */
-    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::client_connection_strategy_config::ASYNC);
+    config.get_connection_strategy_config().set_reconnect_mode(
+      hazelcast::client::config::client_connection_strategy_config::ASYNC);
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
@@ -60,7 +61,9 @@ int main() {
 
     auto connection_future = connected.get_future();
     if (connection_future.wait_for(std::chrono::seconds(10)) == std::future_status::ready) {
-        std::cout << "The client is connected to the cluster within 10 seconds after disconnection as expected." << std::endl;
+        std::cout << "The client is connected to the cluster within 10 seconds after disconnection "
+                     "as expected."
+                  << std::endl;
     }
 
     hz.shutdown().get();
@@ -68,4 +71,3 @@ int main() {
 
     return 0;
 }
-

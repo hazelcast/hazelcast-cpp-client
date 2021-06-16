@@ -16,7 +16,9 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     // Get a latch called 'my-latch'
@@ -32,7 +34,7 @@ int main() {
     // Prints:
     // Count: 1
     // Bring the count down to zero after 10ms
-    auto f = std::async([=] () {
+    auto f = std::async([=]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         latch->count_down().get();
     });

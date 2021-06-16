@@ -20,43 +20,49 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/topic/listener.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace topic {
-            namespace impl {
-                class TopicEventHandlerImpl : public protocol::codec::topic_addmessagelistener_handler {
-                public:
-                    TopicEventHandlerImpl(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
-                                          serialization::pimpl::SerializationService &serialization_service,
-                                          listener &&message_listener)
-                            :instance_name_(instance_name), cluster_service_(cluster_service),
-                            serialization_service_(serialization_service), listener_(std::move(message_listener)) {}
+namespace client {
+namespace topic {
+namespace impl {
+class TopicEventHandlerImpl : public protocol::codec::topic_addmessagelistener_handler
+{
+public:
+    TopicEventHandlerImpl(const std::string& instance_name,
+                          spi::impl::ClientClusterServiceImpl& cluster_service,
+                          serialization::pimpl::SerializationService& serialization_service,
+                          listener&& message_listener)
+      : instance_name_(instance_name)
+      , cluster_service_(cluster_service)
+      , serialization_service_(serialization_service)
+      , listener_(std::move(message_listener))
+    {}
 
-                    void handle_topic(serialization::pimpl::data const &item, int64_t publish_time,
-                                      boost::uuids::uuid uuid) override {
-                        listener_.received_(message(instance_name_, typed_data(std::move(item), serialization_service_),
-                                                    publish_time,
-                                                    cluster_service_.get_member(uuid)));
-                    }
-                private:
-                    std::string instance_name_;
-                    spi::impl::ClientClusterServiceImpl &cluster_service_;
-                    serialization::pimpl::SerializationService &serialization_service_;
-                    listener listener_;
-                };
-            }
-        }
+    void handle_topic(serialization::pimpl::data const& item,
+                      int64_t publish_time,
+                      boost::uuids::uuid uuid) override
+    {
+        listener_.received_(message(instance_name_,
+                                    typed_data(std::move(item), serialization_service_),
+                                    publish_time,
+                                    cluster_service_.get_member(uuid)));
     }
-}
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+private:
+    std::string instance_name_;
+    spi::impl::ClientClusterServiceImpl& cluster_service_;
+    serialization::pimpl::SerializationService& serialization_service_;
+    listener listener_;
+};
+} // namespace impl
+} // namespace topic
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

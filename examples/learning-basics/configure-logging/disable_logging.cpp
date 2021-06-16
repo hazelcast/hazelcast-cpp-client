@@ -16,8 +16,9 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
 
     // Setting the log level to hazelcast::logger::level::off

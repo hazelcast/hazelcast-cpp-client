@@ -16,8 +16,9 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
 
     config.get_logger_config().level(hazelcast::logger::level::finest);

@@ -17,45 +17,44 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace util {
-        namespace concurrent {
-            class HAZELCAST_API Cancellable {
-            public:
-                /**
-                 * Attempts to cancel execution of this task.  This attempt will
-                 * fail if the task has already completed, has already been cancelled,
-                 * or could not be cancelled for some other reason.
-                 *
-                 * <p>After this method returns, subsequent calls to {@link #isCancelled}
-                 * will always return {@code true} if this method returned {@code true}.
-                 *
-                 *
-                 * @return {@code false} if the task could not be cancelled,
-                 * typically because it has already completed normally;
-                 * {@code true} otherwise
-                 */
-                virtual bool cancel() = 0;
+namespace util {
+namespace concurrent {
+class HAZELCAST_API Cancellable
+{
+public:
+    /**
+     * Attempts to cancel execution of this task.  This attempt will
+     * fail if the task has already completed, has already been cancelled,
+     * or could not be cancelled for some other reason.
+     *
+     * <p>After this method returns, subsequent calls to {@link #isCancelled}
+     * will always return {@code true} if this method returned {@code true}.
+     *
+     *
+     * @return {@code false} if the task could not be cancelled,
+     * typically because it has already completed normally;
+     * {@code true} otherwise
+     */
+    virtual bool cancel() = 0;
 
-                /**
-                 * Returns {@code true} if this task was cancelled before it completed
-                 * normally.
-                 *
-                 * @return {@code true} if this task was cancelled before it completed
-                 */
-                virtual bool is_cancelled() = 0;
-            };
-        }
-    }
-}
+    /**
+     * Returns {@code true} if this task was cancelled before it completed
+     * normally.
+     *
+     * @return {@code true} if this task was cancelled before it completed
+     */
+    virtual bool is_cancelled() = 0;
+};
+} // namespace concurrent
+} // namespace util
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

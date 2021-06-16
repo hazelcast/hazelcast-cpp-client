@@ -19,73 +19,73 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            namespace pimpl {
-                class data;
-            }
-        }
-
-        namespace map {
-            namespace impl {
-                namespace nearcache {
-                    /**
-                     * Used to assign a {@link STATE} to a key.
-                     *
-                     * That {@link STATE} is used when deciding whether or not a key can be puttable to a Near Cache.
-                     * Because there is a possibility that an invalidation for a key can be received before putting that
-                     * key into Near Cache, in that case, key should not be put into Near Cache.
-                     */
-                    class HAZELCAST_API KeyStateMarker {
-                    public:
-                        virtual ~KeyStateMarker() = default;
-
-                        virtual bool try_mark(const serialization::pimpl::data &key) = 0;
-
-                        virtual bool try_unmark(const serialization::pimpl::data &key) = 0;
-
-                        virtual bool try_remove(const serialization::pimpl::data &key) = 0;
-
-                        virtual void force_unmark(const serialization::pimpl::data &key) = 0;
-
-                        virtual void init() = 0;
-
-                        enum state {
-                            UNMARKED,
-                            MARKED,
-                            REMOVED
-                        };
-
-                        static const std::unique_ptr<KeyStateMarker> TRUE_MARKER;
-                    };
-
-                    class HAZELCAST_API TrueMarkerImpl : public KeyStateMarker {
-                    public:
-                        bool try_mark(const serialization::pimpl::data &key) override;
-
-                        bool try_unmark(const serialization::pimpl::data &key) override;
-
-                        bool try_remove(const serialization::pimpl::data &key) override;
-
-                        void force_unmark(const serialization::pimpl::data &key) override;
-
-                        void init() override;
-                    };
-                }
-            }
-        }
-    }
+namespace client {
+namespace serialization {
+namespace pimpl {
+class data;
 }
+} // namespace serialization
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+namespace map {
+namespace impl {
+namespace nearcache {
+/**
+ * Used to assign a {@link STATE} to a key.
+ *
+ * That {@link STATE} is used when deciding whether or not a key can be puttable to a Near Cache.
+ * Because there is a possibility that an invalidation for a key can be received before putting that
+ * key into Near Cache, in that case, key should not be put into Near Cache.
+ */
+class HAZELCAST_API KeyStateMarker
+{
+public:
+    virtual ~KeyStateMarker() = default;
+
+    virtual bool try_mark(const serialization::pimpl::data& key) = 0;
+
+    virtual bool try_unmark(const serialization::pimpl::data& key) = 0;
+
+    virtual bool try_remove(const serialization::pimpl::data& key) = 0;
+
+    virtual void force_unmark(const serialization::pimpl::data& key) = 0;
+
+    virtual void init() = 0;
+
+    enum state
+    {
+        UNMARKED,
+        MARKED,
+        REMOVED
+    };
+
+    static const std::unique_ptr<KeyStateMarker> TRUE_MARKER;
+};
+
+class HAZELCAST_API TrueMarkerImpl : public KeyStateMarker
+{
+public:
+    bool try_mark(const serialization::pimpl::data& key) override;
+
+    bool try_unmark(const serialization::pimpl::data& key) override;
+
+    bool try_remove(const serialization::pimpl::data& key) override;
+
+    void force_unmark(const serialization::pimpl::data& key) override;
+
+    void init() override;
+};
+} // namespace nearcache
+} // namespace impl
+} // namespace map
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

@@ -21,34 +21,32 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            class HAZELCAST_API Principal {
-            public:
-                Principal(boost::uuids::uuid uuid);
+namespace client {
+namespace protocol {
+class HAZELCAST_API Principal
+{
+public:
+    Principal(boost::uuids::uuid uuid);
 
-                boost::uuids::uuid getUuid() const;
+    boost::uuids::uuid getUuid() const;
 
-                friend bool operator==(const Principal &lhs, const Principal &rhs);
+    friend bool operator==(const Principal& lhs, const Principal& rhs);
 
-                friend std::ostream &operator<<(std::ostream &os, const Principal &principal);
+    friend std::ostream& operator<<(std::ostream& os, const Principal& principal);
 
-            private:
-                boost::uuids::uuid uuid;
-            };
-        }
-    }
-}
+private:
+    boost::uuids::uuid uuid;
+};
+} // namespace protocol
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

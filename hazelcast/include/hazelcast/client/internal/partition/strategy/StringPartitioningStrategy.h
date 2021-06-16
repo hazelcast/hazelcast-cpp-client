@@ -19,22 +19,20 @@
 #include <string>
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace partition {
-                namespace strategy {
-                    class StringPartitioningStrategy {
-                    public:
-                        static std::string get_base_name(const std::string &name);
+namespace client {
+namespace internal {
+namespace partition {
+namespace strategy {
+class StringPartitioningStrategy
+{
+public:
+    static std::string get_base_name(const std::string& name);
 
-                        static std::string get_partition_key(const std::string &key);
-                    };
-                }
-            }
-        }
+    static std::string get_partition_key(const std::string& key);
+};
+} // namespace strategy
+} // namespace partition
+} // namespace internal
 
-    }
-}
-
-
-
+} // namespace client
+} // namespace hazelcast

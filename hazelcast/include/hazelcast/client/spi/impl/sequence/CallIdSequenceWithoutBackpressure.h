@@ -22,44 +22,42 @@
 
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                namespace sequence {
-                    class HAZELCAST_API CallIdSequenceWithoutBackpressure : public CallIdSequence {
-                    public:
-                        CallIdSequenceWithoutBackpressure();
+namespace client {
+namespace spi {
+namespace impl {
+namespace sequence {
+class HAZELCAST_API CallIdSequenceWithoutBackpressure : public CallIdSequence
+{
+public:
+    CallIdSequenceWithoutBackpressure();
 
-                        ~CallIdSequenceWithoutBackpressure() override;
+    ~CallIdSequenceWithoutBackpressure() override;
 
-                        int32_t get_max_concurrent_invocations() const override;
+    int32_t get_max_concurrent_invocations() const override;
 
-                        int64_t next() override;
+    int64_t next() override;
 
-                        int64_t force_next() override;
+    int64_t force_next() override;
 
-                        void complete() override;
+    void complete() override;
 
-                        int64_t get_last_call_id() override;
+    int64_t get_last_call_id() override;
 
-                    private:
-                        std::atomic<int64_t> head_;
-                    };
-                }
-            }
-        }
-    }
-}
+private:
+    std::atomic<int64_t> head_;
+};
+} // namespace sequence
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

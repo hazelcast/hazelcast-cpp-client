@@ -20,45 +20,43 @@
 
 #include "hazelcast/client/address.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        /**
-         * Endpoint represents a peer in the cluster.
-         * It is the client.
-         */
-        class HAZELCAST_API endpoint {
-        public:
-            endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address);
+namespace client {
+/**
+ * Endpoint represents a peer in the cluster.
+ * It is the client.
+ */
+class HAZELCAST_API endpoint
+{
+public:
+    endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address);
 
-            /**
-             * Returns the UUID of this endpoint
-             *
-             * @return the UUID of this endpoint
-             */
-            boost::uuids::uuid get_uuid() const;
+    /**
+     * Returns the UUID of this endpoint
+     *
+     * @return the UUID of this endpoint
+     */
+    boost::uuids::uuid get_uuid() const;
 
-            /**
-             * Returns the socket address for this endpoint.
-             *
-             * @return the socket address for this endpoint
-             */
-            const boost::optional<address> &get_socket_address() const;
+    /**
+     * Returns the socket address for this endpoint.
+     *
+     * @return the socket address for this endpoint
+     */
+    const boost::optional<address>& get_socket_address() const;
 
-        private:
-            boost::uuids::uuid uuid_;
-            boost::optional<address> socket_address_;
-        };
-    }
-}
+private:
+    boost::uuids::uuid uuid_;
+    boost::optional<address> socket_address_;
+};
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

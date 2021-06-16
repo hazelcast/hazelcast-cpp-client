@@ -23,94 +23,100 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            namespace pimpl {
-                class HAZELCAST_API data {
-                public:
-                    // type and partition_hash are always written with BIG_ENDIAN byte-order
-                    static unsigned int PARTITION_HASH_OFFSET;
+namespace client {
+namespace serialization {
+namespace pimpl {
+class HAZELCAST_API data
+{
+public:
+    // type and partition_hash are always written with BIG_ENDIAN byte-order
+    static unsigned int PARTITION_HASH_OFFSET;
 
-                    static unsigned int TYPE_OFFSET;
+    static unsigned int TYPE_OFFSET;
 
-                    static unsigned int DATA_OFFSET;
+    static unsigned int DATA_OFFSET;
 
-                    static unsigned int DATA_OVERHEAD;
+    static unsigned int DATA_OVERHEAD;
 
-                    data();
+    data();
 
-                    data(std::vector<byte> buffer);
+    data(std::vector<byte> buffer);
 
-                    size_t data_size() const;
+    size_t data_size() const;
 
-                    size_t total_size() const;
+    size_t total_size() const;
 
-                    int get_partition_hash() const;
+    int get_partition_hash() const;
 
-                    /**
-                     * Returns the calculated hash of the data bytes.
-                     * Caches the calculated value.
-                     */
-                    int hash() const;
+    /**
+     * Returns the calculated hash of the data bytes.
+     * Caches the calculated value.
+     */
+    int hash() const;
 
-                    bool has_partition_hash() const;
+    bool has_partition_hash() const;
 
-                    const std::vector<byte> &to_byte_array() const;
+    const std::vector<byte>& to_byte_array() const;
 
-                    int32_t get_type() const;
+    int32_t get_type() const;
 
-                    bool operator<(const data &rhs) const;
+    bool operator<(const data& rhs) const;
 
-                    friend bool HAZELCAST_API operator==(const data &lhs, const data &rhs);
+    friend bool HAZELCAST_API operator==(const data& lhs, const data& rhs);
 
-                private:
-                    std::vector<byte> data_;
-                    int cached_hash_value_;
+private:
+    std::vector<byte> data_;
+    int cached_hash_value_;
 
-                    inline int calculate_hash() const;
-                };
+    inline int calculate_hash() const;
+};
 
-            }
-        }
-    }
-}
+} // namespace pimpl
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
 
 namespace std {
-    template <>
-    class HAZELCAST_API hash<hazelcast::client::serialization::pimpl::data> {
-    public:
-        std::size_t operator()(const hazelcast::client::serialization::pimpl::data &val) const noexcept;
-    };
+template<>
+class HAZELCAST_API hash<hazelcast::client::serialization::pimpl::data>
+{
+public:
+    std::size_t operator()(const hazelcast::client::serialization::pimpl::data& val) const noexcept;
+};
 
-    template<>
-    class HAZELCAST_API hash<std::shared_ptr<hazelcast::client::serialization::pimpl::data>> {
-    public:
-        std::size_t
-        operator()(const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &val) const noexcept;
-    };
+template<>
+class HAZELCAST_API hash<std::shared_ptr<hazelcast::client::serialization::pimpl::data>>
+{
+public:
+    std::size_t operator()(
+      const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& val) const noexcept;
+};
 
-    template<>
-    struct HAZELCAST_API equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::data>> {
-        bool operator()(const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &lhs,
-                const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &rhs) const noexcept;;
-    };
+template<>
+struct HAZELCAST_API equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::data>>
+{
+    bool operator()(
+      const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& lhs,
+      const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& rhs) const noexcept;
+    ;
+};
 
-    template <>
-    class HAZELCAST_API less<std::shared_ptr<hazelcast::client::serialization::pimpl::data> > {
-    public:
-        bool operator() (const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &lhs,
-                                     const std::shared_ptr<hazelcast::client::serialization::pimpl::data> &rhs) const noexcept;
-    };
-}
+template<>
+class HAZELCAST_API less<std::shared_ptr<hazelcast::client::serialization::pimpl::data>>
+{
+public:
+    bool operator()(
+      const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& lhs,
+      const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& rhs) const noexcept;
+};
+} // namespace std
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

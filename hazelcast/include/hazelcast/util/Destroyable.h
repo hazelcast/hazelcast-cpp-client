@@ -19,13 +19,13 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API Destroyable {
-        public:
-            virtual ~Destroyable();
+namespace util {
+class HAZELCAST_API Destroyable
+{
+public:
+    virtual ~Destroyable();
 
-            virtual void destroy() = 0;
-        };
-    }
-}
-
+    virtual void destroy() = 0;
+};
+} // namespace util
+} // namespace hazelcast

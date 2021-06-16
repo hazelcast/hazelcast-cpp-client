@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 #pragma once
 
 #include <string>
@@ -24,35 +22,34 @@
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/client/exception/iexception.h"
 
-
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API IOUtil {
-        public:
-            template<typename T>
-            static std::string to_string(T value) {
-                std::stringstream s;
-                s << value;
-                return s.str();
-            }
-
-            template<typename T>
-            static T to_value(const std::string& str) {
-                std::stringstream s(str);
-                T value;
-                s >> value;
-                return value;
-            }
-
-            static void close_resource(Closeable *closable, const char *close_reason = nullptr);
-        };
-
-        template<>
-        bool IOUtil::to_value(const std::string& str);
-
+namespace util {
+class HAZELCAST_API IOUtil
+{
+public:
+    template<typename T>
+    static std::string to_string(T value)
+    {
+        std::stringstream s;
+        s << value;
+        return s.str();
     }
-}
 
+    template<typename T>
+    static T to_value(const std::string& str)
+    {
+        std::stringstream s(str);
+        T value;
+        s >> value;
+        return value;
+    }
 
+    static void close_resource(Closeable* closable, const char* close_reason = nullptr);
+};
 
+template<>
+bool
+IOUtil::to_value(const std::string& str);
 
+} // namespace util
+} // namespace hazelcast

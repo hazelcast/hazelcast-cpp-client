@@ -19,53 +19,57 @@
 
 #include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                namespace impl {
-                    namespace comparator {
-                        /**
-                         * {@link com.hazelcast.config.EvictionPolicy#LRU} policy based {@link EvictionPolicyComparator}.
-                         */
-                        template<typename A, typename E>
-                        class LRUEvictionPolicyComparator : public EvictionPolicyComparator<A, E> {
-                        public:
-                            int compare(const EvictableEntryView<A, E> *e1, const EvictableEntryView<A, E> *e2) const override {
-                                int64_t accessTime1 = e1->get_last_access_time();
-                                int64_t accessTime2 = e2->get_last_access_time();
-                                if (accessTime2 < accessTime1) {
-                                    return EvictionPolicyComparator<A, E>::SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
-                                } else if (accessTime1 < accessTime2) {
-                                    return EvictionPolicyComparator<A, E>::FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
-                                } else {
-                                    int64_t creationTime1 = e1->get_creation_time();
-                                    int64_t creationTime2 = e2->get_creation_time();
-                                    // if access times are same, we select the oldest entry to evict
-                                    if (creationTime2 < creationTime1) {
-                                        return EvictionPolicyComparator<A, E>::SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
-                                    } else if (creationTime2 > creationTime1) {
-                                        return EvictionPolicyComparator<A, E>::FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
-                                    } else {
-                                        return EvictionPolicyComparator<A, E>::BOTH_OF_ENTRIES_HAVE_SAME_PRIORITY_TO_BE_EVICTED;
-                                    }
-                                }
-                            }
-                        };
-                    }
-                }
+namespace client {
+namespace internal {
+namespace eviction {
+namespace impl {
+namespace comparator {
+/**
+ * {@link com.hazelcast.config.EvictionPolicy#LRU} policy based {@link EvictionPolicyComparator}.
+ */
+template<typename A, typename E>
+class LRUEvictionPolicyComparator : public EvictionPolicyComparator<A, E>
+{
+public:
+    int compare(const EvictableEntryView<A, E>* e1,
+                const EvictableEntryView<A, E>* e2) const override
+    {
+        int64_t accessTime1 = e1->get_last_access_time();
+        int64_t accessTime2 = e2->get_last_access_time();
+        if (accessTime2 < accessTime1) {
+            return EvictionPolicyComparator<A, E>::SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
+        } else if (accessTime1 < accessTime2) {
+            return EvictionPolicyComparator<A, E>::FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
+        } else {
+            int64_t creationTime1 = e1->get_creation_time();
+            int64_t creationTime2 = e2->get_creation_time();
+            // if access times are same, we select the oldest entry to evict
+            if (creationTime2 < creationTime1) {
+                return EvictionPolicyComparator<A,
+                                                E>::SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
+            } else if (creationTime2 > creationTime1) {
+                return EvictionPolicyComparator<A,
+                                                E>::FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED;
+            } else {
+                return EvictionPolicyComparator<A, E>::
+                  BOTH_OF_ENTRIES_HAVE_SAME_PRIORITY_TO_BE_EVICTED;
             }
         }
     }
-}
+};
+} // namespace comparator
+} // namespace impl
+} // namespace eviction
+} // namespace internal
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

@@ -20,33 +20,33 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
+#pragma warning(disable : 4251) // for dll export
+#pragma warning(                                                                                   \
+  disable : 4003) // for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API SyncHttpClient {
-        public:
-            SyncHttpClient(const std::string &server_ip, const std::string &uri_path);
+namespace util {
+class HAZELCAST_API SyncHttpClient
+{
+public:
+    SyncHttpClient(const std::string& server_ip, const std::string& uri_path);
 
-            std::istream &open_connection();
-        private:
-            std::string server_;
-            std::string uri_path_;
-            boost::asio::io_service io_service_;
-            boost::asio::ip::tcp::socket socket_;
-            boost::asio::streambuf response_;
-            std::istream response_stream_;
-        };
-    }
-}
+    std::istream& open_connection();
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+private:
+    std::string server_;
+    std::string uri_path_;
+    boost::asio::io_service io_service_;
+    boost::asio::ip::tcp::socket socket_;
+    boost::asio::streambuf response_;
+    std::istream response_stream_;
+};
+} // namespace util
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

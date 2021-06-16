@@ -22,30 +22,30 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                namespace sequence {
-                    class HAZELCAST_API CallIdFactory {
-                    public:
-                        static std::unique_ptr<CallIdSequence>
-                        new_call_id_sequence(bool is_back_pressure_enabled, int32_t max_allowed_concurrent_invocations,
-                                          int64_t backoff_timeout_ms);
-                    };
-                }
-            }
-        }
-    }
-}
+namespace client {
+namespace spi {
+namespace impl {
+namespace sequence {
+class HAZELCAST_API CallIdFactory
+{
+public:
+    static std::unique_ptr<CallIdSequence> new_call_id_sequence(
+      bool is_back_pressure_enabled,
+      int32_t max_allowed_concurrent_invocations,
+      int64_t backoff_timeout_ms);
+};
+} // namespace sequence
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

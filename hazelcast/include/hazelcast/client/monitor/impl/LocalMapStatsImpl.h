@@ -17,36 +17,36 @@
 
 #include <memory>
 
-
 #include "hazelcast/util/export.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/monitor/local_map_stats.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace monitor {
-            namespace impl {
-                class HAZELCAST_API LocalMapStatsImpl : public local_map_stats {
-                public:
-                    LocalMapStatsImpl();
+namespace client {
+namespace monitor {
+namespace impl {
+class HAZELCAST_API LocalMapStatsImpl : public local_map_stats
+{
+public:
+    LocalMapStatsImpl();
 
-                    LocalMapStatsImpl(const std::shared_ptr<monitor::near_cache_stats> &stats);
+    LocalMapStatsImpl(const std::shared_ptr<monitor::near_cache_stats>& stats);
 
-                    std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const ;
-                private:
-                    std::shared_ptr<monitor::near_cache_stats> near_cache_stats_;
-                };
-            }
-        }
-    }
-}
+    std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const;
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+private:
+    std::shared_ptr<monitor::near_cache_stats> near_cache_stats_;
+};
+} // namespace impl
+} // namespace monitor
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

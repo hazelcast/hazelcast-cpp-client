@@ -28,59 +28,59 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/lifecycle_listener.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class lifecycle_event;
+namespace client {
+class lifecycle_event;
 
-        class client_config;
+class client_config;
 
-        class cluster;
+class cluster;
 
-        namespace spi {
+namespace spi {
 
-            class ClientContext;
+class ClientContext;
 
-            class HAZELCAST_API lifecycle_service {
-            public:
+class HAZELCAST_API lifecycle_service
+{
+public:
+    lifecycle_service(ClientContext& client_context,
+                      const std::vector<lifecycle_listener>& lifecycle_listeners);
 
-                lifecycle_service(ClientContext &client_context,
-                                  const std::vector<lifecycle_listener> &lifecycle_listeners);
+    virtual ~lifecycle_service();
 
-                virtual ~lifecycle_service();
+    bool start();
 
-                bool start();
+    void fire_lifecycle_event(const lifecycle_event& lifecycle_event);
 
-                void fire_lifecycle_event(const lifecycle_event &lifecycle_event);
+    void shutdown();
 
-                void shutdown();
+    boost::uuids::uuid add_listener(lifecycle_listener&& lifecycle_listener);
 
-                boost::uuids::uuid add_listener(lifecycle_listener &&lifecycle_listener);
+    bool remove_listener(const boost::uuids::uuid& registration_id);
 
-                bool remove_listener(const boost::uuids::uuid &registration_id);
+    bool is_running();
 
-                bool is_running();
+private:
+    ClientContext& client_context_;
+    std::unordered_map<boost::uuids::uuid, lifecycle_listener, boost::hash<boost::uuids::uuid>>
+      listeners_;
+    std::mutex listener_lock_;
+    std::atomic<bool> active_{ false };
+    boost::latch shutdown_completed_latch_;
+    std::mt19937 random_generator_{ std::random_device{}() };
+    boost::uuids::basic_random_generator<std::mt19937> uuid_generator_{ random_generator_ };
 
-            private:
-                ClientContext &client_context_;
-                std::unordered_map<boost::uuids::uuid, lifecycle_listener, boost::hash<boost::uuids::uuid>> listeners_;
-                std::mutex listener_lock_;
-                std::atomic<bool> active_{ false };
-                boost::latch shutdown_completed_latch_;
-                std::mt19937 random_generator_{std::random_device{}()};
-                boost::uuids::basic_random_generator<std::mt19937> uuid_generator_{random_generator_};
+    void wait_for_initial_membership_event() const;
+};
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-                void wait_for_initial_membership_event() const;
-            };
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

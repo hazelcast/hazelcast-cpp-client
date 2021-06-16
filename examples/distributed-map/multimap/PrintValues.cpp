@@ -15,17 +15,20 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_multi_map("map").get();
 
-    for (auto &key : map->key_set<std::string>().get()) {
+    for (auto& key : map->key_set<std::string>().get()) {
         std::cout << key << " -> (";
-        for (auto &value : map->get<std::string, std::string>(key).get()) {
+        for (auto& value : map->get<std::string, std::string>(key).get()) {
             std::cout << value << ", \n";
         }
-        std::cout << ")" << "\n";
+        std::cout << ")"
+                  << "\n";
     }
 
     std::cout << "Finished" << std::endl;

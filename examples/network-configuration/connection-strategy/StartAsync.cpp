@@ -20,15 +20,17 @@
 #include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/lifecycle_event.h>
 
-
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
 
     /**
-     * Set true for non blocking {@link hazelcast_client(const client_config &)}. The client creation won't wait to
-     * connect to cluster. The client instace will throw exception until it connects to cluster and become ready.
-     * If set to false, {@link hazelcast_client(const client_config &)} will block until a cluster connection established and it's
-     * ready to use client instance.
+     * Set true for non blocking {@link hazelcast_client(const client_config &)}. The client
+     * creation won't wait to connect to cluster. The client instace will throw exception until it
+     * connects to cluster and become ready. If set to false, {@link hazelcast_client(const
+     * client_config &)} will block until a cluster connection established and it's ready to use
+     * client instance.
      *
      * default value is false
      */
@@ -36,12 +38,8 @@ int main() {
 
     // Add a lifecycle listener so that we can track when the client is connected
     std::promise<void> connected;
-    config.add_listener(
-        hazelcast::client::lifecycle_listener().
-            on_connected([&connected](){
-                connected.set_value();
-            })
-    );
+    config.add_listener(hazelcast::client::lifecycle_listener().on_connected(
+      [&connected]() { connected.set_value(); }));
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
@@ -50,7 +48,8 @@ int main() {
         std::cout << "Async client is not connected yet." << std::endl;
     }
 
-    // the client may not have connected to the cluster yet at this point since the cluster connection is async!!!
+    // the client may not have connected to the cluster yet at this point since the cluster
+    // connection is async!!!
     connection_future.wait();
 
     std::cout << "Async client is connected now." << std::endl;
@@ -61,4 +60,3 @@ int main() {
 
     return 0;
 }
-

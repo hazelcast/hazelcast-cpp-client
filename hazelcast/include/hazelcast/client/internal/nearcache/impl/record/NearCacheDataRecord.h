@@ -22,37 +22,35 @@
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/internal/nearcache/impl/record/AbstractNearCacheRecord.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace nearcache {
-                namespace impl {
-                    namespace record {
-                        /**
-                         * Implementation of {@link NearCacheRecord} to store
-                         * {@link Data} type objects.
-                         */
-                        class HAZELCAST_API NearCacheDataRecord
-                                : public AbstractNearCacheRecord<serialization::pimpl::data> {
-                        public:
-                            NearCacheDataRecord(const std::shared_ptr<serialization::pimpl::data> &data_value,
-                                                int64_t creation_time, int64_t expiry_time);
-                        };
-                    }
-                }
-            }
-        }
-    }
-}
+namespace client {
+namespace internal {
+namespace nearcache {
+namespace impl {
+namespace record {
+/**
+ * Implementation of {@link NearCacheRecord} to store
+ * {@link Data} type objects.
+ */
+class HAZELCAST_API NearCacheDataRecord : public AbstractNearCacheRecord<serialization::pimpl::data>
+{
+public:
+    NearCacheDataRecord(const std::shared_ptr<serialization::pimpl::data>& data_value,
+                        int64_t creation_time,
+                        int64_t expiry_time);
+};
+} // namespace record
+} // namespace impl
+} // namespace nearcache
+} // namespace internal
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

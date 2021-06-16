@@ -21,16 +21,13 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API Named {
-        public:
-            virtual ~Named() {
-            }
+namespace util {
+class HAZELCAST_API Named
+{
+public:
+    virtual ~Named() {}
 
-            virtual const std::string get_name() const = 0;
-        };
-    }
-}
-
-
-
+    virtual const std::string get_name() const = 0;
+};
+} // namespace util
+} // namespace hazelcast

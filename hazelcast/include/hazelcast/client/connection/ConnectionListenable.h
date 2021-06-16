@@ -19,26 +19,24 @@
 #include "hazelcast/client/connection/ConnectionListener.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace connection {
-            /**
-             * Provides connection listen capabilities.
-             */
-            class HAZELCAST_API ConnectionListenable {
-            public:
-                /**
-                 * Registers a ConnectionListener.
-                 *
-                 * If the same listener is registered multiple times, it will be notified multiple times.
-                 *
-                 * @param listener the ConnectionListener to add.
-                 * @throws null_pointer if listener is null.
-                 */
-                virtual void add_connection_listener(const std::shared_ptr<ConnectionListener> &listener) = 0;
-            };
-        }
-    }
-}
-
-
-
+namespace client {
+namespace connection {
+/**
+ * Provides connection listen capabilities.
+ */
+class HAZELCAST_API ConnectionListenable
+{
+public:
+    /**
+     * Registers a ConnectionListener.
+     *
+     * If the same listener is registered multiple times, it will be notified multiple times.
+     *
+     * @param listener the ConnectionListener to add.
+     * @throws null_pointer if listener is null.
+     */
+    virtual void add_connection_listener(const std::shared_ptr<ConnectionListener>& listener) = 0;
+};
+} // namespace connection
+} // namespace client
+} // namespace hazelcast

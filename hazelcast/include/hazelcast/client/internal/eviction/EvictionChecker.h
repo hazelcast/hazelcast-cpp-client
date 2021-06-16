@@ -19,46 +19,46 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                /**
-                 * Interface for checking about if eviction is required or not.
-                 */
-                class HAZELCAST_API EvictionChecker {
-                public:
-                    virtual ~EvictionChecker() = default;
+namespace client {
+namespace internal {
+namespace eviction {
+/**
+ * Interface for checking about if eviction is required or not.
+ */
+class HAZELCAST_API EvictionChecker
+{
+public:
+    virtual ~EvictionChecker() = default;
 
-                    /**
-                     * Empty {@link} EvictionChecker to allow eviction always.
-                     */
-                    static const std::unique_ptr <EvictionChecker> EVICT_ALWAYS;
+    /**
+     * Empty {@link} EvictionChecker to allow eviction always.
+     */
+    static const std::unique_ptr<EvictionChecker> EVICT_ALWAYS;
 
-                    /**
-                     * Checks for if eviction is required or not.
-                     *
-                     * @return <code>true</code> if eviction is required, otherwise <code>false</code>
-                     */
-                    virtual bool is_eviction_required() const = 0;
-                };
-
-                class HAZELCAST_API EvictAlways : public EvictionChecker {
-                public:
-                    bool is_eviction_required() const override;
-                };
-            }
-        }
-    }
+    /**
+     * Checks for if eviction is required or not.
+     *
+     * @return <code>true</code> if eviction is required, otherwise <code>false</code>
+     */
+    virtual bool is_eviction_required() const = 0;
 };
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+class HAZELCAST_API EvictAlways : public EvictionChecker
+{
+public:
+    bool is_eviction_required() const override;
+};
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

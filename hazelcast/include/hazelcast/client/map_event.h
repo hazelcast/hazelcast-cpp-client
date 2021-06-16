@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 #pragma once
 
 #include "hazelcast/util/export.h"
@@ -24,64 +22,66 @@
 #include <string>
 #include <ostream>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        /**
-        * Map events common contract.
-        */
-        class HAZELCAST_API map_event {
-        public:
-            /**
-            * Constructor
-            */
-            map_event(member &&member, entry_event::type event_type, const std::string& name, int number_of_entries_affected);
+namespace client {
+/**
+ * Map events common contract.
+ */
+class HAZELCAST_API map_event
+{
+public:
+    /**
+     * Constructor
+     */
+    map_event(member&& member,
+              entry_event::type event_type,
+              const std::string& name,
+              int number_of_entries_affected);
 
-            /**
-            * Returns the member fired this event.
-            *
-            * @return the member fired this event.
-            */
-            const member &get_member() const;
+    /**
+     * Returns the member fired this event.
+     *
+     * @return the member fired this event.
+     */
+    const member& get_member() const;
 
-            /**
-            * Return the event type
-            *
-            * @return event type
-            */
-            entry_event::type get_event_type() const;
+    /**
+     * Return the event type
+     *
+     * @return event type
+     */
+    entry_event::type get_event_type() const;
 
-            /**
-            * Returns the name of the map for this event.
-            *
-            * @return name of the map.
-            */
-            const std::string& get_name() const;
+    /**
+     * Returns the name of the map for this event.
+     *
+     * @return name of the map.
+     */
+    const std::string& get_name() const;
 
-            /**
-            * Returns the number of entries affected by this event.
-            *
-            * @return number of entries affected.
-            */
-            int get_number_of_entries_affected() const;
+    /**
+     * Returns the number of entries affected by this event.
+     *
+     * @return number of entries affected.
+     */
+    int get_number_of_entries_affected() const;
 
-            friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const map_event &event);
+    friend std::ostream HAZELCAST_API& operator<<(std::ostream& os, const map_event& event);
 
-        private:
-            member member_;
-            entry_event::type event_type_;
-            std::string name_;
-            int number_of_entries_affected_;
-        };
-    }
-}
+private:
+    member member_;
+    entry_event::type event_type_;
+    std::string name_;
+    int number_of_entries_affected_;
+};
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

@@ -31,22 +31,23 @@ typedef unsigned __int64 uint64_t;
 
 // Other compilers
 
-#else	// defined(_MSC_VER)
+#else // defined(_MSC_VER)
 
 #include <stdint.h>
 
 #endif // !defined(_MSC_VER)
 
-namespace hazelcast{
-    namespace util{
-        //-----------------------------------------------------------------------------
+namespace hazelcast {
+namespace util {
+//-----------------------------------------------------------------------------
 
-        int murmur_hash3_x86_32(const void * key, int len);
+int
+murmur_hash3_x86_32(const void* key, int len);
 
-        void murmur_hash3_x86_32  ( const void * key, int len, uint32_t seed, void * out );
+void
+murmur_hash3_x86_32(const void* key, int len, uint32_t seed, void* out);
 
-        //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-    }
-}
-
+} // namespace util
+} // namespace hazelcast

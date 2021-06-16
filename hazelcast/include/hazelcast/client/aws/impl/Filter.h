@@ -20,44 +20,43 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace aws {
-            namespace impl {
-                /**
-                 * Query filter to narrow down the scope of the queried EC2 instance set.
-                 */
-                class HAZELCAST_API Filter {
-                public:
-                    Filter();
+namespace client {
+namespace aws {
+namespace impl {
+/**
+ * Query filter to narrow down the scope of the queried EC2 instance set.
+ */
+class HAZELCAST_API Filter
+{
+public:
+    Filter();
 
-                    /**
-                     *
-                     * Add a new filter with the given name and value to the query.
-                     *
-                     * @param name Filter name
-                     * @param value Filter value
-                     *
-                     */
-                    void add_filter(const std::string &name, const std::string &value);
+    /**
+     *
+     * Add a new filter with the given name and value to the query.
+     *
+     * @param name Filter name
+     * @param value Filter value
+     *
+     */
+    void add_filter(const std::string& name, const std::string& value);
 
-                    const std::unordered_map<std::string, std::string> &get_filters();
+    const std::unordered_map<std::string, std::string>& get_filters();
 
-                private:
-                    std::unordered_map<std::string, std::string> filters_;
-                };
-            };
-        }
-    }
-}
+private:
+    std::unordered_map<std::string, std::string> filters_;
+};
+}; // namespace impl
+} // namespace aws
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

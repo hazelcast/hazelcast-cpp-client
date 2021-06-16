@@ -18,32 +18,32 @@
 #include <memory>
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace monitor {
-            class near_cache_stats;
+namespace client {
+namespace monitor {
+class near_cache_stats;
 
-            class HAZELCAST_API local_map_stats {
-            public:
-                virtual ~local_map_stats() = default;
+class HAZELCAST_API local_map_stats
+{
+public:
+    virtual ~local_map_stats() = default;
 
-                /**
-                 * Returns statistics related to the Near Cache.
-                 *
-                 * @return statistics object for the Near Cache
-                 */
-                virtual std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const = 0;
-            };
-        }
-    }
-}
+    /**
+     * Returns statistics related to the Near Cache.
+     *
+     * @return statistics object for the Near Cache
+     */
+    virtual std::shared_ptr<monitor::near_cache_stats> get_near_cache_stats() const = 0;
+};
+} // namespace monitor
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

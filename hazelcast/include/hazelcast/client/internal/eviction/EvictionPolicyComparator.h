@@ -20,65 +20,69 @@
 #include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/internal/eviction/EvictableEntryView.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                /**
-                 * A kind of {@link Comparator} to be used while comparing
-                 * entries to be evicted.
-                 */
-                template<typename K, typename V>
-                class EvictionPolicyComparator : util::Comparator<EvictableEntryView<K, V> > {
-                public:
-                    ~EvictionPolicyComparator() override = default;
+namespace client {
+namespace internal {
+namespace eviction {
+/**
+ * A kind of {@link Comparator} to be used while comparing
+ * entries to be evicted.
+ */
+template<typename K, typename V>
+class EvictionPolicyComparator : util::Comparator<EvictableEntryView<K, V>>
+{
+public:
+    ~EvictionPolicyComparator() override = default;
 
-                    /**
-                     * Integer constant for representing behaviour for giving higher priority to first entry to be evicted.
-                     */
-                    static const int FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED = -1;
+    /**
+     * Integer constant for representing behaviour for giving higher priority to first entry to be
+     * evicted.
+     */
+    static const int FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED = -1;
 
-                    /**
-                     * Integer constant for representing behaviour for giving higher priority to second entry to be evicted.
-                     */
-                    static const int SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED = +1;
+    /**
+     * Integer constant for representing behaviour for giving higher priority to second entry to be
+     * evicted.
+     */
+    static const int SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED = +1;
 
-                    /**
-                     * Integer constant for representing behaviour for giving same priority to both of entry to be evicted.
-                     */
-                    static const int BOTH_OF_ENTRIES_HAVE_SAME_PRIORITY_TO_BE_EVICTED = 0;
+    /**
+     * Integer constant for representing behaviour for giving same priority to both of entry to be
+     * evicted.
+     */
+    static const int BOTH_OF_ENTRIES_HAVE_SAME_PRIORITY_TO_BE_EVICTED = 0;
 
-                    /**
-                     * Compares the given {@link EvictableEntryView} instances and returns the result.
-                     * The result should be one of the
-                     * <ul>
-                     *   <li>#FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED</li>
-                     *   <li>#SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED</li>
-                     *   <li>#BOTH_OF_ENTRIES_HAVE_SAME_PRIORITY_TO_BE_EVICTED</li>
-                     * </ul>
-                     *
-                     * @param e1 the first {@link EvictableEntryView} instance to be compared
-                     * @param e2 the second {@link EvictableEntryView} instance to be compared
-                     *
-                     * @return the result of comparison
-                     */
-                    int compare(const EvictableEntryView<K, V> *e1, const EvictableEntryView<K, V> *e2) const override {
-                        assert(0);
-                        return 0;
-                    }
-                };
-            }
-        }
+    /**
+     * Compares the given {@link EvictableEntryView} instances and returns the result.
+     * The result should be one of the
+     * <ul>
+     *   <li>#FIRST_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED</li>
+     *   <li>#SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED</li>
+     *   <li>#BOTH_OF_ENTRIES_HAVE_SAME_PRIORITY_TO_BE_EVICTED</li>
+     * </ul>
+     *
+     * @param e1 the first {@link EvictableEntryView} instance to be compared
+     * @param e2 the second {@link EvictableEntryView} instance to be compared
+     *
+     * @return the result of comparison
+     */
+    int compare(const EvictableEntryView<K, V>* e1,
+                const EvictableEntryView<K, V>* e2) const override
+    {
+        assert(0);
+        return 0;
     }
 };
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

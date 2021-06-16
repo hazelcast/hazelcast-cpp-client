@@ -16,7 +16,9 @@
 #include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
-int main() {
+int
+main()
+{
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     // Get a Blocking Queue called "my-distributed-queue"
@@ -25,10 +27,10 @@ int main() {
     queue->offer("item").get();
     // Poll the Distributed Queue and return the String
     auto item = queue->poll<std::string>().get();
-    //Timed blocking Operations
+    // Timed blocking Operations
     queue->offer("anotheritem", std::chrono::milliseconds(500)).get();
     auto anotherItem = queue->poll<std::string>(std::chrono::seconds(5)).get();
-    //Indefinitely blocking Operations
+    // Indefinitely blocking Operations
     queue->put("yetanotheritem");
     std::cout << *queue->take<std::string>().get() << std::endl;
     // Shutdown this Hazelcast Client

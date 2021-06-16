@@ -24,48 +24,47 @@
 #include <boost/functional/hash.hpp>
 
 namespace hazelcast {
-    namespace client {
-        namespace impl {
+namespace client {
+namespace impl {
 
-            /**
-                 * Vector clock consisting of distinct replica logical clocks.
-                 * <p>
-                 * See https://en.wikipedia.org/wiki/Vector_clock
-                 * There is no guarantee for concurrent updates.
-                 */
-            class vector_clock {
-            public:
-                typedef std::vector<std::pair<boost::uuids::uuid, int64_t> > timestamp_vector;
-                typedef std::unordered_map<boost::uuids::uuid, int64_t, boost::hash<boost::uuids::uuid>> timestamp_map;
+/**
+ * Vector clock consisting of distinct replica logical clocks.
+ * <p>
+ * See https://en.wikipedia.org/wiki/Vector_clock
+ * There is no guarantee for concurrent updates.
+ */
+class vector_clock
+{
+public:
+    typedef std::vector<std::pair<boost::uuids::uuid, int64_t>> timestamp_vector;
+    typedef std::unordered_map<boost::uuids::uuid, int64_t, boost::hash<boost::uuids::uuid>>
+      timestamp_map;
 
-                vector_clock();
+    vector_clock();
 
-                vector_clock(const timestamp_vector &replica_logical_timestamps);
+    vector_clock(const timestamp_vector& replica_logical_timestamps);
 
-                /** Returns a set of replica logical timestamps for this vector clock. */
-                timestamp_vector entry_set();
+    /** Returns a set of replica logical timestamps for this vector clock. */
+    timestamp_vector entry_set();
 
-                /**
-                 * Returns {@code true} if this vector clock is causally strictly after the
-                 * provided vector clock. This means that it the provided clock is neither
-                 * equal to, greater than or concurrent to this vector clock.
-                 */
-                bool is_after(vector_clock &other);
+    /**
+     * Returns {@code true} if this vector clock is causally strictly after the
+     * provided vector clock. This means that it the provided clock is neither
+     * equal to, greater than or concurrent to this vector clock.
+     */
+    bool is_after(vector_clock& other);
 
-            private:
-                /**
-                 * Returns logical timestamp for given {@code replicaId}.
-                 * @return false for the pair.first if timestamp does not exist for replicaId,
-                 * otherwise returns true for pair.first and the timestamp of the replica as the pair.second.
-                 */
-                std::pair<bool, int64_t> get_timestamp_for_replica(boost::uuids::uuid replica_id);
+private:
+    /**
+     * Returns logical timestamp for given {@code replicaId}.
+     * @return false for the pair.first if timestamp does not exist for replicaId,
+     * otherwise returns true for pair.first and the timestamp of the replica as the pair.second.
+     */
+    std::pair<bool, int64_t> get_timestamp_for_replica(boost::uuids::uuid replica_id);
 
-                timestamp_map replica_timestamps_;
-                vector_clock::timestamp_vector replica_timestamp_entries_;
-            };
-        }
-    }
-}
-
-
-
+    timestamp_map replica_timestamps_;
+    vector_clock::timestamp_vector replica_timestamp_entries_;
+};
+} // namespace impl
+} // namespace client
+} // namespace hazelcast

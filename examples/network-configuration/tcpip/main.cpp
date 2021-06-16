@@ -16,12 +16,15 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
-    const char *serverIp = "127.0.0.1";
+int
+main()
+{
+    const char* serverIp = "127.0.0.1";
     const int port = 5701;
     hazelcast::client::client_config config;
-    config.get_network_config().add_address({serverIp, port}).add_addresses({{"127.0.0.1", 5702},
-                                                                            {"192.168.1.10", 5701}});
+    config.get_network_config()
+      .add_address({ serverIp, port })
+      .add_addresses({ { "127.0.0.1", 5702 }, { "192.168.1.10", 5701 } });
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
@@ -31,4 +34,3 @@ int main() {
 
     return 0;
 }
-
