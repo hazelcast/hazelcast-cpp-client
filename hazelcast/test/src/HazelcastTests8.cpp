@@ -1438,6 +1438,27 @@ namespace hazelcast {
                 ASSERT_THROW((map->get<int, int>(1).get()), exception::hazelcast_client_not_active);
             }
 
+            TEST_F(IssueTest, issue_888) {
+                // start a server
+                HazelcastServer server(*g_srvFactory);
+
+                auto hz = hazelcast::new_client().get();
+                auto map = hz.get_map("testmap").get();
+                map->put<std::string, std::string>("12", "hello").get();
+                map->put<std::string, std::string>("23", "world").get();
+                map->put<std::string, std::string>("34", "!!!!").get();
+
+                std::vector<std::string> myKeys{"12", "34"};
+
+                auto v = map->entry_set<std::string, std::string>(
+                        query::in_predicate(hz, query::query_constants::KEY_ATTRIBUTE_NAME, myKeys)).get();
+
+                ASSERT_EQ(2, v.size());
+
+                ASSERT_NO_THROW(map->remove_all(
+                        query::in_predicate(hz, query::query_constants::KEY_ATTRIBUTE_NAME, myKeys)).get());
+            }
+
             TEST_F(IssueTest, invocation_should_not_block_indefinitely_during_client_shutdown) {
                 HazelcastServer server(*g_srvFactory);
                 auto hz = new_client().get();
@@ -1509,11 +1530,11 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) 
+            HazelcastServer::HazelcastServer(HazelcastServerFactory &factory)
                 : factory_(factory)
                 , is_started_(false)
                 , is_shutdown_(false)
-                , logger_(std::make_shared<logger>("HazelcastServer", "HazelcastServer", 
+                , logger_(std::make_shared<logger>("HazelcastServer", "HazelcastServer",
                                                    logger::level::info, logger::default_handler)) {
                 start();
             }

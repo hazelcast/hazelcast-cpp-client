@@ -64,6 +64,15 @@ namespace hazelcast {
                     out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
                     out_stream.write_objects(values...);
                 }
+
+                template<typename T>
+                multi_predicate(const std::string attribute_name, hazelcast_client &client, const std::vector<T> &values) : base_predicate(client) {
+                    out_stream.write(attribute_name);
+                    out_stream.write<int32_t>(static_cast<int32_t>(values.size()));
+                    for (const T &value : values) {
+                        out_stream.write_object(value);
+                    }
+                }
             };
 
             enum struct predicate_data_serializer_hook {
@@ -230,6 +239,15 @@ namespace hazelcast {
                 template<typename ...Args>
                 in_predicate(hazelcast_client &client, const std::string &attribute_name, const Args &...values)
                         : multi_predicate(attribute_name, client, values...) {}
+
+                /**
+                 * The type of Args should be able to be serialized.
+                 * @param attributeName The attribute whose value shall be compared to.
+                 * @tparam value The values to search for
+                 */
+                template<typename T>
+                in_predicate(hazelcast_client &client, const std::string &attribute_name, const std::vector<T> &values)
+                        : multi_predicate(attribute_name, client, values) {}
             };
 
             class and_predicate : public multi_predicate {

@@ -1341,7 +1341,7 @@ namespace hazelcast {
 
                 // value in {4, 10, 19}
                 values = int_map_->values<int>(
-                        query::in_predicate(client_, query::query_constants::THIS_ATTRIBUTE_NAME, 4, 10, 19)).get();
+                        query::in_predicate(client_, query::query_constants::THIS_ATTRIBUTE_NAME, std::vector<int>({4, 10, 19}))).get();
                 ASSERT_EQ(2, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(4, values[0]);
