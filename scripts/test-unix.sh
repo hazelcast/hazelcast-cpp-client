@@ -26,8 +26,20 @@ RC_PORT=9701
 
 TEST_EXECUTABLE="$BUILD_DIR/hazelcast/test/src/client_test"
 
-scripts/start-rc.sh &
-rcPid=$!
+while getopts v: flag
+do
+    case "${flag}" in
+        v) version=${OPTARG};;
+    esac
+done
+if [ $# -eq 0 ]
+then
+    scripts/start-rc.sh &
+	rcPid=$!
+else
+	scripts/start-rc.sh -v ${version} &
+	rcPid=$!
+fi
 
 echo "Spawned remote controller with pid ${rcPid}"
 

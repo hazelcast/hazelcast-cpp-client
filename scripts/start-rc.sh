@@ -15,7 +15,17 @@ set +x
 
 trap cleanup EXIT
 
-HZ_VERSION="4.1.4-SNAPSHOT"
+while getopts v: flag
+do
+    case "${flag}" in
+        v) HZ_VERSION=${OPTARG};;
+    esac
+done
+if [ $# -eq 0 ]
+then
+    HZ_VERSION="4.1.4-SNAPSHOT"
+fi
+
 HAZELCAST_TEST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION="0.8-SNAPSHOT"
