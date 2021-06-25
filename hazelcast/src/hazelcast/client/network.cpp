@@ -1017,17 +1017,17 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &os, const Connection &connection) {
-                os << "ClientConnection{"
+                os << "Connection{"
                    << "alive=" << connection.is_alive()
-                   << ", connectionId=" << connection.get_connection_id()
-                   << ", remoteEndpoint=";
+                   << ", connection id=" << connection.get_connection_id()
+                   << ", remote endpoint=";
                 if (connection.get_remote_address()) {
                     os << *connection.get_remote_address();
                 } else {
                     os << "null";
                 }
-                os << ", lastReadTime=" << util::StringUtil::time_to_string(connection.last_read_time())
-                   << ", closedTime=" << util::StringUtil::time_to_string(std::chrono::steady_clock::time_point(
+                os << ", last read time=" << util::StringUtil::time_to_string(connection.last_read_time())
+                   << ", closed time=" << util::StringUtil::time_to_string(std::chrono::steady_clock::time_point(
                         std::chrono::duration_cast<std::chrono::steady_clock::duration>(connection.closed_time_duration_.load())))
                    << ", connected server version=" << connection.connected_server_version_string_
                    << '}';
