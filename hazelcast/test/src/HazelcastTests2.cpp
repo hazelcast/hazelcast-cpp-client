@@ -191,6 +191,14 @@ namespace hazelcast {
                 int64_t actualDuration = end - start;
                 ASSERT_GE(actualDuration, parkDurationNanos);
             }
+
+            TEST_F (ClientUtilTest, print_older_stead_clock_time) {
+                auto now = std::chrono::steady_clock::now();
+                auto time_str = hazelcast::util::StringUtil::time_to_string(now);
+                ASSERT_EQ(std::string::npos, time_str.substr(time_str.find_last_of('.')).find('-'));
+                time_str = hazelcast::util::StringUtil::time_to_string(now - std::chrono::milliseconds(1720));
+                ASSERT_EQ(std::string::npos, time_str.substr(time_str.find_last_of('.')).find('-'));
+            }
         }
     }
 }
