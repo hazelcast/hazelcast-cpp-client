@@ -769,8 +769,7 @@ namespace hazelcast {
 
             ReadHandler::ReadHandler(Connection &connection, size_t buffer_size)
                     : buffer(new char[buffer_size]), byte_buffer(buffer, buffer_size), builder_(connection),
-                      last_read_time_duration_(std::chrono::duration_cast<std::chrono::milliseconds>(
-                              std::chrono::steady_clock::now().time_since_epoch())) {
+                      last_read_time_(std::chrono::steady_clock::now()) {
             }
 
             ReadHandler::~ReadHandler() {
@@ -778,15 +777,14 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                last_read_time_duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::steady_clock::now().time_since_epoch());
+                last_read_time_ = std::chrono::steady_clock::now();
 
                 if (byte_buffer.position() == 0)
                     return;
 
                 byte_buffer.flip();
 
-                // it is important to check the ondata return value since there may be left data less than a message
+                // it is important to check the on_data return value since there may be left data less than a message
                 // header size, and this may cause an infinite loop.
                 while (byte_buffer.has_remaining() && builder_.on_data(byte_buffer)) {
                 }
@@ -799,8 +797,7 @@ namespace hazelcast {
             }
 
             std::chrono::steady_clock::time_point ReadHandler::get_last_read_time() const {
-                return std::chrono::steady_clock::time_point(
-                        std::chrono::duration_cast<std::chrono::steady_clock::duration>(last_read_time_duration_.load()));
+                return last_read_time_;
             }
 
             Connection::Connection(const address &address, spi::ClientContext &client_context, int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -813,7 +810,8 @@ namespace hazelcast {
                       client_context_(client_context),
                       invocation_service_(client_context.get_invocation_service()),
                       connection_id_(connection_id),
-                      remote_uuid_(boost::uuids::nil_uuid()), logger_(client_context.get_logger()), alive_(true) {
+                      remote_uuid_(boost::uuids::nil_uuid()), logger_(client_context.get_logger()), alive_(true),
+                      last_write_time_(std::chrono::steady_clock::now()) {
                 socket_ = socket_factory.create(address, connect_timeout_in_millis);
             }
 
@@ -1026,7 +1024,8 @@ namespace hazelcast {
                 } else {
                     os << "null";
                 }
-                os << ", lastReadTime=" << util::StringUtil::time_to_string(connection.last_read_time())
+                os << ", last_read_time=" << util::StringUtil::time_to_string(connection.last_read_time())
+                   << ", last_write_time=" << util::StringUtil::time_to_string(connection.last_write_time())
                    << ", closedTime=" << util::StringUtil::time_to_string(std::chrono::steady_clock::time_point(
                         std::chrono::duration_cast<std::chrono::steady_clock::duration>(connection.closed_time_duration_.load())))
                    << ", connected server version=" << connection.connected_server_version_string_
@@ -1057,6 +1056,14 @@ namespace hazelcast {
 
             void Connection::set_remote_uuid(boost::uuids::uuid remote_uuid) {
                 remote_uuid_ = remote_uuid;
+            }
+
+            void Connection::last_write_time(std::chrono::steady_clock::time_point time_point) {
+                last_write_time_ = time_point;
+            }
+
+            std::chrono::steady_clock::time_point Connection::last_write_time() const {
+                return last_write_time_;
             }
 
             HeartbeatManager::HeartbeatManager(spi::ClientContext &client,
@@ -1101,7 +1108,7 @@ namespace hazelcast {
                     return;
                 }
 
-                if (now - connection->last_read_time() > heartbeat_interval_) {
+                if (now - connection->last_write_time() > heartbeat_interval_) {
                     auto request = protocol::codec::client_ping_encode();
                     std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                             client_, request, "", connection);
