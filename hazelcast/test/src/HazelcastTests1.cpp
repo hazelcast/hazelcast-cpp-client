@@ -1367,14 +1367,18 @@ namespace hazelcast {
             };
 
             TEST_F(HeartbeatTest, testPing) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServerFactory f("hazelcast/test/resources/short-heartbeat.xml");
+                HazelcastServer instance(f);
                 client_config config = get_config();
-                config.set_property("hazelcast_client_heartbeat_interval", "1");
+                config.set_cluster_name("short-heartbeat-cluster").set_property("hazelcast_client_heartbeat_interval", "1");
 
                 hazelcast_client hz{hazelcast::new_client(std::move(config)).get()};
 
                 // sleep enough time so that the client ping is sent to the server
-                std::this_thread::sleep_for(std::chrono::seconds(3));
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+
+                // perform a map put
+                ASSERT_NO_THROW(hz.get_map("short-heartbeat-map").get()->put(1, 1));
             }
         }
     }

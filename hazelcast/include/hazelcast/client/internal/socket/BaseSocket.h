@@ -120,6 +120,9 @@ namespace hazelcast {
                                             "Error %1% during invocation write for %2% on connection %3%"} %
                                                     ec % *invocation % *connection).str();
                                     connection->close(message);
+                                } else {
+                                    // update the connection write time
+                                    connection->last_write_time(std::chrono::steady_clock::now());
                                 }
                             };
 
