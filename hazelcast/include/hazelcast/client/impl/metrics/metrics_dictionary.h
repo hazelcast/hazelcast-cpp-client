@@ -21,18 +21,19 @@
 #include <vector>
 
 #include "hazelcast/util/byte.h"
+#include "hazelcast/util/export.h"
 
 namespace hazelcast {
 namespace client {
 namespace impl {
 namespace metrics {
 
-class metrics_dictionary
+class HAZELCAST_API metrics_dictionary
 {
 private:
-    using ordered_map = std::map<std::string, int>;
+    using map = std::map<std::string, int>;
 public:
-    using const_iterator = ordered_map::const_iterator;
+    using const_iterator = map::const_iterator;
 
     int get_dictionary_id(const std::string &word);
 
@@ -41,7 +42,7 @@ public:
     std::size_t size() const noexcept;
 
 private:
-    ordered_map word_to_id;
+    map word_to_id;
 };
 
 } // namespace metrics

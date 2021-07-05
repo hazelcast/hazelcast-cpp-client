@@ -20,6 +20,8 @@
 
 #include <boost/optional.hpp>
 
+#include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace impl {
@@ -38,7 +40,7 @@ enum struct probe_unit
     NONE = -1
 };
 
-class metric_descriptor
+class HAZELCAST_API metric_descriptor
 {
 public:
     metric_descriptor(std::string prefix,

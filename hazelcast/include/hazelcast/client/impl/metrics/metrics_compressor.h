@@ -26,6 +26,7 @@
 #include "hazelcast/client/impl/metrics/metric_descriptor.h"
 #include "hazelcast/client/impl/metrics/metrics_dictionary.h"
 #include "hazelcast/util/byte.h"
+#include "hazelcast/util/export.h"
 
 namespace hazelcast {
 namespace client {
@@ -46,7 +47,7 @@ private:
     std::vector<byte> buffer_;
 };
 
-class metrics_compressor
+class HAZELCAST_API metrics_compressor
 {
 public:
     void add_long(const metric_descriptor &descriptor, int64_t value);
