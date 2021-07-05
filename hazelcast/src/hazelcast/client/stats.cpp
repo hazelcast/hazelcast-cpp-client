@@ -29,25 +29,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <boost/utility/string_view_fwd.hpp>
 #include <iomanip>
 
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/utility/string_view.hpp>
+#include <sstream>
 
-#include "hazelcast/client/impl/statistics/Statistics.h"
-#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/client_config.h"
 #include "hazelcast/client/client_properties.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/impl/metrics/metrics_compressor.h"
+#include "hazelcast/client/impl/metrics/metric_descriptor.h"
+#include "hazelcast/client/impl/statistics/Statistics.h"
+#include "hazelcast/client/internal/nearcache/NearCache.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
+#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/lifecycle_service.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/protocol/codec/codecs.h"
-#include "hazelcast/client/protocol/codec/codecs.h"
-#include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
-#include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
-#include "hazelcast/client/client_config.h"
 
 namespace hazelcast {
     namespace client {
@@ -114,12 +119,14 @@ namespace hazelcast {
                         }
 
                         std::ostringstream stats;
+                        metrics::metrics_compressor metrics_comp;
 
-                        periodic_stats_.fill_metrics(stats, connection);
+                        periodic_stats_.fill_metrics(stats, metrics_comp, connection);
 
-                        periodic_stats_.add_near_cache_stats(stats);
+                        periodic_stats_.add_near_cache_stats(stats, metrics_comp);
 
-                        send_stats(collection_timestamp, stats.str(), connection);
+
+                        send_stats(collection_timestamp, stats.str(), metrics_comp.get_blob(), connection);
                     }, std::chrono::seconds(0), std::chrono::seconds(period_seconds));
                 }
 
@@ -128,9 +135,9 @@ namespace hazelcast {
                 }
 
                 void Statistics::send_stats(int64_t timestamp, const std::string &new_stats,
+                                           const std::vector<byte> metrics_blob,
                                            const std::shared_ptr<connection::Connection> &connection) {
-                    // TODO: implement metrics blob
-                    auto request = protocol::codec::client_statistics_encode(timestamp, new_stats, std::vector<byte>());
+                    auto request = protocol::codec::client_statistics_encode(timestamp, new_stats, metrics_blob);
                     try {
                         spi::impl::ClientInvocation::create(client_context_, request, "", connection)->invoke().get();
                     } catch (exception::iexception &e) {
@@ -142,7 +149,8 @@ namespace hazelcast {
                 }
 
                 void Statistics::PeriodicStatistics::fill_metrics(std::ostringstream &stats,
-                                                                 const std::shared_ptr<connection::Connection> &connection) {
+                                                                  metrics::metrics_compressor &compressor,
+                                                                  const std::shared_ptr<connection::Connection> &connection) {
                     stats << "lastStatisticsCollectionTime" << KEY_VALUE_SEPARATOR << util::current_time_millis();
                     add_stat(stats, "enterprise", false);
                     add_stat(stats, "clientType", protocol::ClientTypes::CPP);
@@ -162,45 +170,148 @@ namespace hazelcast {
                     if (credential) {
                         add_stat(stats, "credentials.principal", credential->name());
                     }
+                    
+                    auto hw_concurrency = std::thread::hardware_concurrency();
+                    // necessary for compatibility with Management Center 4.0
+                    add_stat(stats, "runtime.availableProcessors", hw_concurrency);
+                    compressor.add_long({"runtime", "availableProcessors", metrics::probe_unit::COUNT}, hw_concurrency);
+
+                    // more gauges can be added here
                 }
 
-                void Statistics::PeriodicStatistics::add_near_cache_stats(std::ostringstream &stats) {
-                    for (auto nearCache : statistics_.client_context_.get_near_cache_manager().list_all_near_caches()) {
-                        std::string nearCacheName = nearCache->get_name();
-                        std::ostringstream nearCacheNameWithPrefix;
-                        get_name_with_prefix(nearCacheName, nearCacheNameWithPrefix);
+                void Statistics::PeriodicStatistics::add_near_cache_stats(std::ostringstream &stats,
+                                                                          metrics::metrics_compressor &compressor) {
+                    for (auto near_cache : statistics_.client_context_.get_near_cache_manager().list_all_near_caches()) {
+                        std::string nc_name = near_cache->get_name();
+                        
+                        std::ostringstream nc_name_with_prefix_strm;
+                        get_name_with_prefix(nc_name, nc_name_with_prefix_strm);
+                        nc_name_with_prefix_strm << '.';
+                        std::string nc_name_with_prefix = nc_name_with_prefix_strm.str();
 
-                        nearCacheNameWithPrefix << '.';
+                        auto nc_stats = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
+                          near_cache->get_near_cache_stats());
 
-                        auto nearCacheStats = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(nearCache->get_near_cache_stats());
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "creationTime",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_creation_time(),
+                                              metrics::probe_unit::MS);
 
-                        std::string prefix = nearCacheNameWithPrefix.str();
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "evictions",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_evictions(),
+                                              metrics::probe_unit::COUNT);
+                        
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "hits",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_hits(),
+                                              metrics::probe_unit::COUNT);
 
-                        add_stat(stats, prefix, "creationTime", nearCacheStats->get_creation_time());
-                        add_stat(stats, prefix, "evictions", nearCacheStats->get_evictions());
-                        add_stat(stats, prefix, "hits", nearCacheStats->get_hits());
-                        add_stat(stats, prefix, "lastPersistenceDuration",
-                                nearCacheStats->get_last_persistence_duration());
-                        add_stat(stats, prefix, "lastPersistenceKeyCount",
-                                nearCacheStats->get_last_persistence_key_count());
-                        add_stat(stats, prefix, "lastPersistenceTime",
-                                nearCacheStats->get_last_persistence_time());
-                        add_stat(stats, prefix, "lastPersistenceWrittenBytes",
-                                nearCacheStats->get_last_persistence_written_bytes());
-                        add_stat(stats, prefix, "misses", nearCacheStats->get_misses());
-                        add_stat(stats, prefix, "ownedEntryCount", nearCacheStats->get_owned_entry_count());
-                        add_stat(stats, prefix, "expirations", nearCacheStats->get_expirations());
-                        add_stat(stats, prefix, "invalidations", nearCacheStats->get_invalidations());
-                        add_stat(stats, prefix, "invalidationRequests",
-                                nearCacheStats->get_invalidation_requests());
-                        add_stat(stats, prefix, "ownedEntryMemoryCost",
-                                nearCacheStats->get_owned_entry_memory_cost());
-                        std::string persistenceFailure = nearCacheStats->get_last_persistence_failure();
-                        if (!persistenceFailure.empty()) {
-                            add_stat(stats, prefix, "lastPersistenceFailure", persistenceFailure);
-                        }
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "lastPersistenceDuration",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_last_persistence_duration(),
+                                              metrics::probe_unit::MS);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "lastPersistenceKeyCount",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_last_persistence_key_count(),
+                                              metrics::probe_unit::COUNT);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "lastPersistenceTime",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_last_persistence_time(),
+                                              metrics::probe_unit::MS);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "lastPersistenceWrittenBytes",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_last_persistence_written_bytes(),
+                                              metrics::probe_unit::BYTES);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "misses",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_misses(),
+                                              metrics::probe_unit::COUNT);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "ownedEntryCount",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_owned_entry_count(),
+                                              metrics::probe_unit::COUNT);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "expirations",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_expirations(),
+                                              metrics::probe_unit::COUNT);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "invalidations",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_invalidations(),
+                                              metrics::probe_unit::COUNT);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "invalidationRequests",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_invalidation_requests(),
+                                              metrics::probe_unit::COUNT);
+
+                        add_near_cache_metric(stats,
+                                              compressor,
+                                              "ownedEntryMemoryCost",
+                                              nc_name,
+                                              nc_name_with_prefix,
+                                              nc_stats->get_owned_entry_memory_cost(),
+                                              metrics::probe_unit::BYTES);
                     }
 
+                }
+
+                void Statistics::PeriodicStatistics::add_near_cache_metric(std::ostringstream &stats, 
+                                                                           metrics::metrics_compressor &compressor,
+                                                                           const std::string &metric,
+                                                                           const std::string &near_cache_name,
+                                                                           const std::string &near_cache_name_with_prefix,
+                                                                           int64_t value,
+                                                                           metrics::probe_unit unit) {
+
+                    metrics::metric_descriptor desc{ "nearcache", metric, "name", near_cache_name };
+                    compressor.add_long(desc, value);
+
+                    // necessary for compatibility with Management Center 4.0
+                    add_stat(stats, near_cache_name_with_prefix, metric, value);
                 }
 
                 Statistics::PeriodicStatistics::PeriodicStatistics(Statistics &statistics) : statistics_(statistics) {}
@@ -425,6 +536,8 @@ namespace hazelcast {
                 }
 
                 const double NearCacheStatsImpl::PERCENTAGE = 100.0;
+
+
             }
         }
     }
