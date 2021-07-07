@@ -42,6 +42,7 @@ public:
     void write(const std::string &str);
     void write(const std::vector<byte> &vec);
     const std::vector<byte> &content() const;
+    std::vector<byte> &content();
     
 private:
     std::vector<byte> buffer_;

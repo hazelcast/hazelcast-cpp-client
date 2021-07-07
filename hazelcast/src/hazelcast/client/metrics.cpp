@@ -64,7 +64,7 @@ std::vector<byte> zlib_compress(const std::vector<byte> &input)
       (std::max)(static_cast<std::size_t>(1), (input.size() + max_block_size - 1) / max_block_size);
 
     std::vector<byte> output;
-    
+
     // reserve enough space beforehand
     output.reserve(input.size()     // input size itself
                    + 2              // zlib header
@@ -237,6 +237,10 @@ const std::vector<byte> &output_buffer::content() const {
     return buffer_;
 }
 
+std::vector<byte> &output_buffer::content() {
+    return buffer_;
+}
+
 void metrics_compressor::add_long(const metric_descriptor &descriptor, int64_t value) {
     write_descriptor(descriptor);
     metrics_buffer_.write(static_cast<byte>(VALUE_TYPE_LONG));
@@ -264,7 +268,7 @@ std::vector<byte> metrics_compressor::get_blob() {
     blob.write(static_cast<int32_t>(metrics_count));
     blob.write(compressed_metrics);
 
-    return blob.content();
+    return std::move(blob.content());
 }
 
 int metrics_compressor::calculate_descriptor_mask(const metric_descriptor &descriptor) {
@@ -354,7 +358,7 @@ void metrics_compressor::write_dictionary() {
         const auto &word = item.first;
         const auto &id = item.second;
 
-        int common_len = find_common_prefix_length(last_word, word);
+        auto common_len = find_common_prefix_length(last_word, word);
 
         dictionary_buffer_.write(static_cast<int32_t>(id));
         dictionary_buffer_.write(static_cast<byte>(common_len));
