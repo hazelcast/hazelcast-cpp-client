@@ -307,7 +307,7 @@ namespace hazelcast {
                                                                            int64_t value,
                                                                            metrics::probe_unit unit) {
 
-                    metrics::metric_descriptor desc{ "nearcache", metric, "name", near_cache_name };
+                    metrics::metric_descriptor desc{ "nearcache", metric, "name", near_cache_name, unit };
                     compressor.add_long(desc, value);
 
                     // necessary for compatibility with Management Center 4.0
