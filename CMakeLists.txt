@@ -81,9 +81,6 @@ find_package(Threads REQUIRED)
 # find Boost
 find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
 
-# find ZLIB
-find_package(ZLIB 1 REQUIRED) # TODO find minimum compatible version
-
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)
     if (APPLE)
@@ -128,12 +125,6 @@ target_link_libraries(
 target_compile_definitions(
         ${PROJECT_NAME}
         PUBLIC BOOST_THREAD_VERSION=5
-)
-
-# add ZLIB::ZLIB as dependency
-target_link_libraries(
-        ${PROJECT_NAME}
-        PRIVATE ZLIB::ZLIB
 )
 
 # If building WITH_OPENSSL, add OpenSSL::SSL and OpenSSL::Crypto as dependencies

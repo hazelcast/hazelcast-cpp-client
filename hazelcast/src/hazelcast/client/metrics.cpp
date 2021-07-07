@@ -1,13 +1,14 @@
 #include <string>
 #include <vector>
+#include <iostream>
+#include <algorithm>
 
 #include <boost/endian/conversion.hpp>
-
-#include <zlib.h>
 
 #include <hazelcast/client/impl/metrics/metric_descriptor.h>
 #include <hazelcast/client/impl/metrics/metrics_compressor.h>
 #include <hazelcast/client/impl/metrics/metrics_dictionary.h>
+#include <hazelcast/util/byte.h>
 
 namespace hazelcast {
 namespace client {
@@ -47,21 +48,74 @@ std::size_t find_common_prefix_length(const std::string &s1, const std::string &
     return len;
 }
 
-std::vector<byte> zlib_compress(const std::vector<byte> &input) {
-    const auto max_output_len = compressBound(input.size());
+/**
+* ZLIB compress with compression level of 0 (no compression)
+* 
+* References:
+*   https://datatracker.ietf.org/doc/html/rfc1950
+*   https://datatracker.ietf.org/doc/html/rfc1951
+*   https://en.wikipedia.org/wiki/Adler-32
+*/
+std::vector<byte> zlib_compress(const std::vector<byte> &input)
+{
+    constexpr std::size_t max_block_size = (1 << 16) - 1;
 
-    auto output_len = max_output_len;
-    std::vector<byte> output(output_len);
+    const size_t num_blocks =
+      (std::max)(static_cast<std::size_t>(1), (input.size() + max_block_size - 1) / max_block_size);
 
-    int rc = compress2(output.data(), &output_len, input.data(), input.size(), Z_BEST_SPEED);
+    std::vector<byte> output;
+    
+    // reserve enough space beforehand
+    output.reserve(input.size()     // input size itself
+                   + 2              // zlib header
+                   + 4              // Adler32 checksum
+                   + 5 * num_blocks // block headers
+    );
 
-    if (rc == Z_MEM_ERROR) {
-        throw std::bad_alloc{};
+    // ZLIB header
+    output.push_back(static_cast<byte>(120)); // CMF
+    output.push_back(static_cast<byte>(1));   // FLG
+
+    constexpr long adler32_mod = 65521;
+    long a1 = 1, a2 = 0; // accumulators for Adler32 checksum
+
+    for (std::size_t block_start = 0U; block_start == 0U || block_start < input.size();
+         block_start += max_block_size) {
+        const auto block_end = (std::min)(block_start + max_block_size, input.size());
+        const auto block_size = block_end - block_start;
+
+        const bool is_final = block_end == input.size();
+
+        // block header
+        output.push_back(static_cast<byte>(is_final)); // BFINAL = is_final, BTYPE = 00
+        output.push_back(block_size & 0xff);           // LEN - least significant
+        output.push_back(block_size >> 8);             // LEN - most significant
+        output.push_back((~block_size) & 0xff);        // NLEN - least significant
+        output.push_back((~block_size) >> 8);          // NLEN - most significant
+
+        // copy uncompressed bytes and accumulate checksum
+        for (std::size_t i = block_start; i < block_end; i++) {
+            const auto x = input[i];
+
+            output.push_back(x);
+
+            a1 += x;
+            if (a1 >= adler32_mod) {
+                a1 -= adler32_mod;
+            }
+
+            a2 += a1;
+            if (a2 >= adler32_mod) {
+                a2 -= adler32_mod;
+            }
+        }
     }
 
-    assert(rc == Z_OK);
-
-    output.resize(output_len);
+    // Adler32 checksum
+    output.push_back(a2 >> 8);
+    output.push_back(a2 & 0xff);
+    output.push_back(a1 >> 8);
+    output.push_back(a1 & 0xff);
 
     return output;
 }
