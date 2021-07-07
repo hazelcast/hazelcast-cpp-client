@@ -537,7 +537,6 @@ namespace hazelcast {
 
                 const double NearCacheStatsImpl::PERCENTAGE = 100.0;
 
-
             }
         }
     }
