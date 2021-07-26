@@ -434,13 +434,8 @@ namespace hazelcast {
                 return std::string("never");
             }
 
-            auto systemDuration = duration_cast<system_clock::duration>(t - steady_clock::now());
-            auto msecs = duration_cast<milliseconds>(systemDuration).count() % 1000;
-            auto system_time = system_clock::now() + systemDuration;
-            if (msecs < 0) {
-                msecs = 1000 + msecs;
-                system_time -= std::chrono::seconds(1);
-            }
+            auto system_time = system_clock::now() + duration_cast<system_clock::duration>(t - steady_clock::now());
+            auto msecs = duration_cast<milliseconds>(system_time.time_since_epoch()).count() % 1000;
 
             auto brokenTime = system_clock::to_time_t(system_time);
             struct tm localBrokenTime;
@@ -452,7 +447,7 @@ namespace hazelcast {
             char time_buffer[80];
             std::strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", &localBrokenTime);
             oss << time_buffer;
-            oss << '.' << msecs;
+            oss << '.' << std::setfill('0') << std::setw(3) << msecs;
 
             return oss.str();
         }
