@@ -172,7 +172,7 @@ namespace hazelcast {
                 std::string timeString = hazelcast::util::StringUtil::time_to_string(
                         std::chrono::steady_clock::now());
                 //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
-                ASSERT_LE((size_t) 21, timeString.length());
+                ASSERT_EQ(static_cast<std::size_t>(23), timeString.length());
                 ASSERT_EQ(timeString[0], '2');
                 ASSERT_EQ(timeString[1], '0');
                 ASSERT_EQ(timeString[4], '-');
@@ -2178,4 +2178,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
