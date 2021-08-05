@@ -1,4 +1,4 @@
-FROM fedora:latest
+FROM fedora:33
 
 RUN dnf groups install -y "Development Tools"
 RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.i686 cmake valgrind rsync passwd openssh-server ninja-build java-1.8.0-openjdk
