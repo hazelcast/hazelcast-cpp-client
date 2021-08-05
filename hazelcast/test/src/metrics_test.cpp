@@ -80,22 +80,20 @@ TEST(metrics_compressor_test, test_blob) {
     metrics_compressor compressor;
 
     compressor.add_long({ "prefix1", "metric1", "name", "john", probe_unit::COUNT }, 42);
-    
-    compressor.add_double({ "prefix1", "metric2", "name", "josh", probe_unit::MS }, -4.2);
-    
+
+    compressor.add_long({ "prefix1", "metric2", "name", "josh", probe_unit::MS }, -111);
+
     compressor.add_long({ "prefix2", "metric1", "disc", "val", probe_unit::BYTES }, 0);
     
     compressor.add_long({ "prefix2", "metric3", "name", "john" }, 123);
     
     compressor.add_long({ "prefix2", "metric5", "id", "15" }, 32);
-    
-    compressor.add_double({ "prefix3", "metric5", "id2", "15", probe_unit::PERCENT }, 47.2);
-    
+
+    compressor.add_long({ "prefix3", "metric5", "id2", "15", probe_unit::PERCENT }, 83);
+
     compressor.add_long(
       { std::string(255, 'a'), std::string(255, 'b'), "name", "x", probe_unit::COUNT },
       0x7FFFFFFFFFFFFFFFLL);
-    
-    compressor.add_double({ "prefix4", "metric1" }, 1e18);
 
     auto actual_blob = compressor.get_blob();
     

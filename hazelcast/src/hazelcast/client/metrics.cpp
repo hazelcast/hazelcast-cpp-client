@@ -20,24 +20,17 @@ namespace {
 constexpr int MAX_WORD_LENGTH = 255;
 constexpr int NULL_DICTIONARY_ID = -1;
 
-constexpr int MASK_PREFIX = 1 << 0;
-constexpr int MASK_METRIC = 1 << 1;
-constexpr int MASK_DISCRIMINATOR = 1 << 2;
-constexpr int MASK_DISCRIMINATOR_VALUE = 1 << 3;
-constexpr int MASK_UNIT = 1 << 4;
-constexpr int MASK_EXCLUDED_TARGETS = 1 << 5;
-constexpr int MASK_TAG_COUNT = 1 << 6;
-
-constexpr int SIZE_VERSION = 2;
-constexpr int SIZE_DICTIONARY_BLOB = 4;
-constexpr int SIZE_COUNT_METRICS = 4;
+constexpr byte MASK_PREFIX = 1 << 0;
+constexpr byte MASK_METRIC = 1 << 1;
+constexpr byte MASK_DISCRIMINATOR = 1 << 2;
+constexpr byte MASK_DISCRIMINATOR_VALUE = 1 << 3;
+constexpr byte MASK_UNIT = 1 << 4;
+constexpr byte MASK_EXCLUDED_TARGETS = 1 << 5;
+constexpr byte MASK_TAG_COUNT = 1 << 6;
 
 constexpr int VALUE_TYPE_LONG = 0;
-constexpr int VALUE_TYPE_DOUBLE = 1;
 
-constexpr int BITS_IN_BYTE = 8;
-constexpr int BYTE_MASK = 0xff;
-constexpr int BINARY_FORMAT_VERSION = 1;
+constexpr byte BINARY_FORMAT_VERSION = 1;
 
 
 std::size_t find_common_prefix_length(const std::string &s1, const std::string &s2) {
@@ -214,14 +207,6 @@ void output_buffer::write(int64_t val) {
       buffer_.data() + pos, val);
 }
 
-void output_buffer::write(double val) {
-    auto pos = buffer_.size();
-    buffer_.resize(pos + sizeof(double));
-
-    boost::endian::endian_store<double, sizeof(double), boost::endian::order::big>(
-      buffer_.data() + pos, val);
-}
-
 void output_buffer::write(const std::string &str) {
     for (char c: str) {
         buffer_.push_back(static_cast<byte>(0));
@@ -247,12 +232,6 @@ void metrics_compressor::add_long(const metric_descriptor &descriptor, int64_t v
     metrics_buffer_.write(value);
 }
 
-void metrics_compressor::add_double(const metric_descriptor &descriptor, double value) {
-    write_descriptor(descriptor);
-    metrics_buffer_.write(static_cast<byte>(VALUE_TYPE_DOUBLE));
-    metrics_buffer_.write(value);
-}
-
 std::vector<byte> metrics_compressor::get_blob() {
     write_dictionary();
     
@@ -261,8 +240,8 @@ std::vector<byte> metrics_compressor::get_blob() {
 
     output_buffer blob;
 
-    blob.write(static_cast<byte>((BINARY_FORMAT_VERSION >> BITS_IN_BYTE) & BYTE_MASK));
-    blob.write(static_cast<byte>(BINARY_FORMAT_VERSION & BYTE_MASK));
+    blob.write(static_cast<byte>(0));
+    blob.write(BINARY_FORMAT_VERSION);
     blob.write(static_cast<int32_t>(compressed_dictionary.size()));
     blob.write(compressed_dictionary);
     blob.write(static_cast<int32_t>(metrics_count));
@@ -271,8 +250,8 @@ std::vector<byte> metrics_compressor::get_blob() {
     return std::move(blob.content());
 }
 
-int metrics_compressor::calculate_descriptor_mask(const metric_descriptor &descriptor) {
-    int mask = 0;
+byte metrics_compressor::calculate_descriptor_mask(const metric_descriptor &descriptor) {
+    byte mask = 0;
 
     if (last_descriptor_) {
         if (descriptor.prefix() == last_descriptor_->prefix()) {
@@ -303,29 +282,29 @@ int metrics_compressor::calculate_descriptor_mask(const metric_descriptor &descr
     return mask;
 }
 
-int metrics_compressor::get_dictionary_id(const boost::optional<std::string> &word) {
+int32_t metrics_compressor::get_dictionary_id(const boost::optional<std::string> &word) {
     if (!word) {
         return NULL_DICTIONARY_ID;
     }
 
-    return dictionary_.get_dictionary_id(word.get());
+    return static_cast<int32_t>(dictionary_.get_dictionary_id(word.get()));
 }
 
 void metrics_compressor::write_descriptor(const metric_descriptor &descriptor) {
-    int mask = calculate_descriptor_mask(descriptor);
+    byte mask = calculate_descriptor_mask(descriptor);
 
-    metrics_buffer_.write(static_cast<byte>(mask));
+    metrics_buffer_.write(mask);
 
     if ((mask & MASK_PREFIX) == 0) {
-        metrics_buffer_.write(static_cast<int32_t>(get_dictionary_id(descriptor.prefix())));
+        metrics_buffer_.write(get_dictionary_id(descriptor.prefix()));
     }
 
     if ((mask & MASK_METRIC) == 0) {
-        metrics_buffer_.write(static_cast<int32_t>(get_dictionary_id(descriptor.metric())));
+        metrics_buffer_.write(get_dictionary_id(descriptor.metric()));
     }
 
     if ((mask & MASK_DISCRIMINATOR) == 0) {
-        metrics_buffer_.write(static_cast<int32_t>(get_dictionary_id(descriptor.discriminator())));
+        metrics_buffer_.write(get_dictionary_id(descriptor.discriminator()));
     }
 
     if ((mask & MASK_DISCRIMINATOR_VALUE) == 0) {

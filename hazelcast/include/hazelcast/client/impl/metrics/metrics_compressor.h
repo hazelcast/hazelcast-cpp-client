@@ -38,7 +38,6 @@ public:
     void write(byte val);
     void write(int32_t val);
     void write(int64_t val);
-    void write(double val);
     void write(const std::string &str);
     void write(const std::vector<byte> &vec);
     const std::vector<byte> &content() const;
@@ -52,11 +51,10 @@ class HAZELCAST_API metrics_compressor
 {
 public:
     void add_long(const metric_descriptor &descriptor, int64_t value);
-    void add_double(const metric_descriptor &descriptor, double value);
     std::vector<byte> get_blob();
 
 private:
-    int calculate_descriptor_mask(const metric_descriptor &descriptor);
+    byte calculate_descriptor_mask(const metric_descriptor &descriptor);
     int get_dictionary_id(const boost::optional<std::string> &word);
     void write_descriptor(const metric_descriptor &descriptor);
     void write_dictionary();
