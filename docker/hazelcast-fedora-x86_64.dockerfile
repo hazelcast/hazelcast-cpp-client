@@ -2,7 +2,7 @@ FROM fedora:33
 
 RUN dnf groups install -y "Development Tools" && \
     dnf install -y gcc-c++ gdb compat-openssl10-devel.x86_64 cmake java-1.8.0-openjdk.x86_64 rsync passwd \
-                   openssh-server ninja-build maven net-tools gcovr fedora-repos-rawhide thrift-devel boost-devel
+                   openssh-server ninja-build maven net-tools gcovr boost-devel thrift-devel
 
 RUN ssh-keygen -A
 
