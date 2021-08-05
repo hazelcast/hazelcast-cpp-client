@@ -1015,10 +1015,10 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &os, const Connection &connection) {
-                os << "ClientConnection{"
+                os << "Connection{"
                    << "alive=" << connection.is_alive()
-                   << ", connectionId=" << connection.get_connection_id()
-                   << ", remoteEndpoint=";
+                   << ", connection id=" << connection.get_connection_id()
+                   << ", remote endpoint=";
                 if (connection.get_remote_address()) {
                     os << *connection.get_remote_address();
                 } else {

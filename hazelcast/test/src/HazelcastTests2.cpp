@@ -172,7 +172,7 @@ namespace hazelcast {
                 std::string timeString = hazelcast::util::StringUtil::time_to_string(
                         std::chrono::steady_clock::now());
                 //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
-                ASSERT_EQ((size_t) 23, timeString.length());
+                ASSERT_EQ(static_cast<std::size_t>(23), timeString.length());
                 ASSERT_EQ(timeString[0], '2');
                 ASSERT_EQ(timeString[1], '0');
                 ASSERT_EQ(timeString[4], '-');
@@ -190,6 +190,14 @@ namespace hazelcast {
                 int64_t end = hazelcast::util::current_time_nanos();
                 int64_t actualDuration = end - start;
                 ASSERT_GE(actualDuration, parkDurationNanos);
+            }
+
+            TEST_F (ClientUtilTest, print_older_steady_clock_time) {
+                auto now = std::chrono::steady_clock::now();
+                auto time_str = hazelcast::util::StringUtil::time_to_string(now);
+                ASSERT_EQ(std::string::npos, time_str.substr(time_str.find_last_of('.')).find('-'));
+                time_str = hazelcast::util::StringUtil::time_to_string(now - std::chrono::milliseconds(1720));
+                ASSERT_EQ(std::string::npos, time_str.substr(time_str.find_last_of('.')).find('-'));
             }
         }
     }
@@ -2170,4 +2178,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
