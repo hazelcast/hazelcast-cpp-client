@@ -21,11 +21,13 @@
 #include <string>
 #include <stdint.h>
 #include <boost/endian/conversion.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
+#include "hazelcast/client/hazelcast_json_value.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

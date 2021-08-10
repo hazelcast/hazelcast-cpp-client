@@ -16,12 +16,14 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <sstream>
 #include <memory>
 
 #include <boost/asio/steady_timer.hpp>
 
+#include "hazelcast/client/impl/metrics/metric_descriptor.h"
+#include "hazelcast/util/byte.h"
 #include "hazelcast/util/export.h"
 #include "hazelcast/util/Sync.h"
 
@@ -40,7 +42,13 @@ namespace hazelcast {
             class ClientContext;
         }
         namespace impl {
+
+            namespace metrics {
+                class metrics_compressor;
+            }
+
             namespace statistics {
+
                 class Statistics {
                 public:
                     explicit Statistics(spi::ClientContext &client_context);
@@ -62,13 +70,24 @@ namespace hazelcast {
                         PeriodicStatistics(Statistics &statistics);
 
                         void fill_metrics(std::ostringstream &stats,
-                                         const std::shared_ptr<connection::Connection> &connection);
+                                          metrics::metrics_compressor &compressor,
+                                          const std::shared_ptr<connection::Connection> &connection);
 
-                        void add_near_cache_stats(std::ostringstream &stats);
+                        void add_near_cache_stats(std::ostringstream &stats, metrics::metrics_compressor &compressor);
+                        void add_near_cache_metric(std::ostringstream& stats,
+                                                   metrics::metrics_compressor& compressor,
+                                                   const std::string &metric,
+                                                   const std::string &near_cache_name,
+                                                   const std::string &near_cache_name_with_prefix,
+                                                   int64_t value,
+                                                   metrics::probe_unit unit);
 
-                    private:
+                    private: 
                         template<typename T>
-                        void add_stat(std::ostringstream &stats, const std::string &name, const T &value) {
+                        void add_stat(std::ostringstream &stats,
+                                      const std::string &name,
+                                      const T &value)
+                        {
                             add_stat(stats, "", name, value);
                         }
 
@@ -93,6 +112,7 @@ namespace hazelcast {
                     std::shared_ptr<connection::Connection> get_connection();
 
                     void send_stats(int64_t timestamp, const std::string &new_stats,
+                                   const std::vector<byte> metrics_blob,
                                    const std::shared_ptr<connection::Connection> &connection);
 
                     static std::string escape_special_characters(std::string &name);
