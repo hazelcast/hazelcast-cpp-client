@@ -661,6 +661,8 @@ namespace hazelcast {
                         new ClientClusterServiceImpl::member_list_snapshot{-1});
 
                 constexpr boost::chrono::milliseconds ClientClusterServiceImpl::INITIAL_MEMBERS_TIMEOUT;
+                const endpoint_qualifier ClientClusterServiceImpl::CLIENT{1, ""};
+                const endpoint_qualifier ClientClusterServiceImpl::MEMBER{0, ""};
 
                 ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
                         : client_(client), member_list_snapshot_(EMPTY_SNAPSHOT),
@@ -840,7 +842,22 @@ namespace hazelcast {
                     member_list_snapshot result;
                     result.version = version;
                     for (auto &m : members) {
-                        result.members.insert({m.get_uuid(), m});
+                        auto const &address_map = m.address_map();
+                        if (address_map.empty()) {
+                            result.members.insert({m.get_uuid(), m});
+                        } else {
+                            auto found = address_map.find(CLIENT);
+                            address member_address;
+                            if (found != address_map.end()) {
+                                member_address = found->second;
+                            } else {
+                                found = address_map.find(MEMBER);
+                                assert(found != address_map.end());
+                                member_address = found->second;
+                            }
+                            member new_member(member_address, m.get_uuid(), m.is_lite_member(), m.get_attributes(), m.address_map());
+                            result.members.emplace(new_member.get_uuid(), std::move(new_member));
+                        }
                     }
 
                     return result;

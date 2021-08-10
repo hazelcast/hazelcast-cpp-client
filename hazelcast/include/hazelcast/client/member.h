@@ -27,9 +27,25 @@
 #pragma warning(disable: 4251) //for dll export	
 #endif
 
+namespace hazelcast { namespace client {
+    struct HAZELCAST_API endpoint_qualifier {
+        int32_t type;
+        std::string identifier;
+
+        friend bool HAZELCAST_API operator==(const endpoint_qualifier &lhs, const endpoint_qualifier &rhs);
+    };
+}}
+
+namespace std {
+    template<>
+    struct HAZELCAST_API hash<hazelcast::client::endpoint_qualifier> {
+        std::size_t operator()(const hazelcast::client::endpoint_qualifier &qualifier) const noexcept;
+    };
+}
+
+
 namespace hazelcast {
     namespace client {
-
         /**
          * hz_cluster member class. The default implementation
          *
@@ -47,9 +63,17 @@ namespace hazelcast {
                 REMOVE = 2
             };
 
+            struct version {
+                byte major;
+                byte minor;
+                byte patch;
+            };
+
             member();
 
-            member(address address, boost::uuids::uuid uuid, bool lite, std::unordered_map<std::string, std::string> attr);
+            member(address member_address, boost::uuids::uuid uuid, bool lite,
+                   std::unordered_map<std::string, std::string> attr,
+                   std::unordered_map<endpoint_qualifier, address> address_map);
 
             member(address member_address);
 
@@ -101,6 +125,8 @@ namespace hazelcast {
              */
             bool lookup_attribute(const std::string &key) const;
 
+            const std::unordered_map<endpoint_qualifier, address> &address_map() const;
+
             bool operator<(const member &rhs) const;
 
         private:
@@ -108,6 +134,7 @@ namespace hazelcast {
             boost::uuids::uuid uuid_;
             bool lite_member_;
             std::unordered_map<std::string, std::string> attributes_;
+            std::unordered_map<endpoint_qualifier, address> address_map_;
         };
 
         std::ostream HAZELCAST_API &operator<<(std::ostream &out, const member &member);

@@ -152,6 +152,19 @@ namespace hazelcast {
 
                 socket_options &get_socket_options();
 
+                /**
+                 *
+                 * @return true if the public address of the server needs to be used when connecting to the cluster.
+                 */
+                bool use_public_address() const;
+
+                /**
+                 *
+                 * @param should_use_public_address `true` mean force usage of the public address of the server when
+                 * connecting to the server. Otherwise, set to `false` to use the private address. Default is `false`.
+                 */
+                void use_public_address(bool should_use_public_address);
+
             private:
                 config::ssl_config ssl_config_;
                 config::client_aws_config client_aws_config_;
@@ -163,6 +176,8 @@ namespace hazelcast {
                 std::vector<address> address_list_;
 
                 socket_options socket_options_;
+
+                bool use_public_address_{false};
             };
         }
     }
