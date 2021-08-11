@@ -162,8 +162,9 @@ namespace hazelcast {
                  *
                  * @param should_use_public_address `true` mean force usage of the public address of the server when
                  * connecting to the server. Otherwise, set to `false` to use the private address. Default is `false`.
+                * @return configured \client_network_config for chaining
                  */
-                void use_public_address(bool should_use_public_address);
+                client_network_config &use_public_address(bool should_use_public_address);
 
             private:
                 config::ssl_config ssl_config_;

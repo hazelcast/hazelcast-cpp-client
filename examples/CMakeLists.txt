@@ -56,6 +56,7 @@ add_subdirectory(pipeline)
 add_subdirectory(authentication)
 add_subdirectory(cp)
 add_subdirectory(soak-test)
+add_subdirectory(external-smart-client-discovery)
 
 if (${WITH_OPENSSL})
     add_subdirectory(tls)

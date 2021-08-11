@@ -322,8 +322,9 @@ namespace hazelcast {
                 return use_public_address_;
             }
 
-            void client_network_config::use_public_address(bool should_use_public_address) {
+            client_network_config &client_network_config::use_public_address(bool should_use_public_address) {
                 use_public_address_ = should_use_public_address;
+                return *this;
             }
 
             client_connection_strategy_config::client_connection_strategy_config() : async_start_(false), reconnect_mode_(ON) {
