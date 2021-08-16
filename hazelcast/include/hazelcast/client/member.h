@@ -79,10 +79,7 @@ namespace hazelcast {
 
             member(boost::uuids::uuid uuid);
 
-            /**
-             * comparison operation
-             */
-            bool operator==(const member &) const;
+            friend bool operator==(const member &lhs, const member &rhs);
 
             /**
              *

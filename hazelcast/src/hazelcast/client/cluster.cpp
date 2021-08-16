@@ -78,10 +78,6 @@ member::member(address member_address, boost::uuids::uuid uuid, bool lite,
         member::member(boost::uuids::uuid uuid) : uuid_(uuid), lite_member_(false) {
         }
 
-        bool member::operator==(const member &rhs) const {
-            return uuid_ == rhs.uuid_;
-        }
-
         const address &member::get_address() const {
             return address_;
         }
@@ -131,6 +127,11 @@ member::member(address member_address, boost::uuids::uuid uuid, bool lite,
 
         const std::unordered_map<endpoint_qualifier, address> &member::address_map() const {
             return address_map_;
+        }
+
+        bool operator==(const member &lhs, const member &rhs) {
+            return lhs.address_ == rhs.address_ &&
+                   lhs.uuid_ == rhs.uuid_;
         }
 
         endpoint::endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address)

@@ -657,6 +657,10 @@ namespace hazelcast {
                     return addr;
                 }
 
+                bool DefaultAddressProvider::is_default_provider() {
+                    return true;
+                }
+
                 const boost::shared_ptr<ClientClusterServiceImpl::member_list_snapshot> ClientClusterServiceImpl::EMPTY_SNAPSHOT(
                         new ClientClusterServiceImpl::member_list_snapshot{-1});
 

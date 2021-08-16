@@ -85,8 +85,9 @@ namespace hazelcast {
                       wait_strategy_(client.get_client_config().get_connection_strategy_config().get_retry_config(),
                                      logger_), cluster_id_(boost::uuids::nil_uuid()),
                       connect_to_cluster_task_submitted_(false),
-                      use_public_address_(client.get_client_config().get_network_config().use_public_address()){
-
+                      use_public_address_(address_provider_->is_default_provider()
+                                          ? client.get_client_config().get_network_config().use_public_address()
+                                          : false) {
                 config::client_network_config &networkConfig = client.get_client_config().get_network_config();
                 auto connTimeout = networkConfig.get_connection_timeout();
                 if (connTimeout.count() > 0) {
@@ -783,6 +784,10 @@ namespace hazelcast {
 
             std::chrono::steady_clock::time_point ReadHandler::get_last_read_time() const {
                 return last_read_time_;
+            }
+
+            bool AddressProvider::is_default_provider() {
+                return false;
             }
 
             Connection::Connection(const address &address, spi::ClientContext &client_context, int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)

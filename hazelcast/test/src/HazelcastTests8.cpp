@@ -1772,13 +1772,7 @@ namespace hazelcast {
 
                 class test_address_provider : public connection::AddressProvider {
                     public:
-                        test_address_provider(bool shouldTranslate) : should_translate(shouldTranslate) {}
-
                         boost::optional<address> translate(const address &addr) override {
-                                if (!should_translate) {
-                                    return addr;
-                                }
-
                                 if (addr == private_address) {
                                     return public_address;
                                 }
@@ -1789,8 +1783,6 @@ namespace hazelcast {
                         std::vector<address> load_addresses() override {
                             return std::vector<address>{{"localhost", 5701}};
                         }
-                    private:
-                        bool should_translate;
                 };
             protected:
                 static HazelcastServer *instance_;
@@ -1817,7 +1809,7 @@ namespace hazelcast {
                 spi::ClientContext ctx(client);
                 connection::ClientConnectionManagerImpl connection_manager(ctx,
                                                                            std::unique_ptr<connection::AddressProvider>(
-                                                                                   new test_address_provider{true}));
+                                                                                   new test_address_provider{}));
 
                 // throws exception because it can't connect to the cluster using translated public unreachable address
                 ASSERT_THROW(connection_manager.start(), exception::illegal_state);
@@ -1851,7 +1843,13 @@ namespace hazelcast {
                 member m(public_address, ctx.get_hazelcast_client_implementation()->random_uuid(), false, {},
                          {{endpoint_qualifier{1, "public"}, address{"127.0.0.1", 5701}}});
 
-                ASSERT_THROW(ctx.get_connection_manager().get_or_connect(m), std::exception);
+                try {
+                    ctx.get_connection_manager().get_or_connect(m);
+                } catch(boost::system::system_error &e) {
+                    ASSERT_EQ(boost::asio::error::network_unreachable, e.code());
+                } catch (...) {
+                    FAIL();
+                }
             }
 
             TEST_F(connection_manager_translate, default_config_uses_private_addresses) {

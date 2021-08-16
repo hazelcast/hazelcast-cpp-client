@@ -43,6 +43,11 @@ namespace hazelcast {
                  */
                 virtual boost::optional<address> translate(const address &addr) = 0;
 
+                /**
+                 * @return true for the \DefaultAddressProvider , false otherwise.
+                 */
+                virtual bool is_default_provider();
+
                 virtual ~AddressProvider() = default;
             };
         }
