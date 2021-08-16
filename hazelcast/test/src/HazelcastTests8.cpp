@@ -1843,13 +1843,7 @@ namespace hazelcast {
                 member m(public_address, ctx.get_hazelcast_client_implementation()->random_uuid(), false, {},
                          {{endpoint_qualifier{1, "public"}, address{"127.0.0.1", 5701}}});
 
-                try {
-                    ctx.get_connection_manager().get_or_connect(m);
-                } catch(boost::system::system_error &e) {
-                    ASSERT_EQ(boost::asio::error::network_unreachable, e.code());
-                } catch (...) {
-                    FAIL();
-                }
+                ASSERT_THROW(ctx.get_connection_manager().get_or_connect(m), boost::system::system_error);
             }
 
             TEST_F(connection_manager_translate, default_config_uses_private_addresses) {
