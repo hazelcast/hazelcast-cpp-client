@@ -65,11 +65,11 @@ namespace hazelcast {
         member::member() : lite_member_(false) {
         }
 
-        member::member(address member_address, boost::uuids::uuid uuid, bool lite,
+member::member(address member_address, boost::uuids::uuid uuid, bool lite,
                        std::unordered_map<std::string, std::string> attr,
                        std::unordered_map<endpoint_qualifier, address> address_map) :
-                       address_(member_address), uuid_(uuid), lite_member_(lite), attributes_(attr),
-                       address_map_(address_map) {
+                address_(std::move(member_address)), uuid_(uuid), lite_member_(lite),
+                attributes_(std::move(attr)), address_map_(std::move(address_map)) {
         }
 
         member::member(address member_address) : address_(member_address), lite_member_(false) {
