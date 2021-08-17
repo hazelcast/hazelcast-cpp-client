@@ -22,7 +22,7 @@ jobs:
           java-version: 8
             
       - name: Checkout code           
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
         
       - name: Install Necessary Packages
         run: |
