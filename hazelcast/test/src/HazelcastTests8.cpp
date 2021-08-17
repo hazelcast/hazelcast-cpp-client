@@ -36,6 +36,7 @@
 #include <hazelcast/client/client_properties.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 #include <hazelcast/client/connection/Connection.h>
+#include <hazelcast/client/connection/AddressProvider.h>
 #include <hazelcast/client/entry_event.h>
 #include <hazelcast/client/exception/protocol_exceptions.h>
 #include <hazelcast/client/hazelcast_client.h>
@@ -1762,6 +1763,91 @@ namespace hazelcast {
 
                 ASSERT_OPEN_EVENTUALLY(leave);
                 ASSERT_OPEN_EVENTUALLY(join);
+            }
+
+            class connection_manager_translate : public ClientTestSupport {
+            public:
+                static const address private_address;
+                static const address public_address;
+
+                class test_address_provider : public connection::AddressProvider {
+                    public:
+                        boost::optional<address> translate(const address &addr) override {
+                                if (addr == private_address) {
+                                    return public_address;
+                                }
+
+                                return boost::none;
+                        }
+
+                        std::vector<address> load_addresses() override {
+                            return std::vector<address>{{"localhost", 5701}};
+                        }
+                };
+            protected:
+                static HazelcastServer *instance_;
+
+                static void SetUpTestCase() {
+                    instance_ = new HazelcastServer(*g_srvFactory);
+                }
+
+                static void TearDownTestCase() {
+                    delete instance_;
+                }
+            };
+
+            HazelcastServer *connection_manager_translate::instance_ = nullptr;
+            const address connection_manager_translate::private_address{"localhost", 5701};
+            const address connection_manager_translate::public_address{"192.168.0.1", 5701};
+
+            TEST_F(connection_manager_translate, test_translate_is_used) {
+                // given
+                client_config config;
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(1));
+                auto client = new_client(std::move(config)).get();
+                spi::ClientContext ctx(client);
+                connection::ClientConnectionManagerImpl connection_manager(ctx,
+                                                                           std::unique_ptr<connection::AddressProvider>(
+                                                                                   new test_address_provider{}));
+
+                // throws exception because it can't connect to the cluster using translated public unreachable address
+                ASSERT_THROW(connection_manager.start(), exception::illegal_state);
+            }
+
+            TEST_F(connection_manager_translate, test_translate_is_used_when_member_has_public_client_address) {
+                // given
+                client_config config;
+                config.get_network_config().use_public_address(true);
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(1));
+                auto client = new_client(std::move(config)).get();
+                spi::ClientContext ctx(client);
+
+                member m(public_address, ctx.get_hazelcast_client_implementation()->random_uuid(), false, {},
+                         {{endpoint_qualifier{1, "public"}, address{"127.0.0.1", 5701}}});
+
+                auto conn = ctx.get_connection_manager().get_or_connect(m);
+                ASSERT_TRUE(conn);
+            }
+
+            TEST_F(connection_manager_translate, test_translate_is_not_used_when_public_ip_is_disabled) {
+                // given
+                client_config config;
+                config.get_network_config().use_public_address(false);
+                config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
+                        std::chrono::seconds(1));
+                auto client = new_client(std::move(config)).get();
+                spi::ClientContext ctx(client);
+
+                member m(public_address, ctx.get_hazelcast_client_implementation()->random_uuid(), false, {},
+                         {{endpoint_qualifier{1, "public"}, address{"127.0.0.1", 5701}}});
+
+                ASSERT_THROW(ctx.get_connection_manager().get_or_connect(m), boost::system::system_error);
+            }
+
+            TEST_F(connection_manager_translate, default_config_uses_private_addresses) {
+                 ASSERT_FALSE(client_config().get_network_config().use_public_address());
             }
         }
     }

@@ -65,18 +65,17 @@ namespace hazelcast {
         member::member() : lite_member_(false) {
         }
 
-        member::member(address address, boost::uuids::uuid uuid, bool lite, std::unordered_map<std::string, std::string> attr) :
-                address_(address), uuid_(uuid), lite_member_(lite), attributes_(attr) {
+member::member(address member_address, boost::uuids::uuid uuid, bool lite,
+                       std::unordered_map<std::string, std::string> attr,
+                       std::unordered_map<endpoint_qualifier, address> address_map) :
+                address_(std::move(member_address)), uuid_(uuid), lite_member_(lite),
+                attributes_(std::move(attr)), address_map_(std::move(address_map)) {
         }
 
         member::member(address member_address) : address_(member_address), lite_member_(false) {
         }
 
         member::member(boost::uuids::uuid uuid) : uuid_(uuid), lite_member_(false) {
-        }
-
-        bool member::operator==(const member &rhs) const {
-            return uuid_ == rhs.uuid_;
         }
 
         const address &member::get_address() const {
@@ -103,6 +102,9 @@ namespace hazelcast {
             out << ":";
             out << address.get_port();
             out << " - " << boost::uuids::to_string(member.get_uuid());
+            if (member.is_lite_member()) {
+                out << " lite";
+            }
             return out;
         }
 
@@ -121,6 +123,15 @@ namespace hazelcast {
 
         bool member::operator<(const member &rhs) const {
             return uuid_ < rhs.uuid_;
+        }
+
+        const std::unordered_map<endpoint_qualifier, address> &member::address_map() const {
+            return address_map_;
+        }
+
+        bool operator==(const member &lhs, const member &rhs) {
+            return lhs.address_ == rhs.address_ &&
+                   lhs.uuid_ == rhs.uuid_;
         }
 
         endpoint::endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address)
@@ -234,12 +245,28 @@ namespace hazelcast {
                 }
             }
         }
+
+        bool operator==(const endpoint_qualifier &lhs, const endpoint_qualifier &rhs) {
+            return lhs.type == rhs.type &&
+                   lhs.identifier == rhs.identifier;
+        }
     }
 }
 
 namespace std {
-    std::size_t hash<hazelcast::client::member>::operator()(const hazelcast::client::member &k) const noexcept {
-        return boost::hash<boost::uuids::uuid>()(k.get_uuid());
+    std::size_t hash<hazelcast::client::member>::operator()(const hazelcast::client::member &m) const noexcept {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, std::hash<hazelcast::client::address>()(m.get_address()));
+        boost::hash_combine(seed, m.get_uuid());
+        return seed;
+    }
+
+    std::size_t hash<hazelcast::client::endpoint_qualifier>::operator()(
+            const hazelcast::client::endpoint_qualifier &e) const noexcept {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, e.type);
+        boost::hash_combine(seed, e.identifier);
+        return seed;
     }
 }
 

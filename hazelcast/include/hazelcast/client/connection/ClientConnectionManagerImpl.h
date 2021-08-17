@@ -94,12 +94,10 @@ namespace hazelcast {
                 void shutdown();
 
                 /**
-                 * @param address to be connected
+                 * @param m member to be connected
                  * @return associated connection if available, creates new connection otherwise
                  * @throws io if connection is not established
                  */
-                std::shared_ptr<Connection> get_or_connect(const address &address);
-
                 std::shared_ptr<Connection> get_or_connect(const member &m);
 
                 std::vector<std::shared_ptr<Connection>> get_active_connections();
@@ -126,6 +124,8 @@ namespace hazelcast {
 
             private:
                 static constexpr size_t EXECUTOR_CORE_POOL_SIZE = 10;
+                static constexpr int32_t CLIENT = 1;
+                static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
 
                 struct auth_response {
                     byte status;
@@ -136,8 +136,6 @@ namespace hazelcast {
                     boost::optional<address> server_address;
                     std::string server_version;
                 };
-
-                std::shared_ptr<Connection> get_connection(const address &address);
 
                 auth_response authenticate_on_cluster(std::shared_ptr<Connection> &connection);
 
@@ -197,7 +195,7 @@ namespace hazelcast {
                 spi::ClientContext &client_;
                 std::unique_ptr<boost::asio::io_context> io_context_;
                 socket_interceptor socket_interceptor_;
-                util::SynchronizedMap<address, bool> connecting_addresses_;
+                util::SynchronizedMap<member, bool> connecting_members_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connection_listeners_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
@@ -231,6 +229,8 @@ namespace hazelcast {
 #endif
                 std::atomic_bool connect_to_cluster_task_submitted_;
 
+                bool use_public_address_{false};
+
                 void schedule_connect_to_all_members();
 
                 void fire_life_cycle_event(lifecycle_event::lifecycle_state state);
@@ -240,6 +240,8 @@ namespace hazelcast {
                 void trigger_cluster_reconnection();
 
                 std::shared_ptr<Connection> connect(const address &address);
+
+                address translate(const member &m);
             };
         }
     }
