@@ -1,0 +1,64 @@
+name: Test Cpp client against the released IMDG servers
+
+on:
+    push:
+      branches: 
+        - master
+        - CoverageBranch
+    pull_request:
+      branches: 
+        - master
+jobs:
+        
+  test_client:
+    runs-on: ubuntu-latest
+        
+    name: Create and upload coverage
+    steps:
+        
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+            java-version: '8'
+            
+      - name: Checkout code           
+      - uses: actions/checkout@v2
+        
+      - name: Install Necessary Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y net-tools libssl-dev gdb
+          
+      - name: Install Boost
+        run: |
+          sudo ./scripts/install-boost.sh 1.76.0
+          
+      - name: Install Thrift
+        run: |
+          sudo ./scripts/install-thrift.sh 0.13.0
+          
+      - name: Build
+        env:
+          BUILD_DIR: build
+          COVERAGE: ON
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+        run: |
+          ./scripts/build-unix.sh                                          \
+              -DCMAKE_BUILD_TYPE=Debug                                     \
+              -DBUILD_SHARED_LIBS=ON                                       \
+              -DWITH_OPENSSL=ON                                            \
+              -DBUILD_TESTS=ON                                             \
+              -DBUILD_EXAMPLES=OFF                                         
+       
+       - name: Collect coverage files
+         run: |   
+            if [ "$COVERAGE" == "ON" ]; then
+              gcovr --xml-pretty -o cpp_coverage.xml                    \
+                    --delete                                            \
+                    -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
+                    "$(pwd)/$BUILD_DIR"
+            fi
+            
+       - name: Setup tmate session
+         uses: mxschmitt/action-tmate@v3
+             
