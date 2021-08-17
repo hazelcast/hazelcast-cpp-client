@@ -1,4 +1,4 @@
-name: Test Cpp client against the released IMDG servers
+name: Coverage yaml
 
 on:
     push:
@@ -49,7 +49,10 @@ jobs:
               -DWITH_OPENSSL=ON                                            \
               -DBUILD_TESTS=ON                                             \
               -DBUILD_EXAMPLES=OFF                                         
-       
+      
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+      
       - name: Collect coverage files     
         run: |   
             if [ "$COVERAGE" == "ON" ]; then
@@ -58,7 +61,4 @@ jobs:
                     -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
                     "$(pwd)/$BUILD_DIR"
             fi
-            
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
              
