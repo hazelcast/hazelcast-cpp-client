@@ -28,11 +28,12 @@ namespace hazelcast {
             template<typename BaseType>
             class item_event_handler : public BaseType {
             public:
-                item_event_handler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                item_event_handler(std::string instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
                                    serialization::pimpl::SerializationService &serialization_service,
                                    item_listener &&listener, bool include_value)
-                        : instance_name_(instance_name), cluster_service_(cluster_service),
-                          serialization_service_(serialization_service), listener_(std::move(listener)), include_value_(include_value) {};
+                        : instance_name_(std::move(instance_name)), cluster_service_(cluster_service),
+                          serialization_service_(serialization_service), listener_(std::move(listener)),
+                          include_value_(include_value) {};
 
                 void handle_item(const boost::optional<serialization::pimpl::data> &item, boost::uuids::uuid uuid,
                                         int32_t event_type) override {
@@ -51,7 +52,7 @@ namespace hazelcast {
                 }
 
             private:
-                const std::string &instance_name_;
+                const std::string instance_name_;
                 spi::impl::ClientClusterServiceImpl &cluster_service_;
                 serialization::pimpl::SerializationService &serialization_service_;
                 item_listener listener_;

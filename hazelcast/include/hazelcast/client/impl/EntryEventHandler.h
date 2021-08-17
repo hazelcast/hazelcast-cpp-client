@@ -37,11 +37,12 @@ namespace hazelcast {
             template<typename BaseType>
             class EntryEventHandler : public BaseType {
             public:
-                EntryEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                EntryEventHandler(std::string instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
                                   serialization::pimpl::SerializationService &serialization_service,
                                   entry_listener &&listener, bool include_value, logger &lg)
-                : instance_name_(instance_name), cluster_service_(cluster_service), serialization_service_(serialization_service)
-                , listener_(std::move(listener)), include_value_(include_value), logger_(lg) {}
+                        : instance_name_(std::move(instance_name)), cluster_service_(cluster_service),
+                          serialization_service_(serialization_service), listener_(std::move(listener)),
+                          include_value_(include_value), logger_(lg) {}
 
                 void handle_entry(const boost::optional<serialization::pimpl::data> &key,
                                   const boost::optional<serialization::pimpl::data> &value,
@@ -131,7 +132,7 @@ namespace hazelcast {
                     }
                 }
             private:
-                const std::string& instance_name_;
+                const std::string instance_name_;
                 spi::impl::ClientClusterServiceImpl &cluster_service_;
                 serialization::pimpl::SerializationService& serialization_service_;
                 entry_listener listener_;
