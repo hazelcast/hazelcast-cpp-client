@@ -1,4 +1,4 @@
-name: Coverage yaml
+name: Test Cpp client against the released IMDG servers
 
 on:
     push:
@@ -22,7 +22,7 @@ jobs:
           java-version: 8
             
       - name: Checkout code           
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         
       - name: Install Necessary Packages
         run: |
@@ -36,6 +36,9 @@ jobs:
       - name: Install Thrift
         run: |
           sudo ./scripts/install-thrift.sh 0.13.0
+         
+      - name: Setup Gcov   
+        uses: daalbano/lcov-action@v1
           
       - name: Build
         env:
@@ -48,17 +51,35 @@ jobs:
               -DBUILD_SHARED_LIBS=ON                                       \
               -DWITH_OPENSSL=ON                                            \
               -DBUILD_TESTS=ON                                             \
-              -DBUILD_EXAMPLES=OFF                                         
-      
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-      
-      - name: Collect coverage files     
+              -DBUILD_EXAMPLES=OFF
+
+      - name: Test
+        env:
+          BUILD_DIR: build
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        run: |
+          ulimit -c unlimited
+          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+          ./scripts/test-unix.sh       
+       
+      - name: Collect coverage files
         run: |   
-            if [ "$COVERAGE" == "ON" ]; then
-              gcovr --xml-pretty -o cpp_coverage.xml                    \
-                    --delete                                            \
-                    -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
-                    "$(pwd)/$BUILD_DIR"
-            fi
-             
+           if [ "$COVERAGE" == "ON" ]; then
+              gcovr --xml-pretty -o cpp_coverage.xml                \
+                --delete                                            \
+                -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
+                "$(pwd)/$BUILD_DIR"
+           fi
+            
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3     
+      
+      - name: Publish to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: cpp_coverage.xml           
+      
