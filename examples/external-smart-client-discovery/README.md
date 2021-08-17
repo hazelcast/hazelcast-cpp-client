@@ -16,7 +16,7 @@ should specify the public address of at least one member in the configuration:
 
 ```c++
     hazelcast::client::client_config config;
-    constexpr const int32_t server_port = 5701;
+    constexpr int server_port = 5701;
     constexpr const char *server_public_address = "myserver.publicaddress.com";
     config.get_network_config().use_public_address(true).add_address(
             hazelcast::client::address{server_public_address, server_port});
