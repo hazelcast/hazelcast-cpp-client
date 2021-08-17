@@ -38,7 +38,8 @@ jobs:
           sudo ./scripts/install-thrift.sh 0.13.0
          
       - name: Setup Gcov   
-        uses: daalbano/lcov-action@v1
+        run: |
+            sudo apt install gcovr
           
       - name: Build
         env:
