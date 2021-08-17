@@ -473,6 +473,37 @@ namespace hazelcast {
                 }
 
                 template<typename T>
+                typename std::enable_if<std::is_same<T, member::version>::value, T>::type
+                inline get() {
+                    // skip begin frame
+                    rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+                    rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+                    auto major = get<byte>();
+                    auto minor = get<byte>();
+                    auto patch = get<byte>();
+
+                    fast_forward_to_end_frame();
+
+                    return member::version{major, minor, patch};
+                }
+
+                template<typename T>
+                typename std::enable_if<std::is_same<T, endpoint_qualifier>::value, T>::type
+                inline get() {
+                    // skip begin frame
+                    rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+                    rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+                    auto type = get<int32_t>();
+                    auto identifier = get<std::string>();
+
+                    fast_forward_to_end_frame();
+
+                    return endpoint_qualifier{type, identifier};
+                }
+
+                template<typename T>
                 typename std::enable_if<std::is_same<T, member>::value, T>::type
                 inline get() {
                     // skip begin frame
@@ -487,10 +518,13 @@ namespace hazelcast {
 
                     auto addr = get<address>();
                     auto attributes = get<std::unordered_map<std::string, std::string>>();
+                    // read version and ignore it
+                    get<member::version>();
+                    auto address_map = get<std::unordered_map<endpoint_qualifier, address>>();
 
                     fast_forward_to_end_frame();
 
-                    return member(std::move(addr), uuid, lite_member, std::move(attributes));
+                    return member(std::move(addr), uuid, lite_member, std::move(attributes), address_map);
                 }
 
                 template<typename T>
@@ -720,7 +754,7 @@ namespace hazelcast {
 
                 template<typename T>
                 void set_nullable(const T *value, bool is_final = false) {
-                    bool isNull = (NULL == value);
+                    bool isNull = (nullptr == value);
                     if (isNull) {
                         auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
                         *h = null_frame();

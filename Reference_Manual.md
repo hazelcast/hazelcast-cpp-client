@@ -53,10 +53,11 @@
       * [5.7. Enabling Hazelcast AWS Discovery](#57-enabling-hazelcast-aws-discovery)
       * [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
       * [5.8.1. Cloud Discovery With SSL Enabled](#581-cloud-discovery-with-ssl-enabled)
-      * [5.9. Authentication](#59-authentication)
-      * [5.9.1. Username Password Authentication](#591-username-password-authentication)
-      * [5.9.2. Token Authentication](#592-token-authentication)
-      * [5.10. Configuring Backup Acknowledgment](#510-configuring-backup-acknowledgment)
+      * [5.9. External Smart Client Discovery](#59-external-smart-client-discovery)
+      * [5.10. Authentication](#510-authentication)
+      * [5.10.1. Username Password Authentication](#5101-username-password-authentication)
+      * [5.10.2. Token Authentication](#5102-token-authentication)
+      * [5.11. Configuring Backup Acknowledgment](#511-configuring-backup-acknowledgment)
    * [6. Securing Client Connection](#6-securing-client-connection)
       * [6.1. TLS/SSL](#61-tlsssl)
          * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
@@ -140,7 +141,7 @@
    * [11. License](#11-license)
    * [12. Copyright](#12-copyright)
 
-<!-- Added by: ihsan, at: Wed Apr  7 13:25:05 +03 2021 -->
+<!-- Added by: ihsan, at: Wed Aug 11 10:30:27 +03 2021 -->
 
 <!--te-->
 
@@ -767,6 +768,9 @@ Hazelcast C++ client supports the following data structures and features:
 * custom_serializer Serialization
 * JSON Serialization
 * Global Serialization
+* Hazelcast AWS Discovery
+* Hazelcast Cloud Discovery
+* External Smart Client Discovery
 
 # 3. Configuration Overview
 
@@ -1190,7 +1194,37 @@ As you see in the code snippet, we provide a `boost::asio::ssl::context` in the 
 
 Please check the code sample at `examples/cloud-discovery/ssl-connect-cloud.cpp` for a full featured cloud discovery with SSL example.
 
-## 5.9. Authentication
+## 5.9. External Smart Client Discovery
+
+> **NOTE: This feature requires Hazelcast IMDG 4.2 or higher version.**
+
+The client sends requests directly to cluster members in the smart client mode (default) in order to reduce hops to 
+accomplish operations. Because of that, the client should know the addresses of members in the cluster.
+
+In cloud-like environments, or Kubernetes, there are usually two network interfaces: the private and public network 
+interfaces. When the client is in the same network as the members, it uses their private network addresses. Otherwise, 
+if the client and the Hazelcast cluster are on different networks, the client cannot connect to members using their 
+private network addresses. Hazelcast 4.2 introduced External Smart Client Discovery to solve that issue. The client 
+needs to communicate with all cluster members via their public IP addresses in this case. Whenever Hazelcast cluster 
+members are able to resolve their own public external IP addresses, they pass this information to the client. 
+As a result, the client can use public addresses for communication.
+
+In order to use this feature, make sure your cluster members are accessible from the network the client resides in, 
+then set config `client_network_config()::use_public_address(true)` to true. You should specify the public address of 
+at least one member in the configuration:
+
+```c++
+    hazelcast::client::client_config config;
+    constexpr int server_port = 5701;
+    constexpr const char *server_public_address = "myserver.publicaddress.com";
+    config.get_network_config().use_public_address(true).add_address(
+            hazelcast::client::address{server_public_address, server_port});
+```
+
+This solution works everywhere without further configuration (Kubernetes, AWS, GCP, Azure, etc.) as long as the 
+corresponding plugin is enabled in Hazelcast server configuration.
+
+## 5.10. Authentication
 
 By default, the client does not use any authentication method and just uses the cluster "dev" to connect to. You can change which cluster to connect by using the configuration API `client_config::set_cluster_name`. This way, you can have multiple clusters in the network but the client will only be able to connect to the cluster with the correct cluster name (server should also be started with the cluster name configured to the same cluster name).
 
@@ -1199,7 +1233,7 @@ If you want to enable authentication, then the client can be configured in one o
 * Username password based authentication
 * Token based authentication
 
-## 5.9.1. Username Password Authentication
+## 5.10.1. Username Password Authentication
 
 The following is an example configuration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
 
@@ -1221,7 +1255,7 @@ Note that the server needs to be configured to use the same username and passwor
     </security>
 ```
 
-## 5.9.2. Token Authentication
+## 5.10.2. Token Authentication
 
 The following is an example configuration where we set the secret token bytes to be used while trying to connect to the cluster:
 
@@ -1245,7 +1279,7 @@ Note that the server needs to be configured to use the same token. An example se
     </security>
 ```
 
-## 5.10. Configuring Backup Acknowledgment
+## 5.11. Configuring Backup Acknowledgment
 
 When an operation with sync backup is sent by a client to the Hazelcast member(s), the acknowledgment of the operation's backup is sent to the client by the backup replica member(s). This improves the performance of the client operations.
 

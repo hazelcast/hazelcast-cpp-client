@@ -39,6 +39,8 @@ namespace hazelcast {
 
                     boost::optional<address> translate(const address &addr) override;
 
+                    bool is_default_provider() override;
+
                 private:
                     config::client_network_config &network_config_;
                 };
