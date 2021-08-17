@@ -67,15 +67,10 @@ jobs:
        
       - name: Collect coverage files
         run: |   
-           if [ "$COVERAGE" == "ON" ]; then
               gcovr --xml-pretty -o cpp_coverage.xml                \
                 --delete                                            \
                 -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
-                "$(pwd)/$BUILD_DIR"
-           fi
-            
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3     
+                "$(pwd)/build"
       
       - name: Publish to Codecov
         uses: codecov/codecov-action@v2
