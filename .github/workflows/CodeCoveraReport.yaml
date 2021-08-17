@@ -50,8 +50,8 @@ jobs:
               -DBUILD_TESTS=ON                                             \
               -DBUILD_EXAMPLES=OFF                                         
        
-       - name: Collect coverage files
-         run: |   
+      - name: Collect coverage files     
+        run: |   
             if [ "$COVERAGE" == "ON" ]; then
               gcovr --xml-pretty -o cpp_coverage.xml                    \
                     --delete                                            \
@@ -59,6 +59,6 @@ jobs:
                     "$(pwd)/$BUILD_DIR"
             fi
             
-       - name: Setup tmate session
-         uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
              
