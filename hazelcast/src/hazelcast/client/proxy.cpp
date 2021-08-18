@@ -50,7 +50,7 @@
 
 namespace hazelcast {
     namespace client {
-        constexpr std::chrono::milliseconds imap::UNSET;
+        const std::chrono::milliseconds imap::UNSET{ -1 };
 
         reliable_topic::reliable_topic(const std::string &instance_name, spi::ClientContext *context)
                 : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context),
