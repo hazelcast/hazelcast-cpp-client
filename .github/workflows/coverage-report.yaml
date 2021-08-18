@@ -4,6 +4,7 @@ on:
   push:
     branches: 
       - master
+      - CoverageBranch
 jobs:
         
   coverage:
@@ -51,7 +52,8 @@ jobs:
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}            
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+          GTEST_FILTER: '-*Aws*:*DescribeInstances*'
         run: |
           ulimit -c unlimited
           sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
