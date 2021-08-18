@@ -24,7 +24,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y net-tools libssl-dev gdb
-          sudo apt install gcovr
+          sudo apt-get install gcovr
           
       - name: Install Boost
         run: |
