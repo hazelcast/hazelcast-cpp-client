@@ -24,6 +24,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y net-tools libssl-dev gdb
+          sudo apt install gcovr
           
       - name: Install Boost
         run: |
@@ -32,10 +33,6 @@ jobs:
       - name: Install Thrift
         run: |
           sudo ./scripts/install-thrift.sh 0.13.0
-         
-      - name: Setup Gcovr   
-        run: |
-            sudo apt install gcovr
           
       - name: Build
         env:
