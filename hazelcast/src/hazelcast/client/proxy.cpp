@@ -1632,7 +1632,7 @@ namespace hazelcast {
                                                                                           context),
                                                                                 target_partition_id_(-1) {}
 
-            constexpr int32_t RingbufferImpl::MAX_BATCH_SIZE;
+            const int32_t RingbufferImpl::MAX_BATCH_SIZE{ 1000 };
         }
 
         namespace map {

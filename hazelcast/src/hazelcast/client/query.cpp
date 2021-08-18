@@ -36,8 +36,6 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            constexpr const char *query_constants::KEY_ATTRIBUTE_NAME;
-            constexpr const char *query_constants::THIS_ATTRIBUTE_NAME;
 
             base_predicate::base_predicate(hazelcast_client &client) : out_stream(spi::ClientContext(
                     client).get_serialization_service().new_output_stream()) {}
