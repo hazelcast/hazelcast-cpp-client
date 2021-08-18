@@ -846,7 +846,10 @@ namespace hazelcast {
 
 namespace std {
     std::size_t hash<hazelcast::client::address>::operator()(const hazelcast::client::address &address) const noexcept {
-        return std::hash<std::string>()(address.get_host()) + std::hash<int>()(address.get_port()) +
-               std::hash<unsigned long>()(address.type_);
+        std::size_t seed = 0;
+        boost::hash_combine(seed, address.get_host());
+        boost::hash_combine(seed, address.get_port());
+        boost::hash_combine(seed, address.type_);
+        return seed;
     }
 }

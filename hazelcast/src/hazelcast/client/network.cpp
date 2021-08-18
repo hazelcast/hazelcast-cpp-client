@@ -67,6 +67,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             constexpr size_t ClientConnectionManagerImpl::EXECUTOR_CORE_POOL_SIZE;
+            const endpoint_qualifier ClientConnectionManagerImpl::PUBLIC_ENDPOINT_QUALIFIER{CLIENT, "public"};
 
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
                                                                      std::unique_ptr<AddressProvider> address_provider)
@@ -83,8 +84,9 @@ namespace hazelcast {
                       load_balancer_(client.get_client_config().get_load_balancer()),
                       wait_strategy_(client.get_client_config().get_connection_strategy_config().get_retry_config(),
                                      logger_), cluster_id_(boost::uuids::nil_uuid()),
-                      connect_to_cluster_task_submitted_(false) {
-
+                      connect_to_cluster_task_submitted_(false),
+                      use_public_address_(address_provider_->is_default_provider() &&
+                                          client.get_client_config().get_network_config().use_public_address()) {
                 config::client_network_config &networkConfig = client.get_client_config().get_network_config();
                 auto connTimeout = networkConfig.get_connection_timeout();
                 if (connTimeout.count() > 0) {
@@ -175,16 +177,6 @@ namespace hazelcast {
             }
 
             std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::get_or_connect(const address &address) {
-                auto connection = get_connection(address);
-                if (connection) {
-                    return connection;
-                }
-
-                return connect(address);
-            }
-
-            std::shared_ptr<Connection>
             ClientConnectionManagerImpl::get_or_connect(const member &m) {
                 const auto &uuid = m.get_uuid();
                 auto connection = active_connections_.get(uuid);
@@ -192,22 +184,12 @@ namespace hazelcast {
                     return connection;
                 }
 
-                return connect(m.get_address());
+                address addr = translate(m);
+                return connect(addr);
             }
 
             std::vector<std::shared_ptr<Connection> > ClientConnectionManagerImpl::get_active_connections() {
                 return active_connections_.values();
-            }
-
-            std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::get_connection(const address &address) {
-                for (const auto &connection : active_connections_.values()) {
-                    auto remote_address = connection->get_remote_address();
-                    if (remote_address && *remote_address == address) {
-                        return connection;
-                    }
-                }
-                return nullptr;
             }
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::get_connection(boost::uuids::uuid uuid) {
@@ -392,24 +374,22 @@ namespace hazelcast {
                     return;
                 }
 
-                for (const auto &member : client_.get_client_cluster_service().get_member_list()) {
-                    const auto& member_addr = member.get_address();
-
-                    if (client_.get_lifecycle_service().is_running() && !get_connection(member_addr)
-                        && connecting_addresses_.get_or_put_if_absent(member_addr, nullptr).second) {
+                for (const auto &m : client_.get_client_cluster_service().get_member_list()) {
+                    if (client_.get_lifecycle_service().is_running() && !get_connection(m.get_uuid())
+                        && connecting_members_.get_or_put_if_absent(m, nullptr).second) {
                         // submit a task for this address only if there is no other pending connection attempt for it
-                        address addr = member_addr;
-                        boost::asio::post(executor_->get_executor(), [=]() {
+                        member member_to_connect = m;
+                        boost::asio::post(executor_->get_executor(), [member_to_connect, this]() {
                             try {
                                 if (!client_.get_lifecycle_service().is_running()) {
                                     return;
                                 }
-                                if (!get_connection(member.get_uuid())) {
-                                    get_or_connect(addr);
+                                if (!get_connection(member_to_connect.get_uuid())) {
+                                    get_or_connect(member_to_connect);
                                 }
-                                connecting_addresses_.remove(addr);
+                                connecting_members_.remove(member_to_connect);
                             } catch (std::exception &) {
-                                connecting_addresses_.remove(addr);
+                                connecting_members_.remove(member_to_connect);
                             }
                         });
                     }
@@ -611,7 +591,7 @@ namespace hazelcast {
                     } else {
                         HZ_LOG(logger_, info,
                                boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
-                                                        "no local address: (connection disconnected ?). %5%")
+                                                        "no local address: (connection disconnected ?). %4%")
                                           % response.server_address % response.member_uuid
                                           % response.server_version % *connection)
                         );
@@ -715,7 +695,7 @@ namespace hazelcast {
 
                 for (const auto &member : client_.get_client_cluster_service().get_member_list()) {
                     try {
-                        get_or_connect(member.get_address());
+                        get_or_connect(member);
                     } catch (std::exception &) {
                         // ignore
                     }
@@ -746,16 +726,9 @@ namespace hazelcast {
             }
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const address &addr) {
-                auto target = address_provider_->translate(addr);
-                if (!target) {
-                    BOOST_THROW_EXCEPTION(exception::null_pointer("ClientConnectionManagerImpl::connect",
-                                                                  (boost::format("Address Provider could not translate "
-                                                                                 "address %2%") % target).str()));
-                }
-                HZ_LOG(logger_, info, boost::str(
-                        boost::format("Trying to connect to %1%. Translated address:%2%.") % addr % target));
+                HZ_LOG(logger_, info, boost::str(boost::format("Trying to connect to %1%.") % addr));
 
-                auto connection = std::make_shared<Connection>(*target, client_, ++connection_id_gen_,
+                auto connection = std::make_shared<Connection>(addr, client_, ++connection_id_gen_,
                                                                *socket_factory_, *this, connection_timeout_millis_);
                 connection->connect();
 
@@ -765,6 +738,18 @@ namespace hazelcast {
                 auto result = authenticate_on_cluster(connection);
 
                 return on_authenticated(connection, result);
+            }
+
+            address ClientConnectionManagerImpl::translate(const member &m) {
+                if (use_public_address_) {
+                    auto public_addr_it = m.address_map().find(PUBLIC_ENDPOINT_QUALIFIER);
+                    if (public_addr_it != m.address_map().end()) {
+                        return public_addr_it->second;
+                    }
+                    return m.get_address();
+                }
+
+                return *address_provider_->translate(m.get_address());
             }
 
             ReadHandler::ReadHandler(Connection &connection, size_t buffer_size)
@@ -798,6 +783,10 @@ namespace hazelcast {
 
             std::chrono::steady_clock::time_point ReadHandler::get_last_read_time() const {
                 return last_read_time_;
+            }
+
+            bool AddressProvider::is_default_provider() {
+                return false;
             }
 
             Connection::Connection(const address &address, spi::ClientContext &client_context, int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -960,7 +949,7 @@ namespace hazelcast {
                             std::rethrow_exception(close_cause_);
                         } catch (exception::iexception &ie) {
                             HZ_LOG(logger_, warning, 
-                                boost::str(boost::format("%1%%2%") % message.str() % ie)
+                                boost::str(boost::format("%1% %2%") % message.str() % ie)
                             );
                         }
                     }

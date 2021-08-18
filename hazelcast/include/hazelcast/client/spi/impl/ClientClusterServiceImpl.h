@@ -80,6 +80,8 @@ namespace hazelcast {
 
                 private:
                     static constexpr boost::chrono::milliseconds INITIAL_MEMBERS_TIMEOUT{boost::chrono::seconds(120)};
+                    static const endpoint_qualifier CLIENT;
+                    static const endpoint_qualifier MEMBER;
                     struct member_list_snapshot {
                         int32_t version;
                         std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> members;
