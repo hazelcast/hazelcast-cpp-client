@@ -1,11 +1,7 @@
-name: Test Cpp client against the released IMDG servers
+name: Code coverage report to Codecov
 
 on:
     push:
-      branches: 
-        - master
-        - CoverageBranch
-    pull_request:
       branches: 
         - master
 jobs:
@@ -37,7 +33,7 @@ jobs:
         run: |
           sudo ./scripts/install-thrift.sh 0.13.0
          
-      - name: Setup Gcov   
+      - name: Setup Gcovr   
         run: |
             sudo apt install gcovr
           
@@ -58,7 +54,9 @@ jobs:
         env:
           BUILD_DIR: build
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          GTEST_FILTER: -*Aws*:*DescribeInstancesTest*
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}            
         run: |
           ulimit -c unlimited
           sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
