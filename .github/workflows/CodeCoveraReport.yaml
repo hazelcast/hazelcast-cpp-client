@@ -1,12 +1,12 @@
 name: Code coverage report to Codecov
 
 on:
-    push:
-      branches: 
-        - master
+  push:
+    branches: 
+      - master
 jobs:
         
-  test_client:
+  coverage:
     runs-on: ubuntu-latest
         
     name: Create and upload coverage
@@ -41,7 +41,6 @@ jobs:
         env:
           BUILD_DIR: build
           COVERAGE: ON
-          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
         run: |
           ./scripts/build-unix.sh                                          \
               -DCMAKE_BUILD_TYPE=Debug                                     \
@@ -65,10 +64,10 @@ jobs:
        
       - name: Collect coverage files
         run: |   
-              gcovr --xml-pretty -o cpp_coverage.xml                \
-                --delete                                            \
-                -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
-                "$(pwd)/build"
+          gcovr --xml-pretty -o cpp_coverage.xml                \
+            --delete                                            \
+            -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
+            "$(pwd)/build"
       
       - name: Publish to Codecov
         uses: codecov/codecov-action@v2
