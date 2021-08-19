@@ -23,8 +23,7 @@ jobs:
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb
-          sudo apt-get install gcovr
+          sudo apt-get install -y net-tools libssl-dev gdb gcovr
           
       - name: Install Boost
         run: |
@@ -63,6 +62,7 @@ jobs:
         run: |   
           gcovr --xml-pretty -o cpp_coverage.xml                \
             --delete                                            \
+            --exclude-throw-branches                            \
             -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
             "$(pwd)/build"
       
