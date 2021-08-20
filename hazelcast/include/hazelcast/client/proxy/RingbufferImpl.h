@@ -72,7 +72,7 @@ namespace hazelcast {
                  * The maximum number of items that can be retrieved in 1 go using the {@link #readManyAsync(long, int, int, IFunction)}
                  * method.
                  */
-                static constexpr int32_t MAX_BATCH_SIZE = 1000;
+                static const int32_t MAX_BATCH_SIZE;
 
                 /**
                  * Returns the capacity of this Ringbuffer.

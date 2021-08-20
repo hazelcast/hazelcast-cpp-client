@@ -1001,7 +1001,7 @@ namespace hazelcast {
             /**
              * Default TTL value of a record.
              */
-            static constexpr std::chrono::milliseconds UNSET{-1};
+            static const std::chrono::milliseconds UNSET;
 
             monitor::impl::LocalMapStatsImpl local_map_stats_;
 

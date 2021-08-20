@@ -28,8 +28,8 @@ namespace hazelcast {
 
         namespace query {
             struct HAZELCAST_API query_constants {
-                static constexpr const char *KEY_ATTRIBUTE_NAME = "__key";
-                static constexpr const char *THIS_ATTRIBUTE_NAME = "this";
+                static const char * const KEY_ATTRIBUTE_NAME;
+                static const char * const THIS_ATTRIBUTE_NAME;
             };
 
             /**
