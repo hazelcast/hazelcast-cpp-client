@@ -132,16 +132,16 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::schedule_connect_to_all_members() {
+                if (!client_.get_lifecycle_service().is_running()) {
+                    return;
+                }
+
                 connect_to_members_timer_->expires_from_now(boost::asio::chrono::seconds(1));
                 connect_to_members_timer_->async_wait([=](boost::system::error_code ec) {
                     if (ec == boost::asio::error::operation_aborted) {
                         return;
                     }
                     connect_to_all_members();
-
-                    if (!client_.get_lifecycle_service().is_running()) {
-                        return;
-                    }
 
                     schedule_connect_to_all_members();
                 });
@@ -816,6 +816,10 @@ namespace hazelcast {
 
             void Connection::schedule_periodic_backup_cleanup(std::chrono::milliseconds backup_timeout,
                                                               std::shared_ptr<Connection> this_connection) {
+                if (!alive_) {
+                    return;
+                }
+
                 backup_timer_->expires_from_now(backup_timeout);
                 backup_timer_->async_wait(socket_->get_executor().wrap([=](boost::system::error_code ec) {
                     if (ec) {
