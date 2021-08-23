@@ -20,7 +20,7 @@ This is a full example hazelcast.xml that includes all the configuration element
 To use this, rename it to hazelcast.xml and place it in the directory where you start Hazelcast.
 Please see the schema to learn how to configure Hazelcast at
 https://hazelcast.com/schema/config/hazelcast-config-3.8.xsd or the Reference Manual at
-https://hazelcast.org/documentation/.
+https://docs.hazelcast.com/imdg/latest/.
 -->
 <hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.10.xsd"
            xmlns="http://www.hazelcast.com/schema/config"

@@ -147,7 +147,7 @@
 
 # Introduction
 
-This document provides information about the C++ client for [Hazelcast](https://hazelcast.org/). This client uses Hazelcast's [Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast IMDG 4.0 and higher versions.
+This document provides information about the C++ client for [Hazelcast](https://hazelcast.com/). This client uses Hazelcast's [Open Client Protocol](https://github.com/hazelcast/hazelcast-client-protocol) and works with Hazelcast IMDG 4.0 and higher versions.
 
 The client API is fully asynchronous. The API returns `boost::future` API which has the capability of [continuations](https://www.boost.org/doc/libs/1_74_0/doc/html/thread/synchronization.html#thread.synchronization.futures.then). If the user wants to make sure that the requested operation is completed in the cluster and committed in the distributed database, he/she needs to wait for the result of the future.
 
@@ -155,8 +155,8 @@ The client API is fully asynchronous. The API returns `boost::future` API which 
 
 See the following for more information on Hazelcast IMDG:
 
-* Hazelcast IMDG [website](https://hazelcast.org/)
-* Hazelcast IMDG [Reference Manual](https://hazelcast.org/documentation/#imdg)
+* Hazelcast IMDG [website](https://hazelcast.com)
+* Hazelcast IMDG [Reference Manual](https://docs.hazelcast.com/imdg/latest)
 
 # Release Notes
 
@@ -338,7 +338,7 @@ Hazelcast Command Line is a tool which allows users to install & run Hazelcast I
 
 Follow the instructions below to create a Hazelcast IMDG cluster:
 
-1. Go to Hazelcast's download [page](https://hazelcast.org/download/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
+1. Go to Hazelcast's download [page](https://hazelcast.com/open-source-projects/downloads/) and download either the `.zip` or `.tar` distribution of Hazelcast IMDG.
 2. Decompress the contents into any directory that you want to run members from.
 3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
 4. Use either `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see the Hazelcast IMDG logs in the terminal.
@@ -443,7 +443,7 @@ The Hazelcast IMDG members and clients have their own configuration options. You
 
 This section describes the most common configuration elements to get you started in no time. It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the C++ client are discussed in the following sections.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#3-configuration-overview) for more information.
+See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.com/imdg/latest) and [Configuration Overview section](#3-configuration-overview) for more information.
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
@@ -1135,14 +1135,21 @@ The C++ client can discover the existing Hazelcast servers in the Amazon AWS env
 The following is an example configuration:
 
 ```c++
-clientConfig.get_network_config().get_aws_config().set_enabled(true).
-        set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
-        set_tag_key("aws-test-tag").set_tagValue("aws-tag-value-1").set_security_group_name("MySecureGroup").setRegion("us-east-1");
+clientConfig.get_network_config().get_aws_config()
+    .set_enabled(true)
+    .set_access_key("my access key id")
+    .set_secret_key("my secret access key")
+    .set_tag_key("my tag key")
+    .set_tag_value("my tag value")
+    .set_security_group_name("my secure group")
+    .set_region("us-east-1");
 ```
 
 You need to enable the discovery by calling the `set_enabled(true)`. You can set your access key and secret in the configuration as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances will be retrieved from, the default region is `us-east-1`.
- 
-The C++ client works the same way as the Java client. For details, see [aws_client Configuration] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#awsclient-configuration) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
+
+See [client_aws_config.h](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/hazelcast/include/hazelcast/client/config/client_aws_config.h)
+and [the AWS examples directory](https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples/aws)
+for more details.
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
 If you are using [Hazelcast Cloud Service](https://cloud.hazelcast.com) and you want to write an application that will utilize the Hazelcast cloud database service, you can use the C++ client. The configuration is very simple, you just need to set the cluster name, discovery token and enable the cloud discovery on network settings. Here is an example configuration:
@@ -1529,7 +1536,7 @@ Sometimes, e.g., when your servers are overloaded, you may want to slow down the
 - `hazelcast.client.max.concurrent.invocations`: The maximum number of concurrent invocations allowed. To prevent the system from overloading, you can apply a constraint on the number of concurrent invocations. If the maximum number of concurrent invocations has been exceeded and a new invocation comes in, then Hazelcast will throw `hazelcast_overload`. By default this property is configured as INT32_MAX.
 - `hazelcast.client.invocation.backoff.timeout.millis`: Controls the maximum timeout in milliseconds to wait for an invocation space to be available. If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done to give the system time to deal with the backlog of invocations. This property controls how long an invocation is allowed to wait before getting `hazelcast_overload`. When set to -1 then `hazelcast_overload` is thrown immediately without any waiting. This is the default value.
 
-For details of backpressure, see the [Back Pressure section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#back-pressure) in the Hazelcast IMDG Reference Manual.
+For details of backpressure, see the [Back Pressure section](https://docs.hazelcast.com/imdg/latest/performance/back-pressure.html) in the Hazelcast IMDG Reference Manual.
 
 ## 7.3.4 Client Connection Strategy
 
@@ -1563,7 +1570,7 @@ Most of the distributed data structures are supported by the C++ client. In this
 
 ### 7.4.1. Using imap
 
-Hazelcast Map (`imap`) is a distributed map. Through the C++ client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map) in the Hazelcast IMDG Reference Manual.
+Hazelcast Map (`imap`) is a distributed map. Through the C++ client, you can perform operations like reading and writing from/to a Hazelcast Map with the well known get and put methods. For details, see the [Map section](https://docs.hazelcast.com/imdg/latest/data-structures/map.html) in the Hazelcast IMDG Reference Manual.
 
 A Map usage example is shown below.
 
@@ -1580,7 +1587,7 @@ map->replace<std::string, std::string>("key", "value", "newvalue").get();
 
 ### 7.4.2. Using multi_map
 
-Hazelcast `multi_map` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [multi_map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
+Hazelcast `multi_map` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.com/imdg/latest/data-structures/multimap.html) in the Hazelcast IMDG Reference Manual.
 
 A multi_map usage example is shown below.
 
@@ -1601,7 +1608,7 @@ multiMap->remove<std::string, std::string>("my-key", "value2").get();
 
 ### 7.4.3. Using replicated_map
 
-Hazelcast `replicated_map` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [replicated_map section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#replicated-map) in the Hazelcast IMDG Reference Manual.
+Hazelcast `replicated_map` is a distributed key-value data structure where the data is replicated to all members in the cluster. It provides full replication of entries to all members for high speed access. For details, see the [ReplicatedMap section](https://docs.hazelcast.com/imdg/latest/data-structures/replicated-map.html) in the Hazelcast IMDG Reference Manual.
 
 A replicated_map usage example is shown below.
 
@@ -1614,7 +1621,7 @@ std::cout << "Replicated map value for key 2 is " << *replicatedMap->get<int, st
 
 ### 7.4.4. Using iqueue
 
-Hazelcast Queue (`iqueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the [Queue section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#queue) in the Hazelcast IMDG Reference Manual.
+Hazelcast Queue (`iqueue`) is a distributed queue which enables all cluster members to interact with it. For details, see the [Queue section](https://docs.hazelcast.com/imdg/latest/data-structures/queue.html) in the Hazelcast IMDG Reference Manual.
 
 A Queue usage example is shown below.
 
@@ -1635,7 +1642,7 @@ std::cout << *queue->take<std::string>().get() << std::endl; // Will print yetan
 
 ### 7.4.5. Using iset
 
-Hazelcast Set (`iset`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
+Hazelcast Set (`iset`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.com/imdg/latest/data-structures/set.html) in the Hazelcast IMDG Reference Manual.
 
 A Set usage example is shown below.
 
@@ -1657,7 +1664,7 @@ for (const auto &value : set->toArray().get()) {
 
 ### 7.4.6. Using ilist
 
-Hazelcast List (`ilist`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
+Hazelcast List (`ilist`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.com/imdg/latest/data-structures/list.html) in the Hazelcast IMDG Reference Manual.
 
 A List usage example is shown below.
 
@@ -1678,7 +1685,7 @@ list.clear().get();
 
 ### 7.4.7. Using ringbuffer
 
-Hazelcast `ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the ringbuffer. For details, see the [ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
+Hazelcast `ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the ringbuffer. For details, see the [Ringbuffer section](https://docs.hazelcast.com/imdg/latest/data-structures/ringbuffer.html) in the Hazelcast IMDG Reference Manual.
 
 A ringbuffer usage example is shown below.
 
@@ -1697,7 +1704,7 @@ std::cout << *rb->read_one<int>(sequence).get() << std::endl;
 
 ### 7.4.8. Using reliable_topic
 
-Hazelcast `reliable_topic` is a distributed topic implementation backed up by the `ringbuffer` data structure. For details, see the [reliable_topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
+Hazelcast `reliable_topic` is a distributed topic implementation backed up by the `ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.com/imdg/latest/data-structures/reliable-topic.html) in the Hazelcast IMDG Reference Manual.
 
 A reliable_topic usage example is shown below.
 
@@ -1767,7 +1774,7 @@ void listen_with_config() {
 
 ### 7.4.9 Using pn_counter
 
-Hazelcast `pn_counter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [pn_counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
+Hazelcast `pn_counter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.com/imdg/latest/data-structures/pn-counter.html) in the Hazelcast IMDG Reference Manual.
 
 A pn_counter usage example is shown below.
 
@@ -1789,7 +1796,7 @@ std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get()
 
 ### 7.4.10 Using flake_id_generator
 
-Hazelcast `flake_id_generator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [flake_id_generator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
+Hazelcast `flake_id_generator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [Flake ID Generator section](https://docs.hazelcast.com/imdg/latest/data-structures/flake-id-generator.html) in the Hazelcast IMDG Reference Manual.
 
 A flake_id_generator usage example is shown below.
 
@@ -1804,7 +1811,7 @@ Hazelcast IMDG 4.0 introduced CP concurrency primitives with respect to the [CAP
 
 All data structures within CP Subsystem are available through the `hazelcast_client::get_cp_subsystem()` API.
 
-Before using the CP structures, CP Subsystem has to be enabled on the cluster-side. Refer to the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
+Before using the CP structures, CP Subsystem has to be enabled on the cluster-side. Refer to the [CP Subsystem](https://docs.hazelcast.com/imdg/latest/cp-subsystem/cp-subsystem.html) documentation for more information.
 
 Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache the returned proxy objects. Second, if you call `DistributedObject::destroy()` on a CP data structure proxy, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.
 
@@ -1836,7 +1843,7 @@ auto future = atomic_counter->get().then(boost::launch::deferred, [=] (boost::fu
 future.get();
 ```
 
-atomic_long implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see the [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+atomic_long implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see the [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html) server-side setting.
 
 #### 7.4.11.2. Using fenced_lock
 
@@ -1858,7 +1865,7 @@ try {
 }
 ```
 
-fenced_lock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to the [CP Session](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-sessions) documentation for more information.
+fenced_lock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to the [CP Sessions](https://docs.hazelcast.com/imdg/latest/cp-subsystem/sessions.html) documentation for more information.
 
 Distributed locks are unfortunately *not equivalent* to single-node mutexes because of the complexities in distributed systems, such as uncertain communication patterns, and independent and partial failures. In an asynchronous network, no lock service can guarantee mutual exclusion, because there is no way to distinguish between a slow and a crashed process. Consider the following scenario, where a Hazelcast client acquires a fenced_lock, then hits a long GC pause. Since it will not be able to commit session heartbeats while paused, its CP session will be eventually closed. After this moment, another Hazelcast client can acquire this lock. If the first client wakes up again, it may not immediately notice that it has lost ownership of the lock. In this case, multiple clients think they hold the lock. If they attempt to perform an operation on a shared resource, they can break the system. To prevent such situations, you can choose to use an infinite session timeout, but this time probably you are going to deal with liveliness issues. For the scenario above, even if the first client actually crashes, requests sent by 2 clients can be re-ordered in the network and hit the external resource in reverse order.
 
@@ -1928,7 +1935,7 @@ if (success) {
  counting_semaphore data structure has two variations:
 
  * The default implementation is session-aware. In this one, when a caller makes its very first `acquire()` call, it starts a new CP session with the underlying CP group. Then, liveliness of the caller is tracked via this CP session. When the caller fails, permits acquired by this caller are automatically and safely released. However, the session-aware version comes with a limitation, that is, a Hazelcast client cannot release permits before acquiring them first. In other words, a client can release only the permits it has acquired earlier.
- * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or client fails while holding some permits, they will not be automatically released. You can use the sessionless CP counting_semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to the [counting_semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
+ * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or client fails while holding some permits, they will not be automatically released. You can use the sessionless CP counting_semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to the [CP Subsystem Configuration](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html) documentation for more details.
 
 #### 7.4.11.4. Using latch
 
@@ -1995,13 +2002,13 @@ The following are some considerations you need to know when you use atomic_refer
 * The 'in-memory format' of an atomic_reference is `binary`. The receiving side does not need to have the class definition available unless it needs to be deserialized on the other side., e.g., because a method like `alter()` is executed. This deserialization is done for every call that needs to have the object instead of the binary content, so be careful with expensive object graphs that need to be deserialized.
 * If you have an object with many fields or an object graph, and you only need to calculate some information or need a subset of fields, you can use the `apply()` method. With the `apply()` method, the whole object does not need to be sent over the line; only the information that is relevant is sent.
 
-atomic_reference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see the [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+atomic_reference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see the [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.com/imdg/latest/cp-subsystem/configuration.html) server-side setting.
 
 ### 7.4.12. Using Transactions
 
 Hazelcast C++ client provides transactional operations like beginning transactions, committing transactions and retrieving transactional data structures like the `transactional_map`, `transactional_set`, `transactional_list`, `transactional_queue` and `transactional_multi_map`.
 
-You can create a `transaction_context` object using the C++ client to begin, commit and rollback a transaction. You can obtain transaction-aware instances of queues, maps, sets, lists and multimaps via the `transaction_context` object, work with them and commit or rollback in one shot. For details, see the [Transactions section](https://docs.hazelcast.org//docs/latest/manual/html-single/index.html#transactions) in the Hazelcast IMDG Reference Manual.
+You can create a `transaction_context` object using the C++ client to begin, commit and rollback a transaction. You can obtain transaction-aware instances of queues, maps, sets, lists and multimaps via the `transaction_context` object, work with them and commit or rollback in one shot. For details, see the [Transactions section](https://docs.hazelcast.com/imdg/latest/transactions/transactions.html) in the Hazelcast IMDG Reference Manual.
 
 ```c++
   // Create a Transaction object and begin the transaction
@@ -2054,7 +2061,6 @@ You can listen the following types of member events in the `cluster`.
 
 * `member_added`: A new member is added to the cluster.
 * `member_removed`: An existing member leaves the cluster.
-* `memberAttributeChanged`: An attribute of a member is changed. See the [Defining Member Attributes section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) in the Hazelcast IMDG Reference Manual to learn about member attributes.
 
 You can use `cluster` (`hazelcast_client::hazelcast_client::get_cluster()`) object to register for the membership listeners. There are two types of listeners: `InitialMembershipListener` and `membership_listener`. The difference is that `InitialMembershipListener` also gets notified when the client connects to the cluster and retrieves the whole membership list. You need to implement one of these two interfaces and register an instance of the listener to the cluster.
 
@@ -2251,7 +2257,7 @@ You need to implement the actual task logic at the server side as a Java code. T
 
 Note that, the distributed executor service (`iexecutor_service`) is intended to run processing where the data is hosted: on the server members.
 
-For more information on the server side configuration, see the [Executor Service section](https://docs.hazelcast.org/docs/latest/manual/html-single/#executor-service) in the Hazelcast IMDG Reference Manual.
+For more information on the server side configuration, see the [Executor Service section](https://docs.hazelcast.com/imdg/latest/computing/executor-service.html) in the Hazelcast IMDG Reference Manual.
 
 #### 7.6.1.1 Implementing a Callable Task
 
@@ -2362,7 +2368,7 @@ std::cout << "Server result: " << *result << std::endl;
 
 #### 7.6.1.3 Scaling The Executor Service
 
-You can scale the Executor service both vertically (scale up) and horizontally (scale out). See the [Scaling The Executor Service section](https://docs.hazelcast.org/docs/latest/manual/html-single/#scaling-the-executor-service) in the Hazelcast IMDG Reference Manual for more details on its configuration.
+You can scale the Executor service both vertically (scale up) and horizontally (scale out). See the [Scaling The Executor Service section](https://docs.hazelcast.com/imdg/latest/computing/executor-service.html#scaling-the-executor-service) in the Hazelcast IMDG Reference Manual for more details on its configuration.
 
 #### 7.6.1.4 Executing Code in the Cluster
 
@@ -2606,7 +2612,7 @@ Now you need to configure the `hazelcast.xml` to add your factory as shown below
 </hazelcast>
 ```
 
-The code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#entry-processor) in the Hazelcast IMDG Reference Manual.
+The code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.com/imdg/latest/computing/entry-processor.html) in the Hazelcast IMDG Reference Manual.
 
 After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `imap` functions. See the following example.
 
@@ -2997,7 +3003,7 @@ mapOrders->put<OrderKey, Order>(OrderKey{"2"}, order2).get();
 mapOrders->put<OrderKey, Order>(OrderKey{"3"}, order3).get();
 ```  
 
-For more details, see the [partition_aware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
+For more details, see the [Data Affinity section](https://docs.hazelcast.com/imdg/latest/performance/data-affinity.html) in the Hazelcast IMDG Reference Manual.
 
 ### 7.8.2. Near Cache
 
@@ -3084,7 +3090,7 @@ The actual expiration is performed when a record is accessed: it is checked if t
 
 #### 7.8.2.5. Near Cache Invalidation
 
-Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
+Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.com/imdg/latest/performance/near-cache.html#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
 
 ### 7.8.3. Pipelining
 

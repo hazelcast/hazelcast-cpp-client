@@ -54,7 +54,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
   * **socket-interceptor**: Shows an example interceptor which you can use to intercept cluster connection.
   * **tcpip**: Illustrates the configuration for member discovery using a provided tcp/ip address for the cluster member.
 
-**Org.Web.Samples** — The examples presented at the https://hazelcast.org/ website.
+**Org.Web.Samples** — Contains examples presented at https://hazelcast.com/clients/cplusplus/.
 
 **serialization** — Examples for different Hazelcast serialization techniques.
   * **custom**: Illustrates how you can use configure and custom serializers.
