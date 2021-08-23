@@ -50,7 +50,7 @@
 
 namespace hazelcast {
     namespace client {
-        constexpr std::chrono::milliseconds imap::UNSET;
+        const std::chrono::milliseconds imap::UNSET{ -1 };
 
         reliable_topic::reliable_topic(const std::string &instance_name, spi::ClientContext *context)
                 : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context),
@@ -1632,7 +1632,7 @@ namespace hazelcast {
                                                                                           context),
                                                                                 target_partition_id_(-1) {}
 
-            constexpr int32_t RingbufferImpl::MAX_BATCH_SIZE;
+            const int32_t RingbufferImpl::MAX_BATCH_SIZE{ 1000 };
         }
 
         namespace map {
