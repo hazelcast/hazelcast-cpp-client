@@ -51,7 +51,8 @@ jobs:
         run: |
           Invoke-WebRequest `
               "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz" `
-              -OutFile "boost_1_76_0.tar.gz"
+              -OutFile "boost_1_76_0.tar.gz" `
+              -UserAgent "''"
           tar xzf boost_1_76_0.tar.gz
           rm boost_1_76_0.tar.gz
           cd boost_1_76_0
