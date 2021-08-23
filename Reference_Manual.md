@@ -256,14 +256,14 @@ Run `cmake` (or `cmake3` if you are on CentOS or RHEL) to configure:
 ```sh
 cmake ..
 ```
-See the [advanced installation](#115-advanced-installation) section for configuration options.
+See the [advanced installation](#1135-advanced-installation) section for configuration options.
 
 Run `cmake` again to build and install the library:
 ```sh
 cmake --build .
 sudo cmake --build . --target install
 ```
-See [this section](#1151-custom-install-location) for information on how to use a different installation location.
+See [this section](#11351-custom-install-location) for information on how to use a different installation location.
 
 #### 1.1.3.4. Windows Users
 Download and extract the release archive from the 
@@ -812,7 +812,7 @@ Hazelcast serializes all your objects before sending them to the server. The `un
 
 Vector of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively. 
 
-If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`identified_data_serializer` serialization](#41-identifieddataserializable-serialization) and [`portable_serializer` serialization](#42-portable-serialization).
+If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`identified_data_serializer` serialization](#41-identified_data_serializer-serialization) and [`portable_serializer` serialization](#42-portable-serialization).
 
 On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#43-custom-serialization).
 
@@ -1068,7 +1068,7 @@ The provided list is shuffled and tried in a random order. If no address is adde
 
 ## 5.2. Setting Smart Routing
 
-Smart routing defines whether the client mode is smart or unisocket. See the [C++ Client Operation Modes section](#72-cpp-client-operation-modes)
+Smart routing defines whether the client mode is smart or unisocket. See the [C++ Client Operation Modes section](#72-c-client-operation-modes)
 for the description of smart and unisocket modes.
  
 The following is an example configuration.
@@ -1168,7 +1168,7 @@ That is all the configuration you will need. The client will query the hazelcast
 Please check the code sample at `examples/cloud-discovery/connect-cloud.cpp` for a full featured cloud discovery example.
 
 ## 5.8.1. Cloud Discovery With SSL Enabled
-You can create a Hazelcast cluster in the cloud with "[Enable Encryption](https://docs.cloud.hazelcast.com/docs/encryption)" option. When this option is selected the cluster requires the clients to connect using the SSL connection and the client should be configured to do [mutual authentication](#6122-mutual-authentication-two-way-authentication). The required certificate authority file, client certificate, client key file and key file PEM pass phrase are located at the Hazelcast cloud web site cluster configuration `Configure Clients` page. Download the keystore file and unzip it (it will be folder such as `hzcloud_xxx_keys` where `xxx` is the cluster number), this zip includes all the required files. Also, copy the `Keystore and truststore password` which is the client key PEM file pass phrase. Once, you have all this information in hand, you can configure the client as in the following code snippet:
+You can create a Hazelcast cluster in the cloud with "[Enable Encryption](https://docs.hazelcast.com/cloud/encryption.html#setting-up-encryption)" option. When this option is selected the cluster requires the clients to connect using the SSL connection and the client should be configured to do [mutual authentication](#6122-mutual-authentication-two-way-authentication). The required certificate authority file, client certificate, client key file and key file PEM pass phrase are located at the Hazelcast cloud web site cluster configuration `Configure Clients` page. Download the keystore file and unzip it (it will be folder such as `hzcloud_xxx_keys` where `xxx` is the cluster number), this zip includes all the required files. Also, copy the `Keystore and truststore password` which is the client key PEM file pass phrase. Once, you have all this information in hand, you can configure the client as in the following code snippet:
 ```c++
     std::string cluster_name = "my_cluster";
     std::string cloud_token = "my cloud token for the cluster";
@@ -1319,7 +1319,7 @@ Hazelcast allows you to encrypt socket level communication between Hazelcast mem
 
 ### 6.1.2. TLS/SSL for Hazelcast C++ Client
 
-The Hazelcast C++ client uses [Boost Asio](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio.html) library for networking and secure communication. 
+The Hazelcast C++ client uses [Boost Asio](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio.html) library for networking and secure communication. 
 
 To use TLS/SSL with your Hazelcast C++ client, you should build the library with OpenSSL feature turned on. By default, this feature is turned off. Here are the different ways to install the library with SSL support:
 
@@ -1330,7 +1330,7 @@ Once the library is installed properly, you can enable the SSL feature in the cl
 
 You can set the protocol type. If not set, the configuration uses `tlsv12` (TLSv1.2) as the default protocol type and version.
 
-There may be different ways to configure ssl communication at the client side. We utilize the `boost::asio::ssl::context` to configure the SSL communication. You can set the verify mode to ignore or verify the server certificate, set the used SSL protocol, add verify callbacks, and such. The details can be found at the [Boost asio ssl context documentation](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html).
+There may be different ways to configure ssl communication at the client side. We utilize the `boost::asio::ssl::context` to configure the SSL communication. You can set the verify mode to ignore or verify the server certificate, set the used SSL protocol, add verify callbacks, and such. The details can be found at the [Boost asio ssl context documentation](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio/reference/ssl__context.html).
 
 Here is the most basic way to enable the SSL on the client:
 
@@ -1344,7 +1344,7 @@ auto hz = hazelcast::new_client(std::move(config)).get();
 Once, we set the SSL context, the client will start with SSL enabled and try to connect to the server using the provided context.
 
 #### 6.1.2.1. Enabling Validation Of Server Certificate
-If you want to enable the validation of server certificate on the client side and disable any connection without a valid certificate, you can use the [context::set_verify_mode](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context/set_verify_mode.html) API. Here is an example:
+If you want to enable the validation of server certificate on the client side and disable any connection without a valid certificate, you can use the [context::set_verify_mode](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio/reference/ssl__context/set_verify_mode.html) API. Here is an example:
 
 ```c++
     hazelcast::client::client_config config;
@@ -1373,12 +1373,12 @@ If the server is using a user generated certificate file which is not signed by 
     auto hz = hazelcast::new_client(std::move(config)).get();
 ```
 
-As you can see in this code snippet, we add the server public certificate using [context::load_verify_file](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context/load_verify_file.html) as a verify file so that the client can validate the server certificate as valid and connect to the server. There are also other ways to load verify files and use verify directories. You can find the details at [Boost Asio ssl context documentation](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html). 
+As you can see in this code snippet, we add the server public certificate using [context::load_verify_file](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio/reference/ssl__context/load_verify_file.html) as a verify file so that the client can validate the server certificate as valid and connect to the server. There are also other ways to load verify files and use verify directories. You can find the details at [Boost Asio ssl context documentation](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio/reference/ssl__context.html). 
 
 You can check `BasicTLSClient.cpp` example for a full featured example.
 
 #### 6.1.2.2. Mutual Authentication (Two Way Authentication) 
-[Mutual Authentication](https://en.wikipedia.org/wiki/Mutual_authentication) is the process where the client verifies the identity of the server via server's certificate (either self-signed or signed by a CA authority) and the server verifies the client identity via the client provided certificate (either self-signed or signed by a CA authority). If the Hazelcast server is configured for [mutual authentication](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members) as **REQUIRED**, then we can use the [ssl::context::use_xxx](https://www.boost.org/doc/libs/1_75_0/doc/html/boost_asio/reference/ssl__context.html) methods to add the client's public and private certificates and use them during its authentication to the server. An example configuration is as follows:
+[Mutual Authentication](https://en.wikipedia.org/wiki/Mutual_authentication) is the process where the client verifies the identity of the server via server's certificate (either self-signed or signed by a CA authority) and the server verifies the client identity via the client provided certificate (either self-signed or signed by a CA authority). If the Hazelcast server is configured for [mutual authentication](https://docs.hazelcast.com/imdg/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members) as **REQUIRED**, then we can use the [ssl::context::use_xxx](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio/reference/ssl__context.html) methods to add the client's public and private certificates and use them during its authentication to the server. An example configuration is as follows:
 ```c++
     hazelcast::client::client_config config;
 
@@ -2540,7 +2540,7 @@ namespace hazelcast {
 }
 ```
 
-Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1214-adding-user-java-library-to-java-classpath).
 
 The following is the Java equivalent of the entry processor in C++ client given above:
 
