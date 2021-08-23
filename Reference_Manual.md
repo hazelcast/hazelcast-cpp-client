@@ -1,5 +1,6 @@
 # Hazelcast C++ Client Library
 <!--ts-->
+   * [Hazelcast C++ Client Library](#hazelcast-c-client-library)
    * [Introduction](#introduction)
    * [Resources](#resources)
    * [Release Notes](#release-notes)
@@ -26,7 +27,7 @@
             * [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
             * [1.3.3. Windows Users](#133-windows-users)
       * [1.4. Basic Configuration](#14-basic-configuration)
-         * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
+         * [1.4.1. Configuring Hazelcast Server](#141-configuring-hazelcast-server)
          * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-c-client)
          * [1.4.2.1 Cluster Name](#1421-cluster-name)
          * [1.4.2.2. Network Settings](#1422-network-settings)
@@ -141,7 +142,7 @@
    * [11. License](#11-license)
    * [12. Copyright](#12-copyright)
 
-<!-- Added by: ihsan, at: Wed Aug 11 10:30:27 +03 2021 -->
+<!-- Added by: ihsan, at: Mon Aug 23 15:55:05 +03 2021 -->
 
 <!--te-->
 
@@ -445,9 +446,9 @@ This section describes the most common configuration elements to get you started
 
 See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#3-configuration-overview) for more information.
 
-### 1.4.1. Configuring Hazelcast IMDG
+### 1.4.1. Configuring Hazelcast Server
 
-Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However if you have limitations on your network such as multicast being disabled, you may have to configure your Hazelcast IMDG members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
+Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However, if you have limitations on your network such as multicast being disabled, you may have to configure your Hazelcast IMDG members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
 
 You can use the following options to configure Hazelcast IMDG:
 
@@ -500,7 +501,7 @@ These configuration elements are enough for most connection scenarios. Now we wi
 
 ### 1.4.2. Configuring Hazelcast C++ Client
 
-You can configure Hazelcast C++ Client programatically.
+You must configure a Hazelcast C++ Client programmatically. Config files of any type are not yet supported for the C++ client.
 
 You can start the client with no custom configuration like this:
 
