@@ -812,7 +812,7 @@ Hazelcast serializes all your objects before sending them to the server. The `un
 
 Vector of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively. 
 
-If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`identified_data_serializer` serialization](#41-identified_data_serializer-serialization) and [`portable_serializer` serialization](#42-portable-serialization).
+If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`identified_data_serializer` serialization](#41-identified_data_serializer-serialization) and [`portable_serializer` serialization](#42-portable_serializer-serialization).
 
 On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#43-custom-serialization).
 
