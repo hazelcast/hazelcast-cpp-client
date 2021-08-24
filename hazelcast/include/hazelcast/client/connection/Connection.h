@@ -115,7 +115,7 @@ namespace hazelcast {
 
                 void deregister_invocation(int64_t call_id);
 
-                void last_write_time(std::chrono::steady_clock::time_point time_point);
+                void last_write_time(std::chrono::steady_clock::time_point tp);
 
                 std::chrono::steady_clock::time_point last_write_time() const;
 
@@ -143,7 +143,7 @@ namespace hazelcast {
                 logger &logger_;
                 std::atomic_bool alive_;
                 std::unique_ptr<boost::asio::steady_timer> backup_timer_;
-                std::atomic<std::chrono::steady_clock::time_point> last_write_time_;
+                std::atomic<std::chrono::steady_clock::duration> last_write_time_;
 
                 void schedule_periodic_backup_cleanup(std::chrono::milliseconds backup_timeout,
                                                       std::shared_ptr<Connection> this_connection);
