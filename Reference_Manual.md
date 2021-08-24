@@ -193,7 +193,7 @@ Hazelcast C++ client package is available for [Vcpkg](https://github.com/microso
 
 Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
 
-```commandline
+```bat
 > git clone https://github.com/microsoft/vcpkg
 > .\vcpkg\bootstrap-vcpkg.bat
 > .\vcpkg\vcpkg install hazelcast-cpp-client
@@ -201,7 +201,7 @@ Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started)
 The above code snippet will install `hazelcast-cpp-client` with its `boost` dependencies.
 
 After the installation, the library is available for usage. For example, if you are using CMake for your builds, you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
-```commandline
+```bat
 > cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
 > cmake --build [build directory]
 ```
@@ -209,7 +209,7 @@ After the installation, the library is available for usage. For example, if you 
 You can find more details on using a Vcpkg installed package from different IDEs in your projects from the [Vcpkg Official Getting Started](https://github.com/microsoft/vcpkg#getting-started) documentation.
 
 If you need to use `openssl` feature, then you need to install using the following command:
-```commandline
+```bat
 > .\vcpkg\vcpkg install hazelcast-cpp-client[openssl]
 ```
 The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
@@ -228,8 +228,8 @@ Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases)
 The releases page has both `tar.gz` and `zip` archives available. Choose the one which suits your system the best.
 
 Follow the instructions for your platform:
-* [Linux and MacOS](#1132-linux-and-macos-users)
-* [Windows](#1133-windows-users)
+* [Linux and MacOS](#1133-linux-and-macos-users)
+* [Windows](#1134-windows-users)
 
 #### 1.1.3.3. Linux and MacOS Users
 Here is how you download and extract version 4.2.0 using the **curl** command:
@@ -280,7 +280,7 @@ Run `cmake` to configure:
 ```bat
 cmake ..
 ``` 
-See the [advanced installation](#115-advanced-installation) section for configuration options.
+See the [advanced installation](#1135-advanced-installation) section for configuration options.
 
 Build and install:
 ```bat
@@ -289,7 +289,7 @@ cmake --build . --target install --config Release
 ```
 The above commands will build and install the library with the `Release` configuration. Make sure you pass the same `--config` option to both commands.
 
-The install command may require administrator privileges depending on your install prefix. See [this section](#1151-custom-install-location) for information on how to use a different installation location.
+The install command may require administrator privileges depending on your install prefix. See [this section](#11351-custom-install-location) for information on how to use a different installation location.
 
 #### 1.1.3.5. Advanced Installation
 
@@ -2705,7 +2705,7 @@ namespace hazelcast {
 Note that `person` is being serialized with portable_serializer`. As portable types are not deserialized on the server side for querying, you don't need to implement its Java equivalent on the server side for querying.
 
 For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. 
-In this case before starting the server, you need to compile the `person` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
+In this case before starting the server, you need to compile the `person` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#1214-adding-user-java-library-to-java-classpath).
 
 > **NOTE: Querying with `portable_serializer` is faster as compared to `identified_data_serializer` .**
 
@@ -2916,7 +2916,7 @@ values = map->values(pagingPredicate).get();
 //...
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements the `query::entry_comparator` interface. Also, this comparator object should be Hazelcast serializable. After implementing After implementing this object in C++, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the C++ side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath). 
+If you want to sort the result before paging, you need to specify a comparator object that implements the `query::entry_comparator` interface. Also, this comparator object should be Hazelcast serializable. After implementing After implementing this object in C++, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the C++ side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1214-adding-user-java-library-to-java-classpath). 
 
 Also, you can access a specific page more easily with the help of the `set_page` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `next_page` function.
 
