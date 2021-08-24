@@ -1491,11 +1491,9 @@ There are two main failure cases you should be aware of. Below sections explain 
 
 ### 7.3.1. Handling Client Connection Failure
 
-While the client is trying to connect initially to one of the members in the `client_network_config::get_addresses()`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connection_attempt_limit` times. 
+While the client is trying to connect initially to one of the members in the `client_network_config::get_addresses()`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client retries to connect as configured which is described in the [Advanced Cluster Connection Retry Configuration](#55-advanced-cluster-connection-retry-configuration) section.
 
-You can configure `connection_attempt_limit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#55-setting-connection-attempt-limit).
-
-The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
+The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client tries to reconnect as configured.
 
 ### 7.3.2. Handling Retry-able Operation Failure
 
