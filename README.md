@@ -4,7 +4,7 @@ Hazelcast is an open-source distributed in-memory data store and computation pla
 
 hazelcast-cpp-client is the official C++ library API for using the Hazelcast in-memory database platform. It requires C++11 support.  
 
-The library can be installed using package managers [Conan](Reference_Manual.md#111-conan-users) and [Vcpkg](Reference_Manual.md#112-vcpkg-users) or directly [from source code](Reference_Manual.md#112-install-from-source-code-using-cmake) using [CMake](https://cmake.org/).
+The library can be installed using package managers [Conan](Reference_Manual.md#111-conan-users) and [Vcpkg](Reference_Manual.md#112-vcpkg-users) or directly [from source code](Reference_Manual.md#113-install-from-source-code-using-cmake) using [CMake](https://cmake.org/).
 
 * [Hazelcast Community Slack - C++ Client Channel](https://hazelcastcommunity.slack.com/channels/cpp-client)
 * Google Groups: https://groups.google.com/forum/#!forum/hazelcast
