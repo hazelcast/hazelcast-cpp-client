@@ -40,7 +40,7 @@ namespace hazelcast {
                               connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver),
                               socket_(io) {
                     }
-                    
+
 #ifdef HZ_BUILD_WITH_SSL
 
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
