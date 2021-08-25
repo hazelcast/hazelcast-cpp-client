@@ -1383,7 +1383,7 @@ namespace hazelcast {
 
                     auto  hazelcastClient = new_client(std::move(clientConfig)).get();
                     auto map = hazelcastClient.get_map("myMap").get();
-                    map->put(5, 20);
+                    map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val);
                     ASSERT_EQ(20, *val);
