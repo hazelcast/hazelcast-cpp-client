@@ -2747,9 +2747,9 @@ namespace hazelcast {
 
                 std::array<boost::future<void>, n> futures;
                 for (int i = 0; i < n; i++) {
-                    futures[i] = boost::async(std::packaged_task<void()>([&]() {
-                        std::string key = std::to_string(hazelcast::util::get_current_thread_id());
-                        std::string key2 = key + "2";
+                    futures[i] = boost::async([&mm, this, i]() {
+                        std::string key = std::to_string(i);
+                        std::string key2 = key + "-2";
                         client_.get_multi_map("testPutGetRemove").get()->put(key, "value").get();
                         transaction_context context = client_.new_transaction_context();
                         context.begin_transaction().get();
@@ -2768,7 +2768,7 @@ namespace hazelcast {
                         context.commit_transaction().get();
 
                         ASSERT_EQ(3, (int) (mm->get<std::string, std::string>(key).get().size()));
-                    }));
+                    });
                 }
 
                 boost::wait_for_all(futures.begin(), futures.end());
