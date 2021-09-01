@@ -1025,6 +1025,26 @@ namespace hazelcast {
 
             }
 
+            TEST_P(ClientMapTest, testPutAllGetAllWithJson) {
+                std::unordered_map<std::string, hazelcast_json_value> mapTemp;
+
+                for (int i = 0; i < 100; i++) {
+                    mapTemp.emplace(std::to_string(i), hazelcast_json_value("{\"value\":\"value_" + std::to_string(i) + "\"}"));
+                }
+                ASSERT_EQ(imap_->size().get(), 0);
+                imap_->put_all(mapTemp).get();
+                ASSERT_EQ(imap_->size().get(), 100);
+
+                std::unordered_set<std::string> tempSet;
+                tempSet.insert(std::to_string(1));
+                tempSet.insert(std::to_string(3));
+                std::unordered_map<std::string, hazelcast_json_value> m2 = imap_->get_all<std::string, hazelcast_json_value>(tempSet).get();
+
+                ASSERT_EQ(2U, m2.size());
+                ASSERT_EQ(m2.at(std::to_string(1)), hazelcast_json_value("{\"value\":\"value_1\"}"));
+                ASSERT_EQ(m2.at(std::to_string(3)), hazelcast_json_value("{\"value\":\"value_3\"}"));
+            }
+
             TEST_P(ClientMapTest, testTryPutRemove) {
                 ASSERT_TRUE(imap_->try_put("key1", "value1", std::chrono::seconds(1)).get());
                 ASSERT_TRUE(imap_->try_put("key2", "value2", std::chrono::seconds(1)).get());

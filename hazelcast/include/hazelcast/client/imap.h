@@ -603,9 +603,8 @@ namespace hazelcast {
                                                                                                 entry.second);
                                                                                         // it is guaranteed that all values are non-null
                                                                                         assert(val.has_value());
-                                                                                        result[to_object<K>(
-                                                                                                entry.first).value()] = std::move(
-                                                                                                val.value());
+                                                                                        result.emplace(to_object<K>(
+                                                                                                entry.first).value(), val.value());
                                                                                     }
                                                                                 }
                                                                                 return result;
