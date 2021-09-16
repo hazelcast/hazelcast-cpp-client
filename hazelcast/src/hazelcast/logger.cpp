@@ -67,6 +67,8 @@ std::tm time_t_to_localtime(const std::time_t &t) {
     return lt;
 }
 
+std::mutex cout_lock;
+
 }
 
 void logger::default_handler(const std::string &instance_name,
@@ -96,7 +98,6 @@ void logger::default_handler(const std::string &instance_name,
           << '\n';
 
     {
-        static std::mutex cout_lock;
         std::lock_guard<std::mutex> g(cout_lock);
         std::cout << sstrm.str() << std::flush;
     }
