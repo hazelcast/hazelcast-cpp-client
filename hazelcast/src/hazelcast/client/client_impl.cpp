@@ -382,6 +382,10 @@ namespace hazelcast {
                 }
             }
 
+            int32_t hazelcast_client_instance_impl::id() const {
+                return id_;
+            }
+
             BaseEventHandler::~BaseEventHandler() = default;
 
             BaseEventHandler::BaseEventHandler() : logger_(nullptr) {

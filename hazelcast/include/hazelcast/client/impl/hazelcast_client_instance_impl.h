@@ -120,6 +120,8 @@ namespace hazelcast {
                  */
                 const std::string &get_name() const;
 
+                int32_t id() const;
+
                 /**
                 *
                 * @tparam T type of the distributed object
