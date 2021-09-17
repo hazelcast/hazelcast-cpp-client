@@ -18,7 +18,7 @@ extern "C" {
      * @param port The port the server is started at
      * @return 0 on success. On error, non-zero error code is returned.
      */
-    int hazelcast_new_client(int *client_id, const char *server, int port);
+    int HAZELCAST_API hazelcast_new_client(int *client_id, const char *server, int port);
 
     /**
      *
@@ -26,7 +26,7 @@ extern "C" {
      * @param atomic_long_name the name of the \atomic_long to be incremented
      * @return 0 on success, error code on failure
      */
-    int hazelcast_increment_atomic_long(int client_id, const char *atomic_long_name);
+    int HAZELCAST_API hazelcast_increment_atomic_long(int client_id, const char *atomic_long_name);
 
     /**
      *
@@ -35,14 +35,14 @@ extern "C" {
      * @param value The value for the \atomic_long
      * @return 0 on success, non-zero on error.
      */
-    int hazelcast_get_atomic_long_value(int client_id, const char *atomic_long_name, int64_t *value);
+    int HAZELCAST_API hazelcast_get_atomic_long_value(int client_id, const char *atomic_long_name, int64_t *value);
 
     /**
      *
      * @param client_id The client to be shutdown and release its resources.
      * @return 0 on success, non-zero on failure.
      */
-    int hazelcast_shutdown_client(int client_id);
+    int HAZELCAST_API hazelcast_shutdown_client(int client_id);
 
 #ifdef __cplusplus
 }
