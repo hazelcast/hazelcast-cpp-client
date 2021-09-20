@@ -107,7 +107,7 @@ int hazelcast_increment_atomic_long(int client_id, const char *atomic_long_name)
     }
 }
 
-int hazelcast_get_atomic_long_value(int client_id, const char *atomic_long_name, int64_t *value) {
+int hazelcast_get_atomic_long_value(int client_id, const char *atomic_long_name, long *value) {
     using namespace hazelcast::client;
     using namespace hazelcast;
 

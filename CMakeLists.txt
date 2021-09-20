@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18)
 
 project(hazelcast-cpp-client
         VERSION 4.2.0
         DESCRIPTION "Hazelcast C++ Client"
-        LANGUAGES CXX)
+        LANGUAGES CXX C)
 
 # Set the C++ standard
 set(CMAKE_CXX_STANDARD 11)
@@ -37,6 +37,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(GenerateExportHeader)
+include(FindLua)
 include(./cmake/utils.cmake)
 
 # get and set Git commit date and id
@@ -78,6 +79,9 @@ option(BUILD_EXAMPLES
 # find Threads
 find_package(Threads REQUIRED)
 
+#find lua
+find_package(Lua REQUIRED)
+
 # find Boost
 find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
 
@@ -115,6 +119,8 @@ target_compile_features(
 
 # links the library against the system's thread library
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC ${LUA_LIBRARIES})
 
 # add Boost::thread and Boost::chrono as dependencies
 target_link_libraries(
@@ -155,6 +161,7 @@ target_include_directories(
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+        $<BUILD_INTERFACE:${LUA_INCLUDE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
