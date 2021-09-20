@@ -18,7 +18,7 @@ extern "C" {
      * @param port The port the server is started at
      * @return 0 on success. On error, non-zero error code is returned.
      */
-    int hazelcast_new_client(int *client_id, const char *server, int port);
+    int hazelcast_new_client(int *client_id, const char *server, int port, const char *cluster_name = "dev");
 
     /**
      *

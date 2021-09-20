@@ -16,6 +16,30 @@
 #define SWIG_LUA_TARGET SWIG_LUA_FLAVOR_LUA
 #define SWIG_LUA_MODULE_GLOBAL
 
+
+#ifdef __cplusplus
+/* SwigValueWrapper is described in swig.swg */
+template<typename T> class SwigValueWrapper {
+  struct SwigMovePointer {
+    T *ptr;
+    SwigMovePointer(T *p) : ptr(p) { }
+    ~SwigMovePointer() { delete ptr; }
+    SwigMovePointer& operator=(SwigMovePointer& rhs) { T* oldptr = ptr; ptr = 0; delete oldptr; ptr = rhs.ptr; rhs.ptr = 0; return *this; }
+  } pointer;
+  SwigValueWrapper& operator=(const SwigValueWrapper<T>& rhs);
+  SwigValueWrapper(const SwigValueWrapper<T>& rhs);
+public:
+  SwigValueWrapper() : pointer(0) { }
+  SwigValueWrapper& operator=(const T& t) { SwigMovePointer tmp(new T(t)); pointer = tmp; return *this; }
+  operator T&() const { return *pointer.ptr; }
+  T *operator&() { return pointer.ptr; }
+};
+
+template <typename T> T SwigValueInit() {
+  return T();
+}
+#endif
+
 /* -----------------------------------------------------------------------------
  *  This section contains generic SWIG labels for method/variable
  *  declarations/attributes, and other compiler dependent labels.
@@ -2688,6 +2712,11 @@ static swig_module_info swig_module = {swig_types, 2, 0, 0, 0, 0};
 
 #define SWIG_LUACODE   luaopen_hazelcast_luacode
 
+namespace swig {
+typedef struct{} LANGUAGE_OBJ;
+}
+
+
 #ifdef __cplusplus	/* generic alloc/dealloc fns*/
 #define SWIG_ALLOC_ARRAY(TYPE,LEN) 	new TYPE[LEN]
 #define SWIG_FREE_ARRAY(PTR)		delete[] PTR
@@ -2863,16 +2892,21 @@ static int _wrap_hazelcast_new_client(lua_State* L) {
   int *arg1 = (int *) 0 ;
   char *arg2 = (char *) 0 ;
   int arg3 ;
+  char *arg4 = (char *) "dev" ;
   int temp1 ;
   int result;
   
   arg1 = &temp1; 
-  SWIG_check_num_args("hazelcast_new_client",2,2)
+  SWIG_check_num_args("hazelcast_new_client",2,3)
   if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("hazelcast_new_client",1,"char const *");
   if(!lua_isnumber(L,2)) SWIG_fail_arg("hazelcast_new_client",2,"int");
+  if(lua_gettop(L)>=3 && !SWIG_lua_isnilstring(L,3)) SWIG_fail_arg("hazelcast_new_client",3,"char const *");
   arg2 = (char *)lua_tostring(L, 1);
   arg3 = (int)lua_tonumber(L, 2);
-  result = (int)hazelcast_new_client(arg1,(char const *)arg2,arg3);
+  if(lua_gettop(L)>=3){
+    arg4 = (char *)lua_tostring(L, 3);
+  }
+  result = (int)hazelcast_new_client(arg1,(char const *)arg2,arg3,(char const *)arg4);
   lua_pushnumber(L, (lua_Number) result); SWIG_arg++;
   lua_pushnumber(L, (lua_Number) *arg1); SWIG_arg++;
   return SWIG_arg;

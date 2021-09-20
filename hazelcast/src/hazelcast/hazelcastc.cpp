@@ -76,10 +76,11 @@ namespace hazelcast {
 }
 
 
-int hazelcast_new_client(int *id, const char *server, int port) {
+int hazelcast_new_client(int *id, const char *server, int port, const char *cluster_name) {
     using namespace hazelcast::client;
     using namespace hazelcast;
     client_config config;
+    config.set_cluster_name(cluster_name);
     config.get_network_config().add_address(address(server, port));
     try {
         *id = client_manager::new_client(std::move(config));
