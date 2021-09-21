@@ -26,7 +26,7 @@ namespace hazelcast {
                 int id;
                 ASSERT_EQ(0, hazelcast_new_client(&id, "127.0.0.1", 5701));
 
-                int64_t value;
+                long value;
                 ASSERT_EQ(0, hazelcast_get_atomic_long_value(id, "my_counter", &value));
                 ASSERT_EQ(0, value);
 
