@@ -8,6 +8,8 @@
       * [1.1. Installing](#11-installing)
          * [1.1.1. Conan Users](#111-conan-users)
          * [1.1.2. Vcpkg Users](#112-vcpkg-users)
+            * [1.1.2.1. Vcpkg Manifest Mode(vcpkg.json) Usage With Cmake](#1121-vcpkg-manifest-modevcpkgjson-usage-with-cmake)
+            * [1.1.2.2. Vcpkg Classical Mode Usage With Cmake](#1122-vcpkg-classical-mode-usage-with-cmake)
          * [1.1.3. Install From Source Code Using CMake](#113-install-from-source-code-using-cmake)
             * [1.1.3.1. Requirements](#1131-requirements)
             * [1.1.3.2. Downloading Source Code](#1132-downloading-source-code)
@@ -142,7 +144,7 @@
    * [11. License](#11-license)
    * [12. Copyright](#12-copyright)
 
-<!-- Added by: ihsan, at: Mon Aug 23 15:55:05 +03 2021 -->
+<!-- Added by: ihsan, at: Wed Sep 22 15:45:09 +03 2021 -->
 
 <!--te-->
 
@@ -192,17 +194,81 @@ This generates the `conanbuildinfo.cmake` file to be included in your CMakeLists
 ### 1.1.2. Vcpkg Users
 Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The port name is `hazelcast-cpp-client`.
 
-Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
+Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. 
 
-```bat
+vcpkg has two modes of consuming dependencies - classic mode and [manifest mode](https://github.com/microsoft/vcpkg/blob/master/docs/users/manifests.md).
+
+#### 1.1.2.1. Vcpkg Manifest Mode(vcpkg.json) Usage With Cmake
+In this section, we will summarize how you can write your application using the manifest mode.
+
+Once you have the vcpkg installed, you can use a `vcpkg.json` file for specifying your application dependency to `hazelcast-cpp-client`.
+You should put lines similar to the following in this json file:
+
+```json
+{
+  "name": "my_cmake_project_name",
+  "version-string": "0.0.1",
+  "dependencies": [
+    "hazelcast-cpp-client"
+  ]
+}
+```
+You should use the name same as the project name in your `CMakeLists.txt` file. Your project `CMakeLists.txt` file 
+will use the usual `find_package` command similar to following:
+
+```cmake
+find_package(hazelcast-cpp-client REQUIRED)
+
+add_executable(my_application main.cpp)
+target_link_libraries(my_application PRIVATE hazelcast-cpp-client::hazelcast-cpp-client)
+```
+
+Build your application as usual with the vcpkg toolchain file using a command similar to the following:
+```shell
+> cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+> cmake --build [build directory]
+```
+
+The above commands will download and compile all dependencies including the hazelcast-cpp-client and 
+its dependencies into the `build\vcpkg_installed` folder and will compile your application properly.
+
+If you need to use `openssl` feature, then you can use the following in your `vcpkg.json`:
+```json
+{
+  "name": "my_cmake_project_name",
+  "version-string": "0.0.1",
+  "dependencies": [
+    {
+      "name": "hazelcast-cpp-client",
+      "features": [ "openssl" ]
+    }
+  ]
+}
+```
+
+#### 1.1.2.2. Vcpkg Classical Mode Usage With Cmake
+
+In this mode of vcpkg, we can install the `hazelcast-cpp-client` with its dependencies and use the vcpkg toolchain to 
+locate them. In summary,
+
+```shell
 > git clone https://github.com/microsoft/vcpkg
-> .\vcpkg\bootstrap-vcpkg.bat
+> .\vcpkg\bootstrap-vcpkg.sh
 > .\vcpkg\vcpkg install hazelcast-cpp-client
 ``` 
-The above code snippet will install `hazelcast-cpp-client` with its `boost` dependencies.
+The above code snippet will install `hazelcast-cpp-client` with its `boost` dependency.
+
+Your project `CMakeLists.txt` file will use the usual `find_package` command similar to following:
+
+```cmake
+find_package(hazelcast-cpp-client REQUIRED)
+
+add_executable(my_application main.cpp)
+target_link_libraries(my_application PRIVATE hazelcast-cpp-client::hazelcast-cpp-client)
+```
 
 After the installation, the library is available for usage. For example, if you are using CMake for your builds, you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
-```bat
+```shell
 > cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
 > cmake --build [build directory]
 ```
@@ -210,7 +276,7 @@ After the installation, the library is available for usage. For example, if you 
 You can find more details on using a Vcpkg installed package from different IDEs in your projects from the [Vcpkg Official Getting Started](https://github.com/microsoft/vcpkg#getting-started) documentation.
 
 If you need to use `openssl` feature, then you need to install using the following command:
-```bat
+```shell
 > .\vcpkg\vcpkg install hazelcast-cpp-client[openssl]
 ```
 The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
