@@ -69,6 +69,18 @@ jobs:
           lcov --remove coverage.info "`pwd`/hazelcast/test/*" -o coverage.info
           # list results
           lcov --list coverage.info
+          # generate HTML views
+          genhtml coverage.info --output-directory=coverage-html
 
-      - name: Publish to Codecov
+      - name: Upload HTML views as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: |
+            coverage.info
+            coverage-html
+
+      - name: Publish on Codecov
         uses: codecov/codecov-action@v2
+        with:
+          files: coverage.info
