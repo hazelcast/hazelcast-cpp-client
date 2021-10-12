@@ -57,18 +57,13 @@ jobs:
           ulimit -c unlimited
           sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
           sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
-          ./scripts/test-unix.sh       
+          ./scripts/test-unix.sh
        
       - name: Collect coverage files
-        run: |   
-          gcovr --xml-pretty -o cpp_coverage.xml                \
-            --delete                                            \
-            --exclude-throw-branches                            \
-            -r "$(pwd)/hazelcast" -e "$(pwd)/hazelcast/test"    \
-            "$(pwd)/build"
+        run: |
+          lcov --capture --directory . --no-external -o coverage.info
+          lcov --extract coverage.info "`pwd`/hazelcast/src/*" "`pwd`/hazelcast/include/*" \
+               -o coverage.info
       
       - name: Publish to Codecov
         uses: codecov/codecov-action@v2
-        with:
-          files: cpp_coverage.xml           
-      
