@@ -61,16 +61,12 @@ jobs:
        
       - name: Collect coverage info
         run: |
-          # collect coverage info
-          lcov --capture --directory . --no-external -o coverage.info
-          # only include sources and headers under ./hazelcast/
-          lcov --extract coverage.info "`pwd`/hazelcast/*" -o coverage.info
-          # exclude test files
-          lcov --remove coverage.info "`pwd`/hazelcast/test/*" -o coverage.info
-          # list results
+          # collect and list coverage info
+          lcov --capture --directory . --no-external -o coverage.info \
+               --include "`pwd`/hazelcast/*" --exclude "`pwd`/hazelcast/test/*"
           lcov --list coverage.info
           # generate HTML views
-          genhtml coverage.info --output-directory=coverage-html
+          genhtml coverage.info --output-directory=coverage-html-reports
 
       - name: Upload HTML views as artifact
         uses: actions/upload-artifact@v2
@@ -78,7 +74,7 @@ jobs:
           name: coverage-report
           path: |
             coverage.info
-            coverage-html
+            coverage-html-reports
 
       - name: Publish on Codecov
         uses: codecov/codecov-action@v2
