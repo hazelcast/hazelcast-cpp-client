@@ -59,11 +59,16 @@ jobs:
           sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
           ./scripts/test-unix.sh
        
-      - name: Collect coverage files
+      - name: Collect coverage info
         run: |
+          # collect coverage info
           lcov --capture --directory . --no-external -o coverage.info
-          lcov --extract coverage.info "`pwd`/hazelcast/src/*" "`pwd`/hazelcast/include/*" \
-               -o coverage.info
-      
+          # only include sources and headers under ./hazelcast/
+          lcov --extract coverage.info "`pwd`/hazelcast/*" -o coverage.info
+          # exclude test files
+          lcov --remove coverage.info "`pwd`/hazelcast/test/*" -o coverage.info
+          # list results
+          lcov --list coverage.info
+
       - name: Publish to Codecov
         uses: codecov/codecov-action@v2
