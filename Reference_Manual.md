@@ -177,7 +177,7 @@ Please see [example instructions](https://docs.conan.io/en/latest/getting_starte
 - You need to put the following lines to your `conanfile.txt`:
 ```
 [requires]
-hazelcast-cpp-client/4.2.0
+hazelcast-cpp-client/5.0.0
 
 [generators]
 cmake
@@ -233,22 +233,22 @@ Follow the instructions for your platform:
 * [Windows](#1134-windows-users)
 
 #### 1.1.3.3. Linux and MacOS Users
-Here is how you download and extract version 4.2.0 using the **curl** command:
+Here is how you download and extract version 5.0.0 using the **curl** command:
 ```sh
-curl -Lo hazelcast-cpp-client-4.2.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v4.2.0.tar.gz
-tar xzf hazelcast-cpp-client-4.2.0.tar.gz
+curl -Lo hazelcast-cpp-client-5.0.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v5.0.0.tar.gz
+tar xzf hazelcast-cpp-client-5.0.0.tar.gz
 ```
 
 Alternatively, you may clone the repository and checkout a specific version:
 ```sh
 git clone https://github.com/hazelcast/hazelcast-cpp-client.git
 cd hazelcast-cpp-client
-git checkout v4.2.0
+git checkout v5.0.0
 ```
 
 Once you are in the source directory of the Hazelcast C++ client library, create and change into a new directory:
 ```sh
-cd hazelcast-cpp-client-4.2.0
+cd hazelcast-cpp-client-5.0.0
 mkdir build
 cd build
 ```
@@ -272,7 +272,7 @@ Download and extract the release archive from the
 
 Open a `cmd` window and change into the folder where you extracted the contents of the release archive. Then create and change into a new directory:
 ```bat
-cd hazelcast-cpp-client-4.2.0
+cd hazelcast-cpp-client-5.0.0
 mkdir build
 cd build
 ```
@@ -348,14 +348,14 @@ You should see a log similar to the following, which means that your 1-member cl
 
 ```
 Nov 19, 2020 2:52:59 PM com.hazelcast.internal.cluster.ClusterService
-INFO: [192.168.1.112]:5701 [dev] [4.1] 
+INFO: [192.168.1.112]:5701 [dev] [5.0.0] 
 
 Members {size:1, ver:1} [
         Member [192.168.1.112]:5701 - 360ba49b-ef33-4590-9abd-ceff3e31dc06 this
 ]
 
 Nov 19, 2020 2:52:59 PM com.hazelcast.core.LifecycleService
-INFO: [192.168.1.112]:5701 [dev] [4.2.0] [192.168.1.112]:5701 is STARTED
+INFO: [192.168.1.112]:5701 [dev] [5.0.0] [192.168.1.112]:5701 is STARTED
 ```
 
 #### 1.2.1.4. Adding User Java Library to Java CLASSPATH
@@ -587,13 +587,13 @@ int main() {
 ```
 This should print logs about the cluster members and information about the client itself such as client type and local address port.
 ```
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-18/11/2020 21:22:26.837 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
-18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
-18/11/2020 21:22:26.841 INFO: [139868341360384] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+18/11/2020 21:22:26.837 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
+18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
+18/11/2020 21:22:26.841 INFO: [139868341360384] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
 
 Members [1]  {
         Member[10.212.1.117]:5701 - a27f900e-b1eb-48be-aa46-d7a4922ef704
@@ -641,13 +641,13 @@ int main() {
 **Output**
 
 ```
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-18/11/2020 21:22:26.837 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
-18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
-18/11/2020 21:22:26.841 INFO: [139868341360384] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+18/11/2020 21:22:26.837 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
+18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
+18/11/2020 21:22:26.841 INFO: [139868341360384] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
 
 Members [1]  {
         Member[10.212.1.117]:5701 - a27f900e-b1eb-48be-aa46-d7a4922ef704
@@ -700,13 +700,13 @@ auto personnel = hz.get_map("personnel_map").get();
 **Output**
 
 ```
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
-18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-18/11/2020 21:22:26.837 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
-18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
-18/11/2020 21:22:26.841 INFO: [139868341360384] client_1[dev] [4.2.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2020 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
+18/11/2020 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+18/11/2020 21:22:26.837 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
+18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+18/11/2020 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
+18/11/2020 21:22:26.841 INFO: [139868341360384] client_1[dev] [5.0.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
 
 Members [1]  {
         Member[10.212.1.117]:5701 - a27f900e-b1eb-48be-aa46-d7a4922ef704
@@ -2163,23 +2163,23 @@ int main() {
 **Output:**
 
 ```
-20/11/2020 12:26:43.340 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:375] (Fri Nov 20 11:03:59 2020 +0300:f2326084c3) LifecycleService::LifecycleEvent Client (7add62a3-c6ec-4002-a9d8-79ed4639f8e9) is STARTING
-20/11/2020 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:379] (Fri Nov 20 11:03:59 2020 +0300:f2326084c3) LifecycleService::LifecycleEvent STARTING
-20/11/2020 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-20/11/2020 12:26:43.398 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[127.0.0.1:5701]
-20/11/2020 12:26:43.409 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-20/11/2020 12:26:43.410 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:8324bc53-8190-400c-bcbf-e582834a0542, server version: 4.2, local address: Address[127.0.0.1:63383]
-20/11/2020 12:26:43.412 INFO: [0x7000062b8000] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:881] 
+20/11/2020 12:26:43.340 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:375] (Fri Nov 20 11:03:59 2020 +0300:f2326084c3) LifecycleService::LifecycleEvent Client (7add62a3-c6ec-4002-a9d8-79ed4639f8e9) is STARTING
+20/11/2020 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:379] (Fri Nov 20 11:03:59 2020 +0300:f2326084c3) LifecycleService::LifecycleEvent STARTING
+20/11/2020 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+20/11/2020 12:26:43.398 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[127.0.0.1:5701]
+20/11/2020 12:26:43.409 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+20/11/2020 12:26:43.410 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:8324bc53-8190-400c-bcbf-e582834a0542, server version: 4.2, local address: Address[127.0.0.1:63383]
+20/11/2020 12:26:43.412 INFO: [0x7000062b8000] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:881] 
 
 Members [1]  {
 	Member[localhost]:5701 - 8324bc53-8190-400c-bcbf-e582834a0542
 }
 Client connected to the cluster
-20/11/2020 12:26:48.700 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:395] LifecycleService::LifecycleEvent SHUTTING_DOWN
-20/11/2020 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/network.cpp:545] Removed connection to endpoint: Address[localhost:5701], connection: ClientConnection{alive=0, connectionId=1, remoteEndpoint=Address[localhost:5701], lastReadTime=2020-11-20 12:26:43.-286, closedTime=2020-11-20 12:26:48.000, connected server version=4.2}
-20/11/2020 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:419] LifecycleService::LifecycleEvent CLIENT_DISCONNECTED
+20/11/2020 12:26:48.700 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:395] LifecycleService::LifecycleEvent SHUTTING_DOWN
+20/11/2020 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/network.cpp:545] Removed connection to endpoint: Address[localhost:5701], connection: ClientConnection{alive=0, connectionId=1, remoteEndpoint=Address[localhost:5701], lastReadTime=2020-11-20 12:26:43.-286, closedTime=2020-11-20 12:26:48.000, connected server version=4.2}
+20/11/2020 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:419] LifecycleService::LifecycleEvent CLIENT_DISCONNECTED
 Client is disconnected from the cluster
-20/11/2020 12:26:48.703 INFO: [0x11a0acdc0] hz.client_1[dev] [4.2.0] [../hazelcast/src/hazelcast/client/spi.cpp:403] LifecycleService::LifecycleEvent SHUTDOWN
+20/11/2020 12:26:48.703 INFO: [0x11a0acdc0] hz.client_1[dev] [5.0.0] [../hazelcast/src/hazelcast/client/spi.cpp:403] LifecycleService::LifecycleEvent SHUTDOWN
 ```
 
 ### 7.5.2. Distributed Data Structure Events
