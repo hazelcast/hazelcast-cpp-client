@@ -64,46 +64,6 @@ namespace hazelcast {
             };
         }
     }
-
-    namespace util {
-        class ThreadArgs {
-        public:
-            const void *arg0;
-            const void *arg1;
-            const void *arg2;
-            const void *arg3;
-            void (*func)(ThreadArgs &);
-        };
-
-
-        class StartedThread {
-        public:
-            StartedThread(const std::string &name, void (*func)(ThreadArgs &),
-                          void *arg0 = nullptr, void *arg1 = nullptr, void *arg2 = nullptr, void *arg3 = nullptr);
-
-            StartedThread(void (func)(ThreadArgs &),
-                          void *arg0 = nullptr,
-                          void *arg1 = nullptr,
-                          void *arg2 = nullptr,
-                          void *arg3 = nullptr);
-
-            virtual ~StartedThread();
-
-            bool join();
-
-            virtual void run();
-
-            virtual const std::string get_name() const;
-
-        private:
-            ThreadArgs thread_args_;
-            std::string name_;
-            std::thread thread_;
-            std::shared_ptr<logger> logger_;
-
-            void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3);
-        };
-    }
 }
 
 
