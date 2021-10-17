@@ -792,6 +792,25 @@ namespace hazelcast {
 
             };
 
+            TEST(ssl_config_test, try_deprecated_api_when_new_api_is_used) {
+                config::ssl_config c;
+                c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
+                ASSERT_TRUE(c.is_enabled());
+                ASSERT_THROW(c.set_enabled(true), exception::illegal_argument);
+                ASSERT_THROW(c.set_enabled(false), exception::illegal_argument);
+                ASSERT_THROW(c.add_verify_file("dummy"), exception::illegal_argument);
+                ASSERT_THROW(c.set_protocol(config::sslv23), exception::illegal_argument);
+                ASSERT_NO_THROW(c.set_cipher_list("dummy_ciphers"));
+                ASSERT_EQ("dummy_ciphers", c.get_cipher_list());
+            }
+
+            TEST(ssl_config_test, try_new_api_when_deprecated_api_is_used) {
+                config::ssl_config c;
+                c.set_enabled(true);
+                ASSERT_THROW(c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23)),
+                             exception::illegal_argument);
+            }
+
             class ssl_deprecated_api_test : public ssl_test_base {
             protected:
                 client_config new_ssl_client_config(bool set_different_protocol) override {
@@ -806,25 +825,6 @@ namespace hazelcast {
                     return config;
                 }
             };
-
-            TEST(ssl_deprecated_api_test, try_deprecated_api_when_new_api_is_used) {
-                config::ssl_config c;
-                c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
-                ASSERT_TRUE(c.is_enabled());
-                ASSERT_THROW(c.set_enabled(true), exception::illegal_argument);
-                ASSERT_THROW(c.set_enabled(false), exception::illegal_argument);
-                ASSERT_THROW(c.add_verify_file("dummy"), exception::illegal_argument);
-                ASSERT_THROW(c.set_protocol(config::sslv23), exception::illegal_argument);
-                ASSERT_NO_THROW(c.set_cipher_list("dummy_ciphers"));
-                ASSERT_EQ("dummy_ciphers", c.get_cipher_list());
-            }
-
-            TEST(ssl_deprecated_api_test, try_new_api_when_deprecated_api_is_used) {
-                config::ssl_config c;
-                c.set_enabled(true);
-                ASSERT_THROW(c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23)),
-                             exception::illegal_argument);
-            }
 
             TEST_F(ssl_deprecated_api_test, ssl_disabled) {
                 test_ssl_disabled();

@@ -1233,10 +1233,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-            class AwsConfigTest : public ClientTest
-            {};
 
-            TEST (AwsConfigTest, testDefaultValues) {
+                TEST (AwsConfigTest, testDefaultValues) {
                     client::config::client_aws_config awsConfig;
                     ASSERT_EQ("", awsConfig.get_access_key());
                     ASSERT_EQ("us-east-1", awsConfig.get_region());
@@ -1299,8 +1297,8 @@ namespace hazelcast {
                     ASSERT_FALSE(clientConfig.get_network_config().get_aws_config().is_enabled());
                 }
 
-                TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
-                    client_config clientConfig = get_config();
+                TEST (AwsConfigTest, testInvalidAwsMemberPortConfig) {
+                    client_config clientConfig;
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "65536");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
