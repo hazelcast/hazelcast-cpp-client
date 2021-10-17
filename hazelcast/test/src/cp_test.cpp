@@ -720,11 +720,12 @@ namespace hazelcast {
                            << "\").isLocked() ? \"1\" : \"0\";";
                     Response response;
 
-                    ASSERT_TRUE_EVENTUALLY((remoteController->executeOnController(response, factory->get_cluster_id(),
-                                                                                  script.str().c_str(),
-                                                                                  Lang::JAVASCRIPT), response.success &&
-                                                                                                     response.result ==
-                                                                                                     "0"));
+                    ASSERT_TRUE_EVENTUALLY(
+                      (remote_controller_client().executeOnController(response,
+                                                                      factory->get_cluster_id(),
+                                                                      script.str().c_str(),
+                                                                      Lang::JAVASCRIPT),
+                       response.success && response.result == "0"));
                 }
 
                 class basic_sessionless_semaphore_test : public cp_test<hazelcast::cp::counting_semaphore> {

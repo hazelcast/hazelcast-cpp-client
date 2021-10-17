@@ -83,8 +83,8 @@ namespace hazelcast {
           , public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestSuite() {
@@ -623,8 +623,8 @@ namespace hazelcast {
                 static constexpr const char *DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {
@@ -770,7 +770,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     set = client->get_set("MySet").get();
                 }
@@ -934,7 +934,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                 }
 
@@ -1321,7 +1321,7 @@ namespace hazelcast {
                 };
 
                 TEST_F(SimpleMapTest, DISABLED_testThroughput) {
-                    HazelcastServer server(*g_srvFactory);
+                    HazelcastServer server(default_server_factory());
 
                     start(server);
                 }
@@ -1368,8 +1368,8 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled) {
-                HazelcastServer hz1(*g_srvFactory);
-                HazelcastServer hz2(*g_srvFactory);
+                HazelcastServer hz1(default_server_factory());
+                HazelcastServer hz2(default_server_factory());
 
                 client_config clientConfig(get_config());
                 clientConfig.set_redo_operation(true);
@@ -1393,7 +1393,7 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart) {
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 // Start a client
                 client_config clientConfig = get_config();
@@ -1415,7 +1415,7 @@ namespace hazelcast {
 
                 // Restart the server
                 ASSERT_TRUE(server.shutdown());
-                HazelcastServer server2(*g_srvFactory);
+                HazelcastServer server2(default_server_factory());
 
                 // Put a 2nd entry to the map
                 auto result = map->put(2, 20);
@@ -1432,7 +1432,7 @@ namespace hazelcast {
 
             TEST_F(IssueTest, testIssue221) {
                 // start a server
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 // start a client
                 auto config = get_config();
@@ -1449,7 +1449,7 @@ namespace hazelcast {
 
             TEST_F(IssueTest, issue_888) {
                 // start a server
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 auto hz = hazelcast::new_client().get();
                 auto map = hz.get_map("testmap").get();
@@ -1469,7 +1469,7 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, invocation_should_not_block_indefinitely_during_client_shutdown) {
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
                 auto hz = new_client().get();
                 auto map = hz.get_map("my_map").get();
 
@@ -1498,7 +1498,7 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, testIssue753) {
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 auto hz = new_client().get();
 
@@ -1785,7 +1785,7 @@ namespace hazelcast {
                 static HazelcastServer *instance_;
 
                 static void SetUpTestCase() {
-                    instance_ = new HazelcastServer(*g_srvFactory);
+                    instance_ = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {

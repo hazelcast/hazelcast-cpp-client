@@ -22,9 +22,6 @@
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/logger.h>
 
-#define g_srvFactory (&(::hazelcast::client::test::ClientTest::default_server_factory()))
-#define remoteController (&(::hazelcast::client::test::remote_controller_client()))
-
 namespace hazelcast {
 namespace client {
 

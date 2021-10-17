@@ -553,8 +553,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance1 = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance1 = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     client2 = new hazelcast_client{new_client(get_config()).get()};
                 }
@@ -640,8 +640,8 @@ namespace hazelcast {
           , public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestSuite() {
@@ -1167,8 +1167,8 @@ namespace hazelcast {
                 static const std::string DEFAULT_NEAR_CACHE_NAME;
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {
@@ -1315,7 +1315,7 @@ namespace hazelcast {
                 std::shared_ptr<itopic> topic_;
             };
 
-            ClientTopicTest::ClientTopicTest() : instance_(*g_srvFactory), client_(get_new_client()),
+            ClientTopicTest::ClientTopicTest() : instance_(default_server_factory()), client_(get_new_client()),
                                                  topic_(client_.get_topic("ClientTopicTest").get()) {}
 
             TEST_F(ClientTopicTest, testTopicListeners) {

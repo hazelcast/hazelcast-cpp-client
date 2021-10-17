@@ -292,7 +292,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientConfigTest, test_set_instance_name) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 auto test_name = get_test_name();
                 hazelcast_client client(new_client(std::move(client_config().set_instance_name(test_name))).get());
                 ASSERT_EQ(test_name, client.get_name());
@@ -403,7 +403,7 @@ namespace hazelcast {
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
-                    HazelcastServer server(*g_srvFactory);
+                    HazelcastServer server(default_server_factory());
 
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -414,7 +414,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFSingleMember) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
@@ -440,8 +440,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFTwoMembers) {
-                    HazelcastServer server1(*g_srvFactory);
-                    HazelcastServer server2(*g_srvFactory);
+                    HazelcastServer server1(default_server_factory());
+                    HazelcastServer server2(default_server_factory());
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
@@ -468,7 +468,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberInitiallyOffline) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
@@ -494,7 +494,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMember) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     boost::latch connectedLatch(1);
 
@@ -517,7 +517,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberStartLate) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     boost::latch initialConnectionLatch(1);
                     boost::latch reconnectedLatch(1);
@@ -545,7 +545,7 @@ namespace hazelcast {
                             })
                     );
 
-                    HazelcastServer hazelcastInstance2(*g_srvFactory);
+                    HazelcastServer hazelcastInstance2(default_server_factory());
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
@@ -557,8 +557,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers) {
-                    HazelcastServer server1(*g_srvFactory);
-                    HazelcastServer server2(*g_srvFactory);
+                    HazelcastServer server1(default_server_factory());
+                    HazelcastServer server2(default_server_factory());
 
                     boost::latch connectedLatch(1), disconnectedLatch(1), reconnectedLatch(1);
 
@@ -596,7 +596,7 @@ namespace hazelcast {
 
                     ASSERT_OPEN_EVENTUALLY(disconnectedLatch);
 
-                    HazelcastServer server3(*g_srvFactory);
+                    HazelcastServer server3(default_server_factory());
 
                     ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
 
@@ -616,7 +616,7 @@ namespace hazelcast {
         {
             public:
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client(new_client().get());
 
                     map = client->get_map(MAP_NAME).get();
@@ -1525,7 +1525,7 @@ namespace hazelcast {
                 void SetUp() override {
                     server_.reset(new HazelcastServer(
                             *(boost::endian::order::little == GetParam() ? little_endian_server_factory_
-                                                                         : g_srvFactory)));
+                                                                         : &default_server_factory())));
 
                     auto config = get_config();
                     config.set_cluster_name(
@@ -1550,9 +1550,10 @@ namespace hazelcast {
                                          "result = \"\"+foo();";
 
                     Response response;
-                    HazelcastServerFactory *factory =
-                            boost::endian::order::little == GetParam() ? little_endian_server_factory_ : g_srvFactory;
-                    remoteController->executeOnController(response, factory->get_cluster_id(), script, Lang::JAVASCRIPT);
+                    HazelcastServerFactory* factory =
+                            boost::endian::order::little == GetParam() ? little_endian_server_factory_ : &default_server_factory();
+                    remote_controller_client().executeOnController(
+                      response, factory->get_cluster_id(), script, Lang::JAVASCRIPT);
                     return response;
                 }
 
@@ -1562,7 +1563,8 @@ namespace hazelcast {
                     ) %object).str();
 
                     Response response;
-                    remoteController->executeOnController(response, server_->cluster_id(), script, Lang::JAVASCRIPT);
+                    remote_controller_client().executeOnController(
+                      response, server_->cluster_id(), script, Lang::JAVASCRIPT);
                     return response.success;
                 }
 

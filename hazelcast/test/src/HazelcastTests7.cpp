@@ -97,7 +97,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     mm = client->get_multi_map("MyMultiMap").get();
                 }
@@ -321,7 +321,7 @@ namespace hazelcast {
                     sslFactory = new HazelcastServerFactory(get_ssl_file_path());
                     instance = new HazelcastServer(*sslFactory);
 #else
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -529,8 +529,8 @@ namespace hazelcast {
                 }
                 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client(
                             new_client(std::move(get_config().backup_acks_enabled(false))).get());
                     q = client->get_queue("MyQueue").get();

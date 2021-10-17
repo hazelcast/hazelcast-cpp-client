@@ -301,27 +301,28 @@ namespace hazelcast {
                 std::string xmlConfig = read_from_xml_file(server_xml_config_file_path);
 
                 remote::Cluster cluster;
-                remoteController->createClusterKeepClusterName(cluster, HAZELCAST_VERSION, xmlConfig);
+                remote_controller_client().createClusterKeepClusterName(
+                  cluster, HAZELCAST_VERSION, xmlConfig);
 
                 this->cluster_id_ = cluster.id;
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                remoteController->shutdownCluster(cluster_id_);
+                remote_controller_client().shutdownCluster(cluster_id_);
             }
 
             remote::Member HazelcastServerFactory::start_server() {
                 remote::Member member;
-                remoteController->startMember(member, cluster_id_);
+                remote_controller_client().startMember(member, cluster_id_);
                 return member;
             }
 
             bool HazelcastServerFactory::shutdown_server(const remote::Member &member) {
-                return remoteController->shutdownMember(cluster_id_, member.uuid);
+                return remote_controller_client().shutdownMember(cluster_id_, member.uuid);
             }
 
             bool HazelcastServerFactory::terminate_server(const remote::Member &member) {
-                return remoteController->terminateMember(cluster_id_, member.uuid);
+                return remote_controller_client().terminateMember(cluster_id_, member.uuid);
             }
 
             std::string HazelcastServerFactory::read_from_xml_file(const std::string &xml_file_path) {
@@ -381,7 +382,7 @@ namespace hazelcast {
             protected:
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client_config clientConfig = get_config();
                     clientConfig.get_serialization_config().set_global_serializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
@@ -432,8 +433,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     int_map = client->get_map("IntMap").get();
                 }
@@ -499,7 +500,7 @@ namespace hazelcast {
         {
             public:
                 static void SetUpTestSuite() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client_config clientConfig(get_config());
                     clientConfig.set_property(client_properties::PROP_HEARTBEAT_TIMEOUT, "20");
                     client = new hazelcast_client{new_client(std::move(clientConfig)).get()};
@@ -690,8 +691,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {
