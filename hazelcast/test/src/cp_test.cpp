@@ -19,18 +19,19 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-#include "ClientTestSupport.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "IdentifiedSerializables.h"
+#include "TestHelperFunctions.h"
+#include "remote_controller_client.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            extern std::shared_ptr<RemoteControllerClient> remoteController;
-
             namespace cp {
                 template<typename T>
-                class cp_test : public ClientTestSupport {
+                class cp_test : public ClientTest
+            {
                 protected:
                     virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
 

@@ -45,11 +45,10 @@
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
-#include "ClientTestSupport.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 #include "TestHelperFunctions.h"
-
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -59,7 +58,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapTestBase : public ClientTestSupport {
+            class ClientReplicatedMapTestBase : public ClientTest
+        {
             public:
                 struct SamplePortable {
                     int32_t a;
@@ -174,8 +174,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    factory = new HazelcastServerFactory(g_srvFactory->get_server_address(),
-                            "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                    factory = new HazelcastServerFactory(
+                      "hazelcast/test/resources/""replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
 
                     client = create_client();
@@ -454,8 +454,7 @@ namespace hazelcast {
             };
 
             TEST_F(ClientReplicatedMapInvalidation, testNearCacheInvalidation) {
-                HazelcastServerFactory factory(g_srvFactory->get_server_address(),
-                                               "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                HazelcastServerFactory factory("hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                 HazelcastServer server(factory);
 
                 std::string mapName = random_string();
@@ -504,7 +503,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapListenerTest : public ClientTestSupport {
+            class ClientReplicatedMapListenerTest : public ClientTest
+        {
             protected:
                 struct ListenerState {
                     std::mutex lock;
@@ -636,7 +636,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class BasicClientReplicatedMapNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
+                    : public ClientTest
+          , public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
@@ -673,7 +674,8 @@ namespace hazelcast {
                 /**
                  * Provides utility methods for unified Near Cache tests.
                  */
-                class NearCacheTestUtils : public ClientTestSupport {
+                class NearCacheTestUtils : public ClientTest
+                {
                 public:
                     /**
                      * Creates a {@link NearCacheConfig} with a given {@link InMemoryFormat}.
@@ -1156,7 +1158,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapNearCacheTest : public ClientTestSupport {
+            class ClientReplicatedMapNearCacheTest : public ClientTest
+        {
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.
@@ -1301,7 +1304,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTopicTest : public ClientTestSupport {
+            class ClientTopicTest : public ClientTest
+        {
             public:
                 ClientTopicTest();
             protected:

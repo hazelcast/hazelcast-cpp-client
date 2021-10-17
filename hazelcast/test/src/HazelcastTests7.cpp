@@ -55,13 +55,11 @@
 #include <hazelcast/util/Util.h>
 #include <hazelcast/client/spi/impl/discovery/cloud_discovery.h>
 
-#include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
-#include "executor/tasks/Tasks.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 #include "TestHelperFunctions.h"
-
+#include "executor/tasks/Tasks.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -71,7 +69,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMultiMapTest : public ClientTestSupport {
+            class ClientMultiMapTest : public ClientTest
+            {
             protected:
 
                 entry_listener make_add_remove_listener(boost::latch &added_latch, boost::latch &removed_latch) {
@@ -308,7 +307,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientListTest : public ClientTestSupport {
+            class ClientListTest : public ClientTest
+        {
             protected:
 
                 void TearDown() override {
@@ -318,7 +318,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
 #ifdef HZ_BUILD_WITH_SSL
-                    sslFactory = new HazelcastServerFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
+                    sslFactory = new HazelcastServerFactory(get_ssl_file_path());
                     instance = new HazelcastServer(*sslFactory);
 #else
                     instance = new HazelcastServer(*g_srvFactory);
@@ -515,7 +515,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientQueueTest : public ClientTestSupport {
+            class ClientQueueTest : public ClientTest
+        {
             protected:
                 void offer(int number_of_items) {
                     for (int i = 1; i <= number_of_items; ++i) {
@@ -789,7 +790,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientExecutorServiceTest : public ClientTestSupport {
+            class ClientExecutorServiceTest : public ClientTest
+        {
             protected:
                 static constexpr const char *APPENDAGE = ":CallableResult";
 
@@ -799,8 +801,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    factory = new HazelcastServerFactory(g_srvFactory->get_server_address(),
-                                                         "hazelcast/test/resources/hazelcast-test-executor.xml");
+                    factory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast-test-executor.xml");
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
@@ -1232,10 +1233,10 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class AwsConfigTest : public ClientTestSupport {
-                };
+            class AwsConfigTest : public ClientTest
+            {};
 
-                TEST_F (AwsConfigTest, testDefaultValues) {
+            TEST (AwsConfigTest, testDefaultValues) {
                     client::config::client_aws_config awsConfig;
                     ASSERT_EQ("", awsConfig.get_access_key());
                     ASSERT_EQ("us-east-1", awsConfig.get_region());
@@ -1249,7 +1250,7 @@ namespace hazelcast {
                     ASSERT_FALSE(awsConfig.is_enabled());
                 }
 
-                TEST_F (AwsConfigTest, testSetValues) {
+                TEST (AwsConfigTest, testSetValues) {
                     client::config::client_aws_config awsConfig;
 
                     awsConfig.set_access_key("mykey");
@@ -1275,7 +1276,7 @@ namespace hazelcast {
                     ASSERT_TRUE(awsConfig.is_enabled()) << awsConfig;
                 }
 
-                TEST_F (AwsConfigTest, testSetEmptyValues) {
+                TEST (AwsConfigTest, testSetEmptyValues) {
                     client::config::client_aws_config awsConfig;
 
                     ASSERT_THROW(awsConfig.set_access_key(""), exception::illegal_argument);
@@ -1284,7 +1285,7 @@ namespace hazelcast {
                     ASSERT_THROW(awsConfig.set_secret_key(""), exception::illegal_argument);
                 }
 
-                TEST_F (AwsConfigTest, testClientConfigUsage) {
+                TEST (AwsConfigTest, testClientConfigUsage) {
                     client_config clientConfig;
                     client::config::client_aws_config &awsConfig = clientConfig.get_network_config().get_aws_config();
                     awsConfig.set_enabled(true);
@@ -1313,7 +1314,7 @@ namespace hazelcast {
                 }
 
                 class AwsClientTest
-                        : public ClientTestSupport,
+                        : public ClientTest,
                           public ::testing::WithParamInterface<bool> {
                 };
 
@@ -1427,7 +1428,7 @@ namespace hazelcast {
                     ASSERT_THROW(c.connect_and_get_response(), exception::io);
                 }
 
-                class DescribeInstancesTest : public ClientTestSupport {
+                class DescribeInstancesTest : public ClientTest {
                 };
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
@@ -1525,8 +1526,8 @@ namespace hazelcast {
                 }
             }
             namespace cloud {
-                class CloudUtilityTest : public ClientTestSupport {
-                };
+                class CloudUtilityTest: public ClientTest
+                {};
 
                 TEST_F (CloudUtilityTest, testUnmarshallResponseXml) {
                     std::filebuf fb;
@@ -1547,7 +1548,7 @@ namespace hazelcast {
                     ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
                 }
 
-                class cloud_discovery_test : public ClientTestSupport {
+                class cloud_discovery_test : public ClientTest {
                 protected:
                     void check_address_exist(const std::unordered_map<address, address> &addresses,
                                              const std::string &private_ip, const std::string &public_ip, int port) {
@@ -1593,7 +1594,7 @@ namespace hazelcast {
                     check_address_exist(addresses, "100.127.33.250", "54.80.210.250", 30964);
                 }
 
-                class discovery_config_mismatches_test : public ClientTestSupport {
+                class discovery_config_mismatches_test : public ClientTest {
                 };
 
                 TEST_F(discovery_config_mismatches_test, do_not_permit_aws_and_cloud) {

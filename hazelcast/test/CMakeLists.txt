@@ -10,7 +10,7 @@ endif ()
 find_package(GTest 1.10)
 
 if (GTest_FOUND)
-    set(GTEST_TARGET GTest::gtest)
+    set(GTEST_TARGETS GTest::gtest GTest::gtest_main)
 else()
     message(STATUS "Downloading googletest from Github")
 
@@ -44,7 +44,7 @@ else()
             EXCLUDE_FROM_ALL
     )
 
-    set(GTEST_TARGET gtest)
+    set(GTEST_TARGETS gtest gtest_main)
 endif()
 
 add_subdirectory(src)

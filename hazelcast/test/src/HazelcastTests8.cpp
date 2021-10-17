@@ -62,12 +62,13 @@
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
-#include "ClientTestSupport.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
-#include "serialization/Serializables.h"
 #include "TestHelperFunctions.h"
-
+#include "serialization/Serializables.h"
+#include "CountDownLatchWaiter.h"
+#include "remote_controller_client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -78,7 +79,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class BasicClientNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
+                    : public ClientTest
+          , public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
@@ -117,7 +119,8 @@ namespace hazelcast {
                 /**
                  * Provides utility methods for unified Near Cache tests.
                  */
-                class NearCacheTestUtils : public ClientTestSupport {
+                class NearCacheTestUtils : public ClientTest
+                {
                 public:
                     /**
                      * Creates a {@link NearCacheConfig} with a given {@link InMemoryFormat}.
@@ -611,7 +614,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMapNearCacheTest : public ClientTestSupport {
+            class ClientMapNearCacheTest : public ClientTest
+        {
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.
@@ -752,7 +756,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class ClientSetTest : public ClientTestSupport {
+            class ClientSetTest : public ClientTest
+        {
             protected:
                 void add_items(int count) {
                     for (int i = 1; i <= count; ++i) {
@@ -901,7 +906,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ReliableTopicTest : public ClientTestSupport {
+            class ReliableTopicTest : public ClientTest
+        {
             protected:
                 struct ListenerState {
                     explicit ListenerState(int latch_count, int64_t start_sequence = -1)
@@ -1043,7 +1049,7 @@ namespace hazelcast {
 
             TEST_F(ReliableTopicTest, testConfig) {
                 client_config clientConfig;
-                clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
+                clientConfig.get_network_config().add_address(address(remote_controller_address(), 5701));
                 config::reliable_topic_config relConfig("testConfig");
                 relConfig.set_read_batch_size(2);
                 clientConfig.add_reliable_topic_config(relConfig);
@@ -1137,7 +1143,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace performance {
-                class SimpleMapTest : public ClientTestSupport {
+                class SimpleMapTest : public ClientTest
+            {
                 protected:
                     static const int THREAD_COUNT = 40;
                     static const int ENTRY_COUNT = 10000;
@@ -1327,7 +1334,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class IssueTest : public ClientTestSupport {
+            class IssueTest : public ClientTest
+        {
             public:
                 IssueTest();
             protected:
@@ -1611,61 +1619,49 @@ namespace hazelcast {
 }
 
 namespace hazelcast {
-    namespace client {
-        namespace test {
-            ClientTestSupport::ClientTestSupport() {
-                logger_ = std::make_shared<logger>("Test", get_test_name(), logger::level::info, logger::default_handler);
-            }
+namespace client {
+namespace test {
 
-            logger &ClientTestSupport::get_logger() {
-                return *logger_;
-            }
+CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {
+    latches_.push_back(&latch1);
+    return *this;
+}
 
-            std::string ClientTestSupport::get_test_name() {
-                const auto *info = testing::UnitTest::GetInstance()->current_test_info();
-                std::ostringstream out;
-                out << info->test_case_name() << "_" << info->name();
-                return out.str();
-            }
+boost::cv_status CountDownLatchWaiter::wait_for(boost::chrono::steady_clock::duration duration) {
+    if (latches_.empty()) {
+        return boost::cv_status::no_timeout;
+    }
 
-            CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {
-                latches_.push_back(&latch1);
-                return *this;
-            }
-
-            boost::cv_status CountDownLatchWaiter::wait_for(boost::chrono::steady_clock::duration duration) {
-                if (latches_.empty()) {
-                    return boost::cv_status::no_timeout;
-                }
-
-                auto end = boost::chrono::steady_clock::now() + duration;
-                for (auto &l : latches_) {
-                    auto waitDuration = end - boost::chrono::steady_clock::now();
-                    auto status = l->wait_for(waitDuration);
-                    if (boost::cv_status::timeout == status) {
-                        return boost::cv_status::timeout;
-                    }
-                }
-                return boost::cv_status::no_timeout;
-            }
-
-            void CountDownLatchWaiter::reset() {
-                latches_.clear();
-            }
-
+    auto end = boost::chrono::steady_clock::now() + duration;
+    for (auto &l : latches_) {
+        auto waitDuration = end - boost::chrono::steady_clock::now();
+        auto status = l->wait_for(waitDuration);
+        if (boost::cv_status::timeout == status) {
+            return boost::cv_status::timeout;
         }
     }
+    return boost::cv_status::no_timeout;
+}
+
+void CountDownLatchWaiter::reset() {
+    latches_.clear();
+}
+
+}
+}
 }
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class VersionTest: public ClientTestSupport {};
+            class VersionTest: public ClientTest
+        {};
             TEST_F(VersionTest, test_client_version) {
                 ASSERT_EQ(HAZELCAST_VERSION, version());
             }
 
-            class ClientMessageTest: public ClientTestSupport {
+            class ClientMessageTest: public ClientTest
+            {
             protected:
                 struct BufferedMessageHandler {
                     std::shared_ptr<protocol::ClientMessage> msg;
@@ -1765,7 +1761,8 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(join);
             }
 
-            class connection_manager_translate : public ClientTestSupport {
+            class connection_manager_translate : public ClientTest
+            {
             public:
                 static const address private_address;
                 static const address public_address;

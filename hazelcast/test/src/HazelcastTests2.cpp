@@ -56,13 +56,12 @@
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
-#include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
-#include "serialization/Serializables.h"
 #include "TestHelperFunctions.h"
-
+#include "serialization/Serializables.h"
+#include "remote_controller_client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -72,7 +71,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class AddressHelperTest : public ClientTestSupport {
+            class AddressHelperTest : public ClientTest
+        {
             };
 
             TEST_F(AddressHelperTest, testGetPossibleSocketAddresses) {
@@ -139,7 +139,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientUtilTest : public ClientTestSupport {
+            class ClientUtilTest : public ClientTest
+        {
             protected:
             };
 
@@ -209,8 +210,8 @@ namespace hazelcast {
         class hazelcast_client;
 
         namespace test {
-            class ClientConfigTest : public ClientTestSupport
-            {};
+            class ClientConfigTest : public ClientTest
+        {};
             
             TEST_F(ClientConfigTest, testGetAddresses) {
                 client_config clientConfig;
@@ -297,7 +298,7 @@ namespace hazelcast {
                 ASSERT_EQ(test_name, client.get_name());
             }
 
-            class connection_retry_config_test : public ClientTestSupport
+            class connection_retry_config_test : public ClientTest
             {};
 
             TEST_F(connection_retry_config_test, large_jitter) {
@@ -350,7 +351,8 @@ namespace hazelcast {
         namespace test {
             namespace connectionstrategy {
 
-                class ConfiguredBehaviourTest : public ClientTestSupport {
+                class ConfiguredBehaviourTest : public ClientTest
+            {
                 public:
                     ConfiguredBehaviourTest() {
                         client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
@@ -610,7 +612,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PipeliningTest : public ClientTestSupport {
+            class PipeliningTest : public ClientTest
+        {
             public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
@@ -791,7 +794,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PartitionAwareTest : public ClientTestSupport {
+            class PartitionAwareTest : public ClientTest
+        {
             public:
                 class SimplePartitionAwareObject : public partition_aware<int> {
                 public:
@@ -857,7 +861,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class JsonValueSerializationTest : public ClientTestSupport {
+            class JsonValueSerializationTest : public ClientTest
+        {
             public:
                 JsonValueSerializationTest() : serialization_service_(config_) {}
 
@@ -1504,9 +1509,8 @@ namespace hazelcast {
                 ASSERT_EQ(obj, deserializedValue.value());
             }
 
-            extern std::shared_ptr<RemoteControllerClient> remoteController;
-
-            class serialization_with_server : public ClientTestSupport, 
+            class serialization_with_server : public ClientTest
+              ,
                     public ::testing::WithParamInterface<boost::endian::order> {
             protected:
                 static void SetUpTestCase() {
@@ -1801,7 +1805,8 @@ namespace hazelcast {
             namespace internal {
                 namespace nearcache {
                     class NearCacheRecordStoreTest
-                            : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
+                            : public ClientTest
+                  , public ::testing::WithParamInterface<config::in_memory_format> {
                     public:
                         NearCacheRecordStoreTest() {
                             ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
