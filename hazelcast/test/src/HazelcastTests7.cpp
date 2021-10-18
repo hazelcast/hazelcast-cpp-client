@@ -307,8 +307,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientListTest : public ClientTest
-        {
+            class ClientListTest : public ClientTest {
             protected:
 
                 void TearDown() override {
@@ -515,8 +514,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientQueueTest : public ClientTest
-        {
+            class ClientQueueTest : public ClientTest {
             protected:
                 void offer(int number_of_items) {
                     for (int i = 1; i <= number_of_items; ++i) {
@@ -790,8 +788,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientExecutorServiceTest : public ClientTest
-        {
+            class ClientExecutorServiceTest : public ClientTest {
             protected:
                 static constexpr const char *APPENDAGE = ":CallableResult";
 
@@ -1426,8 +1423,8 @@ namespace hazelcast {
                     ASSERT_THROW(c.connect_and_get_response(), exception::io);
                 }
 
-                class DescribeInstancesTest : public ClientTest {
-                };
+                class DescribeInstancesTest : public ClientTest
+                {};
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
                     client::config::client_aws_config awsConfig;
@@ -1442,7 +1439,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value(
@@ -1454,7 +1451,7 @@ namespace hazelcast {
                     ASSERT_TRUE(results.empty());
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag");
@@ -1466,7 +1463,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("non-existent-tag");
@@ -1477,7 +1474,7 @@ namespace hazelcast {
                     ASSERT_TRUE(results.empty());
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
                     config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("aws-tag-value-1");
@@ -1489,7 +1486,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSetToNonExistentValue) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyValueIsSetToNonExistentValue) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("non-existent-value");
@@ -1500,7 +1497,7 @@ namespace hazelcast {
                     ASSERT_TRUE(results.empty());
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesSecurityGroup) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesSecurityGroup) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("launch-wizard-147");
@@ -1512,7 +1509,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("non-existent-group");

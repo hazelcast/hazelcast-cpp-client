@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <cmath>
 #include <ctime>
 #include <fstream>
 #include <memory>
@@ -34,7 +33,6 @@
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
 #include <hazelcast/client/itopic.h>
 #include <hazelcast/client/multi_map.h>
 #include <hazelcast/client/pipelining.h>
@@ -58,8 +56,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapTestBase : public ClientTest
-        {
+            class ClientReplicatedMapTestBase : public ClientTest {
             public:
                 struct SamplePortable {
                     int32_t a;
@@ -503,8 +500,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapListenerTest : public ClientTest
-        {
+            class ClientReplicatedMapListenerTest : public ClientTest {
             protected:
                 struct ListenerState {
                     std::mutex lock;
@@ -674,8 +670,7 @@ namespace hazelcast {
                 /**
                  * Provides utility methods for unified Near Cache tests.
                  */
-                class NearCacheTestUtils : public ClientTest
-                {
+                class NearCacheTestUtils : public ClientTest {
                 public:
                     /**
                      * Creates a {@link NearCacheConfig} with a given {@link InMemoryFormat}.
@@ -1158,8 +1153,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapNearCacheTest : public ClientTest
-        {
+            class ClientReplicatedMapNearCacheTest : public ClientTest {
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.
@@ -1304,8 +1298,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTopicTest : public ClientTest
-        {
+            class ClientTopicTest : public ClientTest {
             public:
                 ClientTopicTest();
             protected:

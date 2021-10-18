@@ -71,8 +71,7 @@ namespace hazelcast {
     namespace client {
 
         namespace test {
-            class CallIdSequenceWithoutBackpressureTest : public ClientTest
-        {
+        class CallIdSequenceWithoutBackpressureTest : public ::testing::Test {
             protected:
                 spi::impl::sequence::CallIdSequenceWithoutBackpressure sequence_;
 
@@ -119,8 +118,7 @@ namespace hazelcast {
     namespace client {
 
         namespace test {
-            class CallIdSequenceWithBackpressureTest : public ClientTest
-        {
+        class CallIdSequenceWithBackpressureTest : public ::testing::Test {
             public:
                 CallIdSequenceWithBackpressureTest() = default;
 
@@ -235,18 +233,14 @@ namespace hazelcast {
     namespace client {
 
         namespace test {
-            class FailFastCallIdSequenceTest : public ClientTest
-        {
-            public:
-            };
 
-            TEST_F(FailFastCallIdSequenceTest, testGettersAndDefaults) {
+            TEST(FailFastCallIdSequenceTest, testGettersAndDefaults) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(100);
                 ASSERT_EQ(0, sequence.get_last_call_id());
                 ASSERT_EQ(100, sequence.get_max_concurrent_invocations());
             }
 
-            TEST_F(FailFastCallIdSequenceTest, whenNext_thenSequenceIncrements) {
+            TEST(FailFastCallIdSequenceTest, whenNext_thenSequenceIncrements) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(100);
                 int64_t oldSequence = sequence.get_last_call_id();
                 int64_t result = sequence.next();
@@ -254,7 +248,7 @@ namespace hazelcast {
                 ASSERT_EQ(oldSequence + 1, sequence.get_last_call_id());
             }
 
-            TEST_F(FailFastCallIdSequenceTest, next_whenNoCapacity_thenThrowException) {
+            TEST(FailFastCallIdSequenceTest, next_whenNoCapacity_thenThrowException) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(1);
 
                 // take the only slot available
@@ -264,7 +258,7 @@ namespace hazelcast {
                 ASSERT_THROW(sequence.next(), exception::hazelcast_overload);
             }
 
-            TEST_F(FailFastCallIdSequenceTest, when_overCapacityButPriorityItem_then_noException) {
+            TEST(FailFastCallIdSequenceTest, when_overCapacityButPriorityItem_then_noException) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(1);
 
 // take the only slot available
@@ -273,7 +267,7 @@ namespace hazelcast {
                 ASSERT_EQ(2, sequence.force_next());
             }
 
-            TEST_F(FailFastCallIdSequenceTest, whenComplete_thenTailIncrements) {
+            TEST(FailFastCallIdSequenceTest, whenComplete_thenTailIncrements) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(100);
                 sequence.next();
 
@@ -353,8 +347,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class MapGlobalSerializerTest : public ClientTest
-        {
+            class MapGlobalSerializerTest : public ClientTest {
             public:
                 class UnknownObject {
                 public:
@@ -424,8 +417,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientExpirationListenerTest : public ClientTest
-        {
+            class ClientExpirationListenerTest : public ClientTest {
             protected:
                 void TearDown() override {
                     // clear maps
@@ -496,8 +488,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientListenerFunctionObjectsTest : public ClientTest
-        {
+            class ClientListenerFunctionObjectsTest : public ClientTest {
             public:
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(default_server_factory());
@@ -647,9 +638,9 @@ namespace hazelcast {
                 int actual_key_;
             };
 
-            class ClientMapTest : public ClientTest
-              ,
-                                  public ::testing::WithParamInterface<std::function<client_config()>> {
+            class ClientMapTest
+              : public ClientTest
+              , public ::testing::WithParamInterface<std::function<client_config()>> {
             public:
                 static constexpr const char *intMapName = "IntMap";
                 static constexpr const char *employeesMapName = "EmployeesMap";

@@ -84,8 +84,9 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientStatisticsTest : public ClientTest
-        {
+            extern std::shared_ptr<RemoteControllerClient> remoteController;
+
+            class ClientStatisticsTest : public ClientTest {
             protected:
                 static const int STATS_PERIOD_SECONDS = 1;
 
@@ -478,8 +479,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace rb {
-                class RingbufferTest : public ClientTest
-            {
+                class RingbufferTest : public ClientTest {
                 public:
                     RingbufferTest() {
                         for (int i = 0; i < 11; ++i) {
@@ -1023,8 +1023,7 @@ namespace hazelcast {
 
 #endif // HZ_BUILD_WITH_SSL
 
-            class ClientConnectionTest : public ClientTest
-            {
+            class ClientConnectionTest : public ClientTest {
             protected:
 #ifdef HZ_BUILD_WITH_SSL
                 std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> get_ciphers(client_config config) {
@@ -1248,8 +1247,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class HeartbeatTest : public ClientTest
-        {
-            };
+            {};
 
             TEST_F(HeartbeatTest, testPing) {
                 HazelcastServerFactory f("hazelcast/test/resources/short-heartbeat.xml");
@@ -1275,8 +1273,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class SocketInterceptorTest : public ClientTest
-        {
-            };
+            {};
 
             socket_interceptor make_socket_interceptor(boost::latch &l) {
                 return socket_interceptor()
@@ -1318,8 +1315,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class SocketOptionsTest : public ClientTest
-        {
-            };
+            {};
 
             TEST_F(SocketOptionsTest, testConfiguration) {
                 HazelcastServer instance(default_server_factory());
@@ -1345,8 +1341,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class ClientAuthenticationTest : public ClientTest
-        {
-            };
+            {};
 
             TEST_F(ClientAuthenticationTest, testUserPasswordCredentials) {
                 HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-username-password.xml");
@@ -1385,8 +1380,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class ClientEnpointTest : public ClientTest
-        {
-            };
+            {};
 
             TEST_F(ClientEnpointTest, testConnectedClientEnpoint) {
                 HazelcastServer instance(default_server_factory());
@@ -1415,7 +1409,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class MemberAttributeTest : public ClientTest
-        {};
+            {};
 
             TEST_F(MemberAttributeTest, testInitialValues) {
                 HazelcastServer instance(default_server_factory());
@@ -1438,8 +1432,7 @@ namespace hazelcast {
         namespace test {
             namespace crdt {
                 namespace pncounter {
-                    class BasicPnCounterAPITest : public ClientTest
-                {
+                    class BasicPnCounterAPITest : public ClientTest {
                     public:
                         static void SetUpTestCase() {
                             instance = new HazelcastServer(default_server_factory());
@@ -1601,8 +1594,7 @@ namespace hazelcast {
                     }
 
                     class ClientPNCounterNoDataMemberTest : public ClientTest
-                    {
-                    };
+                    {};
 
                     TEST_F(ClientPNCounterNoDataMemberTest, noDataMemberExceptionIsThrown) {
                         HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-lite-member.xml");
@@ -1893,8 +1885,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class FlakeIdGeneratorApiTest : public ClientTest
-        {
+            class FlakeIdGeneratorApiTest : public ClientTest {
             protected:
                 virtual void SetUp() {
                     ASSERT_TRUE(client);
@@ -1968,8 +1959,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnMapTest : public ClientTest
-        {
+            class ClientTxnMapTest : public ClientTest {
             public:
                 ClientTxnMapTest();
 
@@ -2315,8 +2305,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnSetTest : public ClientTest
-        {
+            class ClientTxnSetTest : public ClientTest {
             public:
                 ClientTxnSetTest();
 
@@ -2356,8 +2345,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnTest : public ClientTest
-        {
+            class ClientTxnTest : public ClientTest {
             public:
                 ClientTxnTest();
 
@@ -2564,8 +2552,7 @@ namespace hazelcast {
         class hazelcast_client;
 
         namespace test {
-            class ClientTxnListTest : public ClientTest
-        {
+            class ClientTxnListTest : public ClientTest {
             public:
                 ClientTxnListTest();
                 ~ClientTxnListTest() override;
@@ -2603,8 +2590,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnMultiMapTest : public ClientTest
-        {
+            class ClientTxnMultiMapTest : public ClientTest {
             public:
                 ClientTxnMultiMapTest();
                 ~ClientTxnMultiMapTest() override;
@@ -2679,8 +2665,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnQueueTest : public ClientTest
-        {
+            class ClientTxnQueueTest : public ClientTest {
             public:
                 ClientTxnQueueTest();
                 ~ClientTxnQueueTest() override;

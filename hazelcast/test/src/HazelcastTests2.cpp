@@ -72,8 +72,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class AddressHelperTest : public ClientTest
-        {
-            };
+            {};
 
             TEST_F(AddressHelperTest, testGetPossibleSocketAddresses) {
                 std::string addr("10.2.3.1");
@@ -139,12 +138,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientUtilTest : public ClientTest
-        {
-            protected:
-            };
 
-            TEST_F (ClientUtilTest, testStrError) {
+            TEST(ClientUtilTest, testStrError) {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                                                                                                                                         int error = WSAEINPROGRESS;
                 std::string expectedErrorString("A blocking operation is currently executing.\r\n");
@@ -165,11 +160,11 @@ namespace hazelcast {
                 ASSERT_STREQ(expectedErrorString.c_str(), msg);
             }
 
-            TEST_F (ClientUtilTest, testAvailableCoreCount) {
+            TEST(ClientUtilTest, testAvailableCoreCount) {
                 ASSERT_GT(hazelcast::util::get_available_core_count(), 0);
             }
 
-            TEST_F (ClientUtilTest, testStringUtilTimeToString) {
+            TEST(ClientUtilTest, testStringUtilTimeToString) {
                 std::string timeString = hazelcast::util::StringUtil::time_to_string(
                         std::chrono::steady_clock::now());
                 //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
@@ -180,11 +175,11 @@ namespace hazelcast {
                 ASSERT_EQ(timeString[7], '-');
             }
 
-            TEST_F (ClientUtilTest, testStringUtilTimeToStringFriendly) {
+            TEST(ClientUtilTest, testStringUtilTimeToStringFriendly) {
                 ASSERT_EQ("never", hazelcast::util::StringUtil::time_to_string(std::chrono::steady_clock::time_point()));
             }
 
-            TEST_F (ClientUtilTest, testLockSupport) {
+            TEST(ClientUtilTest, testLockSupport) {
                 int64_t parkDurationNanos = 100;
                 int64_t start = hazelcast::util::current_time_nanos();
                 hazelcast::util::concurrent::locks::LockSupport::park_nanos(parkDurationNanos);
@@ -193,7 +188,7 @@ namespace hazelcast {
                 ASSERT_GE(actualDuration, parkDurationNanos);
             }
 
-            TEST_F (ClientUtilTest, print_older_steady_clock_time) {
+            TEST(ClientUtilTest, print_older_steady_clock_time) {
                 auto now = std::chrono::steady_clock::now();
                 auto time_str = hazelcast::util::StringUtil::time_to_string(now);
                 ASSERT_EQ(std::string::npos, time_str.substr(time_str.find_last_of('.')).find('-'));
@@ -211,7 +206,7 @@ namespace hazelcast {
 
         namespace test {
             class ClientConfigTest : public ClientTest
-        {};
+            {};
             
             TEST_F(ClientConfigTest, testGetAddresses) {
                 client_config clientConfig;
@@ -298,35 +293,32 @@ namespace hazelcast {
                 ASSERT_EQ(test_name, client.get_name());
             }
 
-            class connection_retry_config_test : public ClientTest
-            {};
-
-            TEST_F(connection_retry_config_test, large_jitter) {
+            TEST(connection_retry_config_test, large_jitter) {
                 ASSERT_THROW(client_config().get_connection_strategy_config().get_retry_config().set_jitter(1.01), exception::illegal_argument);
             }
 
-            TEST_F(connection_retry_config_test, max_backoff_duration_boundaries) {
+            TEST(connection_retry_config_test, max_backoff_duration_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_max_backoff_duration(std::chrono::milliseconds(-1)), exception::illegal_argument);
                 ASSERT_NO_THROW(retry_config.set_max_backoff_duration(std::chrono::milliseconds(0)));
                 ASSERT_NO_THROW(retry_config.set_max_backoff_duration(std::chrono::seconds(100)));
             }
 
-            TEST_F(connection_retry_config_test, initial_backoff_duration_boundaries) {
+            TEST(connection_retry_config_test, initial_backoff_duration_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_initial_backoff_duration(std::chrono::milliseconds(-1)), exception::illegal_argument);
                 ASSERT_NO_THROW(retry_config.set_initial_backoff_duration(std::chrono::milliseconds(0)));
                 ASSERT_NO_THROW(retry_config.set_initial_backoff_duration(std::chrono::seconds(100)));
             }
 
-            TEST_F(connection_retry_config_test, cluster_connect_timeout_boundaries) {
+            TEST(connection_retry_config_test, cluster_connect_timeout_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_cluster_connect_timeout(std::chrono::milliseconds(-1)), exception::illegal_argument);
                 ASSERT_NO_THROW(retry_config.set_cluster_connect_timeout(std::chrono::milliseconds(0)));
                 ASSERT_NO_THROW(retry_config.set_cluster_connect_timeout(std::chrono::seconds(100)));
             }
 
-            TEST_F(connection_retry_config_test, multiplier_boundaries) {
+            TEST(connection_retry_config_test, multiplier_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_multiplier(0.99), exception::illegal_argument);
                 ASSERT_THROW(retry_config.set_multiplier(-1), exception::illegal_argument);
@@ -334,7 +326,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(retry_config.set_multiplier(2));
             }
 
-            TEST_F(connection_retry_config_test, jitter_boundaries) {
+            TEST(connection_retry_config_test, jitter_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_jitter(1.01), exception::illegal_argument);
                 ASSERT_THROW(retry_config.set_jitter(-0.01), exception::illegal_argument);
@@ -351,8 +343,7 @@ namespace hazelcast {
         namespace test {
             namespace connectionstrategy {
 
-                class ConfiguredBehaviourTest : public ClientTest
-            {
+                class ConfiguredBehaviourTest : public ClientTest {
                 public:
                     ConfiguredBehaviourTest() {
                         client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
@@ -612,8 +603,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PipeliningTest : public ClientTest
-        {
+            class PipeliningTest : public ClientTest {
             public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(default_server_factory());
@@ -794,8 +784,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PartitionAwareTest : public ClientTest
-        {
+            class PartitionAwareTest : public ClientTest {
             public:
                 class SimplePartitionAwareObject : public partition_aware<int> {
                 public:
@@ -861,8 +850,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class JsonValueSerializationTest : public ClientTest
-        {
+            class JsonValueSerializationTest : public ::testing::Test {
             public:
                 JsonValueSerializationTest() : serialization_service_(config_) {}
 
@@ -1509,9 +1497,9 @@ namespace hazelcast {
                 ASSERT_EQ(obj, deserializedValue.value());
             }
 
-            class serialization_with_server : public ClientTest
-              ,
-                    public ::testing::WithParamInterface<boost::endian::order> {
+            class serialization_with_server
+              : public ClientTest
+              , public ::testing::WithParamInterface<boost::endian::order> {
             protected:
                 static void SetUpTestCase() {
                     little_endian_server_factory_ = new HazelcastServerFactory(

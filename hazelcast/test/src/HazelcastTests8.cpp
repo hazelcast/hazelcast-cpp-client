@@ -79,8 +79,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class BasicClientNearCacheTest
-                    : public ClientTest
-          , public ::testing::WithParamInterface<config::in_memory_format> {
+                : public ClientTest
+                , public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(default_server_factory());
@@ -614,8 +614,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMapNearCacheTest : public ClientTest
-        {
+            class ClientMapNearCacheTest : public ClientTest {
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.
@@ -756,8 +755,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class ClientSetTest : public ClientTest
-        {
+            class ClientSetTest : public ClientTest {
             protected:
                 void add_items(int count) {
                     for (int i = 1; i <= count; ++i) {
@@ -906,8 +904,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ReliableTopicTest : public ClientTest
-        {
+            class ReliableTopicTest : public ClientTest {
             protected:
                 struct ListenerState {
                     explicit ListenerState(int latch_count, int64_t start_sequence = -1)
@@ -1143,8 +1140,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace performance {
-                class SimpleMapTest : public ClientTest
-            {
+                class SimpleMapTest : public ClientTest {
                 protected:
                     static const int THREAD_COUNT = 40;
                     static const int ENTRY_COUNT = 10000;
@@ -1334,8 +1330,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class IssueTest : public ClientTest
-        {
+            class IssueTest : public ClientTest {
             public:
                 IssueTest();
             protected:
@@ -1654,15 +1649,12 @@ void CountDownLatchWaiter::reset() {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class VersionTest: public ClientTest
-        {};
-            TEST_F(VersionTest, test_client_version) {
+
+            TEST(VersionTest, test_client_version) {
                 ASSERT_EQ(HAZELCAST_VERSION, version());
             }
 
-            class ClientMessageTest: public ClientTest
-            {
-            protected:
+            namespace {
                 struct BufferedMessageHandler {
                     std::shared_ptr<protocol::ClientMessage> msg;
 
@@ -1670,21 +1662,21 @@ namespace hazelcast {
                         msg = message;
                     }
                 };
-            };
+            }
 
-            TEST_F(ClientMessageTest, testOperationNameGetSet) {
+            TEST(ClientMessageTest, testOperationNameGetSet) {
                 protocol::ClientMessage message(8);
                 constexpr const char* operation_name = "OPERATION_NAME";
                 message.set_operation_name(operation_name);
                 ASSERT_EQ(message.get_operation_name(), operation_name);
             }
 
-            TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
+            TEST(ClientMessageTest, testOperationNameAfterRequestEncoding) {
                 auto request = protocol::codec::map_size_encode("map_name");
                 ASSERT_EQ(request.get_operation_name(), "map.size");
             }
 
-            TEST_F(ClientMessageTest, testFragmentedMessageHandling) {
+            TEST(ClientMessageTest, testFragmentedMessageHandling) {
                 std::ifstream file ("hazelcast/test/resources/fragments_bytes.bin", std::ios::in|std::ios::binary|std::ios::ate);
                 ASSERT_TRUE(file.is_open());
                 auto size = file.tellg();

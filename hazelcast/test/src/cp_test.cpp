@@ -30,8 +30,7 @@ namespace hazelcast {
         namespace test {
             namespace cp {
                 template<typename T>
-                class cp_test : public ClientTest
-            {
+                class cp_test : public ClientTest {
                 protected:
                     virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
 
