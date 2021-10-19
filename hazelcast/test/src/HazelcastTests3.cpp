@@ -172,7 +172,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     factory = new HazelcastServerFactory(
-                      "hazelcast/test/resources/""replicated-map-binary-in-memory-config-hazelcast.xml");
+                      "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
 
                     client = create_client();
