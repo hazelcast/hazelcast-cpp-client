@@ -1320,21 +1320,7 @@ namespace hazelcast {
 
                     template<typename T>
                     inline data to_data(const T &object) {
-                        object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
-
-                        write_hash<T>(&object, output);
-
-                        output.write_object<T>(object);
-
-                        return {std::move(output).to_byte_array()};
-                    }
-
-                    template<typename T>
-                    inline std::shared_ptr<data> to_shared_data(const T *object) {
-                        if (NULL == object) {
-                            return std::shared_ptr<data>();
-                        }
-                        return std::shared_ptr<data>(new data(to_data<T>(object)));
+                        return to_data(&object);
                     }
 
                     template<typename T>

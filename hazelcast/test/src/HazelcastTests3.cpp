@@ -852,7 +852,7 @@ namespace hazelcast {
 
                 std::shared_ptr<serialization::pimpl::data> get_near_cache_key(int key) {
                     spi::ClientContext clientContext(*client_);
-                    return clientContext.get_serialization_service().to_shared_data<int>(&key);
+                    return std::make_shared<serialization::pimpl::data>(clientContext.get_serialization_service().to_data<int>(&key));
                 }
 
                 int64_t get_expected_misses_with_local_update_policy() {
