@@ -23,6 +23,7 @@
 #include <boost/optional.hpp>
 #include<boost/optional/optional_io.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/thread/future.hpp>
 
 #include "hazelcast/client/hazelcast_json_value.h"
 #include "hazelcast/client/serialization/pimpl/data_input.h"
@@ -1308,6 +1309,22 @@ namespace hazelcast {
                     DataSerializer &get_data_serializer();
 
                     template<typename T>
+                    inline boost::future<data> to_data2(const T *object) {
+                      object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
+
+                      write_hash<T>(object, output);
+
+                      output.write_object<T>(object);
+
+                      return boost::make_ready_future<data>({std::move(output).to_byte_array()});
+                    }
+
+                    template<typename T>
+                    inline boost::future<data> to_data2(const T &object) {
+                      return to_data2(&object);
+                    }
+
+                    template<typename T>
                     inline data to_data(const T *object) {
                         object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
 
@@ -1348,6 +1365,27 @@ namespace hazelcast {
                                                           8, portable_serializer_, data_serializer_,
                                                           serialization_config_.get_global_serializer());
                         return objectDataInput.read_object<T>(typeId);
+                    }
+
+                    template<typename T>
+                    typename boost::future<typename std::enable_if<!(std::is_same<T, const char *>::value ||
+                                              std::is_same<T, const char *>::value ||
+                                              std::is_same<T, typed_data>::value), boost::optional<T>>::type>
+                        inline to_object2(const data &data) {
+                      if (is_null_data(data)) {
+                        boost::promise<boost::optional<T>> p;
+                        p.set_value(boost::none);
+                        return p.get_future();
+                      }
+
+                      int32_t typeId = data.get_type();
+
+                      // Constant 8 is Data::DATA_OFFSET. Windows DLL export does not
+                      // let usage of static member.
+                      object_data_input objectDataInput(serialization_config_.get_byte_order(), data.to_byte_array(),
+                                                        8, portable_serializer_, data_serializer_,
+                                                        serialization_config_.get_global_serializer());
+                      return boost::make_ready_future(std::move(objectDataInput.read_object<T>(typeId)));
                     }
 
                     template<typename T>

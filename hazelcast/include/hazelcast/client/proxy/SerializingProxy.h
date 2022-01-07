@@ -84,9 +84,25 @@ namespace hazelcast {
                 }
 
                 template<typename T>
+                boost::future<serialization::pimpl::data> to_data2(const T *object) {
+                  return serialization_service_.template to_data2<T>(object);
+                }
+
+                template<typename T>
+                boost::future<serialization::pimpl::data> to_data2(const T &object) {
+                  return to_data2<T>(&object);
+                }
+
+                template<typename T>
                 inline boost::optional<T> to_object(const serialization::pimpl::data &data) {
                     return serialization_service_.template to_object<T>(data);
                 }
+
+                template<typename T>
+                inline boost::future<boost::optional<T>> to_object2(const boost::optional<serialization::pimpl::data> &data) {
+                  return serialization_service_.template to_object2<T>(data.get());
+                }
+
 
                 template<typename T>
                 inline boost::optional<T> to_object(const serialization::pimpl::data *data) {

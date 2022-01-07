@@ -245,10 +245,10 @@ namespace hazelcast {
                                 return std::shared_ptr<R>();
                             }
 
-                            virtual void put_to_record(std::shared_ptr<R> &record,
-                                                     const std::shared_ptr<V> &value) {
-                                assert(0);
-                            }
+//                            virtual void put_to_record(std::shared_ptr<R> &record,
+//                                                     const std::shared_ptr<V> &value) {
+//                                assert(0);
+//                            }
 
                             virtual std::shared_ptr<R> remove_record(const std::shared_ptr<KS> &key) {
                                 assert(0);
@@ -289,15 +289,15 @@ namespace hazelcast {
                                 return records_.get() != NULL;
                             }
 
-                            std::shared_ptr<serialization::pimpl::data> value_to_data(
-                                    const std::shared_ptr<V> &value) {
-                                if (value.get() != NULL) {
-                                    return std::shared_ptr<serialization::pimpl::data>(new serialization::pimpl::data(
-                                            serialization_service_.to_data<V>(value.get())));
-                                } else {
-                                    return std::shared_ptr<serialization::pimpl::data>();
-                                }
-                            }
+//                            std::shared_ptr<serialization::pimpl::data> value_to_data(
+//                                    const std::shared_ptr<V> &value) {
+//                                if (value.get() != NULL) {
+//                                    return std::shared_ptr<serialization::pimpl::data>(new serialization::pimpl::data(
+//                                            serialization_service_.to_data<V>(value.get())));
+//                                } else {
+//                                    return std::shared_ptr<serialization::pimpl::data>();
+//                                }
+//                            }
 
 /*
                             std::shared_ptr<serialization::pimpl::data> valueToData(
@@ -331,14 +331,14 @@ namespace hazelcast {
                             }
 */
 
-                            const std::shared_ptr<serialization::pimpl::data> to_data(
-                                    const std::shared_ptr<V> &obj) {
-                                if (obj.get() == NULL) {
-                                    return std::shared_ptr<serialization::pimpl::data>();
-                                } else {
-                                    return value_to_data(obj);
-                                }
-                            }
+//                            const std::shared_ptr<serialization::pimpl::data> to_data(
+//                                    const std::shared_ptr<V> &obj) {
+//                                if (obj.get() == NULL) {
+//                                    return std::shared_ptr<serialization::pimpl::data>();
+//                                } else {
+//                                    return value_to_data(obj);
+//                                }
+//                            }
 
 /*
                             std::shared_ptr<V> toValue(std::shared_ptr<serialization::pimpl::data> &obj) {

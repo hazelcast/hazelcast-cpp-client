@@ -98,10 +98,10 @@ namespace hazelcast {
                                 return ANCRS::data_to_value(value, (V *)NULL);
                             }
 
-                            void put_to_record(std::shared_ptr<record::NearCacheDataRecord> &record,
-                                             const std::shared_ptr<V> &value) override {
-                                record->set_value(ANCRS::to_data(value));
-                            }
+//                            void put_to_record(std::shared_ptr<record::NearCacheDataRecord> &record,
+//                                             const std::shared_ptr<V> &value) override {
+//                                record->set_value(ANCRS::to_data(value));
+//                            }
                         private:
                             std::unique_ptr<record::NearCacheDataRecord> value_to_record_internal(
                                     const std::shared_ptr<serialization::pimpl::data> &data) {
