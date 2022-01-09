@@ -160,7 +160,8 @@ namespace hazelcast {
                 return to_data2(value).then(boost::launch::sync,[this, data1, ttl](boost::future<serialization::pimpl::data> f) {
                   serialization::pimpl::data data2 = f.get();
                   return put_internal(data1, data2, ttl).then(boost::launch::sync, [this](boost::future<boost::optional<serialization::pimpl::data>> f) {
-                    return to_object2<R>(f.get()).then(boost::launch::sync, [this](boost::future<boost::optional<R>> f){
+                    boost::optional<serialization::pimpl::data> responseData = f.get();
+                    return to_object2<R>(responseData).then(boost::launch::sync, [this](boost::future<boost::optional<R>> f){
                       return f.get();
                     });
                   }).unwrap();

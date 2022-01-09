@@ -1368,14 +1368,20 @@ namespace hazelcast {
                     }
 
                     template<typename T>
+                    inline boost::future<boost::optional<T>> to_object2(const data *data) {
+                      if (!data) {
+                        return boost::make_ready_future<boost::optional<T>>(boost::none);
+                      }
+                      return to_object2<T>(*data);
+                    }
+
+                    template<typename T>
                     typename boost::future<typename std::enable_if<!(std::is_same<T, const char *>::value ||
                                               std::is_same<T, const char *>::value ||
                                               std::is_same<T, typed_data>::value), boost::optional<T>>::type>
                         inline to_object2(const data &data) {
                       if (is_null_data(data)) {
-                        boost::promise<boost::optional<T>> p;
-                        p.set_value(boost::none);
-                        return p.get_future();
+                        return boost::make_ready_future<boost::optional<T>>(boost::none);
                       }
 
                       int32_t typeId = data.get_type();
