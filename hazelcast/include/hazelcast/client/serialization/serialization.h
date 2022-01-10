@@ -1837,12 +1837,9 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<std::is_base_of<builtin_serializer, hz_serializer<T>>::value, boost::optional<T>>::type
             inline object_data_input::read_object(int32_t type_id) {
-              int32_t x = static_cast<int32_t>(hz_serializer<T>::get_type_id());
-              if(type_id != x) {
-                  std::cout << "error" << std::endl;
-                }
+              assert(type_id == static_cast<int32_t>(hz_serializer<T>::get_type_id()));
 
-                return boost::optional<T>(read<T>());
+              return boost::optional<T>(read<T>());
             }
 
             template<typename T>

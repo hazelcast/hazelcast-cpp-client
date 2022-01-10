@@ -2095,7 +2095,7 @@ namespace hazelcast {
 
                         std::shared_ptr<serialization::pimpl::data> get_shared_value(int value) const {
                             std::string s = "Record-" + std::to_string(value);
-                            return std::make_shared<serialization::pimpl::data>(ss_->to_data(&s));
+                            return std::make_shared<serialization::pimpl::data>(ss_->to_data(s));
                         }
 
                         std::shared_ptr<serialization::pimpl::data> get_shared_key(int value) {

@@ -77,10 +77,10 @@ namespace hazelcast {
                                 return value;
                             }
 
-//                            void put_to_record(std::shared_ptr<record::NearCacheObjectRecord<V> > &record,
-//                                             const std::shared_ptr<V> &value) override {
-//                                record->set_value(value);
-//                            }
+                            void put_to_record(std::shared_ptr<record::NearCacheObjectRecord<V> > &record,
+                                             const std::shared_ptr<V> &value) override {
+                                record->set_value(value);
+                            }
 
                         private:
                             std::unique_ptr<record::NearCacheObjectRecord<V> > value_to_record_internal(
