@@ -1337,7 +1337,13 @@ namespace hazelcast {
 
                     template<typename T>
                     inline data to_data(const T &object) {
-                        return to_data(&object);
+                      object_data_output output(serialization_config_.get_byte_order(), false, &portable_serializer_, serialization_config_.get_global_serializer());
+
+                      write_hash<T>(&object, output);
+
+                      output.write_object<T>(object);
+
+                      return {std::move(output).to_byte_array()};
                     }
 
                     template<typename T>
@@ -1831,7 +1837,10 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<std::is_base_of<builtin_serializer, hz_serializer<T>>::value, boost::optional<T>>::type
             inline object_data_input::read_object(int32_t type_id) {
-                assert(type_id == static_cast<int32_t>(hz_serializer<T>::get_type_id()));
+              int32_t x = static_cast<int32_t>(hz_serializer<T>::get_type_id());
+              if(type_id != x) {
+                  std::cout << "error" << std::endl;
+                }
 
                 return boost::optional<T>(read<T>());
             }
