@@ -50,14 +50,6 @@ namespace hazelcast {
             class ProxyManager;
         }
 
-//        template<typename R, typename V>
-//        std::function<boost::future<R>(boost::future<V>)>  applyToFutureResponse(std::function<boost::future<R>(V)> func)
-//        {
-//          return [func](boost::future<serialization::pimpl::data> future) {
-//            return func(future.get());
-//          };
-//        }
-
         /**
         * Concurrent, distributed, observable and queryable map client.
         *
@@ -83,10 +75,11 @@ namespace hazelcast {
             */
             template<typename K>
             boost::future<bool> contains_key(const K &key) {
-              return to_data2(key).then([this](boost::future<serialization::pimpl::data> f) {
-                return contains_key_internal(f.get());
-              }).unwrap();
-//            return to_data2(key).then(applyToFutureResponse<bool, serialization::pimpl::data>(std::bind(&imap::contains_key_internal, this, std::placeholders::_1))).unwrap();
+              return to_data2(key)
+                  .then([this](boost::future<serialization::pimpl::data> f) {
+                    return contains_key_internal(f.get());
+                  })
+                  .unwrap();
             }
 
             /**
@@ -96,9 +89,11 @@ namespace hazelcast {
              */
             template<typename V>
             boost::future<bool> contains_value(const V &value) {
-              return to_data2(value).then([this](boost::future<serialization::pimpl::data> f) {
-                                    return proxy::IMapImpl::contains_value(f.get());
-                                  }).unwrap();
+              return to_data2(value)
+                  .then([this](boost::future<serialization::pimpl::data> f) {
+                    return proxy::IMapImpl::contains_value(f.get());
+                  })
+                  .unwrap();
             }
 
             /**
@@ -122,25 +117,6 @@ namespace hazelcast {
                 return put<K, V, R>(key, value, UNSET);
             }
 
-//            template<typename R>
-//            boost::future<boost::optional<R>>
-//            func2( const serialization::pimpl::data& data1, boost::future<serialization::pimpl::data> f2, std::chrono::milliseconds ttl)
-//            {
-//              serialization::pimpl::data data2 = f2.get();
-//              return put_internal(data1, data2, ttl).then(boost::launch::sync, [this](boost::future<boost::optional<serialization::pimpl::data>> f) {return to_object<R>(f.get());});
-//            }
-//
-//            template<typename V, typename R>
-//            boost::future<boost::optional<R>>
-//            func1(const V& value, boost::future<serialization::pimpl::data> f1, std::chrono::milliseconds ttl)
-//            {
-//              serialization::pimpl::data data1 = f1.get();
-//              return to_data2(value).then(
-//                  boost::launch::sync,
-//                  [this, data1, ttl](boost::future<serialization::pimpl::data> f2) { return func1<R>(data1, std::move(f2), ttl); }).unwrap();
-//            }
-
-
             /**
             * Puts an entry into this map with a given ttl (time to live) value.
             * Entry will expire and get evicted after the ttl. If ttl is 0, then
@@ -154,19 +130,27 @@ namespace hazelcast {
             template<typename K, typename V, typename R=V>
             boost::future<boost::optional<R>>
             put(const K &key, const V &value, std::chrono::milliseconds ttl) {
-//              return to_data2(key).then([this, value, ttl](boost::future<serialization::pimpl::data> f){return func1<V, R>(value, std::move(f), ttl);}).unwrap();
-              return to_data2(key).then([this, value, ttl](boost::future<serialization::pimpl::data> f){
-                serialization::pimpl::data data1 = f.get();
-                return to_data2(value).then(boost::launch::sync,[this, data1, ttl](boost::future<serialization::pimpl::data> f) {
-                  serialization::pimpl::data data2 = f.get();
-                  return put_internal(data1, data2, ttl).then(boost::launch::sync, [this](boost::future<boost::optional<serialization::pimpl::data>> f) {
-                    boost::optional<serialization::pimpl::data> responseData = f.get();
-                    return to_object2<R>(responseData).then(boost::launch::sync, [this](boost::future<boost::optional<R>> f){
-                      return f.get();
-                    });
-                  }).unwrap();
-                }).unwrap();
-              }).unwrap();
+                using boost::launch;
+                using boost::future;
+                using serialization::pimpl::data;
+                auto key_fut_ptr = std::make_shared<future<data>>(to_data2(key));
+                auto value_fut_ptr = std::make_shared<future<data>>(to_data2(value));
+                auto result = key_fut_ptr
+                  ->then(launch::sync, [value_fut_ptr](future<data> f){
+                    return std::move(*value_fut_ptr);
+                  })
+                  .unwrap()
+                  .then(launch::sync, [key_fut_ptr, ttl, this](future<data> f){
+                    auto key_data = key_fut_ptr->get();
+                    auto value_data = f.get();
+                    return put_internal(key_data, value_data, ttl);
+                  })
+                  .unwrap()
+                  .then(launch::sync, [this](future<boost::optional<data>> f){
+                    return to_object2<R>(f.get());
+                  })
+                  .unwrap();
+                return result;
             }
 
             /**
