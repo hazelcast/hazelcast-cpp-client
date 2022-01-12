@@ -133,23 +133,30 @@ namespace hazelcast {
                 using boost::launch;
                 using boost::future;
                 using serialization::pimpl::data;
-                auto key_fut_ptr = std::make_shared<future<data>>(to_data2(key));
-                auto value_fut_ptr = std::make_shared<future<data>>(to_data2(value));
-                auto result = key_fut_ptr
-                  ->then(launch::sync, [value_fut_ptr](future<data> f){
-                    return std::move(*value_fut_ptr);
-                  })
-                  .unwrap()
-                  .then(launch::sync, [key_fut_ptr, ttl, this](future<data> f){
-                    auto key_data = key_fut_ptr->get();
-                    auto value_data = f.get();
-                    return put_internal(key_data, value_data, ttl);
-                  })
-                  .unwrap()
-                  .then(launch::sync, [this](future<boost::optional<data>> f){
-                    return to_object2<R>(f.get());
-                  })
-                  .unwrap();
+                struct state_ {
+                  future<data> key_data_fut;
+                  future<data> value_data_fut;
+                };
+                auto state = std::make_shared<state_>();
+                state->key_data_fut = to_data2(key);
+                state->value_data_fut = to_data2(value);
+                auto result = state->key_data_fut
+                .then(launch::sync, [state](future<data> f){
+                  // store the ready key_data_fut for later
+                  state->key_data_fut = std::move(f);
+                  return std::move(state->value_data_fut);
+                })
+                .unwrap()
+                .then(launch::sync, [state, ttl, this](future<data> f){
+                  auto key_data = state->key_data_fut.get();
+                  auto value_data = f.get();
+                  return put_internal(key_data, value_data, ttl);
+                })
+                .unwrap()
+                .then(launch::sync, [this](future<boost::optional<data>> f){
+                  return to_object2<R>(f.get());
+                })
+                .unwrap();
                 return result;
             }
 
