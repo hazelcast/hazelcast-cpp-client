@@ -76,7 +76,8 @@ namespace hazelcast {
             template<typename K>
             boost::future<bool> contains_key(const K &key) {
               return to_data2(key)
-                  .then([this](boost::future<serialization::pimpl::data> f) {
+                  .then(boost::launch::sync,
+                        [this](boost::future<serialization::pimpl::data> f) {
                     return contains_key_internal(f.get());
                   })
                   .unwrap();
@@ -90,7 +91,8 @@ namespace hazelcast {
             template<typename V>
             boost::future<bool> contains_value(const V &value) {
               return to_data2(value)
-                  .then([this](boost::future<serialization::pimpl::data> f) {
+                  .then(boost::launch::sync,
+                        [this](boost::future<serialization::pimpl::data> f) {
                     return proxy::IMapImpl::contains_value(f.get());
                   })
                   .unwrap();
