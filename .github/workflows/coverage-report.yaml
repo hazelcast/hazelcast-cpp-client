@@ -4,7 +4,7 @@ on:
   push:
     branches: 
       - master
-      - CoverageBranch
+
 jobs:
         
   coverage:
@@ -12,12 +12,6 @@ jobs:
         
     name: Create and upload coverage
     steps:
-        
-      - name: Setup Java
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-            
       - name: Checkout code           
         uses: actions/checkout@v2
         
@@ -25,10 +19,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y net-tools libssl-dev gdb gcovr
-          
+
       - name: Install Boost
         run: |
-          sudo ./scripts/install-boost.sh 1.76.0
+          sudo ./scripts/install-boost.sh 1.78.0
           
       - name: Install Thrift
         run: |
