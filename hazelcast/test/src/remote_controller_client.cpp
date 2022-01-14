@@ -45,7 +45,11 @@ remote_controller_client()
 
     static remote::RemoteControllerClient client{ protocol };
 
-    transport->open();
+    // if this is the first time this function is called,
+    // open the transport.
+    if (!transport->isOpen()) {
+        transport->open();
+    }
 
     return client;
 }

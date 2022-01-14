@@ -78,8 +78,8 @@ ClientTest::get_config(bool ssl_enabled, bool smart)
     }
 #endif
 
-    config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
-      std::chrono::seconds(5));
+    config.get_connection_strategy_config().get_retry_config()
+        .set_cluster_connect_timeout(std::chrono::seconds(20));
     config.get_network_config().set_smart_routing(smart);
 
     return config;
