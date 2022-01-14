@@ -795,55 +795,6 @@ namespace hazelcast {
             }
         }
     }
-
-    namespace util {
-        StartedThread::StartedThread(const std::string &name, void (*func)(ThreadArgs &),
-                                     void *arg0, void *arg1, void *arg2, void *arg3)
-                : name_(name)
-                , logger_(std::make_shared<logger>("StartedThread", "StartedThread", 
-                                                   logger::level::info, logger::default_handler)) {
-            init(func, arg0, arg1, arg2, arg3);
-        }
-
-        StartedThread::StartedThread(void (func)(ThreadArgs &),
-                                     void *arg0,
-                                     void *arg1,
-                                     void *arg2,
-                                     void *arg3)
-                : StartedThread("hz.unnamed", func, arg0, arg1, arg2, arg3) {
-        }
-
-        void StartedThread::init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3) {
-            thread_args_.arg0 = arg0;
-            thread_args_.arg1 = arg1;
-            thread_args_.arg2 = arg2;
-            thread_args_.arg3 = arg3;
-            thread_args_.func = func;
-
-            thread_ = std::thread([=]() { func(thread_args_); });
-        }
-
-        void StartedThread::run() {
-            thread_args_.func(thread_args_);
-        }
-
-        const std::string StartedThread::get_name() const {
-            return name_;
-        }
-
-        bool StartedThread::join() {
-            if (!thread_.joinable()) {
-                return false;
-            }
-            thread_.join();
-            return true;
-        }
-
-        StartedThread::~StartedThread() {
-            join();
-        }
-
-    }
 }
 
 namespace hazelcast {
@@ -2747,9 +2698,9 @@ namespace hazelcast {
 
                 std::array<boost::future<void>, n> futures;
                 for (int i = 0; i < n; i++) {
-                    futures[i] = boost::async(std::packaged_task<void()>([&]() {
-                        std::string key = std::to_string(hazelcast::util::get_current_thread_id());
-                        std::string key2 = key + "2";
+                    futures[i] = boost::async([&mm, this, i]() {
+                        std::string key = std::to_string(i);
+                        std::string key2 = key + "-2";
                         client_.get_multi_map("testPutGetRemove").get()->put(key, "value").get();
                         transaction_context context = client_.new_transaction_context();
                         context.begin_transaction().get();
@@ -2768,7 +2719,7 @@ namespace hazelcast {
                         context.commit_transaction().get();
 
                         ASSERT_EQ(3, (int) (mm->get<std::string, std::string>(key).get().size()));
-                    }));
+                    });
                 }
 
                 boost::wait_for_all(futures.begin(), futures.end());
@@ -2822,16 +2773,12 @@ namespace hazelcast {
                 ASSERT_EQ(0, client_.get_queue(name).get()->size().get());
             }
 
-            void test_transactional_offer_poll2_thread(hazelcast::util::ThreadArgs &args) {
-                boost::latch *latch1 = (boost::latch *) args.arg0;
-                hazelcast_client *client = (hazelcast_client *) args.arg1;
-                latch1->wait();
-                client->get_queue("defQueue0").get()->offer("item0").get();
-            }
-
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
                 boost::latch latch1(1);
-                hazelcast::util::StartedThread t(test_transactional_offer_poll2_thread, &latch1, &client_);
+                std::thread t([this, &latch1]() {
+                    latch1.wait();
+                    client_.get_queue("defQueue0").get()->offer("item0").get();
+                });
                 transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto q0 = context.get_queue("defQueue0");
@@ -2846,6 +2793,8 @@ namespace hazelcast {
 
                 ASSERT_EQ(0, client_.get_queue("defQueue0").get()->size().get());
                 ASSERT_EQ("item0", client_.get_queue("defQueue1").get()->poll<std::string>().get().value());
+
+                t.join();
             }
         }
     }

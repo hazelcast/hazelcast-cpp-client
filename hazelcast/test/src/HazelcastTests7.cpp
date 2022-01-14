@@ -579,12 +579,6 @@ namespace hazelcast {
                 ASSERT_NO_THROW(q->destroy().get());
             }
 
-            void test_offer_poll_thread2(hazelcast::util::ThreadArgs &args) {
-                auto *q = (iqueue *) args.arg0;
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-                q->offer("item1");
-            }
-
             TEST_F(ClientQueueTest, testOfferPoll) {
                 for (int i = 0; i < 10; i++) {
                     ASSERT_TRUE(q->offer("item").get());
@@ -598,12 +592,16 @@ namespace hazelcast {
                 }
                 ASSERT_EQ(0, q->size().get());
 
-                hazelcast::util::StartedThread t2(test_offer_poll_thread2, q.get());
+                std::thread offer_in_background([]() {
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
+                    q->offer("item1");
+                });
 
                 boost::optional<std::string> item = q->poll<std::string>(std::chrono::seconds(30)).get();
                 ASSERT_TRUE(item.has_value());
                 ASSERT_EQ("item1", item.value());
-                t2.join();
+
+                offer_in_background.join();
             }
 
             TEST_F(ClientQueueTest, testPeek) {
@@ -632,14 +630,17 @@ namespace hazelcast {
 
                 ASSERT_TRUE(q->is_empty().get());
 
-                // start a thread to insert an item
-                hazelcast::util::StartedThread t2(test_offer_poll_thread2, q.get());
+                // start a thread to offer an item
+                std::thread offer_in_background([]() {
+                    std::this_thread::sleep_for(std::chrono::seconds(2));
+                    q->offer("item1");
+                });
 
                 item = q->take<std::string>().get();  //  should block till it gets an item
                 ASSERT_TRUE(item.has_value());
                 ASSERT_EQ("item1", item.value());
 
-                t2.join();
+                offer_in_background.join();
             }
 
             TEST_F(ClientQueueTest, testRemainingCapacity) {
@@ -648,7 +649,6 @@ namespace hazelcast {
                 q->offer("item");
                 ASSERT_EQ(capacity - 1, q->remaining_capacity().get());
             }
-
 
             TEST_F(ClientQueueTest, testRemove) {
                 offer(3);
@@ -1383,7 +1383,7 @@ namespace hazelcast {
 
                     auto  hazelcastClient = new_client(std::move(clientConfig)).get();
                     auto map = hazelcastClient.get_map("myMap").get();
-                    map->put(5, 20);
+                    map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val);
                     ASSERT_EQ(20, *val);
