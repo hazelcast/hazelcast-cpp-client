@@ -2,19 +2,19 @@ name: Code coverage report to Codecov
 
 on:
   push:
-    branches: 
+    branches:
       - master
 
 jobs:
         
   coverage:
     runs-on: ubuntu-latest
-        
+
     name: Create and upload coverage
     steps:
-      - name: Checkout code           
+      - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
@@ -23,11 +23,11 @@ jobs:
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh 1.78.0
-          
+
       - name: Install Thrift
         run: |
           sudo ./scripts/install-thrift.sh 0.13.0
-          
+
       - name: Build
         env:
           BUILD_DIR: build
@@ -52,7 +52,7 @@ jobs:
           sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
           sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
           ./scripts/test-unix.sh
-       
+
       - name: Collect coverage info
         run: |
           # collect and list coverage info
