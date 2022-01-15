@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/yemreinci/hazelcast-cpp-client/branch/master/graph/badge.svg)](https://codecov.io/gh/yemreinci/hazelcast-cpp-client)
+[![codecov](https://codecov.io/gh/hazelcast/hazelcast-cpp-client/branch/master/graph/badge.svg)](https://codecov.io/gh/hazelcast/hazelcast-cpp-client)
 
 # Async Hazelcast C++ Client
 

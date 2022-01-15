@@ -6,7 +6,6 @@ on:
       - master
 
 jobs:
-        
   coverage:
     runs-on: ubuntu-latest
 
