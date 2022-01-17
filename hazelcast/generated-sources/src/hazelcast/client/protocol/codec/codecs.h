@@ -48,13 +48,13 @@ namespace hazelcast {
                      * @param member_infos List of member infos  at the cluster associated with the given version
                      *                     params:
                     */
-                    virtual void handle_membersview(int32_t version, std::vector<member> const & member_infos) = 0;
+                    virtual void handle_membersview(int32_t version, std::vector<member> const &member_infos) = 0;
 
                     /**
                      * @param version Incremental state version of the partition table
                      * @param partitions The partition table. In each entry, it has uuid of the member and list of partitions belonging to that member
                     */
-                    virtual void handle_partitionsview(int32_t version, std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> const & partitions) = 0;
+                    virtual void handle_partitionsview(int32_t version, std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> const &partitions) = 0;
 
                 };
 
@@ -417,7 +417,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -448,7 +448,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -479,7 +479,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -677,7 +677,7 @@ namespace hazelcast {
                      * @param partition_uuid UUID of the source partition that invalidated entry belongs to.
                      * @param sequence Sequence number of the invalidation event.
                     */
-                    virtual void handle_imapinvalidation( const boost::optional<serialization::pimpl::data> & key, boost::uuids::uuid source_uuid, boost::uuids::uuid partition_uuid, int64_t sequence) = 0;
+                    virtual void handle_imapinvalidation(const boost::optional<serialization::pimpl::data> &key, boost::uuids::uuid source_uuid, boost::uuids::uuid partition_uuid, int64_t sequence) = 0;
 
                     /**
                      * @param keys List of the keys of the invalidated entries.
@@ -685,7 +685,7 @@ namespace hazelcast {
                      * @param partition_uuids List of UUIDs of the source partitions that invalidated entries belong to.
                      * @param sequences List of sequence numbers of the invalidation events.
                     */
-                    virtual void handle_imapbatchinvalidation(std::vector<serialization::pimpl::data> const & keys, std::vector<boost::uuids::uuid> const & source_uuids, std::vector<boost::uuids::uuid> const & partition_uuids, std::vector<int64_t> const & sequences) = 0;
+                    virtual void handle_imapbatchinvalidation(std::vector<serialization::pimpl::data> const &keys, std::vector<boost::uuids::uuid> const &source_uuids, std::vector<boost::uuids::uuid> const &partition_uuids, std::vector<int64_t> const &sequences) = 0;
 
                 };
 
@@ -787,7 +787,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -817,7 +817,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -979,7 +979,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches this event.
                      * @param event_type Type of the event. It is either ADDED(1) or REMOVED(2).
                     */
-                    virtual void handle_item( const boost::optional<serialization::pimpl::data> & item, boost::uuids::uuid uuid, int32_t event_type) = 0;
+                    virtual void handle_item(const boost::optional<serialization::pimpl::data> &item, boost::uuids::uuid uuid, int32_t event_type) = 0;
 
                 };
 
@@ -1020,7 +1020,7 @@ namespace hazelcast {
                      * @param publish_time Time that the item is published to the topic.
                      * @param uuid UUID of the member that dispatches this event.
                     */
-                    virtual void handle_topic(serialization::pimpl::data const & item, int64_t publish_time, boost::uuids::uuid uuid) = 0;
+                    virtual void handle_topic(serialization::pimpl::data const &item, int64_t publish_time, boost::uuids::uuid uuid) = 0;
 
                 };
 
@@ -1101,7 +1101,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches this event.
                      * @param event_type Type of the event. It is either ADDED(1) or REMOVED(2).
                     */
-                    virtual void handle_item( const boost::optional<serialization::pimpl::data> & item, boost::uuids::uuid uuid, int32_t event_type) = 0;
+                    virtual void handle_item(const boost::optional<serialization::pimpl::data> &item, boost::uuids::uuid uuid, int32_t event_type) = 0;
 
                 };
 
@@ -1253,7 +1253,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches this event.
                      * @param event_type Type of the event. It is either ADDED(1) or REMOVED(2).
                     */
-                    virtual void handle_item( const boost::optional<serialization::pimpl::data> & item, boost::uuids::uuid uuid, int32_t event_type) = 0;
+                    virtual void handle_item(const boost::optional<serialization::pimpl::data> &item, boost::uuids::uuid uuid, int32_t event_type) = 0;
 
                 };
 
@@ -1324,7 +1324,7 @@ namespace hazelcast {
                 /**
                  * Cancels the task running on the member with the given address.
                  */
-                ClientMessage HAZELCAST_API executorservice_cancelonmember_encode(boost::uuids::uuid uuid, boost::uuids::uuid member_u_u_i_d, bool interrupt);
+                ClientMessage HAZELCAST_API executorservice_cancelonmember_encode(boost::uuids::uuid uuid, boost::uuids::uuid member_uuid, bool interrupt);
 
                 /**
                  * Submits the task to the member that owns the partition with the given id.
@@ -1334,7 +1334,7 @@ namespace hazelcast {
                 /**
                  * Submits the task to member specified by the address.
                  */
-                ClientMessage HAZELCAST_API executorservice_submittomember_encode(const std::string &name, boost::uuids::uuid uuid, const serialization::pimpl::data &callable, boost::uuids::uuid member_u_u_i_d);
+                ClientMessage HAZELCAST_API executorservice_submittomember_encode(const std::string &name, boost::uuids::uuid uuid, const serialization::pimpl::data &callable, boost::uuids::uuid member_uuid);
 
                 /**
                  * Applies a function on the value, the actual stored value will not change
@@ -1572,7 +1572,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -1603,7 +1603,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -1634,7 +1634,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -1664,7 +1664,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -1720,7 +1720,7 @@ namespace hazelcast {
                      * @param uuid UUID of the member that dispatches the event.
                      * @param number_of_affected_entries Number of entries affected by this event.
                     */
-                    virtual void handle_entry( const boost::optional<serialization::pimpl::data> & key,  const boost::optional<serialization::pimpl::data> & value,  const boost::optional<serialization::pimpl::data> & old_value,  const boost::optional<serialization::pimpl::data> & merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
+                    virtual void handle_entry(const boost::optional<serialization::pimpl::data> &key, const boost::optional<serialization::pimpl::data> &value, const boost::optional<serialization::pimpl::data> &old_value, const boost::optional<serialization::pimpl::data> &merging_value, int32_t event_type, boost::uuids::uuid uuid, int32_t number_of_affected_entries) = 0;
 
                 };
 
@@ -2011,7 +2011,7 @@ namespace hazelcast {
                  * If smart routing is disabled, the actual member processing the client
                  * message may act as a proxy.
                  */
-                ClientMessage HAZELCAST_API pncounter_get_encode(const std::string &name, const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps, boost::uuids::uuid target_replica_u_u_i_d);
+                ClientMessage HAZELCAST_API pncounter_get_encode(const std::string &name, const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps, boost::uuids::uuid target_replica_uuid);
 
                 /**
                  * Adds a delta to the PNCounter value. The delta may be negative for a
@@ -2024,7 +2024,7 @@ namespace hazelcast {
                  * If smart routing is disabled, the actual member processing the client
                  * message may act as a proxy.
                  */
-                ClientMessage HAZELCAST_API pncounter_add_encode(const std::string &name, int64_t delta, bool get_before_update, const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps, boost::uuids::uuid target_replica_u_u_i_d);
+                ClientMessage HAZELCAST_API pncounter_add_encode(const std::string &name, int64_t delta, bool get_before_update, const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps, boost::uuids::uuid target_replica_uuid);
 
                 /**
                  * Returns the configured number of CRDT replicas for the PN counter with
