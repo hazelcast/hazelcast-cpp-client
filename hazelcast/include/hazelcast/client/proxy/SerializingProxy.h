@@ -55,7 +55,7 @@ namespace hazelcast {
 
             protected:
                 SerializingProxy(spi::ClientContext &context, const std::string &object_name);
-                
+
                 boost::future<protocol::ClientMessage> invoke(protocol::ClientMessage &request);
 
                 boost::future<protocol::ClientMessage> invoke_on_connection(protocol::ClientMessage &request,
@@ -115,7 +115,7 @@ namespace hazelcast {
 
                 template<typename T>
                 inline boost::future<boost::optional<T>> to_object(boost::future<boost::optional<serialization::pimpl::data>> f) {
-                    return f.then([=] (boost::future<boost::optional<serialization::pimpl::data>> f) {
+                    return f.then(boost::launch::sync, [this](boost::future<boost::optional<serialization::pimpl::data>> f) {
                         return to_object<T>(f.get().get_ptr());
                     });
                 }
