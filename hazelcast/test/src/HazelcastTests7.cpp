@@ -55,13 +55,11 @@
 #include <hazelcast/util/Util.h>
 #include <hazelcast/client/spi/impl/discovery/cloud_discovery.h>
 
-#include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
-#include "executor/tasks/Tasks.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 #include "TestHelperFunctions.h"
-
+#include "executor/tasks/Tasks.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -71,7 +69,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMultiMapTest : public ClientTestSupport {
+            class ClientMultiMapTest : public ClientTest
+            {
             protected:
 
                 entry_listener make_add_remove_listener(boost::latch &added_latch, boost::latch &removed_latch) {
@@ -98,7 +97,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     mm = client->get_multi_map("MyMultiMap").get();
                 }
@@ -308,7 +307,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientListTest : public ClientTestSupport {
+            class ClientListTest : public ClientTest {
             protected:
 
                 void TearDown() override {
@@ -318,10 +317,10 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
 #ifdef HZ_BUILD_WITH_SSL
-                    sslFactory = new HazelcastServerFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
+                    sslFactory = new HazelcastServerFactory(get_ssl_file_path());
                     instance = new HazelcastServer(*sslFactory);
 #else
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -515,7 +514,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientQueueTest : public ClientTestSupport {
+            class ClientQueueTest : public ClientTest {
             protected:
                 void offer(int number_of_items) {
                     for (int i = 1; i <= number_of_items; ++i) {
@@ -528,8 +527,8 @@ namespace hazelcast {
                 }
                 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client(
                             new_client(std::move(get_config().backup_acks_enabled(false))).get());
                     q = client->get_queue("MyQueue").get();
@@ -789,7 +788,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientExecutorServiceTest : public ClientTestSupport {
+            class ClientExecutorServiceTest : public ClientTest {
             protected:
                 static constexpr const char *APPENDAGE = ":CallableResult";
 
@@ -799,8 +798,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    factory = new HazelcastServerFactory(g_srvFactory->get_server_address(),
-                                                         "hazelcast/test/resources/hazelcast-test-executor.xml");
+                    factory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast-test-executor.xml");
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
@@ -1232,10 +1230,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class AwsConfigTest : public ClientTestSupport {
-                };
 
-                TEST_F (AwsConfigTest, testDefaultValues) {
+                TEST (AwsConfigTest, testDefaultValues) {
                     client::config::client_aws_config awsConfig;
                     ASSERT_EQ("", awsConfig.get_access_key());
                     ASSERT_EQ("us-east-1", awsConfig.get_region());
@@ -1249,7 +1245,7 @@ namespace hazelcast {
                     ASSERT_FALSE(awsConfig.is_enabled());
                 }
 
-                TEST_F (AwsConfigTest, testSetValues) {
+                TEST (AwsConfigTest, testSetValues) {
                     client::config::client_aws_config awsConfig;
 
                     awsConfig.set_access_key("mykey");
@@ -1275,7 +1271,7 @@ namespace hazelcast {
                     ASSERT_TRUE(awsConfig.is_enabled()) << awsConfig;
                 }
 
-                TEST_F (AwsConfigTest, testSetEmptyValues) {
+                TEST (AwsConfigTest, testSetEmptyValues) {
                     client::config::client_aws_config awsConfig;
 
                     ASSERT_THROW(awsConfig.set_access_key(""), exception::illegal_argument);
@@ -1284,7 +1280,7 @@ namespace hazelcast {
                     ASSERT_THROW(awsConfig.set_secret_key(""), exception::illegal_argument);
                 }
 
-                TEST_F (AwsConfigTest, testClientConfigUsage) {
+                TEST (AwsConfigTest, testClientConfigUsage) {
                     client_config clientConfig;
                     client::config::client_aws_config &awsConfig = clientConfig.get_network_config().get_aws_config();
                     awsConfig.set_enabled(true);
@@ -1298,8 +1294,8 @@ namespace hazelcast {
                     ASSERT_FALSE(clientConfig.get_network_config().get_aws_config().is_enabled());
                 }
 
-                TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
-                    client_config clientConfig = get_config();
+                TEST (AwsConfigTest, testInvalidAwsMemberPortConfig) {
+                    client_config clientConfig;
 
                     clientConfig.set_property(client_properties::PROP_AWS_MEMBER_PORT, "65536");
                     clientConfig.get_network_config().get_aws_config().set_enabled(true).
@@ -1313,7 +1309,7 @@ namespace hazelcast {
                 }
 
                 class AwsClientTest
-                        : public ClientTestSupport,
+                        : public ClientTest,
                           public ::testing::WithParamInterface<bool> {
                 };
 
@@ -1427,8 +1423,8 @@ namespace hazelcast {
                     ASSERT_THROW(c.connect_and_get_response(), exception::io);
                 }
 
-                class DescribeInstancesTest : public ClientTestSupport {
-                };
+                class DescribeInstancesTest : public ClientTest
+                {};
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
                     client::config::client_aws_config awsConfig;
@@ -1443,7 +1439,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value(
@@ -1455,7 +1451,7 @@ namespace hazelcast {
                     ASSERT_TRUE(results.empty());
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag");
@@ -1467,7 +1463,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("non-existent-tag");
@@ -1478,7 +1474,7 @@ namespace hazelcast {
                     ASSERT_TRUE(results.empty());
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
                     config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("aws-tag-value-1");
@@ -1490,7 +1486,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSetToNonExistentValue) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyValueIsSetToNonExistentValue) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("non-existent-value");
@@ -1501,7 +1497,7 @@ namespace hazelcast {
                     ASSERT_TRUE(results.empty());
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesSecurityGroup) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesSecurityGroup) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("launch-wizard-147");
@@ -1513,7 +1509,7 @@ namespace hazelcast {
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
 
-                TEST_F (DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup) {
+                TEST_F(DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup) {
                     client::config::client_aws_config awsConfig;
                     awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
                             getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("non-existent-group");
@@ -1525,8 +1521,8 @@ namespace hazelcast {
                 }
             }
             namespace cloud {
-                class CloudUtilityTest : public ClientTestSupport {
-                };
+                class CloudUtilityTest: public ClientTest
+                {};
 
                 TEST_F (CloudUtilityTest, testUnmarshallResponseXml) {
                     std::filebuf fb;
@@ -1547,7 +1543,7 @@ namespace hazelcast {
                     ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
                 }
 
-                class cloud_discovery_test : public ClientTestSupport {
+                class cloud_discovery_test : public ClientTest {
                 protected:
                     void check_address_exist(const std::unordered_map<address, address> &addresses,
                                              const std::string &private_ip, const std::string &public_ip, int port) {
@@ -1593,7 +1589,7 @@ namespace hazelcast {
                     check_address_exist(addresses, "100.127.33.250", "54.80.210.250", 30964);
                 }
 
-                class discovery_config_mismatches_test : public ClientTestSupport {
+                class discovery_config_mismatches_test : public ClientTest {
                 };
 
                 TEST_F(discovery_config_mismatches_test, do_not_permit_aws_and_cloud) {

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <cmath>
 #include <ctime>
 #include <fstream>
 #include <memory>
@@ -34,7 +33,6 @@
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
 #include <hazelcast/client/itopic.h>
 #include <hazelcast/client/multi_map.h>
 #include <hazelcast/client/pipelining.h>
@@ -45,11 +43,10 @@
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
-#include "ClientTestSupport.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 #include "TestHelperFunctions.h"
-
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -59,7 +56,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapTestBase : public ClientTestSupport {
+            class ClientReplicatedMapTestBase : public ClientTest {
             public:
                 struct SamplePortable {
                     int32_t a;
@@ -174,8 +171,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    factory = new HazelcastServerFactory(g_srvFactory->get_server_address(),
-                            "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                    factory = new HazelcastServerFactory(
+                      "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
 
                     client = create_client();
@@ -454,8 +451,7 @@ namespace hazelcast {
             };
 
             TEST_F(ClientReplicatedMapInvalidation, testNearCacheInvalidation) {
-                HazelcastServerFactory factory(g_srvFactory->get_server_address(),
-                                               "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                HazelcastServerFactory factory("hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                 HazelcastServer server(factory);
 
                 std::string mapName = random_string();
@@ -504,7 +500,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapListenerTest : public ClientTestSupport {
+            class ClientReplicatedMapListenerTest : public ClientTest {
             protected:
                 struct ListenerState {
                     std::mutex lock;
@@ -553,8 +549,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance1 = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance1 = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     client2 = new hazelcast_client{new_client(get_config()).get()};
                 }
@@ -636,11 +632,12 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class BasicClientReplicatedMapNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
+                    : public ClientTest
+          , public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestSuite() {
@@ -673,7 +670,7 @@ namespace hazelcast {
                 /**
                  * Provides utility methods for unified Near Cache tests.
                  */
-                class NearCacheTestUtils : public ClientTestSupport {
+                class NearCacheTestUtils : public ClientTest {
                 public:
                     /**
                      * Creates a {@link NearCacheConfig} with a given {@link InMemoryFormat}.
@@ -1156,7 +1153,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientReplicatedMapNearCacheTest : public ClientTestSupport {
+            class ClientReplicatedMapNearCacheTest : public ClientTest {
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.
@@ -1164,8 +1161,8 @@ namespace hazelcast {
                 static const std::string DEFAULT_NEAR_CACHE_NAME;
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {
@@ -1301,7 +1298,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTopicTest : public ClientTestSupport {
+            class ClientTopicTest : public ClientTest {
             public:
                 ClientTopicTest();
             protected:
@@ -1311,7 +1308,7 @@ namespace hazelcast {
                 std::shared_ptr<itopic> topic_;
             };
 
-            ClientTopicTest::ClientTopicTest() : instance_(*g_srvFactory), client_(get_new_client()),
+            ClientTopicTest::ClientTopicTest() : instance_(default_server_factory()), client_(get_new_client()),
                                                  topic_(client_.get_topic("ClientTopicTest").get()) {}
 
             TEST_F(ClientTopicTest, testTopicListeners) {

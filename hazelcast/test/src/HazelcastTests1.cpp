@@ -68,13 +68,13 @@
 #include <hazelcast/util/SyncHttpsClient.h>
 #endif //HZ_BUILD_WITH_SSL
 
-#include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
+#include "TestHelperFunctions.h"
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "serialization/Serializables.h"
-#include "TestHelperFunctions.h"
+#include "remote_controller_client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -86,12 +86,12 @@ namespace hazelcast {
         namespace test {
             extern std::shared_ptr<RemoteControllerClient> remoteController;
 
-            class ClientStatisticsTest : public ClientTestSupport {
+            class ClientStatisticsTest : public ClientTest {
             protected:
                 static const int STATS_PERIOD_SECONDS = 1;
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {
@@ -112,7 +112,8 @@ namespace hazelcast {
                     std::string script = boost::str(boost::format(script_template) % get_test_name());
 
                     Response response;
-                    remoteController->executeOnController(response, g_srvFactory->get_cluster_id(), script, Lang::PYTHON);
+                    remote_controller_client().executeOnController(
+                      response, default_server_factory().get_cluster_id(), script, Lang::PYTHON);
                     return response;
                 }
 
@@ -245,7 +246,7 @@ namespace hazelcast {
                 auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
                 // sleep twice the collection period
-                sleep_seconds(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));;
 
                 Response statsFromServer = get_client_stats_from_server();
                 ASSERT_TRUE(statsFromServer.success);
@@ -270,7 +271,7 @@ namespace hazelcast {
                 auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
                 // sleep twice the collection period
-                sleep_seconds(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));;
 
                 Response statsFromServer = get_client_stats_from_server();
                 ASSERT_TRUE(statsFromServer.success);
@@ -291,7 +292,7 @@ namespace hazelcast {
                 client.get_map(test_name).get();
 
                 // sleep twice the collection period
-                sleep_seconds(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));;
 
                 Response statsFromServer;
                 ASSERT_TRUE_EVENTUALLY((statsFromServer = get_client_stats_from_server()).success && !statsFromServer.result.empty());
@@ -478,7 +479,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace rb {
-                class RingbufferTest : public ClientTestSupport {
+                class RingbufferTest : public ClientTest {
                 public:
                     RingbufferTest() {
                         for (int i = 0; i < 11; ++i) {
@@ -503,7 +504,7 @@ namespace hazelcast {
                     }
 
                     static void SetUpTestCase() {
-                        instance = new HazelcastServer(*g_srvFactory);
+                        instance = new HazelcastServer(default_server_factory());
                         client = new hazelcast_client{new_client(get_config()).get()};
                         client2 = new hazelcast_client{new_client(get_config()).get()};
                     }
@@ -732,76 +733,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            std::string ClientTestSupportBase::get_ca_file_path() {
-                return "hazelcast/test/resources/cpp_client.crt";
-            }
-
-            hazelcast::client::client_config ClientTestSupportBase::get_config(bool ssl_enabled, bool smart) {
-                client_config clientConfig;
 #ifdef HZ_BUILD_WITH_SSL
-                if (ssl_enabled) {
-                    clientConfig.set_cluster_name(get_ssl_cluster_name());
-                    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
-                    ctx.set_default_verify_paths();
-                    ctx.load_verify_file(get_ca_file_path());
-
-                    clientConfig.get_network_config().get_ssl_config().set_context(std::move(ctx));
-                }
-#endif
-                clientConfig.get_network_config().set_smart_routing(smart);
-                return clientConfig;
-            }
-
-            hazelcast_client ClientTestSupportBase::get_new_client() {
-                return hazelcast::new_client(get_config()).get();
-            }
-
-            const std::string ClientTestSupportBase::get_ssl_file_path() {
-                return "hazelcast/test/resources/hazelcast-ssl.xml";
-            }
-
-            std::string ClientTestSupportBase::random_map_name() {
-                return random_string();
-            }
-
-            std::string ClientTestSupportBase::random_string() {
-                // performance is not important, hence we can use random_device for the tests
-                std::random_device rand{};
-                return boost::uuids::to_string(boost::uuids::basic_random_generator<std::random_device>{rand}());
-            }
-
-            void ClientTestSupportBase::sleep_seconds(int32_t seconds) {
-                hazelcast::util::sleep(seconds);
-            }
-
-            ClientTestSupportBase::ClientTestSupportBase() = default;
-
-            boost::uuids::uuid ClientTestSupportBase::generate_key_owned_by(spi::ClientContext &context, const member &member) {
-                spi::impl::ClientPartitionServiceImpl &partitionService = context.get_partition_service();
-                serialization::pimpl::SerializationService &serializationService = context.get_serialization_service();
-                while (true) {
-                    auto id = context.random_uuid();
-                    int partitionId = partitionService.get_partition_id(serializationService.to_data(id));
-                    std::shared_ptr<impl::Partition> partition = partitionService.get_partition(partitionId);
-                    auto owner = partition->get_owner();
-                    if (owner && *owner == member) {
-                        return id;
-                    }
-                }
-            }
-
-            const std::string ClientTestSupportBase::get_ssl_cluster_name() {
-                return "ssl-dev";
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-#ifdef HZ_BUILD_WITH_SSL
-            class ssl_test_base : public ClientTestSupport {
+            class ssl_test_base : public ClientTest {
             protected:
                 static constexpr const char *server1_public_key = "hazelcast/test/resources/server1-cert.pem";
                 static constexpr const char *server1_ssl_xml = "hazelcast/test/resources/hazelcast-ssl-server1.xml";
@@ -823,13 +756,13 @@ namespace hazelcast {
                 }
 
                 void test_ssl_disabled() {
-                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServerFactory f(server1_ssl_xml);
                     HazelcastServer instance(f);
                     ASSERT_THROW(new_client(new_client_config()).get(), exception::illegal_state);
                 }
 
                 void test_ssl_enabled_is_client_live() {
-                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServerFactory f(server1_ssl_xml);
                     HazelcastServer instance(f);
                     auto config = new_client_config();
                     config.get_network_config().get_ssl_config().set_enabled(true).set_protocol(
@@ -839,25 +772,44 @@ namespace hazelcast {
                 }
 
                 void test_ssl_enabled_trust_default_certificates() {
-                    HazelcastServerFactory f(g_srvFactory->get_server_address(), default_ca_xml);
+                    HazelcastServerFactory f(default_ca_xml);
                     HazelcastServer instance(f);
                     start_and_verify_client(new_ssl_client_config());
                 }
 
                 void test_ssl_enabled_dont_trust_self_signed_certificates() {
-                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServerFactory f(server1_ssl_xml);
                     HazelcastServer instance(f);
                     ASSERT_THROW(new_client(new_ssl_client_config()).get(), exception::illegal_state);
                 }
 
                 void test_ssl_enabled_with_protocol_mismatch() {
-                    HazelcastServerFactory f(g_srvFactory->get_server_address(), server1_ssl_xml);
+                    HazelcastServerFactory f(server1_ssl_xml);
                     HazelcastServer instance(f);
                     auto config = new_ssl_client_config(true);
                     ASSERT_THROW(new_client(std::move(config)).get(), exception::illegal_state);
                 }
 
             };
+
+            TEST(ssl_config_test, try_deprecated_api_when_new_api_is_used) {
+                config::ssl_config c;
+                c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
+                ASSERT_TRUE(c.is_enabled());
+                ASSERT_THROW(c.set_enabled(true), exception::illegal_argument);
+                ASSERT_THROW(c.set_enabled(false), exception::illegal_argument);
+                ASSERT_THROW(c.add_verify_file("dummy"), exception::illegal_argument);
+                ASSERT_THROW(c.set_protocol(config::sslv23), exception::illegal_argument);
+                ASSERT_NO_THROW(c.set_cipher_list("dummy_ciphers"));
+                ASSERT_EQ("dummy_ciphers", c.get_cipher_list());
+            }
+
+            TEST(ssl_config_test, try_new_api_when_deprecated_api_is_used) {
+                config::ssl_config c;
+                c.set_enabled(true);
+                ASSERT_THROW(c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23)),
+                             exception::illegal_argument);
+            }
 
             class ssl_deprecated_api_test : public ssl_test_base {
             protected:
@@ -873,25 +825,6 @@ namespace hazelcast {
                     return config;
                 }
             };
-
-            TEST_F(ssl_deprecated_api_test, try_deprecated_api_when_new_api_is_used) {
-                config::ssl_config c;
-                c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23));
-                ASSERT_TRUE(c.is_enabled());
-                ASSERT_THROW(c.set_enabled(true), exception::illegal_argument);
-                ASSERT_THROW(c.set_enabled(false), exception::illegal_argument);
-                ASSERT_THROW(c.add_verify_file("dummy"), exception::illegal_argument);
-                ASSERT_THROW(c.set_protocol(config::sslv23), exception::illegal_argument);
-                ASSERT_NO_THROW(c.set_cipher_list("dummy_ciphers"));
-                ASSERT_EQ("dummy_ciphers", c.get_cipher_list());
-            }
-
-            TEST_F(ssl_deprecated_api_test, try_new_api_when_deprecated_api_is_used) {
-                config::ssl_config c;
-                c.set_enabled(true);
-                ASSERT_THROW(c.set_context(boost::asio::ssl::context(boost::asio::ssl::context::sslv23)),
-                             exception::illegal_argument);
-            }
 
             TEST_F(ssl_deprecated_api_test, ssl_disabled) {
                 test_ssl_disabled();
@@ -950,7 +883,7 @@ namespace hazelcast {
             }
 
             TEST_F(ssl_test, connect_without_any_certificate_if_no_verify_none) {
-                HazelcastServerFactory f(g_srvFactory->get_server_address(), default_ca_xml);
+                HazelcastServerFactory f(default_ca_xml);
                 HazelcastServer instance(f);
                 auto config = new_client_config();
                 boost::asio::ssl::context ctx(boost::asio::ssl::context::tlsv12);
@@ -961,8 +894,7 @@ namespace hazelcast {
             class mutual_authentication_test : public ssl_test {
             protected:
                 static HazelcastServerFactory get_server_factory(bool required) {
-                    return HazelcastServerFactory(g_srvFactory->get_server_address(),
-                                                  std::string("hazelcast/test/resources/hazelcast-ma-") +
+                    return HazelcastServerFactory(std::string("hazelcast/test/resources/hazelcast-ma-") +
                                                   (required ? "required" : "optional") + ".xml");
                 }
 
@@ -1091,7 +1023,7 @@ namespace hazelcast {
 
 #endif // HZ_BUILD_WITH_SSL
 
-            class ClientConnectionTest : public ClientTestSupport {
+            class ClientConnectionTest : public ClientTest {
             protected:
 #ifdef HZ_BUILD_WITH_SSL
                 std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> get_ciphers(client_config config) {
@@ -1108,7 +1040,7 @@ namespace hazelcast {
             };
 
             TEST_F(ClientConnectionTest, testTcpSocketTimeoutToOutsideNetwork) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 client_config config;
                 config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
                         std::chrono::seconds(2)).set_initial_backoff_duration(std::chrono::milliseconds(100));
@@ -1119,7 +1051,7 @@ namespace hazelcast {
 
 #ifdef HZ_BUILD_WITH_SSL
             TEST_F(ClientConnectionTest, testSslSocketTimeoutToOutsideNetwork) {
-                HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
+                HazelcastServerFactory sslFactory(get_ssl_file_path());
                 HazelcastServer instance(sslFactory);
                 client_config config;
                 config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
@@ -1133,7 +1065,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientConnectionTest, testExcludedCipher) {
-                HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
+                HazelcastServerFactory sslFactory(get_ssl_file_path());
                 HazelcastServer instance(sslFactory);
 
                 client_config config = get_config(true);
@@ -1163,10 +1095,10 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClusterTest : public ClientTestSupportBase,
-                                public ::testing::TestWithParam<std::function<client_config()>> {
+            class ClusterTest : public ClientTest,
+                                public ::testing::WithParamInterface<std::function<client_config()>> {
             public:
-                ClusterTest() : ssl_factory_(g_srvFactory->get_server_address(), get_ssl_file_path()) {}
+                ClusterTest() : ssl_factory_(get_ssl_file_path()) {}
 
             protected:
                 lifecycle_listener make_all_states_listener(boost::latch &starting,
@@ -1202,7 +1134,7 @@ namespace hazelcast {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(ssl_factory_));
                     }
 #endif
-                    return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
+                    return std::unique_ptr<HazelcastServer>(new HazelcastServer(default_server_factory()));
                 }
 
             private:
@@ -1300,12 +1232,12 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
             INSTANTIATE_TEST_SUITE_P(All,
                                      ClusterTest,
-                                     ::testing::Values([](){ return ClientTestSupportBase::get_config(); },
-                                                       [](){ return ClientTestSupportBase::get_config(true); }));
+                                     ::testing::Values([](){ return ClientTest::get_config(); },
+                                                       [](){ return ClientTest::get_config(true); }));
 #else
             INSTANTIATE_TEST_SUITE_P(All, 
                                      ClusterTest, 
-                                     ::testing::Values([](){ return ClientTestSupportBase::get_config(); }));
+                                     ::testing::Values([](){ return ClientTest::get_config(); }));
 #endif
         }
     }
@@ -1314,8 +1246,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class HeartbeatTest : public ClientTestSupport {
-            };
+            class HeartbeatTest : public ClientTest
+            {};
 
             TEST_F(HeartbeatTest, testPing) {
                 HazelcastServerFactory f("hazelcast/test/resources/short-heartbeat.xml");
@@ -1340,8 +1272,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class SocketInterceptorTest : public ClientTestSupport {
-            };
+            class SocketInterceptorTest : public ClientTest
+            {};
 
             socket_interceptor make_socket_interceptor(boost::latch &l) {
                 return socket_interceptor()
@@ -1354,7 +1286,7 @@ namespace hazelcast {
 
 #ifdef HZ_BUILD_WITH_SSL
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
-                HazelcastServerFactory sslFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
+                HazelcastServerFactory sslFactory(get_ssl_file_path());
                 HazelcastServer instance(sslFactory);
                 client_config config = get_config(true);
                 boost::latch interceptorLatch(1);
@@ -1367,7 +1299,7 @@ namespace hazelcast {
 #endif
 
             TEST_F(SocketInterceptorTest, interceptBasic) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 client_config config = get_config();
                 boost::latch interceptorLatch(1);
                 auto interceptor = make_socket_interceptor(interceptorLatch);
@@ -1382,11 +1314,11 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class SocketOptionsTest : public ClientTestSupport {
-            };
+            class SocketOptionsTest : public ClientTest
+            {};
 
             TEST_F(SocketOptionsTest, testConfiguration) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
 
                 const int bufferSize = 2 * 1024;
                 client_config clientConfig;
@@ -1408,8 +1340,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientAuthenticationTest : public ClientTestSupport {
-            };
+            class ClientAuthenticationTest : public ClientTest
+            {};
 
             TEST_F(ClientAuthenticationTest, testUserPasswordCredentials) {
                 HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-username-password.xml");
@@ -1432,7 +1364,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientAuthenticationTest, testIncorrectGroupName) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 client_config config;
                 config.set_cluster_name("invalid cluster");
                 config.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
@@ -1447,11 +1379,11 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientEnpointTest : public ClientTestSupport {
-            };
+            class ClientEnpointTest : public ClientTest
+            {};
 
             TEST_F(ClientEnpointTest, testConnectedClientEnpoint) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
 
                 auto client = hazelcast::new_client().get();
                 ASSERT_EQ_EVENTUALLY(1, client.get_cluster().get_members().size());
@@ -1476,11 +1408,11 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class MemberAttributeTest : public ClientTestSupport
+            class MemberAttributeTest : public ClientTest
             {};
 
             TEST_F(MemberAttributeTest, testInitialValues) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 auto hazelcastClient = get_new_client();
                 cluster cluster = hazelcastClient.get_cluster();
                 std::vector<member> members = cluster.get_members();
@@ -1500,10 +1432,10 @@ namespace hazelcast {
         namespace test {
             namespace crdt {
                 namespace pncounter {
-                    class BasicPnCounterAPITest : public ClientTestSupport {
+                    class BasicPnCounterAPITest : public ClientTest {
                     public:
                         static void SetUpTestCase() {
-                            instance = new HazelcastServer(*g_srvFactory);
+                            instance = new HazelcastServer(default_server_factory());
                             client = new hazelcast_client{new_client(get_config()).get()};
                         }
 
@@ -1598,10 +1530,11 @@ namespace hazelcast {
                         pnCounter->reset().get();
                     }
 
-                    class PnCounterFunctionalityTest : public ClientTestSupport {
+                    class PnCounterFunctionalityTest : public ClientTest
+                    {
                     public:
                         static void SetUpTestCase() {
-                            instance = new HazelcastServer(*g_srvFactory);
+                            instance = new HazelcastServer(default_server_factory());
                             client = new hazelcast_client{new_client().get()};
                         }
 
@@ -1660,8 +1593,8 @@ namespace hazelcast {
                         ASSERT_EQ_EVENTUALLY(finalExpectedValue, counter2->get().get());
                     }
 
-                    class ClientPNCounterNoDataMemberTest : public ClientTestSupport {
-                    };
+                    class ClientPNCounterNoDataMemberTest : public ClientTest
+                    {};
 
                     TEST_F(ClientPNCounterNoDataMemberTest, noDataMemberExceptionIsThrown) {
                         HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-lite-member.xml");
@@ -1680,7 +1613,8 @@ namespace hazelcast {
                     /**
                      * Client implementation for testing behaviour of {@link consistency_lost}
                      */
-                    class ClientPNCounterConsistencyLostTest : public ClientTestSupport {
+                    class ClientPNCounterConsistencyLostTest : public ClientTest
+                    {
                     protected:
                         boost::shared_ptr<member> get_current_target_replica_address(
                                 const std::shared_ptr<pn_counter> &pn_counter) {
@@ -1759,8 +1693,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class SimpleListenerTest : public ClientTestSupportBase,
-                                       public ::testing::TestWithParam<std::function<client_config()>> {
+            class SimpleListenerTest : public ClientTest,
+                                       public ::testing::WithParamInterface<std::function<client_config()>> {
             public:
                 SimpleListenerTest() = default;
 
@@ -1793,7 +1727,7 @@ namespace hazelcast {
             };
 
             TEST_P(SimpleListenerTest, testSharedClusterListeners) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 auto hazelcastClient = hazelcast::new_client(GetParam()()).get();
                 cluster cluster = hazelcastClient.get_cluster();
                 boost::latch memberAdded(1);
@@ -1807,7 +1741,7 @@ namespace hazelcast {
                 auto initialListenerRegistrationId = cluster.add_membership_listener(std::move(init_listener));
                 auto sampleListenerRegistrationId = cluster.add_membership_listener(std::move(listener));
 
-                HazelcastServer instance2(*g_srvFactory);
+                HazelcastServer instance2(default_server_factory());
 
                 ASSERT_OPEN_EVENTUALLY(memberAdded);
                 ASSERT_OPEN_EVENTUALLY(memberAddedInit);
@@ -1824,7 +1758,7 @@ namespace hazelcast {
             }
 
             TEST_P(SimpleListenerTest, testClusterListeners) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 auto hazelcastClient = hazelcast::new_client(GetParam()()).get();
                 cluster cluster = hazelcastClient.get_cluster();
                 boost::latch memberAdded(1);
@@ -1838,7 +1772,7 @@ namespace hazelcast {
                 auto init_id = cluster.add_membership_listener(std::move(init_listener));
                 auto id = cluster.add_membership_listener(std::move(listener));
 
-                HazelcastServer instance2(*g_srvFactory);
+                HazelcastServer instance2(default_server_factory());
 
                 ASSERT_OPEN_EVENTUALLY(memberAdded);
                 ASSERT_OPEN_EVENTUALLY(memberAddedInit);
@@ -1866,10 +1800,10 @@ namespace hazelcast {
                 clientConfig.add_listener(std::move(init_listener));
                 clientConfig.add_listener(std::move(listener));
 
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 auto hazelcastClient = hazelcast::new_client(std::move(clientConfig)).get();
 
-                HazelcastServer instance2(*g_srvFactory);
+                HazelcastServer instance2(default_server_factory());
 
                 ASSERT_OPEN_EVENTUALLY(memberAdded);
                 ASSERT_OPEN_EVENTUALLY(memberAddedInit);
@@ -1883,7 +1817,7 @@ namespace hazelcast {
             }
 
             TEST_P(SimpleListenerTest, testDeregisterListener) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 client_config clientConfig = GetParam()();
                 auto hazelcastClient = hazelcast::new_client(std::move(clientConfig)).get();
 
@@ -1914,7 +1848,7 @@ namespace hazelcast {
             }
 
             TEST_P(SimpleListenerTest, testEmptyListener) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 auto hazelcastClient = hazelcast::new_client(GetParam()()).get();
 
                 auto map = hazelcastClient.get_map("testEmptyListener").get();
@@ -1942,8 +1876,8 @@ namespace hazelcast {
             INSTANTIATE_TEST_SUITE_P(All,
                                      SimpleListenerTest,
                                      ::testing::Values(
-                                             [](){ return ClientTestSupportBase::get_config(); },
-                                             [](){ return ClientTestSupportBase::get_config(false, false); }));
+                                             [](){ return ClientTest::get_config(); },
+                                             [](){ return ClientTest::get_config(false, false); }));
         }
     }
 }
@@ -1951,7 +1885,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class FlakeIdGeneratorApiTest : public ClientTestSupport {
+            class FlakeIdGeneratorApiTest : public ClientTest {
             protected:
                 virtual void SetUp() {
                     ASSERT_TRUE(client);
@@ -1959,7 +1893,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client_config clientConfig = get_config();
                     config::client_flake_id_generator_config flakeIdConfig("test*");
                     flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(std::chrono::seconds(20));
@@ -2025,7 +1959,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnMapTest : public ClientTestSupport {
+            class ClientTxnMapTest : public ClientTest {
             public:
                 ClientTxnMapTest();
 
@@ -2037,7 +1971,7 @@ namespace hazelcast {
                 hazelcast_client client_;
             };
 
-            ClientTxnMapTest::ClientTxnMapTest() : instance_(*g_srvFactory), client_(get_new_client()) {
+            ClientTxnMapTest::ClientTxnMapTest() : instance_(default_server_factory()), client_(get_new_client()) {
             }
 
             ClientTxnMapTest::~ClientTxnMapTest() = default;
@@ -2371,7 +2305,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnSetTest : public ClientTestSupport {
+            class ClientTxnSetTest : public ClientTest {
             public:
                 ClientTxnSetTest();
 
@@ -2382,7 +2316,7 @@ namespace hazelcast {
                 hazelcast_client client_;
             };
 
-            ClientTxnSetTest::ClientTxnSetTest() : instance_(*g_srvFactory), client_(get_new_client()) {
+            ClientTxnSetTest::ClientTxnSetTest() : instance_(default_server_factory()), client_(get_new_client()) {
             }
 
             ClientTxnSetTest::~ClientTxnSetTest() = default;
@@ -2411,7 +2345,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnTest : public ClientTestSupport {
+            class ClientTxnTest : public ClientTest {
             public:
                 ClientTxnTest();
 
@@ -2433,7 +2367,7 @@ namespace hazelcast {
             }
 
             ClientTxnTest::ClientTxnTest()
-                    : hazelcast_instance_factory_(*g_srvFactory) {
+                    : hazelcast_instance_factory_(default_server_factory()) {
                 server_.reset(new HazelcastServer(hazelcast_instance_factory_));
                 client_config clientConfig = get_config();
                 //always start the txn on first member
@@ -2618,7 +2552,7 @@ namespace hazelcast {
         class hazelcast_client;
 
         namespace test {
-            class ClientTxnListTest : public ClientTestSupport {
+            class ClientTxnListTest : public ClientTest {
             public:
                 ClientTxnListTest();
                 ~ClientTxnListTest() override;
@@ -2628,7 +2562,7 @@ namespace hazelcast {
                 hazelcast_client client_;
             };
 
-            ClientTxnListTest::ClientTxnListTest() : instance_(*g_srvFactory), client_(get_new_client()) {}
+            ClientTxnListTest::ClientTxnListTest() : instance_(default_server_factory()), client_(get_new_client()) {}
 
             ClientTxnListTest::~ClientTxnListTest() = default;
 
@@ -2656,7 +2590,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnMultiMapTest : public ClientTestSupport {
+            class ClientTxnMultiMapTest : public ClientTest {
             public:
                 ClientTxnMultiMapTest();
                 ~ClientTxnMultiMapTest() override;
@@ -2666,7 +2600,7 @@ namespace hazelcast {
             };
 
             ClientTxnMultiMapTest::ClientTxnMultiMapTest()
-                    : instance_(*g_srvFactory), client_(get_new_client()) {}
+                    : instance_(default_server_factory()), client_(get_new_client()) {}
 
             ClientTxnMultiMapTest::~ClientTxnMultiMapTest() = default;
 
@@ -2731,7 +2665,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientTxnQueueTest : public ClientTestSupport {
+            class ClientTxnQueueTest : public ClientTest {
             public:
                 ClientTxnQueueTest();
                 ~ClientTxnQueueTest() override;
@@ -2740,7 +2674,7 @@ namespace hazelcast {
                 hazelcast_client client_;
             };
 
-            ClientTxnQueueTest::ClientTxnQueueTest() : instance_(*g_srvFactory), client_(get_new_client()) {}
+            ClientTxnQueueTest::ClientTxnQueueTest() : instance_(default_server_factory()), client_(get_new_client()) {}
 
             ClientTxnQueueTest::~ClientTxnQueueTest() = default;
 

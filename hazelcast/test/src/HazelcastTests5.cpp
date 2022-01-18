@@ -54,13 +54,13 @@
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
-#include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
-#include "serialization/Serializables.h"
 #include "TestHelperFunctions.h"
-
+#include "serialization/Serializables.h"
+#include "CountDownLatchWaiter.h"
+#include "remote_controller_client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -71,7 +71,7 @@ namespace hazelcast {
     namespace client {
 
         namespace test {
-            class CallIdSequenceWithoutBackpressureTest : public ClientTestSupport {
+        class CallIdSequenceWithoutBackpressureTest : public ::testing::Test {
             protected:
                 spi::impl::sequence::CallIdSequenceWithoutBackpressure sequence_;
 
@@ -118,7 +118,7 @@ namespace hazelcast {
     namespace client {
 
         namespace test {
-            class CallIdSequenceWithBackpressureTest : public ClientTestSupport {
+        class CallIdSequenceWithBackpressureTest : public ::testing::Test {
             public:
                 CallIdSequenceWithBackpressureTest() = default;
 
@@ -138,7 +138,7 @@ namespace hazelcast {
                     virtual void run() {
                         sequence_.next();
                         next_called_latch_.count_down();
-                        sleep_seconds(3);
+                        std::this_thread::sleep_for(std::chrono::seconds(3));;
                         sequence_.complete();
                     }
 
@@ -233,17 +233,14 @@ namespace hazelcast {
     namespace client {
 
         namespace test {
-            class FailFastCallIdSequenceTest : public ClientTestSupport {
-            public:
-            };
 
-            TEST_F(FailFastCallIdSequenceTest, testGettersAndDefaults) {
+            TEST(FailFastCallIdSequenceTest, testGettersAndDefaults) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(100);
                 ASSERT_EQ(0, sequence.get_last_call_id());
                 ASSERT_EQ(100, sequence.get_max_concurrent_invocations());
             }
 
-            TEST_F(FailFastCallIdSequenceTest, whenNext_thenSequenceIncrements) {
+            TEST(FailFastCallIdSequenceTest, whenNext_thenSequenceIncrements) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(100);
                 int64_t oldSequence = sequence.get_last_call_id();
                 int64_t result = sequence.next();
@@ -251,7 +248,7 @@ namespace hazelcast {
                 ASSERT_EQ(oldSequence + 1, sequence.get_last_call_id());
             }
 
-            TEST_F(FailFastCallIdSequenceTest, next_whenNoCapacity_thenThrowException) {
+            TEST(FailFastCallIdSequenceTest, next_whenNoCapacity_thenThrowException) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(1);
 
                 // take the only slot available
@@ -261,7 +258,7 @@ namespace hazelcast {
                 ASSERT_THROW(sequence.next(), exception::hazelcast_overload);
             }
 
-            TEST_F(FailFastCallIdSequenceTest, when_overCapacityButPriorityItem_then_noException) {
+            TEST(FailFastCallIdSequenceTest, when_overCapacityButPriorityItem_then_noException) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(1);
 
 // take the only slot available
@@ -270,7 +267,7 @@ namespace hazelcast {
                 ASSERT_EQ(2, sequence.force_next());
             }
 
-            TEST_F(FailFastCallIdSequenceTest, whenComplete_thenTailIncrements) {
+            TEST(FailFastCallIdSequenceTest, whenComplete_thenTailIncrements) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(100);
                 sequence.next();
 
@@ -289,47 +286,37 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            extern HazelcastServerFactory *g_srvFactory;
-            extern std::shared_ptr<RemoteControllerClient> remoteController;
-
             HazelcastServerFactory::HazelcastServerFactory(const std::string &server_xml_config_file_path)
-                    : HazelcastServerFactory::HazelcastServerFactory(g_srvFactory->get_server_address(),
-                                                                     server_xml_config_file_path) {
-            }
-
-            HazelcastServerFactory::HazelcastServerFactory(const std::string &server_address,
-                                                           const std::string &server_xml_config_file_path)
-                    : logger_(std::make_shared<logger>("HazelcastServerFactory", "HazelcastServerFactory",
-                                                       logger::level::info, logger::default_handler)),
-                      server_address_(server_address) {
+              : logger_(std::make_shared<logger>("HazelcastServerFactory",
+                                                 "HazelcastServerFactory",
+                                                 logger::level::info,
+                                                 logger::default_handler))
+            {
                 std::string xmlConfig = read_from_xml_file(server_xml_config_file_path);
 
                 remote::Cluster cluster;
-                remoteController->createClusterKeepClusterName(cluster, HAZELCAST_VERSION, xmlConfig);
+                remote_controller_client().createClusterKeepClusterName(
+                  cluster, HAZELCAST_VERSION, xmlConfig);
 
                 this->cluster_id_ = cluster.id;
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                remoteController->shutdownCluster(cluster_id_);
+                remote_controller_client().shutdownCluster(cluster_id_);
             }
 
             remote::Member HazelcastServerFactory::start_server() {
                 remote::Member member;
-                remoteController->startMember(member, cluster_id_);
+                remote_controller_client().startMember(member, cluster_id_);
                 return member;
             }
 
             bool HazelcastServerFactory::shutdown_server(const remote::Member &member) {
-                return remoteController->shutdownMember(cluster_id_, member.uuid);
+                return remote_controller_client().shutdownMember(cluster_id_, member.uuid);
             }
 
             bool HazelcastServerFactory::terminate_server(const remote::Member &member) {
-                return remoteController->terminateMember(cluster_id_, member.uuid);
-            }
-
-            const std::string &HazelcastServerFactory::get_server_address() {
-                return server_address_;
+                return remote_controller_client().terminateMember(cluster_id_, member.uuid);
             }
 
             std::string HazelcastServerFactory::read_from_xml_file(const std::string &xml_file_path) {
@@ -353,7 +340,6 @@ namespace hazelcast {
             const std::string &HazelcastServerFactory::get_cluster_id() const {
                 return cluster_id_;
             }
-
         }
     }
 }
@@ -361,7 +347,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class MapGlobalSerializerTest : public ClientTestSupport {
+            class MapGlobalSerializerTest : public ClientTest {
             public:
                 class UnknownObject {
                 public:
@@ -389,7 +375,7 @@ namespace hazelcast {
             protected:
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client_config clientConfig = get_config();
                     clientConfig.get_serialization_config().set_global_serializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
@@ -431,7 +417,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientExpirationListenerTest : public ClientTestSupport {
+            class ClientExpirationListenerTest : public ClientTest {
             protected:
                 void TearDown() override {
                     // clear maps
@@ -439,8 +425,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     int_map = client->get_map("IntMap").get();
                 }
@@ -502,10 +488,10 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientListenerFunctionObjectsTest : public ClientTestSupport {
+            class ClientListenerFunctionObjectsTest : public ClientTest {
             public:
                 static void SetUpTestSuite() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client_config clientConfig(get_config());
                     clientConfig.set_property(client_properties::PROP_HEARTBEAT_TIMEOUT, "20");
                     client = new hazelcast_client{new_client(std::move(clientConfig)).get()};
@@ -652,8 +638,9 @@ namespace hazelcast {
                 int actual_key_;
             };
 
-            class ClientMapTest : public ClientTestSupport,
-                                  public ::testing::WithParamInterface<std::function<client_config()>> {
+            class ClientMapTest
+              : public ClientTest
+              , public ::testing::WithParamInterface<std::function<client_config()>> {
             public:
                 static constexpr const char *intMapName = "IntMap";
                 static constexpr const char *employeesMapName = "EmployeesMap";
@@ -662,7 +649,7 @@ namespace hazelcast {
 
                 static client_config create_map_client_config() {
                     client_config config;
-                    config.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
+                    config.get_network_config().add_address(address(remote_controller_address(), 5701));
                     return config;
                 }
 
@@ -695,8 +682,8 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {

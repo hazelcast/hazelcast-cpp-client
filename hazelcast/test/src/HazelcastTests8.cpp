@@ -62,12 +62,13 @@
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
-#include "ClientTestSupport.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
-#include "serialization/Serializables.h"
 #include "TestHelperFunctions.h"
-
+#include "serialization/Serializables.h"
+#include "CountDownLatchWaiter.h"
+#include "remote_controller_client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -78,11 +79,12 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class BasicClientNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
+                : public ClientTest
+                , public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestSuite() {
@@ -117,7 +119,8 @@ namespace hazelcast {
                 /**
                  * Provides utility methods for unified Near Cache tests.
                  */
-                class NearCacheTestUtils : public ClientTestSupport {
+                class NearCacheTestUtils : public ClientTest
+                {
                 public:
                     /**
                      * Creates a {@link NearCacheConfig} with a given {@link InMemoryFormat}.
@@ -611,7 +614,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMapNearCacheTest : public ClientTestSupport {
+            class ClientMapNearCacheTest : public ClientTest {
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.
@@ -619,8 +622,8 @@ namespace hazelcast {
                 static constexpr const char *DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
+                    instance2 = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {
@@ -752,7 +755,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class ClientSetTest : public ClientTestSupport {
+            class ClientSetTest : public ClientTest {
             protected:
                 void add_items(int count) {
                     for (int i = 1; i <= count; ++i) {
@@ -765,7 +768,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                     set = client->get_set("MySet").get();
                 }
@@ -901,7 +904,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ReliableTopicTest : public ClientTestSupport {
+            class ReliableTopicTest : public ClientTest {
             protected:
                 struct ListenerState {
                     explicit ListenerState(int latch_count, int64_t start_sequence = -1)
@@ -928,7 +931,7 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client{new_client(get_config()).get()};
                 }
 
@@ -1043,7 +1046,7 @@ namespace hazelcast {
 
             TEST_F(ReliableTopicTest, testConfig) {
                 client_config clientConfig;
-                clientConfig.get_network_config().add_address(address(g_srvFactory->get_server_address(), 5701));
+                clientConfig.get_network_config().add_address(address(remote_controller_address(), 5701));
                 config::reliable_topic_config relConfig("testConfig");
                 relConfig.set_read_batch_size(2);
                 clientConfig.add_reliable_topic_config(relConfig);
@@ -1137,7 +1140,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace performance {
-                class SimpleMapTest : public ClientTestSupport {
+                class SimpleMapTest : public ClientTest {
                 protected:
                     static const int THREAD_COUNT = 40;
                     static const int ENTRY_COUNT = 10000;
@@ -1314,7 +1317,7 @@ namespace hazelcast {
                 };
 
                 TEST_F(SimpleMapTest, DISABLED_testThroughput) {
-                    HazelcastServer server(*g_srvFactory);
+                    HazelcastServer server(default_server_factory());
 
                     start(server);
                 }
@@ -1327,7 +1330,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class IssueTest : public ClientTestSupport {
+            class IssueTest : public ClientTest {
             public:
                 IssueTest();
             protected:
@@ -1360,8 +1363,8 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled) {
-                HazelcastServer hz1(*g_srvFactory);
-                HazelcastServer hz2(*g_srvFactory);
+                HazelcastServer hz1(default_server_factory());
+                HazelcastServer hz2(default_server_factory());
 
                 client_config clientConfig(get_config());
                 clientConfig.set_redo_operation(true);
@@ -1385,7 +1388,7 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart) {
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 // Start a client
                 client_config clientConfig = get_config();
@@ -1407,7 +1410,7 @@ namespace hazelcast {
 
                 // Restart the server
                 ASSERT_TRUE(server.shutdown());
-                HazelcastServer server2(*g_srvFactory);
+                HazelcastServer server2(default_server_factory());
 
                 // Put a 2nd entry to the map
                 auto result = map->put(2, 20);
@@ -1424,7 +1427,7 @@ namespace hazelcast {
 
             TEST_F(IssueTest, testIssue221) {
                 // start a server
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 // start a client
                 auto config = get_config();
@@ -1441,7 +1444,7 @@ namespace hazelcast {
 
             TEST_F(IssueTest, issue_888) {
                 // start a server
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 auto hz = hazelcast::new_client().get();
                 auto map = hz.get_map("testmap").get();
@@ -1461,7 +1464,7 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, invocation_should_not_block_indefinitely_during_client_shutdown) {
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
                 auto hz = new_client().get();
                 auto map = hz.get_map("my_map").get();
 
@@ -1490,7 +1493,7 @@ namespace hazelcast {
             }
 
             TEST_F(IssueTest, testIssue753) {
-                HazelcastServer server(*g_srvFactory);
+                HazelcastServer server(default_server_factory());
 
                 auto hz = new_client().get();
 
@@ -1611,62 +1614,47 @@ namespace hazelcast {
 }
 
 namespace hazelcast {
-    namespace client {
-        namespace test {
-            ClientTestSupport::ClientTestSupport() {
-                logger_ = std::make_shared<logger>("Test", get_test_name(), logger::level::info, logger::default_handler);
-            }
+namespace client {
+namespace test {
 
-            logger &ClientTestSupport::get_logger() {
-                return *logger_;
-            }
+CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {
+    latches_.push_back(&latch1);
+    return *this;
+}
 
-            std::string ClientTestSupport::get_test_name() {
-                const auto *info = testing::UnitTest::GetInstance()->current_test_info();
-                std::ostringstream out;
-                out << info->test_case_name() << "_" << info->name();
-                return out.str();
-            }
+boost::cv_status CountDownLatchWaiter::wait_for(boost::chrono::steady_clock::duration duration) {
+    if (latches_.empty()) {
+        return boost::cv_status::no_timeout;
+    }
 
-            CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {
-                latches_.push_back(&latch1);
-                return *this;
-            }
-
-            boost::cv_status CountDownLatchWaiter::wait_for(boost::chrono::steady_clock::duration duration) {
-                if (latches_.empty()) {
-                    return boost::cv_status::no_timeout;
-                }
-
-                auto end = boost::chrono::steady_clock::now() + duration;
-                for (auto &l : latches_) {
-                    auto waitDuration = end - boost::chrono::steady_clock::now();
-                    auto status = l->wait_for(waitDuration);
-                    if (boost::cv_status::timeout == status) {
-                        return boost::cv_status::timeout;
-                    }
-                }
-                return boost::cv_status::no_timeout;
-            }
-
-            void CountDownLatchWaiter::reset() {
-                latches_.clear();
-            }
-
+    auto end = boost::chrono::steady_clock::now() + duration;
+    for (auto &l : latches_) {
+        auto waitDuration = end - boost::chrono::steady_clock::now();
+        auto status = l->wait_for(waitDuration);
+        if (boost::cv_status::timeout == status) {
+            return boost::cv_status::timeout;
         }
     }
+    return boost::cv_status::no_timeout;
+}
+
+void CountDownLatchWaiter::reset() {
+    latches_.clear();
+}
+
+}
+}
 }
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class VersionTest: public ClientTestSupport {};
-            TEST_F(VersionTest, test_client_version) {
+
+            TEST(VersionTest, test_client_version) {
                 ASSERT_EQ(HAZELCAST_VERSION, version());
             }
 
-            class ClientMessageTest: public ClientTestSupport {
-            protected:
+            namespace {
                 struct BufferedMessageHandler {
                     std::shared_ptr<protocol::ClientMessage> msg;
 
@@ -1674,21 +1662,21 @@ namespace hazelcast {
                         msg = message;
                     }
                 };
-            };
+            }
 
-            TEST_F(ClientMessageTest, testOperationNameGetSet) {
+            TEST(ClientMessageTest, testOperationNameGetSet) {
                 protocol::ClientMessage message(8);
                 constexpr const char* operation_name = "OPERATION_NAME";
                 message.set_operation_name(operation_name);
                 ASSERT_EQ(message.get_operation_name(), operation_name);
             }
 
-            TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
+            TEST(ClientMessageTest, testOperationNameAfterRequestEncoding) {
                 auto request = protocol::codec::map_size_encode("map_name");
                 ASSERT_EQ(request.get_operation_name(), "map.size");
             }
 
-            TEST_F(ClientMessageTest, testFragmentedMessageHandling) {
+            TEST(ClientMessageTest, testFragmentedMessageHandling) {
                 std::ifstream file ("hazelcast/test/resources/fragments_bytes.bin", std::ios::in|std::ios::binary|std::ios::ate);
                 ASSERT_TRUE(file.is_open());
                 auto size = file.tellg();
@@ -1765,7 +1753,8 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(join);
             }
 
-            class connection_manager_translate : public ClientTestSupport {
+            class connection_manager_translate : public ClientTest
+            {
             public:
                 static const address private_address;
                 static const address public_address;
@@ -1788,7 +1777,7 @@ namespace hazelcast {
                 static HazelcastServer *instance_;
 
                 static void SetUpTestCase() {
-                    instance_ = new HazelcastServer(*g_srvFactory);
+                    instance_ = new HazelcastServer(default_server_factory());
                 }
 
                 static void TearDownTestCase() {

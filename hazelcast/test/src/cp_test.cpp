@@ -19,18 +19,18 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-#include "ClientTestSupport.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "IdentifiedSerializables.h"
+#include "TestHelperFunctions.h"
+#include "remote_controller_client.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            extern std::shared_ptr<RemoteControllerClient> remoteController;
-
             namespace cp {
                 template<typename T>
-                class cp_test : public ClientTestSupport {
+                class cp_test : public ClientTest {
                 protected:
                     virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
 
@@ -719,11 +719,12 @@ namespace hazelcast {
                            << "\").isLocked() ? \"1\" : \"0\";";
                     Response response;
 
-                    ASSERT_TRUE_EVENTUALLY((remoteController->executeOnController(response, factory->get_cluster_id(),
-                                                                                  script.str().c_str(),
-                                                                                  Lang::JAVASCRIPT), response.success &&
-                                                                                                     response.result ==
-                                                                                                     "0"));
+                    ASSERT_TRUE_EVENTUALLY(
+                      (remote_controller_client().executeOnController(response,
+                                                                      factory->get_cluster_id(),
+                                                                      script.str().c_str(),
+                                                                      Lang::JAVASCRIPT),
+                       response.success && response.result == "0"));
                 }
 
                 class basic_sessionless_semaphore_test : public cp_test<hazelcast::cp::counting_semaphore> {

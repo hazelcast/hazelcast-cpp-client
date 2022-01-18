@@ -56,13 +56,12 @@
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
 
-#include "ClientTestSupport.h"
-#include "ClientTestSupportBase.h"
+#include "ClientTest.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
-#include "serialization/Serializables.h"
 #include "TestHelperFunctions.h"
-
+#include "serialization/Serializables.h"
+#include "remote_controller_client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -72,8 +71,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class AddressHelperTest : public ClientTestSupport {
-            };
+            class AddressHelperTest : public ClientTest
+            {};
 
             TEST_F(AddressHelperTest, testGetPossibleSocketAddresses) {
                 std::string addr("10.2.3.1");
@@ -139,15 +138,12 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientUtilTest : public ClientTestSupport {
-            protected:
-            };
 
-            TEST_F (ClientUtilTest, testAvailableCoreCount) {
+            TEST(ClientUtilTest, testAvailableCoreCount) {
                 ASSERT_GT(hazelcast::util::get_available_core_count(), 0);
             }
 
-            TEST_F (ClientUtilTest, testStringUtilTimeToString) {
+            TEST(ClientUtilTest, testStringUtilTimeToString) {
                 std::string timeString = hazelcast::util::StringUtil::time_to_string(
                         std::chrono::steady_clock::now());
                 //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
@@ -158,11 +154,11 @@ namespace hazelcast {
                 ASSERT_EQ(timeString[7], '-');
             }
 
-            TEST_F (ClientUtilTest, testStringUtilTimeToStringFriendly) {
+            TEST(ClientUtilTest, testStringUtilTimeToStringFriendly) {
                 ASSERT_EQ("never", hazelcast::util::StringUtil::time_to_string(std::chrono::steady_clock::time_point()));
             }
 
-            TEST_F (ClientUtilTest, testLockSupport) {
+            TEST(ClientUtilTest, testLockSupport) {
                 int64_t parkDurationNanos = 100;
                 int64_t start = hazelcast::util::current_time_nanos();
                 hazelcast::util::concurrent::locks::LockSupport::park_nanos(parkDurationNanos);
@@ -171,7 +167,7 @@ namespace hazelcast {
                 ASSERT_GE(actualDuration, parkDurationNanos);
             }
 
-            TEST_F (ClientUtilTest, print_older_steady_clock_time) {
+            TEST(ClientUtilTest, print_older_steady_clock_time) {
                 auto now = std::chrono::steady_clock::now();
                 auto time_str = hazelcast::util::StringUtil::time_to_string(now);
                 ASSERT_EQ(std::string::npos, time_str.substr(time_str.find_last_of('.')).find('-'));
@@ -188,7 +184,7 @@ namespace hazelcast {
         class hazelcast_client;
 
         namespace test {
-            class ClientConfigTest : public ClientTestSupport
+            class ClientConfigTest : public ClientTest
             {};
             
             TEST_F(ClientConfigTest, testGetAddresses) {
@@ -270,41 +266,38 @@ namespace hazelcast {
             }
 
             TEST_F(ClientConfigTest, test_set_instance_name) {
-                HazelcastServer instance(*g_srvFactory);
+                HazelcastServer instance(default_server_factory());
                 auto test_name = get_test_name();
                 hazelcast_client client(new_client(std::move(client_config().set_instance_name(test_name))).get());
                 ASSERT_EQ(test_name, client.get_name());
             }
 
-            class connection_retry_config_test : public ClientTestSupport
-            {};
-
-            TEST_F(connection_retry_config_test, large_jitter) {
+            TEST(connection_retry_config_test, large_jitter) {
                 ASSERT_THROW(client_config().get_connection_strategy_config().get_retry_config().set_jitter(1.01), exception::illegal_argument);
             }
 
-            TEST_F(connection_retry_config_test, max_backoff_duration_boundaries) {
+            TEST(connection_retry_config_test, max_backoff_duration_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_max_backoff_duration(std::chrono::milliseconds(-1)), exception::illegal_argument);
                 ASSERT_NO_THROW(retry_config.set_max_backoff_duration(std::chrono::milliseconds(0)));
                 ASSERT_NO_THROW(retry_config.set_max_backoff_duration(std::chrono::seconds(100)));
             }
 
-            TEST_F(connection_retry_config_test, initial_backoff_duration_boundaries) {
+            TEST(connection_retry_config_test, initial_backoff_duration_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_initial_backoff_duration(std::chrono::milliseconds(-1)), exception::illegal_argument);
                 ASSERT_NO_THROW(retry_config.set_initial_backoff_duration(std::chrono::milliseconds(0)));
                 ASSERT_NO_THROW(retry_config.set_initial_backoff_duration(std::chrono::seconds(100)));
             }
 
-            TEST_F(connection_retry_config_test, cluster_connect_timeout_boundaries) {
+            TEST(connection_retry_config_test, cluster_connect_timeout_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_cluster_connect_timeout(std::chrono::milliseconds(-1)), exception::illegal_argument);
                 ASSERT_NO_THROW(retry_config.set_cluster_connect_timeout(std::chrono::milliseconds(0)));
                 ASSERT_NO_THROW(retry_config.set_cluster_connect_timeout(std::chrono::seconds(100)));
             }
 
-            TEST_F(connection_retry_config_test, multiplier_boundaries) {
+            TEST(connection_retry_config_test, multiplier_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_multiplier(0.99), exception::illegal_argument);
                 ASSERT_THROW(retry_config.set_multiplier(-1), exception::illegal_argument);
@@ -312,7 +305,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(retry_config.set_multiplier(2));
             }
 
-            TEST_F(connection_retry_config_test, jitter_boundaries) {
+            TEST(connection_retry_config_test, jitter_boundaries) {
                 auto retry_config = client_config().get_connection_strategy_config().get_retry_config();
                 ASSERT_THROW(retry_config.set_jitter(1.01), exception::illegal_argument);
                 ASSERT_THROW(retry_config.set_jitter(-0.01), exception::illegal_argument);
@@ -329,7 +322,7 @@ namespace hazelcast {
         namespace test {
             namespace connectionstrategy {
 
-                class ConfiguredBehaviourTest : public ClientTestSupport {
+                class ConfiguredBehaviourTest : public ClientTest {
                 public:
                     ConfiguredBehaviourTest() {
                         client_config_.get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
@@ -380,7 +373,7 @@ namespace hazelcast {
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
-                    HazelcastServer server(*g_srvFactory);
+                    HazelcastServer server(default_server_factory());
 
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -391,7 +384,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFSingleMember) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
@@ -417,8 +410,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFTwoMembers) {
-                    HazelcastServer server1(*g_srvFactory);
-                    HazelcastServer server2(*g_srvFactory);
+                    HazelcastServer server1(default_server_factory());
+                    HazelcastServer server2(default_server_factory());
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
@@ -445,7 +438,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberInitiallyOffline) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::client_connection_strategy_config::OFF);
@@ -471,7 +464,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMember) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     boost::latch connectedLatch(1);
 
@@ -494,7 +487,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberStartLate) {
-                    HazelcastServer hazelcastInstance(*g_srvFactory);
+                    HazelcastServer hazelcastInstance(default_server_factory());
 
                     boost::latch initialConnectionLatch(1);
                     boost::latch reconnectedLatch(1);
@@ -522,7 +515,7 @@ namespace hazelcast {
                             })
                     );
 
-                    HazelcastServer hazelcastInstance2(*g_srvFactory);
+                    HazelcastServer hazelcastInstance2(default_server_factory());
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
@@ -534,8 +527,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers) {
-                    HazelcastServer server1(*g_srvFactory);
-                    HazelcastServer server2(*g_srvFactory);
+                    HazelcastServer server1(default_server_factory());
+                    HazelcastServer server2(default_server_factory());
 
                     boost::latch connectedLatch(1), disconnectedLatch(1), reconnectedLatch(1);
 
@@ -573,7 +566,7 @@ namespace hazelcast {
 
                     ASSERT_OPEN_EVENTUALLY(disconnectedLatch);
 
-                    HazelcastServer server3(*g_srvFactory);
+                    HazelcastServer server3(default_server_factory());
 
                     ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
 
@@ -589,10 +582,10 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PipeliningTest : public ClientTestSupport {
+            class PipeliningTest : public ClientTest {
             public:
                 static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
+                    instance = new HazelcastServer(default_server_factory());
                     client = new hazelcast_client(new_client().get());
 
                     map = client->get_map(MAP_NAME).get();
@@ -770,7 +763,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PartitionAwareTest : public ClientTestSupport {
+            class PartitionAwareTest : public ClientTest {
             public:
                 class SimplePartitionAwareObject : public partition_aware<int> {
                 public:
@@ -836,7 +829,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class JsonValueSerializationTest : public ClientTestSupport {
+            class JsonValueSerializationTest : public ::testing::Test {
             public:
                 JsonValueSerializationTest() : serialization_service_(config_) {}
 
@@ -1483,10 +1476,9 @@ namespace hazelcast {
                 ASSERT_EQ(obj, deserializedValue.value());
             }
 
-            extern std::shared_ptr<RemoteControllerClient> remoteController;
-
-            class serialization_with_server : public ClientTestSupport, 
-                    public ::testing::WithParamInterface<boost::endian::order> {
+            class serialization_with_server
+              : public ClientTest
+              , public ::testing::WithParamInterface<boost::endian::order> {
             protected:
                 static void SetUpTestCase() {
                     little_endian_server_factory_ = new HazelcastServerFactory(
@@ -1500,7 +1492,7 @@ namespace hazelcast {
                 void SetUp() override {
                     server_.reset(new HazelcastServer(
                             *(boost::endian::order::little == GetParam() ? little_endian_server_factory_
-                                                                         : g_srvFactory)));
+                                                                         : &default_server_factory())));
 
                     auto config = get_config();
                     config.set_cluster_name(
@@ -1525,9 +1517,10 @@ namespace hazelcast {
                                          "result = \"\"+foo();";
 
                     Response response;
-                    HazelcastServerFactory *factory =
-                            boost::endian::order::little == GetParam() ? little_endian_server_factory_ : g_srvFactory;
-                    remoteController->executeOnController(response, factory->get_cluster_id(), script, Lang::JAVASCRIPT);
+                    HazelcastServerFactory* factory =
+                            boost::endian::order::little == GetParam() ? little_endian_server_factory_ : &default_server_factory();
+                    remote_controller_client().executeOnController(
+                      response, factory->get_cluster_id(), script, Lang::JAVASCRIPT);
                     return response;
                 }
 
@@ -1537,7 +1530,8 @@ namespace hazelcast {
                     ) %object).str();
 
                     Response response;
-                    remoteController->executeOnController(response, server_->cluster_id(), script, Lang::JAVASCRIPT);
+                    remote_controller_client().executeOnController(
+                      response, server_->cluster_id(), script, Lang::JAVASCRIPT);
                     return response.success;
                 }
 
@@ -1780,7 +1774,8 @@ namespace hazelcast {
             namespace internal {
                 namespace nearcache {
                     class NearCacheRecordStoreTest
-                            : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
+                            : public ClientTest
+                  , public ::testing::WithParamInterface<config::in_memory_format> {
                     public:
                         NearCacheRecordStoreTest() {
                             ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
