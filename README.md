@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/hazelcast/hazelcast-cpp-client/branch/master/graph/badge.svg)](https://codecov.io/gh/hazelcast/hazelcast-cpp-client)
+
 # Async Hazelcast C++ Client
 
 Hazelcast is an open-source distributed in-memory data store and computation platform. It provides a wide variety of distributed data structures and concurrency primitives.
