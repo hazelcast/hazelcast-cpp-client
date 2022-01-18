@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Install Dependencies
         run: |
-          brew install boost openssl thrift
+          brew install boost openssl@1.1 thrift
 
       - uses: actions/checkout@v2
 
