@@ -332,10 +332,6 @@ namespace hazelcast {
             std::this_thread::sleep_for(std::chrono::seconds(seconds));
         }
 
-        void sleepmillis(uint64_t milliseconds) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
-        }
-
         int localtime(const time_t *clock, struct tm *result) {
             int returnCode = -1;
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

@@ -35,8 +35,6 @@ namespace hazelcast {
 
         HAZELCAST_API void sleep(int seconds);
 
-        HAZELCAST_API void sleepmillis(uint64_t milliseconds);
-
         /**
          * Fills the result with localtime if succesful
          * @return 0 on success, non-zero on error
