@@ -35,8 +35,6 @@ namespace hazelcast {
 
         HAZELCAST_API void sleep(int seconds);
 
-        HAZELCAST_API void sleepmillis(uint64_t milliseconds);
-
         /**
          * Fills the result with localtime if succesful
          * @return 0 on success, non-zero on error
@@ -64,12 +62,6 @@ namespace hazelcast {
          */
         HAZELCAST_API int64_t current_time_nanos();
 
-        /**
-         * @return 0 if error string could be obtained, non-zero otherwise
-         */
-        HAZELCAST_API int
-        strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msg_prefix = (const char *) NULL);
-
         int32_t HAZELCAST_API get_available_core_count();
 
         template <typename T>
@@ -87,19 +79,6 @@ namespace hazelcast {
              * @return the the formatted time string. Format is "%Y-%m-%d %H:%M:%S.%f".
              */
             static std::string time_to_string(std::chrono::steady_clock::time_point t);
-
-            /**
-             * Tokenizes a version string and returns the tokens with the following grouping:
-             * (1) major version, eg "3"
-             * (2) minor version, eg "8"
-             * (3) patch version prefixed with ".", if exists, otherwise {@code null} (eg ".0")
-             * (4) patch version, eg "0"
-             * (5) 1st -qualifier, if exists
-             * (6) -SNAPSHOT qualifier, if exists
-             * @param version
-             * @return
-             */
-            static std::vector<std::string> tokenize_version_string(const std::string &version);
         };
 
         class HAZELCAST_API Int64Util {
