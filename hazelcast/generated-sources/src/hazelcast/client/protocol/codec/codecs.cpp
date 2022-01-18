@@ -24,14 +24,8 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                ClientMessage client_authentication_encode(const std::string &cluster_name, const std::string *username,
-                                                           const std::string *password, boost::uuids::uuid uuid,
-                                                           const std::string &client_type, byte serialization_version,
-                                                           const std::string &client_hazelcast_version,
-                                                           const std::string &client_name,
-                                                           const std::vector<std::string> &labels) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UINT8_SIZE;
+                ClientMessage client_authentication_encode(const std::string &cluster_name, const std::string *username, const std::string *password, boost::uuids::uuid uuid, const std::string &client_type, byte serialization_version, const std::string &client_hazelcast_version, const std::string &client_name, const std::vector<std::string> &labels) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("client.authentication");
@@ -58,16 +52,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage client_authenticationcustom_encode(const std::string &cluster_name,
-                                                                 const std::vector<byte> &credentials,
-                                                                 boost::uuids::uuid uuid,
-                                                                 const std::string &client_type,
-                                                                 byte serialization_version,
-                                                                 const std::string &client_hazelcast_version,
-                                                                 const std::string &client_name,
-                                                                 const std::vector<std::string> &labels) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UINT8_SIZE;
+                ClientMessage client_authenticationcustom_encode(const std::string &cluster_name, const std::vector<byte> &credentials, boost::uuids::uuid uuid, const std::string &client_type, byte serialization_version, const std::string &client_hazelcast_version, const std::string &client_name, const std::vector<std::string> &labels) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("client.authenticationcustom");
@@ -93,7 +79,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage client_addclusterviewlistener_encode() {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(false);
                     msg.set_operation_name("client.addclusterviewlistener");
@@ -111,14 +97,13 @@ namespace hazelcast {
                         auto version = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
-                        auto memberInfos = msg.get<std::vector<member>>();
+                        auto member_infos = msg.get<std::vector<member>>();
 
-                        handle_membersview(version, memberInfos);
+                        handle_membersview(version, member_infos);
                         return;
                     }
                     if (messageType == 771) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
                         auto version = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
@@ -164,7 +149,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage client_ping_encode() {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(true);
                     msg.set_operation_name("client.ping");
@@ -175,8 +160,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage client_statistics_encode(int64_t timestamp, const std::string &client_attributes,
-                                                       const std::vector<byte> &metrics_blob) {
+                ClientMessage client_statistics_encode(int64_t timestamp, const std::string &client_attributes, const std::vector<byte> &metrics_blob) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -194,7 +178,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage client_localbackuplistener_encode() {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(false);
                     msg.set_operation_name("client.localbackuplistener");
@@ -208,12 +192,11 @@ namespace hazelcast {
                 void client_localbackuplistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 3842) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto sourceInvocationCorrelationId = msg.get<int64_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto source_invocation_correlation_id = msg.get<int64_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
-                        handle_backup(sourceInvocationCorrelationId);
+                        handle_backup(source_invocation_correlation_id);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -221,23 +204,8 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage client_removemigrationlistener_encode(boost::uuids::uuid registration_id) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE;
-                    ClientMessage msg(initial_frame_size, true);
-                    msg.set_retryable(true);
-                    msg.set_operation_name("client.removemigrationlistener");
-
-                    msg.set_message_type(static_cast<int32_t>(4608));
-                    msg.set_partition_id(-1);
-
-                    msg.set(registration_id);
-                    return msg;
-                }
-
-                ClientMessage map_put_encode(const std::string &name, const serialization::pimpl::data &key,
-                                             const serialization::pimpl::data &value, int64_t thread_id, int64_t ttl) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_put_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id, int64_t ttl) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.put");
@@ -256,8 +224,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_get_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
+                ClientMessage map_get_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -274,8 +241,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_remove_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
+                ClientMessage map_remove_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -292,8 +258,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_replace_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                 const serialization::pimpl::data &value, int64_t thread_id) {
+                ClientMessage map_replace_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -312,9 +277,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_replaceifsame_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                       const serialization::pimpl::data &test_value,
-                                                       const serialization::pimpl::data &value, int64_t thread_id) {
+                ClientMessage map_replaceifsame_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &test_value, const serialization::pimpl::data &value, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -335,8 +298,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_containskey_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                     int64_t thread_id) {
+                ClientMessage map_containskey_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -353,8 +315,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_containsvalue_encode(const std::string &name, const serialization::pimpl::data &value) {
+                ClientMessage map_containsvalue_encode(const std::string &name, const serialization::pimpl::data &value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -370,8 +331,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_removeifsame_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                      const serialization::pimpl::data &value, int64_t thread_id) {
+                ClientMessage map_removeifsame_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -390,8 +350,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_delete_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
+                ClientMessage map_delete_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -408,8 +367,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_flush_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_flush_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.flush");
@@ -422,11 +381,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_tryremove_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id,
-                                     int64_t timeout) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_tryremove_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id, int64_t timeout) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.tryremove");
@@ -443,11 +399,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_tryput_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                const serialization::pimpl::data &value, int64_t thread_id,
-                                                int64_t timeout) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_tryput_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id, int64_t timeout) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.tryput");
@@ -466,11 +419,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_puttransient_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                      const serialization::pimpl::data &value, int64_t thread_id,
-                                                      int64_t ttl) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_puttransient_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id, int64_t ttl) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.puttransient");
@@ -489,11 +439,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_putifabsent_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                     const serialization::pimpl::data &value, int64_t thread_id,
-                                                     int64_t ttl) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_putifabsent_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id, int64_t ttl) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.putifabsent");
@@ -512,10 +459,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_set_encode(const std::string &name, const serialization::pimpl::data &key,
-                                             const serialization::pimpl::data &value, int64_t thread_id, int64_t ttl) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_set_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id, int64_t ttl) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.set");
@@ -534,12 +479,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_lock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id,
-                                int64_t ttl, int64_t reference_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::INT64_SIZE;
+                ClientMessage map_lock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id, int64_t ttl, int64_t reference_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.lock");
@@ -557,12 +498,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_trylock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id,
-                                   int64_t lease, int64_t timeout, int64_t reference_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_trylock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id, int64_t lease, int64_t timeout, int64_t reference_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.trylock");
@@ -597,11 +534,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_unlock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id,
-                                  int64_t reference_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage map_unlock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id, int64_t reference_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.unlock");
@@ -618,8 +552,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_addinterceptor_encode(const std::string &name, const serialization::pimpl::data &interceptor) {
+                ClientMessage map_addinterceptor_encode(const std::string &name, const serialization::pimpl::data &interceptor) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -635,8 +568,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_removeinterceptor_encode(const std::string  & name, const std::string  & id) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_removeinterceptor_encode(const std::string &name, const std::string &id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.removeinterceptor");
@@ -651,13 +584,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_addentrylistenerwithpredicate_encode(const std::string &name,
-                                                                       const serialization::pimpl::data &predicate,
-                                                                       bool include_value, int32_t listener_flags,
-                                                                       bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::INT32_SIZE +
-                            ClientMessage::UINT8_SIZE;
+                ClientMessage map_addentrylistenerwithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate, bool include_value, int32_t listener_flags, bool local_only) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.addentrylistenerwithpredicate");
@@ -678,18 +606,17 @@ namespace hazelcast {
                 void map_addentrylistenerwithpredicate_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 71426) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -697,12 +624,8 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage
-                map_addentrylistenertokey_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                 bool include_value, int32_t listener_flags, bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::INT32_SIZE +
-                            ClientMessage::UINT8_SIZE;
+                ClientMessage map_addentrylistenertokey_encode(const std::string &name, const serialization::pimpl::data &key, bool include_value, int32_t listener_flags, bool local_only) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.addentrylistenertokey");
@@ -723,18 +646,17 @@ namespace hazelcast {
                 void map_addentrylistenertokey_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 71682) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -742,12 +664,8 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage
-                map_addentrylistener_encode(const std::string &name, bool include_value, int32_t listener_flags,
-                                            bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::INT32_SIZE +
-                            ClientMessage::UINT8_SIZE;
+                ClientMessage map_addentrylistener_encode(const std::string &name, bool include_value, int32_t listener_flags, bool local_only) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.addentrylistener");
@@ -766,18 +684,17 @@ namespace hazelcast {
                 void map_addentrylistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 71938) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -785,8 +702,7 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage
-                map_removeentrylistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
+                ClientMessage map_removeentrylistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -801,8 +717,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_getentryview_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                      int64_t thread_id) {
+                ClientMessage map_getentryview_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -819,8 +734,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_evict_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
+                ClientMessage map_evict_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -837,8 +751,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_evictall_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_evictall_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.evictall");
@@ -851,8 +765,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_keyset_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_keyset_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.keyset");
@@ -865,8 +779,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_getall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &keys) {
+                ClientMessage map_getall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &keys) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -882,8 +795,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_values_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_values_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.values");
@@ -896,8 +809,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_entryset_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_entryset_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.entryset");
@@ -910,8 +823,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_keysetwithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate) {
+                ClientMessage map_keysetwithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -927,8 +839,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_valueswithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate) {
+                ClientMessage map_valueswithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -944,8 +855,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_entrieswithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate) {
+                ClientMessage map_entrieswithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -977,8 +887,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_size_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_size_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.size");
@@ -991,8 +901,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_isempty_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_isempty_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.isempty");
@@ -1005,9 +915,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_putall_encode(const std::string &name,
-                                                const std::vector<std::pair<serialization::pimpl::data, serialization::pimpl::data>> &entries,
-                                                bool trigger_map_loader) {
+                ClientMessage map_putall_encode(const std::string &name, const std::vector<std::pair<serialization::pimpl::data, serialization::pimpl::data>> &entries, bool trigger_map_loader) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1024,8 +932,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_clear_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_clear_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.clear");
@@ -1038,9 +946,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_executeonkey_encode(const std::string &name, const serialization::pimpl::data &entry_processor,
-                                        const serialization::pimpl::data &key, int64_t thread_id) {
+                ClientMessage map_executeonkey_encode(const std::string &name, const serialization::pimpl::data &entry_processor, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1059,9 +965,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_submittokey_encode(const std::string &name, const serialization::pimpl::data &entry_processor,
-                                       const serialization::pimpl::data &key, int64_t thread_id) {
+                ClientMessage map_submittokey_encode(const std::string &name, const serialization::pimpl::data &entry_processor, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1080,8 +984,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_executeonallkeys_encode(const std::string &name,
-                                                          const serialization::pimpl::data &entry_processor) {
+                ClientMessage map_executeonallkeys_encode(const std::string &name, const serialization::pimpl::data &entry_processor) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1097,9 +1000,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_executewithpredicate_encode(const std::string &name,
-                                                              const serialization::pimpl::data &entry_processor,
-                                                              const serialization::pimpl::data &predicate) {
+                ClientMessage map_executewithpredicate_encode(const std::string &name, const serialization::pimpl::data &entry_processor, const serialization::pimpl::data &predicate) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1117,9 +1018,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_executeonkeys_encode(const std::string &name, const serialization::pimpl::data &entry_processor,
-                                         const std::vector<serialization::pimpl::data> &keys) {
+                ClientMessage map_executeonkeys_encode(const std::string &name, const serialization::pimpl::data &entry_processor, const std::vector<serialization::pimpl::data> &keys) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1137,8 +1036,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_forceunlock_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                     int64_t reference_id) {
+                ClientMessage map_forceunlock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t reference_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1155,8 +1053,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_keysetwithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_keysetwithpagingpredicate_encode(const std::string &name, const codec::holder::paging_predicate_holder &predicate) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.keysetwithpagingpredicate");
@@ -1171,8 +1069,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_valueswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_valueswithpagingpredicate_encode(const std::string &name, const codec::holder::paging_predicate_holder &predicate) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.valueswithpagingpredicate");
@@ -1187,8 +1085,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage map_entrieswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage map_entrieswithpagingpredicate_encode(const std::string &name, const codec::holder::paging_predicate_holder &predicate) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("map.entrieswithpagingpredicate");
@@ -1203,8 +1101,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_removeall_encode(const std::string &name, const serialization::pimpl::data &predicate) {
+                ClientMessage map_removeall_encode(const std::string &name, const serialization::pimpl::data &predicate) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1220,11 +1117,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                map_addnearcacheinvalidationlistener_encode(const std::string &name, int32_t listener_flags,
-                                                            bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
+                ClientMessage map_addnearcacheinvalidationlistener_encode(const std::string &name, int32_t listener_flags, bool local_only) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("map.addnearcacheinvalidationlistener");
@@ -1243,13 +1137,13 @@ namespace hazelcast {
                     auto messageType = msg.get_message_type();
                     if (messageType == 81666) {
                         auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
-                        auto sourceUuid = msg.get<boost::uuids::uuid>();
-                        auto partitionUuid = msg.get<boost::uuids::uuid>();
+                        auto source_uuid = msg.get<boost::uuids::uuid>();
+                        auto partition_uuid = msg.get<boost::uuids::uuid>();
                         auto sequence = msg.get<int64_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
-                        handle_imapinvalidation(key, sourceUuid, partitionUuid, sequence);
+                        handle_imapinvalidation(key, source_uuid, partition_uuid, sequence);
                         return;
                     }
                     if (messageType == 81667) {
@@ -1257,10 +1151,10 @@ namespace hazelcast {
 
                         auto keys = msg.get<std::vector<serialization::pimpl::data>>();
 
-                        auto sourceUuids = msg.get<std::vector<boost::uuids::uuid>>();
-                        auto partitionUuids = msg.get<std::vector<boost::uuids::uuid>>();
+                        auto source_uuids = msg.get<std::vector<boost::uuids::uuid>>();
+                        auto partition_uuids = msg.get<std::vector<boost::uuids::uuid>>();
                         auto sequences = msg.get<std::vector<int64_t>>();
-                        handle_imapbatchinvalidation(keys, sourceUuids, partitionUuids, sequences);
+                        handle_imapbatchinvalidation(keys, source_uuids, partition_uuids, sequences);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -1268,8 +1162,23 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage multimap_put_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                  const serialization::pimpl::data &value, int64_t thread_id) {
+                ClientMessage map_replaceall_encode(const std::string &name, const serialization::pimpl::data &function) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+                    ClientMessage msg(initial_frame_size);
+                    msg.set_retryable(true);
+                    msg.set_operation_name("map.replaceall");
+
+                    msg.set_message_type(static_cast<int32_t>(83968));
+                    msg.set_partition_id(-1);
+
+                    msg.set(name);
+
+                    msg.set(function, true);
+
+                    return msg;
+                }
+
+                ClientMessage multimap_put_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1288,8 +1197,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_get_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
+                ClientMessage multimap_get_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1306,8 +1214,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_remove_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                     int64_t thread_id) {
+                ClientMessage multimap_remove_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1324,8 +1231,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_keyset_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage multimap_keyset_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("multimap.keyset");
@@ -1338,8 +1245,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_values_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage multimap_values_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("multimap.values");
@@ -1352,8 +1259,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_entryset_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage multimap_entryset_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("multimap.entryset");
@@ -1366,9 +1273,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_containskey_encode(const std::string &name, const serialization::pimpl::data &key,
-                                            int64_t thread_id) {
+                ClientMessage multimap_containskey_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1385,8 +1290,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_containsvalue_encode(const std::string &name, const serialization::pimpl::data &value) {
+                ClientMessage multimap_containsvalue_encode(const std::string &name, const serialization::pimpl::data &value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1402,9 +1306,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_containsentry_encode(const std::string &name, const serialization::pimpl::data &key,
-                                              const serialization::pimpl::data &value, int64_t thread_id) {
+                ClientMessage multimap_containsentry_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1423,8 +1325,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_size_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage multimap_size_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("multimap.size");
@@ -1437,8 +1339,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_clear_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage multimap_clear_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("multimap.clear");
@@ -1451,8 +1353,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_valuecount_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                         int64_t thread_id) {
+                ClientMessage multimap_valuecount_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1469,11 +1370,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_addentrylistenertokey_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                      bool include_value, bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
+                ClientMessage multimap_addentrylistenertokey_encode(const std::string &name, const serialization::pimpl::data &key, bool include_value, bool local_only) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("multimap.addentrylistenertokey");
@@ -1493,18 +1391,17 @@ namespace hazelcast {
                 void multimap_addentrylistenertokey_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 134402) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -1512,10 +1409,8 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage
-                multimap_addentrylistener_encode(const std::string &name, bool include_value, bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
+                ClientMessage multimap_addentrylistener_encode(const std::string &name, bool include_value, bool local_only) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("multimap.addentrylistener");
@@ -1533,18 +1428,17 @@ namespace hazelcast {
                 void multimap_addentrylistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 134658) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -1552,8 +1446,7 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage
-                multimap_removeentrylistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
+                ClientMessage multimap_removeentrylistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1568,12 +1461,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_lock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id,
-                                     int64_t ttl, int64_t reference_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::INT64_SIZE;
+                ClientMessage multimap_lock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id, int64_t ttl, int64_t reference_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("multimap.lock");
@@ -1591,12 +1480,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_trylock_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                      int64_t thread_id, int64_t lease, int64_t timeout,
-                                                      int64_t reference_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage multimap_trylock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id, int64_t lease, int64_t timeout, int64_t reference_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("multimap.trylock");
@@ -1631,10 +1516,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage multimap_unlock_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                     int64_t thread_id, int64_t reference_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage multimap_unlock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t thread_id, int64_t reference_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("multimap.unlock");
@@ -1651,9 +1534,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_forceunlock_encode(const std::string &name, const serialization::pimpl::data &key,
-                                            int64_t reference_id) {
+                ClientMessage multimap_forceunlock_encode(const std::string &name, const serialization::pimpl::data &key, int64_t reference_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -1670,9 +1551,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                multimap_removeentry_encode(const std::string &name, const serialization::pimpl::data &key,
-                                            const serialization::pimpl::data &value, int64_t thread_id) {
+                ClientMessage multimap_removeentry_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t thread_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1691,8 +1570,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_offer_encode(const std::string &name, const serialization::pimpl::data &value,
-                                                 int64_t timeout_millis) {
+                ClientMessage queue_offer_encode(const std::string &name, const serialization::pimpl::data &value, int64_t timeout_millis) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1725,8 +1603,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_size_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_size_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.size");
@@ -1770,8 +1648,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_take_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_take_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.take");
@@ -1784,8 +1662,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_peek_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_peek_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.peek");
@@ -1798,8 +1676,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_iterator_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_iterator_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.iterator");
@@ -1812,8 +1690,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_drainto_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_drainto_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.drainto");
@@ -1857,8 +1735,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_containsall_encode(const std::string &name,
-                                                       const std::vector<serialization::pimpl::data> &data_list) {
+                ClientMessage queue_containsall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &data_list) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1874,8 +1751,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_compareandremoveall_encode(const std::string &name,
-                                                               const std::vector<serialization::pimpl::data> &data_list) {
+                ClientMessage queue_compareandremoveall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &data_list) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1891,8 +1767,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_compareandretainall_encode(const std::string &name,
-                                                               const std::vector<serialization::pimpl::data> &data_list) {
+                ClientMessage queue_compareandretainall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &data_list) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1908,8 +1783,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_clear_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_clear_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.clear");
@@ -1922,8 +1797,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                queue_addall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &data_list) {
+                ClientMessage queue_addall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &data_list) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -1940,8 +1814,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage queue_addlistener_encode(const std::string &name, bool include_value, bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.addlistener");
@@ -1959,14 +1832,13 @@ namespace hazelcast {
                 void queue_addlistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 200962) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto eventType = msg.get<int32_t>();
+                        auto event_type = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto item = msg.get_nullable<serialization::pimpl::data>();
-                        handle_item(item, uuid, eventType);
+                        handle_item(item, uuid, event_type);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -1989,8 +1861,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_remainingcapacity_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_remainingcapacity_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.remainingcapacity");
@@ -2003,8 +1875,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage queue_isempty_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage queue_isempty_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("queue.isempty");
@@ -2051,14 +1923,13 @@ namespace hazelcast {
                 void topic_addmessagelistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 262658) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto publishTime = msg.get<int64_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto publish_time = msg.get<int64_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto item = msg.get<serialization::pimpl::data>();
-                        handle_topic(item, publishTime, uuid);
+                        handle_topic(item, publish_time, uuid);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -2066,8 +1937,7 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage
-                topic_removemessagelistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
+                ClientMessage topic_removemessagelistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -2082,8 +1952,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_size_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage list_size_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("list.size");
@@ -2112,8 +1982,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_containsall_encode(const std::string &name,
-                                                      const std::vector<serialization::pimpl::data> &values) {
+                ClientMessage list_containsall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &values) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -2161,8 +2030,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                list_addall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &value_list) {
+                ClientMessage list_addall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &value_list) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2178,8 +2046,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_compareandremoveall_encode(const std::string &name,
-                                                              const std::vector<serialization::pimpl::data> &values) {
+                ClientMessage list_compareandremoveall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &values) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2195,8 +2062,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_compareandretainall_encode(const std::string &name,
-                                                              const std::vector<serialization::pimpl::data> &values) {
+                ClientMessage list_compareandretainall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &values) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2212,8 +2078,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_clear_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage list_clear_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("list.clear");
@@ -2226,8 +2092,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_getall_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage list_getall_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("list.getall");
@@ -2241,8 +2107,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage list_addlistener_encode(const std::string &name, bool include_value, bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("list.addlistener");
@@ -2260,14 +2125,13 @@ namespace hazelcast {
                 void list_addlistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 330498) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto eventType = msg.get<int32_t>();
+                        auto event_type = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto item = msg.get_nullable<serialization::pimpl::data>();
-                        handle_item(item, uuid, eventType);
+                        handle_item(item, uuid, event_type);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -2290,8 +2154,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_isempty_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage list_isempty_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("list.isempty");
@@ -2304,8 +2168,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_addallwithindex_encode(const std::string &name, int32_t index,
-                                                          const std::vector<serialization::pimpl::data> &value_list) {
+                ClientMessage list_addallwithindex_encode(const std::string &name, int32_t index, const std::vector<serialization::pimpl::data> &value_list) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2322,8 +2185,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_get_encode(const std::string  & name, int32_t index) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT32_SIZE;
+                ClientMessage list_get_encode(const std::string &name, int32_t index) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("list.get");
@@ -2337,8 +2200,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                list_set_encode(const std::string &name, int32_t index, const serialization::pimpl::data &value) {
+                ClientMessage list_set_encode(const std::string &name, int32_t index, const serialization::pimpl::data &value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2355,8 +2217,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_addwithindex_encode(const std::string &name, int32_t index,
-                                                       const serialization::pimpl::data &value) {
+                ClientMessage list_addwithindex_encode(const std::string &name, int32_t index, const serialization::pimpl::data &value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2373,8 +2234,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_removewithindex_encode(const std::string  & name, int32_t index) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT32_SIZE;
+                ClientMessage list_removewithindex_encode(const std::string &name, int32_t index) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("list.removewithindex");
@@ -2388,8 +2249,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                list_lastindexof_encode(const std::string &name, const serialization::pimpl::data &value) {
+                ClientMessage list_lastindexof_encode(const std::string &name, const serialization::pimpl::data &value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -2421,8 +2281,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage list_sub_encode(const std::string  & name, int32_t from, int32_t to) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT32_SIZE + ClientMessage::INT32_SIZE;
+                ClientMessage list_sub_encode(const std::string &name, int32_t from, int32_t to) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("list.sub");
@@ -2437,8 +2297,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage set_size_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage set_size_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("set.size");
@@ -2467,8 +2327,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                set_containsall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &items) {
+                ClientMessage set_containsall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &items) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2516,8 +2375,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                set_addall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &value_list) {
+                ClientMessage set_addall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &value_list) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2533,8 +2391,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage set_compareandremoveall_encode(const std::string &name,
-                                                             const std::vector<serialization::pimpl::data> &values) {
+                ClientMessage set_compareandremoveall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &values) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2550,8 +2407,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage set_compareandretainall_encode(const std::string &name,
-                                                             const std::vector<serialization::pimpl::data> &values) {
+                ClientMessage set_compareandretainall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &values) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2567,8 +2423,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage set_clear_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage set_clear_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("set.clear");
@@ -2581,8 +2437,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage set_getall_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage set_getall_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("set.getall");
@@ -2596,8 +2452,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage set_addlistener_encode(const std::string &name, bool include_value, bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("set.addlistener");
@@ -2615,14 +2470,13 @@ namespace hazelcast {
                 void set_addlistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 396034) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto eventType = msg.get<int32_t>();
+                        auto event_type = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto item = msg.get_nullable<serialization::pimpl::data>();
-                        handle_item(item, uuid, eventType);
+                        handle_item(item, uuid, event_type);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -2645,8 +2499,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage set_isempty_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage set_isempty_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("set.isempty");
@@ -2659,12 +2513,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                fencedlock_lock_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id,
-                                       int64_t thread_id, boost::uuids::uuid invocation_uid) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::UUID_SIZE;
+                ClientMessage fencedlock_lock_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("fencedlock.lock");
@@ -2682,12 +2532,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage fencedlock_trylock_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                        int64_t session_id, int64_t thread_id,
-                                                        boost::uuids::uuid invocation_uid, int64_t timeout_ms) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage fencedlock_trylock_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid, int64_t timeout_ms) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("fencedlock.trylock");
@@ -2706,12 +2552,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                fencedlock_unlock_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id,
-                                         int64_t thread_id, boost::uuids::uuid invocation_uid) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::UUID_SIZE;
+                ClientMessage fencedlock_unlock_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("fencedlock.unlock");
@@ -2729,8 +2571,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                fencedlock_getlockownership_encode(const cp::raft_group_id &group_id, const std::string &name) {
+                ClientMessage fencedlock_getlockownership_encode(const cp::raft_group_id &group_id, const std::string &name) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -2746,8 +2587,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage executorservice_shutdown_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage executorservice_shutdown_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("executorservice.shutdown");
@@ -2760,8 +2601,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage executorservice_isshutdown_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage executorservice_isshutdown_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("executorservice.isshutdown");
@@ -2775,7 +2616,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage executorservice_cancelonpartition_encode(boost::uuids::uuid uuid, bool interrupt) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::UUID_SIZE + ClientMessage::UINT8_SIZE;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(false);
                     msg.set_operation_name("executorservice.cancelonpartition");
@@ -2788,12 +2629,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                executorservice_cancelonmember_encode(boost::uuids::uuid uuid, boost::uuids::uuid member_uuid,
-                                                      bool interrupt) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UUID_SIZE +
-                            ClientMessage::UINT8_SIZE;
+                ClientMessage executorservice_cancelonmember_encode(boost::uuids::uuid uuid, boost::uuids::uuid member_uuid, bool interrupt) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UUID_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(false);
                     msg.set_operation_name("executorservice.cancelonmember");
@@ -2807,8 +2644,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage executorservice_submittopartition_encode(const std::string &name, boost::uuids::uuid uuid,
-                                                                       const serialization::pimpl::data &callable) {
+                ClientMessage executorservice_submittopartition_encode(const std::string &name, boost::uuids::uuid uuid, const serialization::pimpl::data &callable) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2825,11 +2661,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage executorservice_submittomember_encode(const std::string &name, boost::uuids::uuid uuid,
-                                                                    const serialization::pimpl::data &callable,
-                                                                    boost::uuids::uuid member_uuid) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UUID_SIZE;
+                ClientMessage executorservice_submittomember_encode(const std::string &name, boost::uuids::uuid uuid, const serialization::pimpl::data &callable, boost::uuids::uuid member_uuid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("executorservice.submittomember");
@@ -2846,8 +2679,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage atomiclong_apply_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                      const serialization::pimpl::data &function) {
+                ClientMessage atomiclong_apply_encode(const cp::raft_group_id &group_id, const std::string &name, const serialization::pimpl::data &function) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2865,9 +2697,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage atomiclong_alter_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                      const serialization::pimpl::data &function,
-                                                      int32_t return_value_type) {
+                ClientMessage atomiclong_alter_encode(const cp::raft_group_id &group_id, const std::string &name, const serialization::pimpl::data &function, int32_t return_value_type) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2886,8 +2716,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                atomiclong_addandget_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t delta) {
+                ClientMessage atomiclong_addandget_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t delta) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2904,11 +2733,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                atomiclong_compareandset_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                int64_t expected, int64_t updated) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage atomiclong_compareandset_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t expected, int64_t updated) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("atomiclong.compareandset");
@@ -2941,8 +2767,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                atomiclong_getandadd_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t delta) {
+                ClientMessage atomiclong_getandadd_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t delta) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2959,8 +2784,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage atomiclong_getandset_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                          int64_t new_value) {
+                ClientMessage atomiclong_getandset_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t new_value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -2977,11 +2801,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage atomicref_apply_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                     const serialization::pimpl::data &function,
-                                                     int32_t return_value_type, bool alter) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
+                ClientMessage atomicref_apply_encode(const cp::raft_group_id &group_id, const std::string &name, const serialization::pimpl::data &function, int32_t return_value_type, bool alter) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("atomicref.apply");
@@ -3000,9 +2821,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage atomicref_compareandset_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                             const serialization::pimpl::data *old_value,
-                                                             const serialization::pimpl::data *new_value) {
+                ClientMessage atomicref_compareandset_encode(const cp::raft_group_id &group_id, const std::string &name, const serialization::pimpl::data *old_value, const serialization::pimpl::data *new_value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3022,8 +2841,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage atomicref_contains_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                        const serialization::pimpl::data *value) {
+                ClientMessage atomicref_contains_encode(const cp::raft_group_id &group_id, const std::string &name, const serialization::pimpl::data *value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3057,8 +2875,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage atomicref_set_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                   const serialization::pimpl::data *new_value, bool return_old_value) {
+                ClientMessage atomicref_set_encode(const cp::raft_group_id &group_id, const std::string &name, const serialization::pimpl::data *new_value, bool return_old_value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3077,9 +2894,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                countdownlatch_trysetcount_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                  int32_t count) {
+                ClientMessage countdownlatch_trysetcount_encode(const cp::raft_group_id &group_id, const std::string &name, int32_t count) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3096,10 +2911,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage countdownlatch_await_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                          boost::uuids::uuid invocation_uid, int64_t timeout_ms) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage countdownlatch_await_encode(const cp::raft_group_id &group_id, const std::string &name, boost::uuids::uuid invocation_uid, int64_t timeout_ms) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("countdownlatch.await");
@@ -3116,11 +2929,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                countdownlatch_countdown_encode(const cp::raft_group_id &group_id, const std::string &name,
-                                                boost::uuids::uuid invocation_uid, int32_t expected_round) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
+                ClientMessage countdownlatch_countdown_encode(const cp::raft_group_id &group_id, const std::string &name, boost::uuids::uuid invocation_uid, int32_t expected_round) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("countdownlatch.countdown");
@@ -3137,8 +2947,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                countdownlatch_getcount_encode(const cp::raft_group_id &group_id, const std::string &name) {
+                ClientMessage countdownlatch_getcount_encode(const cp::raft_group_id &group_id, const std::string &name) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3154,8 +2963,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                countdownlatch_getround_encode(const cp::raft_group_id &group_id, const std::string &name) {
+                ClientMessage countdownlatch_getround_encode(const cp::raft_group_id &group_id, const std::string &name) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3171,8 +2979,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                semaphore_init_encode(const cp::raft_group_id &group_id, const std::string &name, int32_t permits) {
+                ClientMessage semaphore_init_encode(const cp::raft_group_id &group_id, const std::string &name, int32_t permits) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3189,13 +2996,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                semaphore_acquire_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id,
-                                         int64_t thread_id, boost::uuids::uuid invocation_uid, int32_t permits,
-                                         int64_t timeout_ms) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage semaphore_acquire_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid, int32_t permits, int64_t timeout_ms) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("semaphore.acquire");
@@ -3215,12 +3017,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                semaphore_release_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id,
-                                         int64_t thread_id, boost::uuids::uuid invocation_uid, int32_t permits) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
+                ClientMessage semaphore_release_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid, int32_t permits) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("semaphore.release");
@@ -3239,12 +3037,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                semaphore_drain_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id,
-                                       int64_t thread_id, boost::uuids::uuid invocation_uid) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::UUID_SIZE;
+                ClientMessage semaphore_drain_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("semaphore.drain");
@@ -3262,12 +3056,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                semaphore_change_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id,
-                                        int64_t thread_id, boost::uuids::uuid invocation_uid, int32_t permits) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
+                ClientMessage semaphore_change_encode(const cp::raft_group_id &group_id, const std::string &name, int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid, int32_t permits) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("semaphore.change");
@@ -3286,8 +3076,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                semaphore_availablepermits_encode(const cp::raft_group_id &group_id, const std::string &name) {
+                ClientMessage semaphore_availablepermits_encode(const cp::raft_group_id &group_id, const std::string &name) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3317,8 +3106,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_put_encode(const std::string &name, const serialization::pimpl::data &key,
-                                                       const serialization::pimpl::data &value, int64_t ttl) {
+                ClientMessage replicatedmap_put_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t ttl) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3337,8 +3125,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_size_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage replicatedmap_size_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("replicatedmap.size");
@@ -3351,8 +3139,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_isempty_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage replicatedmap_isempty_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("replicatedmap.isempty");
@@ -3365,8 +3153,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                replicatedmap_containskey_encode(const std::string &name, const serialization::pimpl::data &key) {
+                ClientMessage replicatedmap_containskey_encode(const std::string &name, const serialization::pimpl::data &key) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3382,8 +3169,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                replicatedmap_containsvalue_encode(const std::string &name, const serialization::pimpl::data &value) {
+                ClientMessage replicatedmap_containsvalue_encode(const std::string &name, const serialization::pimpl::data &value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3415,8 +3201,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                replicatedmap_remove_encode(const std::string &name, const serialization::pimpl::data &key) {
+                ClientMessage replicatedmap_remove_encode(const std::string &name, const serialization::pimpl::data &key) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3432,8 +3217,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_putall_encode(const std::string &name,
-                                                          const std::vector<std::pair<serialization::pimpl::data, serialization::pimpl::data>> &entries) {
+                ClientMessage replicatedmap_putall_encode(const std::string &name, const std::vector<std::pair<serialization::pimpl::data, serialization::pimpl::data>> &entries) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3449,8 +3233,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_clear_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage replicatedmap_clear_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("replicatedmap.clear");
@@ -3463,10 +3247,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_addentrylistenertokeywithpredicate_encode(const std::string &name,
-                                                                                      const serialization::pimpl::data &key,
-                                                                                      const serialization::pimpl::data &predicate,
-                                                                                      bool local_only) {
+                ClientMessage replicatedmap_addentrylistenertokeywithpredicate_encode(const std::string &name, const serialization::pimpl::data &key, const serialization::pimpl::data &predicate, bool local_only) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3488,18 +3269,17 @@ namespace hazelcast {
                 void replicatedmap_addentrylistenertokeywithpredicate_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 854530) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -3507,9 +3287,7 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage replicatedmap_addentrylistenerwithpredicate_encode(const std::string &name,
-                                                                                 const serialization::pimpl::data &predicate,
-                                                                                 bool local_only) {
+                ClientMessage replicatedmap_addentrylistenerwithpredicate_encode(const std::string &name, const serialization::pimpl::data &predicate, bool local_only) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3529,18 +3307,17 @@ namespace hazelcast {
                 void replicatedmap_addentrylistenerwithpredicate_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 854786) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -3548,9 +3325,7 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage replicatedmap_addentrylistenertokey_encode(const std::string &name,
-                                                                         const serialization::pimpl::data &key,
-                                                                         bool local_only) {
+                ClientMessage replicatedmap_addentrylistenertokey_encode(const std::string &name, const serialization::pimpl::data &key, bool local_only) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -3570,18 +3345,17 @@ namespace hazelcast {
                 void replicatedmap_addentrylistenertokey_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 855042) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -3607,18 +3381,17 @@ namespace hazelcast {
                 void replicatedmap_addentrylistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 855298) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -3626,8 +3399,7 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage
-                replicatedmap_removeentrylistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
+                ClientMessage replicatedmap_removeentrylistener_encode(const std::string &name, boost::uuids::uuid registration_id) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -3642,8 +3414,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_keyset_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage replicatedmap_keyset_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("replicatedmap.keyset");
@@ -3656,8 +3428,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_values_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage replicatedmap_values_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("replicatedmap.values");
@@ -3670,8 +3442,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage replicatedmap_entryset_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage replicatedmap_entryset_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("replicatedmap.entryset");
@@ -3684,11 +3456,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                replicatedmap_addnearcacheentrylistener_encode(const std::string &name, bool include_value,
-                                                               bool local_only) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
+                ClientMessage replicatedmap_addnearcacheentrylistener_encode(const std::string &name, bool include_value, bool local_only) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("replicatedmap.addnearcacheentrylistener");
@@ -3706,18 +3475,17 @@ namespace hazelcast {
                 void replicatedmap_addnearcacheentrylistener_handler::handle(ClientMessage &msg) {
                     auto messageType = msg.get_message_type();
                     if (messageType == 856578) {
-                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(
-                                ClientMessage::EVENT_HEADER_LEN));
-                        auto eventType = msg.get<int32_t>();
+                        auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+                        auto event_type = msg.get<int32_t>();
                         auto uuid = msg.get<boost::uuids::uuid>();
-                        auto numberOfAffectedEntries = msg.get<int32_t>();
+                        auto number_of_affected_entries = msg.get<int32_t>();
                         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
                         auto key = msg.get_nullable<serialization::pimpl::data>();
                         auto value = msg.get_nullable<serialization::pimpl::data>();
-                        auto oldValue = msg.get_nullable<serialization::pimpl::data>();
-                        auto mergingValue = msg.get_nullable<serialization::pimpl::data>();
-                        handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        auto old_value = msg.get_nullable<serialization::pimpl::data>();
+                        auto merging_value = msg.get_nullable<serialization::pimpl::data>();
+                        handle_entry(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
                     HZ_LOG(*get_logger(), warning, (boost::format(
@@ -3725,11 +3493,8 @@ namespace hazelcast {
                                                     messageType).str());
                 }
 
-                ClientMessage transactionalmap_containskey_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                                  int64_t thread_id,
-                                                                  const serialization::pimpl::data &key) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_containskey_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.containskey");
@@ -3746,11 +3511,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_get_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                            const serialization::pimpl::data &key) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_get_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.get");
@@ -3767,10 +3529,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.size");
@@ -3785,10 +3545,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_isempty_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_isempty_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.isempty");
@@ -3803,13 +3561,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_put_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                            const serialization::pimpl::data &key,
-                                            const serialization::pimpl::data &value, int64_t ttl) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_put_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &value, int64_t ttl) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.put");
@@ -3829,12 +3582,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_set_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                            const serialization::pimpl::data &key,
-                                            const serialization::pimpl::data &value) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_set_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.set");
@@ -3853,12 +3602,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage transactionalmap_putifabsent_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                                  int64_t thread_id,
-                                                                  const serialization::pimpl::data &key,
-                                                                  const serialization::pimpl::data &value) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_putifabsent_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.putifabsent");
@@ -3877,12 +3622,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_replace_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                                const serialization::pimpl::data &key,
-                                                const serialization::pimpl::data &value) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_replace_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.replace");
@@ -3901,13 +3642,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage transactionalmap_replaceifsame_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                                    int64_t thread_id,
-                                                                    const serialization::pimpl::data &key,
-                                                                    const serialization::pimpl::data &old_value,
-                                                                    const serialization::pimpl::data &new_value) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_replaceifsame_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &old_value, const serialization::pimpl::data &new_value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.replaceifsame");
@@ -3928,11 +3664,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_remove_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                               const serialization::pimpl::data &key) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_remove_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.remove");
@@ -3949,11 +3682,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_delete_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                               const serialization::pimpl::data &key) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_delete_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.delete");
@@ -3970,12 +3700,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage transactionalmap_removeifsame_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                                   int64_t thread_id,
-                                                                   const serialization::pimpl::data &key,
-                                                                   const serialization::pimpl::data &value) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_removeifsame_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.removeifsame");
@@ -3994,10 +3720,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_keyset_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_keyset_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.keyset");
@@ -4012,12 +3736,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_keysetwithpredicate_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                            int64_t thread_id,
-                                                            const serialization::pimpl::data &predicate) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_keysetwithpredicate_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &predicate) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.keysetwithpredicate");
@@ -4034,10 +3754,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_values_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_values_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.values");
@@ -4052,12 +3770,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmap_valueswithpredicate_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                            int64_t thread_id,
-                                                            const serialization::pimpl::data &predicate) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmap_valueswithpredicate_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &predicate) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmap.valueswithpredicate");
@@ -4074,12 +3788,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmultimap_put_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                                 const serialization::pimpl::data &key,
-                                                 const serialization::pimpl::data &value) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmultimap_put_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmultimap.put");
@@ -4098,11 +3808,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmultimap_get_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                                 const serialization::pimpl::data &key) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmultimap_get_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmultimap.get");
@@ -4119,11 +3826,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage transactionalmultimap_remove_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                                  int64_t thread_id,
-                                                                  const serialization::pimpl::data &key) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmultimap_remove_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmultimap.remove");
@@ -4140,12 +3844,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmultimap_removeentry_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                         int64_t thread_id, const serialization::pimpl::data &key,
-                                                         const serialization::pimpl::data &value) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmultimap_removeentry_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key, const serialization::pimpl::data &value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmultimap.removeentry");
@@ -4164,11 +3864,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalmultimap_valuecount_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                        int64_t thread_id, const serialization::pimpl::data &key) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmultimap_valuecount_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &key) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmultimap.valuecount");
@@ -4185,10 +3882,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage transactionalmultimap_size_encode(const std::string &name, boost::uuids::uuid txn_id,
-                                                                int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalmultimap_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalmultimap.size");
@@ -4203,11 +3898,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalset_add_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                            const serialization::pimpl::data &item) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalset_add_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &item) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalset.add");
@@ -4224,11 +3916,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalset_remove_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                               const serialization::pimpl::data &item) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalset_remove_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &item) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalset.remove");
@@ -4245,10 +3934,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalset_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalset_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalset.size");
@@ -4263,11 +3950,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionallist_add_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                             const serialization::pimpl::data &item) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionallist_add_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &item) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionallist.add");
@@ -4284,11 +3968,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionallist_remove_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                                const serialization::pimpl::data &item) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionallist_remove_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &item) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionallist.remove");
@@ -4305,10 +3986,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionallist_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionallist_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionallist.size");
@@ -4323,12 +4002,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalqueue_offer_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                                const serialization::pimpl::data &item, int64_t timeout) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::INT64_SIZE;
+                ClientMessage transactionalqueue_offer_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, const serialization::pimpl::data &item, int64_t timeout) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalqueue.offer");
@@ -4346,12 +4021,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalqueue_poll_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id,
-                                               int64_t timeout) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE +
-                            ClientMessage::INT64_SIZE;
+                ClientMessage transactionalqueue_poll_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id, int64_t timeout) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalqueue.poll");
@@ -4367,10 +4038,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                transactionalqueue_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transactionalqueue_size_encode(const std::string &name, boost::uuids::uuid txn_id, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("transactionalqueue.size");
@@ -4386,8 +4055,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage transaction_commit_encode(boost::uuids::uuid transaction_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(false);
                     msg.set_operation_name("transaction.commit");
@@ -4400,11 +4068,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage transaction_create_encode(int64_t timeout, int32_t durability, int32_t transaction_type,
-                                                        int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT32_SIZE +
-                            ClientMessage::INT32_SIZE + ClientMessage::INT64_SIZE;
+                ClientMessage transaction_create_encode(int64_t timeout, int32_t durability, int32_t transaction_type, int64_t thread_id) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT32_SIZE + ClientMessage::INT32_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(false);
                     msg.set_operation_name("transaction.create");
@@ -4420,8 +4085,7 @@ namespace hazelcast {
                 }
 
                 ClientMessage transaction_rollback_encode(boost::uuids::uuid transaction_id, int64_t thread_id) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size, true);
                     msg.set_retryable(false);
                     msg.set_operation_name("transaction.rollback");
@@ -4434,8 +4098,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_size_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage ringbuffer_size_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("ringbuffer.size");
@@ -4448,8 +4112,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_tailsequence_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage ringbuffer_tailsequence_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("ringbuffer.tailsequence");
@@ -4462,8 +4126,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_headsequence_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage ringbuffer_headsequence_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("ringbuffer.headsequence");
@@ -4476,8 +4140,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_capacity_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage ringbuffer_capacity_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("ringbuffer.capacity");
@@ -4490,8 +4154,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_remainingcapacity_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage ringbuffer_remainingcapacity_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("ringbuffer.remainingcapacity");
@@ -4504,8 +4168,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_add_encode(const std::string &name, int32_t overflow_policy,
-                                                    const serialization::pimpl::data &value) {
+                ClientMessage ringbuffer_add_encode(const std::string &name, int32_t overflow_policy, const serialization::pimpl::data &value) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -4522,8 +4185,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_readone_encode(const std::string  & name, int64_t sequence) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE;
+                ClientMessage ringbuffer_readone_encode(const std::string &name, int64_t sequence) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("ringbuffer.readone");
@@ -4537,9 +4200,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage ringbuffer_addall_encode(const std::string &name,
-                                                       const std::vector<serialization::pimpl::data> &value_list,
-                                                       int32_t overflow_policy) {
+                ClientMessage ringbuffer_addall_encode(const std::string &name, const std::vector<serialization::pimpl::data> &value_list, int32_t overflow_policy) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
@@ -4556,12 +4217,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                ringbuffer_readmany_encode(const std::string &name, int64_t start_sequence, int32_t min_count,
-                                           int32_t max_count, const serialization::pimpl::data *filter) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT32_SIZE +
-                            ClientMessage::INT32_SIZE;
+                ClientMessage ringbuffer_readmany_encode(const std::string &name, int64_t start_sequence, int32_t min_count, int32_t max_count, const serialization::pimpl::data *filter) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::INT32_SIZE + ClientMessage::INT32_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("ringbuffer.readmany");
@@ -4594,9 +4251,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage pncounter_get_encode(const std::string &name,
-                                                   const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps,
-                                                   boost::uuids::uuid target_replica_uuid) {
+                ClientMessage pncounter_get_encode(const std::string &name, const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps, boost::uuids::uuid target_replica_uuid) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -4613,12 +4268,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage pncounter_add_encode(const std::string &name, int64_t delta, bool get_before_update,
-                                                   const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps,
-                                                   boost::uuids::uuid target_replica_uuid) {
-                    size_t initial_frame_size =
-                            ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::UINT8_SIZE +
-                            ClientMessage::UUID_SIZE;
+                ClientMessage pncounter_add_encode(const std::string &name, int64_t delta, bool get_before_update, const std::vector<std::pair<boost::uuids::uuid, int64_t>> &replica_timestamps, boost::uuids::uuid target_replica_uuid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE + ClientMessage::UINT8_SIZE + ClientMessage::UUID_SIZE;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(false);
                     msg.set_operation_name("pncounter.add");
@@ -4636,8 +4287,8 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage pncounter_getconfiguredreplicacount_encode(const std::string  & name) {
-                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                ClientMessage pncounter_getconfiguredreplicacount_encode(const std::string &name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
                     msg.set_operation_name("pncounter.getconfiguredreplicacount");
@@ -4664,9 +4315,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                cpgroup_destroycpobject_encode(const cp::raft_group_id &group_id, const std::string &service_name,
-                                               const std::string &object_name) {
+                ClientMessage cpgroup_destroycpobject_encode(const cp::raft_group_id &group_id, const std::string &service_name, const std::string &object_name) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
@@ -4684,8 +4333,7 @@ namespace hazelcast {
                     return msg;
                 }
 
-                ClientMessage
-                cpsession_createsession_encode(const cp::raft_group_id &group_id, const std::string &endpoint_name) {
+                ClientMessage cpsession_createsession_encode(const cp::raft_group_id &group_id, const std::string &endpoint_name) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
                     ClientMessage msg(initial_frame_size);
                     msg.set_retryable(true);
