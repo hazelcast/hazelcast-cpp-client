@@ -53,10 +53,10 @@ public:
                       std::string metric,
                       probe_unit unit = probe_unit::NONE);
 
-    const std::string &prefix() const;
-    const std::string &metric() const;
-    const boost::optional<std::string> &discriminator() const;
-    const boost::optional<std::string> &discriminator_value() const;
+    const std::string& prefix() const;
+    const std::string& metric() const;
+    const boost::optional<std::string>& discriminator() const;
+    const boost::optional<std::string>& discriminator_value() const;
     probe_unit unit() const;
 
 private:

@@ -19,56 +19,63 @@
 #include <vector>
 #include <memory>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
-                class EvictionCandidate;
+namespace client {
+namespace internal {
+namespace eviction {
+template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
+class EvictionCandidate;
 
-                template<typename A, typename E>
-                class EvictionListener;
+template<typename A, typename E>
+class EvictionListener;
 
-                /**
-                 * Interface for store implementations that holds {@link Evictable} entries to evict.
-                 *
-                 * @param <A> Type of the accessor (id) of the {@link com.hazelcast.internal.eviction.EvictionCandidate}
-                 * @param <E> Type of the {@link com.hazelcast.internal.eviction.Evictable} value of
-                 *            {@link com.hazelcast.internal.eviction.EvictionCandidate}
-                 */
-                template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
-                class EvictableStore {
-                public:
-                    virtual ~EvictableStore() = default;
+/**
+ * Interface for store implementations that holds {@link Evictable} entries to
+ * evict.
+ *
+ * @param <A> Type of the accessor (id) of the {@link
+ * com.hazelcast.internal.eviction.EvictionCandidate}
+ * @param <E> Type of the {@link com.hazelcast.internal.eviction.Evictable}
+ * value of
+ *            {@link com.hazelcast.internal.eviction.EvictionCandidate}
+ */
+template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
+class EvictableStore
+{
+public:
+    virtual ~EvictableStore() = default;
 
-                    /**
-                     * The evict method is called by the {@link EvictionStrategy} to eventually evict, by the policy, selected
-                     * candidates from the internal data structures.
-                     *
-                     * @param evictionCandidates Multiple {@link EvictionCandidate} to be evicted
-                     * @param evictionListener   {@link EvictionListener} to listen evicted entries
-                     *
-                     * @return evicted entry count
-                     */
-                    virtual int evict(
-                            std::vector<std::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > *eviction_candidates,
-                            EvictionListener<A, E> *eviction_listener) {
-                        assert(0);
-                        return 0;
-                    }
-                };
-            }
-        }
+    /**
+     * The evict method is called by the {@link EvictionStrategy} to eventually
+     * evict, by the policy, selected candidates from the internal data
+     * structures.
+     *
+     * @param evictionCandidates Multiple {@link EvictionCandidate} to be
+     * evicted
+     * @param evictionListener   {@link EvictionListener} to listen evicted
+     * entries
+     *
+     * @return evicted entry count
+     */
+    virtual int evict(
+      std::vector<std::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E>>>*
+        eviction_candidates,
+      EvictionListener<A, E>* eviction_listener)
+    {
+        assert(0);
+        return 0;
     }
 };
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

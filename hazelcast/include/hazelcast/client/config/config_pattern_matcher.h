@@ -22,37 +22,37 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace config {
-            /**
-             * The ConfigPatternMatcher provides a strategy to match an item name to a configuration pattern.
-             * <p>
-             * It is used on each Config.getXXXConfig() and ClientConfig.getXXXConfig() call for map, list, queue, set, executor, topic,
-             * etc., so for example {@code itemName} is the name of a map and <code>configPatterns</code> are all defined map
-             * configurations.
-             * <p>
-             * If no configuration is found by the matcher it should return {@code NULL}. In this case the default config will be used
-             * for this item then. If multiple configurations are found by the matcher a {@link exception::ConfigurationException}
-             * should be thrown.
-             * <p>
-             * The default matcher is {@link hazelcast::config::matcher::MatchingPointConfigPatternMatcher}.
-             */
-            class HAZELCAST_API config_pattern_matcher {
-            public:
-                /**
-                 * Returns the best match for an item name out of a list of configuration patterns.
-                 *
-                 * @param configPatterns list of configuration patterns
-                 * @param itemName       item name to match
-                 * @return a key of configPatterns which matches the item name or {@code NULL} if nothing matches
-                 * @throws ConfigurationException if ambiguous configurations are found
-                 */
-                virtual std::shared_ptr<std::string>
-                matches(const std::vector<std::string> &config_patterns, const std::string &item_name) const = 0;
-            };
-        }
-    }
-}
-
-
-
+namespace client {
+namespace config {
+/**
+ * The ConfigPatternMatcher provides a strategy to match an item name to a
+ * configuration pattern. <p> It is used on each Config.getXXXConfig() and
+ * ClientConfig.getXXXConfig() call for map, list, queue, set, executor, topic,
+ * etc., so for example {@code itemName} is the name of a map and
+ * <code>configPatterns</code> are all defined map configurations. <p> If no
+ * configuration is found by the matcher it should return {@code NULL}. In this
+ * case the default config will be used for this item then. If multiple
+ * configurations are found by the matcher a {@link
+ * exception::ConfigurationException} should be thrown. <p> The default matcher
+ * is {@link hazelcast::config::matcher::MatchingPointConfigPatternMatcher}.
+ */
+class HAZELCAST_API config_pattern_matcher
+{
+public:
+    /**
+     * Returns the best match for an item name out of a list of configuration
+     * patterns.
+     *
+     * @param configPatterns list of configuration patterns
+     * @param itemName       item name to match
+     * @return a key of configPatterns which matches the item name or {@code
+     * NULL} if nothing matches
+     * @throws ConfigurationException if ambiguous configurations are found
+     */
+    virtual std::shared_ptr<std::string> matches(
+      const std::vector<std::string>& config_patterns,
+      const std::string& item_name) const = 0;
+};
+} // namespace config
+} // namespace client
+} // namespace hazelcast

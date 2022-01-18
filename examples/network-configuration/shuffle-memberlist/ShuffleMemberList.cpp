@@ -15,25 +15,32 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
-    config.get_network_config().add_address(hazelcast::client::address("127.0.0.1", 5702)).add_address(
-            hazelcast::client::address("127.0.0.1", 9090)).add_address(hazelcast::client::address("127.0.0.1", 9091))
-            .add_address(hazelcast::client::address("127.0.0.1", 5701));
+    config.get_network_config()
+      .add_address(hazelcast::client::address("127.0.0.1", 5702))
+      .add_address(hazelcast::client::address("127.0.0.1", 9090))
+      .add_address(hazelcast::client::address("127.0.0.1", 9091))
+      .add_address(hazelcast::client::address("127.0.0.1", 5701));
 
     /**
-     * Client shuffles the given member list to prevent all clients to connect to the same node when
-     * this property is set to true. When it is set to false, the client tries to connect to the nodes
-     * in the given order.
+     * Client shuffles the given member list to prevent all clients to connect
+     * to the same node when this property is set to true. When it is set to
+     * false, the client tries to connect to the nodes in the given order.
      *
-     * We force the client to not shuffle and try connect in the provided order the addresses are added.
+     * We force the client to not shuffle and try connect in the provided order
+     * the addresses are added.
      */
     config.set_property("hazelcast.client.shuffle.member.list", "false");
 
-    // Make sure that there is only one member in the cluster and it is started at 127.0.0.1:5701. This will mean that
-    // the client will try all the ip addresses added before this member address until it connects successfully to the
-    // cluster. Please examine the client logs to observe this. For example, it will write:
-    // "Trying to connect to 127.0.0.1:5702 as owner member" but this will fail since no such member exist.
+    // Make sure that there is only one member in the cluster and it is started
+    // at 127.0.0.1:5701. This will mean that the client will try all the ip
+    // addresses added before this member address until it connects successfully
+    // to the cluster. Please examine the client logs to observe this. For
+    // example, it will write: "Trying to connect to 127.0.0.1:5702 as owner
+    // member" but this will fail since no such member exist.
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
@@ -41,4 +48,3 @@ int main() {
 
     return 0;
 }
-

@@ -18,17 +18,18 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-void my_log_handler(const std::string &instance_name, 
-                    const std::string &cluster_name,
-                    hazelcast::logger::level lvl,
-                    const std::string &msg) 
+void
+my_log_handler(const std::string& instance_name,
+               const std::string& cluster_name,
+               hazelcast::logger::level lvl,
+               const std::string& msg)
 {
-    // The log handler function can be called concurrently 
-    // from different threads. 
+    // The log handler function can be called concurrently
+    // from different threads.
     static std::mutex lock;
     std::lock_guard<std::mutex> g(lock);
-    
-    // Here we print all the log attributes in JSON format 
+
+    // Here we print all the log attributes in JSON format
     // to the standard error.
     std::cerr << "{\n"
               << "  \"instance_name\": \"" << instance_name << "\",\n"
@@ -38,7 +39,9 @@ void my_log_handler(const std::string &instance_name,
               << "}\n\n";
 }
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
 
     // my_log_handler will be called for each log message.

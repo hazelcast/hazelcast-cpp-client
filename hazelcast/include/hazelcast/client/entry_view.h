@@ -21,70 +21,69 @@
 #include "hazelcast/client/serialization/serialization.h"
 
 namespace hazelcast {
-    namespace client {
-        /**
-         * EntryView represents a readonly view of a map entry.
-         *
-         * @param <K> key
-         * @param <V> value
-         */
-        template<typename K, typename V>
-        class entry_view{
-        public:
-            entry_view(K key, V value, map::data_entry_view rhs)
-            : key(std::move(key))
-            , value(std::move(value))
-            , cost (rhs.get_cost())
-            , creation_time (rhs.get_creation_time())
-            , expiration_time (rhs.get_expiration_time())
-            , hits (rhs.get_hits())
-            , last_access_time (rhs.get_last_access_time())
-            , last_stored_time (rhs.get_last_stored_time())
-            , last_update_time (rhs.get_last_update_time())
-            , version (rhs.get_version()) {};
+namespace client {
+/**
+ * EntryView represents a readonly view of a map entry.
+ *
+ * @param <K> key
+ * @param <V> value
+ */
+template<typename K, typename V>
+class entry_view
+{
+public:
+    entry_view(K key, V value, map::data_entry_view rhs)
+      : key(std::move(key))
+      , value(std::move(value))
+      , cost(rhs.get_cost())
+      , creation_time(rhs.get_creation_time())
+      , expiration_time(rhs.get_expiration_time())
+      , hits(rhs.get_hits())
+      , last_access_time(rhs.get_last_access_time())
+      , last_stored_time(rhs.get_last_stored_time())
+      , last_update_time(rhs.get_last_update_time())
+      , version(rhs.get_version()){};
 
-            /**
-             * key
-             */
-            K key;
-            /**
-             * value
-             */
-            V value;
-            /**
-             * memory cost of entry
-             */
-            int64_t cost;
-            /**
-             * entry creation time
-             */
-            int64_t creation_time;
-            /**
-             * entry expiration time if ttl is defined.
-             */
-            int64_t expiration_time;
-            /**
-             * number of hits.
-             */
-            int64_t hits;
-            /**
-             * last access time
-             */
-            int64_t last_access_time;
-            /**
-             * last stored time.
-             */
-            int64_t last_stored_time;
-            /**
-             * last update time.
-             */
-            int64_t last_update_time;
-            /**
-             * version.
-             */
-            int64_t version;
-        };
-    }
-}
-
-
+    /**
+     * key
+     */
+    K key;
+    /**
+     * value
+     */
+    V value;
+    /**
+     * memory cost of entry
+     */
+    int64_t cost;
+    /**
+     * entry creation time
+     */
+    int64_t creation_time;
+    /**
+     * entry expiration time if ttl is defined.
+     */
+    int64_t expiration_time;
+    /**
+     * number of hits.
+     */
+    int64_t hits;
+    /**
+     * last access time
+     */
+    int64_t last_access_time;
+    /**
+     * last stored time.
+     */
+    int64_t last_stored_time;
+    /**
+     * last update time.
+     */
+    int64_t last_update_time;
+    /**
+     * version.
+     */
+    int64_t version;
+};
+} // namespace client
+} // namespace hazelcast

@@ -19,13 +19,13 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API Clearable {
-        public:
-            virtual ~Clearable();
+namespace util {
+class HAZELCAST_API Clearable
+{
+public:
+    virtual ~Clearable();
 
-            virtual void clear() = 0;
-        };
-    }
-}
-
+    virtual void clear() = 0;
+};
+} // namespace util
+} // namespace hazelcast

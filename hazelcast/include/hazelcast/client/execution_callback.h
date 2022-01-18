@@ -20,46 +20,44 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace exception {
-            class iexception;
-        }
-        /**
-         * execution_callback allows to asynchronously get notified when the execution is completed,
-         * either successfully or with error.
-         *
-         * @param <V> value
-         */
-        template <typename V>
-        class execution_callback {
-        public:
-            virtual ~execution_callback() = default;
-
-            /**
-             * Called when an execution is completed successfully.
-             *
-             * @param response the result of the successful execution
-             */
-            virtual void on_response(const boost::optional<V> &response) = 0;
-
-            /**
-             * Called when an execution is completed with an error.
-             * @param e the exception that is thrown
-             */
-            virtual void on_failure(std::exception_ptr e) = 0;
-        };
-    }
+namespace client {
+namespace exception {
+class iexception;
 }
+/**
+ * execution_callback allows to asynchronously get notified when the execution
+ * is completed, either successfully or with error.
+ *
+ * @param <V> value
+ */
+template<typename V>
+class execution_callback
+{
+public:
+    virtual ~execution_callback() = default;
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    /**
+     * Called when an execution is completed successfully.
+     *
+     * @param response the result of the successful execution
+     */
+    virtual void on_response(const boost::optional<V>& response) = 0;
+
+    /**
+     * Called when an execution is completed with an error.
+     * @param e the exception that is thrown
+     */
+    virtual void on_failure(std::exception_ptr e) = 0;
+};
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

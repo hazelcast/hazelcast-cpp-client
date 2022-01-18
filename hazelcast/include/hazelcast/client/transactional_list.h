@@ -18,37 +18,42 @@
 #include "hazelcast/client/proxy/TransactionalListImpl.h"
 
 namespace hazelcast {
-    namespace client {
-        /**
-         * Transactional implementation of ilist.
-         */
-        class transactional_list : public proxy::TransactionalListImpl {
-            friend class transaction_context;
-        public:
-            /**
-             * Add new item to transactional list
-             * @param e item
-             * @return true if item is added successfully
-             */
-            template<typename E>
-            boost::future<bool> add(const E &e) {
-                return proxy::TransactionalListImpl::add(to_data(e));
-            }
+namespace client {
+/**
+ * Transactional implementation of ilist.
+ */
+class transactional_list : public proxy::TransactionalListImpl
+{
+    friend class transaction_context;
 
-            /**
-             * Add item from transactional list
-             * @param e item
-             * @return true if item is remove successfully
-             */
-            template<typename E>
-            boost::future<bool> remove(const E &e) {
-                return proxy::TransactionalListImpl::remove(to_data(e));
-            }
-
-        private:
-            transactional_list(const std::string &instance_name, txn::TransactionProxy &context)
-                    : proxy::TransactionalListImpl(instance_name, context) {}
-        };
+public:
+    /**
+     * Add new item to transactional list
+     * @param e item
+     * @return true if item is added successfully
+     */
+    template<typename E>
+    boost::future<bool> add(const E& e)
+    {
+        return proxy::TransactionalListImpl::add(to_data(e));
     }
-}
 
+    /**
+     * Add item from transactional list
+     * @param e item
+     * @return true if item is remove successfully
+     */
+    template<typename E>
+    boost::future<bool> remove(const E& e)
+    {
+        return proxy::TransactionalListImpl::remove(to_data(e));
+    }
+
+private:
+    transactional_list(const std::string& instance_name,
+                       txn::TransactionProxy& context)
+      : proxy::TransactionalListImpl(instance_name, context)
+    {}
+};
+} // namespace client
+} // namespace hazelcast

@@ -18,38 +18,41 @@
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            namespace pimpl {
-                class data;
-            }
-        }
-        namespace proxy {
-            class HAZELCAST_API TransactionalMultiMapImpl : public TransactionalObject {
-            public:
-                /**
-                * Transactional implementation of Multimap#size().
-                *
-                * @see Multimap#size()
-                */
-                boost::future<int> size();
-
-            protected:
-                TransactionalMultiMapImpl(const std::string &name, txn::TransactionProxy &transaction_proxy);
-
-                boost::future<bool>
-                put_data(const serialization::pimpl::data &key, const serialization::pimpl::data &value);
-
-                boost::future<std::vector<serialization::pimpl::data>> get_data(const serialization::pimpl::data &key);
-
-                boost::future<bool>
-                remove(const serialization::pimpl::data &key, const serialization::pimpl::data &value);
-
-                boost::future<std::vector<serialization::pimpl::data>>
-                remove_data(const serialization::pimpl::data &key);
-
-                boost::future<int> value_count(const serialization::pimpl::data &key);
-            };
-        }
-    }
+namespace client {
+namespace serialization {
+namespace pimpl {
+class data;
 }
+} // namespace serialization
+namespace proxy {
+class HAZELCAST_API TransactionalMultiMapImpl : public TransactionalObject
+{
+public:
+    /**
+     * Transactional implementation of Multimap#size().
+     *
+     * @see Multimap#size()
+     */
+    boost::future<int> size();
+
+protected:
+    TransactionalMultiMapImpl(const std::string& name,
+                              txn::TransactionProxy& transaction_proxy);
+
+    boost::future<bool> put_data(const serialization::pimpl::data& key,
+                                 const serialization::pimpl::data& value);
+
+    boost::future<std::vector<serialization::pimpl::data>> get_data(
+      const serialization::pimpl::data& key);
+
+    boost::future<bool> remove(const serialization::pimpl::data& key,
+                               const serialization::pimpl::data& value);
+
+    boost::future<std::vector<serialization::pimpl::data>> remove_data(
+      const serialization::pimpl::data& key);
+
+    boost::future<int> value_count(const serialization::pimpl::data& key);
+};
+} // namespace proxy
+} // namespace client
+} // namespace hazelcast

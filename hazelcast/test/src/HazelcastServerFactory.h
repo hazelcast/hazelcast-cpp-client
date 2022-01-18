@@ -16,7 +16,7 @@
 
 #pragma once
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <crtdefs.h>
 #endif
 
@@ -29,29 +29,30 @@
 #include "cpp-controller/remote_controller_types.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace test {
+namespace client {
+namespace test {
 
-            class HazelcastServerFactory {
-            public:
-                HazelcastServerFactory(const std::string &server_xml_config_file_path);
+class HazelcastServerFactory
+{
+public:
+    HazelcastServerFactory(const std::string& server_xml_config_file_path);
 
-                remote::Member start_server();
+    remote::Member start_server();
 
-                bool shutdown_server(const remote::Member &member);
+    bool shutdown_server(const remote::Member& member);
 
-                bool terminate_server(const remote::Member &member);
+    bool terminate_server(const remote::Member& member);
 
-                const std::string &get_cluster_id() const;
+    const std::string& get_cluster_id() const;
 
-                ~HazelcastServerFactory();
+    ~HazelcastServerFactory();
 
-            private:
-                std::shared_ptr<logger> logger_;
-                std::string cluster_id_;
+private:
+    std::shared_ptr<logger> logger_;
+    std::string cluster_id_;
 
-                std::string read_from_xml_file(const std::string &xml_file_path);
-            };
-        }
-    }
-}
+    std::string read_from_xml_file(const std::string& xml_file_path);
+};
+} // namespace test
+} // namespace client
+} // namespace hazelcast

@@ -22,45 +22,45 @@
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/address.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class load_balancer;
+namespace client {
+class load_balancer;
 
-        namespace connection {
-            class Connection;
-        }
-        namespace spi {
-            class ClientContext;
-            namespace impl {
-                class HAZELCAST_API ClientTransactionManagerServiceImpl {
-                public:
-                    ClientTransactionManagerServiceImpl(ClientContext &client);
-
-                    ClientContext &get_client() const;
-
-                    std::shared_ptr<connection::Connection> connect();
-
-                private:
-                    ClientContext &client_;
-
-                    std::exception_ptr
-                    new_operation_timeout_exception(std::exception_ptr cause, std::chrono::milliseconds invocation_timeout,
-                                                 std::chrono::steady_clock::time_point start_time);
-
-                    void throw_exception(bool smart_routing);
-                };
-            }
-        }
-    }
+namespace connection {
+class Connection;
 }
+namespace spi {
+class ClientContext;
+namespace impl {
+class HAZELCAST_API ClientTransactionManagerServiceImpl
+{
+public:
+    ClientTransactionManagerServiceImpl(ClientContext& client);
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    ClientContext& get_client() const;
+
+    std::shared_ptr<connection::Connection> connect();
+
+private:
+    ClientContext& client_;
+
+    std::exception_ptr new_operation_timeout_exception(
+      std::exception_ptr cause,
+      std::chrono::milliseconds invocation_timeout,
+      std::chrono::steady_clock::time_point start_time);
+
+    void throw_exception(bool smart_routing);
+};
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

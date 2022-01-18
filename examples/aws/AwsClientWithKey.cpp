@@ -14,31 +14,42 @@
  * limitations under the License.
  */
 /**
- * You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since Aws depends on openssl library.
+ * You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since Aws
+ * depends on openssl library.
  *
  * DO NOT FORGET to make sure that openssl is installed.
  *
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4996) //for dll export
+#pragma warning(disable : 4996) // for dll export
 #endif
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config clientConfig;
 
-    // The default is to use port 5701 if this is not explicitly set. You can enable the below line if your hazelcast
-    // server is running on another port.
-    //clientConfig.setProperty(hazelcast::client::ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
+    // The default is to use port 5701 if this is not explicitly set. You can
+    // enable the below line if your hazelcast server is running on another
+    // port.
+    // clientConfig.setProperty(hazelcast::client::ClientProperties::PROP_AWS_MEMBER_PORT,
+    // "60000");
 
-    // The following assumes that you provide the environment parameters AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-    clientConfig.get_network_config().get_aws_config().set_enabled(true).
-            set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
-            set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1").set_security_group_name("MySecureGroup").
-            set_region("us-east-1");
-    
+    // The following assumes that you provide the environment parameters
+    // AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+    clientConfig.get_network_config()
+      .get_aws_config()
+      .set_enabled(true)
+      .set_access_key(getenv("AWS_ACCESS_KEY_ID"))
+      .set_secret_key(getenv("AWS_SECRET_ACCESS_KEY"))
+      .set_tag_key("aws-test-tag")
+      .set_tag_value("aws-tag-value-1")
+      .set_security_group_name("MySecureGroup")
+      .set_region("us-east-1");
+
     auto hz = hazelcast::new_client(std::move(clientConfig)).get();
 
     auto map = hz.get_map("MyMap").get();
@@ -57,6 +68,6 @@ int main() {
     return 0;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif

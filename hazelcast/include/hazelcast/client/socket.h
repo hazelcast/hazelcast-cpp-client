@@ -20,54 +20,54 @@
 #include "hazelcast/client/config/socket_options.h"
 #include "hazelcast/client/address.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace connection {
-            class Connection;
-        }
-
-        namespace spi {
-            namespace impl {
-                class ClientInvocation;
-            }
-        }
-
-        class HAZELCAST_API socket {
-        public:
-            virtual ~socket() = default;
-
-            virtual void connect(const std::shared_ptr<connection::Connection> connection) = 0;
-
-            virtual void
-            async_write(const std::shared_ptr<connection::Connection> connection,
-                        const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
-
-            virtual void close() = 0;
-
-            virtual address get_address() const = 0;
-
-            /**
-             *
-             * This function is used to obtain the locally bound endpoint of the socket.
-             *
-             * @returns An address that represents the local endpoint of the socket.
-             */
-            virtual boost::optional<address> local_socket_address() const = 0;
-
-            virtual const address &get_remote_endpoint() const = 0;
-
-            virtual boost::asio::io_context::strand &get_executor() noexcept = 0;
-        };
-    }
+namespace client {
+namespace connection {
+class Connection;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+namespace spi {
+namespace impl {
+class ClientInvocation;
+}
+} // namespace spi
+
+class HAZELCAST_API socket
+{
+public:
+    virtual ~socket() = default;
+
+    virtual void connect(
+      const std::shared_ptr<connection::Connection> connection) = 0;
+
+    virtual void async_write(
+      const std::shared_ptr<connection::Connection> connection,
+      const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
+
+    virtual void close() = 0;
+
+    virtual address get_address() const = 0;
+
+    /**
+     *
+     * This function is used to obtain the locally bound endpoint of the socket.
+     *
+     * @returns An address that represents the local endpoint of the socket.
+     */
+    virtual boost::optional<address> local_socket_address() const = 0;
+
+    virtual const address& get_remote_endpoint() const = 0;
+
+    virtual boost::asio::io_context::strand& get_executor() noexcept = 0;
+};
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

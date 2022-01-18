@@ -18,33 +18,52 @@
 
 #include <hazelcast/client/hazelcast.h>
 
-class NearCacheSupport {
+class NearCacheSupport
+{
 public:
-    static constexpr int CACHE_INVALIDATION_MESSAGE_BATCH_FREQUENCY_SECONDS = 10; // seconds
+    static constexpr int CACHE_INVALIDATION_MESSAGE_BATCH_FREQUENCY_SECONDS =
+      10; // seconds
 
-    static void print_near_cache_stats(std::shared_ptr<hazelcast::client::imap> &map, const char *message) {
+    static void print_near_cache_stats(
+      std::shared_ptr<hazelcast::client::imap>& map,
+      const char* message)
+    {
         auto stats = map->get_local_map_stats().get_near_cache_stats();
-        printf("%s (%ld entries, %ld hits, %ld misses, %ld evictions, %ld expirations)\n",
-               message, (long) stats->get_owned_entry_count(), (long) stats->get_hits(), (long) stats->get_misses(),
-               (long) stats->get_evictions(), (long) stats->get_expirations());
+        printf("%s (%ld entries, %ld hits, %ld misses, %ld evictions, %ld "
+               "expirations)\n",
+               message,
+               (long)stats->get_owned_entry_count(),
+               (long)stats->get_hits(),
+               (long)stats->get_misses(),
+               (long)stats->get_evictions(),
+               (long)stats->get_expirations());
     }
 
-    static void print_near_cache_stats(std::shared_ptr<hazelcast::client::imap> &map) {
+    static void print_near_cache_stats(
+      std::shared_ptr<hazelcast::client::imap>& map)
+    {
         auto stats = map->get_local_map_stats().get_near_cache_stats();
 
-        printf("The Near Cache contains %ld entries.\n", (long) stats->get_owned_entry_count());
-        printf("The first article instance was retrieved from the remote instance (Near Cache misses: %ld).\n",
-               (long) stats->get_misses());
-        printf("The second and third article instance were retrieved from the local Near Cache (Near Cache hits: %ld).\n",
-               (long) stats->get_hits());
+        printf("The Near Cache contains %ld entries.\n",
+               (long)stats->get_owned_entry_count());
+        printf("The first article instance was retrieved from the remote "
+               "instance (Near Cache misses: %ld).\n",
+               (long)stats->get_misses());
+        printf("The second and third article instance were retrieved from the "
+               "local Near Cache (Near Cache hits: %ld).\n",
+               (long)stats->get_hits());
     }
 
-    static void wait_for_invalidation_events() {
-        std::this_thread::sleep_for(std::chrono::seconds(2 * CACHE_INVALIDATION_MESSAGE_BATCH_FREQUENCY_SECONDS));
+    static void wait_for_invalidation_events()
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(
+          2 * CACHE_INVALIDATION_MESSAGE_BATCH_FREQUENCY_SECONDS));
     }
 
-    static void
-    wait_for_near_cache_eviction_count(std::shared_ptr<hazelcast::client::imap> &map, int64_t expected_eviction_count) {
+    static void wait_for_near_cache_eviction_count(
+      std::shared_ptr<hazelcast::client::imap>& map,
+      int64_t expected_eviction_count)
+    {
         int64_t evictionCount;
         do {
             auto stats = map->get_local_map_stats().get_near_cache_stats();

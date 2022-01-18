@@ -22,68 +22,64 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/util/Preconditions.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace config {
-            class HAZELCAST_API logger_config {
-            public:
-                /**
-                 * Minimum level of log messages to be printed.
-                 * Log messages with a severity level below this level will be ignored.
-                 * \return minimum severity level 
-                 */
-                logger::level level() {
-                    return level_;
-                }
+namespace client {
+namespace config {
+class HAZELCAST_API logger_config
+{
+public:
+    /**
+     * Minimum level of log messages to be printed.
+     * Log messages with a severity level below this level will be ignored.
+     * \return minimum severity level
+     */
+    logger::level level() { return level_; }
 
-                /**
-                 * Set the minimum severity level of log messages to be printed.
-                 * Log messages with a severity level below this level will be ignored.
-                 * \return *this
-                 */
-                logger_config &level(logger::level level) {
-                    level_ = level;
-                    return *this;
-                }
-
-
-                /**
-                 * \return log handler function 
-                 */
-                logger::handler_type handler() {
-                    return handler_;
-                }
-
-                /**
-                 * Set a log handler function to be invoked on each log message.
-                 * Setting this config will cause the default logging behaviour to be disabled.
-                 * The handler function takes the instance and cluster name of the client, the file
-                 * and the line number from which the log was emitted, the severity level, and the
-                 * log message. 
-                 * \warning The handler function must be thread-safe.
-                 * \return *this
-                 */
-                logger_config &handler(logger::handler_type handler) {
-                    util::Preconditions::check_true(handler, "log handler may not be empty");
-                    handler_ = std::move(handler);
-                    return *this;
-                }
-
-            private:
-                logger::level level_{ logger::level::info };
-                logger::handler_type handler_{ logger::default_handler };
-            };
-        }
+    /**
+     * Set the minimum severity level of log messages to be printed.
+     * Log messages with a severity level below this level will be ignored.
+     * \return *this
+     */
+    logger_config& level(logger::level level)
+    {
+        level_ = level;
+        return *this;
     }
-}
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    /**
+     * \return log handler function
+     */
+    logger::handler_type handler() { return handler_; }
+
+    /**
+     * Set a log handler function to be invoked on each log message.
+     * Setting this config will cause the default logging behaviour to be
+     * disabled. The handler function takes the instance and cluster name of the
+     * client, the file and the line number from which the log was emitted, the
+     * severity level, and the log message. \warning The handler function must
+     * be thread-safe. \return *this
+     */
+    logger_config& handler(logger::handler_type handler)
+    {
+        util::Preconditions::check_true(handler,
+                                        "log handler may not be empty");
+        handler_ = std::move(handler);
+        return *this;
+    }
+
+private:
+    logger::level level_{ logger::level::info };
+    logger::handler_type handler_{ logger::default_handler };
+};
+} // namespace config
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

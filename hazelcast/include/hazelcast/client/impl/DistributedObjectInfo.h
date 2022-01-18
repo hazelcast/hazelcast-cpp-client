@@ -18,35 +18,34 @@
 #include "hazelcast/util/export.h"
 #include <string>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace impl {
-            class HAZELCAST_API DistributedObjectInfo {
-            public:
-                DistributedObjectInfo();
+namespace client {
+namespace impl {
+class HAZELCAST_API DistributedObjectInfo
+{
+public:
+    DistributedObjectInfo();
 
-                DistributedObjectInfo(const std::string &serviceName, const std::string &name);
+    DistributedObjectInfo(const std::string& serviceName,
+                          const std::string& name);
 
-                const std::string &get_service_name() const;
+    const std::string& get_service_name() const;
 
-                const std::string &get_name() const;
+    const std::string& get_name() const;
 
-            private:
-                std::string serviceName;
-                std::string name;
-            };
-        }
-    }
-}
+private:
+    std::string serviceName;
+    std::string name;
+};
+} // namespace impl
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

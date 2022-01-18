@@ -20,42 +20,40 @@
 
 #include "hazelcast/client/internal/nearcache/impl/record/AbstractNearCacheRecord.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace nearcache {
-                namespace impl {
-                    namespace record {
-                        /**
-                         * Implementation of {@link NearCacheRecord} to store
-                         * any object type without {@link com.hazelcast.nio.serialization.Data} type.
-                         *
-                         * @param <V> type of object instances to store.
-                         */
-                        template <typename V>
-                        class NearCacheObjectRecord
-                                : public AbstractNearCacheRecord<V> {
-                        public:
-                            NearCacheObjectRecord(const std::shared_ptr<V> &value,
-                                                int64_t creation_time, int64_t expiry_time)
-                                    : AbstractNearCacheRecord<V>(value, creation_time, expiry_time) {
-                            }
-                        };
-                    }
-                }
-            }
-        }
-    }
-}
+namespace client {
+namespace internal {
+namespace nearcache {
+namespace impl {
+namespace record {
+/**
+ * Implementation of {@link NearCacheRecord} to store
+ * any object type without {@link com.hazelcast.nio.serialization.Data} type.
+ *
+ * @param <V> type of object instances to store.
+ */
+template<typename V>
+class NearCacheObjectRecord : public AbstractNearCacheRecord<V>
+{
+public:
+    NearCacheObjectRecord(const std::shared_ptr<V>& value,
+                          int64_t creation_time,
+                          int64_t expiry_time)
+      : AbstractNearCacheRecord<V>(value, creation_time, expiry_time)
+    {}
+};
+} // namespace record
+} // namespace impl
+} // namespace nearcache
+} // namespace internal
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

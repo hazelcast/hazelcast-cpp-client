@@ -15,13 +15,16 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     hazelcast::client::transaction_options txOptions;
     txOptions.set_timeout(std::chrono::seconds(10));
 
-    hazelcast::client::transaction_context txCxt = hz.new_transaction_context(txOptions);
+    hazelcast::client::transaction_context txCxt =
+      hz.new_transaction_context(txOptions);
 
     try {
         txCxt.begin_transaction().get();
@@ -32,7 +35,7 @@ int main() {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
         map->put<std::string, std::string>("2", "2").get();
         txCxt.commit_transaction().get();
-    } catch (hazelcast::client::exception::iexception &e) {
+    } catch (hazelcast::client::exception::iexception& e) {
         txCxt.rollback_transaction().get();
         std::cerr << "Transaction failed !!! " << e.what() << std::endl;
         exit(-1);
@@ -42,4 +45,3 @@ int main() {
 
     return 0;
 }
-

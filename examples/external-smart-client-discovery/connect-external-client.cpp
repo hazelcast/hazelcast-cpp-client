@@ -15,14 +15,17 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main(int argc, char **argv) {
+int
+main(int argc, char** argv)
+{
     hazelcast::client::client_config config;
     constexpr int server_port = 5701;
-    constexpr const char *server_public_address = "myserver.publicaddress.com";
+    constexpr const char* server_public_address = "myserver.publicaddress.com";
     config.get_network_config().use_public_address(true).add_address(
-            hazelcast::client::address{server_public_address, server_port});
-    // The client will try to connect to the cluster initially using the provided server public address and
-    // it will connect to the other members of the cluster using their public interfaces if available.
+      hazelcast::client::address{ server_public_address, server_port });
+    // The client will try to connect to the cluster initially using the
+    // provided server public address and it will connect to the other members
+    // of the cluster using their public interfaces if available.
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();

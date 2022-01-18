@@ -17,29 +17,28 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace aws {
-            namespace impl {
-                struct HAZELCAST_API Constants {
-                    static const char *DATE_FORMAT;
-                    static const char *DOC_VERSION;
-                    static const char *SIGNATURE_METHOD_V4;
-                    static const char *GET;
-                    static const char *ECS_CREDENTIALS_ENV_VAR_NAME;
-                };
-            };
-        }
-    }
-}
+namespace client {
+namespace aws {
+namespace impl {
+struct HAZELCAST_API Constants
+{
+    static const char* DATE_FORMAT;
+    static const char* DOC_VERSION;
+    static const char* SIGNATURE_METHOD_V4;
+    static const char* GET;
+    static const char* ECS_CREDENTIALS_ENV_VAR_NAME;
+};
+}; // namespace impl
+} // namespace aws
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

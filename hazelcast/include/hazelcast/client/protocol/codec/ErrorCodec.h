@@ -20,45 +20,49 @@
 #include <boost/optional.hpp>
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            class ClientMessage;
+namespace client {
+namespace protocol {
+class ClientMessage;
 
-            namespace codec {
-                struct HAZELCAST_API StackTraceElement {
-                    std::string declaring_class;
-                    std::string method_name;
-                    boost::optional<std::string> file_name;
-                    int line_number;
-                };
+namespace codec {
+struct HAZELCAST_API StackTraceElement
+{
+    std::string declaring_class;
+    std::string method_name;
+    boost::optional<std::string> file_name;
+    int line_number;
+};
 
-                struct HAZELCAST_API ErrorHolder {
-                    int32_t error_code;
-                    std::string class_name;
-                    boost::optional<std::string> message;
-                    std::vector<codec::StackTraceElement> stack_trace;
+struct HAZELCAST_API ErrorHolder
+{
+    int32_t error_code;
+    std::string class_name;
+    boost::optional<std::string> message;
+    std::vector<codec::StackTraceElement> stack_trace;
 
-                    std::string to_string() const;
-                };
+    std::string to_string() const;
+};
 
-                std::ostream &operator<<(std::ostream &out, const StackTraceElement &trace);
+std::ostream&
+operator<<(std::ostream& out, const StackTraceElement& trace);
 
-                struct HAZELCAST_API ErrorCodec {
-                    static constexpr int32_t EXCEPTION_MESSAGE_TYPE = 0;
+struct HAZELCAST_API ErrorCodec
+{
+    static constexpr int32_t EXCEPTION_MESSAGE_TYPE = 0;
 
-                    static std::vector<ErrorHolder> decode(ClientMessage &client_message);
-                };
-            }
-        }
-    }
-}
+    static std::vector<ErrorHolder> decode(ClientMessage& client_message);
+};
+} // namespace codec
+} // namespace protocol
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif

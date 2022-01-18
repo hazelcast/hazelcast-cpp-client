@@ -25,37 +25,37 @@
 using namespace hazelcast::client::test::remote;
 
 namespace hazelcast {
-    namespace client {
-        namespace test {
+namespace client {
+namespace test {
 
-            class HazelcastServer {
-            public:
+class HazelcastServer
+{
+public:
+    HazelcastServer(HazelcastServerFactory& factory);
 
-                HazelcastServer(HazelcastServerFactory &factory);
+    /**
+     * @returns true if the server were not started before and it is now started
+     * successfully
+     */
+    bool start();
 
-                /**
-                 * @returns true if the server were not started before and it is now started successfully
-                 */
-                bool start();
+    bool shutdown();
 
-                bool shutdown();
+    bool terminate();
 
-                bool terminate();
+    ~HazelcastServer();
 
-                ~HazelcastServer();
+    const remote::Member& get_member() const;
 
-                const remote::Member &get_member() const;
+    const std::string& cluster_id() const;
 
-                const std::string &cluster_id() const;
-
-            private:
-                HazelcastServerFactory & factory_;
-                std::atomic_bool is_started_;
-                std::atomic_bool is_shutdown_;
-                remote::Member member_;
-                std::shared_ptr<logger> logger_;
-            };
-        }
-    }
-}
-
+private:
+    HazelcastServerFactory& factory_;
+    std::atomic_bool is_started_;
+    std::atomic_bool is_shutdown_;
+    remote::Member member_;
+    std::shared_ptr<logger> logger_;
+};
+} // namespace test
+} // namespace client
+} // namespace hazelcast

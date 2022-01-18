@@ -19,53 +19,53 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                /**
-                 * Expiring data model interface.
-                 * <p>This interface provides a time variable to be compared against other time values
-                 * to decide on "future" or "past".</p>
-                 */
-                class HAZELCAST_API Expirable {
-                public:
-                    virtual ~Expirable() = default;
+namespace client {
+namespace internal {
+namespace eviction {
+/**
+ * Expiring data model interface.
+ * <p>This interface provides a time variable to be compared against other time
+ * values to decide on "future" or "past".</p>
+ */
+class HAZELCAST_API Expirable
+{
+public:
+    virtual ~Expirable() = default;
 
-                    /**
-                     * Gets the expiration time in milliseconds.
-                     * @return expiration time.
-                     * @see System#currentTimeMillis()
-                     */
-                    virtual int64_t get_expiration_time() const = 0;
+    /**
+     * Gets the expiration time in milliseconds.
+     * @return expiration time.
+     * @see System#currentTimeMillis()
+     */
+    virtual int64_t get_expiration_time() const = 0;
 
-                    /**
-                     * Sets the expiration time in milliseconds.
-                     * @param expirationTime
-                     * @see System#currentTimeMillis()
-                     */
-                    virtual void set_expiration_time(int64_t expiration_time) = 0;
+    /**
+     * Sets the expiration time in milliseconds.
+     * @param expirationTime
+     * @see System#currentTimeMillis()
+     */
+    virtual void set_expiration_time(int64_t expiration_time) = 0;
 
-                    /**
-                     * Checks whether the expiration time is passed with respect to the provided time.
-                     * <p>Returns <tt>true</tt> if and only if {@code now > getExpirationTime()}</p>.
-                     * @param now time in milliseconds.
-                     * @return true if expired.
-                     */
-                    virtual bool is_expired_at(int64_t now) const = 0;
-                };
-            }
-        }
-    }
+    /**
+     * Checks whether the expiration time is passed with respect to the provided
+     * time. <p>Returns <tt>true</tt> if and only if {@code now >
+     * getExpirationTime()}</p>.
+     * @param now time in milliseconds.
+     * @return true if expired.
+     */
+    virtual bool is_expired_at(int64_t now) const = 0;
 };
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
-
+#endif

@@ -20,65 +20,66 @@
 #include <string>
 #include <boost/thread/future.hpp>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#pragma warning(disable: 4250) //for warning class1' : inherits 'class2::member' via dominance
+#pragma warning(disable : 4251) // for dll export
+#pragma warning(disable : 4250) // for warning class1' : inherits
+                                // 'class2::member' via dominance
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace impl {
-            class hazelcast_client_instance_impl;
-        }
-
-        /**
-        * Base class for all distributed objects.
-        *
-        * @see IMap
-        * @see MultiMap
-        * @see IQueue
-        * @see IList
-        * @see ISet
-        * @see ITopic
-        * @see TransactionalMap
-        * @see TransactionalQueue
-        * @see TransactionalMultiMap
-        * @see TransactionalSet
-        * @see TransactionalList
-        */
-        class HAZELCAST_API distributed_object {
-            friend class impl::hazelcast_client_instance_impl;
-
-        public:
-            /**
-            * Returns the service name for this object.
-            */
-            virtual const std::string& get_service_name() const = 0;
-
-            /**
-            * Returns the unique name for this DistributedObject.
-            *
-            * @return the unique name for this object.
-            */
-            virtual const std::string& get_name() const = 0;
-
-            /**
-            * Destroys this object cluster-wide.
-            * Clears and releases all resources for this object.
-            */
-            virtual boost::future<void> destroy() = 0;
-
-            /**
-            * Destructor
-            */
-            virtual ~distributed_object() = default;
-        };
-
-    }
+namespace client {
+namespace impl {
+class hazelcast_client_instance_impl;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/**
+ * Base class for all distributed objects.
+ *
+ * @see IMap
+ * @see MultiMap
+ * @see IQueue
+ * @see IList
+ * @see ISet
+ * @see ITopic
+ * @see TransactionalMap
+ * @see TransactionalQueue
+ * @see TransactionalMultiMap
+ * @see TransactionalSet
+ * @see TransactionalList
+ */
+class HAZELCAST_API distributed_object
+{
+    friend class impl::hazelcast_client_instance_impl;
+
+public:
+    /**
+     * Returns the service name for this object.
+     */
+    virtual const std::string& get_service_name() const = 0;
+
+    /**
+     * Returns the unique name for this DistributedObject.
+     *
+     * @return the unique name for this object.
+     */
+    virtual const std::string& get_name() const = 0;
+
+    /**
+     * Destroys this object cluster-wide.
+     * Clears and releases all resources for this object.
+     */
+    virtual boost::future<void> destroy() = 0;
+
+    /**
+     * Destructor
+     */
+    virtual ~distributed_object() = default;
+};
+
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

@@ -21,46 +21,50 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace pt = boost::property_tree;
 
 namespace hazelcast {
-    class logger;
+class logger;
 
-    namespace client {
-        namespace config {
-            class client_aws_config;
-        }
-        namespace aws {
-            namespace utility {
-                class HAZELCAST_API cloud_utility {
-                public:
-                    /**
-                     * Unmarshal the response from {@link DescribeInstances} and return the discovered node map.
-                     * The map contains mappings from private to public IP.
-                     * If there is an exception while unmarshalling the response, returns an empty map.
-                     *
-                     * @param stream    the response XML stream
-                     * @param logger the logger to be used for logging any warnings during unmarshal.
-                     * @return map from private to public IP or empty map in case of exceptions
-                     */
-                    static std::unordered_map<std::string, std::string> unmarshal_the_response(std::istream &stream,
-                            logger &lg);
-
-                    static void unmarshal_json_response(std::istream &stream, config::client_aws_config &aws_config,
-                                                      std::unordered_map<std::string, std::string> &attributes);
-                };
-            }
-        }
-    }
+namespace client {
+namespace config {
+class client_aws_config;
 }
+namespace aws {
+namespace utility {
+class HAZELCAST_API cloud_utility
+{
+public:
+    /**
+     * Unmarshal the response from {@link DescribeInstances} and return the
+     * discovered node map. The map contains mappings from private to public IP.
+     * If there is an exception while unmarshalling the response, returns an
+     * empty map.
+     *
+     * @param stream    the response XML stream
+     * @param logger the logger to be used for logging any warnings during
+     * unmarshal.
+     * @return map from private to public IP or empty map in case of exceptions
+     */
+    static std::unordered_map<std::string, std::string> unmarshal_the_response(
+      std::istream& stream,
+      logger& lg);
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    static void unmarshal_json_response(
+      std::istream& stream,
+      config::client_aws_config& aws_config,
+      std::unordered_map<std::string, std::string>& attributes);
+};
+} // namespace utility
+} // namespace aws
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

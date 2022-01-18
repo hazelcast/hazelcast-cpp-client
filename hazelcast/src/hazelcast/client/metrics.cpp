@@ -32,8 +32,9 @@ constexpr int VALUE_TYPE_LONG = 0;
 
 constexpr byte BINARY_FORMAT_VERSION = 1;
 
-
-std::size_t find_common_prefix_length(const std::string &s1, const std::string &s2) {
+std::size_t
+find_common_prefix_length(const std::string& s1, const std::string& s2)
+{
     std::size_t len = 0;
     while (len < s1.size() && len < s2.size() && s1[len] == s2[len]) {
         len++;
@@ -42,19 +43,21 @@ std::size_t find_common_prefix_length(const std::string &s1, const std::string &
 }
 
 /**
-* ZLIB compress with compression level of 0 (no compression)
-* 
-* References:
-*   https://datatracker.ietf.org/doc/html/rfc1950
-*   https://datatracker.ietf.org/doc/html/rfc1951
-*   https://en.wikipedia.org/wiki/Adler-32
-*/
-std::vector<byte> zlib_compress(const std::vector<byte> &input)
+ * ZLIB compress with compression level of 0 (no compression)
+ *
+ * References:
+ *   https://datatracker.ietf.org/doc/html/rfc1950
+ *   https://datatracker.ietf.org/doc/html/rfc1951
+ *   https://en.wikipedia.org/wiki/Adler-32
+ */
+std::vector<byte>
+zlib_compress(const std::vector<byte>& input)
 {
     constexpr std::size_t max_block_size = (1 << 16) - 1;
 
     const size_t num_blocks =
-      (std::max)(static_cast<std::size_t>(1), (input.size() + max_block_size - 1) / max_block_size);
+      (std::max)(static_cast<std::size_t>(1),
+                 (input.size() + max_block_size - 1) / max_block_size);
 
     std::vector<byte> output;
 
@@ -72,19 +75,22 @@ std::vector<byte> zlib_compress(const std::vector<byte> &input)
     constexpr long adler32_mod = 65521;
     long a1 = 1, a2 = 0; // accumulators for Adler32 checksum
 
-    for (std::size_t block_start = 0U; block_start == 0U || block_start < input.size();
+    for (std::size_t block_start = 0U;
+         block_start == 0U || block_start < input.size();
          block_start += max_block_size) {
-        const auto block_end = (std::min)(block_start + max_block_size, input.size());
+        const auto block_end =
+          (std::min)(block_start + max_block_size, input.size());
         const auto block_size = block_end - block_start;
 
         const bool is_final = block_end == input.size();
 
         // block header
-        output.push_back(static_cast<byte>(is_final)); // BFINAL = is_final, BTYPE = 00
-        output.push_back(block_size & 0xff);           // LEN - least significant
-        output.push_back(block_size >> 8);             // LEN - most significant
-        output.push_back((~block_size) & 0xff);        // NLEN - least significant
-        output.push_back((~block_size) >> 8);          // NLEN - most significant
+        output.push_back(
+          static_cast<byte>(is_final));         // BFINAL = is_final, BTYPE = 00
+        output.push_back(block_size & 0xff);    // LEN - least significant
+        output.push_back(block_size >> 8);      // LEN - most significant
+        output.push_back((~block_size) & 0xff); // NLEN - least significant
+        output.push_back((~block_size) >> 8);   // NLEN - most significant
 
         // copy uncompressed bytes and accumulate checksum
         for (std::size_t i = block_start; i < block_end; i++) {
@@ -120,44 +126,56 @@ metric_descriptor::metric_descriptor(std::string prefix,
                                      std::string discriminator,
                                      std::string discriminator_value,
                                      probe_unit unit)
-    : prefix_{ std::move(prefix) }
-    , metric_{ std::move(metric) }
-    , discriminator_{ std::move(discriminator) }
-    , discriminator_value_{ std::move(discriminator_value) }
-    , unit_{ unit }
+  : prefix_{ std::move(prefix) }
+  , metric_{ std::move(metric) }
+  , discriminator_{ std::move(discriminator) }
+  , discriminator_value_{ std::move(discriminator_value) }
+  , unit_{ unit }
 {}
 
 metric_descriptor::metric_descriptor(std::string prefix,
                                      std::string metric,
                                      probe_unit unit)
-    : prefix_{ std::move(prefix) }
-    , metric_{ std::move(metric) }
-    , discriminator_{}
-    , discriminator_value_{}
-    , unit_{ unit }
+  : prefix_{ std::move(prefix) }
+  , metric_{ std::move(metric) }
+  , discriminator_{}
+  , discriminator_value_{}
+  , unit_{ unit }
 {}
 
-const std::string &metric_descriptor::prefix() const {
+const std::string&
+metric_descriptor::prefix() const
+{
     return prefix_;
 }
 
-const std::string &metric_descriptor::metric() const {
+const std::string&
+metric_descriptor::metric() const
+{
     return metric_;
 }
 
-const boost::optional<std::string> &metric_descriptor::discriminator() const {
+const boost::optional<std::string>&
+metric_descriptor::discriminator() const
+{
     return discriminator_;
 }
 
-const boost::optional<std::string> &metric_descriptor::discriminator_value() const {
+const boost::optional<std::string>&
+metric_descriptor::discriminator_value() const
+{
     return discriminator_value_;
 }
 
-probe_unit metric_descriptor::unit() const {
+probe_unit
+metric_descriptor::unit() const
+{
     return unit_;
 }
 
-int metrics_dictionary::get_dictionary_id(const std::string &word) {
+int
+metrics_dictionary::get_dictionary_id(const std::string& word)
+{
     if (word.size() > MAX_WORD_LENGTH) {
         throw std::invalid_argument("too long value in metric descriptor");
     }
@@ -169,74 +187,103 @@ int metrics_dictionary::get_dictionary_id(const std::string &word) {
         word_to_id[word] = next_id;
 
         return next_id;
-    }
-    else {
+    } else {
         return word_position->second;
     }
 }
 
-metrics_dictionary::const_iterator metrics_dictionary::begin() const noexcept {
+metrics_dictionary::const_iterator
+metrics_dictionary::begin() const noexcept
+{
     return word_to_id.cbegin();
 }
 
-metrics_dictionary::const_iterator metrics_dictionary::end() const noexcept {
+metrics_dictionary::const_iterator
+metrics_dictionary::end() const noexcept
+{
     return word_to_id.cend();
 }
 
-std::size_t metrics_dictionary::size() const noexcept {
+std::size_t
+metrics_dictionary::size() const noexcept
+{
     return word_to_id.size();
 }
 
-void output_buffer::write(byte val) {
+void
+output_buffer::write(byte val)
+{
     buffer_.push_back(val);
 }
 
-void output_buffer::write(int32_t val) {
+void
+output_buffer::write(int32_t val)
+{
     auto pos = buffer_.size();
     buffer_.resize(pos + sizeof(int32_t));
 
-    boost::endian::endian_store<int32_t, sizeof(int32_t), boost::endian::order::big>(
-      buffer_.data() + pos, val);
+    boost::endian::endian_store<int32_t,
+                                sizeof(int32_t),
+                                boost::endian::order::big>(buffer_.data() + pos,
+                                                           val);
 }
 
-void output_buffer::write(int64_t val) {
+void
+output_buffer::write(int64_t val)
+{
     auto pos = buffer_.size();
     buffer_.resize(pos + sizeof(int64_t));
 
-    boost::endian::endian_store<int64_t, sizeof(int64_t), boost::endian::order::big>(
-      buffer_.data() + pos, val);
+    boost::endian::endian_store<int64_t,
+                                sizeof(int64_t),
+                                boost::endian::order::big>(buffer_.data() + pos,
+                                                           val);
 }
 
-void output_buffer::write(const std::string &str) {
-    for (char c: str) {
+void
+output_buffer::write(const std::string& str)
+{
+    for (char c : str) {
         buffer_.push_back(static_cast<byte>(0));
         buffer_.push_back(c);
     }
 }
 
-void output_buffer::write(const std::vector<byte> &vec) {
+void
+output_buffer::write(const std::vector<byte>& vec)
+{
     buffer_.insert(buffer_.end(), vec.begin(), vec.end());
 }
 
-const std::vector<byte> &output_buffer::content() const {
+const std::vector<byte>&
+output_buffer::content() const
+{
     return buffer_;
 }
 
-std::vector<byte> &output_buffer::content() {
+std::vector<byte>&
+output_buffer::content()
+{
     return buffer_;
 }
 
-void metrics_compressor::add_long(const metric_descriptor &descriptor, int64_t value) {
+void
+metrics_compressor::add_long(const metric_descriptor& descriptor, int64_t value)
+{
     write_descriptor(descriptor);
     metrics_buffer_.write(static_cast<byte>(VALUE_TYPE_LONG));
     metrics_buffer_.write(value);
 }
 
-std::vector<byte> metrics_compressor::get_blob() {
+std::vector<byte>
+metrics_compressor::get_blob()
+{
     write_dictionary();
-    
-    std::vector<byte> compressed_dictionary = zlib_compress(dictionary_buffer_.content());
-    std::vector<byte> compressed_metrics = zlib_compress(metrics_buffer_.content());
+
+    std::vector<byte> compressed_dictionary =
+      zlib_compress(dictionary_buffer_.content());
+    std::vector<byte> compressed_metrics =
+      zlib_compress(metrics_buffer_.content());
 
     output_buffer blob;
 
@@ -250,7 +297,10 @@ std::vector<byte> metrics_compressor::get_blob() {
     return std::move(blob.content());
 }
 
-byte metrics_compressor::calculate_descriptor_mask(const metric_descriptor &descriptor) {
+byte
+metrics_compressor::calculate_descriptor_mask(
+  const metric_descriptor& descriptor)
+{
     byte mask = 0;
 
     if (last_descriptor_) {
@@ -266,14 +316,15 @@ byte metrics_compressor::calculate_descriptor_mask(const metric_descriptor &desc
             mask |= MASK_DISCRIMINATOR;
         }
 
-        if (descriptor.discriminator_value() == last_descriptor_->discriminator_value()) {
+        if (descriptor.discriminator_value() ==
+            last_descriptor_->discriminator_value()) {
             mask |= MASK_DISCRIMINATOR_VALUE;
         }
 
         if (descriptor.unit() == last_descriptor_->unit()) {
             mask |= MASK_UNIT;
         }
-        
+
         // include excludedTargets and tagCount bits for compatibility purposes
         mask |= MASK_EXCLUDED_TARGETS;
         mask |= MASK_TAG_COUNT;
@@ -282,7 +333,9 @@ byte metrics_compressor::calculate_descriptor_mask(const metric_descriptor &desc
     return mask;
 }
 
-int32_t metrics_compressor::get_dictionary_id(const boost::optional<std::string> &word) {
+int32_t
+metrics_compressor::get_dictionary_id(const boost::optional<std::string>& word)
+{
     if (!word) {
         return NULL_DICTIONARY_ID;
     }
@@ -290,7 +343,9 @@ int32_t metrics_compressor::get_dictionary_id(const boost::optional<std::string>
     return static_cast<int32_t>(dictionary_.get_dictionary_id(word.get()));
 }
 
-void metrics_compressor::write_descriptor(const metric_descriptor &descriptor) {
+void
+metrics_compressor::write_descriptor(const metric_descriptor& descriptor)
+{
     byte mask = calculate_descriptor_mask(descriptor);
 
     metrics_buffer_.write(mask);
@@ -308,8 +363,8 @@ void metrics_compressor::write_descriptor(const metric_descriptor &descriptor) {
     }
 
     if ((mask & MASK_DISCRIMINATOR_VALUE) == 0) {
-        metrics_buffer_.write(
-          static_cast<int32_t>(get_dictionary_id(descriptor.discriminator_value())));
+        metrics_buffer_.write(static_cast<int32_t>(
+          get_dictionary_id(descriptor.discriminator_value())));
     }
 
     if ((mask & MASK_UNIT) == 0) {
@@ -328,14 +383,16 @@ void metrics_compressor::write_descriptor(const metric_descriptor &descriptor) {
     metrics_count++;
 }
 
-void metrics_compressor::write_dictionary() {
+void
+metrics_compressor::write_dictionary()
+{
     std::string last_word{ "" };
 
     dictionary_buffer_.write(static_cast<int32_t>(dictionary_.size()));
 
-    for (const auto &item : dictionary_) {
-        const auto &word = item.first;
-        const auto &id = item.second;
+    for (const auto& item : dictionary_) {
+        const auto& word = item.first;
+        const auto& id = item.second;
 
         auto common_len = find_common_prefix_length(last_word, word);
 
@@ -348,7 +405,7 @@ void metrics_compressor::write_dictionary() {
     }
 }
 
-} // namespace statistics
+} // namespace metrics
 } // namespace impl
 } // namespace client
 } // namespace hazelcast

@@ -20,17 +20,17 @@
 #include "hazelcast/client/connection/Connection.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace connection {
-            class HAZELCAST_API ConnectionListener {
-            public:
-                virtual void connection_added(const std::shared_ptr<Connection> connection) = 0;
+namespace client {
+namespace connection {
+class HAZELCAST_API ConnectionListener
+{
+public:
+    virtual void connection_added(
+      const std::shared_ptr<Connection> connection) = 0;
 
-                virtual void connection_removed(const std::shared_ptr<Connection> connection) = 0;
-            };
-        }
-    }
-}
-
-
-
+    virtual void connection_removed(
+      const std::shared_ptr<Connection> connection) = 0;
+};
+} // namespace connection
+} // namespace client
+} // namespace hazelcast

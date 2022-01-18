@@ -19,44 +19,51 @@
 #include <string>
 
 namespace hazelcast {
-    namespace client {
-        namespace proxy {
-            class HAZELCAST_API ITopicImpl : public proxy::ProxyImpl {
-            public:
-                /**
-                * Stops receiving messages for the given message listener. If the given listener already removed,
-                * this method does nothing.
-                *
-                * @param registrationId Id of listener registration.
-                *
-                * @return true if registration is removed, false otherwise
-                */
-                boost::future<bool> remove_message_listener(boost::uuids::uuid registration_id);
+namespace client {
+namespace proxy {
+class HAZELCAST_API ITopicImpl : public proxy::ProxyImpl
+{
+public:
+    /**
+     * Stops receiving messages for the given message listener. If the given
+     * listener already removed, this method does nothing.
+     *
+     * @param registrationId Id of listener registration.
+     *
+     * @return true if registration is removed, false otherwise
+     */
+    boost::future<bool> remove_message_listener(
+      boost::uuids::uuid registration_id);
 
-            protected:
-                ITopicImpl(const std::string& instance_name, spi::ClientContext *context);
+protected:
+    ITopicImpl(const std::string& instance_name, spi::ClientContext* context);
 
-                boost::future<void> publish(const serialization::pimpl::data& data);
+    boost::future<void> publish(const serialization::pimpl::data& data);
 
-                boost::future<boost::uuids::uuid> add_message_listener(std::shared_ptr<impl::BaseEventHandler> topic_event_handler);
+    boost::future<boost::uuids::uuid> add_message_listener(
+      std::shared_ptr<impl::BaseEventHandler> topic_event_handler);
 
-            private:
-                class TopicListenerMessageCodec : public spi::impl::ListenerMessageCodec {
-                public:
-                    TopicListenerMessageCodec(std::string name);
+private:
+    class TopicListenerMessageCodec : public spi::impl::ListenerMessageCodec
+    {
+    public:
+        TopicListenerMessageCodec(std::string name);
 
-                    protocol::ClientMessage encode_add_request(bool local_only) const override;
+        protocol::ClientMessage encode_add_request(
+          bool local_only) const override;
 
-                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid real_registration_id) const override;
+        protocol::ClientMessage encode_remove_request(
+          boost::uuids::uuid real_registration_id) const override;
 
-                private:
-                    std::string name_;
-                };
+    private:
+        std::string name_;
+    };
 
-                int partition_id_;
+    int partition_id_;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> create_item_listener_codec();
-            };
-        }
-    }
-}
+    std::shared_ptr<spi::impl::ListenerMessageCodec>
+    create_item_listener_codec();
+};
+} // namespace proxy
+} // namespace client
+} // namespace hazelcast

@@ -19,17 +19,20 @@
 
 using namespace hazelcast::client;
 
-int main() {
+int
+main()
+{
     client_config config;
-    const char *mapName = "BinaryMap";
+    const char* mapName = "BinaryMap";
     address serverAddr("127.0.0.1", 5701);
     config.get_network_config().add_address(serverAddr);
     config::near_cache_config nearCacheConfig(mapName, config::BINARY);
     nearCacheConfig.set_invalidate_on_change(false);
-    nearCacheConfig.get_eviction_config().set_eviction_policy(config::NONE)
-            .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT);
+    nearCacheConfig.get_eviction_config()
+      .set_eviction_policy(config::NONE)
+      .set_maximum_size_policy(config::eviction_config::ENTRY_COUNT);
     config.add_near_cache_config(nearCacheConfig);
-    hazelcast_client client{hazelcast::new_client(std::move(config)).get()};
+    hazelcast_client client{ hazelcast::new_client(std::move(config)).get() };
 
     auto map = client.get_map(mapName).get();
 
@@ -41,7 +44,8 @@ int main() {
 
     NearCacheSupport::print_near_cache_stats(map);
 
-    printf("Since we use in-memory format BINARY, the instances from the Near Cache will be identical.\n");
+    printf("Since we use in-memory format BINARY, the instances from the Near "
+           "Cache will be identical.\n");
     printf("Compare first and second instance: %d\n", (firstGet == secondGet));
     printf("Compare second and third instance: %d\n", (secondGet == thirdGet));
 

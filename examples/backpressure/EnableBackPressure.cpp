@@ -17,70 +17,77 @@
 
 #include <hazelcast/client/hazelcast_client.h>
 
-class WaitMultiplierProcessor {};
+class WaitMultiplierProcessor
+{};
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<WaitMultiplierProcessor> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 666;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<WaitMultiplierProcessor> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 666; }
 
-                static int32_t get_class_id() noexcept {
-                    return 8;
-                }
+    static int32_t get_class_id() noexcept { return 8; }
 
-                static void write_data(const WaitMultiplierProcessor &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(INT32_MAX);
-                    out.write(5);
-                }
-
-                static WaitMultiplierProcessor read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return WaitMultiplierProcessor{};
-                }
-            };
-        }
+    static void write_data(
+      const WaitMultiplierProcessor& object,
+      hazelcast::client::serialization::object_data_output& out)
+    {
+        out.write(INT32_MAX);
+        out.write(5);
     }
-}
 
-int main() {
+    static WaitMultiplierProcessor read_data(
+      hazelcast::client::serialization::object_data_input& in)
+    {
+        return WaitMultiplierProcessor{};
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+int
+main()
+{
     hazelcast::client::client_config config;
 
     /**
      * The maximum number of concurrent invocations allowed.
      * <p/>
-     * To prevent the system from overloading, user can apply a constraint on the number of concurrent invocations.
-     * If the maximum number of concurrent invocations has been exceeded and a new invocation comes in,
-     * then hazelcast will throw hazelcast_overload
-     * <p/>
-     * By default it is configured as INT32_MAX.
+     * To prevent the system from overloading, user can apply a constraint on
+     * the number of concurrent invocations. If the maximum number of concurrent
+     * invocations has been exceeded and a new invocation comes in, then
+     * hazelcast will throw hazelcast_overload <p/> By default it is configured
+     * as INT32_MAX.
      *
-     * The following sets the maximum allowable outstanding concurrent invocations to 10000.
+     * The following sets the maximum allowable outstanding concurrent
+     * invocations to 10000.
      */
     config.set_property("hazelcast.client.max.concurrent.invocations", "5");
 
     /**
-     * Control the maximum timeout in millis to wait for an invocation space to be available.
-     * <p/>
-     * If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done
-     * to give the system time to deal with the backlog of invocations. This property controls how long an invocation is
-     * allowed to wait before getting a {@link com.hazelcast.core.hazelcast_overload}.
-     * <p/>
-     * <p>
-     * When set to -1 then <code>hazelcast_overload</code> is thrown immediately without any waiting. This is
-     * the default value.
+     * Control the maximum timeout in millis to wait for an invocation space to
+     * be available. <p/> If an invocation can't be made because there are too
+     * many pending invocations, then an exponential backoff is done to give the
+     * system time to deal with the backlog of invocations. This property
+     * controls how long an invocation is allowed to wait before getting a
+     * {@link com.hazelcast.core.hazelcast_overload}. <p/> <p> When set to -1
+     * then <code>hazelcast_overload</code> is thrown immediately without any
+     * waiting. This is the default value.
      * </p>
      *
-     * The following lets a maximum of 2 seconds wait time before throwing the exception.
+     * The following lets a maximum of 2 seconds wait time before throwing the
+     * exception.
      */
-    config.set_property("hazelcast.client.invocation.backoff.timeout.millis", "2000");
+    config.set_property("hazelcast.client.invocation.backoff.timeout.millis",
+                        "2000");
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(1, 1).get();
 
     WaitMultiplierProcessor blockerTask;
@@ -96,7 +103,7 @@ int main() {
     try {
         map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
         std::cout << "This line should not execute!!!" << std::endl;
-    } catch (hazelcast::client::exception::hazelcast_overload &) {
+    } catch (hazelcast::client::exception::hazelcast_overload&) {
         std::cout << "Received the expected overload exception." << std::endl;
     }
 

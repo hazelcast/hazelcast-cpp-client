@@ -15,25 +15,31 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto rb = hz.get_ringbuffer("myringbuffer").get();
 
-    std::cout << "Capacity of the ringbuffer is:" << rb->capacity().get() << std::endl;
+    std::cout << "Capacity of the ringbuffer is:" << rb->capacity().get()
+              << std::endl;
 
     int64_t sequenceNumber = rb->add("First Item").get();
 
-    std::cout << "Added the first item at sequence " << sequenceNumber << std::endl;
+    std::cout << "Added the first item at sequence " << sequenceNumber
+              << std::endl;
 
     rb->add("Second item").get();
 
-    std::cout << "There are " << rb->size().get() << " items in the ring buffer " << std::endl;
+    std::cout << "There are " << rb->size().get()
+              << " items in the ring buffer " << std::endl;
 
     auto val = rb->read_one<std::string>(sequenceNumber).get();
 
     if (val) {
-        std::cout << "The item at read at sequence " << sequenceNumber << " is " << *val << std::endl;
+        std::cout << "The item at read at sequence " << sequenceNumber << " is "
+                  << *val << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

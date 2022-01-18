@@ -23,56 +23,64 @@
 #include "hazelcast/client/member.h"
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace topic {
-            namespace impl {
-                namespace reliable {
-                    class HAZELCAST_API ReliableTopicMessage {
-                        friend struct serialization::hz_serializer<topic::impl::reliable::ReliableTopicMessage>;
-                    public:
-                        ReliableTopicMessage();
+namespace client {
+namespace topic {
+namespace impl {
+namespace reliable {
+class HAZELCAST_API ReliableTopicMessage
+{
+    friend struct serialization::hz_serializer<
+      topic::impl::reliable::ReliableTopicMessage>;
 
-                        ReliableTopicMessage(serialization::pimpl::data &&payload_data, std::unique_ptr<address> address);
+public:
+    ReliableTopicMessage();
 
-                        std::chrono::system_clock::time_point get_publish_time() const;
+    ReliableTopicMessage(serialization::pimpl::data&& payload_data,
+                         std::unique_ptr<address> address);
 
-                        const boost::optional<address> &get_publisher_address() const;
+    std::chrono::system_clock::time_point get_publish_time() const;
 
-                        serialization::pimpl::data &get_payload();
-                    private:
-                        std::chrono::system_clock::time_point publish_time_;
-                        boost::optional<address> publisher_address_;
-                        serialization::pimpl::data payload_;
-                    };
-                }
-            }
-        }
-        namespace serialization {
-            template<>
-            struct HAZELCAST_API hz_serializer<topic::impl::reliable::ReliableTopicMessage> : public identified_data_serializer {
-                static constexpr int32_t F_ID = -9;
-                static constexpr int32_t RELIABLE_TOPIC_MESSAGE = 2;
+    const boost::optional<address>& get_publisher_address() const;
 
-                static int32_t get_factory_id();
+    serialization::pimpl::data& get_payload();
 
-                static int32_t get_class_id();
+private:
+    std::chrono::system_clock::time_point publish_time_;
+    boost::optional<address> publisher_address_;
+    serialization::pimpl::data payload_;
+};
+} // namespace reliable
+} // namespace impl
+} // namespace topic
+namespace serialization {
+template<>
+struct HAZELCAST_API hz_serializer<topic::impl::reliable::ReliableTopicMessage>
+  : public identified_data_serializer
+{
+    static constexpr int32_t F_ID = -9;
+    static constexpr int32_t RELIABLE_TOPIC_MESSAGE = 2;
 
-                static void write_data(const topic::impl::reliable::ReliableTopicMessage &object, object_data_output &out);
+    static int32_t get_factory_id();
 
-                static topic::impl::reliable::ReliableTopicMessage read_data(object_data_input &in);
-            };
-        }
-    }
-}
+    static int32_t get_class_id();
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    static void write_data(
+      const topic::impl::reliable::ReliableTopicMessage& object,
+      object_data_output& out);
+
+    static topic::impl::reliable::ReliableTopicMessage read_data(
+      object_data_input& in);
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

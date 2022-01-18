@@ -19,13 +19,13 @@
 #include "hazelcast/util/export.h"
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API Closeable {
-        public:
-            virtual ~Closeable();
+namespace util {
+class HAZELCAST_API Closeable
+{
+public:
+    virtual ~Closeable();
 
-            virtual void close(const std::string &close_reason) = 0;
-        };
-    }
-}
-
+    virtual void close(const std::string& close_reason) = 0;
+};
+} // namespace util
+} // namespace hazelcast

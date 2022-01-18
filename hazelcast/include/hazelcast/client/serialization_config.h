@@ -20,73 +20,78 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
+#pragma warning(disable : 4251) // for dll export
+#endif
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization{
-            struct global_serializer;
-        }
-
-        /**
-         * SerializationConfig is used to
-         *   * set version of portable classes in this client (@see portable_serializer)
-         */
-        class HAZELCAST_API serialization_config {
-        public:
-            /**
-             * Constructor
-             * default value of version is zero.
-             */
-            serialization_config();
-
-            /**
-             * Portable version will be used to differentiate two same class that have changes on it
-             * , like adding/removing field or changing a type of a field.
-             *
-             *  @return version of portable classes that will be created by this client
-             */
-            int get_portable_version() const;
-
-            /**
-             *
-             * @param v The default portable version to be used.
-             * @return itself serialization_config
-             */
-            serialization_config& set_portable_version(int v);
-
-            std::shared_ptr<serialization::global_serializer> get_global_serializer() const;
-
-            /**
-             * @param global_serializer the serializer to be used when no other serialization can be found for an object
-             * @return itself serialization_config
-             */
-            serialization_config &set_global_serializer(const std::shared_ptr<serialization::global_serializer> &global_serializer);
-
-            /**
-             *
-             * @param byte_order that the serialization will use
-             * @return itself serialization_config
-             */
-            serialization_config &set_byte_order(boost::endian::order byte_order);
-
-            /**
-             *
-             * @return the configured byte endian order
-             */
-            boost::endian::order get_byte_order() const;
-
-        private:
-            int version_;
-            std::shared_ptr<serialization::global_serializer> global_serializer_;
-            boost::endian::order byte_order_ = boost::endian::order::big;
-        };
-    }
+namespace client {
+namespace serialization {
+struct global_serializer;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/**
+ * SerializationConfig is used to
+ *   * set version of portable classes in this client (@see portable_serializer)
+ */
+class HAZELCAST_API serialization_config
+{
+public:
+    /**
+     * Constructor
+     * default value of version is zero.
+     */
+    serialization_config();
+
+    /**
+     * Portable version will be used to differentiate two same class that have
+     * changes on it , like adding/removing field or changing a type of a field.
+     *
+     *  @return version of portable classes that will be created by this client
+     */
+    int get_portable_version() const;
+
+    /**
+     *
+     * @param v The default portable version to be used.
+     * @return itself serialization_config
+     */
+    serialization_config& set_portable_version(int v);
+
+    std::shared_ptr<serialization::global_serializer> get_global_serializer()
+      const;
+
+    /**
+     * @param global_serializer the serializer to be used when no other
+     * serialization can be found for an object
+     * @return itself serialization_config
+     */
+    serialization_config& set_global_serializer(
+      const std::shared_ptr<serialization::global_serializer>&
+        global_serializer);
+
+    /**
+     *
+     * @param byte_order that the serialization will use
+     * @return itself serialization_config
+     */
+    serialization_config& set_byte_order(boost::endian::order byte_order);
+
+    /**
+     *
+     * @return the configured byte endian order
+     */
+    boost::endian::order get_byte_order() const;
+
+private:
+    int version_;
+    std::shared_ptr<serialization::global_serializer> global_serializer_;
+    boost::endian::order byte_order_ = boost::endian::order::big;
+};
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif

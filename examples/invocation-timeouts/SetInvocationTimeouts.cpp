@@ -15,15 +15,19 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
 
     /**
      * Pause time between each retry cycle of an invocation in milliseconds.
      *
-     * Wait only a maximum of 500 msecs between each consecutive retries. The default value is 1000msecs.
+     * Wait only a maximum of 500 msecs between each consecutive retries. The
+     * default value is 1000msecs.
      */
-    config.set_property("hazelcast.client.invocation.retry.pause.millis", "500");
+    config.set_property("hazelcast.client.invocation.retry.pause.millis",
+                        "500");
 
     /**
      * When an invocation gets an exception because :
@@ -31,23 +35,26 @@ int main() {
      * - Connection between the client and member is closed.
      * - Client's heartbeat requests are timed out.
      * Time passed since invocation started is compared with this property.
-     * If the time is already passed, then the exception is delegated to the user. If not, the invocation is retried.
-     * Note that, if invocation gets no exception and it is a long running one, then it will not get any exception,
-     * no matter how small this timeout is set.
+     * If the time is already passed, then the exception is delegated to the
+     * user. If not, the invocation is retried. Note that, if invocation gets no
+     * exception and it is a long running one, then it will not get any
+     * exception, no matter how small this timeout is set.
      *
-     * The following sets the timeout to 30 seconds. The default value is 120 seconds.
+     * The following sets the timeout to 30 seconds. The default value is 120
+     * seconds.
      */
     config.set_property("hazelcast.client.invocation.timeout.seconds", "30");
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(1, 100).get();
 
-    // while doing the map->get in the following loop just shutdown the cluster and restart within 30 seconds, you will
-    // observe that the retries will be done and it will finally succeed when the cluster comes back again.
-    for (int i=0;i < 100000; ++i) {
+    // while doing the map->get in the following loop just shutdown the cluster
+    // and restart within 30 seconds, you will observe that the retries will be
+    // done and it will finally succeed when the cluster comes back again.
+    for (int i = 0; i < 100000; ++i) {
         map->get<int, int>(1).get();
     }
 

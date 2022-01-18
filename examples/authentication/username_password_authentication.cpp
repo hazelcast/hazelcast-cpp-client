@@ -15,19 +15,23 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-// You should use the config file hazelcast-username-password.xml when starting the server
-// so that the server will authenticate the client successfully.
-int main() {
+// You should use the config file hazelcast-username-password.xml when starting
+// the server so that the server will authenticate the client successfully.
+int
+main()
+{
     hazelcast::client::client_config clientConfig;
 
     // set the username and password to match the server side config.
     clientConfig.set_credentials(
-            std::make_shared<hazelcast::client::security::username_password_credentials>("test-user", "test-pass"));
-    
+      std::make_shared<
+        hazelcast::client::security::username_password_credentials>(
+        "test-user", "test-pass"));
+
     auto hz = hazelcast::new_client(std::move(clientConfig)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(1, 100).get();
 
     auto value = map->get<int, int>(1).get();
@@ -40,4 +44,3 @@ int main() {
 
     return 0;
 }
-

@@ -21,31 +21,35 @@
 #include <hazelcast/client/serialization/serialization.h>
 
 namespace hazelcast {
-    namespace client {
-        namespace test {
-            namespace rb {
-                class StartsWithStringFilter {
-                    friend serialization::hz_serializer<StartsWithStringFilter>;
-                public:
-                    StartsWithStringFilter(const std::string &start_string);
-                private:
-                    std::string start_string_;
-                };
-            }
-        }
-        namespace serialization {
-            template<>
-            struct hz_serializer<test::rb::StartsWithStringFilter> : public identified_data_serializer {
-                static int32_t get_factory_id();
+namespace client {
+namespace test {
+namespace rb {
+class StartsWithStringFilter
+{
+    friend serialization::hz_serializer<StartsWithStringFilter>;
 
-                static int32_t get_class_id();
+public:
+    StartsWithStringFilter(const std::string& start_string);
 
-                static void write_data(const test::rb::StartsWithStringFilter &object, object_data_output &out);
+private:
+    std::string start_string_;
+};
+} // namespace rb
+} // namespace test
+namespace serialization {
+template<>
+struct hz_serializer<test::rb::StartsWithStringFilter>
+  : public identified_data_serializer
+{
+    static int32_t get_factory_id();
 
-                static test::rb::StartsWithStringFilter read_data(object_data_input &in);
-            };
-        }
-    }
-}
+    static int32_t get_class_id();
 
+    static void write_data(const test::rb::StartsWithStringFilter& object,
+                           object_data_output& out);
 
+    static test::rb::StartsWithStringFilter read_data(object_data_input& in);
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
