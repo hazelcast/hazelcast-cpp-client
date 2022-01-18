@@ -385,44 +385,6 @@ namespace hazelcast {
                     std::chrono::system_clock::now().time_since_epoch()).count();
         }
 
-        int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msg_prefix) {
-            int numChars = 0;
-            if ((const char *) NULL != msg_prefix) {
-                numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msg_prefix);
-                if (numChars < 0) {
-                    return numChars;
-                }
-
-                if (numChars >= (int) buflen - 1) {
-                    return 0;
-                }
-            }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
-                  NULL,
-                  errnum,
-                  0,
-                  (LPTSTR)(strerrbuf + numChars),
-                  buflen - numChars,
-                  NULL)) {
-                return -1;
-            }
-            return 0;
-#elif defined(__llvm__) && !_GNU_SOURCE
-            /* XSI-compliant */
-            return ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
-#else
-            /* GNU-specific */
-            char *errStr = ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
-            int result = util::hz_snprintf(strerrbuf + numChars, buflen - numChars, "%s", errStr);
-            if (result < 0) {
-                return result;
-            }
-            return 0;
-#endif
-        }
-
         int32_t get_available_core_count() {
             return (int32_t) std::thread::hardware_concurrency();
         }
@@ -450,13 +412,6 @@ namespace hazelcast {
             oss << '.' << std::setfill('0') << std::setw(3) << msecs;
 
             return oss.str();
-        }
-
-        std::vector<std::string> StringUtil::tokenize_version_string(const std::string &version) {
-            // passing -1 as the submatch index parameter performs splitting
-            std::vector<std::string> result;
-            boost::split(result, version, boost::is_any_of("."));
-            return result;
         }
 
         int Int64Util::number_of_leading_zeros(int64_t i) {
