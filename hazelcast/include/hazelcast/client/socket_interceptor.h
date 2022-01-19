@@ -22,61 +22,62 @@
 #include "hazelcast/util/noop.h"
 #include "hazelcast/util/type_traits.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class socket;
+namespace client {
+class socket;
 
-        namespace connection {
-            class ClientConnectionManagerImpl;
-        }
-
-        /**
-         * An interface that provides the ability to intercept the creation of sockets.
-         *
-         * \see ClientConfig::setSocketInterceptor
-         */
-        class HAZELCAST_API socket_interceptor final {
-        public:
-            /**
-             * Set an handler function that will be called with a Socket, 
-             * each time the client creates a connection to any Member.
-             * \param h a `void` function object that is callable with a single parameter of type `const Socket &`
-             */
-            template<typename Handler,
-                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            socket_interceptor &on_connect(Handler &&h) & {
-                connect_ = std::forward<Handler>(h);
-                return *this;
-            }
-
-            /**
-             * \copydoc SocketInterceptor::on_connect
-             */
-            template<typename Handler,
-                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            socket_interceptor &&on_connect(Handler &&h) && {
-                on_connect(std::forward<Handler>(h));
-                return std::move(*this);
-            }
-
-
-        private:
-            friend class connection::ClientConnectionManagerImpl;
-
-            using handler_t = std::function<void(const socket &)>;
-
-            handler_t connect_{util::noop<const socket &>};
-        };
-    }
+namespace connection {
+class ClientConnectionManagerImpl;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/**
+ * An interface that provides the ability to intercept the creation of sockets.
+ *
+ * \see ClientConfig::setSocketInterceptor
+ */
+class HAZELCAST_API socket_interceptor final
+{
+public:
+    /**
+     * Set an handler function that will be called with a Socket,
+     * each time the client creates a connection to any Member.
+     * \param h a `void` function object that is callable with a single
+     * parameter of type `const Socket &`
+     */
+    template<typename Handler,
+             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+    socket_interceptor& on_connect(Handler&& h) &
+    {
+        connect_ = std::forward<Handler>(h);
+        return *this;
+    }
+
+    /**
+     * \copydoc SocketInterceptor::on_connect
+     */
+    template<typename Handler,
+             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+    socket_interceptor&& on_connect(Handler&& h) &&
+    {
+        on_connect(std::forward<Handler>(h));
+        return std::move(*this);
+    }
+
+private:
+    friend class connection::ClientConnectionManagerImpl;
+
+    using handler_t = std::function<void(const socket&)>;
+
+    handler_t connect_{ util::noop<const socket&> };
+};
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

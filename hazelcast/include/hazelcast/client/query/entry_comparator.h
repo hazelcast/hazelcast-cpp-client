@@ -18,28 +18,28 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/Comparator.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace query {
-            template <typename K, typename V>
-            class entry_comparator : public util::Comparator<std::pair<const K *, const V *> > {
-            public:
-                int compare(const std::pair<const K *, const V *> *,
-                            const std::pair<const K *, const V *> *) const override {
-                    return 0;
-                }
-            };
-        }
+namespace client {
+namespace query {
+template<typename K, typename V>
+class entry_comparator : public util::Comparator<std::pair<const K*, const V*>>
+{
+public:
+    int compare(const std::pair<const K*, const V*>*,
+                const std::pair<const K*, const V*>*) const override
+    {
+        return 0;
     }
-}
+};
+} // namespace query
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

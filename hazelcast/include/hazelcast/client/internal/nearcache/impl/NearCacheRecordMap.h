@@ -17,36 +17,33 @@
 
 #include "hazelcast/client/internal/eviction/EvictableStore.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace nearcache {
-                namespace impl {
-                    /**
-                     * Contract point for all record maps to be used for storage in Near Cache.
-                     *
-                     * @param <K> type of the key
-                     * @param <V> type of the {@link NearCacheRecord} to be stored
-                     * @see NearCacheRecord
-                     * @see com.hazelcast.internal.eviction.EvictableStore
-                     */
-                    template<typename K, typename V, typename KS, typename VS>
-                    class NearCacheRecordMap : eviction::EvictableStore<K, V, KS, VS> {
-                    };
-                }
-            }
-        }
-    }
-}
+namespace client {
+namespace internal {
+namespace nearcache {
+namespace impl {
+/**
+ * Contract point for all record maps to be used for storage in Near Cache.
+ *
+ * @param <K> type of the key
+ * @param <V> type of the {@link NearCacheRecord} to be stored
+ * @see NearCacheRecord
+ * @see com.hazelcast.internal.eviction.EvictableStore
+ */
+template<typename K, typename V, typename KS, typename VS>
+class NearCacheRecordMap : eviction::EvictableStore<K, V, KS, VS>
+{};
+} // namespace impl
+} // namespace nearcache
+} // namespace internal
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

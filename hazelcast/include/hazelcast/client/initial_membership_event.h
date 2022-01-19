@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 #pragma once
 
 #include <vector>
@@ -24,51 +22,51 @@
 
 #include "hazelcast/client/member.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class cluster;
+namespace client {
+class cluster;
 
-        /**
-         * A event that is sent when a MembershipListener is registered.
-         *
-         * @see MembershipListener
-         * @see MembershipEvent
-         */
-        class HAZELCAST_API initial_membership_event {
-        public:
-            initial_membership_event(cluster &cluster, std::unordered_set<member> members);
+/**
+ * A event that is sent when a MembershipListener is registered.
+ *
+ * @see MembershipListener
+ * @see MembershipEvent
+ */
+class HAZELCAST_API initial_membership_event
+{
+public:
+    initial_membership_event(cluster& cluster,
+                             std::unordered_set<member> members);
 
-            /**
-             * Returns an immutable set of ordered members at the moment this MembershipListener is
-             * registered. See Cluster#getMembers() for more information.
-             *
-             * @return a set of members.
-             */
-            const std::unordered_set<member> &get_members() const;
+    /**
+     * Returns an immutable set of ordered members at the moment this
+     * MembershipListener is registered. See Cluster#getMembers() for more
+     * information.
+     *
+     * @return a set of members.
+     */
+    const std::unordered_set<member>& get_members() const;
 
-            /**
-             * Returns the cluster of the event.
-             *
-             * @return the cluster of the event.
-             */
-            cluster &get_cluster();
+    /**
+     * Returns the cluster of the event.
+     *
+     * @return the cluster of the event.
+     */
+    cluster& get_cluster();
 
-        private:
-            cluster &cluster_;
-            std::unordered_set<member> members_;
-        };
+private:
+    cluster& cluster_;
+    std::unordered_set<member> members_;
+};
 
-    }
-}
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

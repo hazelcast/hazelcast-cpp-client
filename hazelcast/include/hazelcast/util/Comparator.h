@@ -16,22 +16,19 @@
 #pragma once
 
 namespace hazelcast {
-    namespace util {
-        template <typename T>
-        class Comparator {
-        public:
-            virtual ~Comparator() = default;
+namespace util {
+template<typename T>
+class Comparator
+{
+public:
+    virtual ~Comparator() = default;
 
-            /**
-             * @lhs First value to compare
-             * @rhs Second value to compare
-             * @return Returns < 0 if lhs is less, >0 if lhs is greater, else returns 0.
-             */
-            virtual int compare(const T *lhs, const T *rhs) const = 0;
-        };
-    }
-}
-
-
-
-
+    /**
+     * @lhs First value to compare
+     * @rhs Second value to compare
+     * @return Returns < 0 if lhs is less, >0 if lhs is greater, else returns 0.
+     */
+    virtual int compare(const T* lhs, const T* rhs) const = 0;
+};
+} // namespace util
+} // namespace hazelcast

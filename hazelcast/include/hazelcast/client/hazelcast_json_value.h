@@ -21,72 +21,75 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        /**
-         * hazelcast_json_value is a wrapper for Json formatted strings. It is preferred
-         * to store hazelcast_json_value instead of std::string for Json formatted strings.
-         * Users can run predicates and use indexes on the attributes of the underlying
-         * Json strings.
-         *
-         * hazelcast_json_value is queried using Hazelcast's querying language.
-         * See {@link query::Predicate}.
-         *
-         * In terms of querying, numbers in Json strings are treated as either
-         * {@code int64_t} or {@code double}. Strings, bools and NULL are treated as
-         * their C++ counterparts.
-         *
-         * hazelcast_json_value keeps given string as it is.
-         *
-         */
-        class HAZELCAST_API hazelcast_json_value {
-        public:
-            /**
-             * Create a hazelcast_json_value from a string. This method does not the check
-             * validity of the underlying Json string. Invalid Json strings may cause
-             * wrong results in queries.
-             *
-             * @param jsonString The json string
-             * @return The hazelcast_json_value representing the json string.
-             */
-            hazelcast_json_value(std::string json_string);
+namespace client {
+/**
+ * hazelcast_json_value is a wrapper for Json formatted strings. It is preferred
+ * to store hazelcast_json_value instead of std::string for Json formatted
+ * strings. Users can run predicates and use indexes on the attributes of the
+ * underlying Json strings.
+ *
+ * hazelcast_json_value is queried using Hazelcast's querying language.
+ * See {@link query::Predicate}.
+ *
+ * In terms of querying, numbers in Json strings are treated as either
+ * {@code int64_t} or {@code double}. Strings, bools and NULL are treated as
+ * their C++ counterparts.
+ *
+ * hazelcast_json_value keeps given string as it is.
+ *
+ */
+class HAZELCAST_API hazelcast_json_value
+{
+public:
+    /**
+     * Create a hazelcast_json_value from a string. This method does not the
+     * check validity of the underlying Json string. Invalid Json strings may
+     * cause wrong results in queries.
+     *
+     * @param jsonString The json string
+     * @return The hazelcast_json_value representing the json string.
+     */
+    hazelcast_json_value(std::string json_string);
 
-            virtual ~hazelcast_json_value();
+    virtual ~hazelcast_json_value();
 
-            /**
-             * This method returns a Json representation of the object
-             * @return Json string representation of the object
-             */
-            const std::string &to_string() const;
+    /**
+     * This method returns a Json representation of the object
+     * @return Json string representation of the object
+     */
+    const std::string& to_string() const;
 
-            bool operator==(const hazelcast_json_value &rhs) const;
+    bool operator==(const hazelcast_json_value& rhs) const;
 
-            bool operator!=(const hazelcast_json_value &rhs) const;
+    bool operator!=(const hazelcast_json_value& rhs) const;
 
-            bool operator<(const hazelcast_json_value &rhs) const;
+    bool operator<(const hazelcast_json_value& rhs) const;
 
-            friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const hazelcast_json_value &value);
+    friend std::ostream HAZELCAST_API& operator<<(
+      std::ostream& os,
+      const hazelcast_json_value& value);
 
-        private:
-            std::string json_string_;
-        };
-    }
-}
+private:
+    std::string json_string_;
+};
+} // namespace client
+} // namespace hazelcast
 
 namespace std {
-    template<> struct hash<hazelcast::client::hazelcast_json_value> {
-        std::size_t operator()(const hazelcast::client::hazelcast_json_value &object) const noexcept;
-    };
-}
+template<>
+struct hash<hazelcast::client::hazelcast_json_value>
+{
+    std::size_t operator()(
+      const hazelcast::client::hazelcast_json_value& object) const noexcept;
+};
+} // namespace std
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

@@ -17,25 +17,24 @@
 
 #include "hazelcast/util/export.h"
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API HashUtil {
-        public:
-            /**
-             * A function that calculates the index (e.g. to be used in an array/list) for a given hash. The returned value will always
-             * be equal or larger than 0 and will always be smaller than 'length'.
-             *
-             * The reason this function exists is to deal correctly with negative and especially the Integer.MIN_VALUE; since that can't
-             * be used safely with a Math.abs function.
-             *
-             * @param length the length of the array/list
-             * @return the mod of the hash
-             * @throws illegal_argument if mod smaller than 1.
-             */
-            static int hash_to_index(int hash, int length);
-        };
-    }
-}
-
-
-
-
+namespace util {
+class HAZELCAST_API HashUtil
+{
+public:
+    /**
+     * A function that calculates the index (e.g. to be used in an array/list)
+     * for a given hash. The returned value will always be equal or larger than
+     * 0 and will always be smaller than 'length'.
+     *
+     * The reason this function exists is to deal correctly with negative and
+     * especially the Integer.MIN_VALUE; since that can't be used safely with a
+     * Math.abs function.
+     *
+     * @param length the length of the array/list
+     * @return the mod of the hash
+     * @throws illegal_argument if mod smaller than 1.
+     */
+    static int hash_to_index(int hash, int length);
+};
+} // namespace util
+} // namespace hazelcast

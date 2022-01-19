@@ -6,12 +6,16 @@
  */
 #include "remote_controller_constants.h"
 
-namespace hazelcast { namespace client { namespace test { namespace remote {
+namespace hazelcast {
+namespace client {
+namespace test {
+namespace remote {
 
 const remote_controllerConstants g_remote_controller_constants;
 
-remote_controllerConstants::remote_controllerConstants() {
-}
+remote_controllerConstants::remote_controllerConstants() {}
 
-}}}} // namespace
-
+} // namespace remote
+} // namespace test
+} // namespace client
+} // namespace hazelcast

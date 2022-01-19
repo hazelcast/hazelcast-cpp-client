@@ -15,7 +15,9 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("evictiontestmap").get();
@@ -31,7 +33,8 @@ int main() {
         map->lock(i).get();
     }
 
-    std::cout << "# Map size before evict_all\t:" << map->size().get() << std::endl;
+    std::cout << "# Map size before evict_all\t:" << map->size().get()
+              << std::endl;
 
     // should keep locked keys and evict all others.
     map->evict_all().get();

@@ -20,37 +20,37 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API hz_thread_pool {
-        public:
-            explicit hz_thread_pool();
+namespace util {
+class HAZELCAST_API hz_thread_pool
+{
+public:
+    explicit hz_thread_pool();
 
-            explicit hz_thread_pool(size_t num_threads);
+    explicit hz_thread_pool(size_t num_threads);
 
-            void close();
+    void close();
 
-            bool closed();
+    bool closed();
 
-            void submit(boost::executors::work &&closure);
+    void submit(boost::executors::work&& closure);
 
-            bool try_executing_one();
+    bool try_executing_one();
 
-            boost::asio::thread_pool::executor_type get_executor() const;
+    boost::asio::thread_pool::executor_type get_executor() const;
 
-        private:
-            std::unique_ptr<boost::asio::thread_pool> pool_;
-            std::atomic<bool> closed_{false};
-        };
-    }
-}
+private:
+    std::unique_ptr<boost::asio::thread_pool> pool_;
+    std::atomic<bool> closed_{ false };
+};
+} // namespace util
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

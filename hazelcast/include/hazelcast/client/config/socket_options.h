@@ -17,136 +17,134 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace config {
-            /**
-             * TCP Socket options
-             */
-            class HAZELCAST_API socket_options {
-            public:
-                /**
-                 * constant for kilobyte
-                 */
-                static const int KILO_BYTE = 1024;
+namespace client {
+namespace config {
+/**
+ * TCP Socket options
+ */
+class HAZELCAST_API socket_options
+{
+public:
+    /**
+     * constant for kilobyte
+     */
+    static const int KILO_BYTE = 1024;
 
-                /**
-                 * default buffer size of Bytes
-                 */
-                static const int DEFAULT_BUFFER_SIZE_BYTE = 128 * KILO_BYTE;
+    /**
+     * default buffer size of Bytes
+     */
+    static const int DEFAULT_BUFFER_SIZE_BYTE = 128 * KILO_BYTE;
 
-                socket_options();
+    socket_options();
 
-                /**
-                 * TCP_NODELAY socket option
-                 *
-                 * @return true if enabled
-                 */
-                bool is_tcp_no_delay() const;
+    /**
+     * TCP_NODELAY socket option
+     *
+     * @return true if enabled
+     */
+    bool is_tcp_no_delay() const;
 
-                /**
-                 * Enable/disable TCP_NODELAY socket option.
-                 *
-                 * @param tcpNoDelay
-                 */
-                socket_options &set_tcp_no_delay(bool tcp_no_delay);
+    /**
+     * Enable/disable TCP_NODELAY socket option.
+     *
+     * @param tcpNoDelay
+     */
+    socket_options& set_tcp_no_delay(bool tcp_no_delay);
 
-                /**
-                 * SO_KEEPALIVE socket option
-                 *
-                 * @return true if enabled
-                 */
-                bool is_keep_alive() const;
+    /**
+     * SO_KEEPALIVE socket option
+     *
+     * @return true if enabled
+     */
+    bool is_keep_alive() const;
 
-                /**
-                 * Enable/disable SO_KEEPALIVE socket option.
-                 *
-                 * @param keepAlive enabled if true
-                 * @return SocketOptions configured
-                 */
-                socket_options &set_keep_alive(bool keep_alive);
+    /**
+     * Enable/disable SO_KEEPALIVE socket option.
+     *
+     * @param keepAlive enabled if true
+     * @return SocketOptions configured
+     */
+    socket_options& set_keep_alive(bool keep_alive);
 
-                /**
-                 * SO_REUSEADDR socket option.
-                 *
-                 * @return true if enabled
-                 */
-                bool is_reuse_address() const;
+    /**
+     * SO_REUSEADDR socket option.
+     *
+     * @return true if enabled
+     */
+    bool is_reuse_address() const;
 
-                /**
-                 * Enable/disable the SO_REUSEADDR socket option.
-                 *
-                 * @param reuseAddress enabled if true
-                 * @return SocketOptions configured
-                 */
-                socket_options &set_reuse_address(bool reuse_address);
+    /**
+     * Enable/disable the SO_REUSEADDR socket option.
+     *
+     * @param reuseAddress enabled if true
+     * @return SocketOptions configured
+     */
+    socket_options& set_reuse_address(bool reuse_address);
 
-                /**
-                 * Gets SO_LINGER with the specified linger time in seconds
-                 * @return lingerSeconds value in seconds
-                 */
-                int get_linger_seconds() const;
+    /**
+     * Gets SO_LINGER with the specified linger time in seconds
+     * @return lingerSeconds value in seconds
+     */
+    int get_linger_seconds() const;
 
-                /**
-                 * Enable/disable SO_LINGER with the specified linger time in seconds
-                 *
-                 * if set to a value of 0 or less then it is disabled.
-                 *
-                 * Default value is 3.
-                 *
-                 * @param lingerSeconds value in seconds
-                 * @return SocketOptions configured
-                 */
-                socket_options &set_linger_seconds(int linger_seconds);
+    /**
+     * Enable/disable SO_LINGER with the specified linger time in seconds
+     *
+     * if set to a value of 0 or less then it is disabled.
+     *
+     * Default value is 3.
+     *
+     * @param lingerSeconds value in seconds
+     * @return SocketOptions configured
+     */
+    socket_options& set_linger_seconds(int linger_seconds);
 
-                /**
-                 * If set to 0 or less, then it is not set on the socket.
-                 *
-                 * The default value is DEFAULT_BUFFER_SIZE_BYTE
-                 *
-                 * Gets the SO_SNDBUF and SO_RCVBUF options value in bytes
-                 * @return bufferSize Number of bytes
-                 */
-                int get_buffer_size_in_bytes() const;
+    /**
+     * If set to 0 or less, then it is not set on the socket.
+     *
+     * The default value is DEFAULT_BUFFER_SIZE_BYTE
+     *
+     * Gets the SO_SNDBUF and SO_RCVBUF options value in bytes
+     * @return bufferSize Number of bytes
+     */
+    int get_buffer_size_in_bytes() const;
 
-                /**
-                 * If set to 0 or less, then it is not set on the socket.
-                 *
-                 * The default value is DEFAULT_BUFFER_SIZE_BYTE
-                 *
-                 * Sets the SO_SNDBUF and SO_RCVBUF options to the specified value in bytes
-                 *
-                 * @param bufferSize Number of bytes
-                 * @return SocketOptions configured
-                 */
-                socket_options &set_buffer_size_in_bytes(int buffer_size);
+    /**
+     * If set to 0 or less, then it is not set on the socket.
+     *
+     * The default value is DEFAULT_BUFFER_SIZE_BYTE
+     *
+     * Sets the SO_SNDBUF and SO_RCVBUF options to the specified value in bytes
+     *
+     * @param bufferSize Number of bytes
+     * @return SocketOptions configured
+     */
+    socket_options& set_buffer_size_in_bytes(int buffer_size);
 
-            private:
-                // socket options
+private:
+    // socket options
 
-                bool tcp_no_delay_;
+    bool tcp_no_delay_;
 
-                bool keep_alive_;
+    bool keep_alive_;
 
-                bool reuse_address_;
+    bool reuse_address_;
 
-                int linger_seconds_;
+    int linger_seconds_;
 
-                int buffer_size_;
+    int buffer_size_;
+};
 
-            };
+} // namespace config
+} // namespace client
+} // namespace hazelcast
 
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

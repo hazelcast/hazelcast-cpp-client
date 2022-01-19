@@ -22,22 +22,21 @@
 #include "hazelcast/util/AddressHelper.h"
 
 namespace hazelcast {
-    namespace util {
-        class HAZELCAST_API AddressUtil {
-        public:
-            static AddressHolder get_address_holder(const std::string &address);
+namespace util {
+class HAZELCAST_API AddressUtil
+{
+public:
+    static AddressHolder get_address_holder(const std::string& address);
 
-            static AddressHolder get_address_holder(const std::string &address, int default_port);
+    static AddressHolder get_address_holder(const std::string& address,
+                                            int default_port);
 
-            static boost::asio::ip::address get_by_name(const std::string &host);
+    static boost::asio::ip::address get_by_name(const std::string& host);
 
-        private:
-            static boost::asio::ip::address get_by_name(const std::string &host, const std::string &service);
-        };
+private:
+    static boost::asio::ip::address get_by_name(const std::string& host,
+                                                const std::string& service);
+};
 
-    }
-}
-
-
-
-
+} // namespace util
+} // namespace hazelcast

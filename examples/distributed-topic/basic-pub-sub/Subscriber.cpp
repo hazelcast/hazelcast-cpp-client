@@ -17,20 +17,25 @@
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/topic/listener.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto topic = hz.get_topic("testtopic").get();
 
-    topic->add_message_listener(
-        hazelcast::client::topic::listener().
-            on_received([](hazelcast::client::topic::message &&msg) {
-                std::cout << "Message received:"
-                    << msg.get_message_object().get<std::string>().value() << std::endl;
-            })
-    ).get();
+    topic
+      ->add_message_listener(hazelcast::client::topic::listener().on_received(
+        [](hazelcast::client::topic::message&& msg) {
+            std::cout << "Message received:"
+                      << msg.get_message_object().get<std::string>().value()
+                      << std::endl;
+        }))
+      .get();
 
-    std::cout << "Subscriber: Added topic listener. Waiting 5 seconds for the published topic." << std::endl;
+    std::cout << "Subscriber: Added topic listener. Waiting 5 seconds for the "
+                 "published topic."
+              << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
     std::cout << "Finished" << std::endl;

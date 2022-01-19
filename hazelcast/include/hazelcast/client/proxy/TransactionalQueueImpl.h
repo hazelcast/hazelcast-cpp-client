@@ -18,24 +18,28 @@
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace proxy {
-            class HAZELCAST_API TransactionalQueueImpl : public TransactionalObject {
-            public:
-                /**
-                * Transactional implementation of IQueue::size()
-                *
-                * @see IQueue::size()
-                */
-                boost::future<int> size();
+namespace client {
+namespace proxy {
+class HAZELCAST_API TransactionalQueueImpl : public TransactionalObject
+{
+public:
+    /**
+     * Transactional implementation of IQueue::size()
+     *
+     * @see IQueue::size()
+     */
+    boost::future<int> size();
 
-            public:
-                TransactionalQueueImpl(const std::string &name, txn::TransactionProxy &transaction_proxy);
+public:
+    TransactionalQueueImpl(const std::string& name,
+                           txn::TransactionProxy& transaction_proxy);
 
-                boost::future<bool> offer(const serialization::pimpl::data &e, std::chrono::milliseconds timeout);
+    boost::future<bool> offer(const serialization::pimpl::data& e,
+                              std::chrono::milliseconds timeout);
 
-                boost::future<boost::optional<serialization::pimpl::data>>poll_data(std::chrono::milliseconds timeout);
-            };
-        }
-    }
-}
+    boost::future<boost::optional<serialization::pimpl::data>> poll_data(
+      std::chrono::milliseconds timeout);
+};
+} // namespace proxy
+} // namespace client
+} // namespace hazelcast

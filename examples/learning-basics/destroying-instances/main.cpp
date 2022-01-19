@@ -1,4 +1,4 @@
-    /*
+/*
  * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,21 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto q1 = hz.get_queue("q").get();
     auto q2 = hz.get_queue("q").get();
 
     q1->put("foo").get();
-    std::cout << "q1->size:" << q1->size().get() << "  q2->size:" << q2->size().get() << std::endl;
+    std::cout << "q1->size:" << q1->size().get()
+              << "  q2->size:" << q2->size().get() << std::endl;
 
     q1->destroy().get();
-    std::cout << "q1->size:" << q1->size().get() << "  q2->size:" << q2->size().get() << std::endl;
+    std::cout << "q1->size:" << q1->size().get()
+              << "  q2->size:" << q2->size().get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

@@ -15,13 +15,16 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
-    auto map = hz.get_distributed_object<hazelcast::client::iqueue>("queue distributed object").get();
+    auto map = hz.get_distributed_object<hazelcast::client::iqueue>(
+                   "queue distributed object")
+                 .get();
 
     std::cout << "Finished" << std::endl;
 
     return 0;
 }
-

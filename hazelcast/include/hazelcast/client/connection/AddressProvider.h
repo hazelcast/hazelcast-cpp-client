@@ -22,37 +22,35 @@
 #include "hazelcast/client/address.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace connection {
-            /**
-             * Provides initial addresses for client to find and connect to a node
-             */
-            class HAZELCAST_API AddressProvider {
-            public:
-                /**
-                 * @return The possible member addresses to connect to.
-                 */
-                virtual std::vector<address> load_addresses() = 0;
+namespace client {
+namespace connection {
+/**
+ * Provides initial addresses for client to find and connect to a node
+ */
+class HAZELCAST_API AddressProvider
+{
+public:
+    /**
+     * @return The possible member addresses to connect to.
+     */
+    virtual std::vector<address> load_addresses() = 0;
 
-                /**
-                 * Translates the given address to another address specific to
-                 * network or service
-                 *
-                 * @param address to be translated
-                 * @return translated address or boost::none if no translation is found.
-                 */
-                virtual boost::optional<address> translate(const address &addr) = 0;
+    /**
+     * Translates the given address to another address specific to
+     * network or service
+     *
+     * @param address to be translated
+     * @return translated address or boost::none if no translation is found.
+     */
+    virtual boost::optional<address> translate(const address& addr) = 0;
 
-                /**
-                 * @return true for the \DefaultAddressProvider , false otherwise.
-                 */
-                virtual bool is_default_provider();
+    /**
+     * @return true for the \DefaultAddressProvider , false otherwise.
+     */
+    virtual bool is_default_provider();
 
-                virtual ~AddressProvider() = default;
-            };
-        }
-    }
-}
-
-
-
+    virtual ~AddressProvider() = default;
+};
+} // namespace connection
+} // namespace client
+} // namespace hazelcast

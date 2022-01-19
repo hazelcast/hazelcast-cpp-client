@@ -22,56 +22,67 @@
 #include "hazelcast/client/internal/eviction/EvictionCandidate.h"
 #include "hazelcast/client/internal/eviction/impl/strategy/AbstractEvictionStrategy.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                namespace impl {
-                    namespace strategy {
-                        namespace sampling {
-                            /**
-                             * Sampling based {@link EvictionStrategy} implementation.
-                             * This strategy select sample {@link Evictable} entries from {@link SampleableEvictableStore}.
-                             */
-                            template<typename MAPKEY, typename MAPVALUE, typename A, typename E, typename S>
-                            class SamplingBasedEvictionStrategy
-                                    : public AbstractEvictionStrategy<MAPKEY, MAPVALUE, A, E, S> {
-                            protected:
-                                /**
-                                 * Processes sampling based eviction logic on {@link SampleableEvictableStore}.
-                                 *
-                                 * @param sampleableEvictableStore  {@link SampleableEvictableStore} that holds {@link Evictable} entries
-                                 * @param evictionPolicyEvaluator   {@link EvictionPolicyEvaluator} to evaluate
-                                 * @param evictionListener          {@link EvictionListener} to listen evicted entries
-                                 *
-                                 * @return evicted entry count
-                                 */
-                                int evict_internal(S *sampleable_evictable_store,
-                                                  EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *eviction_policy_evaluator,
-                                                  EvictionListener<A, E> *eviction_listener) override {
-                                    std::unique_ptr<util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > samples = sampleable_evictable_store->sample(SAMPLE_COUNT);
-                                    std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evictionCandidates =
-                                            eviction_policy_evaluator->evaluate(*samples);
-                                    return sampleable_evictable_store->evict(evictionCandidates.get(), eviction_listener);
-                                }
-                            private:
-                                static const int SAMPLE_COUNT = 15;
-                            };
-                        }
-                    }
-                }
-            }
-        }
+namespace client {
+namespace internal {
+namespace eviction {
+namespace impl {
+namespace strategy {
+namespace sampling {
+/**
+ * Sampling based {@link EvictionStrategy} implementation.
+ * This strategy select sample {@link Evictable} entries from {@link
+ * SampleableEvictableStore}.
+ */
+template<typename MAPKEY, typename MAPVALUE, typename A, typename E, typename S>
+class SamplingBasedEvictionStrategy
+  : public AbstractEvictionStrategy<MAPKEY, MAPVALUE, A, E, S>
+{
+protected:
+    /**
+     * Processes sampling based eviction logic on {@link
+     * SampleableEvictableStore}.
+     *
+     * @param sampleableEvictableStore  {@link SampleableEvictableStore} that
+     * holds {@link Evictable} entries
+     * @param evictionPolicyEvaluator   {@link EvictionPolicyEvaluator} to
+     * evaluate
+     * @param evictionListener          {@link EvictionListener} to listen
+     * evicted entries
+     *
+     * @return evicted entry count
+     */
+    int evict_internal(S* sampleable_evictable_store,
+                       EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E>*
+                         eviction_policy_evaluator,
+                       EvictionListener<A, E>* eviction_listener) override
+    {
+        std::unique_ptr<
+          util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E>>>
+          samples = sampleable_evictable_store->sample(SAMPLE_COUNT);
+        std::unique_ptr<std::vector<
+          std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E>>>>
+          evictionCandidates = eviction_policy_evaluator->evaluate(*samples);
+        return sampleable_evictable_store->evict(evictionCandidates.get(),
+                                                 eviction_listener);
     }
-};
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+private:
+    static const int SAMPLE_COUNT = 15;
+};
+} // namespace sampling
+} // namespace strategy
+} // namespace impl
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

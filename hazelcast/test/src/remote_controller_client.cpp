@@ -29,7 +29,8 @@ namespace test {
 std::string
 remote_controller_address()
 {
-    // TODO this can be read from an environment variable to make it configurable
+    // TODO this can be read from an environment variable to make it
+    // configurable
     return "127.0.0.1";
 }
 
@@ -39,7 +40,8 @@ remote_controller_client()
     using namespace apache::thrift::protocol;
     using namespace apache::thrift::transport;
 
-    static auto socket = std::make_shared<TSocket>(remote_controller_address(), 9701);
+    static auto socket =
+      std::make_shared<TSocket>(remote_controller_address(), 9701);
     static auto transport = std::make_shared<TBufferedTransport>(socket);
     static auto protocol = std::make_shared<TBinaryProtocol>(transport);
 

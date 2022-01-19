@@ -70,16 +70,19 @@ ClientTest::get_config(bool ssl_enabled, bool smart)
 #ifdef HZ_BUILD_WITH_SSL
     if (ssl_enabled) {
         config.set_cluster_name(get_ssl_cluster_name());
-        boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+        boost::asio::ssl::context ctx(
+          boost::asio::ssl::context::method::tlsv12_client);
         ctx.set_default_verify_paths();
         ctx.load_verify_file(get_ca_file_path());
 
-        config.get_network_config().get_ssl_config().set_context(std::move(ctx));
+        config.get_network_config().get_ssl_config().set_context(
+          std::move(ctx));
     }
 #endif
 
-    config.get_connection_strategy_config().get_retry_config()
-        .set_cluster_connect_timeout(std::chrono::seconds(120));
+    config.get_connection_strategy_config()
+      .get_retry_config()
+      .set_cluster_connect_timeout(std::chrono::seconds(120));
     config.get_network_config().set_smart_routing(smart);
 
     return config;
@@ -106,22 +109,27 @@ ClientTest::random_map_name()
 std::string
 ClientTest::random_string()
 {
-    // performance is not important, hence we can use random_device for the tests
+    // performance is not important, hence we can use random_device for the
+    // tests
     std::random_device rand{};
     return boost::uuids::to_string(
       boost::uuids::basic_random_generator<std::random_device>{ rand }());
 }
 
 boost::uuids::uuid
-ClientTest::generate_key_owned_by(spi::ClientContext& context, const member& member)
+ClientTest::generate_key_owned_by(spi::ClientContext& context,
+                                  const member& member)
 {
-    spi::impl::ClientPartitionServiceImpl& partitionService = context.get_partition_service();
+    spi::impl::ClientPartitionServiceImpl& partitionService =
+      context.get_partition_service();
     serialization::pimpl::SerializationService& serializationService =
       context.get_serialization_service();
     while (true) {
         auto id = context.random_uuid();
-        int partitionId = partitionService.get_partition_id(serializationService.to_data(id));
-        std::shared_ptr<impl::Partition> partition = partitionService.get_partition(partitionId);
+        int partitionId =
+          partitionService.get_partition_id(serializationService.to_data(id));
+        std::shared_ptr<impl::Partition> partition =
+          partitionService.get_partition(partitionId);
         auto owner = partition->get_owner();
         if (owner && *owner == member) {
             return id;
@@ -138,7 +146,8 @@ ClientTest::get_ssl_cluster_name()
 HazelcastServerFactory&
 ClientTest::default_server_factory()
 {
-    static HazelcastServerFactory factory("hazelcast/test/resources/hazelcast.xml");
+    static HazelcastServerFactory factory(
+      "hazelcast/test/resources/hazelcast.xml");
 
     return factory;
 }

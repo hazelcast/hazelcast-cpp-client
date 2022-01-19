@@ -16,14 +16,18 @@
 #include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
-int main() {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+int
+main()
+{
+    // Start the Hazelcast Client and connect to an already running Hazelcast
+    // Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     // Get a Replicated Map called "my-replicated-map"
     auto map = hz.get_replicated_map("my-replicated-map").get();
     // Add items to the set with duplicates
     // Put and Get a value from the Replicated Map
-    auto replacedValue = map->put<std::string, std::string>("key", "value").get();
+    auto replacedValue =
+      map->put<std::string, std::string>("key", "value").get();
     // key/value replicated to all members
     std::cout << "replacedValue = " << replacedValue.value_or("null");
     // Will be null as its first update

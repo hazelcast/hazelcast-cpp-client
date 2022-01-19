@@ -32,10 +32,11 @@ class HAZELCAST_API metrics_dictionary
 {
 private:
     using map = std::map<std::string, int>;
+
 public:
     using const_iterator = map::const_iterator;
 
-    int get_dictionary_id(const std::string &word);
+    int get_dictionary_id(const std::string& word);
 
     const_iterator begin() const noexcept;
     const_iterator end() const noexcept;

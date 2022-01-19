@@ -19,58 +19,68 @@
 
 #include "hazelcast/client/serialization/serialization.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class member;
+namespace client {
+class member;
 
-        namespace topic {
-            class HAZELCAST_API message {
-            public:
-                message(const std::string &topic_name, typed_data &&msg, int64_t publish_time,
-                        boost::optional<member> &&member) : message(topic_name, std::move(msg),
-                                                                    std::chrono::system_clock::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(publish_time)).count()),
-                                                                    std::move(member)) {}
+namespace topic {
+class HAZELCAST_API message
+{
+public:
+    message(const std::string& topic_name,
+            typed_data&& msg,
+            int64_t publish_time,
+            boost::optional<member>&& member)
+      : message(topic_name,
+                std::move(msg),
+                std::chrono::system_clock::from_time_t(
+                  std::chrono::duration_cast<std::chrono::seconds>(
+                    std::chrono::milliseconds(publish_time))
+                    .count()),
+                std::move(member))
+    {}
 
-                message(std::string topic_name, typed_data &&msg, std::chrono::system_clock::time_point publish_time,
-                        boost::optional<member> &&member)
-                        : message_object_(msg), publish_time_(publish_time), publishing_member_(member), name_(std::move(topic_name)) {}
+    message(std::string topic_name,
+            typed_data&& msg,
+            std::chrono::system_clock::time_point publish_time,
+            boost::optional<member>&& member)
+      : message_object_(msg)
+      , publish_time_(publish_time)
+      , publishing_member_(member)
+      , name_(std::move(topic_name))
+    {}
 
-                const typed_data &get_message_object() const {
-                    return message_object_;
-                }
+    const typed_data& get_message_object() const { return message_object_; }
 
-                std::chrono::system_clock::time_point get_publish_time() const {
-                    return publish_time_;
-                }
-
-                const member *get_publishing_member() const {
-                    return publishing_member_.get_ptr();
-                }
-
-                const std::string &get_source() const {
-                    return name_;
-                }
-
-                const std::string &get_name() const {
-                    return name_;
-                }
-
-            private:
-                typed_data message_object_;
-                std::chrono::system_clock::time_point publish_time_;
-                boost::optional<member> publishing_member_;
-                std::string name_;
-            };
-        }
+    std::chrono::system_clock::time_point get_publish_time() const
+    {
+        return publish_time_;
     }
-}
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    const member* get_publishing_member() const
+    {
+        return publishing_member_.get_ptr();
+    }
+
+    const std::string& get_source() const { return name_; }
+
+    const std::string& get_name() const { return name_; }
+
+private:
+    typed_data message_object_;
+    std::chrono::system_clock::time_point publish_time_;
+    boost::optional<member> publishing_member_;
+    std::string name_;
+};
+} // namespace topic
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

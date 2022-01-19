@@ -19,22 +19,22 @@
 #include "hazelcast/util/exception_util.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace proxy {
-            /**
-             * Base class for proxies of distributed objects that lives in on partition.
-             */
-            class HAZELCAST_API PartitionSpecificClientProxy : public proxy::ProxyImpl {
-            protected:
-                PartitionSpecificClientProxy(const std::string &service_name, const std::string &object_name,
-                                             spi::ClientContext *context);
+namespace client {
+namespace proxy {
+/**
+ * Base class for proxies of distributed objects that lives in on partition.
+ */
+class HAZELCAST_API PartitionSpecificClientProxy : public proxy::ProxyImpl
+{
+protected:
+    PartitionSpecificClientProxy(const std::string& service_name,
+                                 const std::string& object_name,
+                                 spi::ClientContext* context);
 
-                void on_initialize() override;
+    void on_initialize() override;
 
-                int partition_id_;
-            };
-        }
-    }
-}
-
-
+    int partition_id_;
+};
+} // namespace proxy
+} // namespace client
+} // namespace hazelcast

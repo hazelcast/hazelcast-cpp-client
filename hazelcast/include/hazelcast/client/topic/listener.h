@@ -21,65 +21,68 @@
 #include "hazelcast/util/type_traits.h"
 #include "hazelcast/util/noop.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace topic {
-            class message;
-            namespace impl {
-                class TopicEventHandlerImpl;
-            }
-
-            /**
-             * Listen to messages from an ITopic
-             * \see ITopic::add_message_listener
-             */
-            class HAZELCAST_API listener final {
-            public:
-                /**
-                 * Set an handler function to be invoked when a message is received for the subscribed topic.
-                 *
-                 * \warning 
-                 * In order to guarantee message ordering, there is only one thread that invokes the given function.
-                 * The user should off-load any time consuming operation to another thread.
-                 *
-                 * \param h a `void` function object that is callable with a single parameter of type `Message &&`
-                 */
-                template<typename Handler,
-                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
-                listener &on_received(Handler &&h) & {
-                    received_ = std::move(h);
-                    return *this;
-                }
-
-                /**
-                 * \copydoc Listener::on_received
-                 */
-                template<typename Handler,
-                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
-                listener &&on_received(Handler &&h) && {
-                    on_received(std::move(h));
-                    return std::move(*this);
-                }
-
-            private:
-                using HandlerType = std::function<void(message &&)>;
-
-                HandlerType received_ = util::noop<message &&>;
-
-                friend class impl::TopicEventHandlerImpl;
-            };
-        }
-    }
+namespace client {
+namespace topic {
+class message;
+namespace impl {
+class TopicEventHandlerImpl;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/**
+ * Listen to messages from an ITopic
+ * \see ITopic::add_message_listener
+ */
+class HAZELCAST_API listener final
+{
+public:
+    /**
+     * Set an handler function to be invoked when a message is received for the
+     * subscribed topic.
+     *
+     * \warning
+     * In order to guarantee message ordering, there is only one thread that
+     * invokes the given function. The user should off-load any time consuming
+     * operation to another thread.
+     *
+     * \param h a `void` function object that is callable with a single
+     * parameter of type `Message &&`
+     */
+    template<typename Handler,
+             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+    listener& on_received(Handler&& h) &
+    {
+        received_ = std::move(h);
+        return *this;
+    }
+
+    /**
+     * \copydoc Listener::on_received
+     */
+    template<typename Handler,
+             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+    listener&& on_received(Handler&& h) &&
+    {
+        on_received(std::move(h));
+        return std::move(*this);
+    }
+
+private:
+    using HandlerType = std::function<void(message&&)>;
+
+    HandlerType received_ = util::noop<message&&>;
+
+    friend class impl::TopicEventHandlerImpl;
+};
+} // namespace topic
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

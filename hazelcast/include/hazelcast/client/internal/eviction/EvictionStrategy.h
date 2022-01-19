@@ -17,65 +17,74 @@
 
 #include <assert.h>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace eviction {
-                template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
-                class EvictionPolicyEvaluator;
+namespace client {
+namespace internal {
+namespace eviction {
+template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
+class EvictionPolicyEvaluator;
 
-                template <typename A, typename E>
-                class EvictionListener;
+template<typename A, typename E>
+class EvictionListener;
 
-                class EvictionChecker;
+class EvictionChecker;
 
-                /**
-                 * Interface for eviction implementations to evict {@link EvictableStore} implementations as specified
-                 * {@link EvictionPolicyEvaluator}.
-                 *
-                 * @param <A> Type of the accessor (id) of the {@link com.hazelcast.internal.eviction.EvictionCandidate}
-                 * @param <E> Type of the {@link com.hazelcast.internal.eviction.Evictable} value of
-                 *            {@link com.hazelcast.internal.eviction.EvictionCandidate}
-                 * @param <S> Type of the {@link com.hazelcast.internal.eviction.EvictableStore}
-                 */
-                template <typename MAPKEY, typename MAPVALUE,typename A, typename E, typename S>
-                class EvictionStrategy {
-                public:
-                    virtual ~EvictionStrategy() = default;
+/**
+ * Interface for eviction implementations to evict {@link EvictableStore}
+ * implementations as specified
+ * {@link EvictionPolicyEvaluator}.
+ *
+ * @param <A> Type of the accessor (id) of the {@link
+ * com.hazelcast.internal.eviction.EvictionCandidate}
+ * @param <E> Type of the {@link com.hazelcast.internal.eviction.Evictable}
+ * value of
+ *            {@link com.hazelcast.internal.eviction.EvictionCandidate}
+ * @param <S> Type of the {@link com.hazelcast.internal.eviction.EvictableStore}
+ */
+template<typename MAPKEY, typename MAPVALUE, typename A, typename E, typename S>
+class EvictionStrategy
+{
+public:
+    virtual ~EvictionStrategy() = default;
 
-                    /**
-                     * Does eviction if eviction is required by given {@link EvictionChecker}.
-                     *
-                     * @param evictableStore            Store that holds {@link Evictable} entries
-                     * @param evictionPolicyEvaluator   {@link EvictionPolicyEvaluator} to evaluate
-                     *                                  {@link com.hazelcast.config.EvictionPolicy} on entries
-                     * @param evictionChecker           {@link EvictionChecker} to make a decision about if eviction is
-                     *                                  required or not. If you want evict anyway,
-                     *                                  you can use {@link EvictionChecker#EVICT_ALWAYS}
-                     * @param evictionListener          {@link EvictionListener} to listen evicted entries
-                     *
-                     * @return evicted entry count
-                     */
-                    virtual int evict(S *evictable_store,
-                              EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *eviction_policy_evaluator,
-                              EvictionChecker *eviction_checker,
-                              EvictionListener<A, E> *eviction_listener) {
-                        assert(0);
-                        return 0;
-                    }
-                };
-            }
-        }
+    /**
+     * Does eviction if eviction is required by given {@link EvictionChecker}.
+     *
+     * @param evictableStore            Store that holds {@link Evictable}
+     * entries
+     * @param evictionPolicyEvaluator   {@link EvictionPolicyEvaluator} to
+     * evaluate
+     *                                  {@link
+     * com.hazelcast.config.EvictionPolicy} on entries
+     * @param evictionChecker           {@link EvictionChecker} to make a
+     * decision about if eviction is required or not. If you want evict anyway,
+     *                                  you can use {@link
+     * EvictionChecker#EVICT_ALWAYS}
+     * @param evictionListener          {@link EvictionListener} to listen
+     * evicted entries
+     *
+     * @return evicted entry count
+     */
+    virtual int evict(S* evictable_store,
+                      EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E>*
+                        eviction_policy_evaluator,
+                      EvictionChecker* eviction_checker,
+                      EvictionListener<A, E>* eviction_listener)
+    {
+        assert(0);
+        return 0;
     }
 };
+} // namespace eviction
+} // namespace internal
+} // namespace client
+}; // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
-
-
+#endif

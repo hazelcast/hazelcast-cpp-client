@@ -16,8 +16,11 @@
 #include <hazelcast/client/hazelcast.h>
 
 using namespace hazelcast::client;
-int main() {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+int
+main()
+{
+    // Start the Hazelcast Client and connect to an already running Hazelcast
+    // Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     auto rb = hz.get_ringbuffer("rb").get();
     // add two items into ring buffer
@@ -31,5 +34,4 @@ int main() {
     std::cout << *rb->read_one<int>(sequence).get() << std::endl;
     // Shutdown this Hazelcast Client
     hz.shutdown().get();
-
 }

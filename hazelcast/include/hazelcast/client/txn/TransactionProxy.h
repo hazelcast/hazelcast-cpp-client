@@ -23,106 +23,109 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/serialization/serialization.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace connection {
-            class Connection;
-        }
-        class transaction_options;
+namespace client {
+namespace connection {
+class Connection;
+}
+class transaction_options;
 
-        namespace spi {
-            class ClientContext;
-        }
-
-        namespace serialization {
-            namespace pimpl {
-                class SerializationService;
-            }
-        }
-
-        namespace protocol {
-            class ClientMessage;
-        }
-
-        namespace txn {
-            class HAZELCAST_API TxnState {
-            public:
-                enum state {
-                    NO_TXN,
-                    ACTIVE,
-                    PREPARING,
-                    PREPARED,
-                    COMMITTING,
-                    COMMITTED,
-                    COMMIT_FAILED,
-                    ROLLING_BACK,
-                    ROLLED_BACK
-                } value;
-
-                TxnState(state value);
-
-                operator int() const;
-
-                void operator=(int i);
-
-                std::vector<state> values;
-            };
-
-            class HAZELCAST_API TransactionProxy {
-            public:
-                TransactionProxy(transaction_options&, spi::ClientContext& client_context, std::shared_ptr<connection::Connection> connection);
-
-                TransactionProxy(const TransactionProxy &rhs);
-
-                boost::uuids::uuid get_txn_id() const;
-
-                TxnState get_state() const;
-
-                std::chrono::milliseconds get_timeout() const;
-
-                boost::future<void> begin();
-
-                boost::future<void> commit();
-
-                boost::future<void> rollback();
-
-                serialization::pimpl::SerializationService& get_serialization_service();
-
-                std::shared_ptr<connection::Connection> get_connection();
-
-                spi::ClientContext &get_client_context() const;
-
-            private:
-                transaction_options& options_;
-                spi::ClientContext& client_context_;
-                std::shared_ptr<connection::Connection> connection_;
-
-                std::atomic<bool> transaction_exists_{ false };
-
-                int64_t thread_id_;
-                boost::uuids::uuid txn_id_;
-
-                TxnState state_;
-                std::chrono::steady_clock::time_point start_time_;
-
-                void check_thread();
-
-                void check_timeout();
-
-                boost::future<protocol::ClientMessage> invoke(protocol::ClientMessage &request);
-            };
-        }
-    }
+namespace spi {
+class ClientContext;
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+namespace serialization {
+namespace pimpl {
+class SerializationService;
+}
+} // namespace serialization
+
+namespace protocol {
+class ClientMessage;
+}
+
+namespace txn {
+class HAZELCAST_API TxnState
+{
+public:
+    enum state
+    {
+        NO_TXN,
+        ACTIVE,
+        PREPARING,
+        PREPARED,
+        COMMITTING,
+        COMMITTED,
+        COMMIT_FAILED,
+        ROLLING_BACK,
+        ROLLED_BACK
+    } value;
+
+    TxnState(state value);
+
+    operator int() const;
+
+    void operator=(int i);
+
+    std::vector<state> values;
+};
+
+class HAZELCAST_API TransactionProxy
+{
+public:
+    TransactionProxy(transaction_options&,
+                     spi::ClientContext& client_context,
+                     std::shared_ptr<connection::Connection> connection);
+
+    TransactionProxy(const TransactionProxy& rhs);
+
+    boost::uuids::uuid get_txn_id() const;
+
+    TxnState get_state() const;
+
+    std::chrono::milliseconds get_timeout() const;
+
+    boost::future<void> begin();
+
+    boost::future<void> commit();
+
+    boost::future<void> rollback();
+
+    serialization::pimpl::SerializationService& get_serialization_service();
+
+    std::shared_ptr<connection::Connection> get_connection();
+
+    spi::ClientContext& get_client_context() const;
+
+private:
+    transaction_options& options_;
+    spi::ClientContext& client_context_;
+    std::shared_ptr<connection::Connection> connection_;
+
+    std::atomic<bool> transaction_exists_{ false };
+
+    int64_t thread_id_;
+    boost::uuids::uuid txn_id_;
+
+    TxnState state_;
+    std::chrono::steady_clock::time_point start_time_;
+
+    void check_thread();
+
+    void check_timeout();
+
+    boost::future<protocol::ClientMessage> invoke(
+      protocol::ClientMessage& request);
+};
+} // namespace txn
+} // namespace client
+} // namespace hazelcast
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

@@ -20,46 +20,45 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class member;
+namespace client {
+class member;
 
-        namespace impl {
-            class HAZELCAST_API Partition {
-            public:
-                /**
-                 * Returns the ID of the partition. This value will never change and will always be greater to  or equal to 0 and smaller
-                 * than the partition-count.
-                 *
-                 * @return the ID of the partition
-                 */
-                virtual int get_partition_id() const = 0;
+namespace impl {
+class HAZELCAST_API Partition
+{
+public:
+    /**
+     * Returns the ID of the partition. This value will never change and will
+     * always be greater to  or equal to 0 and smaller than the partition-count.
+     *
+     * @return the ID of the partition
+     */
+    virtual int get_partition_id() const = 0;
 
-                /**
-                 * Returns the current member that owns this partition.
-                 *
-                 * The returned value could be stale as soon as it is returned.
-                 *
-                 * It can be that null is returned if the owner of a partition has not been established.
-                 *
-                 * @return the owner member of the partition
-                 */
-                virtual boost::optional<member> get_owner() const = 0;
+    /**
+     * Returns the current member that owns this partition.
+     *
+     * The returned value could be stale as soon as it is returned.
+     *
+     * It can be that null is returned if the owner of a partition has not been
+     * established.
+     *
+     * @return the owner member of the partition
+     */
+    virtual boost::optional<member> get_owner() const = 0;
 
-                virtual ~Partition() = default;
-            };
-        }
-    }
-}
+    virtual ~Partition() = default;
+};
+} // namespace impl
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-

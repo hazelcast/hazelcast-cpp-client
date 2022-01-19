@@ -20,69 +20,71 @@
 
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                namespace sequence {
-                    /**
-                     * A {@link CallIdSequence} that provides backpressure by taking
-                     * the number of in-flight operations into account when before creating a new call-id.
-                     * <p>
-                     * It is possible to temporarily create more concurrent invocations than the declared capacity due to:
-                     * <ul>
-                     *     <li>system operations</li>
-                     *     <li>the racy nature of checking if space is available and getting the next sequence. </li>
-                     * </ul>
-                     * The latter cause is not a problem since the capacity is exceeded temporarily and it isn't sustainable.
-                     * So perhaps there are a few threads that at the same time see that the there is space and do a next.
-                     */
-                    class HAZELCAST_API AbstractCallIdSequence : public CallIdSequence {
-                    public:
-                        ~AbstractCallIdSequence() override;
+namespace client {
+namespace spi {
+namespace impl {
+namespace sequence {
+/**
+ * A {@link CallIdSequence} that provides backpressure by taking
+ * the number of in-flight operations into account when before creating a new
+ * call-id. <p> It is possible to temporarily create more concurrent invocations
+ * than the declared capacity due to: <ul> <li>system operations</li> <li>the
+ * racy nature of checking if space is available and getting the next sequence.
+ * </li>
+ * </ul>
+ * The latter cause is not a problem since the capacity is exceeded temporarily
+ * and it isn't sustainable. So perhaps there are a few threads that at the same
+ * time see that the there is space and do a next.
+ */
+class HAZELCAST_API AbstractCallIdSequence : public CallIdSequence
+{
+public:
+    ~AbstractCallIdSequence() override;
 
-                        AbstractCallIdSequence(int32_t max_concurrent_invocations);
+    AbstractCallIdSequence(int32_t max_concurrent_invocations);
 
-                        int32_t get_max_concurrent_invocations() const override;
+    int32_t get_max_concurrent_invocations() const override;
 
-                        int64_t next() override;
+    int64_t next() override;
 
-                        int64_t force_next() override;
+    int64_t force_next() override;
 
-                        void complete() override;
+    void complete() override;
 
-                        int64_t get_last_call_id() override;
+    int64_t get_last_call_id() override;
 
-                        int64_t get_tail();
+    int64_t get_tail();
 
-                    protected:
-                        virtual void handle_no_space_left() = 0;
+protected:
+    virtual void handle_no_space_left() = 0;
 
-                        bool has_space();
+    bool has_space();
 
-                    private:
-                        static constexpr size_t INDEX_HEAD = 7;
-                        static constexpr size_t INDEX_TAIL = 15;
+private:
+    static constexpr size_t INDEX_HEAD = 7;
+    static constexpr size_t INDEX_TAIL = 15;
 
-                        int32_t max_concurrent_invocations_;
+    int32_t max_concurrent_invocations_;
 
-                        // instead of using 2 AtomicLongs, we use an array if width of 3 cache lines to prevent any false sharing.
-                        std::array<std::atomic<int64_t>,
-                                3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES> longs_;
-                    };
-                }
-            }
-        }
-    }
-}
+    // instead of using 2 AtomicLongs, we use an array if width of 3 cache lines
+    // to prevent any false sharing.
+    std::array<std::atomic<int64_t>,
+               3 * util::Bits::CACHE_LINE_LENGTH /
+                 util::Bits::LONG_SIZE_IN_BYTES>
+      longs_;
+};
+} // namespace sequence
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

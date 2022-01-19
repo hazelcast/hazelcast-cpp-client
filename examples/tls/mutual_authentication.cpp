@@ -18,28 +18,35 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     hazelcast::client::client_config config;
     hazelcast::client::address serverAddress("127.0.0.1", 5701);
     config.get_network_config().add_address(serverAddress);
 
-    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
+    boost::asio::ssl::context ctx(
+      boost::asio::ssl::context::method::tlsv12_client);
     ctx.set_verify_mode(boost::asio::ssl::verify_peer);
     ctx.set_default_verify_paths();
 
-    // This config is to validate the server certificate if server does not have a CA signed certificate
+    // This config is to validate the server certificate if server does not have
+    // a CA signed certificate
     ctx.load_verify_file("/path/to/my/server/public/certificate");
 
-    // The following two lines configure the client to use the client certificate to introduce itself to the server
-    ctx.use_certificate_file("/path/to/certificate", boost::asio::ssl::context::pem);
-    ctx.use_private_key_file("/path/to/private_key", boost::asio::ssl::context::pem);
+    // The following two lines configure the client to use the client
+    // certificate to introduce itself to the server
+    ctx.use_certificate_file("/path/to/certificate",
+                             boost::asio::ssl::context::pem);
+    ctx.use_private_key_file("/path/to/private_key",
+                             boost::asio::ssl::context::pem);
 
     config.get_network_config().get_ssl_config().set_context(std::move(ctx));
-    
+
     auto hz = hazelcast::new_client(std::move(config)).get();
 
     auto map = hz.get_map("MyMap").get();
-    
+
     map->put(1, 100).get();
     map->put(2, 200).get();
 

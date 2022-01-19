@@ -15,12 +15,14 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("somemap").get();
 
-    std::string key{"some string key"};
+    std::string key{ "some string key" };
 
     map->put<std::string, std::string>(key, "1").get();
     map->put<std::string, std::string>(key, "2").get();

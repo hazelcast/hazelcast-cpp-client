@@ -16,5 +16,5 @@
 #pragma once
 
 namespace hazelcast {
-    typedef unsigned char byte;
+typedef unsigned char byte;
 }

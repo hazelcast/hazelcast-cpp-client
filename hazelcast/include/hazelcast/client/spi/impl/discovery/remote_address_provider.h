@@ -23,39 +23,39 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            namespace impl {
-                namespace discovery {
-                    class HAZELCAST_API remote_address_provider : public connection::AddressProvider {
-                    public:
-                        remote_address_provider(std::function<std::unordered_map<address, address>()> addr_map_method,
-                                                bool use_public);
+namespace client {
+namespace spi {
+namespace impl {
+namespace discovery {
+class HAZELCAST_API remote_address_provider : public connection::AddressProvider
+{
+public:
+    remote_address_provider(
+      std::function<std::unordered_map<address, address>()> addr_map_method,
+      bool use_public);
 
-                        std::vector<address> load_addresses() override;
+    std::vector<address> load_addresses() override;
 
-                        boost::optional<address> translate(const address &addr) override;
+    boost::optional<address> translate(const address& addr) override;
 
-                    private:
-                        std::function<std::unordered_map<address, address>()> refresh_address_map_;
-                        const bool use_public_;
-                        std::mutex lock_;
-                        std::unordered_map<address, address> private_to_public_;
-                    };
-                }
-            }
-        }
-    }
-}
+private:
+    std::function<std::unordered_map<address, address>()> refresh_address_map_;
+    const bool use_public_;
+    std::mutex lock_;
+    std::unordered_map<address, address> private_to_public_;
+};
+} // namespace discovery
+} // namespace impl
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

@@ -21,10 +21,12 @@
 
 using namespace hazelcast::client;
 
-// The Java server side example MessagePrinter implementation looks like the following (Please observe that Java class
-// should implement the Callable and the IdentifiedDataSerializable interfaces):
+// The Java server side example MessagePrinter implementation looks like the
+// following (Please observe that Java class should implement the Callable and
+// the IdentifiedDataSerializable interfaces):
 //
-//public class MessagePrinter implements IdentifiedDataSerializable, Callable<String> {
+// public class MessagePrinter implements IdentifiedDataSerializable,
+// Callable<String> {
 //    private String message;
 //
 //    public MessagePrinter(String message) {
@@ -60,40 +62,45 @@ using namespace hazelcast::client;
 //    }
 //}
 
-struct MessagePrinter {
+struct MessagePrinter
+{
     std::string message;
 };
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<MessagePrinter> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<MessagePrinter> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
 
-                static int32_t get_class_id() noexcept {
-                    return 555;
-                }
+    static int32_t get_class_id() noexcept { return 555; }
 
-                static void
-                write_data(const MessagePrinter &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.message);
-                }
-
-                static MessagePrinter read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return MessagePrinter{in.read<std::string>()};
-                }
-            };
-        }
+    static void write_data(
+      const MessagePrinter& object,
+      hazelcast::client::serialization::object_data_output& out)
+    {
+        out.write(object.message);
     }
-}
 
-class MyMemberSelector : public member_selector {
+    static MessagePrinter read_data(
+      hazelcast::client::serialization::object_data_input& in)
+    {
+        return MessagePrinter{ in.read<std::string>() };
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+class MyMemberSelector : public member_selector
+{
 public:
-    bool select(const member &member) const override {
-        const std::string *attribute = member.get_attribute("my.special.executor");
+    bool select(const member& member) const override
+    {
+        const std::string* attribute =
+          member.get_attribute("my.special.executor");
         if (attribute == NULL) {
             return false;
         }
@@ -102,28 +109,38 @@ public:
     }
 };
 
-int main() {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+int
+main()
+{
+    // Start the Hazelcast Client and connect to an already running Hazelcast
+    // Cluster on 127.0.0.1
     auto hz = hazelcast::new_client().get();
     // Get the Distributed Executor Service
-    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor").get();
+    std::shared_ptr<iexecutor_service> ex =
+      hz.get_executor_service("my-distributed-executor").get();
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    auto result_future = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
+    auto result_future = ex->submit<MessagePrinter, std::string>(
+      MessagePrinter{ "message to any node" });
     // Wait for the result of the submitted task and print the result
     auto result = result_future.get_future().get();
     std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
     member firstMember = hz.get_cluster().get_members()[0];
     // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
-    ex->execute_on_member<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, firstMember);
+    ex->execute_on_member<MessagePrinter>(
+      MessagePrinter{ "message to very first member of the cluster" },
+      firstMember);
     // Submit the MessagePrinter Runnable to all Hazelcast Cluster Members
-    ex->execute_on_all_members<MessagePrinter>(MessagePrinter{"message to all members in the cluster"});
-    // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
+    ex->execute_on_all_members<MessagePrinter>(
+      MessagePrinter{ "message to all members in the cluster" });
+    // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning
+    // the key called "key"
     ex->execute_on_key_owner<MessagePrinter, std::string>(
-            MessagePrinter{"message to the member that owns the key"}, "key");
+      MessagePrinter{ "message to the member that owns the key" }, "key");
     // Choose which member to submit the task to using a member selector
-    ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message when using the member selector"},
-                                            MyMemberSelector());
+    ex->submit<MessagePrinter, std::string>(
+      MessagePrinter{ "Message when using the member selector" },
+      MyMemberSelector());
     // Shutdown this Hazelcast Client
     hz.shutdown().get();
 

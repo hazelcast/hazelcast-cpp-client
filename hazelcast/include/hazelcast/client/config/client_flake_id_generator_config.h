@@ -20,104 +20,108 @@
 
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace config {
-            /**
-             * The {@code ClientFlakeIdGeneratorConfig} contains the configuration for the client
-             * regarding {@link hazelcast_client#getFlakeIdGenerator(const std::string &)
-             * Flake ID Generator}.
-             */
-            class HAZELCAST_API client_flake_id_generator_config {
-            public:
-                /**
-                 * Default value for {@link #getPrefetchCount()}.
-                 */
-                static constexpr int32_t DEFAULT_PREFETCH_COUNT = 100;
+namespace client {
+namespace config {
+/**
+ * The {@code ClientFlakeIdGeneratorConfig} contains the configuration for the
+ * client regarding {@link hazelcast_client#getFlakeIdGenerator(const
+ * std::string &) Flake ID Generator}.
+ */
+class HAZELCAST_API client_flake_id_generator_config
+{
+public:
+    /**
+     * Default value for {@link #getPrefetchCount()}.
+     */
+    static constexpr int32_t DEFAULT_PREFETCH_COUNT = 100;
 
-                /**
-                 * Default value for {@link #getPrefetchValidityMillis()}.
-                 */
-                static constexpr int64_t DEFAULT_PREFETCH_VALIDITY_MILLIS = 600000;
+    /**
+     * Default value for {@link #getPrefetchValidityMillis()}.
+     */
+    static constexpr int64_t DEFAULT_PREFETCH_VALIDITY_MILLIS = 600000;
 
-                /**
-                 * Maximum value for prefetch count. The limit is ~10% of the time we allow the IDs to be from the future
-                 * (see {@link com.hazelcast.flakeidgen.impl.FlakeIdGeneratorProxy#ALLOWED_FUTURE_MILLIS}).
-                 * <p>
-                 * The reason to limit the prefetch count is that a single call to {@link FlakeIdGenerator#newId()} might
-                 * be blocked if the future allowance is exceeded: we want to avoid a single call for large batch to block
-                 * another call for small batch.
-                 */
-                static constexpr int32_t MAXIMUM_PREFETCH_COUNT = 100000;
+    /**
+     * Maximum value for prefetch count. The limit is ~10% of the time we allow
+     * the IDs to be from the future (see {@link
+     * com.hazelcast.flakeidgen.impl.FlakeIdGeneratorProxy#ALLOWED_FUTURE_MILLIS}).
+     * <p>
+     * The reason to limit the prefetch count is that a single call to {@link
+     * FlakeIdGenerator#newId()} might be blocked if the future allowance is
+     * exceeded: we want to avoid a single call for large batch to block another
+     * call for small batch.
+     */
+    static constexpr int32_t MAXIMUM_PREFETCH_COUNT = 100000;
 
-                explicit client_flake_id_generator_config(const std::string &name);
+    explicit client_flake_id_generator_config(const std::string& name);
 
-                /**
-                 * Returns the configuration name. This can be actual object name or pattern.
-                 */
-                const std::string &get_name() const;
+    /**
+     * Returns the configuration name. This can be actual object name or
+     * pattern.
+     */
+    const std::string& get_name() const;
 
-                /**
-                 * Sets the name or name pattern for this config. Must not be modified after this
-                 * instance is added to {@link ClientConfig}.
-                 *
-                 * @return this instance for fluent API
-                 */
-                client_flake_id_generator_config &set_name(const std::string &n);
+    /**
+     * Sets the name or name pattern for this config. Must not be modified after
+     * this instance is added to {@link ClientConfig}.
+     *
+     * @return this instance for fluent API
+     */
+    client_flake_id_generator_config& set_name(const std::string& n);
 
-                /**
-                 * @see #setPrefetchCount(int)
-                 */
-                int32_t get_prefetch_count() const;
+    /**
+     * @see #setPrefetchCount(int)
+     */
+    int32_t get_prefetch_count() const;
 
-                /**
-                 * Sets how many IDs are pre-fetched on the background when one call to
-                 * {@link FlakeIdGenerator#newId()} is made. Default is 100.
-                 *
-                 * @param count the desired prefetch count, in the range 1..MAXIMUM_PREFETCH_COUNT.
-                 * @return this instance for fluent API
-                 */
-                client_flake_id_generator_config &set_prefetch_count(int32_t count);
+    /**
+     * Sets how many IDs are pre-fetched on the background when one call to
+     * {@link FlakeIdGenerator#newId()} is made. Default is 100.
+     *
+     * @param count the desired prefetch count, in the
+     * range 1..MAXIMUM_PREFETCH_COUNT.
+     * @return this instance for fluent API
+     */
+    client_flake_id_generator_config& set_prefetch_count(int32_t count);
 
-                /**
-                 * @see #setPrefetchValidityDuration(std::chrono::milliseconds)
-                 */
-                std::chrono::milliseconds get_prefetch_validity_duration() const;
+    /**
+     * @see #setPrefetchValidityDuration(std::chrono::milliseconds)
+     */
+    std::chrono::milliseconds get_prefetch_validity_duration() const;
 
-                /**
-                 * Sets for how long the pre-fetched IDs can be used. If this time elapses, a new batch of IDs will be
-                 * fetched. Time unit resolution is milliseconds, default is 600,000msecs (10 minutes).
-                 * <p>
-                 * The IDs contain timestamp component, which ensures rough global ordering of IDs. If an ID
-                 * is assigned to an object that was created much later, it will be much out of order. If you don't care
-                 * about ordering, set this value to 0.
-                 * <p>
-                 * This setting pertains only to {@link FlakeIdGenerator#newId newId} calls made on the member
-                 * that configured it.
-                 *
-                 * @param durations the desired ID validity or unlimited, if configured to 0.
-                 * @return this instance for fluent API
-                 *
-                 * @throws client::exception::illegal_argument if duration is negative.
-                 */
-                client_flake_id_generator_config &set_prefetch_validity_duration(std::chrono::milliseconds duration);
+    /**
+     * Sets for how long the pre-fetched IDs can be used. If this time elapses,
+     * a new batch of IDs will be fetched. Time unit resolution is milliseconds,
+     * default is 600,000msecs (10 minutes). <p> The IDs contain timestamp
+     * component, which ensures rough global ordering of IDs. If an ID is
+     * assigned to an object that was created much later, it will be much out of
+     * order. If you don't care about ordering, set this value to 0. <p> This
+     * setting pertains only to {@link FlakeIdGenerator#newId newId} calls made
+     * on the member that configured it.
+     *
+     * @param durations the desired ID validity or unlimited, if configured to
+     * 0.
+     * @return this instance for fluent API
+     *
+     * @throws client::exception::illegal_argument if duration is negative.
+     */
+    client_flake_id_generator_config& set_prefetch_validity_duration(
+      std::chrono::milliseconds duration);
 
-            private:
-                std::string name_;
-                int32_t prefetch_count_;
-                std::chrono::milliseconds prefetch_validity_duration_;
-            };
-        }
-    }
-}
+private:
+    std::string name_;
+    int32_t prefetch_count_;
+    std::chrono::milliseconds prefetch_validity_duration_;
+};
+} // namespace config
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

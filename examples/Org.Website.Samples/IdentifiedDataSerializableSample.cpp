@@ -17,47 +17,54 @@
 
 using namespace hazelcast::client;
 
-struct employee {
-    friend std::ostream &operator<<(std::ostream &os, const employee &person);
+struct employee
+{
+    friend std::ostream& operator<<(std::ostream& os, const employee& person);
 
     int32_t id;
     std::string name;
 };
 
-std::ostream &operator<<(std::ostream &os, const employee &person) {
+std::ostream&
+operator<<(std::ostream& os, const employee& person)
+{
     os << "id: " << person.id << " name: " << person.name;
     return os;
 }
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<employee> : identified_data_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 100;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<employee> : identified_data_serializer
+{
+    static int32_t get_factory_id() noexcept { return 100; }
 
-                static int32_t get_class_id() noexcept {
-                    return 1000;
-                }
+    static int32_t get_class_id() noexcept { return 1000; }
 
-                static void write_data(const employee &object, hazelcast::client::serialization::object_data_output &out) {
-                    out.write(object.id);
-                    out.write(object.name);
-                }
-
-                static employee read_data(hazelcast::client::serialization::object_data_input &in) {
-                    return employee{in.read<int32_t>(), in.read<std::string>()};
-                }
-            };
-        }
+    static void write_data(
+      const employee& object,
+      hazelcast::client::serialization::object_data_output& out)
+    {
+        out.write(object.id);
+        out.write(object.name);
     }
-}
 
-int main() {
+    static employee read_data(
+      hazelcast::client::serialization::object_data_input& in)
+    {
+        return employee{ in.read<int32_t>(), in.read<std::string>() };
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
-    //Employee can be used here
+    // Employee can be used here
     hz.shutdown().get();
 
     return 0;

@@ -9,16 +9,22 @@
 
 #include "remote_controller_types.h"
 
-namespace hazelcast { namespace client { namespace test { namespace remote {
+namespace hazelcast {
+namespace client {
+namespace test {
+namespace remote {
 
-class remote_controllerConstants {
- public:
-  remote_controllerConstants();
-
+class remote_controllerConstants
+{
+public:
+    remote_controllerConstants();
 };
 
 extern const remote_controllerConstants g_remote_controller_constants;
 
-}}}} // namespace
+} // namespace remote
+} // namespace test
+} // namespace client
+} // namespace hazelcast
 
 #endif

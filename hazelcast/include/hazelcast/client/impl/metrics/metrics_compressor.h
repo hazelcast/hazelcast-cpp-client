@@ -33,16 +33,17 @@ namespace client {
 namespace impl {
 namespace metrics {
 
-class output_buffer {
+class output_buffer
+{
 public:
     void write(byte val);
     void write(int32_t val);
     void write(int64_t val);
-    void write(const std::string &str);
-    void write(const std::vector<byte> &vec);
-    const std::vector<byte> &content() const;
-    std::vector<byte> &content();
-    
+    void write(const std::string& str);
+    void write(const std::vector<byte>& vec);
+    const std::vector<byte>& content() const;
+    std::vector<byte>& content();
+
 private:
     std::vector<byte> buffer_;
 };
@@ -50,13 +51,13 @@ private:
 class HAZELCAST_API metrics_compressor
 {
 public:
-    void add_long(const metric_descriptor &descriptor, int64_t value);
+    void add_long(const metric_descriptor& descriptor, int64_t value);
     std::vector<byte> get_blob();
 
 private:
-    byte calculate_descriptor_mask(const metric_descriptor &descriptor);
-    int get_dictionary_id(const boost::optional<std::string> &word);
-    void write_descriptor(const metric_descriptor &descriptor);
+    byte calculate_descriptor_mask(const metric_descriptor& descriptor);
+    int get_dictionary_id(const boost::optional<std::string>& word);
+    void write_descriptor(const metric_descriptor& descriptor);
     void write_dictionary();
 
     int metrics_count{ 0 };
@@ -66,7 +67,7 @@ private:
     output_buffer dictionary_buffer_{};
 };
 
-} // namespace statistics
+} // namespace metrics
 } // namespace impl
 } // namespace client
 } // namespace hazelcast

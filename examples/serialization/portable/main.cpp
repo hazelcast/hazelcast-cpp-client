@@ -16,49 +16,56 @@
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 
-struct Person {
+struct Person
+{
     std::string name;
     bool male;
     int32_t age;
 };
 
-std::ostream &operator<<(std::ostream &os, const Person &person) {
-    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+std::ostream&
+operator<<(std::ostream& os, const Person& person)
+{
+    os << "name: " << person.name << " male: " << person.male
+       << " age: " << person.age;
     return os;
 }
 
 namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            template<>
-            struct hz_serializer<Person> : portable_serializer {
-                static int32_t get_factory_id() noexcept {
-                    return 1;
-                }
+namespace client {
+namespace serialization {
+template<>
+struct hz_serializer<Person> : portable_serializer
+{
+    static int32_t get_factory_id() noexcept { return 1; }
 
-                static int32_t get_class_id() noexcept {
-                    return 3;
-                }
+    static int32_t get_class_id() noexcept { return 3; }
 
-                static void write_portable(const Person &object, portable_writer &out) {
-                    out.write("name", object.name);
-                    out.write("gender", object.male);
-                    out.write("age", object.age);
-                }
-
-                static Person read_portable(portable_reader &in) {
-                    return Person{in.read<std::string>("name"), in.read<bool>("gender"), in.read<int32_t>("age")};
-                }
-            };
-        }
+    static void write_portable(const Person& object, portable_writer& out)
+    {
+        out.write("name", object.name);
+        out.write("gender", object.male);
+        out.write("age", object.age);
     }
-}
 
-int main() {
+    static Person read_portable(portable_reader& in)
+    {
+        return Person{ in.read<std::string>("name"),
+                       in.read<bool>("gender"),
+                       in.read<int32_t>("age") };
+    }
+};
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+int
+main()
+{
     auto hz = hazelcast::new_client().get();
 
     auto map = hz.get_map("map").get();
-    map->put("foo", Person{"bar", true, 40}).get();
+    map->put("foo", Person{ "bar", true, 40 }).get();
     std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
 
     std::cout << "Finished" << std::endl;

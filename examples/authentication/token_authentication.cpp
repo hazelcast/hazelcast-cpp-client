@@ -15,15 +15,19 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-// You should use the config file hazelcast-token-credentials.xml when starting the server
-// so that the server will authenticate the client successfully.
-int main() {
-    std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
+// You should use the config file hazelcast-token-credentials.xml when starting
+// the server so that the server will authenticate the client successfully.
+int
+main()
+{
+    std::vector<hazelcast::byte> my_token = { 'S', 'G', 'F', '6', 'Z', 'W' };
 
     hazelcast::client::client_config config;
 
     config.set_cluster_name("token-credentials-dev")
-            .set_credentials(std::make_shared<hazelcast::client::security::token_credentials>(my_token));
+      .set_credentials(
+        std::make_shared<hazelcast::client::security::token_credentials>(
+          my_token));
 
     auto hz = hazelcast::new_client(std::move(config)).get();
 
@@ -41,4 +45,3 @@ int main() {
 
     return 0;
 }
-

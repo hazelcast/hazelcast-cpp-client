@@ -20,45 +20,47 @@
 #include <memory>
 #include "hazelcast/util/export.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable : 4251) // for dll export
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace spi {
-            /**
-             * Base interface for all client {@link EventHandler}s.
-             *
-             */
-            template <typename E>
-            class HAZELCAST_API EventHandler {
-            public:
-                virtual void handle(E &event) = 0;
+namespace client {
+namespace spi {
+/**
+ * Base interface for all client {@link EventHandler}s.
+ *
+ */
+template<typename E>
+class HAZELCAST_API EventHandler
+{
+public:
+    virtual void handle(E& event) = 0;
 
-                /**
-                 *  This method is called before registration request is sent to node.
-                 *
-                 *  Note that this method will also be called while first registered node is dead
-                 *  and re-registering to a second node.
-                 */
-                virtual void before_listener_register() = 0;
+    /**
+     *  This method is called before registration request is sent to node.
+     *
+     *  Note that this method will also be called while first registered node is
+     * dead and re-registering to a second node.
+     */
+    virtual void before_listener_register() = 0;
 
-                /**
-                 *  This method is called when registration request response is successfully returned from node.
-                 *
-                 *  Note that this method will also be called while first registered node is dead
-                 *  and re-registering to a second node.
-                 */
-                virtual void on_listener_register() = 0;
+    /**
+     *  This method is called when registration request response is successfully
+     * returned from node.
+     *
+     *  Note that this method will also be called while first registered node is
+     * dead and re-registering to a second node.
+     */
+    virtual void on_listener_register() = 0;
 
-                virtual ~EventHandler() = default;
-            };
-        }
-    }
-}
+    virtual ~EventHandler() = default;
+};
+} // namespace spi
+} // namespace client
+} // namespace hazelcast
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
