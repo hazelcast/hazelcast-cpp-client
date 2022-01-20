@@ -96,8 +96,7 @@ endif ()
 # add the library target
 add_library(
         ${PROJECT_NAME}
-        ${SOURCE_FILES} ${HEADER_FILES}
-)
+        ${SOURCE_FILES} ${HEADER_FILES})
 
 # set library's version and soversion
 set_target_properties(

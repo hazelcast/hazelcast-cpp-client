@@ -23,6 +23,7 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/thread/future.hpp>
 
 #include "hazelcast/client/hazelcast_json_value.h"
 #include "hazelcast/client/serialization/pimpl/data_input.h"
@@ -1732,6 +1733,8 @@ public:
     void dispose() override;
 
     object_data_output new_output_stream();
+
+    boost::future<void> replicate_schema(schema& schema);
 
 private:
     SerializationService(const SerializationService&) = delete;

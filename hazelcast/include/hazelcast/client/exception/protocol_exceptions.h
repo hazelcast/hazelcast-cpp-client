@@ -18,6 +18,7 @@
 
 #include "hazelcast/client/exception/iexception.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
+#include "hazelcast/client/serialization/pimpl/schema.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,6 +27,7 @@
 
 namespace hazelcast {
 namespace client {
+
 namespace exception {
 #define DEFINE_EXCEPTION_CLASS(ClassName, errorNo, isRuntime)                  \
     class HAZELCAST_API ClassName : public iexception                          \
@@ -342,6 +344,19 @@ public:
                               const std::string& message = "",
                               const std::string& details = "",
                               std::exception_ptr cause = nullptr);
+};
+
+class HAZELCAST_API schema_does_not_exist : public hazelcast_
+{
+public:
+    explicit schema_does_not_exist(const std::string& source = "",
+                              const std::string& message = "",
+                              const std::string& details = "",
+                              std::exception_ptr cause = nullptr);
+
+    serialization::pimpl::schema& get_schema();
+private:
+    serialization::pimpl::schema schema_;
 };
 
 DEFINE_EXCEPTION_CLASS(hazelcast_client_not_active,

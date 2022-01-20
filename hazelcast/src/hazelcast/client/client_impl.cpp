@@ -1137,6 +1137,27 @@ consistency_lost::consistency_lost(const std::string& source,
                true,
                false)
 {}
+
+schema_does_not_exist::schema_does_not_exist(const std::string& source,
+                                             const std::string& message,
+                                             const std::string& details,
+                                             std::exception_ptr cause)
+  : hazelcast_("schema_does_not_exist",
+               protocol::SCHEMA_DOES_NOT_EXIST,
+               source,
+               message,
+               details,
+               cause,
+               true,
+               false)
+{}
+
+serialization::pimpl::schema&
+schema_does_not_exist::get_schema()
+{
+    return schema_;
+}
+
 } // namespace exception
 } // namespace client
 

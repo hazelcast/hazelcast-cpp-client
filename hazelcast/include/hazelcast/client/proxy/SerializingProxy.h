@@ -139,30 +139,41 @@ protected:
     inline boost::future<boost::optional<T>> to_object(
       boost::future<boost::optional<serialization::pimpl::data>> f)
     {
-        return f.then(
-          boost::launch::sync,
-          [this](boost::future<boost::optional<serialization::pimpl::data>> f) {
-              return to_object<T>(f.get().get_ptr());
-          });
+        return f
+          .then(
+            boost::launch::sync,
+            [this](
+              boost::future<boost::optional<serialization::pimpl::data>> f) {
+                auto data = f.get();
+                if (!data) {
+                    return boost::make_ready_future<boost::optional<T>>(
+                      boost::none);
+                } else {
+                    return to_object_internal<T>(*data);
+                }
+            })
+          .unwrap();
     }
 
     template<typename T>
-    boost::future<boost::optional<T>> to_object(
+    inline boost::future<boost::optional<T>> to_object(
       boost::future<serialization::pimpl::data> f)
     {
-        return f.then(boost::launch::sync,
-                      [=](boost::future<serialization::pimpl::data> f) {
-                          return to_object<T>(f.get());
-                      });
+        return f
+          .then(boost::launch::sync,
+                [this](boost::future<serialization::pimpl::data> f) {
+                    return to_object_internal<T>(f.get());
+                })
+          .unwrap();
     }
 
     template<typename T>
-    boost::future<boost::optional<T>> to_object(
+    inline boost::future<boost::optional<T>> to_object(
       boost::future<std::unique_ptr<serialization::pimpl::data>> f)
     {
         return f.then(
           boost::launch::sync,
-          [=](boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
+          [this](boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
               return to_object<T>(f.get());
           });
     }
@@ -378,6 +389,22 @@ private:
       const boost::optional<serialization::pimpl::data>& data)
     {
         return to_object<T>(data.get_ptr());
+    }
+
+    template<typename T>
+    inline boost::future<boost::optional<T>> to_object_internal(
+      const serialization::pimpl::data& data)
+    {
+        try {
+            return boost::make_ready_future(to_object<T>(data));
+        } catch (client::exception::schema_does_not_exist& schema_exception) {
+            return serialization_service_
+              .replicate_schema(schema_exception.get_schema())
+              .then([this, data](boost::future<void> f) {
+                  return to_object_internal<T>(data);
+              })
+              .unwrap();
+        }
     }
 };
 

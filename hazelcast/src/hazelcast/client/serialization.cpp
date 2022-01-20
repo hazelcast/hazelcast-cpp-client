@@ -42,6 +42,7 @@
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/client_config.h"
+#include "hazelcast/client/serialization/pimpl/schema.h"
 
 namespace hazelcast {
 namespace client {
@@ -1116,6 +1117,12 @@ SerializationService::new_output_stream()
                               false,
                               &portable_serializer_,
                               serialization_config_.get_global_serializer());
+}
+
+boost::future<void>
+SerializationService::replicate_schema(schema& schema)
+{
+    return boost::make_ready_future();
 }
 
 template<>
