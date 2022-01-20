@@ -530,17 +530,6 @@ private:
                      boost::uuids::uuid target);
 
     template<typename T>
-    boost::optional<T> retrieve_result_from_message(
-      serialization::pimpl::SerializationService* serialization_service,
-      boost::future<protocol::ClientMessage> f)
-    {
-        auto msg = f.get();
-        msg.skip_frame();
-        return serialization_service->to_object<T>(
-          msg.get_nullable<serialization::pimpl::data>().get_ptr());
-    }
-
-    template<typename T>
     executor_promise<T> check_sync(
       std::pair<boost::future<protocol::ClientMessage>,
                 std::shared_ptr<spi::impl::ClientInvocation>>& future_pair,
@@ -550,20 +539,6 @@ private:
     {
         return check_sync<T>(
           future_pair, uuid, partition_id, member(), prevent_sync);
-    }
-
-    template<typename T>
-    boost::future<boost::optional<T>> retrieve_result_sync(
-      boost::future<protocol::ClientMessage> future)
-    {
-        try {
-            auto response = retrieve_result_from_message<T>(
-              &(get_serialization_service()), std::move(future));
-            return boost::make_ready_future(response);
-        } catch (exception::iexception&) {
-            return boost::make_exceptional_future<boost::optional<T>>(
-              boost::current_exception());
-        }
     }
 
     template<typename T>
@@ -578,19 +553,10 @@ private:
       bool prevent_sync)
     {
         bool sync = is_sync_computation(prevent_sync);
-        boost::future<boost::optional<T>> objectFuture;
+        auto objectFuture = to_object<T>(
+          decode<serialization::pimpl::data>(std::move(future_pair.first)));
         if (sync) {
-            objectFuture =
-              retrieve_result_sync<T>(std::move(future_pair.first));
-        } else {
-            serialization::pimpl::SerializationService* serializationService =
-              &get_serialization_service();
-            objectFuture = future_pair.first.then(
-              boost::launch::sync,
-              [=](boost::future<protocol::ClientMessage> f) {
-                  return retrieve_result_from_message<T>(serializationService,
-                                                         std::move(f));
-              });
+            objectFuture.wait();
         }
 
         return executor_promise<T>(objectFuture,

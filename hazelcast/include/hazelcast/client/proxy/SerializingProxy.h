@@ -98,22 +98,41 @@ protected:
       std::vector<boost::future<EntryVector>>& futures)
     {
         return boost::when_all(futures.begin(), futures.end())
-          .then(
-            boost::launch::sync,
-            [=](boost::future<boost::csbl::vector<boost::future<EntryVector>>>
-                  results_data) {
-                std::unordered_map<K, V> result;
-                for (auto& entryVectorFuture : results_data.get()) {
-                    for (auto& entry : entryVectorFuture.get()) {
-                        auto val = to_object<V>(entry.second);
-                        // it is guaranteed that all values are non-null
-                        assert(val.has_value());
-                        result.emplace(to_object<K>(entry.first).value(),
-                                       std::move(val.value()));
+          .then(boost::launch::sync,
+                [this](
+                  boost::future<boost::csbl::vector<boost::future<EntryVector>>>
+                    results_data) {
+                    std::unordered_map<K, V> result;
+                    for (auto& entryVectorFuture : results_data.get()) {
+                        for (auto& entry : entryVectorFuture.get()) {
+                            auto val = to_object<V>(entry.second);
+                            // it is guaranteed that all values are non-null
+                            assert(val.has_value());
+                            result.emplace(to_object<K>(entry.first).value(),
+                                           std::move(val.value()));
+                        }
                     }
-                }
-                return result;
-            });
+                    return result;
+                });
+    }
+
+    template<typename T>
+    inline boost::future<size_t> to_object_drain(
+      boost::future<std::vector<serialization::pimpl::data>> f,
+      std::vector<T>& elements)
+    {
+        return f.then(
+          boost::launch::sync,
+          [&elements,
+           this](boost::future<std::vector<serialization::pimpl::data>> f) {
+              auto datas = f.get();
+              auto size = datas.size();
+              elements.reserve(size);
+              for (auto& data : datas) {
+                  elements.push_back(to_object<T>(data).value());
+              }
+              return size;
+          });
     }
 
     template<typename T>
