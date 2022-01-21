@@ -17,12 +17,14 @@
 
 #include <cstdint>
 
+#include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {
 namespace impl {
 
-class query_id
+class HAZELCAST_API query_id
 {
 public:
     query_id(int64_t member_id_high,
