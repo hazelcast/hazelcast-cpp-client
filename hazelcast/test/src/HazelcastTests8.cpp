@@ -2005,6 +2005,29 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
     }
 }
 
+TEST(ClientMessageTest, test_encode_sql_query_id)
+{
+    // TODO this test can be removed once the query_id encoder is generated.
+
+    protocol::ClientMessage msg;
+
+    msg.set(sql::impl::query_id{ -1LL, 1000000000000LL, 0LL, -42LL });
+
+    const std::vector<unsigned char> expected_bytes{
+        6,   0,   0,   0,   0,   16,  38,  0, 0,  0,   0,   0,   255,
+        255, 255, 255, 255, 255, 255, 255, 0, 16, 165, 212, 232, 0,
+        0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   214, 255, 255,
+        255, 255, 255, 255, 255, 6,   0,   0, 0,  0,   8
+    };
+
+    std::vector<unsigned char> actual_bytes;
+    for (const auto& piece : msg.get_buffer()) {
+        actual_bytes.insert(actual_bytes.end(), piece.begin(), piece.end());
+    }
+
+    EXPECT_EQ(expected_bytes, actual_bytes);
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast

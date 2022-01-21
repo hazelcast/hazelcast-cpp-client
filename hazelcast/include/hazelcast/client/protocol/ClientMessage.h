@@ -21,26 +21,28 @@
 #pragma warning(disable : 4251) // for dll export
 #endif
 
-#include <string>
+#include <cassert>
 #include <memory>
-#include <vector>
-#include <assert.h>
-#include <unordered_map>
 #include <ostream>
-#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/optional.hpp>
 #include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 
-#include <hazelcast/client/query/paging_predicate.h>
 #include "hazelcast/client/address.h"
-#include "hazelcast/client/member.h"
-#include "hazelcast/client/serialization/pimpl/data.h"
-#include "hazelcast/client/map/data_entry_view.h"
-#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/config/index_config.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
+#include "hazelcast/client/map/data_entry_view.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
+#include "hazelcast/client/query/paging_predicate.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
+#include "hazelcast/client/sql/impl/query_id.h"
 
 namespace hazelcast {
 namespace util {
@@ -1075,6 +1077,32 @@ public:
             h->flags |= IS_FINAL_FLAG;
         }
     }
+
+    void set(const frame_header_t& header)
+    {
+        auto pos = wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        std::memcpy(pos, &header.frame_len, sizeof(header.frame_len));
+        pos += sizeof(header.frame_len);
+        std::memcpy(pos, &header.flags, sizeof(header.flags));
+    }
+
+    void set(const sql::impl::query_id& query_id, bool is_final = false)
+    {
+        // TODO this codec should be a generated.
+
+        add_begin_frame();
+
+        set(frame_header_t{ SIZE_OF_FRAME_LENGTH_AND_FLAGS + 4 * INT64_SIZE,
+                            DEFAULT_FLAGS });
+
+        set(query_id.member_id_high());
+        set(query_id.member_id_low());
+        set(query_id.local_id_high());
+        set(query_id.local_id_low());
+
+        add_end_frame(is_final);
+    }
+
     //----- Setter methods end ---------------------
 
     //----- utility methods -------------------
