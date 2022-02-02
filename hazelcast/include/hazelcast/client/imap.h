@@ -738,7 +738,7 @@ public:
       query::paging_predicate<K, V>& predicate)
     {
         predicate.set_iteration_type(query::iteration_type::KEY);
-        auto futures =
+        auto future =
           key_set_for_paging_predicate_data(
             protocol::codec::holder::paging_predicate_holder::of(
               predicate, serialization_service_))
@@ -751,7 +751,7 @@ public:
                   predicate.set_anchor_data_list(std::move(result.second));
                   return result.first;
               });
-        return to_object_vector<K>(std::move(futures));
+        return to_object_vector<K>(std::move(future));
     }
 
     /**
@@ -803,7 +803,7 @@ public:
       query::paging_predicate<K, V>& predicate)
     {
         predicate.set_iteration_type(query::iteration_type::VALUE);
-        auto futures =
+        auto future =
           values_for_paging_predicate_data(
             protocol::codec::holder::paging_predicate_holder::of(
               predicate, serialization_service_))
@@ -816,7 +816,7 @@ public:
                   predicate.set_anchor_data_list(std::move(result.second));
                   return result.first;
               });
-        return to_object_vector<V>(std::move(futures));
+        return to_object_vector<V>(std::move(future));
     }
 
     /**
@@ -869,7 +869,7 @@ public:
       query::paging_predicate<K, V>& predicate)
     {
         predicate.set_iteration_type(query::iteration_type::ENTRY);
-        auto futures =
+        auto future =
           entry_set_for_paging_predicate_data(
             protocol::codec::holder::paging_predicate_holder::of(
               predicate, serialization_service_))
@@ -882,7 +882,7 @@ public:
                   predicate.set_anchor_data_list(std::move(result.second));
                   return result.first;
               });
-        return to_entry_object_vector<K, V>(std::move(futures));
+        return to_entry_object_vector<K, V>(std::move(future));
     }
 
     /**

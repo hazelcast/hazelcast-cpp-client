@@ -127,7 +127,7 @@ protected:
            this](boost::future<std::vector<serialization::pimpl::data>> f) {
               auto datas = f.get();
               auto size = datas.size();
-              elements.reserve(size);
+              elements.reserve(elements.size() + size);
               for (auto& data : datas) {
                   elements.push_back(to_object<T>(data).value());
               }
