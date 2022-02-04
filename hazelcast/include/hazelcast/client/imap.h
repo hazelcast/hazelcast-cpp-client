@@ -633,8 +633,8 @@ public:
     boost::future<boost::optional<entry_view<K, V>>> get_entry_view(
       const K& key)
     {
-        return to_object_entry_view<K, V>(
-          proxy::IMapImpl::get_entry_view_data(to_data(key)), key);
+        auto f = proxy::IMapImpl::get_entry_view_data(to_data(key));
+        return to_object_entry_view<K, V>(std::move(f), std::move(key));
     }
 
     /**
@@ -738,20 +738,11 @@ public:
       query::paging_predicate<K, V>& predicate)
     {
         predicate.set_iteration_type(query::iteration_type::KEY);
-        auto future =
-          key_set_for_paging_predicate_data(
-            protocol::codec::holder::paging_predicate_holder::of(
-              predicate, serialization_service_))
-            .then(
-              boost::launch::sync,
-              [&predicate](
-                boost::future<std::pair<std::vector<serialization::pimpl::data>,
-                                        query::anchor_data_list>> f) {
-                  auto result = f.get();
-                  predicate.set_anchor_data_list(std::move(result.second));
-                  return result.first;
-              });
-        return to_object_vector<K>(std::move(future));
+        auto future = key_set_for_paging_predicate_data(
+          protocol::codec::holder::paging_predicate_holder::of(
+            predicate, serialization_service_));
+        return keys_to_object_vector_with_predicate(std::move(future),
+                                                    predicate);
     }
 
     /**
@@ -803,20 +794,11 @@ public:
       query::paging_predicate<K, V>& predicate)
     {
         predicate.set_iteration_type(query::iteration_type::VALUE);
-        auto future =
-          values_for_paging_predicate_data(
-            protocol::codec::holder::paging_predicate_holder::of(
-              predicate, serialization_service_))
-            .then(
-              boost::launch::sync,
-              [&predicate](
-                boost::future<std::pair<std::vector<serialization::pimpl::data>,
-                                        query::anchor_data_list>> f) {
-                  auto result = f.get();
-                  predicate.set_anchor_data_list(std::move(result.second));
-                  return result.first;
-              });
-        return to_object_vector<V>(std::move(future));
+        auto future = values_for_paging_predicate_data(
+          protocol::codec::holder::paging_predicate_holder::of(
+            predicate, serialization_service_));
+        return values_to_object_vector_with_predicate(std::move(future),
+                                                      predicate);
     }
 
     /**
@@ -869,20 +851,11 @@ public:
       query::paging_predicate<K, V>& predicate)
     {
         predicate.set_iteration_type(query::iteration_type::ENTRY);
-        auto future =
-          entry_set_for_paging_predicate_data(
-            protocol::codec::holder::paging_predicate_holder::of(
-              predicate, serialization_service_))
-            .then(
-              boost::launch::sync,
-              [&predicate](
-                boost::future<std::pair<EntryVector, query::anchor_data_list>>
-                  f) {
-                  auto result = f.get();
-                  predicate.set_anchor_data_list(std::move(result.second));
-                  return result.first;
-              });
-        return to_entry_object_vector<K, V>(std::move(future));
+        auto future = entry_set_for_paging_predicate_data(
+          protocol::codec::holder::paging_predicate_holder::of(
+            predicate, serialization_service_));
+        return entry_set_to_object_vector_with_predicate<K, V>(
+          std::move(future), predicate);
     }
 
     /**

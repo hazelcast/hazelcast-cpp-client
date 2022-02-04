@@ -135,6 +135,75 @@ protected:
           });
     }
 
+    template<typename K, typename V>
+    inline boost::future<std::vector<K>> keys_to_object_vector_with_predicate(
+      boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                              query::anchor_data_list>> future,
+      query::paging_predicate<K, V>& predicate)
+    {
+        return future.then(
+          boost::launch::sync,
+          [this, &predicate](
+            boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                                    query::anchor_data_list>> f) {
+              auto result = f.get();
+              predicate.set_anchor_data_list(std::move(result.second));
+              const auto& entries = result.first;
+              std::vector<K> keys;
+              keys.reserve(entries.size());
+              for (const auto& e : entries) {
+                  keys.emplace_back(*to_object<K>(e));
+              }
+              return keys;
+          });
+    }
+
+    template<typename K, typename V>
+    inline boost::future<std::vector<V>> values_to_object_vector_with_predicate(
+      boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                              query::anchor_data_list>> future,
+      query::paging_predicate<K, V>& predicate)
+    {
+        return future.then(
+          boost::launch::sync,
+          [this, &predicate](
+            boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                                    query::anchor_data_list>> f) {
+              auto result = f.get();
+              predicate.set_anchor_data_list(std::move(result.second));
+              const auto& entries = result.first;
+              std::vector<V> values;
+              values.reserve(entries.size());
+              for (const auto& e : entries) {
+                  values.emplace_back(*to_object<V>(e));
+              }
+              return values;
+          });
+    }
+
+    template<typename K, typename V>
+    inline boost::future<std::vector<std::pair<K, V>>>
+    entry_set_to_object_vector_with_predicate(
+      boost::future<std::pair<EntryVector, query::anchor_data_list>> future,
+      query::paging_predicate<K, V>& predicate)
+    {
+        return future.then(
+          boost::launch::sync,
+          [this, &predicate](
+            boost::future<std::pair<EntryVector, query::anchor_data_list>> f) {
+              auto result = f.get();
+              predicate.set_anchor_data_list(std::move(result.second));
+              const auto& entries_data = result.first;
+              std::vector<std::pair<K, V>> entries;
+              entries.reserve(entries_data.size());
+              for (const auto& e : entries_data) {
+                  entries.emplace_back(*to_object<K>(e.first),
+                                       *to_object<V>(e.second));
+              }
+              return entries;
+          });
+    }
+
     template<typename T>
     inline boost::future<boost::optional<T>> to_object(
       boost::future<boost::optional<serialization::pimpl::data>> f)
@@ -151,7 +220,7 @@ protected:
       boost::future<serialization::pimpl::data> f)
     {
         return f.then(boost::launch::sync,
-                      [=](boost::future<serialization::pimpl::data> f) {
+                      [this](boost::future<serialization::pimpl::data> f) {
                           return to_object<T>(f.get());
                       });
     }
@@ -162,7 +231,7 @@ protected:
     {
         return f.then(
           boost::launch::sync,
-          [=](boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
+          [this](boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
               return to_object<T>(f.get());
           });
     }
@@ -173,7 +242,7 @@ protected:
     {
         return data_future.then(
           boost::launch::sync,
-          [=](boost::future<std::vector<serialization::pimpl::data>> f) {
+          [this](boost::future<std::vector<serialization::pimpl::data>> f) {
               auto dataResult = f.get();
               std::vector<T> result;
               result.reserve(dataResult.size());
@@ -190,7 +259,7 @@ protected:
       boost::future<EntryVector> entries_data)
     {
         return entries_data.then(
-          boost::launch::sync, [=](boost::future<EntryVector> f) {
+          boost::launch::sync, [this](boost::future<EntryVector> f) {
               auto entries = f.get();
               std::unordered_map<K, boost::optional<V>> result;
               result.reserve(entries.size());
@@ -206,11 +275,11 @@ protected:
     inline boost::future<boost::optional<entry_view<K, V>>>
     to_object_entry_view(
       boost::future<boost::optional<map::data_entry_view>> data_future,
-      const K& key)
+      K key)
     {
         return data_future.then(
           boost::launch::sync,
-          [=](boost::future<boost::optional<map::data_entry_view>> f) {
+          [this, key](boost::future<boost::optional<map::data_entry_view>> f) {
               auto dataView = f.get();
               if (!dataView) {
                   return boost::optional<entry_view<K, V>>();
@@ -226,7 +295,7 @@ protected:
       boost::future<EntryVector> data_future)
     {
         return data_future.then(
-          boost::launch::sync, [=](boost::future<EntryVector> f) {
+          boost::launch::sync, [this](boost::future<EntryVector> f) {
               auto dataEntryVector = f.get();
               std::vector<std::pair<K, V>> result;
               result.reserve(dataEntryVector.size());
