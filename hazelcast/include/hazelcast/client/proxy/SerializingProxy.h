@@ -274,19 +274,26 @@ protected:
     template<typename K, typename V>
     inline boost::future<boost::optional<entry_view<K, V>>>
     to_object_entry_view(
-      boost::future<boost::optional<map::data_entry_view>> data_future,
-      K key)
+      boost::future<boost::optional<map::data_entry_view>> data_future)
     {
         return data_future.then(
           boost::launch::sync,
-          [this, key](boost::future<boost::optional<map::data_entry_view>> f) {
+          [this](boost::future<boost::optional<map::data_entry_view>> f) {
               auto dataView = f.get();
               if (!dataView) {
                   return boost::optional<entry_view<K, V>>();
               }
-              auto v = to_object<V>(dataView->get_value());
-              return boost::make_optional(entry_view<K, V>(
-                key, std::move(v).value(), *std::move(dataView)));
+              return boost::make_optional(
+                entry_view<K, V>(to_object<K>(dataView->get_key()).value(),
+                                 to_object<V>(dataView->get_value()).value(),
+                                 dataView->get_cost(),
+                                 dataView->get_creation_time(),
+                                 dataView->get_expiration_time(),
+                                 dataView->get_hits(),
+                                 dataView->get_last_access_time(),
+                                 dataView->get_last_stored_time(),
+                                 dataView->get_last_update_time(),
+                                 dataView->get_version()));
           });
     }
 

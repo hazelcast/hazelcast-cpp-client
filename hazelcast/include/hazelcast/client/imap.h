@@ -634,7 +634,7 @@ public:
       const K& key)
     {
         auto f = proxy::IMapImpl::get_entry_view_data(to_data(key));
-        return to_object_entry_view<K, V>(std::move(f), std::move(key));
+        return to_object_entry_view<K, V>(std::move(f));
     }
 
     /**

@@ -32,17 +32,27 @@ template<typename K, typename V>
 class entry_view
 {
 public:
-    entry_view(K key, V value, map::data_entry_view rhs)
+    entry_view(K key,
+               V value,
+               int64_t cost,
+               int64_t creationTime,
+               int64_t expirationTime,
+               int64_t hits,
+               int64_t lastAccessTime,
+               int64_t lastStoredTime,
+               int64_t lastUpdateTime,
+               int64_t version)
       : key(std::move(key))
       , value(std::move(value))
-      , cost(rhs.get_cost())
-      , creation_time(rhs.get_creation_time())
-      , expiration_time(rhs.get_expiration_time())
-      , hits(rhs.get_hits())
-      , last_access_time(rhs.get_last_access_time())
-      , last_stored_time(rhs.get_last_stored_time())
-      , last_update_time(rhs.get_last_update_time())
-      , version(rhs.get_version()){};
+      , cost(cost)
+      , creation_time(creationTime)
+      , expiration_time(expirationTime)
+      , hits(hits)
+      , last_access_time(lastAccessTime)
+      , last_stored_time(lastStoredTime)
+      , last_update_time(lastUpdateTime)
+      , version(version)
+    {}
 
     /**
      * key
