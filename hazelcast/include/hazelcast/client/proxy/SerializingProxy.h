@@ -20,6 +20,7 @@
 
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/entry_view.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -92,41 +93,115 @@ protected:
         return to_data<T>(&object);
     }
 
-    template<typename T>
-    inline boost::optional<T> to_object(const serialization::pimpl::data& data)
+    template<typename K, typename V>
+    inline boost::future<std::unordered_map<K, V>> to_object_map(
+      std::vector<boost::future<EntryVector>>& futures)
     {
-        return serialization_service_.template to_object<T>(data);
+        return boost::when_all(futures.begin(), futures.end())
+          .then(boost::launch::sync,
+                [this](
+                  boost::future<boost::csbl::vector<boost::future<EntryVector>>>
+                    results_data) {
+                    std::unordered_map<K, V> result;
+                    for (auto& entryVectorFuture : results_data.get()) {
+                        for (auto& entry : entryVectorFuture.get()) {
+                            auto val = to_object<V>(entry.second);
+                            // it is guaranteed that all values are non-null
+                            assert(val.has_value());
+                            result.emplace(to_object<K>(entry.first).value(),
+                                           std::move(val.value()));
+                        }
+                    }
+                    return result;
+                });
     }
 
     template<typename T>
-    inline boost::optional<T> to_object(const serialization::pimpl::data* data)
+    inline boost::future<size_t> to_object_drain(
+      boost::future<std::vector<serialization::pimpl::data>> f,
+      std::vector<T>& elements)
     {
-        if (!data) {
-            return boost::none;
-        } else {
-            return to_object<T>(*data);
-        }
+        return f.then(
+          boost::launch::sync,
+          [&elements,
+           this](boost::future<std::vector<serialization::pimpl::data>> f) {
+              auto datas = f.get();
+              auto size = datas.size();
+              elements.reserve(elements.size() + size);
+              for (auto& data : datas) {
+                  elements.push_back(to_object<T>(data).value());
+              }
+              return size;
+          });
     }
 
-    template<typename T>
-    inline boost::optional<T> to_object(
-      std::unique_ptr<serialization::pimpl::data>&& data)
+    template<typename K, typename V>
+    inline boost::future<std::vector<K>> keys_to_object_vector_with_predicate(
+      boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                              query::anchor_data_list>> future,
+      query::paging_predicate<K, V>& predicate)
     {
-        return to_object<T>(data.get());
+        return future.then(
+          boost::launch::sync,
+          [this, &predicate](
+            boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                                    query::anchor_data_list>> f) {
+              auto result = f.get();
+              predicate.set_anchor_data_list(std::move(result.second));
+              const auto& entries = result.first;
+              std::vector<K> keys;
+              keys.reserve(entries.size());
+              for (const auto& e : entries) {
+                  keys.emplace_back(*to_object<K>(e));
+              }
+              return keys;
+          });
     }
 
-    template<typename T>
-    inline boost::optional<T> to_object(
-      std::unique_ptr<serialization::pimpl::data>& data)
+    template<typename K, typename V>
+    inline boost::future<std::vector<V>> values_to_object_vector_with_predicate(
+      boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                              query::anchor_data_list>> future,
+      query::paging_predicate<K, V>& predicate)
     {
-        return to_object<T>(data.get());
+        return future.then(
+          boost::launch::sync,
+          [this, &predicate](
+            boost::future<std::pair<std::vector<serialization::pimpl::data>,
+                                    query::anchor_data_list>> f) {
+              auto result = f.get();
+              predicate.set_anchor_data_list(std::move(result.second));
+              const auto& entries = result.first;
+              std::vector<V> values;
+              values.reserve(entries.size());
+              for (const auto& e : entries) {
+                  values.emplace_back(*to_object<V>(e));
+              }
+              return values;
+          });
     }
 
-    template<typename T>
-    inline boost::optional<T> to_object(
-      const boost::optional<serialization::pimpl::data>& data)
+    template<typename K, typename V>
+    inline boost::future<std::vector<std::pair<K, V>>>
+    entry_set_to_object_vector_with_predicate(
+      boost::future<std::pair<EntryVector, query::anchor_data_list>> future,
+      query::paging_predicate<K, V>& predicate)
     {
-        return to_object<T>(data.get_ptr());
+        return future.then(
+          boost::launch::sync,
+          [this, &predicate](
+            boost::future<std::pair<EntryVector, query::anchor_data_list>> f) {
+              auto result = f.get();
+              predicate.set_anchor_data_list(std::move(result.second));
+              const auto& entries_data = result.first;
+              std::vector<std::pair<K, V>> entries;
+              entries.reserve(entries_data.size());
+              for (const auto& e : entries_data) {
+                  entries.emplace_back(*to_object<K>(e.first),
+                                       *to_object<V>(e.second));
+              }
+              return entries;
+          });
     }
 
     template<typename T>
@@ -141,30 +216,11 @@ protected:
     }
 
     template<typename T>
-    typename std::enable_if<
-      std::is_same<char*, typename std::remove_cv<T>::type>::value,
-      boost::optional<std::string>>::
-      type inline to_object(const serialization::pimpl::data& data)
-    {
-        return to_object<std::string>(data);
-    }
-
-    template<typename T>
-    typename std::enable_if<
-      std::is_array<T>::value &&
-        std::is_same<typename std::remove_all_extents<T>::type, char>::value,
-      boost::optional<std::string>>::
-      type inline to_object(const serialization::pimpl::data& data)
-    {
-        return to_object<std::string>(data);
-    }
-
-    template<typename T>
     boost::future<boost::optional<T>> to_object(
       boost::future<serialization::pimpl::data> f)
     {
         return f.then(boost::launch::sync,
-                      [=](boost::future<serialization::pimpl::data> f) {
+                      [this](boost::future<serialization::pimpl::data> f) {
                           return to_object<T>(f.get());
                       });
     }
@@ -175,7 +231,7 @@ protected:
     {
         return f.then(
           boost::launch::sync,
-          [=](boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
+          [this](boost::future<std::unique_ptr<serialization::pimpl::data>> f) {
               return to_object<T>(f.get());
           });
     }
@@ -186,7 +242,7 @@ protected:
     {
         return data_future.then(
           boost::launch::sync,
-          [=](boost::future<std::vector<serialization::pimpl::data>> f) {
+          [this](boost::future<std::vector<serialization::pimpl::data>> f) {
               auto dataResult = f.get();
               std::vector<T> result;
               result.reserve(dataResult.size());
@@ -203,7 +259,7 @@ protected:
       boost::future<EntryVector> entries_data)
     {
         return entries_data.then(
-          boost::launch::sync, [=](boost::future<EntryVector> f) {
+          boost::launch::sync, [this](boost::future<EntryVector> f) {
               auto entries = f.get();
               std::unordered_map<K, boost::optional<V>> result;
               result.reserve(entries.size());
@@ -216,11 +272,37 @@ protected:
     }
 
     template<typename K, typename V>
+    inline boost::future<boost::optional<entry_view<K, V>>>
+    to_object_entry_view(
+      boost::future<boost::optional<map::data_entry_view>> data_future)
+    {
+        return data_future.then(
+          boost::launch::sync,
+          [this](boost::future<boost::optional<map::data_entry_view>> f) {
+              auto dataView = f.get();
+              if (!dataView) {
+                  return boost::optional<entry_view<K, V>>();
+              }
+              return boost::make_optional(
+                entry_view<K, V>(to_object<K>(dataView->get_key()).value(),
+                                 to_object<V>(dataView->get_value()).value(),
+                                 dataView->get_cost(),
+                                 dataView->get_creation_time(),
+                                 dataView->get_expiration_time(),
+                                 dataView->get_hits(),
+                                 dataView->get_last_access_time(),
+                                 dataView->get_last_stored_time(),
+                                 dataView->get_last_update_time(),
+                                 dataView->get_version()));
+          });
+    }
+
+    template<typename K, typename V>
     inline boost::future<std::vector<std::pair<K, V>>> to_entry_object_vector(
       boost::future<EntryVector> data_future)
     {
         return data_future.then(
-          boost::launch::sync, [=](boost::future<EntryVector> f) {
+          boost::launch::sync, [this](boost::future<EntryVector> f) {
               auto dataEntryVector = f.get();
               std::vector<std::pair<K, V>> result;
               result.reserve(dataEntryVector.size());
@@ -316,6 +398,63 @@ protected:
     spi::impl::ClientPartitionServiceImpl& partition_service_;
     std::string object_name_;
     spi::ClientContext& client_context_;
+
+private:
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<char*, typename std::remove_cv<T>::type>::value,
+      boost::optional<std::string>>::
+      type inline to_object(const serialization::pimpl::data& data)
+    {
+        return to_object<std::string>(data);
+    }
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_array<T>::value &&
+        std::is_same<typename std::remove_all_extents<T>::type, char>::value,
+      boost::optional<std::string>>::
+      type inline to_object(const serialization::pimpl::data& data)
+    {
+        return to_object<std::string>(data);
+    }
+
+    template<typename T>
+    inline boost::optional<T> to_object(const serialization::pimpl::data& data)
+    {
+        return serialization_service_.template to_object<T>(data);
+    }
+
+    template<typename T>
+    inline boost::optional<T> to_object(const serialization::pimpl::data* data)
+    {
+        if (!data) {
+            return boost::none;
+        } else {
+            return to_object<T>(*data);
+        }
+    }
+
+    template<typename T>
+    inline boost::optional<T> to_object(
+      std::unique_ptr<serialization::pimpl::data>&& data)
+    {
+        return to_object<T>(data.get());
+    }
+
+    template<typename T>
+    inline boost::optional<T> to_object(
+      std::unique_ptr<serialization::pimpl::data>& data)
+    {
+        return to_object<T>(data.get());
+    }
+
+    template<typename T>
+    inline boost::optional<T> to_object(
+      const boost::optional<serialization::pimpl::data>& data)
+    {
+        return to_object<T>(data.get_ptr());
+    }
 };
 
 template<>

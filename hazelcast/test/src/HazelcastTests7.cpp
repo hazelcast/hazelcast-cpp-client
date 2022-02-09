@@ -738,6 +738,18 @@ TEST_F(ClientQueueTest, testDrain)
     ASSERT_EQ("item1", list2[0]);
     ASSERT_EQ("item2", list2[1]);
     ASSERT_EQ("item3", list2[2]);
+
+    offer(2);
+    // drain to a non-empty vector
+    result = q->drain_to(list2).get();
+    ASSERT_EQ(2U, result);
+    // existing items
+    ASSERT_EQ("item1", list2[0]);
+    ASSERT_EQ("item2", list2[1]);
+    ASSERT_EQ("item3", list2[2]);
+    // new drained items
+    ASSERT_EQ("item1", list2[3]);
+    ASSERT_EQ("item2", list2[4]);
 }
 
 TEST_F(ClientQueueTest, testToArray)

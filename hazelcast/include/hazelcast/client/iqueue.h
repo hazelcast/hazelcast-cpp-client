@@ -158,11 +158,7 @@ public:
     template<typename E>
     boost::future<size_t> drain_to(std::vector<E>& elements)
     {
-        return proxy::IQueueImpl::drain_to_data().then(
-          boost::launch::sync,
-          [&](boost::future<std::vector<serialization::pimpl::data>> f) {
-              return drain_items(std::move(f), elements);
-          });
+        return to_object_drain(proxy::IQueueImpl::drain_to_data(), elements);
     }
 
     /**
@@ -176,11 +172,8 @@ public:
     boost::future<size_t> drain_to(std::vector<E>& elements,
                                    size_t max_elements)
     {
-        return proxy::IQueueImpl::drain_to_data(max_elements)
-          .then(boost::launch::sync,
-                [&](boost::future<std::vector<serialization::pimpl::data>> f) {
-                    return drain_items(std::move(f), elements);
-                });
+        return to_object_drain(proxy::IQueueImpl::drain_to_data(max_elements),
+                               elements);
     }
 
     /**
@@ -268,20 +261,6 @@ private:
     iqueue(const std::string& instance_name, spi::ClientContext* context)
       : proxy::IQueueImpl(instance_name, context)
     {}
-
-    template<typename E>
-    size_t drain_items(boost::future<std::vector<serialization::pimpl::data>> f,
-                       std::vector<E>& elements)
-    {
-        auto datas = f.get();
-        auto size = datas.size();
-        elements.reserve(size);
-        auto& ss = get_context().get_serialization_service();
-        for (auto& data : datas) {
-            elements.push_back(ss.template to_object<E>(data).value());
-        }
-        return size;
-    }
 };
 } // namespace client
 } // namespace hazelcast
