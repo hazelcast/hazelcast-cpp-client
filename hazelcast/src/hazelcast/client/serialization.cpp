@@ -129,6 +129,13 @@ portable_writer::get_raw_data_output()
     return class_definition_writer_->get_raw_data_output();
 }
 
+void
+compact_writer::write_string(const std::string& field_name,
+                             const std::string* value)
+{
+    //TODO sancar
+}
+
 ClassDefinitionBuilder::ClassDefinitionBuilder(int factory_id,
                                                int class_id,
                                                int version)
@@ -369,10 +376,12 @@ object_data_input::object_data_input(
   const std::vector<byte>& buffer,
   int offset,
   pimpl::PortableSerializer& portable_ser,
+  pimpl::CompactSerializer& compact_ser,
   pimpl::DataSerializer& data_ser,
   std::shared_ptr<serialization::global_serializer> global_serializer)
   : pimpl::data_input<std::vector<byte>>(byte_order, buffer, offset)
   , portable_serializer_(portable_ser)
+  , compact_serializer_(compact_ser)
   , data_serializer_(data_ser)
   , global_serializer_(std::move(global_serializer))
 {}
@@ -381,9 +390,11 @@ object_data_output::object_data_output(
   boost::endian::order byte_order,
   bool dont_write,
   pimpl::PortableSerializer* portable_ser,
+  pimpl::CompactSerializer* compact_ser,
   std::shared_ptr<serialization::global_serializer> global_serializer)
   : data_output(byte_order, dont_write)
   , portable_serializer_(portable_ser)
+  , compact_serializer_(compact_ser)
   , global_serializer_(std::move(global_serializer))
 {}
 
@@ -428,6 +439,12 @@ portable_reader::end()
     if (is_default_reader_)
         return default_portable_reader_->end();
     return morphing_portable_reader_->end();
+}
+
+boost::optional<std::string>
+compact_reader::read_string(const std::string& field_name)
+{
+    return boost::none;
 }
 
 ClassDefinition::ClassDefinition()
@@ -924,6 +941,7 @@ SerializationService::SerializationService(const serialization_config& config)
   : serialization_config_(config)
   , portable_context_(serialization_config_)
   , portable_serializer_(portable_context_)
+  , compact_serializer_()
 {}
 
 DefaultPortableWriter::DefaultPortableWriter(
@@ -1087,6 +1105,12 @@ SerializationService::get_portable_serializer()
     return portable_serializer_;
 }
 
+CompactSerializer&
+SerializationService::get_compact_serializer()
+{
+    return compact_serializer_;
+}
+
 DataSerializer&
 SerializationService::get_data_serializer()
 {
@@ -1099,6 +1123,7 @@ SerializationService::new_output_stream()
     return object_data_output(serialization_config_.get_byte_order(),
                               false,
                               &portable_serializer_,
+                              &compact_serializer_,
                               serialization_config_.get_global_serializer());
 }
 

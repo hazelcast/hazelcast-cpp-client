@@ -87,6 +87,7 @@ enum struct HAZELCAST_API serialization_constants
     CONSTANT_TYPE_DOUBLE_ARRAY = -19,
     CONSTANT_TYPE_STRING_ARRAY = -20,
     CONSTANT_TYPE_UUID = -21,
+    CONSTANT_TYPE_COMPACT = -55,
     JAVASCRIPT_JSON_SERIALIZATION_TYPE = -130,
 
     CONSTANT_TYPE_GLOBAL = INT32_MIN
@@ -184,6 +185,7 @@ class DefaultPortableWriter;
 class DefaultPortableReader;
 class MorphingPortableReader;
 class PortableSerializer;
+class CompactSerializer;
 class DataSerializer;
 class SerializationService;
 } // namespace pimpl
@@ -231,6 +233,14 @@ struct portable_serializer
 {};
 
 struct versioned_portable_serializer : public portable_serializer
+{};
+
+/**
+ *      static std::string get_type_name();
+ *      static void write_compact(const T& object, compact_writer &out);
+ *      static T read_compact(compact_reader &in);
+ */
+struct compact_serializer
 {};
 
 template<>
@@ -746,6 +756,7 @@ public:
       const std::vector<byte>& buffer,
       int offset,
       pimpl::PortableSerializer& portable_ser,
+      pimpl::CompactSerializer& compact_ser,
       pimpl::DataSerializer& data_ser,
       std::shared_ptr<serialization::global_serializer> global_serializer);
 
@@ -777,6 +788,11 @@ public:
 
     template<typename T>
     typename std::enable_if<
+      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      boost::optional<T>>::type inline read_object(int32_t type_id);
+
+    template<typename T>
+    typename std::enable_if<
       std::is_base_of<builtin_serializer, hz_serializer<T>>::value,
       boost::optional<T>>::type inline read_object(int32_t type_id);
 
@@ -795,12 +811,14 @@ public:
     typename std::enable_if<
       !(std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
         std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
+        std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
         std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
         std::is_base_of<custom_serializer, hz_serializer<T>>::value),
       boost::optional<T>>::type inline read_object(int32_t type_id);
 
 private:
     pimpl::PortableSerializer& portable_serializer_;
+    pimpl::CompactSerializer& compact_serializer_;
     pimpl::DataSerializer& data_serializer_;
     std::shared_ptr<serialization::global_serializer> global_serializer_;
 };
@@ -817,6 +835,7 @@ public:
       boost::endian::order byte_order,
       bool dont_write = false,
       pimpl::PortableSerializer* portable_ser = nullptr,
+      pimpl::CompactSerializer* compact_ser = nullptr,
       std::shared_ptr<serialization::global_serializer> global_serializer =
         nullptr);
 
@@ -855,6 +874,11 @@ public:
 
     template<typename T>
     typename std::enable_if<
+      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      void>::type inline write_object(const T& object);
+
+    template<typename T>
+    typename std::enable_if<
       std::is_base_of<custom_serializer, hz_serializer<T>>::value,
       void>::type inline write_object(const T& object);
 
@@ -863,6 +887,7 @@ public:
       !(std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
         std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
         std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
+        std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
         std::is_base_of<custom_serializer, hz_serializer<T>>::value ||
         (std::is_array<T>::value &&
          std::is_same<typename std::remove_all_extents<T>::type, char>::value)),
@@ -888,6 +913,7 @@ public:
 
 private:
     pimpl::PortableSerializer* portable_serializer_;
+    pimpl::CompactSerializer* compact_serializer_;
     std::shared_ptr<serialization::global_serializer> global_serializer_;
 };
 
@@ -1523,6 +1549,20 @@ private:
       const T& portable);
 };
 
+class HAZELCAST_API CompactSerializer
+{
+public:
+    CompactSerializer(){};
+
+    template<typename T>
+    T read(object_data_input& in);
+
+    template<typename T>
+    void write(const T& object, object_data_output& out);
+
+private:
+};
+
 class HAZELCAST_API DataSerializer
 {
 public:
@@ -1613,6 +1653,8 @@ public:
 
     PortableSerializer& get_portable_serializer();
 
+    CompactSerializer& get_compact_serializer();
+
     DataSerializer& get_data_serializer();
 
     template<typename T>
@@ -1622,6 +1664,7 @@ public:
           serialization_config_.get_byte_order(),
           false,
           &portable_serializer_,
+          &compact_serializer_,
           serialization_config_.get_global_serializer());
 
         write_hash<T>(object, output);
@@ -1638,6 +1681,7 @@ public:
           serialization_config_.get_byte_order(),
           false,
           &portable_serializer_,
+          &compact_serializer_,
           serialization_config_.get_global_serializer());
 
         write_hash<T>(&object, output);
@@ -1685,6 +1729,7 @@ public:
           data.to_byte_array(),
           8,
           portable_serializer_,
+          compact_serializer_,
           data_serializer_,
           serialization_config_.get_global_serializer());
         return objectDataInput.read_object<T>(typeId);
@@ -1741,6 +1786,7 @@ private:
     const serialization_config& serialization_config_;
     PortableContext portable_context_;
     serialization::pimpl::PortableSerializer portable_serializer_;
+    serialization::pimpl::CompactSerializer compact_serializer_;
     serialization::pimpl::DataSerializer data_serializer_;
 
     static bool is_null_data(const data& data);
@@ -2024,6 +2070,18 @@ portable_writer::write_portable_array(const std::string& field_name,
     return class_definition_writer_->write_portable_array(field_name, values);
 }
 
+class HAZELCAST_API compact_reader
+{
+public:
+    boost::optional<std::string> read_string(const std::string& field_name);
+};
+
+class HAZELCAST_API compact_writer
+{
+public:
+    void write_string(const std::string& field_name, const std::string* value);
+};
+
 template<typename T>
 void
 object_data_output::write_object(const T* object)
@@ -2091,6 +2149,20 @@ typename std::enable_if<
 
 template<typename T>
 typename std::enable_if<
+  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  void>::type inline object_data_output::write_object(const T& object)
+{
+    if (is_no_write_) {
+        return;
+    }
+    write(static_cast<int32_t>(
+            pimpl::serialization_constants::CONSTANT_TYPE_COMPACT),
+          boost::endian::order::big);
+    compact_serializer_->write<T>(object, *this);
+}
+
+template<typename T>
+typename std::enable_if<
   std::is_base_of<builtin_serializer, hz_serializer<T>>::value,
   void>::type inline object_data_output::write_object(const T& object)
 {
@@ -2136,6 +2208,7 @@ typename std::enable_if<
   !(std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
     std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
     std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
+    std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
     std::is_base_of<custom_serializer, hz_serializer<T>>::value ||
     (std::is_array<T>::value &&
      std::is_same<typename std::remove_all_extents<T>::type, char>::value)),
@@ -2221,6 +2294,15 @@ typename std::enable_if<
 
 template<typename T>
 typename std::enable_if<
+  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  boost::optional<T>>::type inline object_data_input::read_object(int32_t
+                                                                    type_id)
+{
+    return compact_serializer_.template read<T>(*this);
+}
+
+template<typename T>
+typename std::enable_if<
   std::is_base_of<custom_serializer, hz_serializer<T>>::value,
   boost::optional<T>>::type inline object_data_input::read_object(int32_t
                                                                     type_id)
@@ -2253,6 +2335,7 @@ template<typename T>
 typename std::enable_if<
   !(std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
     std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
+    std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
     std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
     std::is_base_of<custom_serializer, hz_serializer<T>>::value),
   boost::optional<T>>::type inline object_data_input::read_object(int32_t
@@ -2459,6 +2542,21 @@ PortableSerializer::find_portable_version(int factory_id, int class_id) const
         }
     }
     return currentVersion;
+}
+
+template<typename T>
+T
+CompactSerializer::read(object_data_input& in)
+{
+    std::cout << "compact read " << std::endl;
+    return T();
+}
+
+template<typename T>
+void
+CompactSerializer::write(const T& object, object_data_output& out)
+{
+    std::cout << "compact write " << std::endl;
 }
 
 template<typename T>

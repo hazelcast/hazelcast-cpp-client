@@ -1623,6 +1623,7 @@ TEST_F(ClientSerializationTest, object_data_input_output)
       out.to_byte_array(),
       0,
       serializationService.get_portable_serializer(),
+      serializationService.get_compact_serializer(),
       serializationService.get_data_serializer(),
       serializationConfig.get_global_serializer());
 
