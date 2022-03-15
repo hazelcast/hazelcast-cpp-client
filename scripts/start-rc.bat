@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 if "%HZ_VERSION%"=="" (
-    set HZ_VERSION=4.2.1
+    set HZ_VERSION=5.0.2
 )
 set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
@@ -62,7 +62,17 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar" (
     )
 )
 
-set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar"
+if exist "hazelcast-sql-%HAZELCAST_ENTERPRISE_VERSION%.jar" (
+    echo "hazelcast-sql-%HAZELCAST_ENTERPRISE_VERSION%.jar already exists, not downloading from maven."
+) else (
+    echo "Downloading: hazelcast sql jar com.hazelcast:hazelcast-sql:%HAZELCAST_ENTERPRISE_VERSION%:jar"
+    call mvn -q dependency:get -Dtransitive=false -DrepoUrl=%REPO% -Dartifact=com.hazelcast:hazelcast-sql:%HAZELCAST_ENTERPRISE_VERSION%:jar -Ddest=hazelcast-sql-%HAZELCAST_ENTERPRISE_VERSION%.jar || (
+        echo "Failed download hazelcast sql jar com.hazelcast:hazelcast-sql:%HAZELCAST_ENTERPRISE_VERSION%:jar"
+        exit /b 1
+    )
+)
+
+set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar;hazelcast-sql-%HAZELCAST_ENTERPRISE_VERSION%.jar"
 echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 
 echo "Starting hazelcast-remote-controller"

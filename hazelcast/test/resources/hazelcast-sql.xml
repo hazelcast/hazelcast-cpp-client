@@ -1,0 +1,7 @@
+<hazelcast xmlns="http://www.hazelcast.com/schema/config">
+
+    <cluster-name>sql-dev</cluster-name>
+
+    <jet enabled="true" />
+
+</hazelcast>

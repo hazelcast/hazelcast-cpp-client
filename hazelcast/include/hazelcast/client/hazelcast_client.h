@@ -345,6 +345,18 @@ public:
      */
     cp::cp_subsystem& get_cp_subsystem();
 
+    boost::future<sql::result> execute_sql(const sql::statement& statement);
+
+    template<typename... Params>
+    boost::future<sql::result> execute_sql(const std::string& query,
+                                           const Params&... params)
+    {
+        sql::statement s{ *this, query };
+        int _[] = { (s.add_parameter(params), 0)... };
+        (void)_;
+        return execute_sql(s);
+    }
+
 private:
     hazelcast_client();
 

@@ -21,26 +21,32 @@
 #pragma warning(disable : 4251) // for dll export
 #endif
 
-#include <string>
+#include <cassert>
 #include <memory>
-#include <vector>
-#include <assert.h>
-#include <unordered_map>
 #include <ostream>
-#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/optional.hpp>
 #include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 
-#include <hazelcast/client/query/paging_predicate.h>
 #include "hazelcast/client/address.h"
-#include "hazelcast/client/member.h"
-#include "hazelcast/client/serialization/pimpl/data.h"
-#include "hazelcast/client/map/data_entry_view.h"
-#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/config/index_config.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
+#include "hazelcast/client/map/data_entry_view.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
+#include "hazelcast/client/query/paging_predicate.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
+#include "hazelcast/client/sql/impl/query_id.h"
+#include "hazelcast/client/sql/column_metadata.h"
+#include "hazelcast/client/sql/impl/page.h"
+#include "hazelcast/client/sql/impl/error.h"
+#include "hazelcast/client/sql/column_type.h"
 
 namespace hazelcast {
 namespace util {
@@ -795,6 +801,121 @@ public:
         return h;
     }
 
+    /**
+     * Reads the header of the current frame.
+     * The cursor must be at a frame's beginning.
+     */
+    frame_header_t read_frame_header()
+    {
+        frame_header_t header{};
+        auto pos = rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        std::memcpy(&header.frame_len, pos, sizeof(header.frame_len));
+        pos += sizeof(header.frame_len);
+        std::memcpy(&header.flags, pos, sizeof(header.flags));
+        return header;
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, sql::column_metadata>::value,
+                            T>::type
+    get()
+    {
+        // skip begin frame
+        skip_frame();
+
+        const frame_header_t header = read_frame_header();
+
+        auto type = static_cast<sql::column_type>(get<int32_t>());
+
+        bool nullable = true;
+        int nullable_size = 0;
+        if (header.frame_len - SIZE_OF_FRAME_LENGTH_AND_FLAGS >=
+            INT32_SIZE + INT8_SIZE) {
+            nullable = get<bool>();
+            nullable_size = INT8_SIZE;
+        }
+
+        // skip bytes in initial frame
+        rd_ptr(static_cast<int32_t>(header.frame_len) -
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS - INT32_SIZE - nullable_size);
+
+        std::string name = get<std::string>();
+
+        fast_forward_to_end_frame();
+
+        return sql::column_metadata(std::move(name), type, nullable);
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, sql::impl::page>::value, T>::type
+    get()
+    {
+        // begin frame
+        skip_frame();
+
+        bool last = peek(SIZE_OF_FRAME_LENGTH_AND_FLAGS +
+                         1)[SIZE_OF_FRAME_LENGTH_AND_FLAGS] == 1;
+        skip_frame();
+
+        auto column_type_ids = get<std::vector<int32_t>>();
+
+        using column = std::vector<boost::optional<std::string>>;
+
+        std::vector<column> columns;
+        std::vector<sql::column_type> column_types;
+
+        for (auto column_type_id : column_type_ids) {
+            auto column_type = static_cast<sql::column_type>(column_type_id);
+            column_types.push_back(column_type);
+
+            switch (column_type) {
+                case sql::column_type::varchar:
+                    columns.push_back(
+                      get<std::vector<boost::optional<std::string>>>());
+                    break;
+                default:
+                    assert(false);
+
+                    // TODO add others
+            }
+        }
+
+        fast_forward_to_end_frame();
+
+        return sql::impl::page{ column_types, columns, last };
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, sql::impl::error>::value, T>::type
+    get()
+    {
+        // begin frame
+        skip_frame();
+
+        const auto header = read_frame_header();
+
+        auto code = get<int>();
+        auto originating_member_id = get<boost::uuids::uuid>();
+
+        // skip bytes in initial frame
+        rd_ptr(static_cast<int32_t>(header.frame_len) -
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS - INT32_SIZE - UUID_SIZE);
+
+        auto message = get_nullable<std::string>();
+
+        boost::optional<std::string> suggestion;
+        if (!next_frame_is_data_structure_end_frame()) {
+            suggestion = get_nullable<std::string>();
+        }
+
+        fast_forward_to_end_frame();
+
+        return sql::impl::error{ code,
+                                 std::move(message),
+                                 originating_member_id,
+                                 std::move(suggestion) };
+    }
+
     template<typename T>
     boost::optional<T> get_nullable()
     {
@@ -1075,6 +1196,30 @@ public:
             h->flags |= IS_FINAL_FLAG;
         }
     }
+
+    void set(const frame_header_t& header)
+    {
+        auto pos = wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        std::memcpy(pos, &header.frame_len, sizeof(header.frame_len));
+        pos += sizeof(header.frame_len);
+        std::memcpy(pos, &header.flags, sizeof(header.flags));
+    }
+
+    void set(const sql::impl::query_id& query_id, bool is_final = false)
+    {
+        add_begin_frame();
+
+        set(frame_header_t{ SIZE_OF_FRAME_LENGTH_AND_FLAGS + 4 * INT64_SIZE,
+                            DEFAULT_FLAGS });
+
+        set(query_id.member_id_high());
+        set(query_id.member_id_low());
+        set(query_id.local_id_high());
+        set(query_id.local_id_low());
+
+        add_end_frame(is_final);
+    }
+
     //----- Setter methods end ---------------------
 
     //----- utility methods -------------------
