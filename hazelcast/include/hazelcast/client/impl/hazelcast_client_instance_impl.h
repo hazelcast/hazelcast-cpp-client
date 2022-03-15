@@ -17,7 +17,7 @@
 
 #include <atomic>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 #include <random>
 #include <boost/uuid/uuid.hpp>
@@ -55,6 +55,8 @@
 #include "hazelcast/cp/cp.h"
 #include "hazelcast/cp/cp_impl.h"
 #include "hazelcast/logger.h"
+#include "hazelcast/client/sql/result.h"
+#include "hazelcast/client/sql/statement.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -215,6 +217,8 @@ public:
     boost::uuids::uuid random_uuid();
 
     cp::cp_subsystem& get_cp_subsystem();
+
+    boost::future<sql::result> execute_sql(const sql::statement& statement);
 
 private:
     client_config client_config_;

@@ -2040,6 +2040,99 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
     }
 }
 
+TEST(ClientMessageTest, test_encode_sql_query_id)
+{
+    // TODO this test can be removed once the query_id encoder is generated.
+
+    protocol::ClientMessage msg;
+
+    msg.set(sql::impl::query_id{ -1LL, 1000000000000LL, 0LL, -42LL });
+
+    const std::vector<unsigned char> expected_bytes{
+        6,   0,   0,   0,   0,   16,  38,  0, 0,  0,   0,   0,   255,
+        255, 255, 255, 255, 255, 255, 255, 0, 16, 165, 212, 232, 0,
+        0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   214, 255, 255,
+        255, 255, 255, 255, 255, 6,   0,   0, 0,  0,   8
+    };
+
+    std::vector<unsigned char> actual_bytes;
+    for (const auto& piece : msg.get_buffer()) {
+        actual_bytes.insert(actual_bytes.end(), piece.begin(), piece.end());
+    }
+
+    EXPECT_EQ(expected_bytes, actual_bytes);
+}
+
+TEST(ClientMessageTest, test_decode_sql_column_metadata)
+{
+    const unsigned char bytes[] = {
+        6, 0, 0, 0, 0, 16,  11,  0,   0,  0,  0,   0, 1, 0, 0, 0, 0, 12,
+        0, 0, 0, 0, 0, 102, 111, 111, 98, 97, 114, 6, 0, 0, 0, 0, 8,
+    };
+
+    protocol::ClientMessage msg;
+    std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
+    msg.wrap_for_read();
+
+    auto col_metadata = msg.get<sql::column_metadata>();
+
+    EXPECT_EQ("foobar", col_metadata.name());
+    EXPECT_EQ(sql::column_type::boolean, col_metadata.type());
+    EXPECT_EQ(false, col_metadata.nullable());
+}
+
+TEST(ClientMessageTest, test_decode_sql_page)
+{
+    const unsigned char bytes[] = {
+        6,  0,  0,   0, 0, 16,  7,   0,   0,   0,   0, 0, 1, 14, 0,  0,
+        0,  0,  0,   0, 0, 0,   0,   0,   0,   0,   0, 6, 0, 0,  0,  0,
+        16, 9,  0,   0, 0, 0,   0,   102, 111, 111, 9, 0, 0, 0,  0,  0,
+        98, 97, 114, 6, 0, 0,   0,   0,   8,   6,   0, 0, 0, 0,  16, 10,
+        0,  0,  0,   0, 0, 116, 101, 115, 116, 6,   0, 0, 0, 0,  0,  6,
+        0,  0,  0,   0, 8, 6,   0,   0,   0,   0,   8,
+    };
+
+    protocol::ClientMessage msg;
+    std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
+    msg.wrap_for_read();
+
+    auto page = msg.get<sql::impl::page>();
+
+    EXPECT_EQ(true, page.last());
+    EXPECT_EQ((std::vector<sql::column_type>{
+                sql::column_type::varchar,
+                sql::column_type::varchar,
+              }),
+              page.column_types());
+    EXPECT_EQ((std::vector<std::vector<boost::optional<std::string>>>{
+                { std::string("foo"), std::string("bar") },
+                { std::string("test"), std::string("") } }),
+              page.columns());
+}
+
+TEST(ClientMessageTest, test_decode_sql_error)
+{
+    const unsigned char bytes[] = {
+        6,  0,   0,   0,  0,   16,  27, 0,  0,   0,   0,   0,   42,  0,  0,
+        0,  0,   235, 72, 204, 144, 69, 69, 157, 199, 201, 252, 246, 76, 74,
+        22, 201, 185, 9,  0,   0,   0,  0,  0,   102, 111, 111, 9,   0,  0,
+        0,  0,   0,   98, 97,  114, 6,  0,  0,   0,   0,   8,
+    };
+
+    protocol::ClientMessage msg;
+    std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
+    msg.wrap_for_read();
+
+    auto err = msg.get<sql::impl::error>();
+
+    EXPECT_EQ(42, err.code);
+    EXPECT_EQ(boost::optional<std::string>{ "foo" }, err.message);
+    EXPECT_EQ(
+      boost::uuids::string_generator{}("c79d4545-90cc-48eb-b9c9-164a4cf6fcc9"),
+      err.originating_member_id);
+    EXPECT_EQ(boost::optional<std::string>{ "bar" }, err.suggestion);
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
