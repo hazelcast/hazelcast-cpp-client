@@ -15,7 +15,7 @@ set +x
 
 trap cleanup EXIT
 
-HZ_VERSION="${HZ_VERSION:-4.2.1}"
+HZ_VERSION="${HZ_VERSION:-5.0.2}"
 HAZELCAST_TEST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION="0.8-SNAPSHOT"
@@ -75,11 +75,23 @@ else
         exit 1
     fi
 fi
+if [ -f "hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
+echo "hazelcast-sql.jar already exists, not downloading from maven."
+else
+    echo "Downloading: hazelcast sql jar com.hazelcast:hazelcast-sql:${HAZELCAST_ENTERPRISE_VERSION}"
+    mvn -q dependency:get -Dtransitive=false -DrepoUrl=${REPO} -Dartifact=com.hazelcast:hazelcast-sql:${HAZELCAST_ENTERPRISE_VERSION} -Ddest=hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar
+    if [ $? -ne 0 ]; then
+        echo "Failed download hazelcast sql jar com.hazelcast:hazelcast-sql:${HAZELCAST_ENTERPRISE_VERSION}"
+        exit 1
+    fi
+fi
+
 CLASSPATH="\
 hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar:\
-hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
+hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar:\
+hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar"
 
 # necessary arguments for Java 9+
 JAVA_MAJOR_VERSION=$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | awk -F '.' '{print $1}')

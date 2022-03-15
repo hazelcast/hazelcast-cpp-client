@@ -3053,6 +3053,32 @@ cpsession_heartbeatsession_encode(const cp::raft_group_id& group_id,
 ClientMessage HAZELCAST_API
 cpsession_generatethreadid_encode(const cp::raft_group_id& group_id);
 
+/**
+ * Closes server-side query cursor.
+ */
+ClientMessage HAZELCAST_API
+sql_close_encode(const sql::impl::query_id& query_id);
+
+/**
+ * Starts execution of an SQL query (as of 4.2).
+ */
+ClientMessage HAZELCAST_API
+sql_execute_encode(const std::string& sql,
+                   const std::vector<serialization::pimpl::data>& parameters,
+                   int64_t timeout_millis,
+                   int32_t cursor_buffer_size,
+                   const std::string* schema,
+                   byte expected_result_type,
+                   const sql::impl::query_id& query_id,
+                   bool skip_update_statistics);
+
+/**
+ * Fetches the next row page.
+ */
+ClientMessage HAZELCAST_API
+sql_fetch_encode(const sql::impl::query_id& query_id,
+                 int32_t cursor_buffer_size);
+
 } // namespace codec
 } // namespace protocol
 } // namespace client

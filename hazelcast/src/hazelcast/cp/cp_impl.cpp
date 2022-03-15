@@ -1,5 +1,3 @@
-#include <hazelcast/client/spi/ClientContext.h>
-
 /*
  * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
@@ -15,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <boost/thread/shared_lock_guard.hpp>
 #include <boost/container_hash/hash.hpp>
 
@@ -22,9 +21,11 @@
 #include "hazelcast/cp/cp.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/proxy/SerializingProxy.h"
+
 
 namespace hazelcast {
 namespace cp {
