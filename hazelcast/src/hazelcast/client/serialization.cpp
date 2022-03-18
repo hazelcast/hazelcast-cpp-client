@@ -1486,6 +1486,29 @@ PortableSerializer::read_int(object_data_input& in) const
 {
     return in.read<int32_t>();
 }
+
+long
+schema::schema_id() const
+{
+    return schema_id_;
+}
+
+boost::future<schema>
+default_schema_service::get(long schemaId)
+{
+    auto ptr = schemas.get(schemaId);
+    if (ptr == nullptr) {
+        return boost::make_ready_future<schema>();
+    }
+    return boost::make_ready_future(*ptr);
+}
+boost::future<void>
+default_schema_service::put(std::shared_ptr<schema> schema_ptr)
+{
+    schemas.put(schema_ptr->schema_id(), schema_ptr);
+    return boost::make_ready_future();
+}
+
 } // namespace pimpl
 } // namespace serialization
 } // namespace client

@@ -23,6 +23,7 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/thread/future.hpp>
 
 #include "hazelcast/client/hazelcast_json_value.h"
 #include "hazelcast/client/serialization/pimpl/data_input.h"
@@ -1549,6 +1550,38 @@ private:
       const T& portable);
 };
 
+class HAZELCAST_API schema
+{
+public:
+    long schema_id() const;
+private:
+    long schema_id_;
+};
+
+/**
+ * Service to put and get metadata to cluster.
+ */
+class HAZELCAST_API default_schema_service
+{
+public:
+    /**
+     * Gets the schema with the given id either by
+     * <ul>
+     *     <li>returning it directly from the local registry, if it exists.</li>
+     *     <li>searching the cluster.</li>
+     * </ul>
+     */
+    boost::future<schema> get(long schemaId);
+
+    /**
+     * Puts the schema with the given id to the cluster.
+     */
+    boost::future<void> put(std::shared_ptr<schema> schema_ptr);
+
+private:
+    util::SynchronizedMap<long, schema> schemas;
+};
+
 class HAZELCAST_API CompactSerializer
 {
 public:
@@ -1561,6 +1594,7 @@ public:
     void write(const T& object, object_data_output& out);
 
 private:
+    default_schema_service schema_service;
 };
 
 class HAZELCAST_API DataSerializer
