@@ -74,54 +74,85 @@ namespace client {
 namespace compact {
 namespace test {
 
-class employee
+struct main_dto
 {
-public:
-    employee() {}
-
-    explicit employee(std::string name)
-      : name(std::move(name))
+    main_dto()
+      : i(0)
+      , str("")
     {}
 
-    const std::string& get_name() const { return name; }
+    explicit main_dto(int i, std::string str)
+      : i(i)
+      , str(std::move(str))
+    {}
 
-    bool operator==(const employee& rhs) const
+    bool operator==(const main_dto& rhs) const
     {
-        return name == rhs.get_name();
+        if (i != rhs.i) {
+            return false;
+        }
+        return str == rhs.str;
     }
 
-private:
-    std::string name;
+    std::string str;
+    int i;
 };
 
 std::ostream&
-operator<<(std::ostream& out, const employee& employee)
+operator<<(std::ostream& out, const main_dto& main_dto)
 {
-    out << employee.get_name();
+    out << "i " << main_dto.i << ", str " << main_dto.str;
     return out;
 }
+
+/**
+ * This class is to simulate versioning.
+ * We will provide this struct with serializer returning type name of the
+ * original main dto. This way we can use the serialized data of this class
+ * to test to_object of the original main_dto.
+ */
+struct empty_main_dto
+{};
 
 } // namespace test
 } // namespace compact
 
 namespace serialization {
 template<>
-struct hz_serializer<compact::test::employee> : public compact_serializer
+struct hz_serializer<compact::test::main_dto> : public compact_serializer
 {
-    static void write(const compact::test::employee& object,
+    static void write(const compact::test::main_dto& object,
                       compact_writer& writer)
     {
-        writer.write_string("name", &object.get_name());
+        writer.write_int32("i", object.i);
+        writer.write_string("name", object.str);
     }
 
-    static compact::test::employee read(compact_reader& reader)
+    static compact::test::main_dto read(compact_reader& reader)
     {
-        const boost::optional<std::string>& name = reader.read_string("name");
-        return compact::test::employee{ name.get_value_or("default") };
+        auto i = reader.read_int32("i", 1);
+        auto str = reader.read_string("NA");
+        return compact::test::main_dto{ i, str.get_value_or("default") };
     }
 
-    static std::string type_name() { return "employee"; }
+    static std::string type_name() { return "main"; }
 };
+
+template<>
+struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
+{
+    static void write(const compact::test::empty_main_dto& object,
+                      compact_writer& writer)
+    {}
+
+    static compact::test::empty_main_dto read(compact_reader& reader)
+    {
+        return compact::test::empty_main_dto{};
+    }
+
+    static std::string type_name() { return "main"; }
+};
+
 } // namespace serialization
 
 namespace compact {
@@ -138,14 +169,27 @@ public:
     }
 };
 
-TEST_F(CompactSerializationTest, testCustomSerialization)
+TEST_F(CompactSerializationTest, testAllFields)
 {
     serialization_config config;
     serialization::pimpl::SerializationService ss(config);
 
-    employee expected("john");
+    main_dto expected(30, "john");
     auto actual = to_data_and_back_to_object(ss, expected);
     ASSERT_EQ(expected, actual);
+}
+
+TEST_F(CompactSerializationTest,
+       testReaderReturnsDefaultValues_whenDataIsMissing)
+{
+    serialization_config config;
+    serialization::pimpl::SerializationService ss(config);
+
+    empty_main_dto empty;
+    serialization::pimpl::data data = ss.to_data(empty);
+    main_dto actual = *(ss.to_object<main_dto>(data));
+    ASSERT_EQ(1, actual.i);
+    ASSERT_EQ("NA", actual.str);
 }
 
 } // namespace test

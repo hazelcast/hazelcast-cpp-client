@@ -130,11 +130,12 @@ portable_writer::get_raw_data_output()
 }
 
 void
+compact_writer::write_int32(const std::string& field_name, int32_t value)
+{}
+void
 compact_writer::write_string(const std::string& field_name,
-                             const std::string* value)
-{
-    //TODO sancar
-}
+                             const boost::optional<std::string>& value)
+{}
 
 ClassDefinitionBuilder::ClassDefinitionBuilder(int factory_id,
                                                int class_id,
@@ -440,11 +441,28 @@ portable_reader::end()
         return default_portable_reader_->end();
     return morphing_portable_reader_->end();
 }
+int32_t
+compact_reader::read_int32(const std::string& field_name)
+{
+    return 0;
+}
+
+int32_t
+compact_reader::read_int32(const std::string& field_name, int32_t default_value)
+{
+    return default_value;
+}
 
 boost::optional<std::string>
 compact_reader::read_string(const std::string& field_name)
 {
     return boost::none;
+}
+boost::optional<std::string>
+compact_reader::read_string(const std::string& field_name,
+                            const boost::optional<std::string>& default_value)
+{
+    return default_value;
 }
 
 ClassDefinition::ClassDefinition()

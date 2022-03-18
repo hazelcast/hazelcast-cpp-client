@@ -2151,16 +2151,91 @@ portable_writer::write_portable_array(const std::string& field_name,
     return class_definition_writer_->write_portable_array(field_name, values);
 }
 
+/**
+ * Provides means of reading compact serialized fields from the binary data.
+ * <p>
+ * Read operations might throw {@link HazelcastSerializationException}
+ * when a field with the given name is not found or there is a type mismatch. On
+ * such occasions, one might provide default values to the read methods to
+ * return it in case of the failure scenarios described above. Providing default
+ * values might be especially useful, if the class might evolve in future,
+ * either by adding or removing fields.
+ *
+ * @since 5.2
+ */
 class HAZELCAST_API compact_reader
 {
 public:
+    /**
+     * Reads a 32-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in
+     * the schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    int32_t read_int32(const std::string& field_name);
+
+    /**
+     * Reads a 32-bit two's complement signed integer or returns the default
+     * value.
+     *
+     * @param fieldName    name of the field.
+     * @param defaultValue default value to return if the field with the given
+     * name does not exist in the schema or the type of the field does not match
+     * with the one defined in the schema.
+     * @return the value or the default value of the field.
+     */
+    int32_t read_int32(const std::string& field_name, int32_t default_value);
+
+    /**
+     * Reads an UTF-8 encoded string.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in
+     * the schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
     boost::optional<std::string> read_string(const std::string& field_name);
+
+    /**
+     * Reads an UTF-8 encoded string or returns the default value.
+     *
+     * @param fieldName    name of the field.
+     * @param defaultValue default value to return if the field with the given
+     * name does not exist in the schema or the type of the field does not match
+     * with the one defined in the schema.
+     * @return the value or the default value of the field.
+     */
+    boost::optional<std::string> read_string(
+      const std::string& field_name,
+      const boost::optional<std::string>& default_value);
 };
 
+/**
+ *  Provides means of writing compact serialized fields to the binary data.
+ */
 class HAZELCAST_API compact_writer
 {
 public:
-    void write_string(const std::string& field_name, const std::string* value);
+    /**
+     * Writes a 32-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_int32(const std::string& field_name, int32_t value);
+
+    /**
+     * Writes an UTF-8 encoded string.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_string(const std::string& field_name,
+                      const boost::optional<std::string>& value);
 };
 
 template<typename T>
