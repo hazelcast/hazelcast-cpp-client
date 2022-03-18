@@ -1550,10 +1550,57 @@ private:
       const T& portable);
 };
 
+enum HAZELCAST_API field_kind
+{
+    INT32 = 8,
+    STRING = 16
+};
+
+class HAZELCAST_API field_descriptor
+{
+public:
+    void index(int32_t index) { this->index_ = index; }
+
+    void offset(int32_t offset) { this->offset_ = offset; }
+
+    void bit_offset(int8_t bit_offset) { this->bit_offset_ = bit_offset; }
+
+    enum field_kind field_kind() { return field_kind_; }
+
+    std::string field_name() { return field_name_; }
+
+    /**
+     * @return the index of offset of the non-primitive field. if field is
+     * primitive returns -1
+     */
+    int32_t index() const { return index_; }
+
+    /**
+     * @return the offset to read  the primitive field from. If field is not
+     * primitive returns -1
+     */
+    int32_t offset() const { return offset_; }
+
+    /**
+     * Applicable only for boolean field
+     *
+     * @return the offset of the boolean within the given byte via `offset`
+     */
+    int8_t bit_offset() const { return bit_offset_; }
+
+private:
+    std::string field_name_;
+    enum field_kind field_kind_;
+    int32_t index_ = -1;
+    int32_t offset_ = -1;
+    int8_t bit_offset_ = -1;
+};
+
 class HAZELCAST_API schema
 {
 public:
     long schema_id() const;
+
 private:
     long schema_id_;
 };
