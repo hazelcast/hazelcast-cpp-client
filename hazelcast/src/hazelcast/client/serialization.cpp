@@ -129,14 +129,6 @@ portable_writer::get_raw_data_output()
     return class_definition_writer_->get_raw_data_output();
 }
 
-void
-compact_writer::write_int32(const std::string& field_name, int32_t value)
-{}
-void
-compact_writer::write_string(const std::string& field_name,
-                             const boost::optional<std::string>& value)
-{}
-
 ClassDefinitionBuilder::ClassDefinitionBuilder(int factory_id,
                                                int class_id,
                                                int version)
@@ -440,29 +432,6 @@ portable_reader::end()
     if (is_default_reader_)
         return default_portable_reader_->end();
     return morphing_portable_reader_->end();
-}
-int32_t
-compact_reader::read_int32(const std::string& field_name)
-{
-    return 0;
-}
-
-int32_t
-compact_reader::read_int32(const std::string& field_name, int32_t default_value)
-{
-    return default_value;
-}
-
-boost::optional<std::string>
-compact_reader::read_string(const std::string& field_name)
-{
-    return boost::none;
-}
-boost::optional<std::string>
-compact_reader::read_string(const std::string& field_name,
-                            const boost::optional<std::string>& default_value)
-{
-    return default_value;
 }
 
 ClassDefinition::ClassDefinition()
@@ -1503,28 +1472,6 @@ int32_t
 PortableSerializer::read_int(object_data_input& in) const
 {
     return in.read<int32_t>();
-}
-
-long
-schema::schema_id() const
-{
-    return schema_id_;
-}
-
-boost::future<schema>
-default_schema_service::get(long schemaId)
-{
-    auto ptr = schemas.get(schemaId);
-    if (ptr == nullptr) {
-        return boost::make_ready_future<schema>();
-    }
-    return boost::make_ready_future(*ptr);
-}
-boost::future<void>
-default_schema_service::put(std::shared_ptr<schema> schema_ptr)
-{
-    schemas.put(schema_ptr->schema_id(), schema_ptr);
-    return boost::make_ready_future();
 }
 
 } // namespace pimpl

@@ -39,8 +39,6 @@
 
 namespace hazelcast {
 namespace client {
-class hazelcast_client;
-
 namespace serialization {
 
 /**
@@ -103,9 +101,17 @@ private:
 class HAZELCAST_API schema
 {
 public:
+    schema();
+
+    schema(const std::string& type_name,
+           std::map<std::string, field_descriptor>&& field_definition_map);
     long schema_id() const;
 
 private:
+    std::string type_name_;
+    std::map<std::string, field_descriptor> field_definition_map;
+    size_t number_of_var_size_fields;
+    size_t fixed_size_fields_length;
     long schema_id_;
 };
 
