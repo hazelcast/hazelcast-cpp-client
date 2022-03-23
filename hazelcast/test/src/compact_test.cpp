@@ -68,7 +68,7 @@
 #pragma warning(push)
 #pragma warning(disable : 4996) // for unsafe getenv
 #endif
-
+using namespace hazelcast::client::serialization::pimpl;
 namespace hazelcast {
 namespace client {
 namespace compact {
@@ -97,6 +97,12 @@ struct main_dto
     std::string str;
     int i;
 };
+
+main_dto
+create_main_dto()
+{
+    return main_dto{ 30, "John" };
+}
 
 std::ostream&
 operator<<(std::ostream& out, const main_dto& main_dto)
@@ -161,10 +167,9 @@ class CompactSerializationTest : public ::testing::Test
 {
 public:
     template<typename T>
-    T to_data_and_back_to_object(serialization::pimpl::SerializationService& ss,
-                                 T& value)
+    T to_data_and_back_to_object(SerializationService& ss, T& value)
     {
-        serialization::pimpl::data data = ss.to_data<T>(value);
+        data data = ss.to_data<T>(value);
         return *(ss.to_object<T>(data));
     }
 };
@@ -172,9 +177,9 @@ public:
 TEST_F(CompactSerializationTest, testAllFields)
 {
     serialization_config config;
-    serialization::pimpl::SerializationService ss(config);
+    SerializationService ss(config);
 
-    main_dto expected(30, "john");
+    main_dto expected = create_main_dto();
     auto actual = to_data_and_back_to_object(ss, expected);
     ASSERT_EQ(expected, actual);
 }
@@ -183,13 +188,70 @@ TEST_F(CompactSerializationTest,
        testReaderReturnsDefaultValues_whenDataIsMissing)
 {
     serialization_config config;
-    serialization::pimpl::SerializationService ss(config);
+    SerializationService ss(config);
 
     empty_main_dto empty;
-    serialization::pimpl::data data = ss.to_data(empty);
+    data data = ss.to_data(empty);
     main_dto actual = *(ss.to_object<main_dto>(data));
     ASSERT_EQ(1, actual.i);
     ASSERT_EQ("NA", actual.str);
+}
+
+void
+check_schema_field(const schema& schema,
+                   const std::string& field_name,
+                   int offset,
+                   int index,
+                   int bit_offset)
+{
+    ASSERT_EQ(offset, schema.get_field(field_name).offset());
+    ASSERT_EQ(index, schema.get_field(field_name).index());
+    ASSERT_EQ(bit_offset, schema.get_field(field_name).bit_offset());
+}
+
+TEST_F(CompactSerializationTest, test_schema_field_order)
+{
+    schema_writer schema_writer("typename");
+    schema_writer.add_field("int2", field_kind::INT32);
+    schema_writer.add_field("int1", field_kind::INT32);
+    schema_writer.add_field("string1", field_kind::STRING);
+    schema_writer.add_field("string2", field_kind::STRING);
+    auto schema = std::move(schema_writer).build();
+
+    check_schema_field(schema, "int1", 0, -1, -1);
+    check_schema_field(schema, "int2", 4, -1, -1);
+    check_schema_field(schema, "string1", -1, 0, -1);
+    check_schema_field(schema, "string2", -1, 1, -1);
+}
+
+TEST_F(CompactSerializationTest, test_schema_writer_counts)
+{
+    schema_writer schema_writer("typename");
+    schema_writer.add_field("int1", field_kind::INT32);
+    schema_writer.add_field("int2", field_kind::INT32);
+    schema_writer.add_field("string1", field_kind::STRING);
+    auto schema = std::move(schema_writer).build();
+
+    ASSERT_EQ(8, schema.fixed_size_fields_length());
+    ASSERT_EQ(1, schema.number_of_var_size_fields());
+}
+
+TEST_F(CompactSerializationTest, test_rabin_finterprint_consitent_with_server)
+{
+    // TODO sancar rewrite as following when all types are implemented
+//    schema_writer schema_writer("typename");
+//    serialization::compact_writer writer(&schema_writer);
+//    serialization::hz_serializer<main_dto>::write(create_main_dto(), writer);
+//    auto schema = std::move(schema_writer).build();
+//    ASSERT_EQ(814479248787788739L, schema.schema_id());
+
+    schema_writer schema_writer("typeName");
+    schema_writer.add_field("a", field_kind::BOOLEAN);
+    schema_writer.add_field("b", field_kind::ARRAY_OF_BOOLEAN);
+    schema_writer.add_field("c", field_kind::TIMESTAMP_WITH_TIMEZONE);
+    auto schema = std::move(schema_writer).build();
+
+    ASSERT_EQ(-2132873845851116364, schema.schema_id());
 }
 
 } // namespace test
