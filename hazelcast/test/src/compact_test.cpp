@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <atomic>
-#include <cerrno>
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <fstream>
-#include <iostream>
-#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <boost/asio.hpp>
-#include <boost/thread/barrier.hpp>
 #include <gtest/gtest.h>
 
 #ifdef HZ_BUILD_WITH_SSL

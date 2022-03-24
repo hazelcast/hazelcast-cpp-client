@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//#include <boost/concept_check.hpp>
-//#include <utility>
 
 #include <utility>
 
@@ -96,29 +94,29 @@ namespace rabin_finger_print {
  */
 constexpr unsigned long INIT = 0xc15d213aa4d7a795L;
 unsigned long*
-fb_table(unsigned long* FB_TABLE)
+init_fp_table(unsigned long* FP_TABLE)
 {
     for (int i = 0; i < 256; ++i) {
         unsigned long fp = i;
         for (int j = 0; j < 8; ++j) {
             fp = (fp >> 1) ^ (INIT & -(fp & 1L));
         }
-        FB_TABLE[i] = fp;
+        FP_TABLE[i] = fp;
     }
-    return FB_TABLE;
+    return FP_TABLE;
 }
 unsigned long
-FB_TABLE_I(int index)
+FP_TABLE_AT(int index)
 {
-    static unsigned long FB_TABLE[256];
-    static unsigned long* FB_TABLE_PTR = fb_table(FB_TABLE);
-    return FB_TABLE[index];
+    static unsigned long FP_TABLE[256];
+    static auto _ = init_fp_table(FP_TABLE);
+    return FP_TABLE[index];
 }
 
 unsigned long
 fingerprint64(unsigned long fp, byte b)
 {
-    return (fp >> 8) ^ FB_TABLE_I((int)(fp ^ b) & 0xff);
+    return (fp >> 8) ^ FP_TABLE_AT((int)(fp ^ b) & 0xff);
 }
 
 unsigned long

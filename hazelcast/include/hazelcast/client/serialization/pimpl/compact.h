@@ -15,22 +15,10 @@
  */
 #pragma once
 
-//#include <unordered_map>
-//#include <unordered_set>
-//#include <type_traits>
-//
-//#include <boost/any.hpp>
-//#include <boost/optional.hpp>
-//#include <boost/optional/optional_io.hpp>
-//#include <boost/uuid/uuid.hpp>
 #include <boost/thread/future.hpp>
 #include <utility>
 #include "hazelcast/util/export.h"
-//#include "hazelcast/client/hazelcast_json_value.h"
-//#include "hazelcast/client/serialization/pimpl/data_input.h"
-//#include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/serialization/serialization.h"
-//#include "hazelcast/client/serialization_config.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
