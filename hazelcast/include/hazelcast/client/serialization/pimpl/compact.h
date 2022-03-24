@@ -214,7 +214,7 @@ public:
     schema() = default;
     schema(std::string type_name,
            std::map<std::string, field_descriptor>&& field_definition_map);
-    long schema_id() const;
+    int64_t schema_id() const;
     const field_descriptor& get_field(const std::string& field_name) const;
     size_t number_of_var_size_fields() const;
     size_t fixed_size_fields_length() const;
@@ -227,7 +227,7 @@ private:
     std::map<std::string, field_descriptor> field_definition_map_;
     size_t number_of_var_size_fields_{};
     size_t fixed_size_fields_length_{};
-    long schema_id_{};
+    int64_t schema_id_{};
 };
 } // namespace pimpl
 template<>
@@ -265,7 +265,7 @@ public:
      *     <li>searching the cluster.</li>
      * </ul>
      */
-    boost::future<schema> get(long schemaId);
+    boost::future<schema> get(int64_t schemaId);
 
     /**
      * Puts the schema with the given id to the cluster.
@@ -273,7 +273,7 @@ public:
     boost::future<void> put(const std::shared_ptr<schema>& schema_ptr);
 
 private:
-    util::SynchronizedMap<long, schema> schemas;
+    util::SynchronizedMap<int64_t, schema> schemas;
 };
 
 class HAZELCAST_API CompactSerializer

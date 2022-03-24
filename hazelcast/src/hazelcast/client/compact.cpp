@@ -89,15 +89,17 @@ default_compact_writer::write_string(const std::string& field_name,
 
 namespace rabin_finger_print {
 /**
- * We use unsigned long for computation to match the behaviour of >>> operator
+ * We use uint64_t for computation to match the behaviour of >>> operator
  * on java. We use >> instead.
  */
-constexpr unsigned long INIT = 0xc15d213aa4d7a795L;
-unsigned long*
-init_fp_table(unsigned long* FP_TABLE)
+constexpr uint64_t INIT = 0xc15d213aa4d7a795L;
+
+static std::array<uint64_t , 256>
+init_fp_table()
 {
+    static std::array<uint64_t , 256> FP_TABLE;
     for (int i = 0; i < 256; ++i) {
-        unsigned long fp = i;
+        uint64_t fp = i;
         for (int j = 0; j < 8; ++j) {
             fp = (fp >> 1) ^ (INIT & -(fp & 1L));
         }
@@ -105,22 +107,21 @@ init_fp_table(unsigned long* FP_TABLE)
     }
     return FP_TABLE;
 }
-unsigned long
+uint64_t
 FP_TABLE_AT(int index)
 {
-    static unsigned long FP_TABLE[256];
-    static auto _ = init_fp_table(FP_TABLE);
+    static auto FP_TABLE = init_fp_table();
     return FP_TABLE[index];
 }
 
-unsigned long
-fingerprint64(unsigned long fp, byte b)
+uint64_t
+fingerprint64(uint64_t fp, byte b)
 {
     return (fp >> 8) ^ FP_TABLE_AT((int)(fp ^ b) & 0xff);
 }
 
-unsigned long
-fingerprint64(unsigned long fp, int v)
+uint64_t
+fingerprint64(uint64_t fp, int v)
 {
     fp = fingerprint64(fp, (byte)((v)&0xFF));
     fp = fingerprint64(fp, (byte)((v >> 8) & 0xFF));
@@ -129,8 +130,8 @@ fingerprint64(unsigned long fp, int v)
     return fp;
 }
 
-unsigned long
-fingerprint64(unsigned long fp, const std::string& value)
+uint64_t
+fingerprint64(uint64_t fp, const std::string& value)
 {
     fp = fingerprint64(fp, (int)value.size());
     for (const auto& item : value) {
@@ -142,17 +143,17 @@ fingerprint64(unsigned long fp, const std::string& value)
 /**
  * Calculates the fingerprint of the schema from its type name and fields.
  */
-long
+int64_t
 fingerprint64(const schema& schema)
 {
-    unsigned long fingerPrint = fingerprint64(INIT, schema.type_name());
+    uint64_t fingerPrint = fingerprint64(INIT, schema.type_name());
     fingerPrint = fingerprint64(fingerPrint, (int)schema.field_count());
     for (const auto& entry : schema.fields()) {
         const field_descriptor& descriptor = entry.second;
         fingerPrint = fingerprint64(fingerPrint, descriptor.field_name());
         fingerPrint = fingerprint64(fingerPrint, (int)descriptor.field_kind());
     }
-    return static_cast<long>(fingerPrint);
+    return static_cast<int64_t>(fingerPrint);
 }
 
 } // namespace rabin_finger_print
@@ -328,7 +329,7 @@ schema_writer::build() &&
 }
 
 boost::future<schema>
-default_schema_service::get(long schemaId)
+default_schema_service::get(int64_t schemaId)
 {
     auto ptr = schemas.get(schemaId);
     if (ptr == nullptr) {
