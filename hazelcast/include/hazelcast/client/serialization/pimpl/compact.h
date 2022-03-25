@@ -29,14 +29,21 @@
 namespace hazelcast {
 namespace client {
 namespace serialization {
+class compact_reader;
 class compact_writer;
 namespace pimpl {
+class schema;
 class default_compact_writer;
 class schema_writer;
 compact_writer
 create_compact_writer(pimpl::default_compact_writer* default_compact_writer);
 compact_writer
 create_compact_writer(pimpl::schema_writer* schema_writer);
+compact_reader
+create_compact_reader(
+  pimpl::compact_stream_serializer& compact_stream_serializer,
+  object_data_input& object_data_input,
+  pimpl::schema& schema);
 } // namespace pimpl
 
 /**
@@ -110,6 +117,19 @@ public:
     boost::optional<std::string> read_string(
       const std::string& field_name,
       const boost::optional<std::string>& default_value);
+
+private:
+    compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,
+                   object_data_input& object_data_input,
+                   pimpl::schema& schema);
+
+    friend compact_reader pimpl::create_compact_reader(
+      pimpl::compact_stream_serializer& compact_stream_serializer,
+      object_data_input& object_data_input,
+      pimpl::schema& schema);
+    pimpl::compact_stream_serializer& compact_stream_serializer;
+    serialization::object_data_input& object_data_input;
+    pimpl::schema& schema;
 };
 
 /**
@@ -275,12 +295,12 @@ public:
      *     <li>searching the cluster.</li>
      * </ul>
      */
-    boost::future<schema> get(int64_t schemaId);
+    schema get(int64_t schemaId);
 
     /**
      * Puts the schema with the given id to the cluster.
      */
-    boost::future<void> put(const schema& schema);
+    void put(const schema& schema);
 
 private:
     util::SynchronizedMap<int64_t, schema> schemas;

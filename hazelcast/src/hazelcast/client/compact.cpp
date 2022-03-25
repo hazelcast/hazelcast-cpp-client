@@ -51,6 +51,26 @@ compact_writer::write_string(const std::string& field_name,
         schema_writer->add_field(field_name, pimpl::field_kind::STRING);
     }
 }
+namespace pimpl {
+compact_reader
+create_compact_reader(
+  pimpl::compact_stream_serializer& compact_stream_serializer,
+  object_data_input& object_data_input,
+  pimpl::schema& schema)
+{
+    return compact_reader{ compact_stream_serializer,
+                           object_data_input,
+                           schema };
+}
+} // namespace pimpl
+compact_reader::compact_reader(
+  pimpl::compact_stream_serializer& compact_stream_serializer,
+  serialization::object_data_input& object_data_input,
+  pimpl::schema& schema)
+  : compact_stream_serializer(compact_stream_serializer)
+  , object_data_input(object_data_input)
+  , schema(schema)
+{}
 
 int32_t
 compact_reader::read_int32(const std::string& field_name)
@@ -79,12 +99,14 @@ compact_reader::read_string(const std::string& field_name,
 namespace pimpl {
 
 compact_writer
-create_compact_writer(pimpl::default_compact_writer* default_compact_writer) {
-    return compact_writer{default_compact_writer};
+create_compact_writer(pimpl::default_compact_writer* default_compact_writer)
+{
+    return compact_writer{ default_compact_writer };
 }
 compact_writer
-create_compact_writer(pimpl::schema_writer* schema_writer) {
-    return compact_writer{schema_writer};
+create_compact_writer(pimpl::schema_writer* schema_writer)
+{
+    return compact_writer{ schema_writer };
 }
 void
 default_compact_writer::write_int32(const std::string& field_name,
@@ -339,23 +361,22 @@ schema_writer::build() &&
     return schema{ type_name, std::move(field_definition_map) };
 }
 
-boost::future<schema>
+schema
 default_schema_service::get(int64_t schemaId)
 {
     auto ptr = schemas.get(schemaId);
     if (ptr == nullptr) {
-        return boost::make_ready_future<schema>();
+        // TODO sancar throw schema_does_not_exist;
     }
-    return boost::make_ready_future(*ptr);
+    return *ptr;
 }
-boost::future<void>
+void
 default_schema_service::put(const schema& schema_v)
 {
     if (schemas.contains_key(schema_v.schema_id())) {
-        return boost::make_ready_future();
+        return;
     }
     schemas.put(schema_v.schema_id(), std::make_shared<schema>(schema_v));
-    return boost::make_ready_future();
 }
 
 void

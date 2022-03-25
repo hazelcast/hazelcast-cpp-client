@@ -44,8 +44,10 @@ const schema schema_of<T>::schema_v = schema_of<T>::build_schema();
 template<typename T>
 T inline compact_stream_serializer::read(object_data_input& in)
 {
-    std::cout << "compact read " << std::endl;
-    return T();
+    int64_t schema_id = in.read<int64_t>();
+    schema schema = schema_service.get(schema_id);
+    compact_reader reader = create_compact_reader(*this, in, schema);
+    return hz_serializer<T>::read(reader);
 }
 
 template<typename T>
