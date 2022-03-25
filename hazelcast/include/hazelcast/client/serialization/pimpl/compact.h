@@ -29,15 +29,22 @@
 namespace hazelcast {
 namespace client {
 namespace serialization {
+class compact_writer;
 namespace pimpl {
 class default_compact_writer;
 class schema_writer;
+compact_writer
+create_compact_writer(pimpl::default_compact_writer* default_compact_writer);
+compact_writer
+create_compact_writer(pimpl::schema_writer* schema_writer);
 } // namespace pimpl
 
 /**
- *      static std::string get_type_name();
- *      static void write_compact(const T& object, compact_writer &out);
- *      static T read_compact(compact_reader &in);
+ * Classes derived from this class should implement the following static
+ * methods:
+ *      static std::string type_name() noexpect;
+ *      static void write(const T& object, compact_writer &out);
+ *      static T read(compact_reader &in);
  */
 struct compact_serializer
 {};
@@ -128,12 +135,14 @@ public:
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
 
-protected:
+private:
+    friend compact_writer pimpl::create_compact_writer(
+      pimpl::default_compact_writer* default_compact_writer);
+    friend compact_writer pimpl::create_compact_writer(
+      pimpl::schema_writer* schema_writer);
     explicit compact_writer(
       pimpl::default_compact_writer* default_compact_writer);
     explicit compact_writer(pimpl::schema_writer* schema_writer);
-
-private:
     pimpl::default_compact_writer* default_compact_writer;
     pimpl::schema_writer* schema_writer;
 };
@@ -146,6 +155,7 @@ public:
     void write_int32(const std::string& field_name, int32_t value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    void end();
 };
 
 enum HAZELCAST_API field_kind
@@ -270,17 +280,15 @@ public:
     /**
      * Puts the schema with the given id to the cluster.
      */
-    boost::future<void> put(const std::shared_ptr<schema>& schema_ptr);
+    boost::future<void> put(const schema& schema);
 
 private:
     util::SynchronizedMap<int64_t, schema> schemas;
 };
 
-class HAZELCAST_API CompactSerializer
+class HAZELCAST_API compact_stream_serializer
 {
 public:
-    CompactSerializer();
-
     template<typename T>
     T read(object_data_input& in);
 
@@ -288,6 +296,8 @@ public:
     void write(const T& object, object_data_output& out);
 
 private:
+    void put_to_schema_service(const schema& schema);
+
     default_schema_service schema_service;
 };
 
@@ -311,8 +321,6 @@ get(int index);
 }
 
 } // namespace pimpl
-
 } // namespace serialization
-
 } // namespace client
 } // namespace hazelcast

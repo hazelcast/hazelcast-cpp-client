@@ -369,7 +369,7 @@ object_data_input::object_data_input(
   const std::vector<byte>& buffer,
   int offset,
   pimpl::PortableSerializer& portable_ser,
-  pimpl::CompactSerializer& compact_ser,
+  pimpl::compact_stream_serializer& compact_ser,
   pimpl::DataSerializer& data_ser,
   std::shared_ptr<serialization::global_serializer> global_serializer)
   : pimpl::data_input<std::vector<byte>>(byte_order, buffer, offset)
@@ -383,7 +383,7 @@ object_data_output::object_data_output(
   boost::endian::order byte_order,
   bool dont_write,
   pimpl::PortableSerializer* portable_ser,
-  pimpl::CompactSerializer* compact_ser,
+  pimpl::compact_stream_serializer* compact_ser,
   std::shared_ptr<serialization::global_serializer> global_serializer)
   : data_output(byte_order, dont_write)
   , portable_serializer_(portable_ser)
@@ -1092,7 +1092,7 @@ SerializationService::get_portable_serializer()
     return portable_serializer_;
 }
 
-CompactSerializer&
+compact_stream_serializer&
 SerializationService::get_compact_serializer()
 {
     return compact_serializer_;

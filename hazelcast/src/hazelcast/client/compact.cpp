@@ -78,6 +78,14 @@ compact_reader::read_string(const std::string& field_name,
 
 namespace pimpl {
 
+compact_writer
+create_compact_writer(pimpl::default_compact_writer* default_compact_writer) {
+    return compact_writer{default_compact_writer};
+}
+compact_writer
+create_compact_writer(pimpl::schema_writer* schema_writer) {
+    return compact_writer{schema_writer};
+}
 void
 default_compact_writer::write_int32(const std::string& field_name,
                                     int32_t value)
@@ -87,6 +95,10 @@ default_compact_writer::write_string(const std::string& field_name,
                                      const boost::optional<std::string>& value)
 {}
 
+void
+default_compact_writer::end()
+{}
+
 namespace rabin_finger_print {
 /**
  * We use uint64_t for computation to match the behaviour of >>> operator
@@ -94,10 +106,10 @@ namespace rabin_finger_print {
  */
 constexpr uint64_t INIT = 0xc15d213aa4d7a795L;
 
-static std::array<uint64_t , 256>
+static std::array<uint64_t, 256>
 init_fp_table()
 {
-    static std::array<uint64_t , 256> FP_TABLE;
+    static std::array<uint64_t, 256> FP_TABLE;
     for (int i = 0; i < 256; ++i) {
         uint64_t fp = i;
         for (int j = 0; j < 8; ++j) {
@@ -304,7 +316,6 @@ hz_serializer<pimpl::schema>::read_data(object_data_input& in)
     for (int i = 0; i < field_definitions_size; ++i) {
         auto field_name = in.read<std::string>();
         auto field_kind = (pimpl::field_kind)in.read<int>();
-        // TODO sancar is it safe to emplace field_name and use it again
         field_definition_map.emplace(
           field_name, pimpl::field_descriptor{ field_name, field_kind });
     }
@@ -338,10 +349,19 @@ default_schema_service::get(int64_t schemaId)
     return boost::make_ready_future(*ptr);
 }
 boost::future<void>
-default_schema_service::put(const std::shared_ptr<schema>& schema_ptr)
+default_schema_service::put(const schema& schema_v)
 {
-    schemas.put(schema_ptr->schema_id(), schema_ptr);
+    if (schemas.contains_key(schema_v.schema_id())) {
+        return boost::make_ready_future();
+    }
+    schemas.put(schema_v.schema_id(), std::make_shared<schema>(schema_v));
     return boost::make_ready_future();
+}
+
+void
+compact_stream_serializer::put_to_schema_service(const schema& schema)
+{
+    schema_service.put(schema);
 }
 
 field_kind_based_operations::field_kind_based_operations()

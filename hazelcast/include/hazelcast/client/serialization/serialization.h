@@ -186,7 +186,7 @@ class DefaultPortableWriter;
 class DefaultPortableReader;
 class MorphingPortableReader;
 class PortableSerializer;
-class CompactSerializer;
+class compact_stream_serializer;
 class DataSerializer;
 class SerializationService;
 } // namespace pimpl
@@ -217,18 +217,22 @@ struct global_serializer
 
 /**
  * Classes derived from this class should implement the following static
- * methods: static int32_t getClassId() noexcept; static int32_t getFactoryId()
- * noexcept; static int32_t writeData(const T &object, object_data_output &out);
- *      static T readData(object_data_input &in);
+ * methods:
+ * static int32_t getClassId() noexcept;
+ * static int32_t getFactoryId() noexcept;
+ * static int32_t writeData(const T &object, object_data_output &out);
+ * static T readData(object_data_input &in);
  */
 struct identified_data_serializer
 {};
 
 /**
  * Classes derived from this class should implement the following static
- * methods: static int32_t getClassId() noexcept; static int32_t getFactoryId()
- * noexcept; static int32_t write_portable(const T &object, portable_writer
- * &out); static T read_portable(portable_reader &in);
+ * methods:
+ * static int32_t getClassId() noexcept;
+ * static int32_t getFactoryId() noexcept;
+ * static int32_t write_portable(const T &object, portable_writer &out);
+ * static T read_portable(portable_reader &in);
  */
 struct portable_serializer
 {};
@@ -749,7 +753,7 @@ public:
       const std::vector<byte>& buffer,
       int offset,
       pimpl::PortableSerializer& portable_ser,
-      pimpl::CompactSerializer& compact_ser,
+      pimpl::compact_stream_serializer& compact_ser,
       pimpl::DataSerializer& data_ser,
       std::shared_ptr<serialization::global_serializer> global_serializer);
 
@@ -811,7 +815,7 @@ public:
 
 private:
     pimpl::PortableSerializer& portable_serializer_;
-    pimpl::CompactSerializer& compact_serializer_;
+    pimpl::compact_stream_serializer& compact_serializer_;
     pimpl::DataSerializer& data_serializer_;
     std::shared_ptr<serialization::global_serializer> global_serializer_;
 };
@@ -828,7 +832,7 @@ public:
       boost::endian::order byte_order,
       bool dont_write = false,
       pimpl::PortableSerializer* portable_ser = nullptr,
-      pimpl::CompactSerializer* compact_ser = nullptr,
+      pimpl::compact_stream_serializer* compact_ser = nullptr,
       std::shared_ptr<serialization::global_serializer> global_serializer =
         nullptr);
 
@@ -906,7 +910,7 @@ public:
 
 private:
     pimpl::PortableSerializer* portable_serializer_;
-    pimpl::CompactSerializer* compact_serializer_;
+    pimpl::compact_stream_serializer* compact_serializer_;
     std::shared_ptr<serialization::global_serializer> global_serializer_;
 };
 
@@ -1642,7 +1646,7 @@ public:
 
     PortableSerializer& get_portable_serializer();
 
-    CompactSerializer& get_compact_serializer();
+    compact_stream_serializer& get_compact_serializer();
 
     DataSerializer& get_data_serializer();
 
@@ -1775,7 +1779,7 @@ private:
     const serialization_config& serialization_config_;
     PortableContext portable_context_;
     serialization::pimpl::PortableSerializer portable_serializer_;
-    serialization::pimpl::CompactSerializer compact_serializer_;
+    serialization::pimpl::compact_stream_serializer compact_serializer_;
     serialization::pimpl::DataSerializer data_serializer_;
 
     static bool is_null_data(const data& data);
@@ -1992,7 +1996,6 @@ private:
     pimpl::ClassDefinitionWriter* class_definition_writer_;
     bool is_default_writer_;
 };
-
 
 template<typename T>
 boost::optional<T>
@@ -2687,7 +2690,7 @@ typed_data::get() const
 } // namespace client
 } // namespace hazelcast
 
-#include "hazelcast/client/serialization/pimpl/compact.i"
+#include "hazelcast/client/serialization/pimpl/compact.i.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)

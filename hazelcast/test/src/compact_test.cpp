@@ -228,9 +228,9 @@ TEST_F(CompactSerializationTest, test_schema_writer_counts)
 
 TEST_F(CompactSerializationTest, test_rabin_finterprint_consitent_with_server)
 {
-    // TODO sancar rewrite as following when all types are implemented
+//    // TODO sancar rewrite as following when all types are implemented
 //    schema_writer schema_writer("typename");
-//    serialization::compact_writer writer(&schema_writer);
+//    serialization::compact_writer writer = create_compact_writer(&schema_writer);
 //    serialization::hz_serializer<main_dto>::write(create_main_dto(), writer);
 //    auto schema = std::move(schema_writer).build();
 //    ASSERT_EQ(814479248787788739L, schema.schema_id());
