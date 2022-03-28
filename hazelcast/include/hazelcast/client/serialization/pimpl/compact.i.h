@@ -16,10 +16,59 @@
 #pragma once
 
 #include "hazelcast/client/serialization/pimpl/compact.h"
+#include "hazelcast/util/finally.h"
 
 namespace hazelcast {
 namespace client {
 namespace serialization {
+
+namespace pimpl {
+namespace offset_reader {
+
+template<typename OFFSET_TYPE>
+int32_t
+get_offset(serialization::object_data_input& in,
+           uint32_t variable_offsets_pos,
+           uint32_t index)
+{
+    OFFSET_TYPE offset = in.read<OFFSET_TYPE>(variable_offsets_pos + index);
+    if (offset == NULL_OFFSET) {
+        return NULL_OFFSET;
+    }
+    return (int32_t)offset;
+}
+} // namespace offset_reader
+} // namespace pimpl
+template<typename T>
+boost::optional<T>
+compact_reader::get_variable_size(
+  const pimpl::field_descriptor& field_descriptor)
+{
+    int currentPos = object_data_input.position();
+    util::finally set_position_back(
+      [&] { object_data_input.position(currentPos); });
+    int pos = read_var_size_position(field_descriptor);
+    if (pos == pimpl::offset_reader::NULL_OFFSET) {
+        return boost::none;
+    }
+    object_data_input.position(pos);
+    return object_data_input.read<T>();
+}
+
+template<typename T>
+T
+compact_reader::get_variable_as_non_null(
+  const pimpl::field_descriptor& field_descriptor,
+  const std::string& method_suffix)
+{
+    auto value = get_variable_size<int32_t>(field_descriptor);
+    if (value.has_value()) {
+        return value.value();
+    }
+    throw_unexpected_null_value(field_descriptor.field_name(), method_suffix);
+    return -1;
+}
+
 namespace pimpl {
 
 template<typename T>

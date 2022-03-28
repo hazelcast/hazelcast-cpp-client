@@ -15,7 +15,6 @@
  */
 
 #include <utility>
-
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/Bits.h"
 namespace hazelcast {
@@ -70,18 +69,139 @@ compact_reader::compact_reader(
   : compact_stream_serializer(compact_stream_serializer)
   , object_data_input(object_data_input)
   , schema(schema)
-{}
+{
+    uint32_t final_position;
+    size_t number_of_var_size_fields = schema.number_of_var_size_fields();
+    if (number_of_var_size_fields != 0) {
+        int data_length = object_data_input.read<int32_t>();
+        data_start_position = object_data_input.position();
+        variable_offsets_position = data_start_position + data_length;
+        if (data_length < pimpl::offset_reader::BYTE_OFFSET_READER_RANGE) {
+            get_offset = pimpl::offset_reader::get_offset<int8_t>;
+            final_position =
+              variable_offsets_position + number_of_var_size_fields;
+        } else if (data_length <
+                   pimpl::offset_reader::SHORT_OFFSET_READER_RANGE) {
+            get_offset = pimpl::offset_reader::get_offset<int16_t>;
+            final_position =
+              variable_offsets_position +
+              (number_of_var_size_fields * util::Bits::SHORT_SIZE_IN_BYTES);
+        } else {
+            get_offset = pimpl::offset_reader::get_offset<int32_t>;
+            final_position =
+              variable_offsets_position +
+              (number_of_var_size_fields * util::Bits::INT_SIZE_IN_BYTES);
+        }
+    } else {
+        get_offset = pimpl::offset_reader::get_offset<int8_t>;
+        variable_offsets_position = 0;
+        data_start_position = object_data_input.position();
+        final_position =
+          data_start_position + schema.fixed_size_fields_length();
+    }
+    // set the position to final so that the next one to read something from
+    // `in` can start from correct position
+    object_data_input.position(final_position);
+}
+
+bool
+compact_reader::is_field_exists(const std::string& field_name,
+                                enum pimpl::field_kind kind)
+{
+    auto fields = schema.fields();
+    auto field_descriptor = fields.find(field_name);
+    if (field_descriptor == fields.end()) {
+        return false;
+    }
+    return field_descriptor->second.field_kind() == kind;
+}
+
+const pimpl::field_descriptor&
+compact_reader::get_field_descriptor(const std::string& field_name) const
+{
+    auto fields = schema.fields();
+    auto field_descriptor = fields.find(field_name);
+    if (field_descriptor == fields.end()) {
+        throw_unknown_field_exception(field_name);
+    }
+    return field_descriptor->second;
+}
+
+void
+compact_reader::throw_unknown_field_exception(
+  const std::string& field_name) const
+{
+    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
+      "compact_reader::throw_unknown_field_exception ",
+      (boost::format("Unknown field name %1% on %2% ") % field_name % schema)
+        .str()));
+}
+
+void
+compact_reader::throw_unexpected_field_kind(enum pimpl::field_kind field_kind,
+                                            const std::string& field_name) const
+{
+    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
+      "compact_reader::throw_unexpected_field_kind ",
+      (boost::format("Unexpected fieldKind %1% for %2% on %3%") % field_kind %
+       field_name % schema)
+        .str()));
+}
+
+void
+compact_reader::throw_unexpected_null_value(const std::string& field_name,
+                                            const std::string& method_suffix)
+{
+    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
+      (boost::format("Error while reading %1%. null value can not be read via "
+                     "get_%2% methods. Use get_nullable_%2%  instead.") %
+       field_name % method_suffix)
+        .str()));
+}
+
+size_t
+compact_reader::read_fixed_size_position(
+  const pimpl::field_descriptor& field_descriptor) const
+{
+    int primitive_offset = field_descriptor.offset();
+    return primitive_offset + data_start_position;
+}
+
+size_t
+compact_reader::read_var_size_position(
+  const pimpl::field_descriptor& field_descriptor) const
+{
+    int index = field_descriptor.index();
+    int offset =
+      get_offset(object_data_input, variable_offsets_position, index);
+    return offset == pimpl::offset_reader::NULL_OFFSET
+             ? pimpl::offset_reader::NULL_OFFSET
+             : offset + data_start_position;
+}
 
 int32_t
 compact_reader::read_int32(const std::string& field_name)
 {
-    return 0;
+    auto fd = get_field_descriptor(field_name);
+    auto fieldKind = fd.field_kind();
+    switch (fieldKind) {
+        case pimpl::field_kind::INT32:
+            return object_data_input.read<int32_t>(
+              read_fixed_size_position(fd));
+        case pimpl::field_kind::NULLABLE_INT32:
+            return get_variable_as_non_null<int32_t>(fd, "int32");
+        default:
+            throw_unexpected_field_kind(fieldKind, field_name);
+            return -1;
+    }
 }
 
 int32_t
 compact_reader::read_int32(const std::string& field_name, int32_t default_value)
 {
-    return default_value;
+    return is_field_exists(field_name, pimpl::field_kind::INT32)
+             ? read_int32(field_name)
+             : default_value;
 }
 
 boost::optional<std::string>
@@ -93,7 +213,9 @@ boost::optional<std::string>
 compact_reader::read_string(const std::string& field_name,
                             const boost::optional<std::string>& default_value)
 {
-    return default_value;
+    return is_field_exists(field_name, pimpl::field_kind::STRING)
+             ? read_string(field_name)
+             : default_value;
 }
 
 namespace pimpl {
@@ -265,12 +387,6 @@ schema::schema_id() const
     return schema_id_;
 }
 
-const field_descriptor&
-schema::get_field(const std::string& field_name) const
-{
-    return field_definition_map_.at(field_name);
-}
-
 size_t
 schema::number_of_var_size_fields() const
 {
@@ -300,6 +416,27 @@ schema::fields() const
 {
     return field_definition_map_;
 }
+
+std::ostream&
+operator<<(std::ostream& os, const schema& schema)
+{
+    os << "type name " << schema.type_name() << ",number of var size fields "
+       << schema.number_of_var_size_fields() << ",fixed size fields length "
+       << schema.fixed_size_fields_length() << ",fields {";
+    for (const auto& item : schema.fields()) {
+        os << item.first << " " << item.second << ",";
+    }
+    os << "}";
+    return os;
+}
+
+std::ostream&
+operator<<(std::ostream& os, const field_descriptor& field_descriptor)
+{
+    os << field_descriptor.field_kind() << " " << field_descriptor.field_name();
+    return os;
+}
+
 } // namespace pimpl
 int32_t
 hz_serializer<pimpl::schema>::get_factory_id()

@@ -44,6 +44,19 @@ create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
   pimpl::schema& schema);
+class field_descriptor;
+enum HAZELCAST_API field_kind
+{
+    BOOLEAN = 0,
+    ARRAY_OF_BOOLEAN = 1,
+    INT32 = 8,
+    STRING = 16,
+    TIMESTAMP_WITH_TIMEZONE = 26,
+    NULLABLE_INT32 = 32,
+    ARRAY_OF_NULLABLE_FLOAT64 = 45
+};
+static const int NUMBER_OF_FIELD_KINDS = ARRAY_OF_NULLABLE_FLOAT64 + 1;
+
 } // namespace pimpl
 
 /**
@@ -127,9 +140,33 @@ private:
       pimpl::compact_stream_serializer& compact_stream_serializer,
       object_data_input& object_data_input,
       pimpl::schema& schema);
+
+    bool is_field_exists(const std::string& fieldName,
+                         enum pimpl::field_kind kind);
+    const pimpl::field_descriptor& get_field_descriptor(
+      const std::string& field_name) const;
+    void throw_unknown_field_exception(const std::string& field_name) const;
+    void throw_unexpected_field_kind(enum pimpl::field_kind field_kind,
+                                  const std::string& field_name) const;
+    template<typename T>
+    boost::optional<T> get_variable_size(
+      const pimpl::field_descriptor& field_descriptor);
+    template<typename T>
+    T get_variable_as_non_null(const pimpl::field_descriptor& field_descriptor,
+                               const std::string& method_suffix);
+    void throw_unexpected_null_value(const std::string& field_name,
+                                     const std::string& method_suffix);
+    size_t read_fixed_size_position(
+      const pimpl::field_descriptor& field_descriptor) const;
+    size_t read_var_size_position(
+      const pimpl::field_descriptor& field_descriptor) const;
     pimpl::compact_stream_serializer& compact_stream_serializer;
     serialization::object_data_input& object_data_input;
     pimpl::schema& schema;
+    uint32_t data_start_position;
+    uint32_t variable_offsets_position;
+    std::function<int(serialization::object_data_input&, uint32_t, uint32_t)>
+      get_offset;
 };
 
 /**
@@ -169,6 +206,43 @@ private:
 
 namespace pimpl {
 
+namespace offset_reader {
+/**
+ * Offset of the null fields.
+ */
+constexpr int32_t NULL_OFFSET = -1;
+/**
+ * Range of the offsets that can be represented by a single byte
+ * and can be read with {@link OffsetReader#BYTE_OFFSET_READER}.
+ */
+// constexpr int BYTE_OFFSET_READER_RANGE = Byte.MAX_VALUE - Byte.MIN_VALUE;
+constexpr uint32_t BYTE_OFFSET_READER_RANGE = 127 - (-128);
+
+/**
+ * Range of the offsets that can be represented by two bytes
+ * and can be read with {@link OffsetReader#SHORT_OFFSET_READER}.
+ */
+// constexpr int SHORT_OFFSET_READER_RANGE = Short.MAX_VALUE - Short.MIN_VALUE;
+constexpr uint32_t SHORT_OFFSET_READER_RANGE = 32767 - (-32768);
+
+/**
+ * Returns the offset of the variable-size field at the given index.
+ *
+ * @tparam OFFSET_TYPE can be int32_t, int16_t or int8_t
+ * @param in Input to read the offset from.
+ * @param variableOffsetsPos Start of the variable-size field offsets
+ *                           section of the input.
+ * @param index Index of the field.
+ * @return The offset.
+ */
+template<typename OFFSET_TYPE>
+int32_t
+get_offset(serialization::object_data_input& in,
+           uint32_t variable_offsets_pos,
+           uint32_t index);
+
+} // namespace offset_reader
+
 class HAZELCAST_API default_compact_writer
 {
 public:
@@ -177,17 +251,6 @@ public:
                       const boost::optional<std::string>& value);
     void end();
 };
-
-enum HAZELCAST_API field_kind
-{
-    BOOLEAN = 0,
-    ARRAY_OF_BOOLEAN = 1,
-    INT32 = 8,
-    STRING = 16,
-    TIMESTAMP_WITH_TIMEZONE = 26,
-    ARRAY_OF_NULLABLE_FLOAT64 = 45
-};
-static const int NUMBER_OF_FIELD_KINDS = ARRAY_OF_NULLABLE_FLOAT64 + 1;
 
 class HAZELCAST_API field_descriptor
 {
@@ -233,6 +296,10 @@ private:
     int32_t offset_ = -1;
     int8_t bit_offset_ = -1;
 };
+
+std::ostream&
+operator<<(std::ostream& os, const field_descriptor& field_descriptor);
+
 constexpr int SCHEMA_DS_FACTORY_ID = -42;
 constexpr int SCHEMA_CLASS_ID = 1;
 constexpr int SEND_SCHEMA_OPERATION = 2;
@@ -245,7 +312,6 @@ public:
     schema(std::string type_name,
            std::map<std::string, field_descriptor>&& field_definition_map);
     int64_t schema_id() const;
-    const field_descriptor& get_field(const std::string& field_name) const;
     size_t number_of_var_size_fields() const;
     size_t fixed_size_fields_length() const;
     const std::string& type_name() const;
@@ -259,6 +325,10 @@ private:
     size_t fixed_size_fields_length_{};
     int64_t schema_id_{};
 };
+
+std::ostream&
+operator<<(std::ostream& os, const schema& schema);
+
 } // namespace pimpl
 template<>
 struct hz_serializer<pimpl::schema> : public identified_data_serializer

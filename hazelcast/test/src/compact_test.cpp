@@ -194,9 +194,9 @@ check_schema_field(const schema& schema,
                    int index,
                    int bit_offset)
 {
-    ASSERT_EQ(offset, schema.get_field(field_name).offset());
-    ASSERT_EQ(index, schema.get_field(field_name).index());
-    ASSERT_EQ(bit_offset, schema.get_field(field_name).bit_offset());
+    ASSERT_EQ(offset, schema.fields().at(field_name).offset());
+    ASSERT_EQ(index, schema.fields().at(field_name).index());
+    ASSERT_EQ(bit_offset, schema.fields().at(field_name).bit_offset());
 }
 
 TEST_F(CompactSerializationTest, test_schema_field_order)
