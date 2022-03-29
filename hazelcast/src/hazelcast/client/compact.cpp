@@ -122,41 +122,40 @@ compact_reader::get_field_descriptor(const std::string& field_name) const
     auto fields = schema.fields();
     auto field_descriptor = fields.find(field_name);
     if (field_descriptor == fields.end()) {
-        throw_unknown_field_exception(field_name);
+        BOOST_THROW_EXCEPTION(unknown_field_exception(field_name));
     }
     return field_descriptor->second;
 }
 
-void
-compact_reader::throw_unknown_field_exception(
-  const std::string& field_name) const
+exception::hazelcast_serialization
+compact_reader::unknown_field_exception(const std::string& field_name) const
 {
-    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
-      "compact_reader::throw_unknown_field_exception ",
-      (boost::format("Unknown field name %1% on %2% ") % field_name % schema)
-        .str()));
+    return { "compact_reader",
+             (boost::format("Unknown field name %1% on %2% ") % field_name %
+              schema)
+               .str() };
 }
 
-void
-compact_reader::throw_unexpected_field_kind(enum pimpl::field_kind field_kind,
-                                            const std::string& field_name) const
+exception::hazelcast_serialization
+compact_reader::unexpected_field_kind(enum pimpl::field_kind field_kind,
+                                      const std::string& field_name) const
 {
-    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
-      "compact_reader::throw_unexpected_field_kind ",
-      (boost::format("Unexpected fieldKind %1% for %2% on %3%") % field_kind %
-       field_name % schema)
-        .str()));
+    return { "compact_reader",
+             (boost::format("Unexpected fieldKind %1% for %2% on %3%") %
+              field_kind % field_name % schema)
+               .str() };
 }
 
-void
-compact_reader::throw_unexpected_null_value(const std::string& field_name,
-                                            const std::string& method_suffix)
+exception::hazelcast_serialization
+compact_reader::unexpected_null_value(const std::string& field_name,
+                                      const std::string& method_suffix)
 {
-    BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
-      (boost::format("Error while reading %1%. null value can not be read via "
-                     "get_%2% methods. Use get_nullable_%2%  instead.") %
-       field_name % method_suffix)
-        .str()));
+    return { "compact_reader",
+             (boost::format(
+                "Error while reading %1%. null value can not be read via "
+                "get_%2% methods. Use get_nullable_%2%  instead.") %
+              field_name % method_suffix)
+               .str() };
 }
 
 size_t
@@ -191,7 +190,7 @@ compact_reader::read_int32(const std::string& field_name)
         case pimpl::field_kind::NULLABLE_INT32:
             return get_variable_as_non_null<int32_t>(fd, "int32");
         default:
-            throw_unexpected_field_kind(fieldKind, field_name);
+            BOOST_THROW_EXCEPTION(unexpected_field_kind(fieldKind, field_name));
             return -1;
     }
 }

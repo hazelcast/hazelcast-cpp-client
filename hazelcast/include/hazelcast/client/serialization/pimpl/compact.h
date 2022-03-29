@@ -145,17 +145,20 @@ private:
                          enum pimpl::field_kind kind);
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name) const;
-    void throw_unknown_field_exception(const std::string& field_name) const;
-    void throw_unexpected_field_kind(enum pimpl::field_kind field_kind,
-                                  const std::string& field_name) const;
+    exception::hazelcast_serialization unknown_field_exception(
+      const std::string& field_name) const;
+    exception::hazelcast_serialization unexpected_field_kind(
+      enum pimpl::field_kind field_kind,
+      const std::string& field_name) const;
     template<typename T>
     boost::optional<T> get_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
     T get_variable_as_non_null(const pimpl::field_descriptor& field_descriptor,
                                const std::string& method_suffix);
-    void throw_unexpected_null_value(const std::string& field_name,
-                                     const std::string& method_suffix);
+    static exception::hazelcast_serialization unexpected_null_value(
+      const std::string& field_name,
+      const std::string& method_suffix);
     size_t read_fixed_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
     size_t read_var_size_position(

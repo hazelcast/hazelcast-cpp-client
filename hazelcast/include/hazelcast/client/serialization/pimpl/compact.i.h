@@ -65,7 +65,8 @@ compact_reader::get_variable_as_non_null(
     if (value.has_value()) {
         return value.value();
     }
-    throw_unexpected_null_value(field_descriptor.field_name(), method_suffix);
+    BOOST_THROW_EXCEPTION(
+      unexpected_null_value(field_descriptor.field_name(), method_suffix));
     return -1;
 }
 
