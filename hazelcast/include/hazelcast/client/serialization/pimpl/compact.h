@@ -255,10 +255,21 @@ get_offset(serialization::object_data_input& in,
 class HAZELCAST_API default_compact_writer
 {
 public:
+    default_compact_writer(compact_stream_serializer& compact_stream_serializer,
+                           object_data_output& object_data_output,
+                           const schema& schema);
     void write_int32(const std::string& field_name, int32_t value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
     void end();
+
+private:
+    void write_offsets(size_t data_length);
+    compact_stream_serializer& compact_stream_serializer_;
+    object_data_output& object_data_output_;
+    const schema& schema_;
+    size_t data_start_position;
+    std::vector<int> field_offsets;
 };
 
 class HAZELCAST_API field_descriptor

@@ -46,22 +46,15 @@ namespace serialization {
 namespace pimpl {
 // forward declarations
 class PortableContext;
-
 class ClassDefinitionContext;
-
 class ClassDefinitionWriter;
-
 class DefaultPortableWriter;
-
 class DefaultPortableReader;
-
 class MorphingPortableReader;
-
 class PortableSerializer;
-
 class DataSerializer;
-
 class SerializationService;
+class default_compact_writer;
 
 enum struct HAZELCAST_API serialization_constants
 {
@@ -823,6 +816,7 @@ private:
 class HAZELCAST_API object_data_output : public pimpl::data_output
 {
     friend pimpl::DefaultPortableWriter;
+    friend pimpl::default_compact_writer;
 
 public:
     /**

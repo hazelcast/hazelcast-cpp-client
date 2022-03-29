@@ -116,7 +116,7 @@ void inline compact_stream_serializer::write(const T& object,
     const auto& schema_v = schema_of<T>::schema_v;
     put_to_schema_service(schema_v);
     out.write<int64_t>(schema_v.schema_id());
-    default_compact_writer default_writer;
+    default_compact_writer default_writer(*this, out, schema_v);
     compact_writer writer = create_compact_writer(&default_writer);
     hz_serializer<T>::write(object, writer);
     default_writer.end();

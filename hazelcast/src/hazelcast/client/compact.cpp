@@ -242,18 +242,75 @@ create_compact_writer(pimpl::schema_writer* schema_writer)
 {
     return compact_writer{ schema_writer };
 }
+
+default_compact_writer::default_compact_writer(
+  compact_stream_serializer& compact_stream_serializer,
+  object_data_output& object_data_output,
+  const schema& schema)
+  : compact_stream_serializer_(compact_stream_serializer)
+  , object_data_output_(object_data_output)
+  , schema_(schema)
+{
+    if (schema.number_of_var_size_fields() != 0) {
+        field_offsets.resize(schema.number_of_var_size_fields());
+        data_start_position =
+          object_data_output_.position() + util::Bits::INT_SIZE_IN_BYTES;
+        // Skip for length and primitives.
+        object_data_output_.write_zero_bytes(schema.fixed_size_fields_length() +
+                                             util::Bits::INT_SIZE_IN_BYTES);
+    } else {
+        data_start_position = object_data_output_.position();
+        // Skip for primitives. No need to write data length, when there is no
+        // variable-size fields.
+        object_data_output_.write_zero_bytes(schema.fixed_size_fields_length());
+    }
+}
+
 void
 default_compact_writer::write_int32(const std::string& field_name,
                                     int32_t value)
-{}
+{
+
+}
 void
 default_compact_writer::write_string(const std::string& field_name,
                                      const boost::optional<std::string>& value)
-{}
+{
+
+}
 
 void
 default_compact_writer::end()
-{}
+{
+    if (schema_.number_of_var_size_fields() == 0) {
+        // There are no variable size fields
+        return;
+    }
+    size_t position = object_data_output_.position();
+    size_t data_length = position - data_start_position;
+    write_offsets(data_length);
+    // write dataLength
+    object_data_output_.write_at(
+      data_start_position - util::Bits::INT_SIZE_IN_BYTES, data_length);
+}
+
+void
+default_compact_writer::write_offsets(size_t data_length)
+{
+    if (data_length < offset_reader::BYTE_OFFSET_READER_RANGE) {
+        for (int offset : field_offsets) {
+            object_data_output_.write<byte>(offset);
+        }
+    } else if (data_length < offset_reader::SHORT_OFFSET_READER_RANGE) {
+        for (int offset : field_offsets) {
+            object_data_output_.write<int16_t>(offset);
+        }
+    } else {
+        for (int offset : field_offsets) {
+            object_data_output_.write<int32_t>(offset);
+        }
+    }
+}
 
 namespace rabin_finger_print {
 /**
