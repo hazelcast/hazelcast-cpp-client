@@ -167,12 +167,8 @@ private:
       const std::string& method_suffix);
     size_t read_fixed_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
-    size_t read_fixed_size_position(const std::string& field_name,
-                                    enum pimpl::field_kind field_kind) const;
     size_t read_var_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
-    size_t read_var_size_position(const std::string& field_name,
-                                  enum pimpl::field_kind kind) const;
     pimpl::compact_stream_serializer& compact_stream_serializer;
     serialization::object_data_input& object_data_input;
     pimpl::schema& schema;

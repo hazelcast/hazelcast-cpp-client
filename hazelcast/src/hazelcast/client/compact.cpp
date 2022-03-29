@@ -131,7 +131,7 @@ const pimpl::field_descriptor&
 compact_reader::get_field_descriptor(const std::string& field_name,
                                      enum pimpl::field_kind kind) const
 {
-    auto field_descriptor = get_field_descriptor(field_name);
+    const auto& field_descriptor = get_field_descriptor(field_name);
     if (field_descriptor.field_kind() != kind) {
         BOOST_THROW_EXCEPTION(
           unexpected_field_kind(field_descriptor.field_kind(), field_name));
@@ -188,14 +188,6 @@ compact_reader::read_var_size_position(
     return offset == pimpl::offset_reader::NULL_OFFSET
              ? pimpl::offset_reader::NULL_OFFSET
              : offset + data_start_position;
-}
-
-size_t
-compact_reader::read_var_size_position(const std::string& field_name,
-                                       enum pimpl::field_kind field_kind) const
-{
-    auto field_descriptor = get_field_descriptor(field_name, field_kind);
-    return read_var_size_position(field_descriptor);
 }
 
 int32_t
