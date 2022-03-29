@@ -270,6 +270,15 @@ private:
       const std::string& field_name,
       enum field_kind field_kind) const;
     void write_offsets(size_t data_length);
+
+    template<typename T>
+    void write_variable_size_field(const std::string& field_name,
+                                   enum field_kind field_kind,
+                                   const boost::optional<T>& value);
+    void set_position(const std::string& field_name,
+                      enum field_kind field_kind);
+    void set_position_as_null(const std::string& field_name,
+                      enum field_kind field_kind);
     compact_stream_serializer& compact_stream_serializer_;
     object_data_output& object_data_output_;
     const schema& schema_;

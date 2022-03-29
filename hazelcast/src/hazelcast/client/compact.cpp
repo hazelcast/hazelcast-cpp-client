@@ -276,7 +276,24 @@ default_compact_writer::write_int32(const std::string& field_name,
 void
 default_compact_writer::write_string(const std::string& field_name,
                                      const boost::optional<std::string>& value)
-{}
+{
+    write_variable_size_field(field_name, field_kind::STRING, value);
+}
+
+void
+default_compact_writer::end()
+{
+    if (schema_.number_of_var_size_fields() == 0) {
+        // There are no variable size fields
+        return;
+    }
+    size_t position = object_data_output_.position();
+    size_t data_length = position - data_start_position;
+    write_offsets(data_length);
+    // write dataLength
+    object_data_output_.write_at(
+      data_start_position - util::Bits::INT_SIZE_IN_BYTES, data_length);
+}
 
 int
 default_compact_writer::get_fixed_size_field_position(
@@ -313,21 +330,6 @@ default_compact_writer::check_field_definition(const std::string& field_name,
 }
 
 void
-default_compact_writer::end()
-{
-    if (schema_.number_of_var_size_fields() == 0) {
-        // There are no variable size fields
-        return;
-    }
-    size_t position = object_data_output_.position();
-    size_t data_length = position - data_start_position;
-    write_offsets(data_length);
-    // write dataLength
-    object_data_output_.write_at(
-      data_start_position - util::Bits::INT_SIZE_IN_BYTES, data_length);
-}
-
-void
 default_compact_writer::write_offsets(size_t data_length)
 {
     if (data_length < offset_reader::BYTE_OFFSET_READER_RANGE) {
@@ -343,6 +345,28 @@ default_compact_writer::write_offsets(size_t data_length)
             object_data_output_.write<int32_t>(offset);
         }
     }
+}
+
+void
+default_compact_writer::set_position(const std::string& field_name,
+                                     enum field_kind field_kind)
+{
+    const auto& field_descriptor =
+      check_field_definition(field_name, field_kind);
+    size_t pos = object_data_output_.position();
+    int fieldPosition = pos - data_start_position;
+    int index = field_descriptor.index();
+    field_offsets[index] = fieldPosition;
+}
+
+void
+default_compact_writer::set_position_as_null(const std::string& field_name,
+                                             enum field_kind field_kind)
+{
+    const auto& field_descriptor =
+      check_field_definition(field_name, field_kind);
+    int index = field_descriptor.index();
+    field_offsets[index] = -1;
 }
 
 namespace rabin_finger_print {

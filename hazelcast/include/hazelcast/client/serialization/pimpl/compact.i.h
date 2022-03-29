@@ -76,10 +76,24 @@ compact_reader::get_variable_as_non_null(
     }
     BOOST_THROW_EXCEPTION(
       unexpected_null_value(field_descriptor.field_name(), method_suffix));
-    return -1;
 }
 
 namespace pimpl {
+
+template<typename T>
+void
+default_compact_writer::write_variable_size_field(
+  const std::string& field_name,
+  enum field_kind field_kind,
+  const boost::optional<T>& value)
+{
+    if (!value.has_value()) {
+        set_position_as_null(field_name, field_kind);
+    } else {
+        set_position(field_name, field_kind);
+        object_data_output_.write<T>(value.value());
+    }
+}
 
 template<typename T>
 struct schema_of
