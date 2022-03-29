@@ -278,7 +278,7 @@ private:
     void set_position(const std::string& field_name,
                       enum field_kind field_kind);
     void set_position_as_null(const std::string& field_name,
-                      enum field_kind field_kind);
+                              enum field_kind field_kind);
     compact_stream_serializer& compact_stream_serializer_;
     object_data_output& object_data_output_;
     const schema& schema_;
@@ -439,10 +439,11 @@ struct HAZELCAST_API field_kind_based_operations
     std::function<int()> kind_size_in_byte_func;
 };
 
-namespace field_operations {
-static field_kind_based_operations
-get(int index);
-}
+struct HAZELCAST_API field_operations
+{
+    static field_kind_based_operations get(
+      int index);
+};
 
 } // namespace pimpl
 } // namespace serialization

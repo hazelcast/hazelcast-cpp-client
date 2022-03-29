@@ -84,8 +84,8 @@ struct main_dto
         return str == rhs.str;
     }
 
-    std::string str;
     int i;
+    std::string str;
 };
 
 main_dto

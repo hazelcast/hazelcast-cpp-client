@@ -73,7 +73,7 @@ compact_reader::compact_reader(
     uint32_t final_position;
     size_t number_of_var_size_fields = schema.number_of_var_size_fields();
     if (number_of_var_size_fields != 0) {
-        int data_length = object_data_input.read<int32_t>();
+        uint32_t data_length = object_data_input.read<int32_t>();
         data_start_position = object_data_input.position();
         variable_offsets_position = data_start_position + data_length;
         if (data_length < pimpl::offset_reader::BYTE_OFFSET_READER_RANGE) {
@@ -444,9 +444,11 @@ bool
 kind_size_comparator(const field_descriptor* i, const field_descriptor* j)
 {
     auto i_kind_size =
-      field_operations::get(i->field_kind()).kind_size_in_byte_func();
+      field_operations::get(i->field_kind())
+        .kind_size_in_byte_func();
     auto j_kind_size =
-      field_operations::get(j->field_kind()).kind_size_in_byte_func();
+      field_operations::get(j->field_kind())
+        .kind_size_in_byte_func();
     return i_kind_size < j_kind_size;
 }
 
@@ -462,7 +464,8 @@ schema::schema(std::string type_name,
     for (auto& item : field_definition_map_) {
         field_descriptor& descriptor = item.second;
         field_kind kind = descriptor.field_kind();
-        if (field_operations::get(kind).kind_size_in_byte_func() ==
+        if (field_operations::get(kind)
+              .kind_size_in_byte_func() ==
             field_kind_based_operations::VARIABLE_SIZE) {
             variable_size_fields.push_back(&descriptor);
         } else if (kind == field_kind::BOOLEAN) {
@@ -507,7 +510,7 @@ schema::schema(std::string type_name,
     schema_id_ = rabin_finger_print::fingerprint64(*this);
 }
 
-long
+int64_t
 schema::schema_id() const
 {
     return schema_id_;
@@ -656,9 +659,7 @@ field_kind_based_operations::field_kind_based_operations(
   std::function<int()> kind_size_in_byte_func)
   : kind_size_in_byte_func(std::move(kind_size_in_byte_func))
 {}
-
-field_kind_based_operations
-field_operations::get(int index)
+field_kind_based_operations field_operations::get(int index)
 {
     static const field_kind_based_operations ALL[NUMBER_OF_FIELD_KINDS] = {
         field_kind_based_operations{ []() { return 0; } },
@@ -713,7 +714,6 @@ field_operations::get(int index)
     return ALL[index];
 }
 } // namespace pimpl
-
 } // namespace serialization
 } // namespace client
 } // namespace hazelcast

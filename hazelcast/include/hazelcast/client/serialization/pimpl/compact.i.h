@@ -46,7 +46,7 @@ compact_reader::get_variable_size(
 {
     int current_pos = object_data_input.position();
     util::finally set_position_back(
-      [&, current_pos] { object_data_input.position(current_pos); });
+      [this, current_pos]() { object_data_input.position(current_pos); });
     int pos = read_var_size_position(field_descriptor);
     if (pos == pimpl::offset_reader::NULL_OFFSET) {
         return boost::none;
