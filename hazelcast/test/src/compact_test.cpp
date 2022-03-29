@@ -127,7 +127,8 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
     static compact::test::main_dto read(compact_reader& reader)
     {
         auto i = reader.read_int32("i", 1);
-        auto str = reader.read_string("NA");
+        auto str =
+          reader.read_string("name", boost::make_optional<std::string>("NA"));
         return compact::test::main_dto{ i, str.get_value_or("default") };
     }
 
@@ -228,12 +229,13 @@ TEST_F(CompactSerializationTest, test_schema_writer_counts)
 
 TEST_F(CompactSerializationTest, test_rabin_finterprint_consitent_with_server)
 {
-//    // TODO sancar rewrite as following when all types are implemented
-//    schema_writer schema_writer("typename");
-//    serialization::compact_writer writer = create_compact_writer(&schema_writer);
-//    serialization::hz_serializer<main_dto>::write(create_main_dto(), writer);
-//    auto schema = std::move(schema_writer).build();
-//    ASSERT_EQ(814479248787788739L, schema.schema_id());
+    //    // TODO sancar rewrite as following when all types are implemented
+    //    schema_writer schema_writer("typename");
+    //    serialization::compact_writer writer =
+    //    create_compact_writer(&schema_writer);
+    //    serialization::hz_serializer<main_dto>::write(create_main_dto(),
+    //    writer); auto schema = std::move(schema_writer).build();
+    //    ASSERT_EQ(814479248787788739L, schema.schema_id());
 
     schema_writer schema_writer("typeName");
     schema_writer.add_field("a", field_kind::BOOLEAN);

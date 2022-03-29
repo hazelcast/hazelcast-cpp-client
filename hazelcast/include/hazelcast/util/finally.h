@@ -20,6 +20,9 @@
 
 namespace hazelcast {
 namespace util {
+/**
+ * Utility class to set a lambda to run when current context finishes
+ */
 class HAZELCAST_API finally
 {
     std::function<void(void)> functor;

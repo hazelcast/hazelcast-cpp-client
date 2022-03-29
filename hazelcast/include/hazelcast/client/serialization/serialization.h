@@ -43,6 +43,7 @@ namespace client {
 class hazelcast_client;
 
 namespace serialization {
+class object_data_input;
 namespace pimpl {
 // forward declarations
 class PortableContext;
@@ -55,7 +56,13 @@ class PortableSerializer;
 class DataSerializer;
 class SerializationService;
 class default_compact_writer;
-
+namespace offset_reader {
+template<typename OFFSET_TYPE>
+int32_t
+get_offset(serialization::object_data_input& in,
+           uint32_t variable_offsets_pos,
+           uint32_t index);
+}
 enum struct HAZELCAST_API serialization_constants
 {
     CONSTANT_TYPE_NULL = 0,
@@ -737,6 +744,15 @@ public:
 class HAZELCAST_API object_data_input
   : public pimpl::data_input<std::vector<byte>>
 {
+    template<typename OFFSET_TYPE>
+    friend int32_t pimpl::offset_reader::get_offset(
+      object_data_input& in,
+      uint32_t variable_offsets_pos,
+      uint32_t index);
+
+    friend class compact_reader;
+    friend class portable_reader;
+
 public:
     /**
      * Internal API. Constructor
