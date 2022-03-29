@@ -127,6 +127,18 @@ compact_reader::get_field_descriptor(const std::string& field_name) const
     return field_descriptor->second;
 }
 
+const pimpl::field_descriptor&
+compact_reader::get_field_descriptor(const std::string& field_name,
+                                     enum pimpl::field_kind kind) const
+{
+    auto field_descriptor = get_field_descriptor(field_name);
+    if (field_descriptor.field_kind() != kind) {
+        BOOST_THROW_EXCEPTION(
+          unexpected_field_kind(field_descriptor.field_kind(), field_name));
+    }
+    return field_descriptor;
+}
+
 exception::hazelcast_serialization
 compact_reader::unknown_field_exception(const std::string& field_name) const
 {
@@ -178,6 +190,14 @@ compact_reader::read_var_size_position(
              : offset + data_start_position;
 }
 
+size_t
+compact_reader::read_var_size_position(const std::string& field_name,
+                                       enum pimpl::field_kind field_kind) const
+{
+    auto field_descriptor = get_field_descriptor(field_name, field_kind);
+    return read_var_size_position(field_descriptor);
+}
+
 int32_t
 compact_reader::read_int32(const std::string& field_name)
 {
@@ -206,7 +226,8 @@ compact_reader::read_int32(const std::string& field_name, int32_t default_value)
 boost::optional<std::string>
 compact_reader::read_string(const std::string& field_name)
 {
-    return boost::none;
+    return get_variable_size<std::string>(field_name,
+                                          pimpl::field_kind::STRING);
 }
 boost::optional<std::string>
 compact_reader::read_string(const std::string& field_name,

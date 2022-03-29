@@ -145,6 +145,9 @@ private:
                          enum pimpl::field_kind kind);
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name) const;
+    const pimpl::field_descriptor& get_field_descriptor(
+      const std::string& field_name,
+      enum pimpl::field_kind field_kind) const;
     exception::hazelcast_serialization unknown_field_exception(
       const std::string& field_name) const;
     exception::hazelcast_serialization unexpected_field_kind(
@@ -154,6 +157,9 @@ private:
     boost::optional<T> get_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
+    boost::optional<T> get_variable_size(const std::string& field_name,
+                                         enum pimpl::field_kind field_kind);
+    template<typename T>
     T get_variable_as_non_null(const pimpl::field_descriptor& field_descriptor,
                                const std::string& method_suffix);
     static exception::hazelcast_serialization unexpected_null_value(
@@ -161,8 +167,12 @@ private:
       const std::string& method_suffix);
     size_t read_fixed_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
+    size_t read_fixed_size_position(const std::string& field_name,
+                                    enum pimpl::field_kind field_kind) const;
     size_t read_var_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
+    size_t read_var_size_position(const std::string& field_name,
+                                  enum pimpl::field_kind kind) const;
     pimpl::compact_stream_serializer& compact_stream_serializer;
     serialization::object_data_input& object_data_input;
     pimpl::schema& schema;

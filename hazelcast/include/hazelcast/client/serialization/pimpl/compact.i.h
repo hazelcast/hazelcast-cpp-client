@@ -44,15 +44,24 @@ boost::optional<T>
 compact_reader::get_variable_size(
   const pimpl::field_descriptor& field_descriptor)
 {
-    int currentPos = object_data_input.position();
+    int current_pos = object_data_input.position();
     util::finally set_position_back(
-      [&] { object_data_input.position(currentPos); });
+      [&] { object_data_input.position(current_pos); });
     int pos = read_var_size_position(field_descriptor);
     if (pos == pimpl::offset_reader::NULL_OFFSET) {
         return boost::none;
     }
     object_data_input.position(pos);
     return object_data_input.read<T>();
+}
+
+template<typename T>
+boost::optional<T>
+compact_reader::get_variable_size(const std::string& field_name,
+                                  enum pimpl::field_kind field_kind)
+{
+    auto field_descriptor = get_field_descriptor(field_name, field_kind);
+    return get_variable_size<T>(field_descriptor);
 }
 
 template<typename T>
