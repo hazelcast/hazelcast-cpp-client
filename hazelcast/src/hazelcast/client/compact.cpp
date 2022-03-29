@@ -270,13 +270,46 @@ void
 default_compact_writer::write_int32(const std::string& field_name,
                                     int32_t value)
 {
-
+    int position = get_fixed_size_field_position(field_name, field_kind::INT32);
+    object_data_output_.write_at(position, value);
 }
 void
 default_compact_writer::write_string(const std::string& field_name,
                                      const boost::optional<std::string>& value)
-{
+{}
 
+int
+default_compact_writer::get_fixed_size_field_position(
+  const std::string& field_name,
+  enum field_kind field_kind) const
+{
+    const field_descriptor& field_descriptor =
+      check_field_definition(field_name, field_kind);
+    return field_descriptor.offset() + data_start_position;
+}
+
+const field_descriptor&
+default_compact_writer::check_field_definition(const std::string& field_name,
+                                               enum field_kind field_kind) const
+{
+    auto iterator = schema_.fields().find(field_name);
+    if (iterator == schema_.fields().end()) {
+        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
+          "default_compact_writer",
+          (boost::format("Invalid field name %1% for %2%") % field_name %
+           schema_)
+            .str()));
+    }
+    if (iterator->second.field_kind() != field_kind) {
+        if (iterator == schema_.fields().end()) {
+            BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
+              "default_compact_writer",
+              (boost::format("Invalid field type %1% for %2%") % field_name %
+               schema_)
+                .str()));
+        }
+    }
+    return iterator->second;
 }
 
 void
