@@ -35,11 +35,11 @@ namespace pimpl {
 class schema;
 class default_compact_writer;
 class schema_writer;
-compact_writer
+compact_writer HAZELCAST_API
 create_compact_writer(pimpl::default_compact_writer* default_compact_writer);
-compact_writer
+compact_writer HAZELCAST_API
 create_compact_writer(pimpl::schema_writer* schema_writer);
-compact_reader
+compact_reader HAZELCAST_API
 create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
@@ -441,8 +441,7 @@ struct HAZELCAST_API field_kind_based_operations
 
 struct HAZELCAST_API field_operations
 {
-    static field_kind_based_operations get(
-      int index);
+    static field_kind_based_operations get(int index);
 };
 
 } // namespace pimpl
