@@ -108,8 +108,8 @@ bool
 compact_reader::is_field_exists(const std::string& field_name,
                                 enum pimpl::field_kind kind)
 {
-    auto fields = schema.fields();
-    auto field_descriptor = fields.find(field_name);
+    const auto& fields = schema.fields();
+    const auto& field_descriptor = fields.find(field_name);
     if (field_descriptor == fields.end()) {
         return false;
     }
@@ -119,8 +119,8 @@ compact_reader::is_field_exists(const std::string& field_name,
 const pimpl::field_descriptor&
 compact_reader::get_field_descriptor(const std::string& field_name) const
 {
-    auto fields = schema.fields();
-    auto field_descriptor = fields.find(field_name);
+    const auto& fields = schema.fields();
+    const auto& field_descriptor = fields.find(field_name);
     if (field_descriptor == fields.end()) {
         BOOST_THROW_EXCEPTION(unknown_field_exception(field_name));
     }
@@ -193,8 +193,8 @@ compact_reader::read_var_size_position(
 int32_t
 compact_reader::read_int32(const std::string& field_name)
 {
-    auto fd = get_field_descriptor(field_name);
-    auto fieldKind = fd.field_kind();
+    const auto& fd = get_field_descriptor(field_name);
+    const auto& fieldKind = fd.field_kind();
     switch (fieldKind) {
         case pimpl::field_kind::INT32:
             return object_data_input.read<int32_t>(
