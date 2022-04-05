@@ -64,9 +64,22 @@ namespace client {
 namespace compact {
 namespace test {
 
+struct inner_dto
+{
+    inner_dto() {}
+
+    explicit inner_dto(std::string str)
+      : str(std::move(str))
+    {}
+
+    bool operator==(const inner_dto& rhs) const { return str == rhs.str; }
+    bool operator!=(const inner_dto& rhs) const { return !(*this == (rhs)); }
+    std::string str;
+};
 struct main_dto
 {
     int i;
+    boost::optional<inner_dto> p;
     std::string str;
 };
 
@@ -76,19 +89,30 @@ operator==(const main_dto& lhs, const main_dto& rhs)
     if (lhs.i != rhs.i) {
         return false;
     }
+    if (lhs.p != rhs.p) {
+        return false;
+    }
     return lhs.str == rhs.str;
 }
 
 main_dto
 create_main_dto()
 {
-    return main_dto{ 30, "John" };
+    inner_dto p("Johny");
+    return main_dto{ 30, p, "John" };
 }
 
 std::ostream&
 operator<<(std::ostream& out, const main_dto& main_dto)
 {
     out << "i " << main_dto.i << ", str " << main_dto.str;
+    return out;
+}
+
+std::ostream&
+operator<<(std::ostream& out, const inner_dto& inner_dto)
+{
+    out << "str " << inner_dto.str;
     return out;
 }
 
@@ -105,6 +129,25 @@ struct empty_main_dto
 } // namespace compact
 
 namespace serialization {
+
+template<>
+struct hz_serializer<compact::test::inner_dto> : public compact_serializer
+{
+    static void write(const compact::test::inner_dto& object,
+                      compact_writer& writer)
+    {
+        writer.write_string("name", object.str);
+    }
+
+    static compact::test::inner_dto read(compact_reader& reader)
+    {
+        auto str = reader.read_string("name");
+        return compact::test::inner_dto{ str.value() };
+    }
+
+    static std::string type_name() { return "main"; }
+};
+
 template<>
 struct hz_serializer<compact::test::main_dto> : public compact_serializer
 {
@@ -112,15 +155,18 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
                       compact_writer& writer)
     {
         writer.write_int32("i", object.i);
+        writer.write_compact<compact::test::inner_dto>("p", object.p);
         writer.write_string("name", object.str);
     }
 
     static compact::test::main_dto read(compact_reader& reader)
     {
         auto i = reader.read_int32("i", 1);
+        auto p =
+          reader.read_compact<compact::test::inner_dto>("p", boost::none);
         auto str =
           reader.read_string("name", boost::make_optional<std::string>("NA"));
-        return compact::test::main_dto{ i, *str };
+        return compact::test::main_dto{ i, p, *str };
     }
 
     static std::string type_name() { return "main"; }
@@ -176,6 +222,7 @@ TEST_F(CompactSerializationTest,
     data data = ss.to_data(empty);
     main_dto actual = *(ss.to_object<main_dto>(data));
     ASSERT_EQ(1, actual.i);
+    ASSERT_EQ(boost::none, actual.p);
     ASSERT_EQ("NA", actual.str);
 }
 

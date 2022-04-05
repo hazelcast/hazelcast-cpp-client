@@ -115,7 +115,13 @@ template<typename T>
 void
 compact_writer::write_compact(const std::string& field_name,
                               const boost::optional<T>& value)
-{}
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_compact(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::COMPACT);
+    }
+}
 
 namespace pimpl {
 
@@ -130,8 +136,35 @@ default_compact_writer::write_variable_size_field(
         set_position_as_null(field_name, field_kind);
     } else {
         set_position(field_name, field_kind);
-        object_data_output_.write<T>(value.value());
+        write<T>(value.value());
     }
+}
+
+template<typename T>
+void
+default_compact_writer::write_compact(const std::string& field_name,
+                                      const boost::optional<T>& value)
+{
+    write_variable_size_field<T>(field_name, field_kind::COMPACT, value);
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+  void>::type
+default_compact_writer::write(const T& value)
+{
+    object_data_output_.template write(value);
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  void>::type
+default_compact_writer::write(const T& value)
+{
+    compact_stream_serializer_.template write<T>(value, object_data_output_);
 }
 
 template<typename T>

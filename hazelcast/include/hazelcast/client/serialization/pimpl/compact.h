@@ -328,6 +328,9 @@ public:
     void write_int32(const std::string& field_name, int32_t value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    template<typename T>
+    void write_compact(const std::string& field_name,
+                       const boost::optional<T>& value);
     void end();
 
 private:
@@ -342,6 +345,20 @@ private:
     void write_variable_size_field(const std::string& field_name,
                                    enum field_kind field_kind,
                                    const boost::optional<T>& value);
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      void>::type
+    write(const T& value);
+
     void set_position(const std::string& field_name,
                       enum field_kind field_kind);
     void set_position_as_null(const std::string& field_name,
