@@ -56,6 +56,7 @@ enum HAZELCAST_API field_kind
     INT32 = 8,
     STRING = 16,
     TIMESTAMP_WITH_TIMEZONE = 26,
+    COMPACT = 28,
     NULLABLE_INT32 = 32,
     ARRAY_OF_NULLABLE_FLOAT64 = 45
 };
@@ -138,6 +139,32 @@ public:
       const std::string& field_name,
       const boost::optional<std::string>& default_value);
 
+    /**
+     * Reads a compact object
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization       if the field does not exist in the
+     * schema or the type of the field does not match with the one defined in
+     * the schema.
+     */
+    template<typename T>
+    boost::optional<T> read_compact(const std::string& field_name);
+
+    /**
+     * Reads a compact object
+     * or returns the default value
+     *
+     * @param fieldName    name of the field.
+     * @param defaultValue default value to return if the field with the given
+     * name does not exist in the schema or the type of the field does not match
+     * with the one defined in the schema.
+     * @return the value or the default value of the field.
+     */
+    template<typename T>
+    boost::optional<T> read_compact(const std::string& field_name,
+                                    boost::optional<T> default_value);
+
 private:
     compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,
                    object_data_input& object_data_input,
@@ -171,6 +198,18 @@ private:
       const pimpl::field_descriptor& field_descriptor,
       const std::string& field_name,
       const std::string& method_suffix);
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      typename boost::optional<T>>::type
+    read();
     static exception::hazelcast_serialization unexpected_null_value(
       const std::string& field_name,
       const std::string& method_suffix);
@@ -220,6 +259,16 @@ public:
      */
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+
+    /**
+     * Writes a nested compact object.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    template<typename T>
+    void write_compact(const std::string& field_name,
+                       const boost::optional<T>& value);
 
 private:
     friend compact_writer pimpl::create_compact_writer(

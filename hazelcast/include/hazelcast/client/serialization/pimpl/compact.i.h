@@ -49,7 +49,7 @@ compact_reader::get_variable_size(
         return boost::none;
     }
     object_data_input.position(pos);
-    return object_data_input.read<T>();
+    return read<T>();
 }
 
 template<typename T>
@@ -74,6 +74,48 @@ compact_reader::get_variable_size_as_non_null(
     }
     BOOST_THROW_EXCEPTION(unexpected_null_value(field_name, method_suffix));
 }
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+  typename boost::optional<T>>::type
+compact_reader::read()
+{
+    return object_data_input.template read<T>();
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  typename boost::optional<T>>::type
+compact_reader::read()
+{
+    return compact_stream_serializer.template read<T>(object_data_input);
+}
+
+template<typename T>
+boost::optional<T>
+compact_reader::read_compact(const std::string& field_name)
+{
+    return get_variable_size<T>(field_name, pimpl::field_kind::COMPACT);
+}
+
+template<typename T>
+boost::optional<T>
+compact_reader::read_compact(const std::string& field_name,
+                             boost::optional<T> default_value)
+{
+    return is_field_exists(field_name, pimpl::field_kind::COMPACT)
+             ? read_compact<T>(field_name)
+             : default_value;
+}
+
+template<typename T>
+void
+compact_writer::write_compact(const std::string& field_name,
+                              const boost::optional<T>& value)
+{}
 
 namespace pimpl {
 
