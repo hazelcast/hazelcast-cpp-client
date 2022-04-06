@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,18 +36,28 @@ namespace client {
 namespace compact {
 namespace test {
 
+struct node_dto
+{
+    int id;
+    std::shared_ptr<node_dto> child;
+};
+
+bool
+operator==(const node_dto& lhs, const node_dto& rhs)
+{
+    return lhs.id == rhs.id && lhs.child == rhs.child;
+}
+
 struct inner_dto
 {
-    inner_dto() {}
-
-    explicit inner_dto(std::string str)
-      : str(std::move(str))
-    {}
-
-    bool operator==(const inner_dto& rhs) const { return str == rhs.str; }
-    bool operator!=(const inner_dto& rhs) const { return !(*this == (rhs)); }
     std::string str;
 };
+
+bool
+operator==(const inner_dto& lhs, const inner_dto& rhs)
+{
+    return lhs.str == rhs.str;
+}
 struct main_dto
 {
     int i;
@@ -57,19 +68,13 @@ struct main_dto
 bool
 operator==(const main_dto& lhs, const main_dto& rhs)
 {
-    if (lhs.i != rhs.i) {
-        return false;
-    }
-    if (lhs.p != rhs.p) {
-        return false;
-    }
-    return lhs.str == rhs.str;
+    return lhs.i == rhs.i && lhs.p == rhs.p && lhs.str == rhs.str;
 }
 
 main_dto
 create_main_dto()
 {
-    inner_dto p("Johny");
+    inner_dto p{ "Johny" };
     return main_dto{ 30, p, "John" };
 }
 
@@ -84,6 +89,18 @@ std::ostream&
 operator<<(std::ostream& out, const inner_dto& inner_dto)
 {
     out << "str " << inner_dto.str;
+    return out;
+}
+
+std::ostream&
+operator<<(std::ostream& out, const node_dto& node_dto)
+{
+    out << "id " << node_dto.id;
+    if (node_dto.child == nullptr) {
+        out << ", child null";
+    } else {
+        out << ", child " << *node_dto.child;
+    }
     return out;
 }
 
@@ -144,6 +161,34 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
 };
 
 template<>
+struct hz_serializer<compact::test::node_dto> : public compact_serializer
+{
+    static void write(const compact::test::node_dto& object,
+                      compact_writer& writer)
+    {
+        writer.write_int32("id", object.id);
+        writer.write_compact<compact::test::node_dto>(
+          "child",
+          object.child == nullptr ? boost::none
+                                  : boost::make_optional(*object.child));
+    }
+
+    static compact::test::node_dto read(compact_reader& reader)
+    {
+        auto id = reader.read_int32("id", 1);
+        auto&& child = reader.read_compact<compact::test::node_dto>("child");
+        return compact::test::node_dto{
+            id,
+            child.has_value()
+              ? std::make_shared<compact::test::node_dto>(child.value())
+              : nullptr
+        };
+    }
+
+    static std::string type_name() { return "node"; }
+};
+
+template<>
 struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
 {
     static void write(const compact::test::empty_main_dto& object,
@@ -173,12 +218,24 @@ public:
     }
 };
 
-TEST_F(CompactSerializationTest, testAllFields)
+TEST_F(CompactSerializationTest, testAllTypes)
 {
     serialization_config config;
     SerializationService ss(config);
 
     main_dto expected = create_main_dto();
+    auto actual = to_data_and_back_to_object(ss, expected);
+    ASSERT_EQ(expected, actual);
+}
+
+TEST_F(CompactSerializationTest, testRecursive)
+{
+    serialization_config config;
+    SerializationService ss(config);
+
+    auto n2 = std::make_shared<node_dto>(node_dto{ 2, nullptr });
+    auto n1 = std::make_shared<node_dto>(node_dto{ 1, n2 });
+    node_dto expected{ 0, n1 };
     auto actual = to_data_and_back_to_object(ss, expected);
     ASSERT_EQ(expected, actual);
 }
