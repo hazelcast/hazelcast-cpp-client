@@ -23,36 +23,7 @@
 #include <openssl/crypto.h>
 #endif
 
-#include <hazelcast/client/lifecycle_event.h>
-#include <hazelcast/client/client_config.h>
-#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/connection/Connection.h>
-#include <hazelcast/client/exception/protocol_exceptions.h>
-#include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/hazelcast_json_value.h>
-#include <hazelcast/client/imap.h>
-#include <hazelcast/client/impl/Partition.h>
-#include <hazelcast/client/initial_membership_event.h>
-#include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
-#include <hazelcast/client/lifecycle_listener.h>
-#include <hazelcast/client/pipelining.h>
-#include <hazelcast/client/serialization_config.h>
-#include <hazelcast/client/serialization/pimpl/data_input.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/util/concurrent/locks/LockSupport.h>
-#include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/Util.h>
-
-#include "ClientTest.h"
-#include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
-#include "TestHelperFunctions.h"
-#include "serialization/Serializables.h"
-#include "remote_controller_client.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
