@@ -49,36 +49,16 @@ public:
      *
      * @return reference to the internal byte buffer.
      */
-    inline const std::vector<byte>& to_byte_array() const
-    {
-        return output_stream_;
-    }
+    const std::vector<byte>& to_byte_array() const;
 
     /**
      *
      * @param bytes The bytes to be appended to the current buffer
      */
-    inline void append_bytes(const std::vector<byte>& bytes)
-    {
-        output_stream_.insert(output_stream_.end(), bytes.begin(), bytes.end());
-    }
-
-    inline void write_zero_bytes(size_t number_of_bytes)
-    {
-        output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
-    }
-
-    inline size_t position() { return output_stream_.size(); }
-
-    inline void position(size_t new_pos)
-    {
-        if (is_no_write_) {
-            return;
-        }
-        if (output_stream_.size() < new_pos) {
-            output_stream_.resize(new_pos, 0);
-        }
-    }
+    void append_bytes(const std::vector<byte>& bytes);
+    void write_zero_bytes(size_t number_of_bytes);
+    size_t position();
+    void position(size_t new_pos);
 
     /**
      * @param value to be written
@@ -101,6 +81,7 @@ public:
         if (is_no_write_) {
             return;
         }
+        // TODO sancar looks wierd. Check later.
     }
 
     template<typename T>
@@ -119,6 +100,7 @@ public:
         if (is_no_write_) {
             return;
         }
+        // TODO sancar looks wierd. Check later.
     }
 
     /**
@@ -149,6 +131,7 @@ public:
                               std::is_same<std::vector<std::string>, T>::value,
                             void>::type inline write(const T* value);
 
+    //TODO sancar introduced to public before me here https://github.com/hazelcast/hazelcast-cpp-client/commit/e04bb694f02d2d02d5bc598f07d564f8da9de1ac#diff-a88ea399b57da82e30e5a5acd7a2556ea371fba0a9c656bb7e219a179f7f7dfdR132
     void write(int32_t value, boost::endian::order byte_order);
 
 protected:
@@ -156,45 +139,29 @@ protected:
     bool is_no_write_;
     std::vector<byte> output_stream_;
 
-    void inline check_available(int index, int requested_length)
-    {
-        if (index < 0) {
-            BOOST_THROW_EXCEPTION(exception::illegal_argument(
-              "DataOutput::checkAvailable",
-              (boost::format("Negative pos! -> %1%") % index).str()));
-        }
-
-        size_t available = output_stream_.size() - index;
-
-        if (requested_length > (int)available) {
-            BOOST_THROW_EXCEPTION(exception::illegal_argument(
-              "DataOutput::checkAvailable",
-              (boost::format("Cannot write %1% bytes!") % requested_length)
-                .str()));
-        }
-    }
-
-    /**
-     * Write integer at the provided index. Bounds check is performed.
-     * @param index The index to write the integer
-     * @param value The integer value to be written
-     */
-    inline void write_at(int index, int32_t value)
+    void check_available(size_t index, int requested_length);
+    void write_boolean_bit_at(size_t index, size_t offset_in_bits, bool value);
+    void write_at(size_t index, int8_t value);
+    void write_at(size_t index, int16_t value);
+    void write_at(size_t index, int32_t value);
+    void write_at(size_t index, int64_t value);
+    void write_at(size_t index, float value);
+    void write_at(size_t index, double value);
+    template<typename T>
+    void write_int_at(size_t index, T value, int requested_length)
     {
         if (is_no_write_) {
             return;
         }
-        check_available(index, util::Bits::INT_SIZE_IN_BYTES);
+        check_available(index, requested_length);
         if (byte_order_ == boost::endian::order::big) {
             boost::endian::native_to_big_inplace(value);
         } else {
             boost::endian::native_to_little_inplace(value);
         }
-        std::memcpy(
-          &output_stream_[index], &value, util::Bits::INT_SIZE_IN_BYTES);
+        std::memcpy(&output_stream_[index], &value, requested_length);
     }
 };
-
 template<>
 HAZELCAST_API void
 data_output::write(byte value);

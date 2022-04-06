@@ -608,6 +608,41 @@ data_output::data_output(boost::endian::order byte_order, bool dont_write)
     }
 }
 
+const std::vector<byte>&
+data_output::to_byte_array() const
+{
+    return output_stream_;
+}
+
+void
+data_output::append_bytes(const std::vector<byte>& bytes)
+{
+    output_stream_.insert(output_stream_.end(), bytes.begin(), bytes.end());
+}
+
+void
+data_output::write_zero_bytes(size_t number_of_bytes)
+{
+    output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
+}
+
+inline size_t
+data_output::position()
+{
+    return output_stream_.size();
+}
+
+void
+data_output::position(size_t new_pos)
+{
+    if (is_no_write_) {
+        return;
+    }
+    if (output_stream_.size() < new_pos) {
+        output_stream_.resize(new_pos, 0);
+    }
+}
+
 template<>
 void
 data_output::write(byte i)
@@ -769,6 +804,90 @@ data_output::write(const hazelcast_json_value& value)
         return;
     }
     write<std::string>(value.to_string());
+}
+
+void
+data_output::check_available(size_t index, int requested_length)
+{
+    if (index < 0) {
+        BOOST_THROW_EXCEPTION(exception::illegal_argument(
+          "DataOutput::checkAvailable",
+          (boost::format("Negative pos! -> %1%") % index).str()));
+    }
+
+    size_t available = output_stream_.size() - index;
+
+    if (requested_length > (int)available) {
+        BOOST_THROW_EXCEPTION(exception::illegal_argument(
+          "DataOutput::checkAvailable",
+          (boost::format("Cannot write %1% bytes!") % requested_length).str()));
+    }
+}
+
+void
+data_output::write_boolean_bit_at(size_t index,
+                                  size_t offset_in_bits,
+                                  bool value)
+{
+    if (is_no_write_) {
+        return;
+    }
+    check_available(index, 1);
+    byte b = output_stream_[index];
+    if (value) {
+        b = (byte)(b |   (1 << offset_in_bits));
+    } else {
+        b = (byte)(b & ~(1 << offset_in_bits));
+    }
+    output_stream_[index] = b;
+}
+
+void
+data_output::write_at(size_t index, int8_t value)
+{
+    write_int_at(index, value, 1);
+}
+
+void
+data_output::write_at(size_t index, int16_t value)
+{
+    write_int_at(index, value, util::Bits::SHORT_SIZE_IN_BYTES);
+}
+
+void
+data_output::write_at(size_t index, int32_t value)
+{
+    write_int_at(index, value, util::Bits::INT_SIZE_IN_BYTES);
+}
+
+void
+data_output::write_at(size_t index, int64_t value)
+{
+    write_int_at(index, value, util::Bits::LONG_SIZE_IN_BYTES);
+}
+
+void
+data_output::write_at(size_t index, float value)
+{
+    union
+    {
+        float f;
+        int32_t i;
+    } u;
+    u.f = value;
+    write_int_at(index, u.i, util::Bits::INT_SIZE_IN_BYTES);
+}
+
+void
+data_output::write_at(size_t index, double value)
+{
+    union
+    {
+        double d;
+        int64_t l;
+    } u;
+    u.d = value;
+    write_int_at(index, u.l, util::Bits::LONG_SIZE_IN_BYTES);
 }
 
 object_type::object_type()
