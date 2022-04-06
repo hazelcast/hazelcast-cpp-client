@@ -102,16 +102,6 @@ compact_reader::read_compact(const std::string& field_name)
 }
 
 template<typename T>
-boost::optional<T>
-compact_reader::read_compact(const std::string& field_name,
-                             boost::optional<T> default_value)
-{
-    return is_field_exists(field_name, pimpl::field_kind::COMPACT)
-             ? read_compact<T>(field_name)
-             : default_value;
-}
-
-template<typename T>
 void
 compact_writer::write_compact(const std::string& field_name,
                               const boost::optional<T>& value)

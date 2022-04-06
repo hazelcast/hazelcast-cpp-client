@@ -140,18 +140,6 @@ public:
     int32_t read_int32(const std::string& field_name);
 
     /**
-     * Reads a 32-bit two's complement signed integer or returns the default
-     * value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given
-     * name does not exist in the schema or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
-     */
-    int32_t read_int32(const std::string& field_name, int32_t default_value);
-
-    /**
      * Reads an UTF-8 encoded string.
      *
      * @param fieldName name of the field.
@@ -161,19 +149,6 @@ public:
      * in the schema.
      */
     boost::optional<std::string> read_string(const std::string& field_name);
-
-    /**
-     * Reads an UTF-8 encoded string or returns the default value.
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given
-     * name does not exist in the schema or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
-     */
-    boost::optional<std::string> read_string(
-      const std::string& field_name,
-      const boost::optional<std::string>& default_value);
 
     /**
      * Reads a compact object
@@ -186,20 +161,6 @@ public:
      */
     template<typename T>
     boost::optional<T> read_compact(const std::string& field_name);
-
-    /**
-     * Reads a compact object
-     * or returns the default value
-     *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given
-     * name does not exist in the schema or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
-     */
-    template<typename T>
-    boost::optional<T> read_compact(const std::string& field_name,
-                                    boost::optional<T> default_value);
 
 private:
     compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,

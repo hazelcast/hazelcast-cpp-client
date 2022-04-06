@@ -267,29 +267,12 @@ compact_reader::read_int32(const std::string& field_name)
     }
 }
 
-int32_t
-compact_reader::read_int32(const std::string& field_name, int32_t default_value)
-{
-    return is_field_exists(field_name, pimpl::field_kind::INT32)
-             ? read_int32(field_name)
-             : default_value;
-}
-
 boost::optional<std::string>
 compact_reader::read_string(const std::string& field_name)
 {
     return get_variable_size<std::string>(field_name,
                                           pimpl::field_kind::STRING);
 }
-boost::optional<std::string>
-compact_reader::read_string(const std::string& field_name,
-                            const boost::optional<std::string>& default_value)
-{
-    return is_field_exists(field_name, pimpl::field_kind::STRING)
-             ? read_string(field_name)
-             : default_value;
-}
-
 namespace pimpl {
 
 compact_writer

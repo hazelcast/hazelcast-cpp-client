@@ -149,11 +149,9 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
 
     static compact::test::main_dto read(compact_reader& reader)
     {
-        auto i = reader.read_int32("i", 1);
-        auto p =
-          reader.read_compact<compact::test::inner_dto>("p", boost::none);
-        auto str =
-          reader.read_string("name", boost::make_optional<std::string>("NA"));
+        auto i = reader.read_int32("i");
+        auto p = reader.read_compact<compact::test::inner_dto>("p");
+        auto str = reader.read_string("name");
         return compact::test::main_dto{ i, p, *str };
     }
 
@@ -175,7 +173,7 @@ struct hz_serializer<compact::test::node_dto> : public compact_serializer
 
     static compact::test::node_dto read(compact_reader& reader)
     {
-        auto id = reader.read_int32("id", 1);
+        auto id = reader.read_int32("id");
         auto&& child = reader.read_compact<compact::test::node_dto>("child");
         return compact::test::node_dto{
             id,
@@ -238,20 +236,6 @@ TEST_F(CompactSerializationTest, testRecursive)
     node_dto expected{ 0, n1 };
     auto actual = to_data_and_back_to_object(ss, expected);
     ASSERT_EQ(expected, actual);
-}
-
-TEST_F(CompactSerializationTest,
-       testReaderReturnsDefaultValues_whenDataIsMissing)
-{
-    serialization_config config;
-    SerializationService ss(config);
-
-    empty_main_dto empty;
-    data data = ss.to_data(empty);
-    main_dto actual = *(ss.to_object<main_dto>(data));
-    ASSERT_EQ(1, actual.i);
-    ASSERT_EQ(boost::none, actual.p);
-    ASSERT_EQ("NA", actual.str);
 }
 
 void
