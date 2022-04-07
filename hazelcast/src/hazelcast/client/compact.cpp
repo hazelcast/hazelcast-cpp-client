@@ -113,7 +113,7 @@ compact_reader::is_field_exists(const std::string& field_name,
     if (field_descriptor == fields.end()) {
         return false;
     }
-    return field_descriptor->second.field_kind() == kind;
+    return field_descriptor->second.field_kind == kind;
 }
 
 const pimpl::field_descriptor&
@@ -132,9 +132,9 @@ compact_reader::get_field_descriptor(const std::string& field_name,
                                      enum pimpl::field_kind kind) const
 {
     const auto& field_descriptor = get_field_descriptor(field_name);
-    if (field_descriptor.field_kind() != kind) {
+    if (field_descriptor.field_kind != kind) {
         BOOST_THROW_EXCEPTION(
-          unexpected_field_kind(field_descriptor.field_kind(), field_name));
+          unexpected_field_kind(field_descriptor.field_kind, field_name));
     }
     return field_descriptor;
 }
@@ -174,7 +174,7 @@ size_t
 compact_reader::read_fixed_size_position(
   const pimpl::field_descriptor& field_descriptor) const
 {
-    int primitive_offset = field_descriptor.offset();
+    int primitive_offset = field_descriptor.offset;
     return primitive_offset + data_start_position;
 }
 
@@ -182,7 +182,7 @@ size_t
 compact_reader::read_var_size_position(
   const pimpl::field_descriptor& field_descriptor) const
 {
-    int index = field_descriptor.index();
+    int index = field_descriptor.index;
     int offset =
       get_offset(object_data_input, variable_offsets_position, index);
     return offset == pimpl::offset_reader::NULL_OFFSET
@@ -194,7 +194,7 @@ int32_t
 compact_reader::read_int32(const std::string& field_name)
 {
     const auto& fd = get_field_descriptor(field_name);
-    const auto& fieldKind = fd.field_kind();
+    const auto& fieldKind = fd.field_kind;
     switch (fieldKind) {
         case pimpl::field_kind::INT32:
             return object_data_input.read<int32_t>(
@@ -302,7 +302,7 @@ default_compact_writer::get_fixed_size_field_position(
 {
     const field_descriptor& field_descriptor =
       check_field_definition(field_name, field_kind);
-    return field_descriptor.offset() + data_start_position;
+    return field_descriptor.offset + data_start_position;
 }
 
 const field_descriptor&
@@ -317,7 +317,7 @@ default_compact_writer::check_field_definition(const std::string& field_name,
            schema_)
             .str()));
     }
-    if (iterator->second.field_kind() != field_kind) {
+    if (iterator->second.field_kind != field_kind) {
         if (iterator == schema_.fields().end()) {
             BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
               "default_compact_writer",
@@ -355,7 +355,7 @@ default_compact_writer::set_position(const std::string& field_name,
       check_field_definition(field_name, field_kind);
     size_t pos = object_data_output_.position();
     int fieldPosition = pos - data_start_position;
-    int index = field_descriptor.index();
+    int index = field_descriptor.index;
     field_offsets[index] = fieldPosition;
 }
 
@@ -365,7 +365,7 @@ default_compact_writer::set_position_as_null(const std::string& field_name,
 {
     const auto& field_descriptor =
       check_field_definition(field_name, field_kind);
-    int index = field_descriptor.index();
+    int index = field_descriptor.index;
     field_offsets[index] = -1;
 }
 
@@ -432,8 +432,8 @@ fingerprint64(const schema& schema)
     fingerPrint = fingerprint64(fingerPrint, (int)schema.field_count());
     for (const auto& entry : schema.fields()) {
         const field_descriptor& descriptor = entry.second;
-        fingerPrint = fingerprint64(fingerPrint, descriptor.field_name());
-        fingerPrint = fingerprint64(fingerPrint, (int)descriptor.field_kind());
+        fingerPrint = fingerprint64(fingerPrint, descriptor.field_name);
+        fingerPrint = fingerprint64(fingerPrint, (int)descriptor.field_kind);
     }
     return static_cast<int64_t>(fingerPrint);
 }
@@ -444,11 +444,9 @@ bool
 kind_size_comparator(const field_descriptor* i, const field_descriptor* j)
 {
     auto i_kind_size =
-      field_operations::get(i->field_kind())
-        .kind_size_in_byte_func();
+      field_operations::get(i->field_kind).kind_size_in_byte_func();
     auto j_kind_size =
-      field_operations::get(j->field_kind())
-        .kind_size_in_byte_func();
+      field_operations::get(j->field_kind).kind_size_in_byte_func();
     return i_kind_size < j_kind_size;
 }
 
@@ -463,9 +461,8 @@ schema::schema(std::string type_name,
 
     for (auto& item : field_definition_map_) {
         field_descriptor& descriptor = item.second;
-        field_kind kind = descriptor.field_kind();
-        if (field_operations::get(kind)
-              .kind_size_in_byte_func() ==
+        field_kind kind = descriptor.field_kind;
+        if (field_operations::get(kind).kind_size_in_byte_func() ==
             field_kind_based_operations::VARIABLE_SIZE) {
             variable_size_fields.push_back(&descriptor);
         } else if (kind == field_kind::BOOLEAN) {
@@ -480,15 +477,15 @@ schema::schema(std::string type_name,
 
     int offset = 0;
     for (auto descriptor : fixed_size_fields) {
-        descriptor->offset(offset);
-        offset += field_operations::get(descriptor->field_kind())
+        descriptor->offset = offset;
+        offset += field_operations::get(descriptor->field_kind)
                     .kind_size_in_byte_func();
     }
 
     int bit_offset = 0;
     for (auto descriptor : boolean_fields) {
-        descriptor->offset(offset);
-        descriptor->bit_offset(bit_offset % util::Bits::BITS_IN_BYTE);
+        descriptor->offset = offset;
+        descriptor->bit_offset = bit_offset % util::Bits::BITS_IN_BYTE;
         bit_offset++;
         if (bit_offset % util::Bits::BITS_IN_BYTE == 0) {
             offset += 1;
@@ -502,7 +499,7 @@ schema::schema(std::string type_name,
 
     int index = 0;
     for (auto descriptor : variable_size_fields) {
-        descriptor->index(index);
+        descriptor->index = index;
         index++;
     }
 
@@ -562,7 +559,7 @@ operator<<(std::ostream& os, const schema& schema)
 std::ostream&
 operator<<(std::ostream& os, const field_descriptor& field_descriptor)
 {
-    os << field_descriptor.field_kind() << " " << field_descriptor.field_name();
+    os << field_descriptor.field_kind << " " << field_descriptor.field_name;
     return os;
 }
 
@@ -589,8 +586,8 @@ hz_serializer<pimpl::schema>::write_data(const pimpl::schema& object,
     out.write((int)fields.size());
     for (const auto& field : fields) {
         const auto& descriptor = field.second;
-        out.write(descriptor.field_name());
-        out.write((int)descriptor.field_kind());
+        out.write(descriptor.field_name);
+        out.write((int)descriptor.field_kind);
     }
 }
 
@@ -605,7 +602,8 @@ hz_serializer<pimpl::schema>::read_data(object_data_input& in)
         auto field_name = in.read<std::string>();
         auto field_kind = (pimpl::field_kind)in.read<int>();
         field_definition_map.emplace(
-          field_name, pimpl::field_descriptor{ field_name, field_kind });
+          field_name,
+          pimpl::field_descriptor{ field_name, field_kind, -1, -1, -1 });
     }
     return pimpl::schema{ type_name, std::move(field_definition_map) };
 }
@@ -617,8 +615,8 @@ schema_writer::schema_writer(std::string type_name)
 void
 schema_writer::add_field(const std::string& field_name, enum field_kind kind)
 {
-    field_definition_map.emplace(field_name,
-                                 field_descriptor{ field_name, kind });
+    field_definition_map.emplace(
+      field_name, field_descriptor{ field_name, kind, -1, -1, -1 });
 }
 
 schema
@@ -659,7 +657,8 @@ field_kind_based_operations::field_kind_based_operations(
   std::function<int()> kind_size_in_byte_func)
   : kind_size_in_byte_func(std::move(kind_size_in_byte_func))
 {}
-field_kind_based_operations field_operations::get(int index)
+field_kind_based_operations
+field_operations::get(int index)
 {
     static const field_kind_based_operations ALL[NUMBER_OF_FIELD_KINDS] = {
         field_kind_based_operations{ []() { return 0; } },

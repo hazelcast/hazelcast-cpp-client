@@ -66,27 +66,18 @@ namespace test {
 
 struct main_dto
 {
-    main_dto()
-      : i(0)
-      , str("")
-    {}
-
-    explicit main_dto(int i, std::string str)
-      : i(i)
-      , str(std::move(str))
-    {}
-
-    bool operator==(const main_dto& rhs) const
-    {
-        if (i != rhs.i) {
-            return false;
-        }
-        return str == rhs.str;
-    }
-
     int i;
     std::string str;
 };
+
+bool
+operator==(const main_dto& lhs, const main_dto& rhs)
+{
+    if (lhs.i != rhs.i) {
+        return false;
+    }
+    return lhs.str == rhs.str;
+}
 
 main_dto
 create_main_dto()
@@ -195,9 +186,9 @@ check_schema_field(const schema& schema,
                    int index,
                    int bit_offset)
 {
-    ASSERT_EQ(offset, schema.fields().at(field_name).offset());
-    ASSERT_EQ(index, schema.fields().at(field_name).index());
-    ASSERT_EQ(bit_offset, schema.fields().at(field_name).bit_offset());
+    ASSERT_EQ(offset, schema.fields().at(field_name).offset);
+    ASSERT_EQ(index, schema.fields().at(field_name).index);
+    ASSERT_EQ(bit_offset, schema.fields().at(field_name).bit_offset);
 }
 
 TEST_F(CompactSerializationTest, test_schema_field_order)
@@ -235,6 +226,7 @@ TEST_F(CompactSerializationTest, test_rabin_finterprint_consitent_with_server)
     //    create_compact_writer(&schema_writer);
     //    serialization::hz_serializer<main_dto>::write(create_main_dto(),
     //    writer); auto schema = std::move(schema_writer).build();
+    //    This magic number is generated via Java code for exact same class.
     //    ASSERT_EQ(814479248787788739L, schema.schema_id());
 
     schema_writer schema_writer("typeName");
@@ -242,7 +234,7 @@ TEST_F(CompactSerializationTest, test_rabin_finterprint_consitent_with_server)
     schema_writer.add_field("b", field_kind::ARRAY_OF_BOOLEAN);
     schema_writer.add_field("c", field_kind::TIMESTAMP_WITH_TIMEZONE);
     auto schema = std::move(schema_writer).build();
-
+    // This magic number is generated via Java code for exact same class.
     ASSERT_EQ(-2132873845851116364, schema.schema_id());
 }
 

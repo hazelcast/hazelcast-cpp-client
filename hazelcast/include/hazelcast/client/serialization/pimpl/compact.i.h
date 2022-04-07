@@ -76,7 +76,7 @@ compact_reader::get_variable_as_non_null(
         return value.value();
     }
     BOOST_THROW_EXCEPTION(
-      unexpected_null_value(field_descriptor.field_name(), method_suffix));
+      unexpected_null_value(field_descriptor.field_name, method_suffix));
 }
 
 namespace pimpl {
@@ -119,7 +119,7 @@ template<typename T>
 T inline compact_stream_serializer::read(object_data_input& in)
 {
     int64_t schema_id = in.read<int64_t>();
-    schema schema = schema_service.get(schema_id);
+    auto schema = schema_service.get(schema_id);
     compact_reader reader = create_compact_reader(*this, in, schema);
     return hz_serializer<T>::read(reader);
 }

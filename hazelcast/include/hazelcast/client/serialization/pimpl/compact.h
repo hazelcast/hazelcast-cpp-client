@@ -290,49 +290,22 @@ private:
     std::vector<int> field_offsets;
 };
 
-class HAZELCAST_API field_descriptor
+struct HAZELCAST_API field_descriptor
 {
-public:
-    field_descriptor(std::string field_name, enum field_kind field_kind)
-      : field_name_(std::move(field_name))
-      , field_kind_(field_kind)
-    {}
-
-    void index(int32_t index) { this->index_ = index; }
-
-    void offset(int32_t offset) { this->offset_ = offset; }
-
-    void bit_offset(int8_t bit_offset) { this->bit_offset_ = bit_offset; }
-
-    enum field_kind field_kind() const { return field_kind_; }
-
-    const std::string& field_name() const { return field_name_; }
-
+    std::string field_name;
+    enum field_kind field_kind;
     /**
-     * @return the index of offset of the non-primitive field. if field is
-     * primitive returns -1
+     * Index of the offset of the non-primitive field. For others, it is -1
      */
-    int32_t index() const { return index_; }
-
+    int32_t index;
     /**
-     * @return the offset to read  the primitive field from. If field is not
-     * primitive returns -1
+     * Applicable only for primitive fields. For others, it is -1
      */
-    int32_t offset() const { return offset_; }
-
+    int32_t offset;
     /**
-     * Applicable only for boolean field
-     *
-     * @return the offset of the boolean within the given byte via `offset`
+     * Applicable only for boolean field. For others, it is -1
      */
-    int8_t bit_offset() const { return bit_offset_; }
-
-private:
-    std::string field_name_;
-    enum field_kind field_kind_;
-    int32_t index_ = -1;
-    int32_t offset_ = -1;
-    int8_t bit_offset_ = -1;
+    int8_t bit_offset;
 };
 
 std::ostream&
