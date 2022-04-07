@@ -47,7 +47,7 @@ compact_reader HAZELCAST_API
 create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
-  pimpl::schema& schema);
+  const pimpl::schema& schema);
 class field_descriptor;
 enum HAZELCAST_API field_kind
 {
@@ -138,12 +138,12 @@ public:
 private:
     compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,
                    object_data_input& object_data_input,
-                   pimpl::schema& schema);
+                   const pimpl::schema& schema);
 
     friend compact_reader pimpl::create_compact_reader(
       pimpl::compact_stream_serializer& compact_stream_serializer,
       object_data_input& object_data_input,
-      pimpl::schema& schema);
+      const pimpl::schema& schema);
 
     bool is_field_exists(const std::string& fieldName,
                          enum pimpl::field_kind kind);
@@ -176,7 +176,7 @@ private:
       const pimpl::field_descriptor& field_descriptor) const;
     pimpl::compact_stream_serializer& compact_stream_serializer;
     serialization::object_data_input& object_data_input;
-    pimpl::schema& schema;
+    const pimpl::schema& schema;
     uint32_t data_start_position;
     uint32_t variable_offsets_position;
     std::function<int(serialization::object_data_input&, uint32_t, uint32_t)>

@@ -55,7 +55,7 @@ compact_reader
 create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
-  pimpl::schema& schema)
+  const pimpl::schema& schema)
 {
     return compact_reader{ compact_stream_serializer,
                            object_data_input,
@@ -65,7 +65,7 @@ create_compact_reader(
 compact_reader::compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   serialization::object_data_input& object_data_input,
-  pimpl::schema& schema)
+  const pimpl::schema& schema)
   : compact_stream_serializer(compact_stream_serializer)
   , object_data_input(object_data_input)
   , schema(schema)
