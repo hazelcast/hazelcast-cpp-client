@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#ifndef HAZELCAST_CLIENT_SERIALIZATION_PIMPL_COMPACT_H_
+#define HAZELCAST_CLIENT_SERIALIZATION_PIMPL_COMPACT_H_
+// We are using ifdef guards instead of pragmas because, ide could not recognize
+// pragma once for this specific case. compact.h and compact.i.h is included in
+// serialization.h not in the beginning but later to avoid cyclic dependency.
 
 #include <boost/thread/future.hpp>
 #include <utility>
@@ -448,3 +452,4 @@ struct HAZELCAST_API field_operations
 } // namespace serialization
 } // namespace client
 } // namespace hazelcast
+#endif // HAZELCAST_CLIENT_SERIALIZATION_IMPL_SCHEMA_H_
