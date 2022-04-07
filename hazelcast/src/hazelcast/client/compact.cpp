@@ -200,7 +200,7 @@ compact_reader::read_int32(const std::string& field_name)
             return object_data_input.read<int32_t>(
               read_fixed_size_position(fd));
         case pimpl::field_kind::NULLABLE_INT32:
-            return get_variable_as_non_null<int32_t>(fd, "int32");
+            return get_variable_as_non_null<int32_t>(fd, field_name, "int32");
         default:
             BOOST_THROW_EXCEPTION(unexpected_field_kind(fieldKind, field_name));
             return -1;
@@ -432,7 +432,7 @@ fingerprint64(const schema& schema)
     fingerPrint = fingerprint64(fingerPrint, (int)schema.field_count());
     for (const auto& entry : schema.fields()) {
         const field_descriptor& descriptor = entry.second;
-        fingerPrint = fingerprint64(fingerPrint, descriptor.field_name);
+        fingerPrint = fingerprint64(fingerPrint, entry.first);
         fingerPrint = fingerprint64(fingerPrint, (int)descriptor.field_kind);
     }
     return static_cast<int64_t>(fingerPrint);
@@ -559,7 +559,7 @@ operator<<(std::ostream& os, const schema& schema)
 std::ostream&
 operator<<(std::ostream& os, const field_descriptor& field_descriptor)
 {
-    os << field_descriptor.field_kind << " " << field_descriptor.field_name;
+    os << field_descriptor.field_kind;
     return os;
 }
 
@@ -586,7 +586,7 @@ hz_serializer<pimpl::schema>::write_data(const pimpl::schema& object,
     out.write((int)fields.size());
     for (const auto& field : fields) {
         const auto& descriptor = field.second;
-        out.write(descriptor.field_name);
+        out.write(field.first);
         out.write((int)descriptor.field_kind);
     }
 }
@@ -602,8 +602,7 @@ hz_serializer<pimpl::schema>::read_data(object_data_input& in)
         auto field_name = in.read<std::string>();
         auto field_kind = (pimpl::field_kind)in.read<int>();
         field_definition_map.emplace(
-          field_name,
-          pimpl::field_descriptor{ field_name, field_kind, -1, -1, -1 });
+          field_name, pimpl::field_descriptor{ field_kind, -1, -1, -1 });
     }
     return pimpl::schema{ type_name, std::move(field_definition_map) };
 }
@@ -613,10 +612,10 @@ schema_writer::schema_writer(std::string type_name)
   : type_name(std::move(type_name))
 {}
 void
-schema_writer::add_field(const std::string& field_name, enum field_kind kind)
+schema_writer::add_field(std::string field_name, enum field_kind kind)
 {
-    field_definition_map.emplace(
-      field_name, field_descriptor{ field_name, kind, -1, -1, -1 });
+    field_definition_map.emplace(std::move(field_name),
+                                 field_descriptor{ kind, -1, -1, -1 });
 }
 
 schema

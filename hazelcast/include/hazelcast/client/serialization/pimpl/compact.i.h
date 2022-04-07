@@ -69,14 +69,14 @@ template<typename T>
 T
 compact_reader::get_variable_as_non_null(
   const pimpl::field_descriptor& field_descriptor,
+  const std::string& field_name,
   const std::string& method_suffix)
 {
     auto value = get_variable_size<int32_t>(field_descriptor);
     if (value.has_value()) {
         return value.value();
     }
-    BOOST_THROW_EXCEPTION(
-      unexpected_null_value(field_descriptor.field_name, method_suffix));
+    BOOST_THROW_EXCEPTION(unexpected_null_value(field_name, method_suffix));
 }
 
 namespace pimpl {

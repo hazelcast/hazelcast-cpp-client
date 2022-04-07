@@ -165,6 +165,7 @@ private:
                                          enum pimpl::field_kind field_kind);
     template<typename T>
     T get_variable_as_non_null(const pimpl::field_descriptor& field_descriptor,
+                               const std::string& field_name,
                                const std::string& method_suffix);
     static exception::hazelcast_serialization unexpected_null_value(
       const std::string& field_name,
@@ -292,7 +293,6 @@ private:
 
 struct HAZELCAST_API field_descriptor
 {
-    std::string field_name;
     enum field_kind field_kind;
     /**
      * Index of the offset of the non-primitive field. For others, it is -1
@@ -355,7 +355,7 @@ class HAZELCAST_API schema_writer
 {
 public:
     explicit schema_writer(std::string type_name);
-    void add_field(const std::string& field_name, enum field_kind kind);
+    void add_field(std::string field_name, enum field_kind kind);
     schema build() &&;
 
 private:
