@@ -320,18 +320,18 @@ class HAZELCAST_API schema
 {
 public:
     schema() = default;
-    schema(std::string type_name,
-           std::map<std::string, field_descriptor>&& field_definition_map);
+    schema(
+      std::string type_name,
+      std::unordered_map<std::string, field_descriptor>&& field_definition_map);
     int64_t schema_id() const;
     size_t number_of_var_size_fields() const;
     size_t fixed_size_fields_length() const;
     const std::string& type_name() const;
-    size_t field_count() const;
-    const std::map<std::string, field_descriptor>& fields() const;
+    const std::unordered_map<std::string, field_descriptor>& fields() const;
 
 private:
     std::string type_name_;
-    std::map<std::string, field_descriptor> field_definition_map_;
+    std::unordered_map<std::string, field_descriptor> field_definition_map_;
     size_t number_of_var_size_fields_{};
     size_t fixed_size_fields_length_{};
     int64_t schema_id_{};
@@ -359,7 +359,7 @@ public:
     schema build() &&;
 
 private:
-    std::map<std::string, field_descriptor> field_definition_map;
+    std::unordered_map<std::string, field_descriptor> field_definition_map;
     std::string type_name;
 };
 

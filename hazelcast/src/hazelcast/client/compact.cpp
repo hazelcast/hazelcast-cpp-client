@@ -426,11 +426,12 @@ fingerprint64(uint64_t fp, const std::string& value)
  * Calculates the fingerprint of the schema from its type name and fields.
  */
 int64_t
-fingerprint64(const schema& schema)
+fingerprint64(const std::string& type_name,
+              std::map<std::string, field_descriptor>& fields)
 {
-    uint64_t fingerPrint = fingerprint64(INIT, schema.type_name());
-    fingerPrint = fingerprint64(fingerPrint, (int)schema.field_count());
-    for (const auto& entry : schema.fields()) {
+    uint64_t fingerPrint = fingerprint64(INIT, type_name);
+    fingerPrint = fingerprint64(fingerPrint, (int)fields.size());
+    for (const auto& entry : fields) {
         const field_descriptor& descriptor = entry.second;
         fingerPrint = fingerprint64(fingerPrint, entry.first);
         fingerPrint = fingerprint64(fingerPrint, (int)descriptor.field_kind);
@@ -450,16 +451,19 @@ kind_size_comparator(const field_descriptor* i, const field_descriptor* j)
     return i_kind_size < j_kind_size;
 }
 
-schema::schema(std::string type_name,
-               std::map<std::string, field_descriptor>&& field_definition_map)
+schema::schema(
+  std::string type_name,
+  std::unordered_map<std::string, field_descriptor>&& field_definition_map)
   : type_name_(std::move(type_name))
-  , field_definition_map_(field_definition_map)
+  , field_definition_map_(std::move(field_definition_map))
 {
     std::vector<field_descriptor*> fixed_size_fields;
     std::vector<field_descriptor*> boolean_fields;
     std::vector<field_descriptor*> variable_size_fields;
 
-    for (auto& item : field_definition_map_) {
+    std::map<std::string, field_descriptor> sorted_fields(
+      field_definition_map_.begin(), field_definition_map_.end());
+    for (auto& item : sorted_fields) {
         field_descriptor& descriptor = item.second;
         field_kind kind = descriptor.field_kind;
         if (field_operations::get(kind).kind_size_in_byte_func() ==
@@ -503,8 +507,12 @@ schema::schema(std::string type_name,
         index++;
     }
 
+    for (auto& item : sorted_fields) {
+        field_definition_map_[item.first] = item.second;
+    }
+
     number_of_var_size_fields_ = index;
-    schema_id_ = rabin_finger_print::fingerprint64(*this);
+    schema_id_ = rabin_finger_print::fingerprint64(type_name_, sorted_fields);
 }
 
 int64_t
@@ -531,13 +539,7 @@ schema::type_name() const
     return type_name_;
 }
 
-size_t
-schema::field_count() const
-{
-    return field_definition_map_.size();
-}
-
-const std::map<std::string, field_descriptor>&
+const std::unordered_map<std::string, field_descriptor>&
 schema::fields() const
 {
     return field_definition_map_;
@@ -581,8 +583,7 @@ hz_serializer<pimpl::schema>::write_data(const pimpl::schema& object,
                                          object_data_output& out)
 {
     out.write(object.type_name());
-    const std::map<std::string, pimpl::field_descriptor>& fields =
-      object.fields();
+    const auto& fields = object.fields();
     out.write((int)fields.size());
     for (const auto& field : fields) {
         const auto& descriptor = field.second;
@@ -597,7 +598,8 @@ hz_serializer<pimpl::schema>::read_data(object_data_input& in)
     auto type_name = in.read<std::string>();
     int field_definitions_size = in.read<int>();
 
-    std::map<std::string, pimpl::field_descriptor> field_definition_map;
+    std::unordered_map<std::string, pimpl::field_descriptor>
+      field_definition_map;
     for (int i = 0; i < field_definitions_size; ++i) {
         auto field_name = in.read<std::string>();
         auto field_kind = (pimpl::field_kind)in.read<int>();
