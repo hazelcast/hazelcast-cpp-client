@@ -76,7 +76,7 @@ struct compact_serializer
 /**
  * Provides means of reading compact serialized fields from the binary data.
  * <p>
- * Read operations might throw {@link HazelcastSerializationException}
+ * Read operations might throw hazelcast_serialization exception.
  * when a field with the given name is not found or there is a type mismatch. On
  * such occasions, one might provide default values to the read methods to
  * return it in case of the failure scenarios described above. Providing default
@@ -227,17 +227,15 @@ namespace offset_reader {
 constexpr int32_t NULL_OFFSET = -1;
 /**
  * Range of the offsets that can be represented by a single byte
- * and can be read with {@link OffsetReader#BYTE_OFFSET_READER}.
+ * and can be read with offset_reader::BYTE_OFFSET_READER.
  */
-// constexpr int BYTE_OFFSET_READER_RANGE = Byte.MAX_VALUE - Byte.MIN_VALUE;
-constexpr uint32_t BYTE_OFFSET_READER_RANGE = 127 - (-128);
+constexpr uint32_t BYTE_OFFSET_READER_RANGE = INT8_MAX - INT8_MIN;
 
 /**
  * Range of the offsets that can be represented by two bytes
- * and can be read with {@link OffsetReader#SHORT_OFFSET_READER}.
+ * and can be read with offset_reader#SHORT_OFFSET_READER}.
  */
-// constexpr int SHORT_OFFSET_READER_RANGE = Short.MAX_VALUE - Short.MIN_VALUE;
-constexpr uint32_t SHORT_OFFSET_READER_RANGE = 32767 - (-32768);
+constexpr uint32_t SHORT_OFFSET_READER_RANGE = INT16_MAX - INT16_MIN;
 
 /**
  * Returns the offset of the variable-size field at the given index.

@@ -249,10 +249,9 @@ default_compact_writer::default_compact_writer(
   const schema& schema)
   : compact_stream_serializer_(compact_stream_serializer)
   , object_data_output_(object_data_output)
-  , schema_(schema)
+  , schema_(schema), field_offsets(schema.number_of_var_size_fields())
 {
     if (schema.number_of_var_size_fields() != 0) {
-        field_offsets.resize(schema.number_of_var_size_fields());
         data_start_position =
           object_data_output_.position() + util::Bits::INT_SIZE_IN_BYTES;
         // Skip for length and primitives.
