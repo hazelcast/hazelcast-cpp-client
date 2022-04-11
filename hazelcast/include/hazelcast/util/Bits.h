@@ -40,14 +40,19 @@ struct HAZELCAST_API Bits
     static constexpr int INT_SIZE_IN_BYTES = 4;
 
     /**
+     * Long size in bytes
+     */
+    static constexpr int LONG_SIZE_IN_BYTES = 8;
+
+    /**
      * Float size in bytes
      */
     static constexpr int FLOAT_SIZE_IN_BYTES = 4;
 
     /**
-     * Long size in bytes
+     * Double size in bytes
      */
-    static constexpr int LONG_SIZE_IN_BYTES = 8;
+    static constexpr int DOUBLE_SIZE_IN_BYTES = 8;
 
     /**
      * uuid size in bytes

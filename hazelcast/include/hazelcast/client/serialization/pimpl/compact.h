@@ -272,7 +272,7 @@ private:
     template<typename T>
     typename std::enable_if<
       std::is_same<bool, typename std::remove_cv<T>::type>::value ||
-      std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
         std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
         std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
         std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||

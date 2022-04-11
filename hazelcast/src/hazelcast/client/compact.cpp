@@ -774,11 +774,14 @@ field_operations::get(enum field_kind field_kind)
         field_kind_based_operations(
           []() { return util::Bits::INT_SIZE_IN_BYTES; }),
         field_kind_based_operations{},
+        field_kind_based_operations{
+          []() { return util::Bits::LONG_SIZE_IN_BYTES; } },
         field_kind_based_operations{},
+        field_kind_based_operations{
+          []() { return util::Bits::FLOAT_SIZE_IN_BYTES; } },
         field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
+        field_kind_based_operations{
+          []() { return util::Bits::DOUBLE_SIZE_IN_BYTES; } },
         field_kind_based_operations{},
         field_kind_based_operations{},
         field_kind_based_operations{},

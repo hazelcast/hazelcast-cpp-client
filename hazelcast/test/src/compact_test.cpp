@@ -36,6 +36,27 @@ namespace client {
 namespace compact {
 namespace test {
 
+struct bits_dto
+{
+    bool a = false;
+    bool b = false;
+    bool c = false;
+    bool d = false;
+    bool e = false;
+    bool f = false;
+    bool g = false;
+    bool h = false;
+    int id = 0;
+};
+
+bool
+operator==(const bits_dto& lhs, const bits_dto& rhs)
+{
+    return lhs.a == rhs.a && lhs.b == rhs.b && lhs.c == rhs.c &&
+           lhs.d == rhs.d && lhs.e == rhs.e && lhs.f == rhs.f &&
+           lhs.g == rhs.g && lhs.h == rhs.h && lhs.id == rhs.id;
+}
+
 struct node_dto
 {
     int id;
@@ -45,7 +66,15 @@ struct node_dto
 bool
 operator==(const node_dto& lhs, const node_dto& rhs)
 {
-    return lhs.id == rhs.id && lhs.child == rhs.child;
+    if (lhs.id != rhs.id)
+        return false;
+    if (lhs.child == rhs.child)
+        return true;
+    if (lhs.child == nullptr && rhs.child != nullptr)
+        return false;
+    if (lhs.child != nullptr && rhs.child == nullptr)
+        return false;
+    return *lhs.child == *rhs.child;
 }
 
 struct inner_dto
@@ -60,7 +89,13 @@ operator==(const inner_dto& lhs, const inner_dto& rhs)
 }
 struct main_dto
 {
-    int i;
+    bool boolean;
+    int8_t b;
+    int16_t s;
+    int32_t i;
+    int64_t l;
+    float f;
+    double d;
     boost::optional<inner_dto> p;
     std::string str;
 };
@@ -68,20 +103,28 @@ struct main_dto
 bool
 operator==(const main_dto& lhs, const main_dto& rhs)
 {
-    return lhs.i == rhs.i && lhs.p == rhs.p && lhs.str == rhs.str;
+    return lhs.b == rhs.b && lhs.boolean == rhs.boolean && lhs.s == rhs.s &&
+           lhs.i == rhs.i && lhs.l == rhs.l && lhs.f == rhs.f &&
+           lhs.d == rhs.d && lhs.p == rhs.p && lhs.str == rhs.str;
 }
 
 main_dto
 create_main_dto()
 {
     inner_dto p{ "Johny" };
-    return main_dto{ 30, p, "John" };
+    return main_dto{
+        true, 113,   -500, 56789, -50992225L, 900.5678f, -897543.3678909,
+        p,    "John"
+    };
 }
 
 std::ostream&
 operator<<(std::ostream& out, const main_dto& main_dto)
 {
-    out << "i " << main_dto.i << ", str " << main_dto.str;
+    out << "{" << main_dto.b << ", " << main_dto.boolean << ", " << main_dto.s
+        << ", " << main_dto.i << ", " << main_dto.l << ", " << main_dto.f
+        << ", " << main_dto.d << ", " << main_dto.p << ", " << main_dto.str
+        << "}";
     return out;
 }
 
@@ -119,6 +162,40 @@ struct empty_main_dto
 namespace serialization {
 
 template<>
+struct hz_serializer<compact::test::bits_dto> : public compact_serializer
+{
+    static void write(const compact::test::bits_dto& dto,
+                      compact_writer& writer)
+    {
+        writer.write_boolean("a", dto.a);
+        writer.write_boolean("b", dto.b);
+        writer.write_boolean("c", dto.c);
+        writer.write_boolean("d", dto.d);
+        writer.write_boolean("e", dto.e);
+        writer.write_boolean("f", dto.f);
+        writer.write_boolean("g", dto.g);
+        writer.write_boolean("h", dto.h);
+        writer.write_int32("id", dto.id);
+    }
+
+    static compact::test::bits_dto read(compact_reader& reader)
+    {
+        compact::test::bits_dto dto;
+        dto.a = reader.read_boolean("a");
+        dto.b = reader.read_boolean("b");
+        dto.c = reader.read_boolean("c");
+        dto.d = reader.read_boolean("d");
+        dto.e = reader.read_boolean("e");
+        dto.f = reader.read_boolean("f");
+        dto.g = reader.read_boolean("g");
+        dto.h = reader.read_boolean("h");
+        dto.id = reader.read_int32("id");
+        return dto;
+    }
+
+    static std::string type_name() { return "bits_dto"; }
+};
+template<>
 struct hz_serializer<compact::test::inner_dto> : public compact_serializer
 {
     static void write(const compact::test::inner_dto& object,
@@ -142,17 +219,29 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
     static void write(const compact::test::main_dto& object,
                       compact_writer& writer)
     {
+        writer.write_boolean("bool", object.boolean);
+        writer.write_int8("b", object.b);
+        writer.write_int16("s", object.s);
         writer.write_int32("i", object.i);
+        writer.write_int64("l", object.l);
+        writer.write_float32("f", object.f);
+        writer.write_float64("d", object.d);
         writer.write_compact<compact::test::inner_dto>("p", object.p);
         writer.write_string("name", object.str);
     }
 
     static compact::test::main_dto read(compact_reader& reader)
     {
+        auto boolean = reader.read_boolean("bool");
+        auto b = reader.read_int8("b");
+        auto s = reader.read_int16("s");
         auto i = reader.read_int32("i");
+        auto l = reader.read_int64("l");
+        auto f = reader.read_float32("f");
+        auto d = reader.read_float64("d");
         auto p = reader.read_compact<compact::test::inner_dto>("p");
         auto str = reader.read_string("name");
-        return compact::test::main_dto{ i, p, *str };
+        return compact::test::main_dto{ boolean, b, s, i, l, f, d, p, *str };
     }
 
     static std::string type_name() { return "main"; }
@@ -235,6 +324,25 @@ TEST_F(CompactSerializationTest, testRecursive)
     auto n1 = std::make_shared<node_dto>(node_dto{ 1, n2 });
     node_dto expected{ 0, n1 };
     auto actual = to_data_and_back_to_object(ss, expected);
+    ASSERT_EQ(expected, actual);
+}
+
+TEST_F(CompactSerializationTest, testBits)
+{
+    serialization_config config;
+    SerializationService ss(config);
+
+    bits_dto expected;
+    expected.a = true;
+    expected.b = true;
+    expected.id = 121;
+
+    const data& data = ss.to_data(expected);
+    // hash(4) + typeid(4) + schemaId(8) + (1 bytes for 8 bits)
+    // + (4 bytes for int)
+    ASSERT_EQ(21, data.total_size());
+
+    bits_dto actual = *(ss.to_object<bits_dto>(data));
     ASSERT_EQ(expected, actual);
 }
 
