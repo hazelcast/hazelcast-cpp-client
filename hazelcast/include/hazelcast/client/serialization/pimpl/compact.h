@@ -248,7 +248,7 @@ constexpr uint32_t BYTE_OFFSET_READER_RANGE = INT8_MAX - INT8_MIN;
 
 /**
  * Range of the offsets that can be represented by two bytes
- * and can be read with offset_reader#SHORT_OFFSET_READER}.
+ * and can be read with offset_reader::SHORT_OFFSET_READER.
  */
 constexpr uint32_t SHORT_OFFSET_READER_RANGE = INT16_MAX - INT16_MIN;
 

@@ -342,7 +342,6 @@ protected:
         return buffer_[pos];
     }
 
-
     template<typename T>
     typename std::enable_if<
       std::is_same<int16_t, typename std::remove_cv<T>::type>::value,

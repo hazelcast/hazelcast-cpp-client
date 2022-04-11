@@ -2046,8 +2046,9 @@ TEST_P(serialization_with_server, test_double_array_from_server)
 
 TEST_P(serialization_with_server, test_string_array_from_server)
 {
-    ASSERT_TRUE(set_on_server(u8"Java.to([\"hey\", \"1⚐中💦2😭‍🙆😔5\"], "
-                              u8"\"java.lang.String[]\")"));
+    ASSERT_TRUE(
+      set_on_server(u8"Java.to([\"hey\", \"1⚐中💦2😭‍🙆😔5\"], "
+                    u8"\"java.lang.String[]\")"));
     ASSERT_EQ(
       std::vector<std::string>({ u8"hey", u8"1⚐中💦2😭‍🙆😔5" }),
       (*map_->get<std::string, std::vector<std::string>>("key").get()));
