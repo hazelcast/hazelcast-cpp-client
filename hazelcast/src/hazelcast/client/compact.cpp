@@ -250,21 +250,67 @@ compact_reader::read_var_size_position(
              : offset + data_start_position;
 }
 
+bool
+compact_reader::read_boolean(const std::string& fieldName)
+{
+    return read_primitive<bool>(fieldName,
+                                pimpl::field_kind::BOOLEAN,
+                                pimpl::field_kind::NULLABLE_BOOLEAN,
+                                "boolean");
+}
+
+int8_t
+compact_reader::read_int8(const std::string& fieldName)
+{
+    return read_primitive<int8_t>(fieldName,
+                                  pimpl::field_kind::INT8,
+                                  pimpl::field_kind::NULLABLE_INT8,
+                                  "int8");
+}
+
+int16_t
+compact_reader::read_int16(const std::string& field_name)
+{
+    return read_primitive<int16_t>(field_name,
+                                   pimpl::field_kind::INT16,
+                                   pimpl::field_kind::NULLABLE_INT16,
+                                   "int16");
+}
+
 int32_t
 compact_reader::read_int32(const std::string& field_name)
 {
-    const auto& fd = get_field_descriptor(field_name);
-    const auto& fieldKind = fd.field_kind;
-    switch (fieldKind) {
-        case pimpl::field_kind::INT32:
-            return object_data_input.read<int32_t>(
-              read_fixed_size_position(fd));
-        case pimpl::field_kind::NULLABLE_INT32:
-            return get_variable_size_as_non_null<int32_t>(
-              fd, field_name, "int32");
-        default:
-            BOOST_THROW_EXCEPTION(unexpected_field_kind(fieldKind, field_name));
-    }
+    return read_primitive<int32_t>(field_name,
+                                   pimpl::field_kind::INT32,
+                                   pimpl::field_kind::NULLABLE_INT32,
+                                   "int32");
+}
+
+int64_t
+compact_reader::read_int64(const std::string& field_name)
+{
+    return read_primitive<int64_t>(field_name,
+                                   pimpl::field_kind::INT64,
+                                   pimpl::field_kind::NULLABLE_INT64,
+                                   "int64");
+}
+
+float
+compact_reader::read_float32(const std::string& field_name)
+{
+    return read_primitive<float>(field_name,
+                                 pimpl::field_kind::FLOAT32,
+                                 pimpl::field_kind::NULLABLE_FLOAT32,
+                                 "float32");
+}
+
+double
+compact_reader::read_float64(const std::string& field_name)
+{
+    return read_primitive<double>(field_name,
+                                  pimpl::field_kind::FLOAT64,
+                                  pimpl::field_kind::NULLABLE_FLOAT64,
+                                  "float64");
 }
 
 boost::optional<std::string>

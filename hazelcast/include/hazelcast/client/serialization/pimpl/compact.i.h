@@ -36,6 +36,44 @@ get_offset(serialization::object_data_input& in,
 
 } // namespace offset_reader
 } // namespace pimpl
+
+template<typename T>
+T
+compact_reader::read_primitive(const std::string& field_name,
+                               enum pimpl::field_kind primitive_field_kind,
+                               enum pimpl::field_kind nullable_field_kind,
+                               const std::string& method_suffix)
+{
+    const auto& fd = get_field_descriptor(field_name);
+    const auto& field_kind = fd.field_kind;
+    if (field_kind == primitive_field_kind) {
+        return read_primitive<T>(fd);
+    } else if (field_kind == nullable_field_kind) {
+        return get_variable_size_as_non_null<T>(fd, field_name, method_suffix);
+    } else {
+        BOOST_THROW_EXCEPTION(unexpected_field_kind(field_kind, field_name));
+    }
+}
+
+template<typename T>
+T inline compact_reader::read_primitive(
+  const pimpl::field_descriptor& field_descriptor)
+{
+    return object_data_input.read<T>(
+      read_fixed_size_position(field_descriptor));
+}
+
+template<>
+bool inline compact_reader::read_primitive<bool>(
+  const pimpl::field_descriptor& field_descriptor)
+{
+    int8_t boolean_offset = field_descriptor.offset;
+    int8_t bit_offset = field_descriptor.bit_offset;
+    int8_t offset = boolean_offset + data_start_position;
+    byte last_byte = object_data_input.read<byte>(offset);
+    return ((last_byte >> bit_offset) & 1) != 0;
+}
+
 template<typename T>
 boost::optional<T>
 compact_reader::get_variable_size(
@@ -77,7 +115,13 @@ compact_reader::get_variable_size_as_non_null(
 
 template<typename T>
 typename std::enable_if<
-  std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+  std::is_same<bool, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<float, typename std::remove_cv<T>::type>::value ||
+    std::is_same<double, typename std::remove_cv<T>::type>::value ||
     std::is_same<std::string, typename std::remove_cv<T>::type>::value,
   typename boost::optional<T>>::type
 compact_reader::read()

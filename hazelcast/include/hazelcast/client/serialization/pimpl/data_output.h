@@ -81,7 +81,6 @@ public:
         if (is_no_write_) {
             return;
         }
-        // TODO sancar looks wierd. Check later.
     }
 
     template<typename T>
@@ -100,7 +99,6 @@ public:
         if (is_no_write_) {
             return;
         }
-        // TODO sancar looks wierd. Check later.
     }
 
     /**
@@ -131,7 +129,6 @@ public:
                               std::is_same<std::vector<std::string>, T>::value,
                             void>::type inline write(const T* value);
 
-    //TODO sancar introduced to public before me here https://github.com/hazelcast/hazelcast-cpp-client/commit/e04bb694f02d2d02d5bc598f07d564f8da9de1ac#diff-a88ea399b57da82e30e5a5acd7a2556ea371fba0a9c656bb7e219a179f7f7dfdR132
     void write(int32_t value, boost::endian::order byte_order);
 
 protected:
@@ -141,25 +138,56 @@ protected:
 
     void check_available(size_t index, int requested_length);
     void write_boolean_bit_at(size_t index, size_t offset_in_bits, bool value);
-    void write_at(size_t index, int8_t value);
-    void write_at(size_t index, int16_t value);
-    void write_at(size_t index, int32_t value);
-    void write_at(size_t index, int64_t value);
-    void write_at(size_t index, float value);
-    void write_at(size_t index, double value);
+
     template<typename T>
-    void write_int_at(size_t index, T value, int requested_length)
+    typename std::enable_if<
+      std::is_same<float, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write_at(size_t index, T value)
+    {
+        union
+        {
+            float f;
+            int32_t i;
+        } u;
+        u.f = value;
+        write_at<int32_t>(index, u.i);
+    }
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<double, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write_at(size_t index, T value)
+    {
+        union
+        {
+            double d;
+            int64_t l;
+        } u;
+        u.d = value;
+        write_at<int64_t>(index, u.l);
+    }
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int64_t, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write_at(size_t index, T value)
     {
         if (is_no_write_) {
             return;
         }
-        check_available(index, requested_length);
+        check_available(index, sizeof(T));
         if (byte_order_ == boost::endian::order::big) {
             boost::endian::native_to_big_inplace(value);
         } else {
             boost::endian::native_to_little_inplace(value);
         }
-        std::memcpy(&output_stream_[index], &value, requested_length);
+        std::memcpy(&output_stream_[index], &value, sizeof(T));
     }
 };
 template<>

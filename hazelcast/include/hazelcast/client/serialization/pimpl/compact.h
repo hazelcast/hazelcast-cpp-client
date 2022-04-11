@@ -129,6 +129,39 @@ class HAZELCAST_API compact_reader
 {
 public:
     /**
+     * Reads a boolean.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     *                                         or the type of the field does not
+     * match with the one defined in the schema.
+     */
+    bool read_boolean(const std::string& fieldName);
+
+    /**
+     * Reads an 8-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     *                                         or the type of the field does not
+     * match with the one defined in the schema.
+     */
+    int8_t read_int8(const std::string& fieldName);
+
+    /**
+     * Reads a 16-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     *                                         or the type of the field does not
+     * match with the one defined in the schema.
+     */
+    int16_t read_int16(const std::string& fieldName);
+
+    /**
      * Reads a 32-bit two's complement signed integer.
      *
      * @param fieldName name of the field.
@@ -138,6 +171,39 @@ public:
      * in the schema.
      */
     int32_t read_int32(const std::string& field_name);
+
+    /**
+     * Reads a 64-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     *                                         or the type of the field does not
+     * match with the one defined in the schema.
+     */
+    int64_t read_int64(const std::string& field_name);
+
+    /**
+     * Reads a 32-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     *                                         or the type of the field does not
+     * match with the one defined in the schema.
+     */
+    float read_float32(const std::string& field_name);
+
+    /**
+     * Reads a 64-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     *                                         or the type of the field does not
+     * match with the one defined in the schema.
+     */
+    double read_float64(const std::string& field_name);
 
     /**
      * Reads an UTF-8 encoded string.
@@ -172,6 +238,14 @@ private:
       object_data_input& object_data_input,
       const pimpl::schema& schema);
 
+    template<typename T>
+    T read_primitive(const std::string& field_name,
+                     enum pimpl::field_kind field_kind,
+                     enum pimpl::field_kind nullable_field_kind,
+                     const std::string& method_suffix);
+    template<typename T>
+    T read_primitive(const pimpl::field_descriptor& field_descriptor);
+
     bool is_field_exists(const std::string& fieldName,
                          enum pimpl::field_kind kind) const;
     const pimpl::field_descriptor& get_field_descriptor(
@@ -197,7 +271,13 @@ private:
       const std::string& method_suffix);
     template<typename T>
     typename std::enable_if<
-      std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+      std::is_same<bool, typename std::remove_cv<T>::type>::value ||
+      std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<float, typename std::remove_cv<T>::type>::value ||
+        std::is_same<double, typename std::remove_cv<T>::type>::value ||
         std::is_same<std::string, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();

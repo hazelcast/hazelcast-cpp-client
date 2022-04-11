@@ -835,59 +835,11 @@ data_output::write_boolean_bit_at(size_t index,
     check_available(index, 1);
     byte b = output_stream_[index];
     if (value) {
-        b = (byte)(b |   (1 << offset_in_bits));
+        b = (byte)(b | (1 << offset_in_bits));
     } else {
         b = (byte)(b & ~(1 << offset_in_bits));
     }
     output_stream_[index] = b;
-}
-
-void
-data_output::write_at(size_t index, int8_t value)
-{
-    write_int_at(index, value, 1);
-}
-
-void
-data_output::write_at(size_t index, int16_t value)
-{
-    write_int_at(index, value, util::Bits::SHORT_SIZE_IN_BYTES);
-}
-
-void
-data_output::write_at(size_t index, int32_t value)
-{
-    write_int_at(index, value, util::Bits::INT_SIZE_IN_BYTES);
-}
-
-void
-data_output::write_at(size_t index, int64_t value)
-{
-    write_int_at(index, value, util::Bits::LONG_SIZE_IN_BYTES);
-}
-
-void
-data_output::write_at(size_t index, float value)
-{
-    union
-    {
-        float f;
-        int32_t i;
-    } u;
-    u.f = value;
-    write_int_at(index, u.i, util::Bits::INT_SIZE_IN_BYTES);
-}
-
-void
-data_output::write_at(size_t index, double value)
-{
-    union
-    {
-        double d;
-        int64_t l;
-    } u;
-    u.d = value;
-    write_int_at(index, u.l, util::Bits::LONG_SIZE_IN_BYTES);
 }
 
 object_type::object_type()
