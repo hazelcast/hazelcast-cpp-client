@@ -184,8 +184,7 @@ default_compact_writer::write_compact(const std::string& field_name,
 
 template<typename T>
 typename std::enable_if<
-  std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
-    std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+  std::is_same<std::string, typename std::remove_cv<T>::type>::value,
   void>::type
 default_compact_writer::write(const T& value)
 {
