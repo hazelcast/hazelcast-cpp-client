@@ -67,7 +67,7 @@ compact_reader::get_variable_size(const std::string& field_name,
 
 template<typename T>
 T
-compact_reader::get_variable_as_non_null(
+compact_reader::get_variable_size_as_non_null(
   const pimpl::field_descriptor& field_descriptor,
   const std::string& field_name,
   const std::string& method_suffix)

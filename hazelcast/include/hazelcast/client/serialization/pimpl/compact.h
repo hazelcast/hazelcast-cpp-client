@@ -69,6 +69,9 @@ static const int NUMBER_OF_FIELD_KINDS = ARRAY_OF_NULLABLE_FLOAT64 + 1;
  *      static std::string type_name() noexpect;
  *      static void write(const T& object, compact_writer &out);
  *      static T read(compact_reader &in);
+ *
+ * @Beta
+ * @since 5.1
  */
 struct compact_serializer
 {};
@@ -76,14 +79,14 @@ struct compact_serializer
 /**
  * Provides means of reading compact serialized fields from the binary data.
  * <p>
- * Read operations might throw hazelcast_serialization exception.
+ * Read operations might throw hazelcast_serialization exception
  * when a field with the given name is not found or there is a type mismatch. On
  * such occasions, one might provide default values to the read methods to
- * return it in case of the failure scenarios described above. Providing default
- * values might be especially useful, if the class might evolve in future,
- * either by adding or removing fields.
+ * return it. Providing default values might be especially useful if the class
+ * might evolve in the future, either by adding or removing fields.
  *
- * @since 5.2
+ * @Beta
+ * @since 5.1
  */
 class HAZELCAST_API compact_reader
 {
@@ -146,7 +149,7 @@ private:
       const pimpl::schema& schema);
 
     bool is_field_exists(const std::string& fieldName,
-                         enum pimpl::field_kind kind);
+                         enum pimpl::field_kind kind) const;
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name) const;
     const pimpl::field_descriptor& get_field_descriptor(
@@ -164,9 +167,10 @@ private:
     boost::optional<T> get_variable_size(const std::string& field_name,
                                          enum pimpl::field_kind field_kind);
     template<typename T>
-    T get_variable_as_non_null(const pimpl::field_descriptor& field_descriptor,
-                               const std::string& field_name,
-                               const std::string& method_suffix);
+    T get_variable_size_as_non_null(
+      const pimpl::field_descriptor& field_descriptor,
+      const std::string& field_name,
+      const std::string& method_suffix);
     static exception::hazelcast_serialization unexpected_null_value(
       const std::string& field_name,
       const std::string& method_suffix);
@@ -179,12 +183,23 @@ private:
     const pimpl::schema& schema;
     uint32_t data_start_position;
     uint32_t variable_offsets_position;
+    /**
+     * Returns the offset of the variable-size field at the given index.
+     * @param serialization::object_data_input& Input to read the offset from.
+     * @param uint32_t start of the variable-size field offsets
+     *                           section of the input.
+     * @param uint32_t index of the field.
+     * @return The offset.
+     */
     std::function<int(serialization::object_data_input&, uint32_t, uint32_t)>
       get_offset;
 };
 
 /**
  *  Provides means of writing compact serialized fields to the binary data.
+ *
+ * @Beta
+ * @since 5.1
  */
 class HAZELCAST_API compact_writer
 {

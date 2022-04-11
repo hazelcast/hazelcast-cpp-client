@@ -106,7 +106,7 @@ compact_reader::compact_reader(
 
 bool
 compact_reader::is_field_exists(const std::string& field_name,
-                                enum pimpl::field_kind kind)
+                                enum pimpl::field_kind kind) const
 {
     const auto& fields = schema.fields();
     const auto& field_descriptor = fields.find(field_name);
@@ -200,7 +200,8 @@ compact_reader::read_int32(const std::string& field_name)
             return object_data_input.read<int32_t>(
               read_fixed_size_position(fd));
         case pimpl::field_kind::NULLABLE_INT32:
-            return get_variable_as_non_null<int32_t>(fd, field_name, "int32");
+            return get_variable_size_as_non_null<int32_t>(
+              fd, field_name, "int32");
         default:
             BOOST_THROW_EXCEPTION(unexpected_field_kind(fieldKind, field_name));
             return -1;
