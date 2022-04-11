@@ -590,7 +590,7 @@ kind_size_comparator(const field_descriptor* i, const field_descriptor* j)
       field_operations::get(i->field_kind).kind_size_in_byte_func();
     auto j_kind_size =
       field_operations::get(j->field_kind).kind_size_in_byte_func();
-    return i_kind_size < j_kind_size;
+    return i_kind_size > j_kind_size;
 }
 
 schema::schema(

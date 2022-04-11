@@ -63,6 +63,18 @@ struct node_dto
     std::shared_ptr<node_dto> child;
 };
 
+std::ostream&
+operator<<(std::ostream& out, const node_dto& node_dto)
+{
+    out << "id " << node_dto.id;
+    if (node_dto.child == nullptr) {
+        out << ", child null";
+    } else {
+        out << ", child " << *node_dto.child;
+    }
+    return out;
+}
+
 bool
 operator==(const node_dto& lhs, const node_dto& rhs)
 {
@@ -81,12 +93,19 @@ struct inner_dto
 {
     std::string str;
 };
-
 bool
 operator==(const inner_dto& lhs, const inner_dto& rhs)
 {
     return lhs.str == rhs.str;
 }
+
+std::ostream&
+operator<<(std::ostream& out, const inner_dto& inner_dto)
+{
+    out << "str " << inner_dto.str;
+    return out;
+}
+
 struct main_dto
 {
     bool boolean;
@@ -128,25 +147,6 @@ operator<<(std::ostream& out, const main_dto& main_dto)
     return out;
 }
 
-std::ostream&
-operator<<(std::ostream& out, const inner_dto& inner_dto)
-{
-    out << "str " << inner_dto.str;
-    return out;
-}
-
-std::ostream&
-operator<<(std::ostream& out, const node_dto& node_dto)
-{
-    out << "id " << node_dto.id;
-    if (node_dto.child == nullptr) {
-        out << ", child null";
-    } else {
-        out << ", child " << *node_dto.child;
-    }
-    return out;
-}
-
 /**
  * This class is to simulate versioning.
  * We will provide this struct with serializer returning type name of the
@@ -155,6 +155,31 @@ operator<<(std::ostream& out, const node_dto& node_dto)
  */
 struct empty_main_dto
 {};
+
+struct employee_dto
+{
+    int32_t age;
+    int32_t rank;
+    int64_t id;
+    bool isHired;
+    bool isFired;
+};
+
+bool
+operator==(const employee_dto& lhs, const employee_dto& rhs)
+{
+    return lhs.age == rhs.age && lhs.rank == rhs.rank && lhs.id == rhs.id &&
+           lhs.isHired == rhs.isHired && lhs.isFired == rhs.isFired;
+}
+
+std::ostream&
+operator<<(std::ostream& out, const employee_dto& employee_dto)
+{
+    out << "{" << employee_dto.age << ", " << employee_dto.rank << ", "
+        << employee_dto.id << ", " << employee_dto.isHired << ", "
+        << employee_dto.isFired << "}";
+    return out;
+}
 
 } // namespace test
 } // namespace compact
@@ -290,6 +315,31 @@ struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
     static std::string type_name() { return "main"; }
 };
 
+template<>
+struct hz_serializer<compact::test::employee_dto> : public compact_serializer
+{
+
+    static void write(const compact::test::employee_dto& object,
+                      compact_writer& writer)
+    {
+        writer.write_int32("age", object.age);
+        writer.write_int32("rank", object.rank);
+        writer.write_int64("id", object.id);
+        writer.write_boolean("isHired", object.isHired);
+        writer.write_boolean("isFired", object.isFired);
+    }
+
+    static compact::test::employee_dto read(compact_reader& reader)
+    {
+        auto age = reader.read_int32("age");
+        auto rank = reader.read_int32("rank");
+        auto id = reader.read_int64("id");
+        auto isHired = reader.read_boolean("isHired");
+        auto isFired = reader.read_boolean("isFired");
+        return compact::test::employee_dto{ age, rank, id, isHired, isFired };
+    }
+};
+
 } // namespace serialization
 
 namespace compact {
@@ -358,19 +408,18 @@ check_schema_field(const schema& schema,
     ASSERT_EQ(bit_offset, schema.fields().at(field_name).bit_offset);
 }
 
-TEST_F(CompactSerializationTest, test_schema_field_order)
+TEST_F(CompactSerializationTest, test_field_order_fixed_size)
 {
-    schema_writer schema_writer("typename");
-    schema_writer.add_field("int2", field_kind::INT32);
-    schema_writer.add_field("int1", field_kind::INT32);
-    schema_writer.add_field("string1", field_kind::STRING);
-    schema_writer.add_field("string2", field_kind::STRING);
+    schema_writer schema_writer("typeName");
+    auto writer = serialization::pimpl::create_compact_writer(&schema_writer);
+    serialization::hz_serializer<employee_dto>::write(employee_dto{}, writer);
     auto schema = std::move(schema_writer).build();
 
-    check_schema_field(schema, "int1", 0, -1, -1);
-    check_schema_field(schema, "int2", 4, -1, -1);
-    check_schema_field(schema, "string1", -1, 0, -1);
-    check_schema_field(schema, "string2", -1, 1, -1);
+    check_schema_field(schema, "id", 0, -1, -1);
+    check_schema_field(schema, "age", 8, -1, -1);
+    check_schema_field(schema, "rank", 12, -1, -1);
+    check_schema_field(schema, "isFired", 16, -1, 0);
+    check_schema_field(schema, "isHired", 16, -1, 1);
 }
 
 TEST_F(CompactSerializationTest, test_schema_writer_counts)
