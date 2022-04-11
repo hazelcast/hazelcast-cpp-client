@@ -130,10 +130,10 @@ compact_reader::compact_reader(
   , object_data_input(object_data_input)
   , schema(schema)
 {
-    uint32_t final_position;
+    size_t final_position;
     size_t number_of_var_size_fields = schema.number_of_var_size_fields();
     if (number_of_var_size_fields != 0) {
-        uint32_t data_length = object_data_input.read<int32_t>();
+        int32_t data_length = object_data_input.read<int32_t>();
         data_start_position = object_data_input.position();
         variable_offsets_position = data_start_position + data_length;
         if (data_length < pimpl::offset_reader::BYTE_OFFSET_READER_RANGE) {
@@ -161,7 +161,7 @@ compact_reader::compact_reader(
     }
     // set the position to final so that the next one to read something from
     // `in` can start from correct position
-    object_data_input.position(final_position);
+    object_data_input.position(static_cast<int>(final_position));
 }
 
 bool
@@ -234,16 +234,16 @@ size_t
 compact_reader::read_fixed_size_position(
   const pimpl::field_descriptor& field_descriptor) const
 {
-    int primitive_offset = field_descriptor.offset;
+    int32_t primitive_offset = field_descriptor.offset;
     return primitive_offset + data_start_position;
 }
 
-size_t
+int32_t
 compact_reader::read_var_size_position(
   const pimpl::field_descriptor& field_descriptor) const
 {
-    int index = field_descriptor.index;
-    int offset =
+    int32_t index = field_descriptor.index;
+    int32_t offset =
       get_offset(object_data_input, variable_offsets_position, index);
     return offset == pimpl::offset_reader::NULL_OFFSET
              ? pimpl::offset_reader::NULL_OFFSET
@@ -360,9 +360,9 @@ default_compact_writer::write_boolean(const std::string& field_name, bool value)
 {
     field_descriptor descriptor =
       check_field_definition(field_name, field_kind::BOOLEAN);
-    int offset_in_bytes = descriptor.offset;
-    int offset_in_bits = descriptor.bit_offset;
-    int write_offset = offset_in_bytes + data_start_position;
+    int32_t offset_in_bytes = descriptor.offset;
+    int8_t offset_in_bits = descriptor.bit_offset;
+    size_t write_offset = offset_in_bytes + data_start_position;
     object_data_output_.write_boolean_bit_at(
       write_offset, offset_in_bits, value);
 }
@@ -370,7 +370,8 @@ default_compact_writer::write_boolean(const std::string& field_name, bool value)
 void
 default_compact_writer::write_int8(const std::string& field_name, int8_t value)
 {
-    int position = get_fixed_size_field_position(field_name, field_kind::INT8);
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT8);
     object_data_output_.write_at(position, value);
 }
 
@@ -378,7 +379,8 @@ void
 default_compact_writer::write_int16(const std::string& field_name,
                                     int16_t value)
 {
-    int position = get_fixed_size_field_position(field_name, field_kind::INT16);
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT16);
     object_data_output_.write_at(position, value);
 }
 
@@ -386,7 +388,8 @@ void
 default_compact_writer::write_int32(const std::string& field_name,
                                     int32_t value)
 {
-    int position = get_fixed_size_field_position(field_name, field_kind::INT32);
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT32);
     object_data_output_.write_at(position, value);
 }
 
@@ -394,7 +397,8 @@ void
 default_compact_writer::write_int64(const std::string& field_name,
                                     int64_t value)
 {
-    int position = get_fixed_size_field_position(field_name, field_kind::INT64);
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT64);
     object_data_output_.write_at(position, value);
 }
 
@@ -402,7 +406,7 @@ void
 default_compact_writer::write_float32(const std::string& field_name,
                                       float value)
 {
-    int position =
+    size_t position =
       get_fixed_size_field_position(field_name, field_kind::FLOAT32);
     object_data_output_.write_at(position, value);
 }
@@ -411,7 +415,7 @@ void
 default_compact_writer::write_float64(const std::string& field_name,
                                       double value)
 {
-    int position =
+    size_t position =
       get_fixed_size_field_position(field_name, field_kind::FLOAT64);
     object_data_output_.write_at(position, value);
 }
@@ -439,7 +443,7 @@ default_compact_writer::end()
                                  (int32_t)data_length);
 }
 
-int
+size_t
 default_compact_writer::get_fixed_size_field_position(
   const std::string& field_name,
   enum field_kind field_kind) const
@@ -475,15 +479,15 @@ void
 default_compact_writer::write_offsets(size_t data_length)
 {
     if (data_length < offset_reader::BYTE_OFFSET_READER_RANGE) {
-        for (int offset : field_offsets) {
+        for (int32_t offset : field_offsets) {
             object_data_output_.write<byte>(offset);
         }
     } else if (data_length < offset_reader::SHORT_OFFSET_READER_RANGE) {
-        for (int offset : field_offsets) {
-            object_data_output_.write<int16_t>(offset);
+        for (int32_t offset : field_offsets) {
+            object_data_output_.write<int16_t>(static_cast<int16_t>(offset));
         }
     } else {
-        for (int offset : field_offsets) {
+        for (int32_t offset : field_offsets) {
             object_data_output_.write<int32_t>(offset);
         }
     }
@@ -496,9 +500,9 @@ default_compact_writer::set_position(const std::string& field_name,
     const auto& field_descriptor =
       check_field_definition(field_name, field_kind);
     size_t pos = object_data_output_.position();
-    int fieldPosition = pos - data_start_position;
+    size_t fieldPosition = pos - data_start_position;
     int index = field_descriptor.index;
-    field_offsets[index] = fieldPosition;
+    field_offsets[index] = static_cast<int32_t>(fieldPosition);
 }
 
 void
@@ -628,10 +632,11 @@ schema::schema(
                     .kind_size_in_byte_func();
     }
 
-    int bit_offset = 0;
+    int8_t bit_offset = 0;
     for (auto descriptor : boolean_fields) {
         descriptor->offset = offset;
-        descriptor->bit_offset = bit_offset % util::Bits::BITS_IN_BYTE;
+        descriptor->bit_offset =
+          static_cast<int8_t>(bit_offset % util::Bits::BITS_IN_BYTE);
         bit_offset++;
         if (bit_offset % util::Bits::BITS_IN_BYTE == 0) {
             offset += 1;

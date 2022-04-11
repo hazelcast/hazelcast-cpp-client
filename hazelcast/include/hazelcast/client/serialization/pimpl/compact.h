@@ -292,13 +292,13 @@ private:
       const std::string& method_suffix);
     size_t read_fixed_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
-    size_t read_var_size_position(
+    int32_t read_var_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
     pimpl::compact_stream_serializer& compact_stream_serializer;
     serialization::object_data_input& object_data_input;
     const pimpl::schema& schema;
-    uint32_t data_start_position;
-    uint32_t variable_offsets_position;
+    int32_t data_start_position;
+    size_t variable_offsets_position;
     /**
      * Returns the offset of the variable-size field at the given index.
      * @param serialization::object_data_input& Input to read the offset from.
@@ -307,7 +307,8 @@ private:
      * @param uint32_t index of the field.
      * @return The offset.
      */
-    std::function<int(serialization::object_data_input&, uint32_t, uint32_t)>
+    std::function<
+      int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
       get_offset;
 };
 
@@ -426,22 +427,6 @@ constexpr uint32_t BYTE_OFFSET_READER_RANGE = INT8_MAX - INT8_MIN;
  */
 constexpr uint32_t SHORT_OFFSET_READER_RANGE = INT16_MAX - INT16_MIN;
 
-/**
- * Returns the offset of the variable-size field at the given index.
- *
- * @tparam OFFSET_TYPE can be int32_t, int16_t or int8_t
- * @param in Input to read the offset from.
- * @param variableOffsetsPos Start of the variable-size field offsets
- *                           section of the input.
- * @param index Index of the field.
- * @return The offset.
- */
-template<typename OFFSET_TYPE>
-int32_t
-get_offset(serialization::object_data_input& in,
-           uint32_t variable_offsets_pos,
-           uint32_t index);
-
 } // namespace offset_reader
 
 class HAZELCAST_API default_compact_writer
@@ -465,8 +450,8 @@ public:
     void end();
 
 private:
-    int get_fixed_size_field_position(const std::string& field_name,
-                                      enum field_kind field_kind) const;
+    size_t get_fixed_size_field_position(const std::string& field_name,
+                                         enum field_kind field_kind) const;
     const field_descriptor& check_field_definition(
       const std::string& field_name,
       enum field_kind field_kind) const;
@@ -497,7 +482,7 @@ private:
     object_data_output& object_data_output_;
     const schema& schema_;
     size_t data_start_position;
-    std::vector<int> field_offsets;
+    std::vector<int32_t> field_offsets;
 };
 
 struct HAZELCAST_API field_descriptor

@@ -25,6 +25,16 @@ namespace serialization {
 namespace pimpl {
 namespace offset_reader {
 
+/**
+ * Returns the offset of the variable-size field at the given index.
+ *
+ * @tparam OFFSET_TYPE can be int32_t, int16_t or int8_t
+ * @param in Input to read the offset from.
+ * @param variableOffsetsPos Start of the variable-size field offsets
+ *                           section of the input.
+ * @param index Index of the field.
+ * @return The offset.
+ */
 template<typename OFFSET_TYPE>
 int32_t
 get_offset(serialization::object_data_input& in,
@@ -67,9 +77,9 @@ template<>
 bool inline compact_reader::read_primitive<bool>(
   const pimpl::field_descriptor& field_descriptor)
 {
-    int8_t boolean_offset = field_descriptor.offset;
+    int32_t boolean_offset = field_descriptor.offset;
     int8_t bit_offset = field_descriptor.bit_offset;
-    int8_t offset = boolean_offset + data_start_position;
+    int32_t offset = boolean_offset + data_start_position;
     byte last_byte = object_data_input.read<byte>(offset);
     return ((last_byte >> bit_offset) & 1) != 0;
 }
