@@ -324,11 +324,6 @@ struct HAZELCAST_API field_descriptor
 std::ostream&
 operator<<(std::ostream& os, const field_descriptor& field_descriptor);
 
-constexpr int SCHEMA_DS_FACTORY_ID = -42;
-constexpr int SCHEMA_CLASS_ID = 1;
-constexpr int SEND_SCHEMA_OPERATION = 2;
-constexpr int FETCH_SCHEMA_OPERATION = 3;
-constexpr int SEND_ALL_SCHEMAS_OPERATION = 4;
 class HAZELCAST_API schema
 {
 public:
@@ -354,15 +349,7 @@ std::ostream&
 operator<<(std::ostream& os, const schema& schema);
 
 } // namespace pimpl
-template<>
-struct hz_serializer<pimpl::schema> : public identified_data_serializer
-{
-    static int32_t get_factory_id();
-    static int32_t get_class_id();
-    static void write_data(const pimpl::schema& object,
-                           object_data_output& out);
-    static pimpl::schema read_data(object_data_input& in);
-};
+
 namespace pimpl {
 class HAZELCAST_API schema_writer
 {
@@ -431,7 +418,7 @@ struct HAZELCAST_API field_kind_based_operations
 
 struct HAZELCAST_API field_operations
 {
-    static field_kind_based_operations get(int index);
+    static field_kind_based_operations get(enum field_kind field_kind);
 };
 
 } // namespace pimpl

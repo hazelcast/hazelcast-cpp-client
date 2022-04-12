@@ -567,48 +567,6 @@ operator<<(std::ostream& os, const field_descriptor& field_descriptor)
 }
 
 } // namespace pimpl
-int32_t
-hz_serializer<pimpl::schema>::get_factory_id()
-{
-    return pimpl::SCHEMA_DS_FACTORY_ID;
-}
-
-int32_t
-hz_serializer<pimpl::schema>::get_class_id()
-{
-    return pimpl::SCHEMA_CLASS_ID;
-}
-
-void
-hz_serializer<pimpl::schema>::write_data(const pimpl::schema& object,
-                                         object_data_output& out)
-{
-    out.write(object.type_name());
-    const auto& fields = object.fields();
-    out.write((int)fields.size());
-    for (const auto& field : fields) {
-        const auto& descriptor = field.second;
-        out.write(field.first);
-        out.write((int)descriptor.field_kind);
-    }
-}
-
-pimpl::schema
-hz_serializer<pimpl::schema>::read_data(object_data_input& in)
-{
-    auto type_name = in.read<std::string>();
-    int field_definitions_size = in.read<int>();
-
-    std::unordered_map<std::string, pimpl::field_descriptor>
-      field_definition_map;
-    for (int i = 0; i < field_definitions_size; ++i) {
-        auto field_name = in.read<std::string>();
-        auto field_kind = (pimpl::field_kind)in.read<int>();
-        field_definition_map.emplace(
-          field_name, pimpl::field_descriptor{ field_kind, -1, -1, -1 });
-    }
-    return pimpl::schema{ type_name, std::move(field_definition_map) };
-}
 
 namespace pimpl {
 schema_writer::schema_writer(std::string type_name)
@@ -660,7 +618,7 @@ field_kind_based_operations::field_kind_based_operations(
   : kind_size_in_byte_func(std::move(kind_size_in_byte_func))
 {}
 field_kind_based_operations
-field_operations::get(int index)
+field_operations::get(enum field_kind field_kind)
 {
     static const field_kind_based_operations ALL[NUMBER_OF_FIELD_KINDS] = {
         field_kind_based_operations{ []() { return 0; } },
@@ -712,7 +670,7 @@ field_operations::get(int index)
         field_kind_based_operations{},
         field_kind_based_operations{}
     };
-    return ALL[index];
+    return ALL[field_kind];
 }
 } // namespace pimpl
 } // namespace serialization

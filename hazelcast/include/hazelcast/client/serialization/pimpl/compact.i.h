@@ -31,11 +31,7 @@ get_offset(serialization::object_data_input& in,
            uint32_t variable_offsets_pos,
            uint32_t index)
 {
-    OFFSET_TYPE offset = in.read<OFFSET_TYPE>(variable_offsets_pos + index);
-    if (offset == NULL_OFFSET) {
-        return NULL_OFFSET;
-    }
-    return (int32_t)offset;
+    return (int32_t)in.read<OFFSET_TYPE>(variable_offsets_pos + index);
 }
 
 } // namespace offset_reader
@@ -72,7 +68,7 @@ compact_reader::get_variable_size_as_non_null(
   const std::string& field_name,
   const std::string& method_suffix)
 {
-    auto value = get_variable_size<int32_t>(field_descriptor);
+    auto value = get_variable_size<T>(field_descriptor);
     if (value.has_value()) {
         return value.value();
     }
