@@ -133,7 +133,7 @@ compact_reader::compact_reader(
     size_t final_position;
     size_t number_of_var_size_fields = schema.number_of_var_size_fields();
     if (number_of_var_size_fields != 0) {
-        int32_t data_length = object_data_input.read<int32_t>();
+        uint32_t data_length = object_data_input.read<int32_t>();
         data_start_position = object_data_input.position();
         variable_offsets_position = data_start_position + data_length;
         if (data_length < pimpl::offset_reader::BYTE_OFFSET_READER_RANGE) {
