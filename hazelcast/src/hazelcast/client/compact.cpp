@@ -572,8 +572,8 @@ schema_writer::schema_writer(std::string type_name)
 void
 schema_writer::add_field(std::string field_name, enum field_kind kind)
 {
-    field_definition_map.emplace(std::move(field_name),
-                                 field_descriptor{ kind, -1, -1, -1 });
+    field_definition_map[std::move(field_name)] =
+      field_descriptor{ kind, -1, -1, -1 };
 }
 
 schema
