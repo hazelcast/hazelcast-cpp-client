@@ -132,7 +132,21 @@ typename std::enable_if<
     std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
     std::is_same<float, typename std::remove_cv<T>::type>::value ||
     std::is_same<double, typename std::remove_cv<T>::type>::value ||
-    std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+    std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<int8_t>,
+                 typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<int16_t>,
+                 typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<int32_t>,
+                 typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<int64_t>,
+                 typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<float>, typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<double>,
+                 typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<boost::optional<std::string>>,
+                 typename std::remove_cv<T>::type>::value,
   typename boost::optional<T>>::type
 compact_reader::read()
 {
@@ -147,12 +161,92 @@ compact_reader::read()
 {
     return compact_stream_serializer.template read<T>(object_data_input);
 }
+template<typename T>
+boost::optional<T>
+compact_reader::read_array_of_primitive(
+  const std::string& field_name,
+  enum pimpl::field_kind field_kind,
+  enum pimpl::field_kind nullable_field_kind,
+  const std::string& method_suffix)
+{
+    auto& field_descriptor = get_field_descriptor(field_name);
+    if (field_descriptor.field_kind == field_kind) {
+        return get_variable_size<T>(field_descriptor);
+    } else if (field_descriptor.field_kind == nullable_field_kind) {
+        return get_nullable_array_as_primitive_array<T>(
+          field_descriptor, field_name, method_suffix);
+    }
+    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+}
+
+template<typename T>
+boost::optional<std::vector<boost::optional<T>>>
+compact_reader::get_array_of_variable_size(
+  const pimpl::field_descriptor& field_descriptor)
+{
+    int32_t position = read_var_size_position(field_descriptor);
+    if (position == util::Bits::NULL_ARRAY) {
+        return boost::none;
+    }
+    object_data_input.position(position);
+    int32_t data_length = object_data_input.read<int32_t>();
+    int32_t item_count = object_data_input.read<int32_t>();
+    int data_start_pos = object_data_input.position();
+    std::vector<boost::optional<T>> values(item_count);
+    auto offset_reader = get_offset_reader(data_length);
+    int offsets_position = data_start_pos + data_length;
+    for (int i = 0; i < item_count; ++i) {
+        int offset = offset_reader(object_data_input, offsets_position, i);
+        if (offset != util::Bits::NULL_ARRAY) {
+            object_data_input.position(offset + data_start_pos);
+            values[i] = read<T>();
+        }
+    }
+    return values;
+}
+
+template<typename T>
+boost::optional<T>
+compact_reader::get_nullable_array_as_primitive_array(
+  const pimpl::field_descriptor& field_descriptor,
+  const std::string& field_name,
+  const std::string& method_suffix)
+{
+    int32_t position = read_var_size_position(field_descriptor);
+    if (position == util::Bits::NULL_ARRAY) {
+        return boost::none;
+    }
+    object_data_input.position(position);
+    int32_t data_length = object_data_input.read<int32_t>();
+    int32_t item_count = object_data_input.read<int32_t>();
+    int data_start_pos = object_data_input.position();
+    auto offset_reader = get_offset_reader(data_length);
+    int offsets_position = data_start_pos + data_length;
+    for (int i = 0; i < item_count; ++i) {
+        int offset = offset_reader(object_data_input, offsets_position, i);
+        if (offset == util::Bits::NULL_ARRAY) {
+            BOOST_THROW_EXCEPTION(exception_unexpected_null_value_in_array(
+              field_name, method_suffix));
+        }
+    }
+    object_data_input.position(data_start_pos - util::Bits::INT_SIZE_IN_BYTES);
+    return read<T>();
+}
 
 template<typename T>
 boost::optional<T>
 compact_reader::read_compact(const std::string& field_name)
 {
     return get_variable_size<T>(field_name, pimpl::field_kind::COMPACT);
+}
+
+template<typename T>
+boost::optional<std::vector<boost::optional<T>>>
+compact_reader::read_array_of_compact(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_COMPACT);
+    return get_array_of_variable_size<T>(descriptor);
 }
 
 template<typename T>

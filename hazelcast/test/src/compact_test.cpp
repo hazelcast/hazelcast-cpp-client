@@ -332,7 +332,18 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
 
     static compact::test::inner_dto read(compact_reader& reader)
     {
-        return compact::test::inner_dto{};
+        compact::test::inner_dto object;
+        object.bools = reader.read_array_of_boolean("bools");
+        object.bytes = reader.read_array_of_int8("bytes");
+        object.shorts = reader.read_array_of_int16("shorts");
+        object.ints = reader.read_array_of_int32("ints");
+        object.longs = reader.read_array_of_int64("longs");
+        object.floats = reader.read_array_of_float32("floats");
+        object.doubles = reader.read_array_of_float64("doubles");
+        object.strings = reader.read_array_of_string("strings");
+        object.nn =
+          reader.read_array_of_compact<compact::test::named_dto>("nn");
+        return object;
     }
 
     static std::string type_name() { return "inner_dto"; }

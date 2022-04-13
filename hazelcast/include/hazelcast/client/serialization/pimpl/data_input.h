@@ -194,6 +194,8 @@ public:
                      typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<bool>,
                      typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<int8_t>,
+                     typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<int16_t>,
                      typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<int32_t>,

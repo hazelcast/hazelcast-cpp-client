@@ -300,6 +300,33 @@ compact_reader::get_field_descriptor(const std::string& field_name,
     return field_descriptor;
 }
 
+std::function<int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
+compact_reader::get_offset_reader(int32_t data_length)
+{
+    if (data_length < pimpl::offset_reader::BYTE_OFFSET_READER_RANGE) {
+        return pimpl::offset_reader::get_offset<int8_t>;
+    } else if (data_length < pimpl::offset_reader::SHORT_OFFSET_READER_RANGE) {
+        return pimpl::offset_reader::get_offset<int16_t>;
+    } else {
+        return pimpl::offset_reader::get_offset<int32_t>;
+    }
+}
+
+exception::hazelcast_serialization
+compact_reader::exception_unexpected_null_value_in_array(
+  const std::string& field_name,
+  const std::string& method_suffix)
+{
+    return {
+        "compact_reader",
+        (boost::format(
+           "Error while reading %1%. Array with null items can not be read via "
+           "read_array_of_%2% methods. Use read_array_of_nullable_%2% "
+           "instead") %
+         field_name % schema)
+          .str()
+    };
+}
 exception::hazelcast_serialization
 compact_reader::unknown_field_exception(const std::string& field_name) const
 {
@@ -420,6 +447,84 @@ compact_reader::read_string(const std::string& field_name)
     return get_variable_size<std::string>(field_name,
                                           pimpl::field_kind::STRING);
 }
+
+boost::optional<std::vector<bool>>
+compact_reader::read_array_of_boolean(const std::string& field_name)
+{
+    return read_array_of_primitive<std::vector<bool>>(
+      field_name,
+      pimpl::field_kind::ARRAY_OF_BOOLEAN,
+      pimpl::ARRAY_OF_NULLABLE_BOOLEAN,
+      "boolean");
+}
+
+boost::optional<std::vector<int8_t>>
+compact_reader::read_array_of_int8(const std::string& field_name)
+{
+    return read_array_of_primitive<std::vector<int8_t>>(
+      field_name,
+      pimpl::field_kind::ARRAY_OF_INT8,
+      pimpl::ARRAY_OF_NULLABLE_INT8,
+      "int8");
+}
+
+boost::optional<std::vector<int16_t>>
+compact_reader::read_array_of_int16(const std::string& field_name)
+{
+    return read_array_of_primitive<std::vector<int16_t>>(
+      field_name,
+      pimpl::field_kind::ARRAY_OF_INT16,
+      pimpl::ARRAY_OF_NULLABLE_INT16,
+      "int16");
+}
+
+boost::optional<std::vector<int32_t>>
+compact_reader::read_array_of_int32(const std::string& field_name)
+{
+    return read_array_of_primitive<std::vector<int32_t>>(
+      field_name,
+      pimpl::field_kind::ARRAY_OF_INT32,
+      pimpl::ARRAY_OF_NULLABLE_INT32,
+      "int32");
+}
+boost::optional<std::vector<int64_t>>
+compact_reader::read_array_of_int64(const std::string& field_name)
+{
+    return read_array_of_primitive<std::vector<int64_t>>(
+      field_name,
+      pimpl::field_kind::ARRAY_OF_INT64,
+      pimpl::ARRAY_OF_NULLABLE_INT64,
+      "int64");
+}
+
+boost::optional<std::vector<float>>
+compact_reader::read_array_of_float32(const std::string& field_name)
+{
+    return read_array_of_primitive<std::vector<float>>(
+      field_name,
+      pimpl::field_kind::ARRAY_OF_FLOAT32,
+      pimpl::ARRAY_OF_NULLABLE_FLOAT32,
+      "float32");
+}
+
+boost::optional<std::vector<double>>
+compact_reader::read_array_of_float64(const std::string& field_name)
+{
+    return read_array_of_primitive<std::vector<double>>(
+      field_name,
+      pimpl::field_kind::ARRAY_OF_FLOAT64,
+      pimpl::ARRAY_OF_NULLABLE_FLOAT64,
+      "float64");
+}
+
+boost::optional<std::vector<boost::optional<std::string>>>
+compact_reader::read_array_of_string(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_STRING);
+    return get_array_of_variable_size<std::string>(descriptor);
+}
+
 namespace pimpl {
 
 compact_writer
