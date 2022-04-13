@@ -198,7 +198,7 @@ typename std::enable_if<
   void>::type
 default_compact_writer::write(const T& value)
 {
-    object_data_output_.template write(value);
+    object_data_output_.write(value);
 }
 
 template<typename T>
