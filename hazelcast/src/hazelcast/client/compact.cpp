@@ -93,7 +93,7 @@ compact_reader::compact_reader(
               (number_of_var_size_fields * util::Bits::INT_SIZE_IN_BYTES);
         }
     } else {
-        get_offset = pimpl::offset_reader::get_offset<int8_t>;
+        get_offset = pimpl::offset_reader::get_offset<int32_t>;
         variable_offsets_position = 0;
         data_start_position = object_data_input.position();
         final_position =
@@ -204,7 +204,6 @@ compact_reader::read_int32(const std::string& field_name)
               fd, field_name, "int32");
         default:
             BOOST_THROW_EXCEPTION(unexpected_field_kind(fieldKind, field_name));
-            return -1;
     }
 }
 
@@ -319,13 +318,11 @@ default_compact_writer::check_field_definition(const std::string& field_name,
             .str()));
     }
     if (iterator->second.field_kind != field_kind) {
-        if (iterator == schema_.fields().end()) {
-            BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
-              "default_compact_writer",
-              (boost::format("Invalid field type %1% for %2%") % field_name %
-               schema_)
-                .str()));
-        }
+        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
+          "default_compact_writer",
+          (boost::format("Invalid field type %1% for %2%") % field_name %
+           schema_)
+            .str()));
     }
     return iterator->second;
 }

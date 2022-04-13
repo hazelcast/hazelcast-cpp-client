@@ -120,7 +120,7 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         auto i = reader.read_int32("i", 1);
         auto str =
           reader.read_string("name", boost::make_optional<std::string>("NA"));
-        return compact::test::main_dto{ i, str.get_value_or("default") };
+        return compact::test::main_dto{ i, *str };
     }
 
     static std::string type_name() { return "main"; }
@@ -218,7 +218,7 @@ TEST_F(CompactSerializationTest, test_schema_writer_counts)
     ASSERT_EQ(1, schema.number_of_var_size_fields());
 }
 
-TEST_F(CompactSerializationTest, test_rabin_finterprint_consitent_with_server)
+TEST_F(CompactSerializationTest, test_rabin_fingerprint_consistent_with_server)
 {
     //    // TODO sancar rewrite as following when all types are implemented
     //    schema_writer schema_writer("typename");
