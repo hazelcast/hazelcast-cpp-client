@@ -64,6 +64,8 @@ struct HAZELCAST_API Bits
      * Length of the data blocks used by the CPU cache sub-system in bytes.
      */
     static constexpr int CACHE_LINE_LENGTH = 64;
+
+    static constexpr int BITS_IN_BYTE = 8;
 };
 } // namespace util
 } // namespace hazelcast
