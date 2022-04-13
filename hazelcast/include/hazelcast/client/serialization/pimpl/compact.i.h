@@ -167,6 +167,19 @@ compact_writer::write_compact(const std::string& field_name,
     }
 }
 
+template<typename T>
+void
+compact_writer::write_array_of_compact(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<T>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_compact<T>(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_COMPACT);
+    }
+}
 namespace pimpl {
 
 template<typename T>
@@ -193,8 +206,59 @@ default_compact_writer::write_compact(const std::string& field_name,
 }
 
 template<typename T>
+void
+default_compact_writer::write_array_of_compact(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<T>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_COMPACT, value);
+}
+
+template<typename T>
+void
+default_compact_writer::write_array_of_variable_size(
+  const std::string& field_name,
+  enum field_kind field_kind,
+  const boost::optional<std::vector<boost::optional<T>>>& value)
+{
+    if (!value.has_value()) {
+        set_position_as_null(field_name, field_kind);
+        return;
+    }
+    set_position(field_name, field_kind);
+    size_t data_length_offset = object_data_output_.position();
+    object_data_output_.write_zero_bytes(util::Bits::INT_SIZE_IN_BYTES);
+    const auto& v = value.value();
+    int item_count = v.size();
+    object_data_output_.write<int32_t>(item_count);
+    size_t offset = object_data_output_.position();
+    std::vector<int32_t> offsets(item_count);
+    for (int i = 0; i < item_count; ++i) {
+        if (v[i].has_value()) {
+            offsets[i] =
+              static_cast<int32_t>(object_data_output_.position() - offset);
+            write<T>(v[i].value());
+        } else {
+            offsets[i] = -1;
+        }
+    }
+    auto data_length =
+      static_cast<int32_t>(object_data_output_.position() - offset);
+    object_data_output_.write_at<int32_t>(data_length_offset, data_length);
+    write_offsets(data_length, offsets);
+}
+template<typename T>
 typename std::enable_if<
-  std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+  std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::vector<bool>, T>::value ||
+    std::is_same<std::vector<int8_t>, T>::value ||
+    std::is_same<std::vector<int16_t>, T>::value ||
+    std::is_same<std::vector<int32_t>, T>::value ||
+    std::is_same<std::vector<int64_t>, T>::value ||
+    std::is_same<std::vector<float>, T>::value ||
+    std::is_same<std::vector<double>, T>::value ||
+    std::is_same<std::vector<std::string>, T>::value,
   void>::type
 default_compact_writer::write(const T& value)
 {

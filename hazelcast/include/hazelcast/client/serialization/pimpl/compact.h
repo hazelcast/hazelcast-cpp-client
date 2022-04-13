@@ -392,6 +392,95 @@ public:
     void write_compact(const std::string& field_name,
                        const boost::optional<T>& value);
 
+    /**
+     * Writes an array of booleans.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_boolean(
+      const std::string& field_name,
+      const boost::optional<std::vector<bool>>& value);
+
+    /**
+     * Writes an array of 8-bit two's complement signed integers.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_int8(const std::string& field_name,
+                             const boost::optional<std::vector<int8_t>>& value);
+
+    /**
+     * Writes an array of 16-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @param value    to be written.
+     */
+    void write_array_of_int16(
+      const std::string& field_name,
+      const boost::optional<std::vector<int16_t>>& value);
+
+    /**
+     * Writes an array of 32-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @param value   to be written.
+     */
+    void write_array_of_int32(
+      const std::string& field_name,
+      const boost::optional<std::vector<int32_t>>& value);
+
+    /**
+     * Writes an array of 64-bit two's complement signed integers.
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_int64(
+      const std::string& field_name,
+      const boost::optional<std::vector<int64_t>>& value);
+
+    /**
+     * Writes an array of 32-bit IEEE 754 floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_float32(
+      const std::string& field_name,
+      const boost::optional<std::vector<float>>& value);
+
+    /**
+     * Writes an array of 64-bit IEEE 754 floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_float64(
+      const std::string& field_name,
+      const boost::optional<std::vector<double>>& value);
+
+    /**
+     * Writes an array of UTF-8 encoded strings.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_string(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<std::string>>>& value);
+
+    /**
+     * Writes an array of nested compact objects.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    template<typename T>
+    void write_array_of_compact(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<T>>>& value);
+
 private:
     friend compact_writer pimpl::create_compact_writer(
       pimpl::default_compact_writer* default_compact_writer);
@@ -440,6 +529,33 @@ public:
     void write_float64(const std::string& field_name, double value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    void write_array_of_boolean(
+      const std::string& field_name,
+      const boost::optional<std::vector<bool>>& value);
+    void write_array_of_int8(const std::string& field_name,
+                             const boost::optional<std::vector<int8_t>>& value);
+    void write_array_of_int16(
+      const std::string& field_name,
+      const boost::optional<std::vector<int16_t>>& value);
+    void write_array_of_int32(
+      const std::string& field_name,
+      const boost::optional<std::vector<int32_t>>& value);
+    void write_array_of_int64(
+      const std::string& field_name,
+      const boost::optional<std::vector<int64_t>>& value);
+    void write_array_of_float32(
+      const std::string& field_name,
+      const boost::optional<std::vector<float>>& value);
+    void write_array_of_float64(
+      const std::string& field_name,
+      const boost::optional<std::vector<double>>& value);
+    void write_array_of_string(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<std::string>>>& value);
+    template<typename T>
+    void write_array_of_compact(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<T>>>& value);
     template<typename T>
     void write_compact(const std::string& field_name,
                        const boost::optional<T>& value);
@@ -451,7 +567,7 @@ private:
     const field_descriptor& check_field_definition(
       const std::string& field_name,
       enum field_kind field_kind) const;
-    void write_offsets(size_t data_length);
+    void write_offsets(size_t data_length, const std::vector<int32_t>& offsets);
 
     template<typename T>
     void write_variable_size_field(const std::string& field_name,
@@ -460,7 +576,15 @@ private:
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+      std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<bool>, T>::value ||
+        std::is_same<std::vector<int8_t>, T>::value ||
+        std::is_same<std::vector<int16_t>, T>::value ||
+        std::is_same<std::vector<int32_t>, T>::value ||
+        std::is_same<std::vector<int64_t>, T>::value ||
+        std::is_same<std::vector<float>, T>::value ||
+        std::is_same<std::vector<double>, T>::value ||
+        std::is_same<std::vector<std::string>, T>::value,
       void>::type
     write(const T& value);
 
@@ -469,6 +593,12 @@ private:
       std::is_base_of<compact_serializer, hz_serializer<T>>::value,
       void>::type
     write(const T& value);
+
+    template<typename T>
+    void write_array_of_variable_size(
+      const std::string& field_name,
+      enum field_kind field_kind,
+      const boost::optional<std::vector<boost::optional<T>>>& value);
 
     void set_position(const std::string& field_name,
                       enum field_kind field_kind);

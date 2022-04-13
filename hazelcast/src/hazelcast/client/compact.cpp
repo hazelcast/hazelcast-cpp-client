@@ -110,6 +110,107 @@ compact_writer::write_string(const std::string& field_name,
         schema_writer->add_field(field_name, pimpl::field_kind::STRING);
     }
 }
+
+void
+compact_writer::write_array_of_boolean(
+  const std::string& field_name,
+  const boost::optional<std::vector<bool>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_boolean(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_BOOLEAN);
+    }
+}
+
+void
+compact_writer::write_array_of_int8(
+  const std::string& field_name,
+  const boost::optional<std::vector<int8_t>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_int8(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT8);
+    }
+}
+
+void
+compact_writer::write_array_of_int16(
+  const std::string& field_name,
+  const boost::optional<std::vector<int16_t>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_int16(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT16);
+    }
+}
+
+void
+compact_writer::write_array_of_int32(
+  const std::string& field_name,
+  const boost::optional<std::vector<int32_t>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_int32(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT32);
+    }
+}
+
+void
+compact_writer::write_array_of_int64(
+  const std::string& field_name,
+  const boost::optional<std::vector<int64_t>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_int64(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT64);
+    }
+}
+
+void
+compact_writer::write_array_of_float32(
+  const std::string& field_name,
+  const boost::optional<std::vector<float>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_float32(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_FLOAT32);
+    }
+}
+
+void
+compact_writer::write_array_of_float64(
+  const std::string& field_name,
+  const boost::optional<std::vector<double>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_float64(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_FLOAT64);
+    }
+}
+
+void
+compact_writer::write_array_of_string(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<std::string>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_string(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_STRING);
+    }
+}
+
 namespace pimpl {
 compact_reader
 create_compact_reader(
@@ -428,6 +529,71 @@ default_compact_writer::write_string(const std::string& field_name,
 }
 
 void
+default_compact_writer::write_array_of_boolean(
+  const std::string& field_name,
+  const boost::optional<std::vector<bool>>& value)
+{
+    write_variable_size_field(field_name, field_kind::ARRAY_OF_BOOLEAN, value);
+}
+
+void
+default_compact_writer::write_array_of_int8(
+  const std::string& field_name,
+  const boost::optional<std::vector<int8_t>>& value)
+{
+    write_variable_size_field(field_name, field_kind::ARRAY_OF_INT8, value);
+}
+
+void
+default_compact_writer::write_array_of_int16(
+  const std::string& field_name,
+  const boost::optional<std::vector<int16_t>>& value)
+{
+    write_variable_size_field(field_name, field_kind::ARRAY_OF_INT16, value);
+}
+
+void
+default_compact_writer::write_array_of_int32(
+  const std::string& field_name,
+  const boost::optional<std::vector<int32_t>>& value)
+{
+    write_variable_size_field(field_name, field_kind::ARRAY_OF_INT32, value);
+}
+
+void
+default_compact_writer::write_array_of_int64(
+  const std::string& field_name,
+  const boost::optional<std::vector<int64_t>>& value)
+{
+    write_variable_size_field(field_name, field_kind::ARRAY_OF_INT64, value);
+}
+
+void
+default_compact_writer::write_array_of_float32(
+  const std::string& field_name,
+  const boost::optional<std::vector<float>>& value)
+{
+    write_variable_size_field(field_name, field_kind::ARRAY_OF_FLOAT32, value);
+}
+
+void
+default_compact_writer::write_array_of_float64(
+  const std::string& field_name,
+  const boost::optional<std::vector<double>>& value)
+{
+    write_variable_size_field(field_name, field_kind::ARRAY_OF_FLOAT64, value);
+}
+
+void
+default_compact_writer::write_array_of_string(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<std::string>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_STRING, value);
+}
+
+void
 default_compact_writer::end()
 {
     if (schema_.number_of_var_size_fields() == 0) {
@@ -436,7 +602,7 @@ default_compact_writer::end()
     }
     size_t position = object_data_output_.position();
     size_t data_length = position - data_start_position;
-    write_offsets(data_length);
+    write_offsets(data_length, field_offsets);
     // write dataLength
     object_data_output_.write_at(data_start_position -
                                    util::Bits::INT_SIZE_IN_BYTES,
@@ -476,18 +642,19 @@ default_compact_writer::check_field_definition(const std::string& field_name,
 }
 
 void
-default_compact_writer::write_offsets(size_t data_length)
+default_compact_writer::write_offsets(size_t data_length,
+                                      const std::vector<int32_t>& offsets)
 {
     if (data_length < offset_reader::BYTE_OFFSET_READER_RANGE) {
-        for (int32_t offset : field_offsets) {
+        for (int32_t offset : offsets) {
             object_data_output_.write<byte>(offset);
         }
     } else if (data_length < offset_reader::SHORT_OFFSET_READER_RANGE) {
-        for (int32_t offset : field_offsets) {
+        for (int32_t offset : offsets) {
             object_data_output_.write<int16_t>(static_cast<int16_t>(offset));
         }
     } else {
-        for (int32_t offset : field_offsets) {
+        for (int32_t offset : offsets) {
             object_data_output_.write<int32_t>(offset);
         }
     }

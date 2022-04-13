@@ -83,20 +83,77 @@ operator==(const node_dto& lhs, const node_dto& rhs)
             (lhs.child && rhs.child && *lhs.child == *rhs.child));
 }
 
+struct named_dto
+{
+    boost::optional<std::string> name;
+    int my_int;
+};
+
+std::ostream&
+operator<<(std::ostream& out, const named_dto& named_dto)
+{
+    out << "name " << named_dto.name << ", my_int " << named_dto.my_int;
+    return out;
+}
+
+bool
+operator==(const named_dto& lhs, const named_dto& rhs)
+{
+    return lhs.name == rhs.name && lhs.my_int == rhs.my_int;
+}
+
 struct inner_dto
 {
-    std::string str;
+    boost::optional<std::vector<bool>> bools;
+    boost::optional<std::vector<int8_t>> bytes;
+    boost::optional<std::vector<int16_t>> shorts;
+    boost::optional<std::vector<int32_t>> ints;
+    boost::optional<std::vector<int64_t>> longs;
+    boost::optional<std::vector<float>> floats;
+    boost::optional<std::vector<double>> doubles;
+    boost::optional<std::vector<boost::optional<std::string>>> strings;
+    boost::optional<std::vector<boost::optional<named_dto>>> nn;
 };
 bool
 operator==(const inner_dto& lhs, const inner_dto& rhs)
 {
-    return lhs.str == rhs.str;
+    return lhs.bools == rhs.bools && lhs.bytes == rhs.bytes &&
+           lhs.shorts == rhs.shorts && lhs.ints == rhs.ints &&
+           lhs.longs == rhs.longs && lhs.floats == rhs.floats &&
+           lhs.doubles == rhs.doubles && lhs.strings == rhs.strings &&
+           lhs.nn == rhs.nn;
+}
+
+template<typename T>
+void
+print_vector(const std::string& field_name,
+             std::ostream& out,
+             boost::optional<T> const& v)
+{
+    out << field_name << ", ";
+    if (v) {
+        out << "{";
+        for (auto const& e : *v) {
+            out << e << ", ";
+        }
+        out << "}";
+    } else {
+        out << "null";
+    }
 }
 
 std::ostream&
 operator<<(std::ostream& out, const inner_dto& inner_dto)
 {
-    out << "str " << inner_dto.str;
+    print_vector("bools", out, inner_dto.bools);
+    print_vector("bytes", out, inner_dto.bytes);
+    print_vector("shorts", out, inner_dto.shorts);
+    print_vector("ints", out, inner_dto.ints);
+    print_vector("longs", out, inner_dto.longs);
+    print_vector("floats", out, inner_dto.floats);
+    print_vector("doubles", out, inner_dto.doubles);
+    print_vector("strings", out, inner_dto.strings);
+    print_vector("nn", out, inner_dto.nn);
     return out;
 }
 
@@ -124,7 +181,22 @@ operator==(const main_dto& lhs, const main_dto& rhs)
 main_dto
 create_main_dto()
 {
-    inner_dto p{ "Johny" };
+    inner_dto p{
+        boost::make_optional<std::vector<bool>>({ true, false }),
+        boost::make_optional<std::vector<int8_t>>({ 0, 1, 2 }),
+        boost::make_optional<std::vector<int16_t>>({ 3, 4, 5 }),
+        boost::make_optional<std::vector<int32_t>>({ 9, 8, 7, 6 }),
+        boost::make_optional<std::vector<int64_t>>({ 0, 1, 5, 7, 9, 11 }),
+        boost::make_optional<std::vector<float>>({ 0.6543f, -3.56f, 45.67f }),
+        boost::make_optional<std::vector<double>>(
+          { 456.456, 789.789, 321.321 }),
+        boost::make_optional<std::vector<boost::optional<std::string>>>(
+          { boost::make_optional<std::string>("test"), boost::none }),
+        boost::make_optional<std::vector<boost::optional<named_dto>>>(
+          { boost::make_optional<named_dto>(
+              named_dto{ boost::make_optional<std::string>("test"), 1 }),
+            boost::none })
+    };
     return main_dto{ true,
                      113,
                      -500,
@@ -219,19 +291,48 @@ struct hz_serializer<compact::test::bits_dto> : public compact_serializer
 
     static std::string type_name() { return "bits_dto"; }
 };
+
+template<>
+struct hz_serializer<compact::test::named_dto> : public compact_serializer
+{
+    static void write(const compact::test::named_dto& dto,
+                      compact_writer& writer)
+    {
+        writer.write_string("name", dto.name);
+        writer.write_int32("my_int", dto.my_int);
+    }
+
+    static compact::test::named_dto read(compact_reader& reader)
+    {
+        compact::test::named_dto dto;
+        dto.name = reader.read_string("name");
+        dto.my_int = reader.read_int32("my_int");
+        return dto;
+    }
+
+    static std::string type_name() { return "named_dto"; }
+};
+
 template<>
 struct hz_serializer<compact::test::inner_dto> : public compact_serializer
 {
     static void write(const compact::test::inner_dto& object,
                       compact_writer& writer)
     {
-        writer.write_string("name", object.str);
+        writer.write_array_of_boolean("bools", object.bools);
+        writer.write_array_of_int8("bytes", object.bytes);
+        writer.write_array_of_int16("shorts", object.shorts);
+        writer.write_array_of_int32("ints", object.ints);
+        writer.write_array_of_int64("longs", object.longs);
+        writer.write_array_of_float32("floats", object.floats);
+        writer.write_array_of_float64("doubles", object.doubles);
+        writer.write_array_of_string("strings", object.strings);
+        writer.write_array_of_compact("nn", object.nn);
     }
 
     static compact::test::inner_dto read(compact_reader& reader)
     {
-        auto str = reader.read_string("name");
-        return compact::test::inner_dto{ str.value() };
+        return compact::test::inner_dto{};
     }
 
     static std::string type_name() { return "inner_dto"; }
