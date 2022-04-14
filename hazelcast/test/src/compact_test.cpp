@@ -65,18 +65,6 @@ struct node_dto
     std::shared_ptr<node_dto> child;
 };
 
-std::ostream&
-operator<<(std::ostream& out, const node_dto& node_dto)
-{
-    out << "id " << node_dto.id;
-    if (!node_dto.child) {
-        out << ", child null";
-    } else {
-        out << ", child " << *node_dto.child;
-    }
-    return out;
-}
-
 bool
 operator==(const node_dto& lhs, const node_dto& rhs)
 {
@@ -90,13 +78,6 @@ struct named_dto
     boost::optional<std::string> name;
     int my_int;
 };
-
-std::ostream&
-operator<<(std::ostream& out, const named_dto& named_dto)
-{
-    out << "name " << named_dto.name << ", my_int " << named_dto.my_int;
-    return out;
-}
 
 bool
 operator==(const named_dto& lhs, const named_dto& rhs)
@@ -124,39 +105,6 @@ operator==(const inner_dto& lhs, const inner_dto& rhs)
            lhs.longs == rhs.longs && lhs.floats == rhs.floats &&
            lhs.doubles == rhs.doubles && lhs.strings == rhs.strings &&
            lhs.nn == rhs.nn;
-}
-
-template<typename T>
-void
-print_vector(const std::string& field_name,
-             std::ostream& out,
-             boost::optional<T> const& v)
-{
-    out << field_name << ", ";
-    if (v) {
-        out << "{";
-        for (auto const& e : *v) {
-            out << e << ", ";
-        }
-        out << "}";
-    } else {
-        out << "null";
-    }
-}
-
-std::ostream&
-operator<<(std::ostream& out, const inner_dto& inner_dto)
-{
-    print_vector("bools", out, inner_dto.bools);
-    print_vector("bytes", out, inner_dto.bytes);
-    print_vector("shorts", out, inner_dto.shorts);
-    print_vector("ints", out, inner_dto.ints);
-    print_vector("longs", out, inner_dto.longs);
-    print_vector("floats", out, inner_dto.floats);
-    print_vector("doubles", out, inner_dto.doubles);
-    print_vector("strings", out, inner_dto.strings);
-    print_vector("nn", out, inner_dto.nn);
-    return out;
 }
 
 struct main_dto
@@ -215,16 +163,6 @@ create_main_dto()
                      "this is main object created for testing!" };
 }
 
-std::ostream&
-operator<<(std::ostream& out, const main_dto& main_dto)
-{
-    out << "{" << main_dto.b << ", " << main_dto.boolean << ", " << main_dto.s
-        << ", " << main_dto.i << ", " << main_dto.l << ", " << main_dto.f
-        << ", " << main_dto.d << ", " << main_dto.p << ", " << main_dto.str
-        << "}";
-    return out;
-}
-
 /**
  * This class is to simulate versioning.
  * We will provide this struct with serializer returning type name of the
@@ -248,15 +186,6 @@ operator==(const employee_dto& lhs, const employee_dto& rhs)
 {
     return lhs.age == rhs.age && lhs.rank == rhs.rank && lhs.id == rhs.id &&
            lhs.isHired == rhs.isHired && lhs.isFired == rhs.isFired;
-}
-
-std::ostream&
-operator<<(std::ostream& out, const employee_dto& employee_dto)
-{
-    out << "{" << employee_dto.age << ", " << employee_dto.rank << ", "
-        << employee_dto.id << ", " << employee_dto.isHired << ", "
-        << employee_dto.isFired << "}";
-    return out;
 }
 
 } // namespace test
