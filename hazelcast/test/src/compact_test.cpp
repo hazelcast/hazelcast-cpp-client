@@ -67,7 +67,7 @@ std::ostream&
 operator<<(std::ostream& out, const node_dto& node_dto)
 {
     out << "id " << node_dto.id;
-    if (node_dto.child == nullptr) {
+    if (!node_dto.child) {
         out << ", child null";
     } else {
         out << ", child " << *node_dto.child;
@@ -78,15 +78,9 @@ operator<<(std::ostream& out, const node_dto& node_dto)
 bool
 operator==(const node_dto& lhs, const node_dto& rhs)
 {
-    if (lhs.id != rhs.id)
-        return false;
-    if (lhs.child == rhs.child)
-        return true;
-    if (lhs.child == nullptr && rhs.child != nullptr)
-        return false;
-    if (lhs.child != nullptr && rhs.child == nullptr)
-        return false;
-    return *lhs.child == *rhs.child;
+    return lhs.id == rhs.id &&
+           (lhs.child == rhs.child ||
+            (lhs.child && rhs.child && *lhs.child == *rhs.child));
 }
 
 struct inner_dto
@@ -131,10 +125,15 @@ main_dto
 create_main_dto()
 {
     inner_dto p{ "Johny" };
-    return main_dto{
-        true, 113,   -500, 56789, -50992225L, 900.5678f, -897543.3678909,
-        p,    "John"
-    };
+    return main_dto{ true,
+                     113,
+                     -500,
+                     56789,
+                     -50992225L,
+                     900.5678f,
+                     -897543.3678909,
+                     p,
+                     "this is main object created for testing!" };
 }
 
 std::ostream&
@@ -235,7 +234,7 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         return compact::test::inner_dto{ str.value() };
     }
 
-    static std::string type_name() { return "main"; }
+    static std::string type_name() { return "inner_dto"; }
 };
 
 template<>
@@ -269,7 +268,7 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         return compact::test::main_dto{ boolean, b, s, i, l, f, d, p, *str };
     }
 
-    static std::string type_name() { return "inner"; }
+    static std::string type_name() { return "main"; }
 };
 
 template<>
