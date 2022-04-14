@@ -333,6 +333,84 @@ public:
     boost::optional<std::vector<boost::optional<T>>> read_array_of_compact(
       const std::string& field_name);
 
+    /**
+     * Reads a nullable boolean.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<bool> read_nullable_boolean(const std::string& field_name);
+
+    /**
+     * Reads a nullable 8-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<int8_t> read_nullable_int8(const std::string& field_name);
+
+    /**
+     * Reads a nullable 16-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<int16_t> read_nullable_int16(const std::string& field_name);
+
+    /**
+     * Reads a nullable 32-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<int32_t> read_nullable_int32(const std::string& field_name);
+
+    /**
+     * Reads a nullable 64-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<int64_t> read_nullable_int64(const std::string& field_name);
+
+    /**
+     * Reads a nullable 32-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<float> read_nullable_float32(const std::string& field_name);
+
+    /**
+     * Reads a nullable 64-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<double> read_nullable_float64(
+      const std::string& field_name);
+
 private:
     compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,
                    object_data_input& object_data_input,
@@ -422,6 +500,11 @@ private:
     static const offset_func BYTE_OFFSET_READER;
     static const offset_func SHORT_OFFSET_READER;
     static const offset_func INT_OFFSET_READER;
+    template<typename T>
+    boost::optional<T> get_nullable_primitive(
+      const std::string& field_name,
+      enum pimpl::field_kind field_kind,
+      enum pimpl::field_kind nullable_field_kind);
     static std::function<
       int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
     get_offset_reader(int32_t data_length);
