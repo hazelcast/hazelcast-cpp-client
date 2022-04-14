@@ -178,10 +178,10 @@ operator==(const main_dto& lhs, const main_dto& rhs)
            lhs.d == rhs.d && lhs.p == rhs.p && lhs.str == rhs.str;
 }
 
-main_dto
-create_main_dto()
+inner_dto
+create_inner_dto()
 {
-    inner_dto p{
+    return inner_dto{
         boost::make_optional<std::vector<bool>>({ true, false }),
         boost::make_optional<std::vector<int8_t>>({ 0, 1, 2 }),
         boost::make_optional<std::vector<int16_t>>({ 3, 4, 5 }),
@@ -197,6 +197,11 @@ create_main_dto()
               named_dto{ boost::make_optional<std::string>("test"), 1 }),
             boost::none })
     };
+}
+main_dto
+create_main_dto()
+{
+    inner_dto p = create_inner_dto();
     return main_dto{ true,
                      113,
                      -500,
@@ -471,7 +476,7 @@ TEST_F(CompactSerializationTest, testAllTypes)
     serialization_config config;
     SerializationService ss(config);
 
-    main_dto expected = create_main_dto();
+    auto expected = create_main_dto();
     auto actual = to_data_and_back_to_object(ss, expected);
     ASSERT_EQ(expected, actual);
 }

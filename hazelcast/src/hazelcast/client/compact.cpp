@@ -752,7 +752,7 @@ default_compact_writer::write_offsets(size_t data_length,
 {
     if (data_length < offset_reader::BYTE_OFFSET_READER_RANGE) {
         for (int32_t offset : offsets) {
-            object_data_output_.write<byte>(offset);
+            object_data_output_.write<int8_t>(static_cast<int8_t>(offset));
         }
     } else if (data_length < offset_reader::SHORT_OFFSET_READER_RANGE) {
         for (int32_t offset : offsets) {

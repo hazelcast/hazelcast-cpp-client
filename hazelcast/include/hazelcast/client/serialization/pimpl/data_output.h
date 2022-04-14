@@ -210,6 +210,10 @@ data_output::write(bool value);
 
 template<>
 HAZELCAST_API void
+data_output::write(int8_t value);
+
+template<>
+HAZELCAST_API void
 data_output::write(int16_t value);
 
 template<>

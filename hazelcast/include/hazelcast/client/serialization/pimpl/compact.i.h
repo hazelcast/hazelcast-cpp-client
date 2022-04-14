@@ -17,6 +17,7 @@
 
 #include "hazelcast/client/serialization/pimpl/compact.h"
 #include "hazelcast/util/finally.h"
+#include <type_traits>
 
 namespace hazelcast {
 namespace client {
@@ -41,7 +42,11 @@ get_offset(serialization::object_data_input& in,
            uint32_t variable_offsets_pos,
            uint32_t index)
 {
-    return (int32_t)in.read<OFFSET_TYPE>(variable_offsets_pos + index);
+    OFFSET_TYPE v = in.read<OFFSET_TYPE>(variable_offsets_pos + index);
+    if (v == NULL_OFFSET) {
+        return NULL_OFFSET;
+    }
+    return (int32_t)(typename std::make_unsigned<OFFSET_TYPE>::type)(v);
 }
 
 } // namespace offset_reader
