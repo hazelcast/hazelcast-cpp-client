@@ -211,6 +211,86 @@ compact_writer::write_array_of_string(
     }
 }
 
+void
+compact_writer::write_nullable_boolean(const std::string& field_name,
+                                       const boost::optional<bool>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_nullable_boolean(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::NULLABLE_BOOLEAN);
+    }
+}
+
+void
+compact_writer::write_nullable_int8(const std::string& field_name,
+                                    const boost::optional<int8_t>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_nullable_int8(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT8);
+    }
+}
+
+void
+compact_writer::write_nullable_int16(const std::string& field_name,
+                                     const boost::optional<int16_t>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_nullable_int16(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT16);
+    }
+}
+
+void
+compact_writer::write_nullable_int32(const std::string& field_name,
+                                     const boost::optional<int32_t>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_nullable_int32(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT32);
+    }
+}
+
+void
+compact_writer::write_nullable_int64(const std::string& field_name,
+                                     const boost::optional<int64_t>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_nullable_int64(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT64);
+    }
+}
+
+void
+compact_writer::write_nullable_float32(const std::string& field_name,
+                                       const boost::optional<float>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_nullable_float32(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::NULLABLE_FLOAT32);
+    }
+}
+
+void
+compact_writer::write_nullable_float64(const std::string& field_name,
+                                       const boost::optional<double>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_nullable_float64(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::NULLABLE_FLOAT64);
+    }
+}
+
 namespace pimpl {
 compact_reader
 create_compact_reader(
@@ -703,6 +783,56 @@ default_compact_writer::write_array_of_string(
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_STRING, value);
+}
+
+void
+default_compact_writer::write_nullable_boolean(
+  const std::string& field_name,
+  const boost::optional<bool>& value)
+{
+    write_variable_size_field(field_name, field_kind::NULLABLE_BOOLEAN, value);
+}
+void
+default_compact_writer::write_nullable_int8(
+  const std::string& field_name,
+  const boost::optional<int8_t>& value)
+{
+    write_variable_size_field(field_name, field_kind::NULLABLE_INT8, value);
+}
+void
+default_compact_writer::write_nullable_int16(
+  const std::string& field_name,
+  const boost::optional<int16_t>& value)
+{
+    write_variable_size_field(field_name, field_kind::NULLABLE_INT16, value);
+}
+void
+default_compact_writer::write_nullable_int32(
+  const std::string& field_name,
+  const boost::optional<int32_t>& value)
+{
+    write_variable_size_field(field_name, field_kind::NULLABLE_INT32, value);
+}
+void
+default_compact_writer::write_nullable_int64(
+  const std::string& field_name,
+  const boost::optional<int64_t>& value)
+{
+    write_variable_size_field(field_name, field_kind::NULLABLE_INT64, value);
+}
+void
+default_compact_writer::write_nullable_float32(
+  const std::string& field_name,
+  const boost::optional<float>& value)
+{
+    write_variable_size_field(field_name, field_kind::NULLABLE_FLOAT32, value);
+}
+void
+default_compact_writer::write_nullable_float64(
+  const std::string& field_name,
+  const boost::optional<double>& value)
+{
+    write_variable_size_field(field_name, field_kind::NULLABLE_FLOAT64, value);
 }
 
 void

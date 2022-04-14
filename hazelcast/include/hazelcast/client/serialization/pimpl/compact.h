@@ -632,6 +632,69 @@ public:
       const std::string& field_name,
       const boost::optional<std::vector<boost::optional<T>>>& value);
 
+    /**
+     * Writes a nullable boolean.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_nullable_boolean(const std::string& field_name,
+                                const boost::optional<bool>& value);
+
+    /**
+     * Writes a nullable 8-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_nullable_int8(const std::string& field_name,
+                             const boost::optional<int8_t>& value);
+
+    /**
+     * Writes a nullable 16-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_nullable_int16(const std::string& field_name,
+                              const boost::optional<int16_t>& value);
+
+    /**
+     * Writes a nullable 32-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_nullable_int32(const std::string& field_name,
+                              const boost::optional<int32_t>& value);
+
+    /**
+     * Writes a nullable 64-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_nullable_int64(const std::string& field_name,
+                              const boost::optional<int64_t>& value);
+
+    /**
+     * Writes a nullable 32-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_nullable_float32(const std::string& field_name,
+                                const boost::optional<float>& value);
+
+    /**
+     * Writes a nullable 64-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_nullable_float64(const std::string& field_name,
+                                const boost::optional<double>& value);
+
 private:
     friend compact_writer pimpl::create_compact_writer(
       pimpl::default_compact_writer* default_compact_writer);
@@ -680,6 +743,9 @@ public:
     void write_float64(const std::string& field_name, double value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    template<typename T>
+    void write_compact(const std::string& field_name,
+                       const boost::optional<T>& value);
     void write_array_of_boolean(
       const std::string& field_name,
       const boost::optional<std::vector<bool>>& value);
@@ -707,9 +773,20 @@ public:
     void write_array_of_compact(
       const std::string& field_name,
       const boost::optional<std::vector<boost::optional<T>>>& value);
-    template<typename T>
-    void write_compact(const std::string& field_name,
-                       const boost::optional<T>& value);
+    void write_nullable_boolean(const std::string& field_name,
+                                const boost::optional<bool>& value);
+    void write_nullable_int8(const std::string& field_name,
+                             const boost::optional<int8_t>& value);
+    void write_nullable_int16(const std::string& field_name,
+                              const boost::optional<int16_t>& value);
+    void write_nullable_int32(const std::string& field_name,
+                              const boost::optional<int32_t>& value);
+    void write_nullable_int64(const std::string& field_name,
+                              const boost::optional<int64_t>& value);
+    void write_nullable_float32(const std::string& field_name,
+                                const boost::optional<float>& value);
+    void write_nullable_float64(const std::string& field_name,
+                                const boost::optional<double>& value);
     void end();
 
 private:
@@ -727,7 +804,14 @@ private:
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
+      std::is_same<bool, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<float, typename std::remove_cv<T>::type>::value ||
+        std::is_same<double, typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<int8_t>, T>::value ||
         std::is_same<std::vector<int16_t>, T>::value ||
         std::is_same<std::vector<int32_t>, T>::value ||
