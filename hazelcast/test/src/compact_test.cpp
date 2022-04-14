@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,36 +24,7 @@
 #include <openssl/crypto.h>
 #endif
 
-#include <hazelcast/client/lifecycle_event.h>
-#include <hazelcast/client/client_config.h>
-#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/connection/Connection.h>
-#include <hazelcast/client/exception/protocol_exceptions.h>
-#include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/hazelcast_json_value.h>
-#include <hazelcast/client/imap.h>
-#include <hazelcast/client/impl/Partition.h>
-#include <hazelcast/client/initial_membership_event.h>
-#include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
-#include <hazelcast/client/lifecycle_listener.h>
-#include <hazelcast/client/pipelining.h>
-#include <hazelcast/client/serialization_config.h>
-#include <hazelcast/client/serialization/pimpl/data_input.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/util/AddressHelper.h>
-#include <hazelcast/util/concurrent/locks/LockSupport.h>
-#include <hazelcast/util/MurmurHash3.h>
-#include <hazelcast/util/Util.h>
-
-#include "ClientTest.h"
-#include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
-#include "TestHelperFunctions.h"
-#include "serialization/Serializables.h"
-#include "remote_controller_client.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -64,31 +36,113 @@ namespace client {
 namespace compact {
 namespace test {
 
+struct bits_dto
+{
+    bool a = false;
+    bool b = false;
+    bool c = false;
+    bool d = false;
+    bool e = false;
+    bool f = false;
+    bool g = false;
+    bool h = false;
+    int id = 0;
+};
+
+bool
+operator==(const bits_dto& lhs, const bits_dto& rhs)
+{
+    return lhs.a == rhs.a && lhs.b == rhs.b && lhs.c == rhs.c &&
+           lhs.d == rhs.d && lhs.e == rhs.e && lhs.f == rhs.f &&
+           lhs.g == rhs.g && lhs.h == rhs.h && lhs.id == rhs.id;
+}
+
+struct node_dto
+{
+    int id;
+    std::shared_ptr<node_dto> child;
+};
+
+std::ostream&
+operator<<(std::ostream& out, const node_dto& node_dto)
+{
+    out << "id " << node_dto.id;
+    if (!node_dto.child) {
+        out << ", child null";
+    } else {
+        out << ", child " << *node_dto.child;
+    }
+    return out;
+}
+
+bool
+operator==(const node_dto& lhs, const node_dto& rhs)
+{
+    return lhs.id == rhs.id &&
+           (lhs.child == rhs.child ||
+            (lhs.child && rhs.child && *lhs.child == *rhs.child));
+}
+
+struct inner_dto
+{
+    std::string str;
+};
+bool
+operator==(const inner_dto& lhs, const inner_dto& rhs)
+{
+    return lhs.str == rhs.str;
+}
+
+std::ostream&
+operator<<(std::ostream& out, const inner_dto& inner_dto)
+{
+    out << "str " << inner_dto.str;
+    return out;
+}
+
 struct main_dto
 {
-    int i;
+    bool boolean;
+    int8_t b;
+    int16_t s;
+    int32_t i;
+    int64_t l;
+    float f;
+    double d;
+    boost::optional<inner_dto> p;
     std::string str;
 };
 
 bool
 operator==(const main_dto& lhs, const main_dto& rhs)
 {
-    if (lhs.i != rhs.i) {
-        return false;
-    }
-    return lhs.str == rhs.str;
+    return lhs.b == rhs.b && lhs.boolean == rhs.boolean && lhs.s == rhs.s &&
+           lhs.i == rhs.i && lhs.l == rhs.l && lhs.f == rhs.f &&
+           lhs.d == rhs.d && lhs.p == rhs.p && lhs.str == rhs.str;
 }
 
 main_dto
 create_main_dto()
 {
-    return main_dto{ 30, "John" };
+    inner_dto p{ "Johny" };
+    return main_dto{ true,
+                     113,
+                     -500,
+                     56789,
+                     -50992225L,
+                     900.5678f,
+                     -897543.3678909,
+                     p,
+                     "this is main object created for testing!" };
 }
 
 std::ostream&
 operator<<(std::ostream& out, const main_dto& main_dto)
 {
-    out << "i " << main_dto.i << ", str " << main_dto.str;
+    out << "{" << main_dto.b << ", " << main_dto.boolean << ", " << main_dto.s
+        << ", " << main_dto.i << ", " << main_dto.l << ", " << main_dto.f
+        << ", " << main_dto.d << ", " << main_dto.p << ", " << main_dto.str
+        << "}";
     return out;
 }
 
@@ -101,29 +155,148 @@ operator<<(std::ostream& out, const main_dto& main_dto)
 struct empty_main_dto
 {};
 
+struct employee_dto
+{
+    int32_t age;
+    int32_t rank;
+    int64_t id;
+    bool isHired;
+    bool isFired;
+};
+
+bool
+operator==(const employee_dto& lhs, const employee_dto& rhs)
+{
+    return lhs.age == rhs.age && lhs.rank == rhs.rank && lhs.id == rhs.id &&
+           lhs.isHired == rhs.isHired && lhs.isFired == rhs.isFired;
+}
+
+std::ostream&
+operator<<(std::ostream& out, const employee_dto& employee_dto)
+{
+    out << "{" << employee_dto.age << ", " << employee_dto.rank << ", "
+        << employee_dto.id << ", " << employee_dto.isHired << ", "
+        << employee_dto.isFired << "}";
+    return out;
+}
+
 } // namespace test
 } // namespace compact
 
 namespace serialization {
+
+template<>
+struct hz_serializer<compact::test::bits_dto> : public compact_serializer
+{
+    static void write(const compact::test::bits_dto& dto,
+                      compact_writer& writer)
+    {
+        writer.write_boolean("a", dto.a);
+        writer.write_boolean("b", dto.b);
+        writer.write_boolean("c", dto.c);
+        writer.write_boolean("d", dto.d);
+        writer.write_boolean("e", dto.e);
+        writer.write_boolean("f", dto.f);
+        writer.write_boolean("g", dto.g);
+        writer.write_boolean("h", dto.h);
+        writer.write_int32("id", dto.id);
+    }
+
+    static compact::test::bits_dto read(compact_reader& reader)
+    {
+        compact::test::bits_dto dto;
+        dto.a = reader.read_boolean("a");
+        dto.b = reader.read_boolean("b");
+        dto.c = reader.read_boolean("c");
+        dto.d = reader.read_boolean("d");
+        dto.e = reader.read_boolean("e");
+        dto.f = reader.read_boolean("f");
+        dto.g = reader.read_boolean("g");
+        dto.h = reader.read_boolean("h");
+        dto.id = reader.read_int32("id");
+        return dto;
+    }
+
+    static std::string type_name() { return "bits_dto"; }
+};
+template<>
+struct hz_serializer<compact::test::inner_dto> : public compact_serializer
+{
+    static void write(const compact::test::inner_dto& object,
+                      compact_writer& writer)
+    {
+        writer.write_string("name", object.str);
+    }
+
+    static compact::test::inner_dto read(compact_reader& reader)
+    {
+        auto str = reader.read_string("name");
+        return compact::test::inner_dto{ str.value() };
+    }
+
+    static std::string type_name() { return "inner_dto"; }
+};
+
 template<>
 struct hz_serializer<compact::test::main_dto> : public compact_serializer
 {
     static void write(const compact::test::main_dto& object,
                       compact_writer& writer)
     {
+        writer.write_boolean("bool", object.boolean);
+        writer.write_int8("b", object.b);
+        writer.write_int16("s", object.s);
         writer.write_int32("i", object.i);
+        writer.write_int64("l", object.l);
+        writer.write_float32("f", object.f);
+        writer.write_float64("d", object.d);
+        writer.write_compact<compact::test::inner_dto>("p", object.p);
         writer.write_string("name", object.str);
     }
 
     static compact::test::main_dto read(compact_reader& reader)
     {
-        auto i = reader.read_int32("i", 1);
-        auto str =
-          reader.read_string("name", boost::make_optional<std::string>("NA"));
-        return compact::test::main_dto{ i, *str };
+        auto boolean = reader.read_boolean("bool");
+        auto b = reader.read_int8("b");
+        auto s = reader.read_int16("s");
+        auto i = reader.read_int32("i");
+        auto l = reader.read_int64("l");
+        auto f = reader.read_float32("f");
+        auto d = reader.read_float64("d");
+        auto p = reader.read_compact<compact::test::inner_dto>("p");
+        auto str = reader.read_string("name");
+        return compact::test::main_dto{ boolean, b, s, i, l, f, d, p, *str };
     }
 
     static std::string type_name() { return "main"; }
+};
+
+template<>
+struct hz_serializer<compact::test::node_dto> : public compact_serializer
+{
+    static void write(const compact::test::node_dto& object,
+                      compact_writer& writer)
+    {
+        writer.write_int32("id", object.id);
+        writer.write_compact<compact::test::node_dto>(
+          "child",
+          object.child == nullptr ? boost::none
+                                  : boost::make_optional(*object.child));
+    }
+
+    static compact::test::node_dto read(compact_reader& reader)
+    {
+        auto id = reader.read_int32("id");
+        auto&& child = reader.read_compact<compact::test::node_dto>("child");
+        return compact::test::node_dto{
+            id,
+            child.has_value()
+              ? std::make_shared<compact::test::node_dto>(child.value())
+              : nullptr
+        };
+    }
+
+    static std::string type_name() { return "node"; }
 };
 
 template<>
@@ -141,6 +314,31 @@ struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
     static std::string type_name() { return "main"; }
 };
 
+template<>
+struct hz_serializer<compact::test::employee_dto> : public compact_serializer
+{
+
+    static void write(const compact::test::employee_dto& object,
+                      compact_writer& writer)
+    {
+        writer.write_int32("age", object.age);
+        writer.write_int32("rank", object.rank);
+        writer.write_int64("id", object.id);
+        writer.write_boolean("isHired", object.isHired);
+        writer.write_boolean("isFired", object.isFired);
+    }
+
+    static compact::test::employee_dto read(compact_reader& reader)
+    {
+        auto age = reader.read_int32("age");
+        auto rank = reader.read_int32("rank");
+        auto id = reader.read_int64("id");
+        auto isHired = reader.read_boolean("isHired");
+        auto isFired = reader.read_boolean("isFired");
+        return compact::test::employee_dto{ age, rank, id, isHired, isFired };
+    }
+};
+
 } // namespace serialization
 
 namespace compact {
@@ -156,7 +354,7 @@ public:
     }
 };
 
-TEST_F(CompactSerializationTest, testAllFields)
+TEST_F(CompactSerializationTest, testAllTypes)
 {
     serialization_config config;
     SerializationService ss(config);
@@ -166,17 +364,35 @@ TEST_F(CompactSerializationTest, testAllFields)
     ASSERT_EQ(expected, actual);
 }
 
-TEST_F(CompactSerializationTest,
-       testReaderReturnsDefaultValues_whenDataIsMissing)
+TEST_F(CompactSerializationTest, testRecursive)
 {
     serialization_config config;
     SerializationService ss(config);
 
-    empty_main_dto empty;
-    data data = ss.to_data(empty);
-    main_dto actual = *(ss.to_object<main_dto>(data));
-    ASSERT_EQ(1, actual.i);
-    ASSERT_EQ("NA", actual.str);
+    auto n2 = std::make_shared<node_dto>(node_dto{ 2, nullptr });
+    auto n1 = std::make_shared<node_dto>(node_dto{ 1, n2 });
+    node_dto expected{ 0, n1 };
+    auto actual = to_data_and_back_to_object(ss, expected);
+    ASSERT_EQ(expected, actual);
+}
+
+TEST_F(CompactSerializationTest, testBits)
+{
+    serialization_config config;
+    SerializationService ss(config);
+
+    bits_dto expected;
+    expected.a = true;
+    expected.b = true;
+    expected.id = 121;
+
+    const data& data = ss.to_data(expected);
+    // hash(4) + typeid(4) + schemaId(8) + (1 bytes for 8 bits)
+    // + (4 bytes for int)
+    ASSERT_EQ(21, data.total_size());
+
+    bits_dto actual = *(ss.to_object<bits_dto>(data));
+    ASSERT_EQ(expected, actual);
 }
 
 void
@@ -191,19 +407,18 @@ check_schema_field(const schema& schema,
     ASSERT_EQ(bit_offset, schema.fields().at(field_name).bit_offset);
 }
 
-TEST_F(CompactSerializationTest, test_schema_field_order)
+TEST_F(CompactSerializationTest, test_field_order_fixed_size)
 {
-    schema_writer schema_writer("typename");
-    schema_writer.add_field("int2", field_kind::INT32);
-    schema_writer.add_field("int1", field_kind::INT32);
-    schema_writer.add_field("string1", field_kind::STRING);
-    schema_writer.add_field("string2", field_kind::STRING);
+    schema_writer schema_writer("typeName");
+    auto writer = serialization::pimpl::create_compact_writer(&schema_writer);
+    serialization::hz_serializer<employee_dto>::write(employee_dto{}, writer);
     auto schema = std::move(schema_writer).build();
 
-    check_schema_field(schema, "int1", 0, -1, -1);
-    check_schema_field(schema, "int2", 4, -1, -1);
-    check_schema_field(schema, "string1", -1, 0, -1);
-    check_schema_field(schema, "string2", -1, 1, -1);
+    check_schema_field(schema, "id", 0, -1, -1);
+    check_schema_field(schema, "age", 8, -1, -1);
+    check_schema_field(schema, "rank", 12, -1, -1);
+    check_schema_field(schema, "isFired", 16, -1, 0);
+    check_schema_field(schema, "isHired", 16, -1, 1);
 }
 
 TEST_F(CompactSerializationTest, test_schema_writer_counts)

@@ -53,11 +53,44 @@ enum HAZELCAST_API field_kind
 {
     BOOLEAN = 0,
     ARRAY_OF_BOOLEAN = 1,
+    INT8 = 2,
+    ARRAY_OF_INT8 = 3,
+    INT16 = 6,
+    ARRAY_OF_INT16 = 7,
     INT32 = 8,
+    ARRAY_OF_INT32 = 9,
+    INT64 = 10,
+    ARRAY_OF_INT64 = 11,
+    FLOAT32 = 12,
+    ARRAY_OF_FLOAT32 = 13,
+    FLOAT64 = 14,
+    ARRAY_OF_FLOAT64 = 15,
     STRING = 16,
+    ARRAY_OF_STRING = 17,
+    DECIMAL = 18,
+    ARRAY_OF_DECIMAL = 19,
+    TIME = 20,
+    ARRAY_OF_TIME = 21,
+    DATE = 22,
+    ARRAY_OF_DATE = 23,
     TIMESTAMP_WITH_TIMEZONE = 26,
-    NULLABLE_INT32 = 32,
-    ARRAY_OF_NULLABLE_FLOAT64 = 45
+    ARRAY_OF_TIMESTAMP_WITH_TIMEZONE = 27,
+    COMPACT = 28,
+    ARRAY_OF_COMPACT = 29,
+    NULLABLE_BOOLEAN = 32,
+    ARRAY_OF_NULLABLE_BOOLEAN = 33,
+    NULLABLE_INT8 = 34,
+    ARRAY_OF_NULLABLE_INT8 = 35,
+    NULLABLE_INT16 = 36,
+    ARRAY_OF_NULLABLE_INT16 = 37,
+    NULLABLE_INT32 = 38,
+    ARRAY_OF_NULLABLE_INT32 = 39,
+    NULLABLE_INT64 = 40,
+    ARRAY_OF_NULLABLE_INT64 = 41,
+    NULLABLE_FLOAT32 = 42,
+    ARRAY_OF_NULLABLE_FLOAT32 = 43,
+    NULLABLE_FLOAT64 = 44,
+    ARRAY_OF_NULLABLE_FLOAT64 = 45,
 };
 static const int NUMBER_OF_FIELD_KINDS = ARRAY_OF_NULLABLE_FLOAT64 + 1;
 
@@ -92,51 +125,104 @@ class HAZELCAST_API compact_reader
 {
 public:
     /**
+     * Reads a boolean.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
+     */
+    bool read_boolean(const std::string& fieldName);
+
+    /**
+     * Reads an 8-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
+     */
+    int8_t read_int8(const std::string& fieldName);
+
+    /**
+     * Reads a 16-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
+     */
+    int16_t read_int16(const std::string& fieldName);
+
+    /**
      * Reads a 32-bit two's complement signed integer.
      *
      * @param fieldName name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in
-     * the schema or the type of the field does not match with the one defined
-     * in the schema.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     int32_t read_int32(const std::string& field_name);
 
     /**
-     * Reads a 32-bit two's complement signed integer or returns the default
-     * value.
+     * Reads a 64-bit two's complement signed integer.
      *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given
-     * name does not exist in the schema or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
-    int32_t read_int32(const std::string& field_name, int32_t default_value);
+    int64_t read_int64(const std::string& field_name);
+
+    /**
+     * Reads a 32-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
+     */
+    float read_float32(const std::string& field_name);
+
+    /**
+     * Reads a 64-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
+     */
+    double read_float64(const std::string& field_name);
 
     /**
      * Reads an UTF-8 encoded string.
      *
      * @param fieldName name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in
-     * the schema or the type of the field does not match with the one defined
-     * in the schema.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     boost::optional<std::string> read_string(const std::string& field_name);
 
     /**
-     * Reads an UTF-8 encoded string or returns the default value.
+     * Reads a compact object
      *
-     * @param fieldName    name of the field.
-     * @param defaultValue default value to return if the field with the given
-     * name does not exist in the schema or the type of the field does not match
-     * with the one defined in the schema.
-     * @return the value or the default value of the field.
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
-    boost::optional<std::string> read_string(
-      const std::string& field_name,
-      const boost::optional<std::string>& default_value);
+    template<typename T>
+    boost::optional<T> read_compact(const std::string& field_name);
 
 private:
     compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,
@@ -147,6 +233,14 @@ private:
       pimpl::compact_stream_serializer& compact_stream_serializer,
       object_data_input& object_data_input,
       const pimpl::schema& schema);
+
+    template<typename T>
+    T read_primitive(const std::string& field_name,
+                     enum pimpl::field_kind field_kind,
+                     enum pimpl::field_kind nullable_field_kind,
+                     const std::string& method_suffix);
+    template<typename T>
+    T read_primitive(const pimpl::field_descriptor& field_descriptor);
 
     bool is_field_exists(const std::string& fieldName,
                          enum pimpl::field_kind kind) const;
@@ -171,18 +265,36 @@ private:
       const pimpl::field_descriptor& field_descriptor,
       const std::string& field_name,
       const std::string& method_suffix);
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<bool, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<float, typename std::remove_cv<T>::type>::value ||
+        std::is_same<double, typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      typename boost::optional<T>>::type
+    read();
     static exception::hazelcast_serialization unexpected_null_value(
       const std::string& field_name,
       const std::string& method_suffix);
     size_t read_fixed_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
-    size_t read_var_size_position(
+    int32_t read_var_size_position(
       const pimpl::field_descriptor& field_descriptor) const;
     pimpl::compact_stream_serializer& compact_stream_serializer;
     serialization::object_data_input& object_data_input;
     const pimpl::schema& schema;
-    uint32_t data_start_position;
-    uint32_t variable_offsets_position;
+    int32_t data_start_position;
+    size_t variable_offsets_position;
     /**
      * Returns the offset of the variable-size field at the given index.
      * @param serialization::object_data_input& Input to read the offset from.
@@ -191,7 +303,8 @@ private:
      * @param uint32_t index of the field.
      * @return The offset.
      */
-    std::function<int(serialization::object_data_input&, uint32_t, uint32_t)>
+    std::function<
+      int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
       get_offset;
 };
 
@@ -205,12 +318,60 @@ class HAZELCAST_API compact_writer
 {
 public:
     /**
+     * Writes a boolean value.
+     *
+     * @param fieldName name of the field.
+     * @param value     value to write.
+     */
+    void write_boolean(const std::string& field_name, bool value);
+
+    /**
+     * Writes an 8-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     value to write.
+     */
+    void write_int8(const std::string& field_name, int8_t value);
+
+    /**
+     *  Writes a 16-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     value to write.
+     */
+    void write_int16(const std::string& field_name, int16_t value);
+
+    /**
      * Writes a 32-bit two's complement signed integer.
      *
      * @param fieldName name of the field.
      * @param value     to be written.
      */
     void write_int32(const std::string& field_name, int32_t value);
+
+    /**
+     * Writes a 64-bit two's complement signed integer.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_int64(const std::string& field_name, int64_t value);
+
+    /**
+     * Writes a 32-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_float32(const std::string& field_name, float value);
+
+    /**
+     * Writes a 64-bit IEEE 754 floating point number.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_float64(const std::string& field_name, double value);
 
     /**
      * Writes an UTF-8 encoded string.
@@ -220,6 +381,16 @@ public:
      */
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+
+    /**
+     * Writes a nested compact object.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    template<typename T>
+    void write_compact(const std::string& field_name,
+                       const boost::optional<T>& value);
 
 private:
     friend compact_writer pimpl::create_compact_writer(
@@ -252,22 +423,6 @@ constexpr uint32_t BYTE_OFFSET_READER_RANGE = INT8_MAX - INT8_MIN;
  */
 constexpr uint32_t SHORT_OFFSET_READER_RANGE = INT16_MAX - INT16_MIN;
 
-/**
- * Returns the offset of the variable-size field at the given index.
- *
- * @tparam OFFSET_TYPE can be int32_t, int16_t or int8_t
- * @param in Input to read the offset from.
- * @param variableOffsetsPos Start of the variable-size field offsets
- *                           section of the input.
- * @param index Index of the field.
- * @return The offset.
- */
-template<typename OFFSET_TYPE>
-int32_t
-get_offset(serialization::object_data_input& in,
-           uint32_t variable_offsets_pos,
-           uint32_t index);
-
 } // namespace offset_reader
 
 class HAZELCAST_API default_compact_writer
@@ -276,14 +431,23 @@ public:
     default_compact_writer(compact_stream_serializer& compact_stream_serializer,
                            object_data_output& object_data_output,
                            const schema& schema);
+    void write_boolean(const std::string& field_name, bool value);
+    void write_int8(const std::string& field_name, int8_t value);
+    void write_int16(const std::string& field_name, int16_t value);
     void write_int32(const std::string& field_name, int32_t value);
+    void write_int64(const std::string& field_name, int64_t value);
+    void write_float32(const std::string& field_name, float value);
+    void write_float64(const std::string& field_name, double value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    template<typename T>
+    void write_compact(const std::string& field_name,
+                       const boost::optional<T>& value);
     void end();
 
 private:
-    int get_fixed_size_field_position(const std::string& field_name,
-                                      enum field_kind field_kind) const;
+    size_t get_fixed_size_field_position(const std::string& field_name,
+                                         enum field_kind field_kind) const;
     const field_descriptor& check_field_definition(
       const std::string& field_name,
       enum field_kind field_kind) const;
@@ -293,6 +457,19 @@ private:
     void write_variable_size_field(const std::string& field_name,
                                    enum field_kind field_kind,
                                    const boost::optional<T>& value);
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      void>::type
+    write(const T& value);
+
     void set_position(const std::string& field_name,
                       enum field_kind field_kind);
     void set_position_as_null(const std::string& field_name,
@@ -301,7 +478,7 @@ private:
     object_data_output& object_data_output_;
     const schema& schema_;
     size_t data_start_position;
-    std::vector<int> field_offsets;
+    std::vector<int32_t> field_offsets;
 };
 
 struct HAZELCAST_API field_descriptor

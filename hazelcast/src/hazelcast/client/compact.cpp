@@ -32,6 +32,35 @@ compact_writer::compact_writer(pimpl::schema_writer* schema_writer)
 {}
 
 void
+compact_writer::write_boolean(const std::string& field_name, bool value)
+{
+    if (default_compact_writer) {
+        default_compact_writer->write_boolean(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::BOOLEAN);
+    }
+}
+void
+compact_writer::write_int8(const std::string& field_name, int8_t value)
+{
+    if (default_compact_writer) {
+        default_compact_writer->write_int8(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::INT8);
+    }
+}
+
+void
+compact_writer::write_int16(const std::string& field_name, int16_t value)
+{
+    if (default_compact_writer) {
+        default_compact_writer->write_int16(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::INT16);
+    }
+}
+
+void
 compact_writer::write_int32(const std::string& field_name, int32_t value)
 {
     if (default_compact_writer != nullptr) {
@@ -40,6 +69,37 @@ compact_writer::write_int32(const std::string& field_name, int32_t value)
         schema_writer->add_field(field_name, pimpl::field_kind::INT32);
     }
 }
+
+void
+compact_writer::write_int64(const std::string& field_name, int64_t value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_int64(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::INT64);
+    }
+}
+
+void
+compact_writer::write_float32(const std::string& field_name, float value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_float32(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::FLOAT32);
+    }
+}
+
+void
+compact_writer::write_float64(const std::string& field_name, double value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_float64(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::FLOAT64);
+    }
+}
+
 void
 compact_writer::write_string(const std::string& field_name,
                              const boost::optional<std::string>& value)
@@ -70,7 +130,7 @@ compact_reader::compact_reader(
   , object_data_input(object_data_input)
   , schema(schema)
 {
-    uint32_t final_position;
+    size_t final_position;
     size_t number_of_var_size_fields = schema.number_of_var_size_fields();
     if (number_of_var_size_fields != 0) {
         uint32_t data_length = object_data_input.read<int32_t>();
@@ -101,7 +161,7 @@ compact_reader::compact_reader(
     }
     // set the position to final so that the next one to read something from
     // `in` can start from correct position
-    object_data_input.position(final_position);
+    object_data_input.position(static_cast<int>(final_position));
 }
 
 bool
@@ -174,45 +234,83 @@ size_t
 compact_reader::read_fixed_size_position(
   const pimpl::field_descriptor& field_descriptor) const
 {
-    int primitive_offset = field_descriptor.offset;
+    int32_t primitive_offset = field_descriptor.offset;
     return primitive_offset + data_start_position;
 }
 
-size_t
+int32_t
 compact_reader::read_var_size_position(
   const pimpl::field_descriptor& field_descriptor) const
 {
-    int index = field_descriptor.index;
-    int offset =
+    int32_t index = field_descriptor.index;
+    int32_t offset =
       get_offset(object_data_input, variable_offsets_position, index);
     return offset == pimpl::offset_reader::NULL_OFFSET
              ? pimpl::offset_reader::NULL_OFFSET
              : offset + data_start_position;
 }
 
-int32_t
-compact_reader::read_int32(const std::string& field_name)
+bool
+compact_reader::read_boolean(const std::string& fieldName)
 {
-    const auto& fd = get_field_descriptor(field_name);
-    const auto& fieldKind = fd.field_kind;
-    switch (fieldKind) {
-        case pimpl::field_kind::INT32:
-            return object_data_input.read<int32_t>(
-              read_fixed_size_position(fd));
-        case pimpl::field_kind::NULLABLE_INT32:
-            return get_variable_size_as_non_null<int32_t>(
-              fd, field_name, "int32");
-        default:
-            BOOST_THROW_EXCEPTION(unexpected_field_kind(fieldKind, field_name));
-    }
+    return read_primitive<bool>(fieldName,
+                                pimpl::field_kind::BOOLEAN,
+                                pimpl::field_kind::NULLABLE_BOOLEAN,
+                                "boolean");
+}
+
+int8_t
+compact_reader::read_int8(const std::string& fieldName)
+{
+    return read_primitive<int8_t>(fieldName,
+                                  pimpl::field_kind::INT8,
+                                  pimpl::field_kind::NULLABLE_INT8,
+                                  "int8");
+}
+
+int16_t
+compact_reader::read_int16(const std::string& field_name)
+{
+    return read_primitive<int16_t>(field_name,
+                                   pimpl::field_kind::INT16,
+                                   pimpl::field_kind::NULLABLE_INT16,
+                                   "int16");
 }
 
 int32_t
-compact_reader::read_int32(const std::string& field_name, int32_t default_value)
+compact_reader::read_int32(const std::string& field_name)
 {
-    return is_field_exists(field_name, pimpl::field_kind::INT32)
-             ? read_int32(field_name)
-             : default_value;
+    return read_primitive<int32_t>(field_name,
+                                   pimpl::field_kind::INT32,
+                                   pimpl::field_kind::NULLABLE_INT32,
+                                   "int32");
+}
+
+int64_t
+compact_reader::read_int64(const std::string& field_name)
+{
+    return read_primitive<int64_t>(field_name,
+                                   pimpl::field_kind::INT64,
+                                   pimpl::field_kind::NULLABLE_INT64,
+                                   "int64");
+}
+
+float
+compact_reader::read_float32(const std::string& field_name)
+{
+    return read_primitive<float>(field_name,
+                                 pimpl::field_kind::FLOAT32,
+                                 pimpl::field_kind::NULLABLE_FLOAT32,
+                                 "float32");
+}
+
+double
+compact_reader::read_float64(const std::string& field_name)
+{
+    return read_primitive<double>(field_name,
+                                  pimpl::field_kind::FLOAT64,
+                                  pimpl::field_kind::NULLABLE_FLOAT64,
+                                  "float64");
 }
 
 boost::optional<std::string>
@@ -221,15 +319,6 @@ compact_reader::read_string(const std::string& field_name)
     return get_variable_size<std::string>(field_name,
                                           pimpl::field_kind::STRING);
 }
-boost::optional<std::string>
-compact_reader::read_string(const std::string& field_name,
-                            const boost::optional<std::string>& default_value)
-{
-    return is_field_exists(field_name, pimpl::field_kind::STRING)
-             ? read_string(field_name)
-             : default_value;
-}
-
 namespace pimpl {
 
 compact_writer
@@ -267,12 +356,70 @@ default_compact_writer::default_compact_writer(
 }
 
 void
+default_compact_writer::write_boolean(const std::string& field_name, bool value)
+{
+    field_descriptor descriptor =
+      check_field_definition(field_name, field_kind::BOOLEAN);
+    int32_t offset_in_bytes = descriptor.offset;
+    int8_t offset_in_bits = descriptor.bit_offset;
+    size_t write_offset = offset_in_bytes + data_start_position;
+    object_data_output_.write_boolean_bit_at(
+      write_offset, offset_in_bits, value);
+}
+
+void
+default_compact_writer::write_int8(const std::string& field_name, int8_t value)
+{
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT8);
+    object_data_output_.write_at(position, value);
+}
+
+void
+default_compact_writer::write_int16(const std::string& field_name,
+                                    int16_t value)
+{
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT16);
+    object_data_output_.write_at(position, value);
+}
+
+void
 default_compact_writer::write_int32(const std::string& field_name,
                                     int32_t value)
 {
-    int position = get_fixed_size_field_position(field_name, field_kind::INT32);
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT32);
     object_data_output_.write_at(position, value);
 }
+
+void
+default_compact_writer::write_int64(const std::string& field_name,
+                                    int64_t value)
+{
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::INT64);
+    object_data_output_.write_at(position, value);
+}
+
+void
+default_compact_writer::write_float32(const std::string& field_name,
+                                      float value)
+{
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::FLOAT32);
+    object_data_output_.write_at(position, value);
+}
+
+void
+default_compact_writer::write_float64(const std::string& field_name,
+                                      double value)
+{
+    size_t position =
+      get_fixed_size_field_position(field_name, field_kind::FLOAT64);
+    object_data_output_.write_at(position, value);
+}
+
 void
 default_compact_writer::write_string(const std::string& field_name,
                                      const boost::optional<std::string>& value)
@@ -291,11 +438,12 @@ default_compact_writer::end()
     size_t data_length = position - data_start_position;
     write_offsets(data_length);
     // write dataLength
-    object_data_output_.write_at(
-      data_start_position - util::Bits::INT_SIZE_IN_BYTES, data_length);
+    object_data_output_.write_at(data_start_position -
+                                   util::Bits::INT_SIZE_IN_BYTES,
+                                 (int32_t)data_length);
 }
 
-int
+size_t
 default_compact_writer::get_fixed_size_field_position(
   const std::string& field_name,
   enum field_kind field_kind) const
@@ -331,15 +479,15 @@ void
 default_compact_writer::write_offsets(size_t data_length)
 {
     if (data_length < offset_reader::BYTE_OFFSET_READER_RANGE) {
-        for (int offset : field_offsets) {
+        for (int32_t offset : field_offsets) {
             object_data_output_.write<byte>(offset);
         }
     } else if (data_length < offset_reader::SHORT_OFFSET_READER_RANGE) {
-        for (int offset : field_offsets) {
-            object_data_output_.write<int16_t>(offset);
+        for (int32_t offset : field_offsets) {
+            object_data_output_.write<int16_t>(static_cast<int16_t>(offset));
         }
     } else {
-        for (int offset : field_offsets) {
+        for (int32_t offset : field_offsets) {
             object_data_output_.write<int32_t>(offset);
         }
     }
@@ -352,9 +500,9 @@ default_compact_writer::set_position(const std::string& field_name,
     const auto& field_descriptor =
       check_field_definition(field_name, field_kind);
     size_t pos = object_data_output_.position();
-    int fieldPosition = pos - data_start_position;
+    size_t fieldPosition = pos - data_start_position;
     int index = field_descriptor.index;
-    field_offsets[index] = fieldPosition;
+    field_offsets[index] = static_cast<int32_t>(fieldPosition);
 }
 
 void
@@ -446,7 +594,7 @@ kind_size_comparator(const field_descriptor* i, const field_descriptor* j)
       field_operations::get(i->field_kind).kind_size_in_byte_func();
     auto j_kind_size =
       field_operations::get(j->field_kind).kind_size_in_byte_func();
-    return i_kind_size < j_kind_size;
+    return i_kind_size > j_kind_size;
 }
 
 schema::schema(
@@ -484,10 +632,11 @@ schema::schema(
                     .kind_size_in_byte_func();
     }
 
-    int bit_offset = 0;
+    int8_t bit_offset = 0;
     for (auto descriptor : boolean_fields) {
         descriptor->offset = offset;
-        descriptor->bit_offset = bit_offset % util::Bits::BITS_IN_BYTE;
+        descriptor->bit_offset =
+          static_cast<int8_t>(bit_offset % util::Bits::BITS_IN_BYTE);
         bit_offset++;
         if (bit_offset % util::Bits::BITS_IN_BYTE == 0) {
             offset += 1;
@@ -630,11 +779,14 @@ field_operations::get(enum field_kind field_kind)
         field_kind_based_operations(
           []() { return util::Bits::INT_SIZE_IN_BYTES; }),
         field_kind_based_operations{},
+        field_kind_based_operations{
+          []() { return util::Bits::LONG_SIZE_IN_BYTES; } },
         field_kind_based_operations{},
+        field_kind_based_operations{
+          []() { return util::Bits::FLOAT_SIZE_IN_BYTES; } },
         field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
+        field_kind_based_operations{
+          []() { return util::Bits::DOUBLE_SIZE_IN_BYTES; } },
         field_kind_based_operations{},
         field_kind_based_operations{},
         field_kind_based_operations{},

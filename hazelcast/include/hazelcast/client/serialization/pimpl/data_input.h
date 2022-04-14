@@ -109,78 +109,24 @@ public:
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<int16_t, typename std::remove_cv<T>::type>::value,
+      std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<float, typename std::remove_cv<T>::type>::value ||
+        std::is_same<double, typename std::remove_cv<T>::type>::value,
       T>::type inline read()
     {
-        int16_t result = read<int16_t>(pos_);
-        pos_ += util::Bits::SHORT_SIZE_IN_BYTES;
-        return result;
-    }
-
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<int32_t, typename std::remove_cv<T>::type>::value,
-      T>::type inline read()
-    {
-        int32_t result = read<int32_t>(pos_);
-        pos_ += util::Bits::INT_SIZE_IN_BYTES;
+        T result = read<T>(pos_);
+        pos_ += sizeof(T);
         return result;
     }
 
     int32_t read(boost::endian::order byte_order)
     {
-        check_available(util::Bits::INT_SIZE_IN_BYTES);
-        int32_t result = read(pos_, byte_order);
+        int32_t result = read_at<int32_t>(pos_, byte_order);
         pos_ += util::Bits::INT_SIZE_IN_BYTES;
         return result;
-    }
-
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<int64_t, typename std::remove_cv<T>::type>::value,
-      T>::type inline read()
-    {
-        check_available(util::Bits::LONG_SIZE_IN_BYTES);
-        int64_t result;
-        if (byte_order_ == boost::endian::order::big) {
-            result = boost::endian::
-              endian_load<boost::int64_t, 8, boost::endian::order::big>(
-                &buffer_[pos_]);
-        } else {
-            result = boost::endian::
-              endian_load<boost::int64_t, 8, boost::endian::order::little>(
-                &buffer_[pos_]);
-        }
-        pos_ += util::Bits::LONG_SIZE_IN_BYTES;
-        return result;
-    }
-
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<float, typename std::remove_cv<T>::type>::value,
-      T>::type inline read()
-    {
-        union
-        {
-            int32_t i;
-            float f;
-        } u;
-        u.i = read<int32_t>();
-        return u.f;
-    }
-
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<double, typename std::remove_cv<T>::type>::value,
-      T>::type inline read()
-    {
-        union
-        {
-            double d;
-            int64_t l;
-        } u;
-        u.l = read<int64_t>();
-        return u.d;
     }
 
     template<typename T>
@@ -332,10 +278,34 @@ private:
         return value;
     }
 
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int64_t, typename std::remove_cv<T>::type>::value,
+      T>::type inline read_at(int pos, boost::endian::order byte_order)
+    {
+        check_available(pos, sizeof(T));
+        T result;
+        if (byte_order == boost::endian::order::big) {
+            result =
+              boost::endian::endian_load<typename std::make_unsigned<T>::type,
+                                         sizeof(T),
+                                         boost::endian::order::big>(
+                &buffer_[pos]);
+        } else {
+            result = boost::endian::
+              endian_load<T, sizeof(T), boost::endian::order::little>(
+                &buffer_[pos]);
+        }
+        return result;
+    }
+
 protected:
     template<typename T>
     typename std::enable_if<
-      std::is_same<int8_t, typename std::remove_cv<T>::type>::value,
+      std::is_same<byte, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int8_t, typename std::remove_cv<T>::type>::value,
       T>::type inline read(int pos)
     {
         check_available(pos, 1);
@@ -344,45 +314,40 @@ protected:
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<int16_t, typename std::remove_cv<T>::type>::value,
+      std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+        std::is_same<int64_t, typename std::remove_cv<T>::type>::value,
       T>::type inline read(int pos)
     {
-        check_available(pos, util::Bits::SHORT_SIZE_IN_BYTES);
-        int16_t result;
-        if (byte_order_ == boost::endian::order::big) {
-            result = boost::endian::
-              endian_load<boost::uint16_t, 2, boost::endian::order::big>(
-                &buffer_[pos]);
-        } else {
-            result = boost::endian::
-              endian_load<boost::int16_t, 2, boost::endian::order::little>(
-                &buffer_[pos]);
-        }
-        return result;
+        return read_at<T>(pos, byte_order_);
     }
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<int32_t, typename std::remove_cv<T>::type>::value,
+      std::is_same<float, typename std::remove_cv<T>::type>::value,
       T>::type inline read(int pos)
     {
-        return read(pos, byte_order_);
+        union
+        {
+            int32_t i;
+            float f;
+        } u;
+        u.i = read<int32_t>(pos);
+        return u.f;
     }
 
-    int32_t read(int pos, boost::endian::order byte_order)
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<double, typename std::remove_cv<T>::type>::value,
+      T>::type inline read(int pos)
     {
-        check_available(pos, util::Bits::INT_SIZE_IN_BYTES);
-        int32_t result;
-        if (byte_order == boost::endian::order::big) {
-            result = boost::endian::
-              endian_load<boost::uint32_t, 4, boost::endian::order::big>(
-                &buffer_[pos]);
-        } else {
-            result = boost::endian::
-              endian_load<boost::int32_t, 4, boost::endian::order::little>(
-                &buffer_[pos]);
-        }
-        return result;
+        union
+        {
+            double d;
+            int64_t l;
+        } u;
+        u.l = read<int64_t>(pos);
+        return u.d;
     }
 };
 } // namespace pimpl
