@@ -440,7 +440,7 @@ compact_reader::unexpected_null_value(const std::string& field_name,
     return { "compact_reader",
              (boost::format(
                 "Error while reading %1%. null value can not be read via "
-                "get_%2% methods. Use get_nullable_%2%  instead.") %
+                "read_%2% methods. Use read_nullable_%2%  instead.") %
               field_name % method_suffix)
                .str() };
 }
