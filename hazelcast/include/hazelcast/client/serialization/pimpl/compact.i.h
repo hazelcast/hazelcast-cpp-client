@@ -138,7 +138,6 @@ typename std::enable_if<
     std::is_same<float, typename std::remove_cv<T>::type>::value ||
     std::is_same<double, typename std::remove_cv<T>::type>::value ||
     std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
-    std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value ||
     std::is_same<std::vector<int8_t>,
                  typename std::remove_cv<T>::type>::value ||
     std::is_same<std::vector<int16_t>,
@@ -166,6 +165,33 @@ compact_reader::read()
 {
     return compact_stream_serializer.template read<T>(object_data_input);
 }
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value,
+  typename boost::optional<T>>::type
+compact_reader::read()
+{
+    int32_t len = object_data_input.read<int32_t>();
+    if (len == 0) {
+        return boost::make_optional<std::vector<bool>>(std::vector<bool>(0));
+    }
+    auto values =
+      boost::make_optional<std::vector<bool>>(std::vector<bool>(len));
+    int index = 0;
+    byte current_byte = object_data_input.read<byte>();
+    for (int i = 0; i < len; ++i) {
+        if (index == util::Bits::BITS_IN_BYTE) {
+            index = 0;
+            current_byte = object_data_input.read<byte>();
+        }
+        bool result = ((current_byte >> index) & 1) != 0;
+        index++;
+        values.value()[i] = result;
+    }
+    return values;
+}
+
 template<typename T>
 boost::optional<T>
 compact_reader::read_array_of_primitive(
@@ -350,7 +376,6 @@ default_compact_writer::write_array_of_variable_size(
 template<typename T>
 typename std::enable_if<
   std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
-    std::is_same<std::vector<bool>, T>::value ||
     std::is_same<std::vector<int8_t>, T>::value ||
     std::is_same<std::vector<int16_t>, T>::value ||
     std::is_same<std::vector<int32_t>, T>::value ||
@@ -371,6 +396,28 @@ typename std::enable_if<
 default_compact_writer::write(const T& value)
 {
     compact_stream_serializer_.template write<T>(value, object_data_output_);
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<std::vector<bool>, T>::value, void>::type
+default_compact_writer::write(const T& value)
+{
+    auto len = value.size();
+    object_data_output_.write<int32_t>(len);
+    size_t position = object_data_output_.position();
+    if (len > 0) {
+        int index = 0;
+        object_data_output_.write_zero_bytes(1);
+        for (auto v : value) {
+            if (index == util::Bits::BITS_IN_BYTE) {
+                index = 0;
+                object_data_output_.write_zero_bytes(1);
+                position++;
+            }
+            object_data_output_.write_boolean_bit_at(position, index, v);
+            index++;
+        }
+    }
 }
 
 template<typename T>

@@ -375,8 +375,6 @@ private:
         std::is_same<float, typename std::remove_cv<T>::type>::value ||
         std::is_same<double, typename std::remove_cv<T>::type>::value ||
         std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
-        std::is_same<std::vector<bool>,
-                     typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<int8_t>,
                      typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<int16_t>,
@@ -398,6 +396,12 @@ private:
       std::is_base_of<compact_serializer, hz_serializer<T>>::value,
       typename boost::optional<T>>::type
     read();
+    template<typename T>
+    typename std::enable_if<
+        std::is_same<std::vector<bool>,
+                     typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+      read();
     template<typename T>
     boost::optional<T> read_array_of_primitive(
       const std::string& field_name,
@@ -718,7 +722,6 @@ private:
     template<typename T>
     typename std::enable_if<
       std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
-        std::is_same<std::vector<bool>, T>::value ||
         std::is_same<std::vector<int8_t>, T>::value ||
         std::is_same<std::vector<int16_t>, T>::value ||
         std::is_same<std::vector<int32_t>, T>::value ||
@@ -733,6 +736,11 @@ private:
     typename std::enable_if<
       std::is_base_of<compact_serializer, hz_serializer<T>>::value,
       void>::type
+    write(const T& value);
+
+    template<typename T>
+    typename std::enable_if<std::is_same<std::vector<bool>, T>::value,
+                            void>::type
     write(const T& value);
 
     template<typename T>

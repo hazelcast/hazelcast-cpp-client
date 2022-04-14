@@ -47,6 +47,7 @@ struct bits_dto
     bool g = false;
     bool h = false;
     int id = 0;
+    boost::optional<std::vector<bool>> booleans;
 };
 
 bool
@@ -54,7 +55,8 @@ operator==(const bits_dto& lhs, const bits_dto& rhs)
 {
     return lhs.a == rhs.a && lhs.b == rhs.b && lhs.c == rhs.c &&
            lhs.d == rhs.d && lhs.e == rhs.e && lhs.f == rhs.f &&
-           lhs.g == rhs.g && lhs.h == rhs.h && lhs.id == rhs.id;
+           lhs.g == rhs.g && lhs.h == rhs.h && lhs.id == rhs.id &&
+           lhs.booleans == rhs.booleans;
 }
 
 struct node_dto
@@ -277,6 +279,7 @@ struct hz_serializer<compact::test::bits_dto> : public compact_serializer
         writer.write_boolean("g", dto.g);
         writer.write_boolean("h", dto.h);
         writer.write_int32("id", dto.id);
+        writer.write_array_of_boolean("booleans", dto.booleans);
     }
 
     static compact::test::bits_dto read(compact_reader& reader)
@@ -291,6 +294,7 @@ struct hz_serializer<compact::test::bits_dto> : public compact_serializer
         dto.g = reader.read_boolean("g");
         dto.h = reader.read_boolean("h");
         dto.id = reader.read_int32("id");
+        dto.booleans = reader.read_array_of_boolean("booleans");
         return dto;
     }
 
@@ -502,11 +506,14 @@ TEST_F(CompactSerializationTest, testBits)
     expected.a = true;
     expected.b = true;
     expected.id = 121;
+    expected.booleans = boost::make_optional<std::vector<bool>>(
+      { true, false, false, false, true, false, false, false });
 
     const data& data = ss.to_data(expected);
-    // hash(4) + typeid(4) + schemaId(8) + (1 bytes for 8 bits)
-    // + (4 bytes for int)
-    ASSERT_EQ(21, data.total_size());
+    // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (1 bytes for 8
+    // bits) + (4 bytes for int) (4 byte length of byte array) + (1 byte for
+    // booleans array of 8 bits) + (1 byte offset bytes)
+    ASSERT_EQ(31, data.total_size());
 
     bits_dto actual = *(ss.to_object<bits_dto>(data));
     ASSERT_EQ(expected, actual);
