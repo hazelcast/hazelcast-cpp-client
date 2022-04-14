@@ -42,7 +42,8 @@ get_offset(serialization::object_data_input& in,
            uint32_t variable_offsets_pos,
            uint32_t index)
 {
-    OFFSET_TYPE v = in.read<OFFSET_TYPE>(variable_offsets_pos + index);
+    OFFSET_TYPE v = in.read<OFFSET_TYPE>(variable_offsets_pos +
+                                         (index * sizeof(OFFSET_TYPE)));
     if (v == NULL_OFFSET) {
         return NULL_OFFSET;
     }
