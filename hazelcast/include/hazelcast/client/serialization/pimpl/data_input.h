@@ -124,7 +124,7 @@ public:
 
     int32_t read(boost::endian::order byte_order)
     {
-        int32_t result = read(pos_, byte_order);
+        int32_t result = read_at<int32_t>(pos_, byte_order);
         pos_ += util::Bits::INT_SIZE_IN_BYTES;
         return result;
     }
@@ -348,11 +348,6 @@ protected:
         } u;
         u.l = read<int64_t>(pos);
         return u.d;
-    }
-
-    int32_t read(int pos, boost::endian::order byte_order)
-    {
-        return read_at<int32_t>(pos, byte_order);
     }
 };
 } // namespace pimpl

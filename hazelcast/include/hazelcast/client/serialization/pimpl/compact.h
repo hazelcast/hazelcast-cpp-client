@@ -55,8 +55,6 @@ enum HAZELCAST_API field_kind
     ARRAY_OF_BOOLEAN = 1,
     INT8 = 2,
     ARRAY_OF_INT8 = 3,
-    CHAR = 4,
-    ARRAY_OF_CHAR = 5,
     INT16 = 6,
     ARRAY_OF_INT16 = 7,
     INT32 = 8,
@@ -79,8 +77,6 @@ enum HAZELCAST_API field_kind
     ARRAY_OF_TIMESTAMP_WITH_TIMEZONE = 27,
     COMPACT = 28,
     ARRAY_OF_COMPACT = 29,
-    PORTABLE = 30,
-    ARRAY_OF_PORTABLE = 31,
     NULLABLE_BOOLEAN = 32,
     ARRAY_OF_NULLABLE_BOOLEAN = 33,
     NULLABLE_INT8 = 34,
@@ -134,8 +130,8 @@ public:
      * @param fieldName name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the schema
-     *                                         or the type of the field does not
-     * match with the one defined in the schema.
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     bool read_boolean(const std::string& fieldName);
 
@@ -145,8 +141,8 @@ public:
      * @param fieldName name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the schema
-     *                                         or the type of the field does not
-     * match with the one defined in the schema.
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     int8_t read_int8(const std::string& fieldName);
 
@@ -156,8 +152,8 @@ public:
      * @param fieldName name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the schema
-     *                                         or the type of the field does not
-     * match with the one defined in the schema.
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     int16_t read_int16(const std::string& fieldName);
 
@@ -166,9 +162,9 @@ public:
      *
      * @param fieldName name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in
-     * the schema or the type of the field does not match with the one defined
-     * in the schema.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     int32_t read_int32(const std::string& field_name);
 
@@ -178,8 +174,8 @@ public:
      * @param fieldName name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the schema
-     *                                         or the type of the field does not
-     * match with the one defined in the schema.
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     int64_t read_int64(const std::string& field_name);
 
@@ -189,8 +185,8 @@ public:
      * @param fieldName name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the schema
-     *                                         or the type of the field does not
-     * match with the one defined in the schema.
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     float read_float32(const std::string& field_name);
 
@@ -200,8 +196,8 @@ public:
      * @param fieldName name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the schema
-     *                                         or the type of the field does not
-     * match with the one defined in the schema.
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     double read_float64(const std::string& field_name);
 
@@ -210,9 +206,9 @@ public:
      *
      * @param fieldName name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in
-     * the schema or the type of the field does not match with the one defined
-     * in the schema.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     boost::optional<std::string> read_string(const std::string& field_name);
 
@@ -221,9 +217,9 @@ public:
      *
      * @param fieldName name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization       if the field does not exist in the
-     * schema or the type of the field does not match with the one defined in
-     * the schema.
+     * @throws hazelcast_serialization if the field does not exist in the schema
+     * or the type of the field does not match with the one defined in the
+     * schema.
      */
     template<typename T>
     boost::optional<T> read_compact(const std::string& field_name);

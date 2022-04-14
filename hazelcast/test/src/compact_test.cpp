@@ -269,7 +269,7 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         return compact::test::main_dto{ boolean, b, s, i, l, f, d, p, *str };
     }
 
-    static std::string type_name() { return "main"; }
+    static std::string type_name() { return "inner"; }
 };
 
 template<>

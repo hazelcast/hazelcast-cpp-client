@@ -832,7 +832,6 @@ data_output::write_boolean_bit_at(size_t index,
     if (is_no_write_) {
         return;
     }
-    check_available(index, 1);
     byte b = output_stream_[index];
     if (value) {
         b = (byte)(b | (1 << offset_in_bits));
