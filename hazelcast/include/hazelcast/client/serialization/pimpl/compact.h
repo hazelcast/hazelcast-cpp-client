@@ -411,6 +411,96 @@ public:
     boost::optional<double> read_nullable_float64(
       const std::string& field_name);
 
+    /**
+     * Reads a nullable array of nullable booleans.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<bool>>>
+    read_array_of_nullable_boolean(const std::string& field_name);
+
+    /**
+     * Reads a nullable array of nullable 8-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<int8_t>>>
+    read_array_of_nullable_int8(const std::string& field_name);
+
+    /**
+     * Reads a nullable array of nullable 16-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     *  @return the value of the field.
+     *  @throws hazelcast_serialization if the field does not exist in the
+     *  schema or the type of the field does not match with the one defined
+     *  in the schema.
+     */
+    boost::optional<std::vector<boost::optional<int16_t>>>
+    read_array_of_nullable_int16(const std::string& field_name);
+
+    /**
+     * Reads a nullable array of nullable 32-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     *  @return the value of the field.
+     *  @throws hazelcast_serialization if the field does not exist in the
+     *  schema or the type of the field does not match with the one defined
+     *  in the schema.
+     */
+    boost::optional<std::vector<boost::optional<int32_t>>>
+    read_array_of_nullable_int32(const std::string& field_name);
+
+    /**
+     * Reads a nullable array of nullable 64-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     *  @return the value of the field.
+     *  @throws hazelcast_serialization if the field does not exist in the
+     *  schema or the type of the field does not match with the one defined
+     *  in the schema.
+     */
+    boost::optional<std::vector<boost::optional<int64_t>>>
+    read_array_of_nullable_int64(const std::string& field_name);
+
+    /**
+     * Reads a nullable array of nullable 32-bit IEEE 754 floating point
+     * numbers.
+     *
+     * @param fieldName name of the field.
+     *  @return the value of the field.
+     *  @throws hazelcast_serialization if the field does not exist in the
+     *  schema or the type of the field does not match with the one defined
+     *  in the schema.
+     */
+    boost::optional<std::vector<boost::optional<float>>>
+    read_array_of_nullable_float32(const std::string& field_name);
+
+    /**
+     * Reads a nullable array of nullable 64-bit IEEE 754 floating point
+     * numbers.
+     *
+     * @param fieldName name of the field.
+     *  @return the value of the field.
+     *  @throws hazelcast_serialization if the field does not exist in the
+     *  schema or the type of the field does not match with the one defined
+     *  in the schema.
+     */
+    boost::optional<std::vector<boost::optional<double>>>
+    read_array_of_nullable_float64(const std::string& field_name);
+
 private:
     compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,
                    object_data_input& object_data_input,
@@ -481,6 +571,12 @@ private:
       typename boost::optional<T>>::type
     read();
     template<typename T>
+    typename std::enable_if<
+      std::is_same<std::vector<boost::optional<bool>>,
+                   typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
     boost::optional<T> read_array_of_primitive(
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
@@ -505,6 +601,15 @@ private:
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
       enum pimpl::field_kind nullable_field_kind);
+    template<typename T>
+    boost::optional<std::vector<boost::optional<T>>> get_array_of_nullable(
+      const std::string& field_name,
+      enum pimpl::field_kind field_kind,
+      enum pimpl::field_kind nullable_field_kind);
+    template<typename T>
+    boost::optional<std::vector<boost::optional<T>>>
+    read_primitive_array_as_nullable_array(
+      const pimpl::field_descriptor& field_descriptor);
     static std::function<
       int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
     get_offset_reader(int32_t data_length);
@@ -784,69 +889,75 @@ public:
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-     void write_array_of_nullable_boolean(
-       const std::string& field_name,
-       const boost::optional<std::vector<boost::optional<bool>>>& value);
+    void write_array_of_nullable_boolean(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<bool>>>& value);
 
-     /**
-      * Writes a nullable array of nullable 8-bit two's complement signed integers.
-      *
-      * @param fieldName name of the field.
-      * @param value     to be written.
-      */
-     void write_array_of_nullable_int8(
-       const std::string& field_name,
-       const boost::optional<std::vector<boost::optional<int8_t>>>& value);
+    /**
+     * Writes a nullable array of nullable 8-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_nullable_int8(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int8_t>>>& value);
 
-     /**
-      * Writes a nullable array of nullable 16-bit two's complement signed integers.
-      *
-      * @param fieldName name of the field.
-      * @param value     to be written.
-      */
-     void write_array_of_nullable_int16(
-       const std::string& field_name,
-       const boost::optional<std::vector<boost::optional<int16_t>>>& value);
+    /**
+     * Writes a nullable array of nullable 16-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_nullable_int16(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int16_t>>>& value);
 
-     /**
-      * Writes a nullable array of nullable 32-bit two's complement signed integers.
-      *
-      * @param fieldName name of the field.
-      * @param value     to be written.
-      */
-     void write_array_of_nullable_int32(
-       const std::string& field_name,
-       const boost::optional<std::vector<boost::optional<int32_t>>>& value);
+    /**
+     * Writes a nullable array of nullable 32-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_nullable_int32(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int32_t>>>& value);
 
-     /**
-      * Writes a nullable array of nullable 64-bit two's complement signed integers.
-      *
-      * @param fieldName name of the field.
-      * @param value     to be written.
-      */
-     void write_array_of_nullable_int64(
-       const std::string& field_name,
-       const boost::optional<std::vector<boost::optional<int64_t>>>& value);
+    /**
+     * Writes a nullable array of nullable 64-bit two's complement signed
+     * integers.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_nullable_int64(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int64_t>>>& value);
 
-     /**
-      * Writes a nullable array of nullable 32-bit IEEE 754 floating point numbers.
-      *
-      * @param fieldName name of the field.
-      * @param value     to be written.
-      */
-     void write_array_of_nullable_float32(
-       const std::string& field_name,
-       const boost::optional<std::vector<boost::optional<float>>>& value);
+    /**
+     * Writes a nullable array of nullable 32-bit IEEE 754 floating point
+     * numbers.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_nullable_float32(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<float>>>& value);
 
-     /**
-      * Writes a nullable array of nullable 64-bit IEEE 754 floating point numbers.
-      *
-      * @param fieldName name of the field.
-      * @param value     to be written.
-      */
-     void write_array_of_nullable_float64(
-       const std::string& field_name,
-       const boost::optional<std::vector<boost::optional<double>>>& value);
+    /**
+     * Writes a nullable array of nullable 64-bit IEEE 754 floating point
+     * numbers.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_nullable_float64(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<double>>>& value);
 
 private:
     friend compact_writer pimpl::create_compact_writer(

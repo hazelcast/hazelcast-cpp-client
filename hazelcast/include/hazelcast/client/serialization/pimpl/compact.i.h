@@ -194,6 +194,33 @@ compact_reader::read()
 }
 
 template<typename T>
+typename std::enable_if<std::is_same<std::vector<boost::optional<bool>>,
+                                     typename std::remove_cv<T>::type>::value,
+                        typename boost::optional<T>>::type
+compact_reader::read()
+{
+    int32_t len = object_data_input.read<int32_t>();
+    if (len == 0) {
+        return boost::make_optional<std::vector<boost::optional<bool>>>(
+          std::vector<boost::optional<bool>>(0));
+    }
+    auto values = boost::make_optional<std::vector<boost::optional<bool>>>(
+      std::vector<boost::optional<bool>>(len));
+    int index = 0;
+    byte current_byte = object_data_input.read<byte>();
+    for (int i = 0; i < len; ++i) {
+        if (index == util::Bits::BITS_IN_BYTE) {
+            index = 0;
+            current_byte = object_data_input.read<byte>();
+        }
+        values.value()[i] =
+          boost::make_optional<bool>(((current_byte >> index) & 1) != 0);
+        index++;
+    }
+    return values;
+}
+
+template<typename T>
 boost::optional<T>
 compact_reader::read_array_of_primitive(
   const std::string& field_name,
@@ -287,6 +314,46 @@ compact_reader::read_nullable_primitive(
         return read_variable_size<T>(field_descriptor);
     }
     throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+}
+
+template<typename T>
+boost::optional<std::vector<boost::optional<T>>>
+compact_reader::get_array_of_nullable(
+  const std::string& field_name,
+  enum pimpl::field_kind field_kind,
+  enum pimpl::field_kind nullable_field_kind)
+{
+    auto& field_descriptor = get_field_descriptor(field_name);
+    if (field_descriptor.field_kind == field_kind) {
+        return read_primitive_array_as_nullable_array<T>(field_descriptor);
+    } else if (field_descriptor.field_kind == nullable_field_kind) {
+        return get_array_of_variable_size<T>(field_descriptor);
+    }
+    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+}
+
+template<typename T>
+boost::optional<std::vector<boost::optional<T>>>
+compact_reader::read_primitive_array_as_nullable_array(
+  const pimpl::field_descriptor& field_descriptor)
+{
+    int32_t current_pos = object_data_input.position();
+    util::finally set_position_back(
+      [this, current_pos]() { this->object_data_input.position(current_pos); });
+
+    int32_t pos = read_var_size_position(field_descriptor);
+    if (pos == pimpl::offset_reader::NULL_OFFSET) {
+        return boost::none;
+    }
+    object_data_input.position(pos);
+    int32_t item_count = object_data_input.read<int32_t>();
+    auto values = boost::make_optional<std::vector<boost::optional<T>>>(
+      std::vector<boost::optional<T>>(item_count));
+
+    for (int i = 0; i < item_count; ++i) {
+        values.value()[i] = boost::make_optional(object_data_input.read<T>());
+    }
+    return values;
 }
 
 template<typename T>

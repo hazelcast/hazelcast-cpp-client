@@ -761,6 +761,68 @@ compact_reader::read_nullable_float64(const std::string& field_name)
                                            pimpl::field_kind::NULLABLE_FLOAT64);
 }
 
+boost::optional<std::vector<boost::optional<bool>>>
+compact_reader::read_array_of_nullable_boolean(const std::string& field_name)
+{
+    auto& field_descriptor = get_field_descriptor(field_name);
+    if (field_descriptor.field_kind == pimpl::field_kind::ARRAY_OF_BOOLEAN) {
+        return read_variable_size<std::vector<boost::optional<bool>>>(
+          field_descriptor);
+    } else if (field_descriptor.field_kind ==
+               pimpl::field_kind::ARRAY_OF_NULLABLE_BOOLEAN) {
+        return read_array_of_variable_size<bool>(field_descriptor);
+    }
+    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+}
+
+boost::optional<std::vector<boost::optional<int8_t>>>
+compact_reader::read_array_of_nullable_int8(const std::string& field_name)
+{
+    return get_array_of_nullable<int8_t>(field_name,
+                                         pimpl::field_kind::ARRAY_OF_INT8,
+                                         pimpl::ARRAY_OF_NULLABLE_INT8);
+}
+
+boost::optional<std::vector<boost::optional<int16_t>>>
+compact_reader::read_array_of_nullable_int16(const std::string& field_name)
+{
+    return get_array_of_nullable<int16_t>(field_name,
+                                          pimpl::field_kind::ARRAY_OF_INT16,
+                                          pimpl::ARRAY_OF_NULLABLE_INT16);
+}
+
+boost::optional<std::vector<boost::optional<int32_t>>>
+compact_reader::read_array_of_nullable_int32(const std::string& field_name)
+{
+    return get_array_of_nullable<int32_t>(field_name,
+                                          pimpl::field_kind::ARRAY_OF_INT32,
+                                          pimpl::ARRAY_OF_NULLABLE_INT32);
+}
+
+boost::optional<std::vector<boost::optional<int64_t>>>
+compact_reader::read_array_of_nullable_int64(const std::string& field_name)
+{
+    return get_array_of_nullable<int64_t>(field_name,
+                                          pimpl::field_kind::ARRAY_OF_INT64,
+                                          pimpl::ARRAY_OF_NULLABLE_INT64);
+}
+
+boost::optional<std::vector<boost::optional<float>>>
+compact_reader::read_array_of_nullable_float32(const std::string& field_name)
+{
+    return get_array_of_nullable<float>(field_name,
+                                        pimpl::field_kind::ARRAY_OF_FLOAT32,
+                                        pimpl::ARRAY_OF_NULLABLE_FLOAT32);
+}
+
+boost::optional<std::vector<boost::optional<double>>>
+compact_reader::read_array_of_nullable_float64(const std::string& field_name)
+{
+    return get_array_of_nullable<double>(field_name,
+                                         pimpl::field_kind::ARRAY_OF_FLOAT64,
+                                         pimpl::ARRAY_OF_NULLABLE_FLOAT64);
+}
+
 namespace pimpl {
 
 compact_writer
