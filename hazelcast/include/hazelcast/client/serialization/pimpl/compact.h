@@ -778,6 +778,76 @@ public:
     void write_nullable_float64(const std::string& field_name,
                                 const boost::optional<double>& value);
 
+    /**
+     * Writes a nullable array of nullable booleans.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+     void write_array_of_nullable_boolean(
+       const std::string& field_name,
+       const boost::optional<std::vector<boost::optional<bool>>>& value);
+
+     /**
+      * Writes a nullable array of nullable 8-bit two's complement signed integers.
+      *
+      * @param fieldName name of the field.
+      * @param value     to be written.
+      */
+     void write_array_of_nullable_int8(
+       const std::string& field_name,
+       const boost::optional<std::vector<boost::optional<int8_t>>>& value);
+
+     /**
+      * Writes a nullable array of nullable 16-bit two's complement signed integers.
+      *
+      * @param fieldName name of the field.
+      * @param value     to be written.
+      */
+     void write_array_of_nullable_int16(
+       const std::string& field_name,
+       const boost::optional<std::vector<boost::optional<int16_t>>>& value);
+
+     /**
+      * Writes a nullable array of nullable 32-bit two's complement signed integers.
+      *
+      * @param fieldName name of the field.
+      * @param value     to be written.
+      */
+     void write_array_of_nullable_int32(
+       const std::string& field_name,
+       const boost::optional<std::vector<boost::optional<int32_t>>>& value);
+
+     /**
+      * Writes a nullable array of nullable 64-bit two's complement signed integers.
+      *
+      * @param fieldName name of the field.
+      * @param value     to be written.
+      */
+     void write_array_of_nullable_int64(
+       const std::string& field_name,
+       const boost::optional<std::vector<boost::optional<int64_t>>>& value);
+
+     /**
+      * Writes a nullable array of nullable 32-bit IEEE 754 floating point numbers.
+      *
+      * @param fieldName name of the field.
+      * @param value     to be written.
+      */
+     void write_array_of_nullable_float32(
+       const std::string& field_name,
+       const boost::optional<std::vector<boost::optional<float>>>& value);
+
+     /**
+      * Writes a nullable array of nullable 64-bit IEEE 754 floating point numbers.
+      *
+      * @param fieldName name of the field.
+      * @param value     to be written.
+      */
+     void write_array_of_nullable_float64(
+       const std::string& field_name,
+       const boost::optional<std::vector<boost::optional<double>>>& value);
+
 private:
     friend compact_writer pimpl::create_compact_writer(
       pimpl::default_compact_writer* default_compact_writer);
@@ -870,6 +940,27 @@ public:
                                 const boost::optional<float>& value);
     void write_nullable_float64(const std::string& field_name,
                                 const boost::optional<double>& value);
+    void write_array_of_nullable_boolean(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<bool>>>& value);
+    void write_array_of_nullable_int8(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int8_t>>>& value);
+    void write_array_of_nullable_int16(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int16_t>>>& value);
+    void write_array_of_nullable_int32(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int32_t>>>& value);
+    void write_array_of_nullable_int64(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<int64_t>>>& value);
+    void write_array_of_nullable_float32(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<float>>>& value);
+    void write_array_of_nullable_float64(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<double>>>& value);
     void end();
 
 private:
