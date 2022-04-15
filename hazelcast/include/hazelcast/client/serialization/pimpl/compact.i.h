@@ -356,6 +356,15 @@ compact_reader::read_primitive_array_as_nullable_array(
     return values;
 }
 
+template<>
+boost::optional<std::vector<boost::optional<bool>>> inline compact_reader::
+  read_primitive_array_as_nullable_array(
+    const pimpl::field_descriptor& field_descriptor)
+{
+    return get_variable_size<std::vector<boost::optional<bool>>>(
+      field_descriptor);
+}
+
 template<typename T>
 boost::optional<T>
 compact_reader::read_compact(const std::string& field_name)

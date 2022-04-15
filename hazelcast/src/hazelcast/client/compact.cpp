@@ -764,15 +764,9 @@ compact_reader::read_nullable_float64(const std::string& field_name)
 boost::optional<std::vector<boost::optional<bool>>>
 compact_reader::read_array_of_nullable_boolean(const std::string& field_name)
 {
-    auto& field_descriptor = get_field_descriptor(field_name);
-    if (field_descriptor.field_kind == pimpl::field_kind::ARRAY_OF_BOOLEAN) {
-        return read_variable_size<std::vector<boost::optional<bool>>>(
-          field_descriptor);
-    } else if (field_descriptor.field_kind ==
-               pimpl::field_kind::ARRAY_OF_NULLABLE_BOOLEAN) {
-        return read_array_of_variable_size<bool>(field_descriptor);
-    }
-    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+    return get_array_of_nullable<bool>(field_name,
+                                       pimpl::field_kind::ARRAY_OF_BOOLEAN,
+                                       pimpl::ARRAY_OF_NULLABLE_BOOLEAN);
 }
 
 boost::optional<std::vector<boost::optional<int8_t>>>
