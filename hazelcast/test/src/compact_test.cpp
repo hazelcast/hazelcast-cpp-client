@@ -96,6 +96,13 @@ struct inner_dto
     boost::optional<std::vector<double>> doubles;
     boost::optional<std::vector<boost::optional<std::string>>> strings;
     boost::optional<std::vector<boost::optional<named_dto>>> nn;
+    boost::optional<std::vector<boost::optional<bool>>> nullableBools;
+    boost::optional<std::vector<boost::optional<int8_t>>> nullableBytes;
+    boost::optional<std::vector<boost::optional<int16_t>>> nullableShorts;
+    boost::optional<std::vector<boost::optional<int32_t>>> nullableInts;
+    boost::optional<std::vector<boost::optional<int64_t>>> nullableLongs;
+    boost::optional<std::vector<boost::optional<float>>> nullableFloats;
+    boost::optional<std::vector<boost::optional<double>>> nullableDoubles;
 };
 bool
 operator==(const inner_dto& lhs, const inner_dto& rhs)
@@ -104,7 +111,13 @@ operator==(const inner_dto& lhs, const inner_dto& rhs)
            lhs.shorts == rhs.shorts && lhs.ints == rhs.ints &&
            lhs.longs == rhs.longs && lhs.floats == rhs.floats &&
            lhs.doubles == rhs.doubles && lhs.strings == rhs.strings &&
-           lhs.nn == rhs.nn;
+           lhs.nn == rhs.nn && lhs.nullableBools == rhs.nullableBools &&
+           lhs.nullableBytes == rhs.nullableBytes &&
+           lhs.nullableShorts == rhs.nullableShorts &&
+           lhs.nullableInts == rhs.nullableInts &&
+           lhs.nullableLongs == rhs.nullableLongs &&
+           lhs.nullableFloats == rhs.nullableFloats &&
+           lhs.nullableDoubles == rhs.nullableDoubles;
 }
 
 struct main_dto
@@ -280,6 +293,20 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         writer.write_array_of_float64("doubles", object.doubles);
         writer.write_array_of_string("strings", object.strings);
         writer.write_array_of_compact("nn", object.nn);
+        writer.write_array_of_nullable_boolean("nullableBools",
+                                               object.nullableBools);
+        writer.write_array_of_nullable_int8("nullableBytes",
+                                            object.nullableBytes);
+        writer.write_array_of_nullable_int16("nullableShorts",
+                                             object.nullableShorts);
+        writer.write_array_of_nullable_int32("nullableInts",
+                                             object.nullableInts);
+        writer.write_array_of_nullable_int64("nullableLongs",
+                                             object.nullableLongs);
+        writer.write_array_of_nullable_float32("nullableFloats",
+                                               object.nullableFloats);
+        writer.write_array_of_nullable_float64("nullableDoubles",
+                                               object.nullableDoubles);
     }
 
     static compact::test::inner_dto read(compact_reader& reader)
@@ -295,6 +322,20 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         object.strings = reader.read_array_of_string("strings");
         object.nn =
           reader.read_array_of_compact<compact::test::named_dto>("nn");
+        object.nullableBools =
+          reader.read_array_of_nullable_boolean("nullableBools");
+        object.nullableBytes =
+          reader.read_array_of_nullable_int8("nullableBytes");
+        object.nullableShorts =
+          reader.read_array_of_nullable_int16("nullableShorts");
+        object.nullableInts =
+          reader.read_array_of_nullable_int32("nullableInts");
+        object.nullableLongs =
+          reader.read_array_of_nullable_int64("nullableLongs");
+        object.nullableFloats =
+          reader.read_array_of_nullable_float32("nullableFloats");
+        object.nullableDoubles =
+          reader.read_array_of_nullable_float64("nullableDoubles");
         return object;
     }
 
@@ -540,7 +581,6 @@ TEST_F(CompactSerializationTest, test_rabin_fingerprint_consistent_with_server)
 
 struct primitive_object
 {
-
     bool boolean_;
     int8_t byte_;
     int16_t short_;
@@ -548,6 +588,13 @@ struct primitive_object
     int64_t long_;
     float float_;
     double double_;
+    boost::optional<std::vector<bool>> booleans;
+    boost::optional<std::vector<int8_t>> bytes;
+    boost::optional<std::vector<int16_t>> shorts;
+    boost::optional<std::vector<int32_t>> ints;
+    boost::optional<std::vector<int64_t>> longs;
+    boost::optional<std::vector<float>> floats;
+    boost::optional<std::vector<double>> doubles;
 };
 
 struct nullable_primitive_object
@@ -559,6 +606,13 @@ struct nullable_primitive_object
     boost::optional<int64_t> nullableLong;
     boost::optional<float> nullableFloat;
     boost::optional<double> nullableDouble;
+    boost::optional<std::vector<boost::optional<bool>>> nullableBooleans;
+    boost::optional<std::vector<boost::optional<int8_t>>> nullableBytes;
+    boost::optional<std::vector<boost::optional<int16_t>>> nullableShorts;
+    boost::optional<std::vector<boost::optional<int32_t>>> nullableInts;
+    boost::optional<std::vector<boost::optional<int64_t>>> nullableLongs;
+    boost::optional<std::vector<boost::optional<float>>> nullableFloats;
+    boost::optional<std::vector<boost::optional<double>>> nullableDoubles;
 };
 } // namespace test
 } // namespace compact
@@ -578,6 +632,13 @@ struct hz_serializer<compact::test::primitive_object>
         writer.write_int64("long", object.long_);
         writer.write_float32("float", object.float_);
         writer.write_float64("double", object.double_);
+        writer.write_array_of_boolean("booleans", object.booleans);
+        writer.write_array_of_int8("bytes", object.bytes);
+        writer.write_array_of_int16("shorts", object.shorts);
+        writer.write_array_of_int32("ints", object.ints);
+        writer.write_array_of_int64("longs", object.longs);
+        writer.write_array_of_float32("floats", object.floats);
+        writer.write_array_of_float64("doubles", object.doubles);
     }
 
     static compact::test::primitive_object read(compact_reader& reader)
@@ -590,6 +651,13 @@ struct hz_serializer<compact::test::primitive_object>
         object.long_ = reader.read_int64("long");
         object.float_ = reader.read_float32("float");
         object.double_ = reader.read_float64("double");
+        object.booleans = reader.read_array_of_boolean("booleans");
+        object.bytes = reader.read_array_of_int8("bytes");
+        object.shorts = reader.read_array_of_int16("shorts");
+        object.ints = reader.read_array_of_int32("ints");
+        object.longs = reader.read_array_of_int64("longs");
+        object.floats = reader.read_array_of_float32("floats");
+        object.doubles = reader.read_array_of_float64("doubles");
         return object;
     }
 
@@ -610,6 +678,15 @@ struct hz_serializer<compact::test::nullable_primitive_object>
         writer.write_nullable_int64("long", object.nullableLong);
         writer.write_nullable_float32("float", object.nullableFloat);
         writer.write_nullable_float64("double", object.nullableDouble);
+        writer.write_array_of_nullable_boolean("booleans",
+                                               object.nullableBooleans);
+        writer.write_array_of_nullable_int8("bytes", object.nullableBytes);
+        writer.write_array_of_nullable_int16("shorts", object.nullableShorts);
+        writer.write_array_of_nullable_int32("ints", object.nullableInts);
+        writer.write_array_of_nullable_int64("longs", object.nullableLongs);
+        writer.write_array_of_nullable_float32("floats", object.nullableFloats);
+        writer.write_array_of_nullable_float64("doubles",
+                                               object.nullableDoubles);
     }
 
     static compact::test::nullable_primitive_object read(compact_reader& reader)
@@ -622,6 +699,15 @@ struct hz_serializer<compact::test::nullable_primitive_object>
         object.nullableLong = reader.read_nullable_int64("long");
         object.nullableFloat = reader.read_nullable_float32("float");
         object.nullableDouble = reader.read_nullable_float64("double");
+        object.nullableBooleans =
+          reader.read_array_of_nullable_boolean("booleans");
+        object.nullableBytes = reader.read_array_of_nullable_int8("bytes");
+        object.nullableShorts = reader.read_array_of_nullable_int16("shorts");
+        object.nullableInts = reader.read_array_of_nullable_int32("ints");
+        object.nullableLongs = reader.read_array_of_nullable_int64("longs");
+        object.nullableFloats = reader.read_array_of_nullable_float32("floats");
+        object.nullableDoubles =
+          reader.read_array_of_nullable_float64("doubles");
         return object;
     }
 
@@ -635,10 +721,50 @@ namespace compact {
 namespace test {
 class CompactNullablePrimitiveInteroperabilityTest : public ::testing::Test
 {};
+
+template<typename T>
+void
+ASSERT_SAME_CONTENT(
+  const boost::optional<std::vector<boost::optional<T>>>& expected,
+  const boost::optional<std::vector<T>>& actual)
+{
+    ASSERT_EQ(expected->size(), actual->size());
+    for (size_t i = 0; i < expected->size(); ++i) {
+        ASSERT_EQ(expected->at(i).value(), actual->at(i));
+    }
+}
+
+template<typename T>
+void
+ASSERT_SAME_CONTENT(
+  const boost::optional<std::vector<T>>& expected,
+  const boost::optional<std::vector<boost::optional<T>>>& actual)
+{
+    ASSERT_EQ(expected->size(), actual->size());
+    for (size_t i = 0; i < expected->size(); ++i) {
+        ASSERT_EQ(expected->at(i), actual->at(i).value());
+    }
+}
+
 TEST_F(CompactNullablePrimitiveInteroperabilityTest,
        testWritePrimitiveReadNullable)
 {
-    primitive_object expected{ true, 2, 4, 8, 4444, 8321.321F, 41231.32 };
+    primitive_object expected{
+        true,
+        2,
+        4,
+        8,
+        4444,
+        8321.321F,
+        41231.32,
+        boost::make_optional(std::vector<bool>{ true, false }),
+        boost::make_optional(std::vector<int8_t>{ 1, 2 }),
+        boost::make_optional(std::vector<int16_t>{ 1, 4 }),
+        boost::make_optional(std::vector<int32_t>{ 1, 8 }),
+        boost::make_optional(std::vector<int64_t>{ 1, 4444 }),
+        boost::make_optional(std::vector<float>{ 1.0F, 8321.321F }),
+        boost::make_optional(std::vector<double>{ 41231.32, 2 })
+    };
     serialization_config config;
     SerializationService ss(config);
 
@@ -651,6 +777,13 @@ TEST_F(CompactNullablePrimitiveInteroperabilityTest,
     ASSERT_EQ(expected.long_, actual.nullableLong.value());
     ASSERT_EQ(expected.float_, actual.nullableFloat.value());
     ASSERT_EQ(expected.double_, actual.nullableDouble.value());
+    ASSERT_SAME_CONTENT(expected.booleans, actual.nullableBooleans);
+    ASSERT_SAME_CONTENT(expected.bytes, actual.nullableBytes);
+    ASSERT_SAME_CONTENT(expected.shorts, actual.nullableShorts);
+    ASSERT_SAME_CONTENT(expected.ints, actual.nullableInts);
+    ASSERT_SAME_CONTENT(expected.longs, actual.nullableLongs);
+    ASSERT_SAME_CONTENT(expected.floats, actual.nullableFloats);
+    ASSERT_SAME_CONTENT(expected.doubles, actual.nullableDoubles);
 }
 
 TEST_F(CompactNullablePrimitiveInteroperabilityTest,
@@ -663,7 +796,34 @@ TEST_F(CompactNullablePrimitiveInteroperabilityTest,
         boost::make_optional<int32_t>(8),
         boost::make_optional<int64_t>(4444),
         boost::make_optional<float>(8321.321F),
-        boost::make_optional<double>(41231.32)
+        boost::make_optional<double>(41231.32),
+        boost::make_optional<std::vector<boost::optional<bool>>>(
+          std::vector<boost::optional<bool>>{
+            boost::make_optional<bool>(true),
+            boost::make_optional<bool>(false) }),
+        boost::make_optional<std::vector<boost::optional<int8_t>>>(
+          std::vector<boost::optional<int8_t>>{
+            boost::make_optional<int8_t>(1), boost::make_optional<int8_t>(2) }),
+        boost::make_optional<std::vector<boost::optional<int16_t>>>(
+          std::vector<boost::optional<int16_t>>{
+            boost::make_optional<int16_t>(1),
+            boost::make_optional<int16_t>(4) }),
+        boost::make_optional<std::vector<boost::optional<int32_t>>>(
+          std::vector<boost::optional<int32_t>>{
+            boost::make_optional<int32_t>(1),
+            boost::make_optional<int32_t>(8) }),
+        boost::make_optional<std::vector<boost::optional<int64_t>>>(
+          std::vector<boost::optional<int64_t>>{
+            boost::make_optional<int64_t>(1),
+            boost::make_optional<int64_t>(4444) }),
+        boost::make_optional<std::vector<boost::optional<float>>>(
+          std::vector<boost::optional<float>>{
+            boost::make_optional<float>(1.0F),
+            boost::make_optional<float>(8321.321F) }),
+        boost::make_optional<std::vector<boost::optional<double>>>(
+          std::vector<boost::optional<double>>{
+            boost::make_optional<double>(41231.32),
+            boost::make_optional<double>(2) })
     };
     serialization_config config;
     SerializationService ss(config);
@@ -677,14 +837,19 @@ TEST_F(CompactNullablePrimitiveInteroperabilityTest,
     ASSERT_EQ(expected.nullableLong.value(), actual.long_);
     ASSERT_EQ(expected.nullableFloat.value(), actual.float_);
     ASSERT_EQ(expected.nullableDouble.value(), actual.double_);
+    ASSERT_SAME_CONTENT(expected.nullableBooleans, actual.booleans);
+    ASSERT_SAME_CONTENT(expected.nullableBytes, actual.bytes);
+    ASSERT_SAME_CONTENT(expected.nullableShorts, actual.shorts);
+    ASSERT_SAME_CONTENT(expected.nullableInts, actual.ints);
+    ASSERT_SAME_CONTENT(expected.nullableLongs, actual.longs);
+    ASSERT_SAME_CONTENT(expected.nullableFloats, actual.floats);
+    ASSERT_SAME_CONTENT(expected.nullableDoubles, actual.doubles);
 }
 
 TEST_F(CompactNullablePrimitiveInteroperabilityTest,
        testWriteNullReadPrimitiveThrowsException)
 {
-    nullable_primitive_object expected{ boost::none, boost::none, boost::none,
-                                        boost::none, boost::none, boost::none,
-                                        boost::none };
+    nullable_primitive_object expected;
     serialization_config config;
     SerializationService ss(config);
 
