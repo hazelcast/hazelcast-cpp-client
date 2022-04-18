@@ -417,12 +417,17 @@ private:
       const pimpl::field_descriptor& field_descriptor,
       const std::string& field_name,
       const std::string& method_suffix);
+    using offset_func = std::function<
+      int32_t(serialization::object_data_input&, uint32_t, uint32_t)>;
+    static const offset_func BYTE_OFFSET_READER;
+    static const offset_func SHORT_OFFSET_READER;
+    static const offset_func INT_OFFSET_READER;
     static std::function<
       int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
     get_offset_reader(int32_t data_length);
-    exception::hazelcast_serialization unexpected_null_value_in_array(
+    static exception::hazelcast_serialization unexpected_null_value_in_array(
       const std::string& field_name,
-      const std::string& method_suffix) const;
+      const std::string& method_suffix);
     exception::hazelcast_serialization unknown_field(
       const std::string& field_name) const;
     exception::hazelcast_serialization unexpected_field_kind(

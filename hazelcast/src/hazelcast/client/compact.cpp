@@ -223,6 +223,14 @@ create_compact_reader(
                            schema };
 }
 } // namespace pimpl
+
+const compact_reader::offset_func compact_reader::BYTE_OFFSET_READER =
+  pimpl::offset_reader::get_offset<int8_t>;
+const compact_reader::offset_func compact_reader::SHORT_OFFSET_READER =
+  pimpl::offset_reader::get_offset<int16_t>;
+const compact_reader::offset_func compact_reader::INT_OFFSET_READER =
+  pimpl::offset_reader::get_offset<int32_t>;
+
 compact_reader::compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   serialization::object_data_input& object_data_input,
@@ -238,23 +246,23 @@ compact_reader::compact_reader(
         data_start_position = object_data_input.position();
         variable_offsets_position = data_start_position + data_length;
         if (data_length < pimpl::offset_reader::BYTE_OFFSET_READER_RANGE) {
-            get_offset = pimpl::offset_reader::get_offset<int8_t>;
+            get_offset = BYTE_OFFSET_READER;
             final_position =
               variable_offsets_position + number_of_var_size_fields;
         } else if (data_length <
                    pimpl::offset_reader::SHORT_OFFSET_READER_RANGE) {
-            get_offset = pimpl::offset_reader::get_offset<int16_t>;
+            get_offset = SHORT_OFFSET_READER;
             final_position =
               variable_offsets_position +
               (number_of_var_size_fields * util::Bits::SHORT_SIZE_IN_BYTES);
         } else {
-            get_offset = pimpl::offset_reader::get_offset<int32_t>;
+            get_offset = INT_OFFSET_READER;
             final_position =
               variable_offsets_position +
               (number_of_var_size_fields * util::Bits::INT_SIZE_IN_BYTES);
         }
     } else {
-        get_offset = pimpl::offset_reader::get_offset<int32_t>;
+        get_offset = INT_OFFSET_READER;
         variable_offsets_position = 0;
         data_start_position = object_data_input.position();
         final_position =
@@ -304,18 +312,17 @@ std::function<int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
 compact_reader::get_offset_reader(int32_t data_length)
 {
     if (data_length < pimpl::offset_reader::BYTE_OFFSET_READER_RANGE) {
-        return pimpl::offset_reader::get_offset<int8_t>;
+        return BYTE_OFFSET_READER;
     } else if (data_length < pimpl::offset_reader::SHORT_OFFSET_READER_RANGE) {
-        return pimpl::offset_reader::get_offset<int16_t>;
+        return SHORT_OFFSET_READER;
     } else {
-        return pimpl::offset_reader::get_offset<int32_t>;
+        return INT_OFFSET_READER;
     }
 }
 
 exception::hazelcast_serialization
-compact_reader::unexpected_null_value_in_array(
-  const std::string& field_name,
-  const std::string& method_suffix) const
+compact_reader::unexpected_null_value_in_array(const std::string& field_name,
+                                               const std::string& method_suffix)
 {
     return {
         "compact_reader",
@@ -323,7 +330,7 @@ compact_reader::unexpected_null_value_in_array(
            "Error while reading %1%. Array with null items can not be read via "
            "read_array_of_%2% methods. Use read_array_of_nullable_%2% "
            "instead") %
-         field_name % schema)
+         field_name % method_suffix)
           .str()
     };
 }
