@@ -127,40 +127,40 @@ public:
     /**
      * Reads a boolean.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    bool read_boolean(const std::string& fieldName);
+    bool read_boolean(const std::string& field_name);
 
     /**
      * Reads an 8-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    int8_t read_int8(const std::string& fieldName);
+    int8_t read_int8(const std::string& field_name);
 
     /**
      * Reads a 16-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    int16_t read_int16(const std::string& fieldName);
+    int16_t read_int16(const std::string& field_name);
 
     /**
      * Reads a 32-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -171,7 +171,7 @@ public:
     /**
      * Reads a 64-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -182,7 +182,7 @@ public:
     /**
      * Reads a 32-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -193,7 +193,7 @@ public:
     /**
      * Reads a 64-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -204,7 +204,7 @@ public:
     /**
      * Reads an UTF-8 encoded string.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -215,7 +215,7 @@ public:
     /**
      * Reads a compact object
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -227,7 +227,7 @@ public:
     /**
      * Reads an array of booleans.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -239,7 +239,7 @@ public:
     /**
      * Reads an array of 8-bit two's complement signed integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -251,7 +251,7 @@ public:
     /**
      * Reads an array of 16-bit two's complement signed integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -263,7 +263,7 @@ public:
     /**
      * Reads an array of 32-bit two's complement signed integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -275,7 +275,7 @@ public:
     /**
      * Reads an array of 64-bit two's complement signed integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -287,7 +287,7 @@ public:
     /**
      * Reads an array of 32-bit IEEE 754 floating point numbers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -299,7 +299,7 @@ public:
     /**
      * Reads an array of 64-bit IEEE 754 floating point numbers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -309,9 +309,10 @@ public:
       const std::string& field_name);
 
     /**
-     *  Reads an array of UTF-8 encoded strings.
-     *  @param fieldName name of the field.
-     *  @return the value of the field.
+     * Reads an array of UTF-8 encoded strings.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
      * in the schema.
@@ -322,7 +323,7 @@ public:
     /**
      * Reads an array of compact objects.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -347,7 +348,7 @@ private:
                      const std::string& method_suffix);
     template<typename T>
     T read_primitive(const pimpl::field_descriptor& field_descriptor);
-    bool is_field_exists(const std::string& fieldName,
+    bool is_field_exists(const std::string& field_name,
                          enum pimpl::field_kind kind) const;
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name) const;
@@ -355,13 +356,13 @@ private:
       const std::string& field_name,
       enum pimpl::field_kind field_kind) const;
     template<typename T>
-    boost::optional<T> get_variable_size(
+    boost::optional<T> read_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
-    boost::optional<T> get_variable_size(const std::string& field_name,
-                                         enum pimpl::field_kind field_kind);
+    boost::optional<T> read_variable_size(const std::string& field_name,
+                                          enum pimpl::field_kind field_kind);
     template<typename T>
-    T get_variable_size_as_non_null(
+    T read_variable_size_as_non_null(
       const pimpl::field_descriptor& field_descriptor,
       const std::string& field_name,
       const std::string& method_suffix);
@@ -398,10 +399,9 @@ private:
     read();
     template<typename T>
     typename std::enable_if<
-        std::is_same<std::vector<bool>,
-                     typename std::remove_cv<T>::type>::value,
+      std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
-      read();
+    read();
     template<typename T>
     boost::optional<T> read_array_of_primitive(
       const std::string& field_name,
@@ -409,21 +409,21 @@ private:
       enum pimpl::field_kind nullable_field_kind,
       const std::string& method_suffix);
     template<typename T>
-    boost::optional<std::vector<boost::optional<T>>> get_array_of_variable_size(
+    boost::optional<std::vector<boost::optional<T>>>
+    read_array_of_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
-    boost::optional<T> get_nullable_array_as_primitive_array(
+    boost::optional<T> read_nullable_array_as_primitive_array(
       const pimpl::field_descriptor& field_descriptor,
       const std::string& field_name,
       const std::string& method_suffix);
     static std::function<
       int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
     get_offset_reader(int32_t data_length);
-    exception::hazelcast_serialization exception_unexpected_null_value_in_array(
+    exception::hazelcast_serialization unexpected_null_value_in_array(
       const std::string& field_name,
-      const std::string& method_suffix);
-
-    exception::hazelcast_serialization unknown_field_exception(
+      const std::string& method_suffix) const;
+    exception::hazelcast_serialization unknown_field(
       const std::string& field_name) const;
     exception::hazelcast_serialization unexpected_field_kind(
       enum pimpl::field_kind field_kind,
@@ -465,7 +465,7 @@ public:
     /**
      * Writes a boolean value.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     value to write.
      */
     void write_boolean(const std::string& field_name, bool value);
@@ -473,7 +473,7 @@ public:
     /**
      * Writes an 8-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     value to write.
      */
     void write_int8(const std::string& field_name, int8_t value);
@@ -481,7 +481,7 @@ public:
     /**
      *  Writes a 16-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     value to write.
      */
     void write_int16(const std::string& field_name, int16_t value);
@@ -489,7 +489,7 @@ public:
     /**
      * Writes a 32-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_int32(const std::string& field_name, int32_t value);
@@ -497,7 +497,7 @@ public:
     /**
      * Writes a 64-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_int64(const std::string& field_name, int64_t value);
@@ -505,7 +505,7 @@ public:
     /**
      * Writes a 32-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_float32(const std::string& field_name, float value);
@@ -513,7 +513,7 @@ public:
     /**
      * Writes a 64-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_float64(const std::string& field_name, double value);
@@ -521,7 +521,7 @@ public:
     /**
      * Writes an UTF-8 encoded string.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_string(const std::string& field_name,
@@ -530,7 +530,7 @@ public:
     /**
      * Writes a nested compact object.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     template<typename T>
@@ -540,7 +540,7 @@ public:
     /**
      * Writes an array of booleans.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_array_of_boolean(
@@ -550,7 +550,7 @@ public:
     /**
      * Writes an array of 8-bit two's complement signed integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_array_of_int8(const std::string& field_name,
@@ -578,6 +578,7 @@ public:
 
     /**
      * Writes an array of 64-bit two's complement signed integers.
+     *
      * @param field_name name of the field.
      * @param value to be written.
      */
@@ -618,7 +619,7 @@ public:
     /**
      * Writes an array of nested compact objects.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     template<typename T>

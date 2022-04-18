@@ -65,7 +65,7 @@ compact_reader::read_primitive(const std::string& field_name,
     if (field_kind == primitive_field_kind) {
         return read_primitive<T>(fd);
     } else if (field_kind == nullable_field_kind) {
-        return get_variable_size_as_non_null<T>(fd, field_name, method_suffix);
+        return read_variable_size_as_non_null<T>(fd, field_name, method_suffix);
     } else {
         BOOST_THROW_EXCEPTION(unexpected_field_kind(field_kind, field_name));
     }
@@ -92,12 +92,13 @@ bool inline compact_reader::read_primitive<bool>(
 
 template<typename T>
 boost::optional<T>
-compact_reader::get_variable_size(
+compact_reader::read_variable_size(
   const pimpl::field_descriptor& field_descriptor)
 {
     int current_pos = object_data_input.position();
     util::finally set_position_back(
       [this, current_pos]() { this->object_data_input.position(current_pos); });
+
     int pos = read_var_size_position(field_descriptor);
     if (pos == pimpl::offset_reader::NULL_OFFSET) {
         return boost::none;
@@ -108,21 +109,21 @@ compact_reader::get_variable_size(
 
 template<typename T>
 boost::optional<T>
-compact_reader::get_variable_size(const std::string& field_name,
-                                  enum pimpl::field_kind field_kind)
+compact_reader::read_variable_size(const std::string& field_name,
+                                   enum pimpl::field_kind field_kind)
 {
     auto field_descriptor = get_field_descriptor(field_name, field_kind);
-    return get_variable_size<T>(field_descriptor);
+    return read_variable_size<T>(field_descriptor);
 }
 
 template<typename T>
 T
-compact_reader::get_variable_size_as_non_null(
+compact_reader::read_variable_size_as_non_null(
   const pimpl::field_descriptor& field_descriptor,
   const std::string& field_name,
   const std::string& method_suffix)
 {
-    auto value = get_variable_size<T>(field_descriptor);
+    auto value = read_variable_size<T>(field_descriptor);
     if (value.has_value()) {
         return value.value();
     }
@@ -175,10 +176,9 @@ compact_reader::read()
 {
     int32_t len = object_data_input.read<int32_t>();
     if (len == 0) {
-        return boost::make_optional<std::vector<bool>>(std::vector<bool>(0));
+        return boost::make_optional(std::vector<bool>(0));
     }
-    auto values =
-      boost::make_optional<std::vector<bool>>(std::vector<bool>(len));
+    std::vector<bool> values(len);
     int index = 0;
     byte current_byte = object_data_input.read<byte>();
     for (int i = 0; i < len; ++i) {
@@ -188,9 +188,9 @@ compact_reader::read()
         }
         bool result = ((current_byte >> index) & 1) != 0;
         index++;
-        values.value()[i] = result;
+        values[i] = result;
     }
-    return values;
+    return boost::make_optional(std::move(values));
 }
 
 template<typename T>
@@ -203,9 +203,9 @@ compact_reader::read_array_of_primitive(
 {
     auto& field_descriptor = get_field_descriptor(field_name);
     if (field_descriptor.field_kind == field_kind) {
-        return get_variable_size<T>(field_descriptor);
+        return read_variable_size<T>(field_descriptor);
     } else if (field_descriptor.field_kind == nullable_field_kind) {
-        return get_nullable_array_as_primitive_array<T>(
+        return read_nullable_array_as_primitive_array<T>(
           field_descriptor, field_name, method_suffix);
     }
     throw unexpected_field_kind(field_descriptor.field_kind, field_name);
@@ -213,9 +213,13 @@ compact_reader::read_array_of_primitive(
 
 template<typename T>
 boost::optional<std::vector<boost::optional<T>>>
-compact_reader::get_array_of_variable_size(
+compact_reader::read_array_of_variable_size(
   const pimpl::field_descriptor& field_descriptor)
 {
+    int current_pos = object_data_input.position();
+    util::finally set_position_back(
+      [this, current_pos]() { this->object_data_input.position(current_pos); });
+
     int32_t position = read_var_size_position(field_descriptor);
     if (position == util::Bits::NULL_ARRAY) {
         return boost::none;
@@ -239,11 +243,15 @@ compact_reader::get_array_of_variable_size(
 
 template<typename T>
 boost::optional<T>
-compact_reader::get_nullable_array_as_primitive_array(
+compact_reader::read_nullable_array_as_primitive_array(
   const pimpl::field_descriptor& field_descriptor,
   const std::string& field_name,
   const std::string& method_suffix)
 {
+    int current_pos = object_data_input.position();
+    util::finally set_position_back(
+      [this, current_pos]() { this->object_data_input.position(current_pos); });
+
     int32_t position = read_var_size_position(field_descriptor);
     if (position == util::Bits::NULL_ARRAY) {
         return boost::none;
@@ -257,8 +265,8 @@ compact_reader::get_nullable_array_as_primitive_array(
     for (int i = 0; i < item_count; ++i) {
         int offset = offset_reader(object_data_input, offsets_position, i);
         if (offset == util::Bits::NULL_ARRAY) {
-            BOOST_THROW_EXCEPTION(exception_unexpected_null_value_in_array(
-              field_name, method_suffix));
+            BOOST_THROW_EXCEPTION(
+              unexpected_null_value_in_array(field_name, method_suffix));
         }
     }
     object_data_input.position(data_start_pos - util::Bits::INT_SIZE_IN_BYTES);
@@ -269,7 +277,7 @@ template<typename T>
 boost::optional<T>
 compact_reader::read_compact(const std::string& field_name)
 {
-    return get_variable_size<T>(field_name, pimpl::field_kind::COMPACT);
+    return read_variable_size<T>(field_name, pimpl::field_kind::COMPACT);
 }
 
 template<typename T>
@@ -278,7 +286,7 @@ compact_reader::read_array_of_compact(const std::string& field_name)
 {
     const auto& descriptor =
       get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_COMPACT);
-    return get_array_of_variable_size<T>(descriptor);
+    return read_array_of_variable_size<T>(descriptor);
 }
 
 template<typename T>

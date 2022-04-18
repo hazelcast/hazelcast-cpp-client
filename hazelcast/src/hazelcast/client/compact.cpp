@@ -283,7 +283,7 @@ compact_reader::get_field_descriptor(const std::string& field_name) const
     const auto& fields = schema.fields();
     const auto& field_descriptor = fields.find(field_name);
     if (field_descriptor == fields.end()) {
-        BOOST_THROW_EXCEPTION(unknown_field_exception(field_name));
+        BOOST_THROW_EXCEPTION(unknown_field(field_name));
     }
     return field_descriptor->second;
 }
@@ -313,9 +313,9 @@ compact_reader::get_offset_reader(int32_t data_length)
 }
 
 exception::hazelcast_serialization
-compact_reader::exception_unexpected_null_value_in_array(
+compact_reader::unexpected_null_value_in_array(
   const std::string& field_name,
-  const std::string& method_suffix)
+  const std::string& method_suffix) const
 {
     return {
         "compact_reader",
@@ -328,7 +328,7 @@ compact_reader::exception_unexpected_null_value_in_array(
     };
 }
 exception::hazelcast_serialization
-compact_reader::unknown_field_exception(const std::string& field_name) const
+compact_reader::unknown_field(const std::string& field_name) const
 {
     return { "compact_reader",
              (boost::format("Unknown field name %1% on %2% ") % field_name %
@@ -444,8 +444,8 @@ compact_reader::read_float64(const std::string& field_name)
 boost::optional<std::string>
 compact_reader::read_string(const std::string& field_name)
 {
-    return get_variable_size<std::string>(field_name,
-                                          pimpl::field_kind::STRING);
+    return read_variable_size<std::string>(field_name,
+                                           pimpl::field_kind::STRING);
 }
 
 boost::optional<std::vector<bool>>
@@ -522,7 +522,7 @@ compact_reader::read_array_of_string(const std::string& field_name)
 {
     const auto& descriptor =
       get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_STRING);
-    return get_array_of_variable_size<std::string>(descriptor);
+    return read_array_of_variable_size<std::string>(descriptor);
 }
 
 namespace pimpl {
