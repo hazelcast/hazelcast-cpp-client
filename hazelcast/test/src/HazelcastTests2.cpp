@@ -55,6 +55,7 @@
 #include <hazelcast/util/concurrent/locks/LockSupport.h>
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
+#include <hazelcast/client/decimal.h>
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
@@ -71,6 +72,80 @@
 namespace hazelcast {
 namespace client {
 namespace test {
+
+/**
+ * All the hardcoded values are generated via java.util.BigInteger.toByteArray()
+ * method
+ */
+class DecimalTest : public ::testing::Test
+{};
+
+void
+assertEqual(const std::string& expected_string,
+            const std::vector<int8_t>& expected_vector)
+{
+    using boost::multiprecision::cpp_int;
+    cpp_int expected_int(expected_string);
+
+    std::vector<int8_t> actual_vector = pimpl::to_bytes(expected_int);
+    ASSERT_EQ(expected_vector, actual_vector);
+    cpp_int actual_int = pimpl::from_bytes(expected_vector);
+    ASSERT_EQ(expected_int, actual_int);
+}
+
+TEST_F(DecimalTest, positive_test)
+{
+    assertEqual(
+      "236095134049630962491764987683473058401811134068823290126231516129",
+      {
+        2,  61, -22, 92, -44, -54, -45, -9,  -17, -4, -66, -5,  -12, 19,
+        64, -5, -98, 12, -70, -24, 105, -66, -57, 61, -14, 109, -77, -31,
+      });
+}
+
+TEST_F(DecimalTest, negative_test)
+{
+    assertEqual("-158058224523514071900098807210097354699988293366",
+                {
+                  -28, 80,  108, -112, -19, -44, 84,  -98,  96,  106,
+                  53,  -88, 77,  -45,  89,  119, 109, -109, -87, 10,
+                });
+}
+
+TEST_F(DecimalTest, preserve_positive_sign_test)
+{
+    assertEqual("53220513728803604", { 0, -67, 19, -58, 119, -111, -77, 20 });
+}
+
+TEST_F(DecimalTest, preserve_negative_sign_test)
+{
+    assertEqual(
+      "-78097809300018214368298043748751294327036591272091714272720014418",
+      {
+        -1,  66, 39,  -99,  44,  53, -23, 60,  125, 105, 65,   -21, 104, -36,
+        -49, 79, -13, -115, 122, 57, -63, 106, 64,  -39, -112, 16,  -77, -82,
+      });
+}
+
+TEST_F(DecimalTest, carry_bit_test)
+{
+    assertEqual("-4172290065390264938962604145655817690459633380799476516330728"
+                "71499276353298132342018230923743606150479511296",
+                {
+                  -46,  -123, 61, 41,   -1,  115,  -54,  91,   -48,
+                  79,   55,   25, 41,   -90, 14,   109,  -115, 68,
+                  -122, 46,   70, 90,   47,  -103, -21,  -39,  126,
+                  -45,  37,   58, 60,   -76, -44,  91,   97,   52,
+                  31,   -38,  23, -111, 18,  -112, -109, -127, 0,
+                });
+}
+
+TEST_F(DecimalTest, cascading_carry_bit_test)
+{
+    assertEqual("-1234506895138773532672",
+                { -67, 19, -58, 119, -111, -77, 0, 0, 0 });
+}
+
 class AddressHelperTest : public ClientTest
 {};
 
