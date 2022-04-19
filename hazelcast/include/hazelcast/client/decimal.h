@@ -52,7 +52,8 @@ namespace pimpl {
  * Takes twos complement of giving array where most significant value is first.
  * @param a the array to take twos complement of
  */
-void
+
+void HAZELCAST_API
 twos_complement(std::vector<int8_t>& a);
 
 /**
@@ -65,7 +66,7 @@ twos_complement(std::vector<int8_t>& a);
  * @param v int8_t array to read from
  * @return cpp_int
  */
-boost::multiprecision::cpp_int
+boost::multiprecision::cpp_int HAZELCAST_API
 from_bytes(std::vector<int8_t> v);
 /**
  * Creates cpp_int from vector of int8_t respecting the sign.
@@ -78,7 +79,7 @@ from_bytes(std::vector<int8_t> v);
  * @param i the number to convert to bytes
  * @return the vector of int8_t representing the number
  */
-std::vector<int8_t>
+std::vector<int8_t> HAZELCAST_API
 to_bytes(const boost::multiprecision::cpp_int& i);
 } // namespace pimpl
 } // namespace client
