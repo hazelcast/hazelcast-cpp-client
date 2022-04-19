@@ -501,7 +501,7 @@ private:
     static const offset_func SHORT_OFFSET_READER;
     static const offset_func INT_OFFSET_READER;
     template<typename T>
-    boost::optional<T> get_nullable_primitive(
+    boost::optional<T> read_nullable_primitive(
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
       enum pimpl::field_kind nullable_field_kind);

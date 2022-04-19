@@ -615,53 +615,53 @@ compact_reader::read_array_of_string(const std::string& field_name)
 boost::optional<bool>
 compact_reader::read_nullable_boolean(const std::string& field_name)
 {
-    return get_nullable_primitive<bool>(field_name,
-                                        pimpl::field_kind::BOOLEAN,
-                                        pimpl::field_kind::NULLABLE_BOOLEAN);
+    return read_nullable_primitive<bool>(field_name,
+                                         pimpl::field_kind::BOOLEAN,
+                                         pimpl::field_kind::NULLABLE_BOOLEAN);
 }
 
 boost::optional<int8_t>
 compact_reader::read_nullable_int8(const std::string& field_name)
 {
-    return get_nullable_primitive<int8_t>(
+    return read_nullable_primitive<int8_t>(
       field_name, pimpl::field_kind::INT8, pimpl::field_kind::NULLABLE_INT8);
 }
 
 boost::optional<int16_t>
 compact_reader::read_nullable_int16(const std::string& field_name)
 {
-    return get_nullable_primitive<int16_t>(
+    return read_nullable_primitive<int16_t>(
       field_name, pimpl::field_kind::INT16, pimpl::field_kind::NULLABLE_INT16);
 }
 
 boost::optional<int32_t>
 compact_reader::read_nullable_int32(const std::string& field_name)
 {
-    return get_nullable_primitive<int32_t>(
+    return read_nullable_primitive<int32_t>(
       field_name, pimpl::field_kind::INT32, pimpl::field_kind::NULLABLE_INT32);
 }
 
 boost::optional<int64_t>
 compact_reader::read_nullable_int64(const std::string& field_name)
 {
-    return get_nullable_primitive<int64_t>(
+    return read_nullable_primitive<int64_t>(
       field_name, pimpl::field_kind::INT64, pimpl::field_kind::NULLABLE_INT64);
 }
 
 boost::optional<float>
 compact_reader::read_nullable_float32(const std::string& field_name)
 {
-    return get_nullable_primitive<float>(field_name,
-                                         pimpl::field_kind::FLOAT32,
-                                         pimpl::field_kind::NULLABLE_FLOAT32);
+    return read_nullable_primitive<float>(field_name,
+                                          pimpl::field_kind::FLOAT32,
+                                          pimpl::field_kind::NULLABLE_FLOAT32);
 }
 
 boost::optional<double>
 compact_reader::read_nullable_float64(const std::string& field_name)
 {
-    return get_nullable_primitive<double>(field_name,
-                                          pimpl::field_kind::FLOAT64,
-                                          pimpl::field_kind::NULLABLE_FLOAT64);
+    return read_nullable_primitive<double>(field_name,
+                                           pimpl::field_kind::FLOAT64,
+                                           pimpl::field_kind::NULLABLE_FLOAT64);
 }
 
 namespace pimpl {

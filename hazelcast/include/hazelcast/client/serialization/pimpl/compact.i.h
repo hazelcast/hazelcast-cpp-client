@@ -275,7 +275,7 @@ compact_reader::read_nullable_array_as_primitive_array(
 
 template<typename T>
 boost::optional<T>
-compact_reader::get_nullable_primitive(
+compact_reader::read_nullable_primitive(
   const std::string& field_name,
   enum pimpl::field_kind field_kind,
   enum pimpl::field_kind nullable_field_kind)
@@ -284,7 +284,7 @@ compact_reader::get_nullable_primitive(
     if (field_descriptor.field_kind == field_kind) {
         return boost::make_optional<T>(read_primitive<T>(field_descriptor));
     } else if (field_descriptor.field_kind == nullable_field_kind) {
-        return get_variable_size<T>(field_descriptor);
+        return read_variable_size<T>(field_descriptor);
     }
     throw unexpected_field_kind(field_descriptor.field_kind, field_name);
 }
