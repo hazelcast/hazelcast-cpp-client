@@ -221,6 +221,91 @@ compact_reader::read()
 }
 
 template<typename T>
+typename std::enable_if<
+  std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+  typename boost::optional<T>>::type
+compact_reader::read()
+{
+    int32_t size = object_data_input.read<int32_t>();
+    std::vector<int8_t> bytes(size);
+    object_data_input.read_fully(bytes);
+    auto cppInt = client::pimpl::from_bytes(std::move(bytes));
+    int32_t scale = object_data_input.read<int32_t>();
+    return boost::make_optional(decimal{ std::move(cppInt), scale });
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<boost::posix_time::time_duration,
+                                     typename std::remove_cv<T>::type>::value,
+                        typename boost::optional<T>>::type
+compact_reader::read()
+{
+    byte hour = object_data_input.read<byte>();
+    byte minute = object_data_input.read<byte>();
+    byte second = object_data_input.read<byte>();
+    int32_t nano = object_data_input.read<int32_t>();
+    return boost::make_optional(
+      boost::posix_time::time_duration{ hour, minute, second, nano });
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<boost::gregorian::date, typename std::remove_cv<T>::type>::value,
+  typename boost::optional<T>>::type
+compact_reader::read()
+{
+    int32_t year = object_data_input.read<int32_t>();
+    byte month = object_data_input.read<byte>();
+    byte dayOfMonth = object_data_input.read<byte>();
+    return boost::make_optional(
+      boost::gregorian::date{ year, month, dayOfMonth });
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<boost::posix_time::ptime,
+                                     typename std::remove_cv<T>::type>::value,
+                        typename boost::optional<T>>::type
+compact_reader::read()
+{
+    int32_t year = object_data_input.read<int32_t>();
+    byte month = object_data_input.read<byte>();
+    byte dayOfMonth = object_data_input.read<byte>();
+
+    byte hour = object_data_input.read<byte>();
+    byte minute = object_data_input.read<byte>();
+    byte second = object_data_input.read<byte>();
+    int32_t nano = object_data_input.read<int32_t>();
+
+    return boost::make_optional(boost::posix_time::ptime{
+      boost::gregorian::date{ year, month, dayOfMonth },
+      boost::posix_time::time_duration{ hour, minute, second, nano } });
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<boost::local_time::local_date_time,
+                                     typename std::remove_cv<T>::type>::value,
+                        typename boost::optional<T>>::type
+compact_reader::read()
+{
+    int32_t year = object_data_input.read<int32_t>();
+    byte month = object_data_input.read<byte>();
+    byte dayOfMonth = object_data_input.read<byte>();
+
+    byte hour = object_data_input.read<byte>();
+    byte minute = object_data_input.read<byte>();
+    byte second = object_data_input.read<byte>();
+    int32_t nano = object_data_input.read<int32_t>();
+    int32_t zoneTotalSeconds = object_data_input.read<int32_t>();
+    using namespace boost;
+    posix_time::time_duration time{ hour, minute, second, nano };
+    boost::gregorian::date date{ year, month, dayOfMonth };
+    posix_time::ptime timestamp{ date, time };
+    boost::local_time::time_zone_ptr zone_ptr(
+      new boost::local_time::posix_time_zone("UTC" +
+                                             std::to_string(zoneTotalSeconds)));
+    return make_optional(local_time::local_date_time{ timestamp, zone_ptr });
+}
+template<typename T>
 boost::optional<T>
 compact_reader::read_array_of_primitive(
   const std::string& field_name,

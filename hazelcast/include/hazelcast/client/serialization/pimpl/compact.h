@@ -20,10 +20,12 @@
 // serialization.h not in the beginning but later to avoid cyclic dependency.
 
 #include <boost/thread/future.hpp>
+#include <boost/date_time.hpp>
 #include <utility>
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/client/decimal.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -73,6 +75,8 @@ enum HAZELCAST_API field_kind
     ARRAY_OF_TIME = 21,
     DATE = 22,
     ARRAY_OF_DATE = 23,
+    TIMESTAMP = 24,
+    ARRAY_OF_TIMESTAMP = 25,
     TIMESTAMP_WITH_TIMEZONE = 26,
     ARRAY_OF_TIMESTAMP_WITH_TIMEZONE = 27,
     COMPACT = 28,
@@ -211,6 +215,66 @@ public:
      *in  the schema.
      */
     boost::optional<std::string> read_string(const std::string& field_name);
+
+    /**
+     * Reads an arbitrary precision and scale floating point number.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<decimal> read_decimal(const std::string& field_name);
+
+    /**
+     * Reads a time consisting of hour, minute, second, and nano seconds.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<boost::posix_time::time_duration> read_time(
+      const std::string& field_name);
+
+    /**
+     * Reads a date consisting of year, month, and day.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<boost::gregorian::date> read_date(
+      const std::string& field_name);
+
+    /**
+     * Reads a timestamp consisting of date and time.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<boost::posix_time::ptime> read_timestamp(
+      const std::string& field_name);
+
+    /**
+     * Reads a timestamp with timezone consisting of date, time and timezone
+     * offset.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<boost::local_time::local_date_time>
+    read_timestamp_with_timezone(const std::string& field_name);
 
     /**
      * Reads a compact object
@@ -574,6 +638,31 @@ private:
     typename std::enable_if<
       std::is_same<std::vector<boost::optional<bool>>,
                    typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::posix_time::time_duration, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::gregorian::date, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::posix_time::ptime, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::local_time::local_date_time, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>

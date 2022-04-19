@@ -632,6 +632,33 @@ compact_reader::read_string(const std::string& field_name)
                                            pimpl::field_kind::STRING);
 }
 
+boost::optional<decimal>
+compact_reader::read_decimal(const std::string& field_name)
+{
+    return read_variable_size<decimal>(field_name, pimpl::field_kind::DECIMAL);
+}
+
+boost::optional<boost::posix_time::time_duration>
+compact_reader::read_time(const std::string& field_name)
+{
+    return read_variable_size<boost::posix_time::time_duration>(
+      field_name, pimpl::field_kind::TIME);
+}
+
+boost::optional<boost::posix_time::ptime>
+compact_reader::read_timestamp(const std::string& field_name)
+{
+    return read_variable_size<boost::posix_time::ptime>(
+      field_name, pimpl::field_kind::TIMESTAMP);
+}
+
+boost::optional<boost::local_time::local_date_time>
+compact_reader::read_timestamp_with_timezone(const std::string& field_name)
+{
+    return read_variable_size<boost::local_time::local_date_time>(
+      field_name, pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
+}
+
 boost::optional<std::vector<bool>>
 compact_reader::read_array_of_boolean(const std::string& field_name)
 {
