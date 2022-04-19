@@ -47,6 +47,7 @@ struct bits_dto
     bool g = false;
     bool h = false;
     int id = 0;
+    boost::optional<std::vector<bool>> booleans;
 };
 
 bool
@@ -54,7 +55,8 @@ operator==(const bits_dto& lhs, const bits_dto& rhs)
 {
     return lhs.a == rhs.a && lhs.b == rhs.b && lhs.c == rhs.c &&
            lhs.d == rhs.d && lhs.e == rhs.e && lhs.f == rhs.f &&
-           lhs.g == rhs.g && lhs.h == rhs.h && lhs.id == rhs.id;
+           lhs.g == rhs.g && lhs.h == rhs.h && lhs.id == rhs.id &&
+           lhs.booleans == rhs.booleans;
 }
 
 struct node_dto
@@ -62,18 +64,6 @@ struct node_dto
     int id;
     std::shared_ptr<node_dto> child;
 };
-
-std::ostream&
-operator<<(std::ostream& out, const node_dto& node_dto)
-{
-    out << "id " << node_dto.id;
-    if (!node_dto.child) {
-        out << ", child null";
-    } else {
-        out << ", child " << *node_dto.child;
-    }
-    return out;
-}
 
 bool
 operator==(const node_dto& lhs, const node_dto& rhs)
@@ -83,21 +73,38 @@ operator==(const node_dto& lhs, const node_dto& rhs)
             (lhs.child && rhs.child && *lhs.child == *rhs.child));
 }
 
+struct named_dto
+{
+    boost::optional<std::string> name;
+    int my_int;
+};
+
+bool
+operator==(const named_dto& lhs, const named_dto& rhs)
+{
+    return lhs.name == rhs.name && lhs.my_int == rhs.my_int;
+}
+
 struct inner_dto
 {
-    std::string str;
+    boost::optional<std::vector<bool>> bools;
+    boost::optional<std::vector<int8_t>> bytes;
+    boost::optional<std::vector<int16_t>> shorts;
+    boost::optional<std::vector<int32_t>> ints;
+    boost::optional<std::vector<int64_t>> longs;
+    boost::optional<std::vector<float>> floats;
+    boost::optional<std::vector<double>> doubles;
+    boost::optional<std::vector<boost::optional<std::string>>> strings;
+    boost::optional<std::vector<boost::optional<named_dto>>> nn;
 };
 bool
 operator==(const inner_dto& lhs, const inner_dto& rhs)
 {
-    return lhs.str == rhs.str;
-}
-
-std::ostream&
-operator<<(std::ostream& out, const inner_dto& inner_dto)
-{
-    out << "str " << inner_dto.str;
-    return out;
+    return lhs.bools == rhs.bools && lhs.bytes == rhs.bytes &&
+           lhs.shorts == rhs.shorts && lhs.ints == rhs.ints &&
+           lhs.longs == rhs.longs && lhs.floats == rhs.floats &&
+           lhs.doubles == rhs.doubles && lhs.strings == rhs.strings &&
+           lhs.nn == rhs.nn;
 }
 
 struct main_dto
@@ -121,10 +128,30 @@ operator==(const main_dto& lhs, const main_dto& rhs)
            lhs.d == rhs.d && lhs.p == rhs.p && lhs.str == rhs.str;
 }
 
+inner_dto
+create_inner_dto()
+{
+    return inner_dto{
+        boost::make_optional<std::vector<bool>>({ true, false }),
+        boost::make_optional<std::vector<int8_t>>({ 0, 1, 2 }),
+        boost::make_optional<std::vector<int16_t>>({ 3, 4, 5 }),
+        boost::make_optional<std::vector<int32_t>>({ 9, 8, 7, 6 }),
+        boost::make_optional<std::vector<int64_t>>({ 0, 1, 5, 7, 9, 11 }),
+        boost::make_optional<std::vector<float>>({ 0.6543f, -3.56f, 45.67f }),
+        boost::make_optional<std::vector<double>>(
+          { 456.456, 789.789, 321.321 }),
+        boost::make_optional<std::vector<boost::optional<std::string>>>(
+          { boost::make_optional<std::string>("test"), boost::none }),
+        boost::make_optional<std::vector<boost::optional<named_dto>>>(
+          { boost::make_optional<named_dto>(
+              named_dto{ boost::make_optional<std::string>("test"), 1 }),
+            boost::none })
+    };
+}
 main_dto
 create_main_dto()
 {
-    inner_dto p{ "Johny" };
+    inner_dto p = create_inner_dto();
     return main_dto{ true,
                      113,
                      -500,
@@ -134,16 +161,6 @@ create_main_dto()
                      -897543.3678909,
                      p,
                      "this is main object created for testing!" };
-}
-
-std::ostream&
-operator<<(std::ostream& out, const main_dto& main_dto)
-{
-    out << "{" << main_dto.b << ", " << main_dto.boolean << ", " << main_dto.s
-        << ", " << main_dto.i << ", " << main_dto.l << ", " << main_dto.f
-        << ", " << main_dto.d << ", " << main_dto.p << ", " << main_dto.str
-        << "}";
-    return out;
 }
 
 /**
@@ -171,15 +188,6 @@ operator==(const employee_dto& lhs, const employee_dto& rhs)
            lhs.isHired == rhs.isHired && lhs.isFired == rhs.isFired;
 }
 
-std::ostream&
-operator<<(std::ostream& out, const employee_dto& employee_dto)
-{
-    out << "{" << employee_dto.age << ", " << employee_dto.rank << ", "
-        << employee_dto.id << ", " << employee_dto.isHired << ", "
-        << employee_dto.isFired << "}";
-    return out;
-}
-
 } // namespace test
 } // namespace compact
 
@@ -200,6 +208,7 @@ struct hz_serializer<compact::test::bits_dto> : public compact_serializer
         writer.write_boolean("g", dto.g);
         writer.write_boolean("h", dto.h);
         writer.write_int32("id", dto.id);
+        writer.write_array_of_boolean("booleans", dto.booleans);
     }
 
     static compact::test::bits_dto read(compact_reader& reader)
@@ -214,24 +223,65 @@ struct hz_serializer<compact::test::bits_dto> : public compact_serializer
         dto.g = reader.read_boolean("g");
         dto.h = reader.read_boolean("h");
         dto.id = reader.read_int32("id");
+        dto.booleans = reader.read_array_of_boolean("booleans");
         return dto;
     }
 
     static std::string type_name() { return "bits_dto"; }
 };
+
+template<>
+struct hz_serializer<compact::test::named_dto> : public compact_serializer
+{
+    static void write(const compact::test::named_dto& dto,
+                      compact_writer& writer)
+    {
+        writer.write_string("name", dto.name);
+        writer.write_int32("my_int", dto.my_int);
+    }
+
+    static compact::test::named_dto read(compact_reader& reader)
+    {
+        compact::test::named_dto dto;
+        dto.name = reader.read_string("name");
+        dto.my_int = reader.read_int32("my_int");
+        return dto;
+    }
+
+    static std::string type_name() { return "named_dto"; }
+};
+
 template<>
 struct hz_serializer<compact::test::inner_dto> : public compact_serializer
 {
     static void write(const compact::test::inner_dto& object,
                       compact_writer& writer)
     {
-        writer.write_string("name", object.str);
+        writer.write_array_of_boolean("bools", object.bools);
+        writer.write_array_of_int8("bytes", object.bytes);
+        writer.write_array_of_int16("shorts", object.shorts);
+        writer.write_array_of_int32("ints", object.ints);
+        writer.write_array_of_int64("longs", object.longs);
+        writer.write_array_of_float32("floats", object.floats);
+        writer.write_array_of_float64("doubles", object.doubles);
+        writer.write_array_of_string("strings", object.strings);
+        writer.write_array_of_compact("nn", object.nn);
     }
 
     static compact::test::inner_dto read(compact_reader& reader)
     {
-        auto str = reader.read_string("name");
-        return compact::test::inner_dto{ str.value() };
+        compact::test::inner_dto object;
+        object.bools = reader.read_array_of_boolean("bools");
+        object.bytes = reader.read_array_of_int8("bytes");
+        object.shorts = reader.read_array_of_int16("shorts");
+        object.ints = reader.read_array_of_int32("ints");
+        object.longs = reader.read_array_of_int64("longs");
+        object.floats = reader.read_array_of_float32("floats");
+        object.doubles = reader.read_array_of_float64("doubles");
+        object.strings = reader.read_array_of_string("strings");
+        object.nn =
+          reader.read_array_of_compact<compact::test::named_dto>("nn");
+        return object;
     }
 
     static std::string type_name() { return "inner_dto"; }
@@ -359,7 +409,7 @@ TEST_F(CompactSerializationTest, testAllTypes)
     serialization_config config;
     SerializationService ss(config);
 
-    main_dto expected = create_main_dto();
+    auto expected = create_main_dto();
     auto actual = to_data_and_back_to_object(ss, expected);
     ASSERT_EQ(expected, actual);
 }
@@ -385,11 +435,14 @@ TEST_F(CompactSerializationTest, testBits)
     expected.a = true;
     expected.b = true;
     expected.id = 121;
+    expected.booleans = boost::make_optional<std::vector<bool>>(
+      { true, false, false, false, true, false, false, false });
 
     const data& data = ss.to_data(expected);
-    // hash(4) + typeid(4) + schemaId(8) + (1 bytes for 8 bits)
-    // + (4 bytes for int)
-    ASSERT_EQ(21, data.total_size());
+    // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (1 bytes for 8
+    // bits) + (4 bytes for int) (4 byte length of byte array) + (1 byte for
+    // booleans array of 8 bits) + (1 byte offset bytes)
+    ASSERT_EQ(31, data.total_size());
 
     bits_dto actual = *(ss.to_object<bits_dto>(data));
     ASSERT_EQ(expected, actual);

@@ -786,6 +786,16 @@ data_output::write(bool value)
 
 template<>
 void
+data_output::write(int8_t value)
+{
+    if (is_no_write_) {
+        return;
+    }
+    write<byte>(value);
+}
+
+template<>
+void
 data_output::write(const std::string& str)
 {
     if (is_no_write_) {

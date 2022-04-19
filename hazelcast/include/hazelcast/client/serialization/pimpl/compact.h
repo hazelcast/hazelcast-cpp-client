@@ -127,113 +127,220 @@ public:
     /**
      * Reads a boolean.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
-    bool read_boolean(const std::string& fieldName);
+    bool read_boolean(const std::string& field_name);
 
     /**
      * Reads an 8-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
-    int8_t read_int8(const std::string& fieldName);
+    int8_t read_int8(const std::string& field_name);
 
     /**
      * Reads a 16-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
-    int16_t read_int16(const std::string& fieldName);
+    int16_t read_int16(const std::string& field_name);
 
     /**
      * Reads a 32-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     int32_t read_int32(const std::string& field_name);
 
     /**
      * Reads a 64-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     int64_t read_int64(const std::string& field_name);
 
     /**
      * Reads a 32-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     float read_float32(const std::string& field_name);
 
     /**
      * Reads a 64-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     double read_float64(const std::string& field_name);
 
     /**
      * Reads an UTF-8 encoded string.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     *in  the schema.
      */
     boost::optional<std::string> read_string(const std::string& field_name);
 
     /**
      * Reads a compact object
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
-     * @throws hazelcast_serialization if the field does not exist in the schema
-     * or the type of the field does not match with the one defined in the
-     * schema.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     template<typename T>
     boost::optional<T> read_compact(const std::string& field_name);
+
+    /**
+     * Reads an array of booleans.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<bool>> read_array_of_boolean(
+      const std::string& field_name);
+
+    /**
+     * Reads an array of 8-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<int8_t>> read_array_of_int8(
+      const std::string& field_name);
+
+    /**
+     * Reads an array of 16-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<int16_t>> read_array_of_int16(
+      const std::string& field_name);
+
+    /**
+     * Reads an array of 32-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<int32_t>> read_array_of_int32(
+      const std::string& field_name);
+
+    /**
+     * Reads an array of 64-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<int64_t>> read_array_of_int64(
+      const std::string& field_name);
+
+    /**
+     * Reads an array of 32-bit IEEE 754 floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<float>> read_array_of_float32(
+      const std::string& field_name);
+
+    /**
+     * Reads an array of 64-bit IEEE 754 floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<double>> read_array_of_float64(
+      const std::string& field_name);
+
+    /**
+     * Reads an array of UTF-8 encoded strings.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<std::string>>>
+    read_array_of_string(const std::string& field_name);
+
+    /**
+     * Reads an array of compact objects.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    template<typename T>
+    boost::optional<std::vector<boost::optional<T>>> read_array_of_compact(
+      const std::string& field_name);
 
 private:
     compact_reader(pimpl::compact_stream_serializer& compact_stream_serializer,
                    object_data_input& object_data_input,
                    const pimpl::schema& schema);
-
     friend compact_reader pimpl::create_compact_reader(
       pimpl::compact_stream_serializer& compact_stream_serializer,
       object_data_input& object_data_input,
       const pimpl::schema& schema);
-
     template<typename T>
     T read_primitive(const std::string& field_name,
                      enum pimpl::field_kind field_kind,
@@ -241,27 +348,21 @@ private:
                      const std::string& method_suffix);
     template<typename T>
     T read_primitive(const pimpl::field_descriptor& field_descriptor);
-
-    bool is_field_exists(const std::string& fieldName,
+    bool is_field_exists(const std::string& field_name,
                          enum pimpl::field_kind kind) const;
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name) const;
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name,
       enum pimpl::field_kind field_kind) const;
-    exception::hazelcast_serialization unknown_field_exception(
-      const std::string& field_name) const;
-    exception::hazelcast_serialization unexpected_field_kind(
-      enum pimpl::field_kind field_kind,
-      const std::string& field_name) const;
     template<typename T>
-    boost::optional<T> get_variable_size(
+    boost::optional<T> read_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
-    boost::optional<T> get_variable_size(const std::string& field_name,
-                                         enum pimpl::field_kind field_kind);
+    boost::optional<T> read_variable_size(const std::string& field_name,
+                                          enum pimpl::field_kind field_kind);
     template<typename T>
-    T get_variable_size_as_non_null(
+    T read_variable_size_as_non_null(
       const pimpl::field_descriptor& field_descriptor,
       const std::string& field_name,
       const std::string& method_suffix);
@@ -274,15 +375,64 @@ private:
         std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
         std::is_same<float, typename std::remove_cv<T>::type>::value ||
         std::is_same<double, typename std::remove_cv<T>::type>::value ||
-        std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+        std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<int8_t>,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<int16_t>,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<int32_t>,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<int64_t>,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<float>,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<double>,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<boost::optional<std::string>>,
+                     typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
-
     template<typename T>
     typename std::enable_if<
       std::is_base_of<compact_serializer, hz_serializer<T>>::value,
       typename boost::optional<T>>::type
     read();
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
+    boost::optional<T> read_array_of_primitive(
+      const std::string& field_name,
+      enum pimpl::field_kind field_kind,
+      enum pimpl::field_kind nullable_field_kind,
+      const std::string& method_suffix);
+    template<typename T>
+    boost::optional<std::vector<boost::optional<T>>>
+    read_array_of_variable_size(
+      const pimpl::field_descriptor& field_descriptor);
+    template<typename T>
+    boost::optional<T> read_nullable_array_as_primitive_array(
+      const pimpl::field_descriptor& field_descriptor,
+      const std::string& field_name,
+      const std::string& method_suffix);
+    using offset_func = std::function<
+      int32_t(serialization::object_data_input&, uint32_t, uint32_t)>;
+    static const offset_func BYTE_OFFSET_READER;
+    static const offset_func SHORT_OFFSET_READER;
+    static const offset_func INT_OFFSET_READER;
+    static std::function<
+      int32_t(serialization::object_data_input&, uint32_t, uint32_t)>
+    get_offset_reader(int32_t data_length);
+    static exception::hazelcast_serialization unexpected_null_value_in_array(
+      const std::string& field_name,
+      const std::string& method_suffix);
+    exception::hazelcast_serialization unknown_field(
+      const std::string& field_name) const;
+    exception::hazelcast_serialization unexpected_field_kind(
+      enum pimpl::field_kind field_kind,
+      const std::string& field_name) const;
     static exception::hazelcast_serialization unexpected_null_value(
       const std::string& field_name,
       const std::string& method_suffix);
@@ -320,7 +470,7 @@ public:
     /**
      * Writes a boolean value.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     value to write.
      */
     void write_boolean(const std::string& field_name, bool value);
@@ -328,7 +478,7 @@ public:
     /**
      * Writes an 8-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     value to write.
      */
     void write_int8(const std::string& field_name, int8_t value);
@@ -336,7 +486,7 @@ public:
     /**
      *  Writes a 16-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     value to write.
      */
     void write_int16(const std::string& field_name, int16_t value);
@@ -344,7 +494,7 @@ public:
     /**
      * Writes a 32-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_int32(const std::string& field_name, int32_t value);
@@ -352,7 +502,7 @@ public:
     /**
      * Writes a 64-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_int64(const std::string& field_name, int64_t value);
@@ -360,7 +510,7 @@ public:
     /**
      * Writes a 32-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_float32(const std::string& field_name, float value);
@@ -368,7 +518,7 @@ public:
     /**
      * Writes a 64-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_float64(const std::string& field_name, double value);
@@ -376,7 +526,7 @@ public:
     /**
      * Writes an UTF-8 encoded string.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_string(const std::string& field_name,
@@ -385,12 +535,102 @@ public:
     /**
      * Writes a nested compact object.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     template<typename T>
     void write_compact(const std::string& field_name,
                        const boost::optional<T>& value);
+
+    /**
+     * Writes an array of booleans.
+     *
+     * @param field_name name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_boolean(
+      const std::string& field_name,
+      const boost::optional<std::vector<bool>>& value);
+
+    /**
+     * Writes an array of 8-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @param value     to be written.
+     */
+    void write_array_of_int8(const std::string& field_name,
+                             const boost::optional<std::vector<int8_t>>& value);
+
+    /**
+     * Writes an array of 16-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @param value    to be written.
+     */
+    void write_array_of_int16(
+      const std::string& field_name,
+      const boost::optional<std::vector<int16_t>>& value);
+
+    /**
+     * Writes an array of 32-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @param value   to be written.
+     */
+    void write_array_of_int32(
+      const std::string& field_name,
+      const boost::optional<std::vector<int32_t>>& value);
+
+    /**
+     * Writes an array of 64-bit two's complement signed integers.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_int64(
+      const std::string& field_name,
+      const boost::optional<std::vector<int64_t>>& value);
+
+    /**
+     * Writes an array of 32-bit IEEE 754 floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_float32(
+      const std::string& field_name,
+      const boost::optional<std::vector<float>>& value);
+
+    /**
+     * Writes an array of 64-bit IEEE 754 floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_float64(
+      const std::string& field_name,
+      const boost::optional<std::vector<double>>& value);
+
+    /**
+     * Writes an array of UTF-8 encoded strings.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_string(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<std::string>>>& value);
+
+    /**
+     * Writes an array of nested compact objects.
+     *
+     * @param field_name name of the field.
+     * @param value     to be written.
+     */
+    template<typename T>
+    void write_array_of_compact(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<T>>>& value);
 
 private:
     friend compact_writer pimpl::create_compact_writer(
@@ -415,13 +655,13 @@ constexpr int32_t NULL_OFFSET = -1;
  * Range of the offsets that can be represented by a single byte
  * and can be read with offset_reader::BYTE_OFFSET_READER.
  */
-constexpr uint32_t BYTE_OFFSET_READER_RANGE = INT8_MAX - INT8_MIN;
+constexpr int32_t BYTE_OFFSET_READER_RANGE = INT8_MAX - INT8_MIN;
 
 /**
  * Range of the offsets that can be represented by two bytes
  * and can be read with offset_reader::SHORT_OFFSET_READER.
  */
-constexpr uint32_t SHORT_OFFSET_READER_RANGE = INT16_MAX - INT16_MIN;
+constexpr int32_t SHORT_OFFSET_READER_RANGE = INT16_MAX - INT16_MIN;
 
 } // namespace offset_reader
 
@@ -440,6 +680,33 @@ public:
     void write_float64(const std::string& field_name, double value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    void write_array_of_boolean(
+      const std::string& field_name,
+      const boost::optional<std::vector<bool>>& value);
+    void write_array_of_int8(const std::string& field_name,
+                             const boost::optional<std::vector<int8_t>>& value);
+    void write_array_of_int16(
+      const std::string& field_name,
+      const boost::optional<std::vector<int16_t>>& value);
+    void write_array_of_int32(
+      const std::string& field_name,
+      const boost::optional<std::vector<int32_t>>& value);
+    void write_array_of_int64(
+      const std::string& field_name,
+      const boost::optional<std::vector<int64_t>>& value);
+    void write_array_of_float32(
+      const std::string& field_name,
+      const boost::optional<std::vector<float>>& value);
+    void write_array_of_float64(
+      const std::string& field_name,
+      const boost::optional<std::vector<double>>& value);
+    void write_array_of_string(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<std::string>>>& value);
+    template<typename T>
+    void write_array_of_compact(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<T>>>& value);
     template<typename T>
     void write_compact(const std::string& field_name,
                        const boost::optional<T>& value);
@@ -451,7 +718,7 @@ private:
     const field_descriptor& check_field_definition(
       const std::string& field_name,
       enum field_kind field_kind) const;
-    void write_offsets(size_t data_length);
+    void write_offsets(size_t data_length, const std::vector<int32_t>& offsets);
 
     template<typename T>
     void write_variable_size_field(const std::string& field_name,
@@ -460,7 +727,14 @@ private:
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<std::string, typename std::remove_cv<T>::type>::value,
+      std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
+        std::is_same<std::vector<int8_t>, T>::value ||
+        std::is_same<std::vector<int16_t>, T>::value ||
+        std::is_same<std::vector<int32_t>, T>::value ||
+        std::is_same<std::vector<int64_t>, T>::value ||
+        std::is_same<std::vector<float>, T>::value ||
+        std::is_same<std::vector<double>, T>::value ||
+        std::is_same<std::vector<std::string>, T>::value,
       void>::type
     write(const T& value);
 
@@ -469,6 +743,17 @@ private:
       std::is_base_of<compact_serializer, hz_serializer<T>>::value,
       void>::type
     write(const T& value);
+
+    template<typename T>
+    typename std::enable_if<std::is_same<std::vector<bool>, T>::value,
+                            void>::type
+    write(const T& value);
+
+    template<typename T>
+    void write_array_of_variable_size(
+      const std::string& field_name,
+      enum field_kind field_kind,
+      const boost::optional<std::vector<boost::optional<T>>>& value);
 
     void set_position(const std::string& field_name,
                       enum field_kind field_kind);
