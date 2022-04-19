@@ -602,7 +602,7 @@ private:
       enum pimpl::field_kind field_kind,
       enum pimpl::field_kind nullable_field_kind);
     template<typename T>
-    boost::optional<std::vector<boost::optional<T>>> get_array_of_nullable(
+    boost::optional<std::vector<boost::optional<T>>> read_array_of_nullable(
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
       enum pimpl::field_kind nullable_field_kind);
