@@ -112,6 +112,66 @@ compact_writer::write_string(const std::string& field_name,
 }
 
 void
+compact_writer::write_decimal(const std::string& field_name,
+                              const boost::optional<decimal>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_decimal(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::DECIMAL);
+    }
+}
+
+void
+compact_writer::write_time(
+  const std::string& field_name,
+  const boost::optional<boost::posix_time::time_duration>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_time(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::TIME);
+    }
+}
+
+void
+compact_writer::write_date(const std::string& field_name,
+                           const boost::optional<boost::gregorian::date>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_date(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::DATE);
+    }
+}
+
+void
+compact_writer::write_timestamp(
+  const std::string& field_name,
+  const boost::optional<boost::posix_time::ptime>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_timestamp(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::TIMESTAMP);
+    }
+}
+
+void
+compact_writer::write_timestamp_with_timezone(
+  const std::string& field_name,
+  const boost::optional<boost::local_time::local_date_time>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_timestamp_with_timezone(field_name,
+                                                              value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
+    }
+}
+
+void
 compact_writer::write_array_of_boolean(
   const std::string& field_name,
   const boost::optional<std::vector<bool>>& value)
@@ -950,6 +1010,45 @@ default_compact_writer::write_string(const std::string& field_name,
                                      const boost::optional<std::string>& value)
 {
     write_variable_size_field(field_name, field_kind::STRING, value);
+}
+
+void
+default_compact_writer::write_decimal(const std::string& field_name,
+                                      const boost::optional<decimal>& value)
+{
+    write_variable_size_field(field_name, field_kind::DECIMAL, value);
+}
+
+void
+default_compact_writer::write_time(
+  const std::string& field_name,
+  const boost::optional<boost::posix_time::time_duration>& value)
+{
+    write_variable_size_field(field_name, field_kind::TIME, value);
+}
+void
+default_compact_writer::write_date(
+  const std::string& field_name,
+  const boost::optional<boost::gregorian::date>& value)
+{
+    write_variable_size_field(field_name, field_kind::DATE, value);
+}
+
+void
+default_compact_writer::write_timestamp(
+  const std::string& field_name,
+  const boost::optional<boost::posix_time::ptime>& value)
+{
+    write_variable_size_field(field_name, field_kind::TIMESTAMP, value);
+}
+
+void
+default_compact_writer::write_timestamp_with_timezone(
+  const std::string& field_name,
+  const boost::optional<boost::local_time::local_date_time>& value)
+{
+    write_variable_size_field(field_name, field_kind::TIMESTAMP_WITH_TIMEZONE,
+                              value);
 }
 
 void

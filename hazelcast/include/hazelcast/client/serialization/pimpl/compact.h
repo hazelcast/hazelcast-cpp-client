@@ -647,22 +647,26 @@ private:
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::posix_time::time_duration, typename std::remove_cv<T>::type>::value,
+      std::is_same<boost::posix_time::time_duration,
+                   typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::gregorian::date, typename std::remove_cv<T>::type>::value,
+      std::is_same<boost::gregorian::date,
+                   typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::posix_time::ptime, typename std::remove_cv<T>::type>::value,
+      std::is_same<boost::posix_time::ptime,
+                   T>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::local_time::local_date_time, typename std::remove_cv<T>::type>::value,
+      std::is_same<boost::local_time::local_date_time,
+                   typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
@@ -808,6 +812,55 @@ public:
      */
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+
+    /**
+     * Writes an arbitrary precision and scale floating point number.
+     *
+     * @param field_name name of the field.
+     * @param value     to be written.
+     */
+    void write_decimal(const std::string& field_name,
+                       const boost::optional<decimal>& value);
+
+    /**
+     *  Writes a time consisting of hour, minute, second, and nanoseconds.
+     *
+     *  @param field_name name of the field.
+     *  @param value     to be written.
+     */
+    void write_time(
+      const std::string& field_name,
+      const boost::optional<boost::posix_time::time_duration>& value);
+
+    /**
+     * Writes a date consisting of year, month, and day.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_date(const std::string& field_name,
+                    const boost::optional<boost::gregorian::date>& value);
+
+    /**
+     * Writes a timestamp consisting of date and time.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_timestamp(
+      const std::string& field_name,
+      const boost::optional<boost::posix_time::ptime>& value);
+
+    /**
+     * Reads a timestamp with timezone consisting of date, time and timezone
+     * offset.
+     *
+     * @param fieldName name of the field.
+     * @param value     to be written.
+     */
+    void write_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<boost::local_time::local_date_time>& value);
 
     /**
      * Writes a nested compact object.
@@ -1096,6 +1149,19 @@ public:
     void write_float64(const std::string& field_name, double value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    void write_decimal(const std::string& field_name,
+                       const boost::optional<decimal>& value);
+    void write_time(
+      const std::string& field_name,
+      const boost::optional<boost::posix_time::time_duration>& value);
+    void write_date(const std::string& field_name,
+                    const boost::optional<boost::gregorian::date>& value);
+    void write_timestamp(
+      const std::string& field_name,
+      const boost::optional<boost::posix_time::ptime>& value);
+    void write_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<boost::local_time::local_date_time>& value);
     template<typename T>
     void write_compact(const std::string& field_name,
                        const boost::optional<T>& value);
@@ -1206,7 +1272,35 @@ private:
     typename std::enable_if<std::is_same<std::vector<bool>, T>::value,
                             void>::type
     write(const T& value);
-
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::posix_time::time_duration,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::gregorian::date,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::posix_time::ptime,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<boost::local_time::local_date_time,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
     template<typename T>
     void write_array_of_variable_size(
       const std::string& field_name,

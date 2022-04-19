@@ -245,7 +245,7 @@ compact_reader::read()
     byte second = object_data_input.read<byte>();
     int32_t nano = object_data_input.read<int32_t>();
     return boost::make_optional(
-      boost::posix_time::time_duration{ hour, minute, second, nano });
+      boost::posix_time::time_duration{ hour, minute, second, nano / 1000 });
 }
 
 template<typename T>
@@ -258,12 +258,11 @@ compact_reader::read()
     byte month = object_data_input.read<byte>();
     byte dayOfMonth = object_data_input.read<byte>();
     return boost::make_optional(
-      boost::gregorian::date{ year, month, dayOfMonth });
+      boost::gregorian::date{ (short unsigned int)year, month, dayOfMonth });
 }
 
 template<typename T>
-typename std::enable_if<std::is_same<boost::posix_time::ptime,
-                                     typename std::remove_cv<T>::type>::value,
+typename std::enable_if<std::is_same<boost::posix_time::ptime, T>::value,
                         typename boost::optional<T>>::type
 compact_reader::read()
 {
@@ -277,8 +276,8 @@ compact_reader::read()
     int32_t nano = object_data_input.read<int32_t>();
 
     return boost::make_optional(boost::posix_time::ptime{
-      boost::gregorian::date{ year, month, dayOfMonth },
-      boost::posix_time::time_duration{ hour, minute, second, nano } });
+      boost::gregorian::date{ (short unsigned int)year, month, dayOfMonth },
+      boost::posix_time::time_duration{ hour, minute, second, nano / 1000 } });
 }
 
 template<typename T>
@@ -297,12 +296,17 @@ compact_reader::read()
     int32_t nano = object_data_input.read<int32_t>();
     int32_t zoneTotalSeconds = object_data_input.read<int32_t>();
     using namespace boost;
-    posix_time::time_duration time{ hour, minute, second, nano };
-    boost::gregorian::date date{ year, month, dayOfMonth };
+    posix_time::time_duration time{ hour, minute, second, nano / 1000 };
+    boost::gregorian::date date{ (short unsigned int)year, month, dayOfMonth };
     posix_time::ptime timestamp{ date, time };
+    std::stringstream zone_string;
+    zone_string << "UTC";
+    if (zoneTotalSeconds >= 0) {
+        zone_string << "+";
+    }
+    zone_string << to_simple_string(posix_time::seconds(zoneTotalSeconds));
     boost::local_time::time_zone_ptr zone_ptr(
-      new boost::local_time::posix_time_zone("UTC" +
-                                             std::to_string(zoneTotalSeconds)));
+      new boost::local_time::posix_time_zone(zone_string.str()));
     return make_optional(local_time::local_date_time{ timestamp, zone_ptr });
 }
 template<typename T>
@@ -610,6 +614,76 @@ default_compact_writer::write(const T& value)
             index++;
         }
     }
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+  void>::type
+default_compact_writer::write(const T& value)
+{
+    auto v = hazelcast::client::pimpl::to_bytes(value.unscaled);
+    object_data_output_.write(v);
+    object_data_output_.write<int32_t>(value.scale);
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<boost::posix_time::time_duration,
+                                     typename std::remove_cv<T>::type>::value,
+                        void>::type
+default_compact_writer::write(const T& value)
+{
+    object_data_output_.write<byte>(value.hours());
+    object_data_output_.write<byte>(value.minutes());
+    object_data_output_.write<byte>(value.seconds());
+    object_data_output_.write<int32_t>(value.fractional_seconds() * 1000);
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<boost::gregorian::date, typename std::remove_cv<T>::type>::value,
+  void>::type
+default_compact_writer::write(const T& value)
+{
+    object_data_output_.write<int32_t>(value.year());
+    object_data_output_.write<byte>(value.month());
+    object_data_output_.write<byte>(value.day());
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<boost::posix_time::ptime,
+                                     typename std::remove_cv<T>::type>::value,
+                        void>::type
+default_compact_writer::write(const T& value)
+{
+    const boost::gregorian::date& date = value.date();
+    object_data_output_.write<int32_t>(date.year());
+    object_data_output_.write<byte>(date.month());
+    object_data_output_.write<byte>(date.day());
+    const boost::posix_time::time_duration& time_of_day = value.time_of_day();
+    object_data_output_.write<byte>(time_of_day.hours());
+    object_data_output_.write<byte>(time_of_day.minutes());
+    object_data_output_.write<byte>(time_of_day.seconds());
+    object_data_output_.write<int32_t>(time_of_day.fractional_seconds() * 1000);
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<boost::local_time::local_date_time,
+                                     typename std::remove_cv<T>::type>::value,
+                        void>::type
+default_compact_writer::write(const T& value)
+{
+    const boost::gregorian::date& date = value.date();
+    object_data_output_.write<int32_t>(date.year());
+    object_data_output_.write<byte>(date.month());
+    object_data_output_.write<byte>(date.day());
+    const boost::posix_time::time_duration& time_of_day = value.time_of_day();
+    object_data_output_.write<byte>(time_of_day.hours());
+    object_data_output_.write<byte>(time_of_day.minutes());
+    object_data_output_.write<byte>(time_of_day.seconds());
+    object_data_output_.write<int32_t>(time_of_day.fractional_seconds() * 1000);
+    object_data_output_.write<int32_t>(
+      value.zone()->base_utc_offset().total_seconds());
 }
 
 template<typename T>
