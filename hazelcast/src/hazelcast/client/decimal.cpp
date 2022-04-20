@@ -47,7 +47,7 @@ from_bytes(std::vector<int8_t> v)
     }
     import_bits(i, v.begin(), v.end(), 8);
     if (is_negative) {
-        i = -i;
+        return -i;
     }
     return i;
 }
