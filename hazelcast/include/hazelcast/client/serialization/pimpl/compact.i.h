@@ -235,34 +235,34 @@ compact_reader::read()
 }
 
 template<typename T>
-typename std::enable_if<std::is_same<boost::posix_time::time_duration,
-                                     typename std::remove_cv<T>::type>::value,
-                        typename boost::optional<T>>::type
+typename std::enable_if<
+  std::is_same<local_time, typename std::remove_cv<T>::type>::value,
+  typename boost::optional<T>>::type
 compact_reader::read()
 {
     byte hour = object_data_input.read<byte>();
     byte minute = object_data_input.read<byte>();
     byte second = object_data_input.read<byte>();
     int32_t nano = object_data_input.read<int32_t>();
-    return boost::make_optional(
-      boost::posix_time::time_duration{ hour, minute, second, nano / 1000 });
+    client::local_time time{ hour, minute, second, nano };
+    return boost::make_optional(time);
 }
 
 template<typename T>
 typename std::enable_if<
-  std::is_same<boost::gregorian::date, typename std::remove_cv<T>::type>::value,
+  std::is_same<client::local_date, typename std::remove_cv<T>::type>::value,
   typename boost::optional<T>>::type
 compact_reader::read()
 {
     int32_t year = object_data_input.read<int32_t>();
     byte month = object_data_input.read<byte>();
     byte dayOfMonth = object_data_input.read<byte>();
-    return boost::make_optional(
-      boost::gregorian::date{ (short unsigned int)year, month, dayOfMonth });
+    client::local_date date{ (short unsigned int)year, month, dayOfMonth };
+    return boost::make_optional(date);
 }
 
 template<typename T>
-typename std::enable_if<std::is_same<boost::posix_time::ptime, T>::value,
+typename std::enable_if<std::is_same<client::local_date_time, T>::value,
                         typename boost::optional<T>>::type
 compact_reader::read()
 {
@@ -275,13 +275,14 @@ compact_reader::read()
     byte second = object_data_input.read<byte>();
     int32_t nano = object_data_input.read<int32_t>();
 
-    return boost::make_optional(boost::posix_time::ptime{
-      boost::gregorian::date{ (short unsigned int)year, month, dayOfMonth },
-      boost::posix_time::time_duration{ hour, minute, second, nano / 1000 } });
+    client::local_time time{ hour, minute, second, nano };
+    client::local_date date{ (short unsigned int)year, month, dayOfMonth };
+    client::local_date_time date_time{ date, time };
+    return boost::make_optional(date_time);
 }
 
 template<typename T>
-typename std::enable_if<std::is_same<boost::local_time::local_date_time,
+typename std::enable_if<std::is_same<client::offset_date_time,
                                      typename std::remove_cv<T>::type>::value,
                         typename boost::optional<T>>::type
 compact_reader::read()
@@ -295,19 +296,11 @@ compact_reader::read()
     byte second = object_data_input.read<byte>();
     int32_t nano = object_data_input.read<int32_t>();
     int32_t zoneTotalSeconds = object_data_input.read<int32_t>();
-    using namespace boost;
-    posix_time::time_duration time{ hour, minute, second, nano / 1000 };
-    boost::gregorian::date date{ (short unsigned int)year, month, dayOfMonth };
-    posix_time::ptime timestamp{ date, time };
-    std::stringstream zone_string;
-    zone_string << "UTC";
-    if (zoneTotalSeconds >= 0) {
-        zone_string << "+";
-    }
-    zone_string << to_simple_string(posix_time::seconds(zoneTotalSeconds));
-    boost::local_time::time_zone_ptr zone_ptr(
-      new boost::local_time::posix_time_zone(zone_string.str()));
-    return make_optional(local_time::local_date_time{ timestamp, zone_ptr });
+    client::local_time time{ hour, minute, second, nano };
+    client::local_date date{ (short unsigned int)year, month, dayOfMonth };
+    client::local_date_time date_time{ date, time };
+    client::offset_date_time offset_date_time{ date_time, zoneTotalSeconds };
+    return boost::make_optional(offset_date_time);
 }
 template<typename T>
 boost::optional<T>
@@ -628,67 +621,61 @@ default_compact_writer::write(const T& value)
 }
 
 template<typename T>
-typename std::enable_if<std::is_same<boost::posix_time::time_duration,
+typename std::enable_if<std::is_same<hazelcast::client::local_time,
                                      typename std::remove_cv<T>::type>::value,
                         void>::type
 default_compact_writer::write(const T& value)
 {
-    object_data_output_.write<byte>(value.hours());
-    object_data_output_.write<byte>(value.minutes());
-    object_data_output_.write<byte>(value.seconds());
-    object_data_output_.write<int32_t>(value.fractional_seconds() * 1000);
+    object_data_output_.write<byte>(value.hours);
+    object_data_output_.write<byte>(value.minutes);
+    object_data_output_.write<byte>(value.seconds);
+    object_data_output_.write<int32_t>(value.nanos);
 }
 
 template<typename T>
-typename std::enable_if<
-  std::is_same<boost::gregorian::date, typename std::remove_cv<T>::type>::value,
-  void>::type
-default_compact_writer::write(const T& value)
-{
-    object_data_output_.write<int32_t>(value.year());
-    object_data_output_.write<byte>(value.month());
-    object_data_output_.write<byte>(value.day());
-}
-
-template<typename T>
-typename std::enable_if<std::is_same<boost::posix_time::ptime,
+typename std::enable_if<std::is_same<hazelcast::client::local_date,
                                      typename std::remove_cv<T>::type>::value,
                         void>::type
 default_compact_writer::write(const T& value)
 {
-    const boost::gregorian::date& date = value.date();
-    object_data_output_.write<int32_t>(date.year());
-    object_data_output_.write<byte>(date.month());
-    object_data_output_.write<byte>(date.day());
-    const boost::posix_time::time_duration& time_of_day = value.time_of_day();
-    object_data_output_.write<byte>(time_of_day.hours());
-    object_data_output_.write<byte>(time_of_day.minutes());
-    object_data_output_.write<byte>(time_of_day.seconds());
-    object_data_output_.write<int32_t>(time_of_day.fractional_seconds() * 1000);
+    object_data_output_.write<int32_t>(value.year);
+    object_data_output_.write<byte>(value.month);
+    object_data_output_.write<byte>(value.day_of_month);
 }
 
 template<typename T>
-typename std::enable_if<std::is_same<boost::local_time::local_date_time,
+typename std::enable_if<std::is_same<hazelcast::client::local_date_time,
                                      typename std::remove_cv<T>::type>::value,
                         void>::type
 default_compact_writer::write(const T& value)
 {
-    const boost::gregorian::date& date = value.date();
-    object_data_output_.write<int32_t>(date.year());
-    object_data_output_.write<byte>(date.month());
-    object_data_output_.write<byte>(date.day());
-    const boost::posix_time::time_duration& time_of_day = value.time_of_day();
-    object_data_output_.write<byte>(time_of_day.hours());
-    object_data_output_.write<byte>(time_of_day.minutes());
-    object_data_output_.write<byte>(time_of_day.seconds());
-    object_data_output_.write<int32_t>(time_of_day.fractional_seconds() * 1000);
-    const auto& zone = value.zone();
-    if (zone) {
-        object_data_output_.write<int32_t>(
-          zone->base_utc_offset().total_seconds());
-    } else {
-        object_data_output_.write<int32_t>(0);
-    }
+    const hazelcast::client::local_date& date = value.date;
+    object_data_output_.write<int32_t>(date.year);
+    object_data_output_.write<byte>(date.month);
+    object_data_output_.write<byte>(date.day_of_month);
+    const hazelcast::client::local_time& time = value.time;
+    object_data_output_.write<byte>(time.hours);
+    object_data_output_.write<byte>(time.minutes);
+    object_data_output_.write<byte>(time.seconds);
+    object_data_output_.write<int32_t>(time.nanos);
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<hazelcast::client::offset_date_time,
+                                     typename std::remove_cv<T>::type>::value,
+                        void>::type
+default_compact_writer::write(const T& value)
+{
+    const hazelcast::client::local_date& date = value.date_time.date;
+    object_data_output_.write<int32_t>(date.year);
+    object_data_output_.write<byte>(date.month);
+    object_data_output_.write<byte>(date.day_of_month);
+    const hazelcast::client::local_time& time = value.date_time.time;
+    object_data_output_.write<byte>(time.hours);
+    object_data_output_.write<byte>(time.minutes);
+    object_data_output_.write<byte>(time.seconds);
+    object_data_output_.write<int32_t>(time.nanos);
+    object_data_output_.write<int32_t>(value.zone_offset_in_seconds);
 }
 
 template<typename T>

@@ -133,10 +133,10 @@ struct main_dto
     std::string str;
     boost::optional<inner_dto> p;
     boost::optional<hazelcast::client::big_decimal> bigDecimal;
-    boost::optional<boost::posix_time::time_duration> localTime;
-    boost::optional<boost::gregorian::date> localDate;
-    boost::optional<boost::posix_time::ptime> localDateTime;
-    boost::optional<boost::local_time::local_date_time> offsetDateTime;
+    boost::optional<hazelcast::client::local_time> localTime;
+    boost::optional<hazelcast::client::local_date> localDate;
+    boost::optional<hazelcast::client::local_date_time> localDateTime;
+    boost::optional<hazelcast::client::offset_date_time> offsetDateTime;
     boost::optional<bool> nullable_bool;
     boost::optional<int8_t> nullable_b;
     boost::optional<int16_t> nullable_s;
@@ -188,36 +188,34 @@ main_dto
 create_main_dto()
 {
     inner_dto p = create_inner_dto();
-    return main_dto{
-        true,
-        113,
-        -500,
-        56789,
-        -50992225L,
-        900.5678f,
-        -897543.3678909,
-        "this is main object created for testing!",
-        p,
-        hazelcast::client::big_decimal{
-          boost::multiprecision::cpp_int{ "12312313" }, 0 },
-        boost::posix_time::time_duration(1, 2, 3, 4),
-        boost::gregorian::date(2015, 12, 31),
-        boost::posix_time::ptime(boost::gregorian::date(2015, 12, 31),
-                                 boost::posix_time::time_duration(1, 2, 3, 4)),
-        boost::local_time::local_date_time(
-          boost::posix_time::ptime(
-            boost::gregorian::date(2015, 12, 31),
-            boost::posix_time::time_duration(1, 2, 3, 4)),
-          boost::local_time::time_zone_ptr(
-            new boost::local_time::posix_time_zone("UTC-10:21:13"))),
-        true,
-        113,
-        (short)-500,
-        56789,
-        -50992225L,
-        900.5678f,
-        -897543.3678909
-    };
+    return main_dto{ true,
+                     113,
+                     -500,
+                     56789,
+                     -50992225L,
+                     900.5678f,
+                     -897543.3678909,
+                     "this is main object created for testing!",
+                     p,
+                     hazelcast::client::big_decimal{
+                       boost::multiprecision::cpp_int{ "12312313" }, 0 },
+                     hazelcast::client::local_time{ 1, 2, 3, 4 },
+                     hazelcast::client::local_date{ 2015, 12, 31 },
+                     hazelcast::client::local_date_time{
+                       hazelcast::client::local_date{ 2015, 12, 31 },
+                       hazelcast::client::local_time{ 1, 2, 3, 4 } },
+                     hazelcast::client::offset_date_time{
+                       hazelcast::client::local_date_time{
+                         hazelcast::client::local_date{ 2015, 12, 31 },
+                         hazelcast::client::local_time{ 1, 2, 3, 4 } },
+                       100 },
+                     true,
+                     113,
+                     (short)-500,
+                     56789,
+                     -50992225L,
+                     900.5678f,
+                     -897543.3678909 };
 }
 
 /**

@@ -125,7 +125,7 @@ compact_writer::write_decimal(const std::string& field_name,
 void
 compact_writer::write_time(
   const std::string& field_name,
-  const boost::optional<boost::posix_time::time_duration>& value)
+  const boost::optional<hazelcast::client::local_time>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_time(field_name, value);
@@ -135,8 +135,9 @@ compact_writer::write_time(
 }
 
 void
-compact_writer::write_date(const std::string& field_name,
-                           const boost::optional<boost::gregorian::date>& value)
+compact_writer::write_date(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::local_date>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_date(field_name, value);
@@ -148,7 +149,7 @@ compact_writer::write_date(const std::string& field_name,
 void
 compact_writer::write_timestamp(
   const std::string& field_name,
-  const boost::optional<boost::posix_time::ptime>& value)
+  const boost::optional<hazelcast::client::local_date_time>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_timestamp(field_name, value);
@@ -160,7 +161,7 @@ compact_writer::write_timestamp(
 void
 compact_writer::write_timestamp_with_timezone(
   const std::string& field_name,
-  const boost::optional<boost::local_time::local_date_time>& value)
+  const boost::optional<hazelcast::client::offset_date_time>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_timestamp_with_timezone(field_name,
@@ -698,31 +699,31 @@ compact_reader::read_decimal(const std::string& field_name)
     return read_variable_size<big_decimal>(field_name, pimpl::field_kind::DECIMAL);
 }
 
-boost::optional<boost::posix_time::time_duration>
+boost::optional<hazelcast::client::local_time>
 compact_reader::read_time(const std::string& field_name)
 {
-    return read_variable_size<boost::posix_time::time_duration>(
+    return read_variable_size<hazelcast::client::local_time>(
       field_name, pimpl::field_kind::TIME);
 }
 
-boost::optional<boost::gregorian::date>
+boost::optional<hazelcast::client::local_date>
 compact_reader::read_date(const std::string& field_name)
 {
-    return read_variable_size<boost::gregorian::date>(field_name,
-                                                      pimpl::field_kind::DATE);
+    return read_variable_size<hazelcast::client::local_date>(
+      field_name, pimpl::field_kind::DATE);
 }
 
-boost::optional<boost::posix_time::ptime>
+boost::optional<hazelcast::client::local_date_time>
 compact_reader::read_timestamp(const std::string& field_name)
 {
-    return read_variable_size<boost::posix_time::ptime>(
+    return read_variable_size<hazelcast::client::local_date_time>(
       field_name, pimpl::field_kind::TIMESTAMP);
 }
 
-boost::optional<boost::local_time::local_date_time>
+boost::optional<hazelcast::client::offset_date_time>
 compact_reader::read_timestamp_with_timezone(const std::string& field_name)
 {
-    return read_variable_size<boost::local_time::local_date_time>(
+    return read_variable_size<hazelcast::client::offset_date_time>(
       field_name, pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
 }
 
@@ -1029,14 +1030,14 @@ default_compact_writer::write_decimal(const std::string& field_name,
 void
 default_compact_writer::write_time(
   const std::string& field_name,
-  const boost::optional<boost::posix_time::time_duration>& value)
+  const boost::optional<hazelcast::client::local_time>& value)
 {
     write_variable_size_field(field_name, field_kind::TIME, value);
 }
 void
 default_compact_writer::write_date(
   const std::string& field_name,
-  const boost::optional<boost::gregorian::date>& value)
+  const boost::optional<hazelcast::client::local_date>& value)
 {
     write_variable_size_field(field_name, field_kind::DATE, value);
 }
@@ -1044,7 +1045,7 @@ default_compact_writer::write_date(
 void
 default_compact_writer::write_timestamp(
   const std::string& field_name,
-  const boost::optional<boost::posix_time::ptime>& value)
+  const boost::optional<hazelcast::client::local_date_time>& value)
 {
     write_variable_size_field(field_name, field_kind::TIMESTAMP, value);
 }
@@ -1052,10 +1053,10 @@ default_compact_writer::write_timestamp(
 void
 default_compact_writer::write_timestamp_with_timezone(
   const std::string& field_name,
-  const boost::optional<boost::local_time::local_date_time>& value)
+  const boost::optional<hazelcast::client::offset_date_time>& value)
 {
-    write_variable_size_field(field_name, field_kind::TIMESTAMP_WITH_TIMEZONE,
-                              value);
+    write_variable_size_field(
+      field_name, field_kind::TIMESTAMP_WITH_TIMEZONE, value);
 }
 
 void

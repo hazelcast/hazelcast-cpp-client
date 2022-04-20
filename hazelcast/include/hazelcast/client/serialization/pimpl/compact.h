@@ -20,12 +20,12 @@
 // serialization.h not in the beginning but later to avoid cyclic dependency.
 
 #include <boost/thread/future.hpp>
-#include <boost/date_time.hpp>
 #include <utility>
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/big_decimal.h"
+#include "hazelcast/client/temporals.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -236,8 +236,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<boost::posix_time::time_duration> read_time(
-      const std::string& field_name);
+    boost::optional<local_time> read_time(const std::string& field_name);
 
     /**
      * Reads a date consisting of year, month, and day.
@@ -248,8 +247,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<boost::gregorian::date> read_date(
-      const std::string& field_name);
+    boost::optional<local_date> read_date(const std::string& field_name);
 
     /**
      * Reads a timestamp consisting of date and time.
@@ -260,7 +258,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<boost::posix_time::ptime> read_timestamp(
+    boost::optional<local_date_time> read_timestamp(
       const std::string& field_name);
 
     /**
@@ -273,8 +271,8 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<boost::local_time::local_date_time>
-    read_timestamp_with_timezone(const std::string& field_name);
+    boost::optional<offset_date_time> read_timestamp_with_timezone(
+      const std::string& field_name);
 
     /**
      * Reads a compact object
@@ -647,26 +645,21 @@ private:
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::posix_time::time_duration,
-                   typename std::remove_cv<T>::type>::value,
+      std::is_same<local_time, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::gregorian::date,
-                   typename std::remove_cv<T>::type>::value,
+      std::is_same<local_date, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
-    typename std::enable_if<
-      std::is_same<boost::posix_time::ptime,
-                   T>::value,
-      typename boost::optional<T>>::type
+    typename std::enable_if<std::is_same<local_date_time, T>::value,
+                            typename boost::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::local_time::local_date_time,
-                   typename std::remove_cv<T>::type>::value,
+      std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
@@ -828,9 +821,8 @@ public:
      *  @param field_name name of the field.
      *  @param value     to be written.
      */
-    void write_time(
-      const std::string& field_name,
-      const boost::optional<boost::posix_time::time_duration>& value);
+    void write_time(const std::string& field_name,
+                    const boost::optional<local_time>& value);
 
     /**
      * Writes a date consisting of year, month, and day.
@@ -839,7 +831,7 @@ public:
      * @param value     to be written.
      */
     void write_date(const std::string& field_name,
-                    const boost::optional<boost::gregorian::date>& value);
+                    const boost::optional<local_date>& value);
 
     /**
      * Writes a timestamp consisting of date and time.
@@ -847,9 +839,8 @@ public:
      * @param fieldName name of the field.
      * @param value     to be written.
      */
-    void write_timestamp(
-      const std::string& field_name,
-      const boost::optional<boost::posix_time::ptime>& value);
+    void write_timestamp(const std::string& field_name,
+                         const boost::optional<local_date_time>& value);
 
     /**
      * Reads a timestamp with timezone consisting of date, time and timezone
@@ -860,7 +851,7 @@ public:
      */
     void write_timestamp_with_timezone(
       const std::string& field_name,
-      const boost::optional<boost::local_time::local_date_time>& value);
+      const boost::optional<offset_date_time>& value);
 
     /**
      * Writes a nested compact object.
@@ -1151,17 +1142,15 @@ public:
                       const boost::optional<std::string>& value);
     void write_decimal(const std::string& field_name,
                        const boost::optional<big_decimal>& value);
-    void write_time(
-      const std::string& field_name,
-      const boost::optional<boost::posix_time::time_duration>& value);
+    void write_time(const std::string& field_name,
+                    const boost::optional<local_time>& value);
     void write_date(const std::string& field_name,
-                    const boost::optional<boost::gregorian::date>& value);
-    void write_timestamp(
-      const std::string& field_name,
-      const boost::optional<boost::posix_time::ptime>& value);
+                    const boost::optional<local_date>& value);
+    void write_timestamp(const std::string& field_name,
+                         const boost::optional<local_date_time>& value);
     void write_timestamp_with_timezone(
       const std::string& field_name,
-      const boost::optional<boost::local_time::local_date_time>& value);
+      const boost::optional<offset_date_time>& value);
     template<typename T>
     void write_compact(const std::string& field_name,
                        const boost::optional<T>& value);
@@ -1279,26 +1268,22 @@ private:
     write(const T& value);
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::posix_time::time_duration,
-                   typename std::remove_cv<T>::type>::value,
+      std::is_same<local_time, typename std::remove_cv<T>::type>::value,
       void>::type
     write(const T& value);
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::gregorian::date,
-                   typename std::remove_cv<T>::type>::value,
+      std::is_same<local_date, typename std::remove_cv<T>::type>::value,
       void>::type
     write(const T& value);
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::posix_time::ptime,
-                   typename std::remove_cv<T>::type>::value,
+      std::is_same<local_date_time, typename std::remove_cv<T>::type>::value,
       void>::type
     write(const T& value);
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::local_time::local_date_time,
-                   typename std::remove_cv<T>::type>::value,
+      std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
       void>::type
     write(const T& value);
     template<typename T>
