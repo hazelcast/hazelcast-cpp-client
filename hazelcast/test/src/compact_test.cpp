@@ -116,8 +116,15 @@ struct main_dto
     int64_t l;
     float f;
     double d;
-    boost::optional<inner_dto> p;
     std::string str;
+    boost::optional<inner_dto> p;
+    boost::optional<bool> nullable_bool;
+    boost::optional<int8_t> nullable_b;
+    boost::optional<int16_t> nullable_s;
+    boost::optional<int32_t> nullable_i;
+    boost::optional<int64_t> nullable_l;
+    boost::optional<float> nullable_f;
+    boost::optional<double> nullable_d;
 };
 
 bool
@@ -159,8 +166,15 @@ create_main_dto()
                      -50992225L,
                      900.5678f,
                      -897543.3678909,
+                     "this is main object created for testing!",
                      p,
-                     "this is main object created for testing!" };
+                     true,
+                     113,
+                     (short)-500,
+                     56789,
+                     -50992225L,
+                     900.5678f,
+                     -897543.3678909 };
 }
 
 /**
@@ -284,7 +298,7 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         return object;
     }
 
-    static std::string type_name() { return "inner_dto"; }
+    static std::string type_name() { return "inner"; }
 };
 
 template<>
@@ -300,8 +314,15 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         writer.write_int64("l", object.l);
         writer.write_float32("f", object.f);
         writer.write_float64("d", object.d);
-        writer.write_compact<compact::test::inner_dto>("p", object.p);
         writer.write_string("name", object.str);
+        writer.write_compact<compact::test::inner_dto>("p", object.p);
+        writer.write_nullable_boolean("nullable_bool", object.nullable_bool);
+        writer.write_nullable_int8("nullable_b", object.nullable_b);
+        writer.write_nullable_int16("nullable_s", object.nullable_s);
+        writer.write_nullable_int32("nullable_i", object.nullable_i);
+        writer.write_nullable_int64("nullable_l", object.nullable_l);
+        writer.write_nullable_float32("nullable_f", object.nullable_f);
+        writer.write_nullable_float64("nullable_d", object.nullable_d);
     }
 
     static compact::test::main_dto read(compact_reader& reader)
@@ -313,9 +334,21 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         auto l = reader.read_int64("l");
         auto f = reader.read_float32("f");
         auto d = reader.read_float64("d");
-        auto p = reader.read_compact<compact::test::inner_dto>("p");
         auto str = reader.read_string("name");
-        return compact::test::main_dto{ boolean, b, s, i, l, f, d, p, *str };
+        auto p = reader.read_compact<compact::test::inner_dto>("p");
+        auto nullable_bool = reader.read_nullable_boolean("nullable_bool");
+        auto nullable_b = reader.read_nullable_int8("nullable_b");
+        auto nullable_s = reader.read_nullable_int16("nullable_s");
+        auto nullable_i = reader.read_nullable_int32("nullable_i");
+        auto nullable_l = reader.read_nullable_int64("nullable_l");
+        auto nullable_f = reader.read_nullable_float32("nullable_f");
+        auto nullable_d = reader.read_nullable_float64("nullable_d");
+        return compact::test::main_dto{
+            boolean,    b,          s,          i,          l,
+            f,          d,          *str,       p,          nullable_bool,
+            nullable_b, nullable_s, nullable_i, nullable_l, nullable_f,
+            nullable_d
+        };
     }
 
     static std::string type_name() { return "main"; }
@@ -367,7 +400,6 @@ struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
 template<>
 struct hz_serializer<compact::test::employee_dto> : public compact_serializer
 {
-
     static void write(const compact::test::employee_dto& object,
                       compact_writer& writer)
     {
@@ -506,6 +538,160 @@ TEST_F(CompactSerializationTest, test_rabin_fingerprint_consistent_with_server)
     ASSERT_EQ(-2132873845851116364, schema.schema_id());
 }
 
+struct primitive_object
+{
+
+    bool boolean_;
+    int8_t byte_;
+    int16_t short_;
+    int32_t int_;
+    int64_t long_;
+    float float_;
+    double double_;
+};
+
+struct nullable_primitive_object
+{
+    boost::optional<bool> nullableBoolean;
+    boost::optional<int8_t> nullableByte;
+    boost::optional<int16_t> nullableShort;
+    boost::optional<int32_t> nullableInt;
+    boost::optional<int64_t> nullableLong;
+    boost::optional<float> nullableFloat;
+    boost::optional<double> nullableDouble;
+};
+} // namespace test
+} // namespace compact
+
+namespace serialization {
+template<>
+struct hz_serializer<compact::test::primitive_object>
+  : public compact_serializer
+{
+    static void write(const compact::test::primitive_object& object,
+                      compact_writer& writer)
+    {
+        writer.write_boolean("boolean", object.boolean_);
+        writer.write_int8("byte", object.byte_);
+        writer.write_int16("short", object.short_);
+        writer.write_int32("int", object.int_);
+        writer.write_int64("long", object.long_);
+        writer.write_float32("float", object.float_);
+        writer.write_float64("double", object.double_);
+    }
+
+    static compact::test::primitive_object read(compact_reader& reader)
+    {
+        compact::test::primitive_object object;
+        object.boolean_ = reader.read_boolean("boolean");
+        object.byte_ = reader.read_int8("byte");
+        object.short_ = reader.read_int16("short");
+        object.int_ = reader.read_int32("int");
+        object.long_ = reader.read_int64("long");
+        object.float_ = reader.read_float32("float");
+        object.double_ = reader.read_float64("double");
+        return object;
+    }
+
+    static std::string type_name() { return "primitive_object"; }
+};
+
+template<>
+struct hz_serializer<compact::test::nullable_primitive_object>
+  : public compact_serializer
+{
+    static void write(const compact::test::nullable_primitive_object& object,
+                      compact_writer& writer)
+    {
+        writer.write_nullable_boolean("boolean", object.nullableBoolean);
+        writer.write_nullable_int8("byte", object.nullableByte);
+        writer.write_nullable_int16("short", object.nullableShort);
+        writer.write_nullable_int32("int", object.nullableInt);
+        writer.write_nullable_int64("long", object.nullableLong);
+        writer.write_nullable_float32("float", object.nullableFloat);
+        writer.write_nullable_float64("double", object.nullableDouble);
+    }
+
+    static compact::test::nullable_primitive_object read(compact_reader& reader)
+    {
+        compact::test::nullable_primitive_object object;
+        object.nullableBoolean = reader.read_nullable_boolean("boolean");
+        object.nullableByte = reader.read_nullable_int8("byte");
+        object.nullableShort = reader.read_nullable_int16("short");
+        object.nullableInt = reader.read_nullable_int32("int");
+        object.nullableLong = reader.read_nullable_int64("long");
+        object.nullableFloat = reader.read_nullable_float32("float");
+        object.nullableDouble = reader.read_nullable_float64("double");
+        return object;
+    }
+
+    // typename is same as the primitive_object on purpose.
+    // This is to simulate two different applications implementing the same
+    // class with different serializers.
+    static std::string type_name() { return "primitive_object"; }
+};
+} // namespace serialization
+namespace compact {
+namespace test {
+class CompactNullablePrimitiveInteroperabilityTest : public ::testing::Test
+{};
+TEST_F(CompactNullablePrimitiveInteroperabilityTest,
+       testWritePrimitiveReadNullable)
+{
+    primitive_object expected{ true, 2, 4, 8, 4444, 8321.321F, 41231.32 };
+    serialization_config config;
+    SerializationService ss(config);
+
+    const data& data = ss.to_data(expected);
+    auto actual = ss.to_object<nullable_primitive_object>(data).value();
+    ASSERT_EQ(expected.boolean_, actual.nullableBoolean.value());
+    ASSERT_EQ(expected.byte_, actual.nullableByte.value());
+    ASSERT_EQ(expected.short_, actual.nullableShort.value());
+    ASSERT_EQ(expected.int_, actual.nullableInt.value());
+    ASSERT_EQ(expected.long_, actual.nullableLong.value());
+    ASSERT_EQ(expected.float_, actual.nullableFloat.value());
+    ASSERT_EQ(expected.double_, actual.nullableDouble.value());
+}
+
+TEST_F(CompactNullablePrimitiveInteroperabilityTest,
+       testWriteNullableReadPrimitive)
+{
+    nullable_primitive_object expected{
+        boost::make_optional<bool>(true),
+        boost::make_optional<int8_t>(4),
+        boost::make_optional<int16_t>(6),
+        boost::make_optional<int32_t>(8),
+        boost::make_optional<int64_t>(4444),
+        boost::make_optional<float>(8321.321F),
+        boost::make_optional<double>(41231.32)
+    };
+    serialization_config config;
+    SerializationService ss(config);
+
+    const data& data = ss.to_data(expected);
+    auto actual = ss.to_object<primitive_object>(data).value();
+    ASSERT_EQ(expected.nullableBoolean.value(), actual.boolean_);
+    ASSERT_EQ(expected.nullableByte.value(), actual.byte_);
+    ASSERT_EQ(expected.nullableShort.value(), actual.short_);
+    ASSERT_EQ(expected.nullableInt.value(), actual.int_);
+    ASSERT_EQ(expected.nullableLong.value(), actual.long_);
+    ASSERT_EQ(expected.nullableFloat.value(), actual.float_);
+    ASSERT_EQ(expected.nullableDouble.value(), actual.double_);
+}
+
+TEST_F(CompactNullablePrimitiveInteroperabilityTest,
+       testWriteNullReadPrimitiveThrowsException)
+{
+    nullable_primitive_object expected{ boost::none, boost::none, boost::none,
+                                        boost::none, boost::none, boost::none,
+                                        boost::none };
+    serialization_config config;
+    SerializationService ss(config);
+
+    const data& data = ss.to_data(expected);
+    ASSERT_THROW(ss.to_object<primitive_object>(data),
+                 exception::hazelcast_serialization);
+}
 } // namespace test
 } // namespace compact
 } // namespace client

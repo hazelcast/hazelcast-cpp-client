@@ -275,6 +275,22 @@ compact_reader::read_nullable_array_as_primitive_array(
 
 template<typename T>
 boost::optional<T>
+compact_reader::read_nullable_primitive(
+  const std::string& field_name,
+  enum pimpl::field_kind field_kind,
+  enum pimpl::field_kind nullable_field_kind)
+{
+    auto& field_descriptor = get_field_descriptor(field_name);
+    if (field_descriptor.field_kind == field_kind) {
+        return boost::make_optional<T>(read_primitive<T>(field_descriptor));
+    } else if (field_descriptor.field_kind == nullable_field_kind) {
+        return read_variable_size<T>(field_descriptor);
+    }
+    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+}
+
+template<typename T>
+boost::optional<T>
 compact_reader::read_compact(const std::string& field_name)
 {
     return read_variable_size<T>(field_name, pimpl::field_kind::COMPACT);
@@ -384,7 +400,14 @@ default_compact_writer::write_array_of_variable_size(
 }
 template<typename T>
 typename std::enable_if<
-  std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
+  std::is_same<bool, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int8_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
+    std::is_same<float, typename std::remove_cv<T>::type>::value ||
+    std::is_same<double, typename std::remove_cv<T>::type>::value ||
+    std::is_same<std::string, typename std::remove_cv<T>::type>::value ||
     std::is_same<std::vector<int8_t>, T>::value ||
     std::is_same<std::vector<int16_t>, T>::value ||
     std::is_same<std::vector<int32_t>, T>::value ||
