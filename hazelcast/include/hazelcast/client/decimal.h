@@ -49,7 +49,8 @@ struct HAZELCAST_API decimal
 namespace pimpl {
 
 /**
- * Takes twos complement of giving array where most significant value is first.
+ * Takes twos complement of given array where most significant value is first.
+ * This method modifies the vector in place.
  * @param a the array to take twos complement of
  */
 
@@ -57,10 +58,10 @@ void HAZELCAST_API
 twos_complement(std::vector<int8_t>& a);
 
 /**
- * Creates cpp_int from vector of int8_t respecting the sign.
+ * Creates a cpp_int from a vector of int8_t respecting the sign.
  *
  * boost::import_bits does not respect the sign, so we have to do it manually.
- * if v represents  a negative number, we take the two's complement of it,
+ * if v represents a negative number, we take the two's complement of it,
  * to get positive representation of the same number. Then we add the sign
  * at the end.
  * @param v int8_t array to read from
@@ -69,7 +70,7 @@ twos_complement(std::vector<int8_t>& a);
 boost::multiprecision::cpp_int HAZELCAST_API
 from_bytes(std::vector<int8_t> v);
 /**
- * Creates cpp_int from vector of int8_t respecting the sign.
+ * Creates a twos complement byte array from cpp_int respecting the sign.
  *
  * boost::export_bits does not respect the sign, so we have to do it manually.
  * if i is a negative number, we take the two's complement on resulting vector,
