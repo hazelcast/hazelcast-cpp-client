@@ -137,13 +137,13 @@ struct main_dto
     boost::optional<hazelcast::client::local_date> localDate;
     boost::optional<hazelcast::client::local_date_time> localDateTime;
     boost::optional<hazelcast::client::offset_date_time> offsetDateTime;
-    boost::optional<bool> nullable_bool;
-    boost::optional<int8_t> nullable_b;
-    boost::optional<int16_t> nullable_s;
-    boost::optional<int32_t> nullable_i;
-    boost::optional<int64_t> nullable_l;
-    boost::optional<float> nullable_f;
-    boost::optional<double> nullable_d;
+    boost::optional<bool> nullableBool;
+    boost::optional<int8_t> nullableB;
+    boost::optional<int16_t> nullableS;
+    boost::optional<int32_t> nullableI;
+    boost::optional<int64_t> nullableL;
+    boost::optional<float> nullableF;
+    boost::optional<double> nullableD;
 };
 
 bool
@@ -156,12 +156,10 @@ operator==(const main_dto& lhs, const main_dto& rhs)
            lhs.localDate == rhs.localDate &&
            lhs.localDateTime == rhs.localDateTime &&
            lhs.offsetDateTime == rhs.offsetDateTime &&
-           lhs.nullable_bool == rhs.nullable_bool &&
-           lhs.nullable_b == rhs.nullable_b &&
-           lhs.nullable_s == rhs.nullable_s &&
-           lhs.nullable_i == rhs.nullable_i &&
-           lhs.nullable_l == rhs.nullable_l &&
-           lhs.nullable_f == rhs.nullable_f && lhs.nullable_d == rhs.nullable_d;
+           lhs.nullableBool == rhs.nullableBool &&
+           lhs.nullableB == rhs.nullableB && lhs.nullableS == rhs.nullableS &&
+           lhs.nullableI == rhs.nullableI && lhs.nullableL == rhs.nullableL &&
+           lhs.nullableF == rhs.nullableF && lhs.nullableD == rhs.nullableD;
 }
 
 inner_dto
@@ -383,7 +381,7 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         writer.write_int64("l", object.l);
         writer.write_float32("f", object.f);
         writer.write_float64("d", object.d);
-        writer.write_string("name", object.str);
+        writer.write_string("str", object.str);
         writer.write_decimal("bigDecimal", object.bigDecimal);
         writer.write_time("localTime", object.localTime);
         writer.write_date("localDate", object.localDate);
@@ -391,13 +389,13 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         writer.write_timestamp_with_timezone("offsetDateTime",
                                              object.offsetDateTime);
         writer.write_compact<compact::test::inner_dto>("p", object.p);
-        writer.write_nullable_boolean("nullable_bool", object.nullable_bool);
-        writer.write_nullable_int8("nullable_b", object.nullable_b);
-        writer.write_nullable_int16("nullable_s", object.nullable_s);
-        writer.write_nullable_int32("nullable_i", object.nullable_i);
-        writer.write_nullable_int64("nullable_l", object.nullable_l);
-        writer.write_nullable_float32("nullable_f", object.nullable_f);
-        writer.write_nullable_float64("nullable_d", object.nullable_d);
+        writer.write_nullable_boolean("nullableBool", object.nullableBool);
+        writer.write_nullable_int8("nullableB", object.nullableB);
+        writer.write_nullable_int16("nullableS", object.nullableS);
+        writer.write_nullable_int32("nullableI", object.nullableI);
+        writer.write_nullable_int64("nullableL", object.nullableL);
+        writer.write_nullable_float32("nullableF", object.nullableF);
+        writer.write_nullable_float64("nullableD", object.nullableD);
     }
 
     static compact::test::main_dto read(compact_reader& reader)
@@ -409,7 +407,7 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         auto l = reader.read_int64("l");
         auto f = reader.read_float32("f");
         auto d = reader.read_float64("d");
-        auto str = reader.read_string("name");
+        auto str = reader.read_string("str");
         auto bigDecimal = reader.read_decimal("bigDecimal");
         auto localTime = reader.read_time("localTime");
         auto localDate = reader.read_date("localDate");
@@ -417,13 +415,13 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         auto offsetDateTime =
           reader.read_timestamp_with_timezone("offsetDateTime");
         auto p = reader.read_compact<compact::test::inner_dto>("p");
-        auto nullable_bool = reader.read_nullable_boolean("nullable_bool");
-        auto nullable_b = reader.read_nullable_int8("nullable_b");
-        auto nullable_s = reader.read_nullable_int16("nullable_s");
-        auto nullable_i = reader.read_nullable_int32("nullable_i");
-        auto nullable_l = reader.read_nullable_int64("nullable_l");
-        auto nullable_f = reader.read_nullable_float32("nullable_f");
-        auto nullable_d = reader.read_nullable_float64("nullable_d");
+        auto nullableBool = reader.read_nullable_boolean("nullableBool");
+        auto nullableB = reader.read_nullable_int8("nullableB");
+        auto nullableS = reader.read_nullable_int16("nullableS");
+        auto nullableI = reader.read_nullable_int32("nullableI");
+        auto nullableL = reader.read_nullable_int64("nullableL");
+        auto nullableF = reader.read_nullable_float32("nullableF");
+        auto nullableD = reader.read_nullable_float64("nullableD");
         return compact::test::main_dto{ boolean,
                                         b,
                                         s,
@@ -438,13 +436,13 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
                                         localDate,
                                         localDateTime,
                                         offsetDateTime,
-                                        nullable_bool,
-                                        nullable_b,
-                                        nullable_s,
-                                        nullable_i,
-                                        nullable_l,
-                                        nullable_f,
-                                        nullable_d };
+                                        nullableBool,
+                                        nullableB,
+                                        nullableS,
+                                        nullableI,
+                                        nullableL,
+                                        nullableF,
+                                        nullableD };
     }
 
     static std::string type_name() { return "main"; }
@@ -616,22 +614,9 @@ TEST_F(CompactSerializationTest, test_schema_writer_counts)
 
 TEST_F(CompactSerializationTest, test_rabin_fingerprint_consistent_with_server)
 {
-    //    // TODO sancar rewrite as following when all types are implemented
-    //    schema_writer schema_writer("typename");
-    //    serialization::compact_writer writer =
-    //    create_compact_writer(&schema_writer);
-    //    serialization::hz_serializer<main_dto>::write(create_main_dto(),
-    //    writer); auto schema = std::move(schema_writer).build();
-    //    This magic number is generated via Java code for exact same class.
-    //    ASSERT_EQ(814479248787788739L, schema.schema_id());
-
-    schema_writer schema_writer("typeName");
-    schema_writer.add_field("a", field_kind::BOOLEAN);
-    schema_writer.add_field("b", field_kind::ARRAY_OF_BOOLEAN);
-    schema_writer.add_field("c", field_kind::TIMESTAMP_WITH_TIMEZONE);
-    auto schema = std::move(schema_writer).build();
+    const auto& schema = schema_of<main_dto>::schema_v;
     // This magic number is generated via Java code for exact same class.
-    ASSERT_EQ(-2132873845851116364, schema.schema_id());
+    ASSERT_EQ(814479248787788739L, schema.schema_id());
 }
 
 struct primitive_object
