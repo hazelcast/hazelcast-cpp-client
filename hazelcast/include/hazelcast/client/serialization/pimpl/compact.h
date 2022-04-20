@@ -336,7 +336,7 @@ public:
     /**
      * Reads a nullable boolean.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -347,7 +347,7 @@ public:
     /**
      * Reads a nullable 8-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -358,7 +358,7 @@ public:
     /**
      * Reads a nullable 16-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -369,7 +369,7 @@ public:
     /**
      * Reads a nullable 32-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -380,7 +380,7 @@ public:
     /**
      * Reads a nullable 64-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -391,7 +391,7 @@ public:
     /**
      * Reads a nullable 32-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -402,7 +402,7 @@ public:
     /**
      * Reads a nullable 64-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -718,7 +718,7 @@ public:
     /**
      * Writes a nullable boolean.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_nullable_boolean(const std::string& field_name,
@@ -727,7 +727,7 @@ public:
     /**
      * Writes a nullable 8-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_nullable_int8(const std::string& field_name,
@@ -736,7 +736,7 @@ public:
     /**
      * Writes a nullable 16-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_nullable_int16(const std::string& field_name,
@@ -745,7 +745,7 @@ public:
     /**
      * Writes a nullable 32-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_nullable_int32(const std::string& field_name,
@@ -754,7 +754,7 @@ public:
     /**
      * Writes a nullable 64-bit two's complement signed integer.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_nullable_int64(const std::string& field_name,
@@ -763,7 +763,7 @@ public:
     /**
      * Writes a nullable 32-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_nullable_float32(const std::string& field_name,
@@ -772,7 +772,7 @@ public:
     /**
      * Writes a nullable 64-bit IEEE 754 floating point number.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_nullable_float64(const std::string& field_name,
