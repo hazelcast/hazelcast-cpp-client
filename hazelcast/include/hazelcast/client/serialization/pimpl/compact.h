@@ -25,7 +25,7 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/decimal.h"
+#include "hazelcast/client/big_decimal.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -225,7 +225,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<decimal> read_decimal(const std::string& field_name);
+    boost::optional<big_decimal> read_decimal(const std::string& field_name);
 
     /**
      * Reads a time consisting of hour, minute, second, and nano seconds.
@@ -642,7 +642,7 @@ private:
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
@@ -820,7 +820,7 @@ public:
      * @param value     to be written.
      */
     void write_decimal(const std::string& field_name,
-                       const boost::optional<decimal>& value);
+                       const boost::optional<big_decimal>& value);
 
     /**
      *  Writes a time consisting of hour, minute, second, and nanoseconds.
@@ -1150,7 +1150,7 @@ public:
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
     void write_decimal(const std::string& field_name,
-                       const boost::optional<decimal>& value);
+                       const boost::optional<big_decimal>& value);
     void write_time(
       const std::string& field_name,
       const boost::optional<boost::posix_time::time_duration>& value);
@@ -1274,7 +1274,7 @@ private:
     write(const T& value);
     template<typename T>
     typename std::enable_if<
-      std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
       void>::type
     write(const T& value);
     template<typename T>

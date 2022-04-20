@@ -113,7 +113,7 @@ compact_writer::write_string(const std::string& field_name,
 
 void
 compact_writer::write_decimal(const std::string& field_name,
-                              const boost::optional<decimal>& value)
+                              const boost::optional<big_decimal>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_decimal(field_name, value);
@@ -692,10 +692,10 @@ compact_reader::read_string(const std::string& field_name)
                                            pimpl::field_kind::STRING);
 }
 
-boost::optional<decimal>
+boost::optional<big_decimal>
 compact_reader::read_decimal(const std::string& field_name)
 {
-    return read_variable_size<decimal>(field_name, pimpl::field_kind::DECIMAL);
+    return read_variable_size<big_decimal>(field_name, pimpl::field_kind::DECIMAL);
 }
 
 boost::optional<boost::posix_time::time_duration>
@@ -703,6 +703,13 @@ compact_reader::read_time(const std::string& field_name)
 {
     return read_variable_size<boost::posix_time::time_duration>(
       field_name, pimpl::field_kind::TIME);
+}
+
+boost::optional<boost::gregorian::date>
+compact_reader::read_date(const std::string& field_name)
+{
+    return read_variable_size<boost::gregorian::date>(field_name,
+                                                      pimpl::field_kind::DATE);
 }
 
 boost::optional<boost::posix_time::ptime>
@@ -1014,7 +1021,7 @@ default_compact_writer::write_string(const std::string& field_name,
 
 void
 default_compact_writer::write_decimal(const std::string& field_name,
-                                      const boost::optional<decimal>& value)
+                                      const boost::optional<big_decimal>& value)
 {
     write_variable_size_field(field_name, field_kind::DECIMAL, value);
 }

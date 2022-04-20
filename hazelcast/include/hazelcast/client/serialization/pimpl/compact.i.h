@@ -222,7 +222,7 @@ compact_reader::read()
 
 template<typename T>
 typename std::enable_if<
-  std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
   typename boost::optional<T>>::type
 compact_reader::read()
 {
@@ -231,7 +231,7 @@ compact_reader::read()
     object_data_input.read_fully(bytes);
     auto cppInt = client::pimpl::from_bytes(std::move(bytes));
     int32_t scale = object_data_input.read<int32_t>();
-    return boost::make_optional(decimal{ std::move(cppInt), scale });
+    return boost::make_optional(big_decimal{ std::move(cppInt), scale });
 }
 
 template<typename T>
@@ -618,7 +618,7 @@ default_compact_writer::write(const T& value)
 
 template<typename T>
 typename std::enable_if<
-  std::is_same<decimal, typename std::remove_cv<T>::type>::value,
+  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
   void>::type
 default_compact_writer::write(const T& value)
 {
@@ -682,8 +682,13 @@ default_compact_writer::write(const T& value)
     object_data_output_.write<byte>(time_of_day.minutes());
     object_data_output_.write<byte>(time_of_day.seconds());
     object_data_output_.write<int32_t>(time_of_day.fractional_seconds() * 1000);
-    object_data_output_.write<int32_t>(
-      value.zone()->base_utc_offset().total_seconds());
+    const auto& zone = value.zone();
+    if (zone) {
+        object_data_output_.write<int32_t>(
+          zone->base_utc_offset().total_seconds());
+    } else {
+        object_data_output_.write<int32_t>(0);
+    }
 }
 
 template<typename T>

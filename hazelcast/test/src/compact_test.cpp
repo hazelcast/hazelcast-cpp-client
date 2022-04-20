@@ -132,6 +132,11 @@ struct main_dto
     double d;
     std::string str;
     boost::optional<inner_dto> p;
+    boost::optional<hazelcast::client::big_decimal> bigDecimal;
+    boost::optional<boost::posix_time::time_duration> localTime;
+    boost::optional<boost::gregorian::date> localDate;
+    boost::optional<boost::posix_time::ptime> localDateTime;
+    boost::optional<boost::local_time::local_date_time> offsetDateTime;
     boost::optional<bool> nullable_bool;
     boost::optional<int8_t> nullable_b;
     boost::optional<int16_t> nullable_s;
@@ -147,6 +152,10 @@ operator==(const main_dto& lhs, const main_dto& rhs)
     return lhs.boolean == rhs.boolean && lhs.b == rhs.b && lhs.s == rhs.s &&
            lhs.i == rhs.i && lhs.l == rhs.l && lhs.f == rhs.f &&
            lhs.d == rhs.d && lhs.str == rhs.str && lhs.p == rhs.p &&
+           lhs.bigDecimal == rhs.bigDecimal && lhs.localTime == rhs.localTime &&
+           lhs.localDate == rhs.localDate &&
+           lhs.localDateTime == rhs.localDateTime &&
+           lhs.offsetDateTime == rhs.offsetDateTime &&
            lhs.nullable_bool == rhs.nullable_bool &&
            lhs.nullable_b == rhs.nullable_b &&
            lhs.nullable_s == rhs.nullable_s &&
@@ -179,22 +188,36 @@ main_dto
 create_main_dto()
 {
     inner_dto p = create_inner_dto();
-    return main_dto{ true,
-                     113,
-                     -500,
-                     56789,
-                     -50992225L,
-                     900.5678f,
-                     -897543.3678909,
-                     "this is main object created for testing!",
-                     p,
-                     true,
-                     113,
-                     (short)-500,
-                     56789,
-                     -50992225L,
-                     900.5678f,
-                     -897543.3678909 };
+    return main_dto{
+        true,
+        113,
+        -500,
+        56789,
+        -50992225L,
+        900.5678f,
+        -897543.3678909,
+        "this is main object created for testing!",
+        p,
+        hazelcast::client::big_decimal{
+          boost::multiprecision::cpp_int{ "12312313" }, 0 },
+        boost::posix_time::time_duration(1, 2, 3, 4),
+        boost::gregorian::date(2015, 12, 31),
+        boost::posix_time::ptime(boost::gregorian::date(2015, 12, 31),
+                                 boost::posix_time::time_duration(1, 2, 3, 4)),
+        boost::local_time::local_date_time(
+          boost::posix_time::ptime(
+            boost::gregorian::date(2015, 12, 31),
+            boost::posix_time::time_duration(1, 2, 3, 4)),
+          boost::local_time::time_zone_ptr(
+            new boost::local_time::posix_time_zone("UTC-10:21:13"))),
+        true,
+        113,
+        (short)-500,
+        56789,
+        -50992225L,
+        900.5678f,
+        -897543.3678909
+    };
 }
 
 /**
@@ -363,6 +386,12 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         writer.write_float32("f", object.f);
         writer.write_float64("d", object.d);
         writer.write_string("name", object.str);
+        writer.write_decimal("bigDecimal", object.bigDecimal);
+        writer.write_time("localTime", object.localTime);
+        writer.write_date("localDate", object.localDate);
+        writer.write_timestamp("localDateTime", object.localDateTime);
+        writer.write_timestamp_with_timezone("offsetDateTime",
+                                             object.offsetDateTime);
         writer.write_compact<compact::test::inner_dto>("p", object.p);
         writer.write_nullable_boolean("nullable_bool", object.nullable_bool);
         writer.write_nullable_int8("nullable_b", object.nullable_b);
@@ -383,6 +412,12 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         auto f = reader.read_float32("f");
         auto d = reader.read_float64("d");
         auto str = reader.read_string("name");
+        auto bigDecimal = reader.read_decimal("bigDecimal");
+        auto localTime = reader.read_time("localTime");
+        auto localDate = reader.read_date("localDate");
+        auto localDateTime = reader.read_timestamp("localDateTime");
+        auto offsetDateTime =
+          reader.read_timestamp_with_timezone("offsetDateTime");
         auto p = reader.read_compact<compact::test::inner_dto>("p");
         auto nullable_bool = reader.read_nullable_boolean("nullable_bool");
         auto nullable_b = reader.read_nullable_int8("nullable_b");
@@ -391,12 +426,27 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         auto nullable_l = reader.read_nullable_int64("nullable_l");
         auto nullable_f = reader.read_nullable_float32("nullable_f");
         auto nullable_d = reader.read_nullable_float64("nullable_d");
-        return compact::test::main_dto{
-            boolean,    b,          s,          i,          l,
-            f,          d,          *str,       p,          nullable_bool,
-            nullable_b, nullable_s, nullable_i, nullable_l, nullable_f,
-            nullable_d
-        };
+        return compact::test::main_dto{ boolean,
+                                        b,
+                                        s,
+                                        i,
+                                        l,
+                                        f,
+                                        d,
+                                        *str,
+                                        p,
+                                        bigDecimal,
+                                        localTime,
+                                        localDate,
+                                        localDateTime,
+                                        offsetDateTime,
+                                        nullable_bool,
+                                        nullable_b,
+                                        nullable_s,
+                                        nullable_i,
+                                        nullable_l,
+                                        nullable_f,
+                                        nullable_d };
     }
 
     static std::string type_name() { return "main"; }
