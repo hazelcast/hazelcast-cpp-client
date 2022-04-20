@@ -18,6 +18,13 @@
 
 namespace hazelcast {
 namespace client {
+
+bool
+operator==(const decimal& lhs, const decimal& rhs)
+{
+    return lhs.unscaled == rhs.unscaled && lhs.scale == rhs.scale;
+}
+
 namespace pimpl {
 
 void

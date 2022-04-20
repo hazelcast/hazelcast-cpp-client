@@ -46,6 +46,9 @@ struct HAZELCAST_API decimal
     int32_t scale;
 };
 
+bool HAZELCAST_API
+operator==(const decimal& lhs, const decimal& rhs);
+
 namespace pimpl {
 
 /**
