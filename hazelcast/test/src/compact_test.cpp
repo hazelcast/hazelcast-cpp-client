@@ -143,9 +143,15 @@ struct main_dto
 bool
 operator==(const main_dto& lhs, const main_dto& rhs)
 {
-    return lhs.b == rhs.b && lhs.boolean == rhs.boolean && lhs.s == rhs.s &&
+    return lhs.boolean == rhs.boolean && lhs.b == rhs.b && lhs.s == rhs.s &&
            lhs.i == rhs.i && lhs.l == rhs.l && lhs.f == rhs.f &&
-           lhs.d == rhs.d && lhs.p == rhs.p && lhs.str == rhs.str;
+           lhs.d == rhs.d && lhs.str == rhs.str && lhs.p == rhs.p &&
+           lhs.nullable_bool == rhs.nullable_bool &&
+           lhs.nullable_b == rhs.nullable_b &&
+           lhs.nullable_s == rhs.nullable_s &&
+           lhs.nullable_i == rhs.nullable_i &&
+           lhs.nullable_l == rhs.nullable_l &&
+           lhs.nullable_f == rhs.nullable_f && lhs.nullable_d == rhs.nullable_d;
 }
 
 inner_dto

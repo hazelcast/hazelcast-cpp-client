@@ -414,7 +414,7 @@ public:
     /**
      * Reads a nullable array of nullable booleans.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -427,7 +427,7 @@ public:
      * Reads a nullable array of nullable 8-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @return the value of the field.
      * @throws hazelcast_serialization if the field does not exist in the
      * schema or the type of the field does not match with the one defined
@@ -440,7 +440,7 @@ public:
      * Reads a nullable array of nullable 16-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      *  @return the value of the field.
      *  @throws hazelcast_serialization if the field does not exist in the
      *  schema or the type of the field does not match with the one defined
@@ -453,7 +453,7 @@ public:
      * Reads a nullable array of nullable 32-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      *  @return the value of the field.
      *  @throws hazelcast_serialization if the field does not exist in the
      *  schema or the type of the field does not match with the one defined
@@ -466,7 +466,7 @@ public:
      * Reads a nullable array of nullable 64-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      *  @return the value of the field.
      *  @throws hazelcast_serialization if the field does not exist in the
      *  schema or the type of the field does not match with the one defined
@@ -479,7 +479,7 @@ public:
      * Reads a nullable array of nullable 32-bit IEEE 754 floating point
      * numbers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      *  @return the value of the field.
      *  @throws hazelcast_serialization if the field does not exist in the
      *  schema or the type of the field does not match with the one defined
@@ -492,7 +492,7 @@ public:
      * Reads a nullable array of nullable 64-bit IEEE 754 floating point
      * numbers.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      *  @return the value of the field.
      *  @throws hazelcast_serialization if the field does not exist in the
      *  schema or the type of the field does not match with the one defined
@@ -683,7 +683,7 @@ public:
      * Writes a 32-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_int32(const std::string& field_name, int32_t value);
 
@@ -691,7 +691,7 @@ public:
      * Writes a 64-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_int64(const std::string& field_name, int64_t value);
 
@@ -699,7 +699,7 @@ public:
      * Writes a 32-bit IEEE 754 floating point number.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_float32(const std::string& field_name, float value);
 
@@ -707,7 +707,7 @@ public:
      * Writes a 64-bit IEEE 754 floating point number.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_float64(const std::string& field_name, double value);
 
@@ -715,7 +715,7 @@ public:
      * Writes an UTF-8 encoded string.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
@@ -724,7 +724,7 @@ public:
      * Writes a nested compact object.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     template<typename T>
     void write_compact(const std::string& field_name,
@@ -734,7 +734,7 @@ public:
      * Writes an array of booleans.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_array_of_boolean(
       const std::string& field_name,
@@ -744,7 +744,7 @@ public:
      * Writes an array of 8-bit two's complement signed integers.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_array_of_int8(const std::string& field_name,
                              const boost::optional<std::vector<int8_t>>& value);
@@ -813,7 +813,7 @@ public:
      * Writes an array of nested compact objects.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     template<typename T>
     void write_array_of_compact(
@@ -824,7 +824,7 @@ public:
      * Writes a nullable boolean.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_nullable_boolean(const std::string& field_name,
                                 const boost::optional<bool>& value);
@@ -833,7 +833,7 @@ public:
      * Writes a nullable 8-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_nullable_int8(const std::string& field_name,
                              const boost::optional<int8_t>& value);
@@ -842,7 +842,7 @@ public:
      * Writes a nullable 16-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_nullable_int16(const std::string& field_name,
                               const boost::optional<int16_t>& value);
@@ -851,7 +851,7 @@ public:
      * Writes a nullable 32-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_nullable_int32(const std::string& field_name,
                               const boost::optional<int32_t>& value);
@@ -860,7 +860,7 @@ public:
      * Writes a nullable 64-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_nullable_int64(const std::string& field_name,
                               const boost::optional<int64_t>& value);
@@ -869,7 +869,7 @@ public:
      * Writes a nullable 32-bit IEEE 754 floating point number.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_nullable_float32(const std::string& field_name,
                                 const boost::optional<float>& value);
@@ -878,7 +878,7 @@ public:
      * Writes a nullable 64-bit IEEE 754 floating point number.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_nullable_float64(const std::string& field_name,
                                 const boost::optional<double>& value);
@@ -886,8 +886,8 @@ public:
     /**
      * Writes a nullable array of nullable booleans.
      *
-     * @param fieldName name of the field.
-     * @param value     to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_nullable_boolean(
       const std::string& field_name,
@@ -897,8 +897,8 @@ public:
      * Writes a nullable array of nullable 8-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
-     * @param value     to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_nullable_int8(
       const std::string& field_name,
@@ -908,8 +908,8 @@ public:
      * Writes a nullable array of nullable 16-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
-     * @param value     to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_nullable_int16(
       const std::string& field_name,
@@ -919,8 +919,8 @@ public:
      * Writes a nullable array of nullable 32-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
-     * @param value     to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_nullable_int32(
       const std::string& field_name,
@@ -930,8 +930,8 @@ public:
      * Writes a nullable array of nullable 64-bit two's complement signed
      * integers.
      *
-     * @param fieldName name of the field.
-     * @param value     to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_nullable_int64(
       const std::string& field_name,
@@ -941,8 +941,8 @@ public:
      * Writes a nullable array of nullable 32-bit IEEE 754 floating point
      * numbers.
      *
-     * @param fieldName name of the field.
-     * @param value     to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_nullable_float32(
       const std::string& field_name,
@@ -952,8 +952,8 @@ public:
      * Writes a nullable array of nullable 64-bit IEEE 754 floating point
      * numbers.
      *
-     * @param fieldName name of the field.
-     * @param value     to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_nullable_float64(
       const std::string& field_name,
