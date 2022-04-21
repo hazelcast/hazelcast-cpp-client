@@ -97,7 +97,7 @@ struct inner_dto
     boost::optional<std::vector<double>> doubles;
     boost::optional<std::vector<boost::optional<std::string>>> strings;
     boost::optional<std::vector<boost::optional<named_dto>>> nn;
-    boost::optional<std::vector<boost::optional<decimal>>> bigDecimals;
+    boost::optional<std::vector<boost::optional<big_decimal>>> bigDecimals;
     boost::optional<std::vector<boost::optional<local_time>>> localTimes;
     boost::optional<std::vector<boost::optional<local_date>>> localDates;
     boost::optional<std::vector<boost::optional<local_date_time>>>
@@ -225,10 +225,10 @@ create_inner_dto()
               named_dto{ boost::make_optional<std::string>("test"), 1 }),
             boost::none }),
         boost::make_optional<
-          std::vector<boost::optional<hazelcast::client::decimal>>>(
-          { boost::make_optional(hazelcast::client::decimal{
+          std::vector<boost::optional<hazelcast::client::big_decimal>>>(
+          { boost::make_optional(hazelcast::client::big_decimal{
               boost::multiprecision::cpp_int{ "12345" }, 0 }),
-            boost::make_optional(hazelcast::client::decimal{
+            boost::make_optional(hazelcast::client::big_decimal{
               boost::multiprecision::cpp_int{ "123456" }, 0 }) }),
         boost::make_optional<
           std::vector<boost::optional<hazelcast::client::local_time>>>(

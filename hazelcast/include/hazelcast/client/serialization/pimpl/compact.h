@@ -391,7 +391,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<decimal>>>
+    boost::optional<std::vector<boost::optional<big_decimal>>>
     read_array_of_decimal(const std::string& field_name);
 
     /**
@@ -889,7 +889,7 @@ public:
     /**
      * Writes a date consisting of year, month, and day.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_date(const std::string& field_name,
@@ -898,7 +898,7 @@ public:
     /**
      * Writes a timestamp consisting of date and time.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_timestamp(const std::string& field_name,
@@ -908,7 +908,7 @@ public:
      * Reads a timestamp with timezone consisting of date, time and timezone
      * offset.
      *
-     * @param fieldName name of the field.
+     * @param field_name name of the field.
      * @param value     to be written.
      */
     void write_timestamp_with_timezone(
@@ -1012,7 +1012,7 @@ public:
      */
     void write_array_of_decimal(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<decimal>>>& value);
+      const boost::optional<std::vector<boost::optional<big_decimal>>>& value);
 
     /**
      *  Writes an array of times consisting of hour, minute, second, and nano
@@ -1296,7 +1296,7 @@ public:
       const boost::optional<std::vector<boost::optional<std::string>>>& value);
     void write_array_of_decimal(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<decimal>>>& value);
+      const boost::optional<std::vector<boost::optional<big_decimal>>>& value);
     void write_array_of_time(
       const std::string& field_name,
       const boost::optional<std::vector<boost::optional<local_time>>>& value);

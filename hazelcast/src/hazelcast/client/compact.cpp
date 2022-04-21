@@ -275,7 +275,7 @@ compact_writer::write_array_of_string(
 void
 compact_writer::write_array_of_decimal(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<decimal>>>& value)
+  const boost::optional<std::vector<boost::optional<big_decimal>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_decimal(field_name, value);
@@ -868,12 +868,12 @@ compact_reader::read_array_of_string(const std::string& field_name)
     return read_array_of_variable_size<std::string>(descriptor);
 }
 
-boost::optional<std::vector<boost::optional<decimal>>>
+boost::optional<std::vector<boost::optional<big_decimal>>>
 compact_reader::read_array_of_decimal(const std::string& field_name)
 {
     const auto& descriptor =
       get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_DECIMAL);
-    return read_array_of_variable_size<decimal>(descriptor);
+    return read_array_of_variable_size<big_decimal>(descriptor);
 }
 
 boost::optional<std::vector<boost::optional<local_time>>>
@@ -1232,7 +1232,7 @@ default_compact_writer::write_array_of_string(
 void
 default_compact_writer::write_array_of_decimal(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<decimal>>>& value)
+  const boost::optional<std::vector<boost::optional<big_decimal>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_DECIMAL, value);
