@@ -868,6 +868,47 @@ compact_reader::read_array_of_string(const std::string& field_name)
     return read_array_of_variable_size<std::string>(descriptor);
 }
 
+boost::optional<std::vector<boost::optional<decimal>>>
+compact_reader::read_array_of_decimal(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_DECIMAL);
+    return read_array_of_variable_size<decimal>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<local_time>>>
+compact_reader::read_array_of_time(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_TIME);
+    return read_array_of_variable_size<local_time>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<local_date>>>
+compact_reader::read_array_of_date(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_DATE);
+    return read_array_of_variable_size<local_date>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<local_date_time>>>
+compact_reader::read_array_of_timestamp(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP);
+    return read_array_of_variable_size<local_date_time>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<offset_date_time>>>
+compact_reader::read_array_of_timestamp_with_timezone(
+  const std::string& field_name)
+{
+    const auto& descriptor = get_field_descriptor(
+      field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
+    return read_array_of_variable_size<offset_date_time>(descriptor);
+}
+
 boost::optional<bool>
 compact_reader::read_nullable_boolean(const std::string& field_name)
 {

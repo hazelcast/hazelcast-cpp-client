@@ -383,6 +383,68 @@ public:
     read_array_of_string(const std::string& field_name);
 
     /**
+     * Reads an array of arbitrary precision and scale floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<decimal>>>
+    read_array_of_decimal(const std::string& field_name);
+
+    /**
+     * Reads an array of times consisting of hour, minute, second, and
+     * nanoseconds.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<local_time>>>
+    read_array_of_time(const std::string& field_name);
+
+    /**
+     * Reads an array of dates consisting of year, month, and day.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<local_date>>>
+    read_array_of_date(const std::string& field_name);
+
+    /**
+     * Reads an array of timestamps consisting of date and time.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<local_date_time>>>
+    read_array_of_timestamp(const std::string& field_name);
+
+    /**
+     * Reads an array of timestamps with timezone consisting of date, time and
+     * timezone offset.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<offset_date_time>>>
+    read_array_of_timestamp_with_timezone(const std::string& field_name);
+
+    /**
      * Reads an array of compact objects.
      *
      * @param field_name name of the field.
