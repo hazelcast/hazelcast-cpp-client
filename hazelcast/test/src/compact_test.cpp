@@ -97,6 +97,13 @@ struct inner_dto
     boost::optional<std::vector<double>> doubles;
     boost::optional<std::vector<boost::optional<std::string>>> strings;
     boost::optional<std::vector<boost::optional<named_dto>>> nn;
+    boost::optional<std::vector<boost::optional<decimal>>> bigDecimals;
+    boost::optional<std::vector<boost::optional<local_time>>> localTimes;
+    boost::optional<std::vector<boost::optional<local_date>>> localDates;
+    boost::optional<std::vector<boost::optional<local_date_time>>>
+      localDateTimes;
+    boost::optional<std::vector<boost::optional<offset_date_time>>>
+      offsetDateTimes;
     boost::optional<std::vector<boost::optional<bool>>> nullableBools;
     boost::optional<std::vector<boost::optional<int8_t>>> nullableBytes;
     boost::optional<std::vector<boost::optional<int16_t>>> nullableShorts;
@@ -112,7 +119,12 @@ operator==(const inner_dto& lhs, const inner_dto& rhs)
            lhs.shorts == rhs.shorts && lhs.ints == rhs.ints &&
            lhs.longs == rhs.longs && lhs.floats == rhs.floats &&
            lhs.doubles == rhs.doubles && lhs.strings == rhs.strings &&
-           lhs.nn == rhs.nn && lhs.nullableBools == rhs.nullableBools &&
+           lhs.nn == rhs.nn && lhs.bigDecimals == rhs.bigDecimals &&
+           lhs.localTimes == rhs.localTimes &&
+           lhs.localDates == rhs.localDates &&
+           lhs.localDateTimes == rhs.localDateTimes &&
+           lhs.offsetDateTimes == rhs.offsetDateTimes &&
+           lhs.nullableBools == rhs.nullableBools &&
            lhs.nullableBytes == rhs.nullableBytes &&
            lhs.nullableShorts == rhs.nullableShorts &&
            lhs.nullableInts == rhs.nullableInts &&
@@ -162,6 +174,38 @@ operator==(const main_dto& lhs, const main_dto& rhs)
            lhs.nullableF == rhs.nullableF && lhs.nullableD == rhs.nullableD;
 }
 
+hazelcast::client::local_time
+current_time()
+{
+    std::time_t t = std::time(nullptr); // get time now
+    std::tm* now = std::localtime(&t);
+    return hazelcast::client::local_time{ static_cast<uint8_t>(now->tm_hour),
+                                          static_cast<uint8_t>(now->tm_min),
+                                          static_cast<uint8_t>(now->tm_sec),
+                                          0 };
+}
+
+hazelcast::client::local_date
+current_date()
+{
+    std::time_t t = std::time(nullptr); // get time now
+    std::tm* now = std::localtime(&t);
+    return hazelcast::client::local_date{ now->tm_year + 1900,
+                                          static_cast<uint8_t>(now->tm_mon),
+                                          static_cast<uint8_t>(now->tm_mday) };
+}
+
+hazelcast::client::local_date_time
+current_timestamp()
+{
+    return hazelcast::client::local_date_time{ current_date(), current_time() };
+}
+hazelcast::client::offset_date_time
+current_timestamp_with_timezone()
+{
+    return hazelcast::client::offset_date_time{ current_timestamp(), 3600 };
+}
+
 inner_dto
 create_inner_dto()
 {
@@ -177,9 +221,67 @@ create_inner_dto()
         boost::make_optional<std::vector<boost::optional<std::string>>>(
           { boost::make_optional<std::string>("test"), boost::none }),
         boost::make_optional<std::vector<boost::optional<named_dto>>>(
-          { boost::make_optional<named_dto>(
+          { boost::make_optional(
               named_dto{ boost::make_optional<std::string>("test"), 1 }),
-            boost::none })
+            boost::none }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::decimal>>>(
+          { boost::make_optional(hazelcast::client::decimal{
+              boost::multiprecision::cpp_int{ "12345" }, 0 }),
+            boost::make_optional(hazelcast::client::decimal{
+              boost::multiprecision::cpp_int{ "123456" }, 0 }) }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::local_time>>>(
+          { boost::make_optional(current_time()),
+            boost::none,
+            boost::make_optional(current_time()) }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::local_date>>>(
+          { boost::make_optional(current_date()),
+            boost::none,
+            boost::make_optional(current_date()) }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::local_date_time>>>(
+          { boost::make_optional(current_timestamp()), boost::none }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::offset_date_time>>>(
+          { boost::make_optional(current_timestamp_with_timezone()) }),
+        boost::make_optional<std::vector<boost::optional<bool>>>(
+          { boost::make_optional(true),
+            boost::make_optional(false),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int8_t>>>(
+          { boost::make_optional<int8_t>(0),
+            boost::make_optional<int8_t>(1),
+            boost::make_optional<int8_t>(2),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int16_t>>>(
+          { boost::make_optional<int16_t>(3),
+            boost::make_optional<int16_t>(4),
+            boost::make_optional<int16_t>(5),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int32_t>>>(
+          { boost::make_optional<int32_t>(9),
+            boost::make_optional<int32_t>(8),
+            boost::make_optional<int32_t>(7),
+            boost::make_optional<int32_t>(6),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int64_t>>>(
+          { boost::make_optional<int64_t>(0),
+            boost::make_optional<int64_t>(1),
+            boost::make_optional<int64_t>(5),
+            boost::make_optional<int64_t>(7),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<float>>>(
+          { boost::make_optional(0.6543f),
+            boost::make_optional(-3.56f),
+            boost::make_optional(45.67f),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<double>>>(
+          { boost::make_optional(456.456),
+            boost::make_optional(789.789),
+            boost::make_optional(321.321),
+            boost::none }),
     };
 }
 main_dto
@@ -318,6 +420,13 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         writer.write_array_of_float32("floats", object.floats);
         writer.write_array_of_float64("doubles", object.doubles);
         writer.write_array_of_string("strings", object.strings);
+        writer.write_array_of_decimal("bigDecimals", object.bigDecimals);
+        writer.write_array_of_time("localTimes", object.localTimes);
+        writer.write_array_of_date("localDates", object.localDates);
+        writer.write_array_of_timestamp("localDateTimes",
+                                        object.localDateTimes);
+        writer.write_array_of_timestamp_with_timezone("offsetDateTimes",
+                                                      object.offsetDateTimes);
         writer.write_array_of_compact("nn", object.nn);
         writer.write_array_of_nullable_boolean("nullableBools",
                                                object.nullableBools);
@@ -346,6 +455,13 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         object.floats = reader.read_array_of_float32("floats");
         object.doubles = reader.read_array_of_float64("doubles");
         object.strings = reader.read_array_of_string("strings");
+        object.bigDecimals = reader.read_array_of_decimal("bigDecimals");
+        object.localTimes = reader.read_array_of_time("localTimes");
+        object.localDates = reader.read_array_of_date("localDates");
+        object.localDateTimes =
+          reader.read_array_of_timestamp("localDateTimes");
+        object.offsetDateTimes =
+          reader.read_array_of_timestamp_with_timezone("offsetDateTimes");
         object.nn =
           reader.read_array_of_compact<compact::test::named_dto>("nn");
         object.nullableBools =
