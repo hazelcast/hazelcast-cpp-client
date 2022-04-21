@@ -943,6 +943,61 @@ public:
       const boost::optional<std::vector<boost::optional<std::string>>>& value);
 
     /**
+     * Writes an array of arbitrary precision and scale floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_decimal(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<decimal>>>& value);
+
+    /**
+     *  Writes an array of times consisting of hour, minute, second, and nano
+     * seconds.
+     *
+     *  @param field_name name of the field.
+     *  @param value to be written.
+     */
+    void write_array_of_time(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_time>>>& value);
+
+    /**
+     * Writes an array of dates consisting of year, month, and day.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_date(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date>>>& value);
+
+    /**
+     * Writes an array of timestamps consisting of year, month, day, hour,
+     * minute, second, and nano seconds.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_timestamp(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date_time>>>&
+        value);
+
+    /**
+     * Writes an array of timestamps with timezone consisting of date, time and
+     * timezone offset.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<offset_date_time>>>&
+        value);
+
+    /**
      * Writes an array of nested compact objects.
      *
      * @param field_name name of the field.
@@ -1177,6 +1232,23 @@ public:
     void write_array_of_string(
       const std::string& field_name,
       const boost::optional<std::vector<boost::optional<std::string>>>& value);
+    void write_array_of_decimal(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<decimal>>>& value);
+    void write_array_of_time(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_time>>>& value);
+    void write_array_of_date(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date>>>& value);
+    void write_array_of_timestamp(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date_time>>>&
+        value);
+    void write_array_of_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<offset_date_time>>>&
+        value);
     template<typename T>
     void write_array_of_compact(
       const std::string& field_name,
