@@ -25,6 +25,7 @@
 #endif
 
 #include <hazelcast/client/serialization/serialization.h>
+#include <hazelcast/client/decimal.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -541,6 +542,9 @@ check_schema_field(const schema& schema,
 
 TEST_F(CompactSerializationTest, test_field_order_fixed_size)
 {
+    std::unordered_map<hazelcast::client::decimal, hazelcast::client::decimal> m(4);
+    m.insert(std::make_pair(hazelcast::client::decimal{1, 2},
+                            hazelcast::client::decimal{3, 4}));
     schema_writer schema_writer("typeName");
     auto writer = serialization::pimpl::create_compact_writer(&schema_writer);
     serialization::hz_serializer<employee_dto>::write(employee_dto{}, writer);

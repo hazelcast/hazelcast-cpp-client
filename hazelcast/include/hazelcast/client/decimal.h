@@ -49,6 +49,19 @@ struct HAZELCAST_API decimal
 bool HAZELCAST_API
 operator==(const decimal& lhs, const decimal& rhs);
 
+bool HAZELCAST_API
+operator<(const decimal& lhs, const decimal& rhs);
+} // namespace client
+} // namespace hazelcast
+namespace std {
+template<>
+struct HAZELCAST_API hash<hazelcast::client::decimal>
+{
+    std::size_t operator()(const hazelcast::client::decimal& f) const;
+};
+} // namespace std
+namespace hazelcast {
+namespace client {
 namespace pimpl {
 
 /**
@@ -79,7 +92,8 @@ from_bytes(std::vector<int8_t> v);
  * if i is a negative number, we take the two's complement on resulting vector,
  * to get negative representation of the number.
  * We also add one extra byte to the end of the vector to preserve the sign if
- * necessary.
+ * sign of the integer is not same as the most significant byte's sign.
+ * Otherwise we don't add it to have minimum size vector to represent the value.
  * @param i the number to convert to bytes
  * @return the vector of int8_t representing the number
  */
