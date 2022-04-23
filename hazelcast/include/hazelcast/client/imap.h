@@ -101,7 +101,8 @@ public:
     template<typename K, typename V>
     boost::future<boost::optional<V>> get(const K& key)
     {
-        return to_object<V>(get_internal(to_data(key)));
+        return controlled_serialization(
+          [&]() { return to_object<V>(get_internal(to_data(key))); });
     }
 
     /**
@@ -134,7 +135,10 @@ public:
                                           const V& value,
                                           std::chrono::milliseconds ttl)
     {
-        return to_object<R>(put_internal(to_data(key), to_data(value), ttl));
+        return controlled_serialization([&]() {
+            return to_object<R>(
+              put_internal(to_data(key), to_data(value), ttl));
+        });
     }
 
     /**

@@ -1147,6 +1147,50 @@ TEST_P(ClientMapTest, testTryPutRemove)
     imap_->force_unlock("key2").get();
 }
 
+struct named_dto
+{
+    boost::optional<std::string> name;
+    int my_int;
+};
+
+bool
+operator==(const named_dto& lhs, const named_dto& rhs)
+{
+    return lhs.name == rhs.name && lhs.my_int == rhs.my_int;
+}
+} // namespace test
+namespace serialization {
+template<>
+struct hz_serializer<test::named_dto> : public compact_serializer
+{
+    static void write(const test::named_dto& dto, compact_writer& writer)
+    {
+        writer.write_string("name", dto.name);
+        writer.write_int32("my_int", dto.my_int);
+    }
+
+    static test::named_dto read(compact_reader& reader)
+    {
+        test::named_dto dto;
+        dto.name = reader.read_string("name");
+        dto.my_int = reader.read_int32("my_int");
+        return dto;
+    }
+
+    static std::string type_name() { return "named_dto"; }
+};
+} // namespace serialization
+namespace test {
+
+TEST_P(ClientMapTest, testPut)
+{
+    named_dto key = { boost::make_optional<std::string>("key"), 2 };
+    named_dto value = { boost::make_optional<std::string>("value"), 1 };
+    imap_->put<named_dto, named_dto>(key, value).get();
+    imap_->put<named_dto, named_dto>(key, value).get();
+    ASSERT_EQ(value, (imap_->get<named_dto, named_dto>(key).get().value()));
+}
+
 TEST_P(ClientMapTest, testPutTtl)
 {
     validate_expiry_invalidations(imap_, [=]() {

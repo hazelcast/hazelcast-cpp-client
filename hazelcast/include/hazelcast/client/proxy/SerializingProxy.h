@@ -93,6 +93,26 @@ protected:
         return to_data<T>(&object);
     }
 
+    template<typename FUNC>
+    typename std::result_of<FUNC()>::type controlled_serialization(FUNC func)
+    {
+        using boost::future;
+        using boost::launch;
+        using serialization::pimpl::data;
+        try {
+            return func();
+        } catch (exception::schema_not_replicated& exception) {
+            return serialization_service_.get_compact_serializer()
+              .replicate_schema(exception.schema())
+              .then(boost::launch::sync,
+                    [func](boost::future<void> f) {
+                        f.get();
+                        return func();
+                    })
+              .unwrap();
+        }
+    }
+
     template<typename K, typename V>
     inline boost::future<std::unordered_map<K, V>> to_object_map(
       std::vector<boost::future<EntryVector>>& futures)

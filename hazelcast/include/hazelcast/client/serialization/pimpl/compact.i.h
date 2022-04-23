@@ -587,16 +587,16 @@ T inline compact_stream_serializer::read(object_data_input& in)
     }
     // This path will run only in schema evolution case
     auto schema = schema_service.get(schema_id);
-    if (schema.type_name() != hz_serializer<T>::type_name()) {
+    if (schema->type_name() != hz_serializer<T>::type_name()) {
         auto exception = exception::hazelcast_serialization{
             "compact_stream_serializer",
             (boost::format("Unexpected typename. expected %1%, received %2%") %
-             hz_serializer<T>::type_name() % schema.type_name())
+             hz_serializer<T>::type_name() % schema->type_name())
               .str()
         };
         BOOST_THROW_EXCEPTION(exception);
     }
-    compact_reader reader = create_compact_reader(*this, in, schema);
+    compact_reader reader = create_compact_reader(*this, in, *schema);
     return hz_serializer<T>::read(reader);
 }
 
@@ -605,7 +605,7 @@ void inline compact_stream_serializer::write(const T& object,
                                              object_data_output& out)
 {
     const auto& schema_v = schema_of<T>::schema_v;
-    put_to_schema_service(schema_v);
+    schema_service.check_schema_replicated(schema_v);
     out.write<int64_t>(schema_v.schema_id());
     default_compact_writer default_writer(*this, out, schema_v);
     compact_writer writer = create_compact_writer(&default_writer);

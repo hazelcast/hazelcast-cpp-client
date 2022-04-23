@@ -28,6 +28,7 @@
 #include "hazelcast/client/serialization/pimpl/data_input.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/serialization/pimpl/data_output.h"
+#include "hazelcast/client/serialization/field_kind.h"
 #include "hazelcast/client/serialization_config.h"
 #include "hazelcast/client/partition_aware.h"
 #include "hazelcast/util/SynchronizedMap.h"
@@ -1936,6 +1937,8 @@ public:
     void dispose() override;
 
     object_data_output new_output_stream();
+
+
 
 private:
     SerializationService(const SerializationService&) = delete;

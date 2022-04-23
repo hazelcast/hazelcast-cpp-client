@@ -1302,6 +1302,28 @@ consistency_lost::consistency_lost(const std::string& source,
                true,
                false)
 {}
+
+schema_not_replicated::schema_not_replicated(
+  const std::string& source,
+  const std::string& message,
+  serialization::pimpl::schema schema)
+  : hazelcast_("schema_not_replicated",
+               protocol::SCHEMA_NOT_REPLICATED,
+               source,
+               message,
+               "",
+               nullptr,
+               true,
+               true)
+  , schema_(std::move(schema))
+{}
+
+const serialization::pimpl::schema&
+schema_not_replicated::schema() const
+{
+    return schema_;
+}
+
 } // namespace exception
 } // namespace client
 

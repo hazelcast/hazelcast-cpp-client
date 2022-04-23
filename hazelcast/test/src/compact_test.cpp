@@ -634,16 +634,23 @@ struct hz_serializer<compact::test::employee_dto> : public compact_serializer
 
 namespace compact {
 namespace test {
-class CompactSerializationTest : public ::testing::Test
+
+template<typename TV, typename TR = TV>
+TR
+to_data_and_back_to_object(SerializationService& ss, TV& value)
 {
-public:
-    template<typename T>
-    T to_data_and_back_to_object(SerializationService& ss, T& value)
-    {
-        data data = ss.to_data<T>(value);
-        return *(ss.to_object<T>(data));
+    try {
+        data data = ss.to_data<TV>(value);
+        return *(ss.to_object<TR>(data));
+    } catch (const exception::schema_not_replicated& e) {
+        auto future = ss.get_compact_serializer().replicate_schema(e.schema());
+        future.get();
+        return to_data_and_back_to_object<TV, TR>(ss, value);
     }
-};
+}
+
+class CompactSerializationTest : public ::testing::Test
+{};
 
 TEST_F(CompactSerializationTest, testAllTypes)
 {
@@ -679,6 +686,7 @@ TEST_F(CompactSerializationTest, testBits)
     expected.booleans = boost::make_optional<std::vector<bool>>(
       { true, false, false, false, true, false, false, false });
 
+    ss.get_compact_serializer().replicate_schema(schema_of<bits_dto>::schema_v);
     const data& data = ss.to_data(expected);
     // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (1 bytes for 8
     // bits) + (4 bytes for int) (4 byte length of byte array) + (1 byte for
@@ -923,8 +931,9 @@ TEST_F(CompactNullablePrimitiveInteroperabilityTest,
     serialization_config config;
     SerializationService ss(config);
 
-    const data& data = ss.to_data(expected);
-    auto actual = ss.to_object<nullable_primitive_object>(data).value();
+    auto actual =
+      to_data_and_back_to_object<primitive_object, nullable_primitive_object>(
+        ss, expected);
     ASSERT_EQ(expected.boolean_, actual.nullableBoolean.value());
     ASSERT_EQ(expected.byte_, actual.nullableByte.value());
     ASSERT_EQ(expected.short_, actual.nullableShort.value());
@@ -983,8 +992,9 @@ TEST_F(CompactNullablePrimitiveInteroperabilityTest,
     serialization_config config;
     SerializationService ss(config);
 
-    const data& data = ss.to_data(expected);
-    auto actual = ss.to_object<primitive_object>(data).value();
+    auto actual =
+      to_data_and_back_to_object<nullable_primitive_object, primitive_object>(
+        ss, expected);
     ASSERT_EQ(expected.nullableBoolean.value(), actual.boolean_);
     ASSERT_EQ(expected.nullableByte.value(), actual.byte_);
     ASSERT_EQ(expected.nullableShort.value(), actual.short_);
@@ -1008,6 +1018,8 @@ TEST_F(CompactNullablePrimitiveInteroperabilityTest,
     serialization_config config;
     SerializationService ss(config);
 
+    ss.get_compact_serializer().replicate_schema(
+      schema_of<nullable_primitive_object>::schema_v);
     const data& data = ss.to_data(expected);
     ASSERT_THROW(ss.to_object<primitive_object>(data),
                  exception::hazelcast_serialization);

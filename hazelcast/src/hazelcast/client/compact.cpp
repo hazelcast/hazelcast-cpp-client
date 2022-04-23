@@ -1690,28 +1690,40 @@ schema_writer::build() &&
     return schema{ type_name, std::move(field_definition_map) };
 }
 
-schema
+std::shared_ptr<schema>
 default_schema_service::get(int64_t schemaId)
 {
     auto ptr = schemas.get(schemaId);
     if (ptr == nullptr) {
         // TODO sancar throw schema_does_not_exist;
     }
-    return *ptr;
+    return ptr;
 }
-void
+boost::future<void>
 default_schema_service::put(const schema& schema_v)
 {
     if (schemas.contains_key(schema_v.schema_id())) {
-        return;
+        return boost::make_ready_future();
     }
     schemas.put(schema_v.schema_id(), std::make_shared<schema>(schema_v));
+    return boost::make_ready_future();
 }
 
 void
-compact_stream_serializer::put_to_schema_service(const schema& schema)
+default_schema_service::check_schema_replicated(const schema& schema)
+{
+    const std::shared_ptr<pimpl::schema>& ptr = schemas.get(schema.schema_id());
+    if (!ptr) {
+        throw exception::schema_not_replicated(
+          "schema service", "schema not replicated to the cluster", schema);
+    }
+}
+
+boost::future<void>
+compact_stream_serializer::replicate_schema(const schema& schema)
 {
     schema_service.put(schema);
+    return boost::make_ready_future();
 }
 
 field_kind_based_operations::field_kind_based_operations()
