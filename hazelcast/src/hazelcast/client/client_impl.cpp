@@ -45,7 +45,7 @@
 #include "hazelcast/logger.h"
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/client_properties.h"
-#include "hazelcast/client/decimal.h"
+#include "hazelcast/client/big_decimal.h"
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
 #endif
@@ -592,13 +592,13 @@ operator<<(std::ostream& stream, const address& address)
 }
 
 bool
-operator==(const decimal& lhs, const decimal& rhs)
+operator==(const big_decimal& lhs, const big_decimal& rhs)
 {
     return lhs.unscaled == rhs.unscaled && lhs.scale == rhs.scale;
 }
 
 bool
-operator<(const decimal& lhs, const decimal& rhs)
+operator<(const big_decimal& lhs, const big_decimal& rhs)
 {
     if (lhs.scale != rhs.scale) {
         return lhs.scale < rhs.scale;
@@ -1227,8 +1227,8 @@ hash<hazelcast::client::address>::operator()(
 }
 
 std::size_t
-hash<hazelcast::client::decimal>::operator()(
-  const hazelcast::client::decimal& dec) const
+hash<hazelcast::client::big_decimal>::operator()(
+  const hazelcast::client::big_decimal& dec) const
 {
     std::size_t seed = 0;
     boost::hash_combine(seed, dec.unscaled);

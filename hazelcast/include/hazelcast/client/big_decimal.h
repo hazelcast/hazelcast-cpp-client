@@ -34,30 +34,30 @@ namespace client {
  *  libraries. An usage example with boost::multiprecision::cpp_dec_float
  *  could be as follows:
  *  <pre><code>
- * hazelcast::decimal dec{ u, 2 };
+ * hazelcast::big_decimal dec{ u, 2 };
  * boost::multiprecision::cpp_dec_float<10> f(
  *  (dec.unscaled.str() + "e-" + std::to_string(dec.scale)).c_str());
  *  std::cout << f.str(100, std::ios_base::dec) << std::endl;
  *  </code></pre>
  */
-struct HAZELCAST_API decimal
+struct HAZELCAST_API big_decimal
 {
     boost::multiprecision::cpp_int unscaled;
     int32_t scale;
 };
 
 bool HAZELCAST_API
-operator==(const decimal& lhs, const decimal& rhs);
+operator==(const big_decimal& lhs, const big_decimal& rhs);
 
 bool HAZELCAST_API
-operator<(const decimal& lhs, const decimal& rhs);
+operator<(const big_decimal& lhs, const big_decimal& rhs);
 } // namespace client
 } // namespace hazelcast
 namespace std {
 template<>
-struct HAZELCAST_API hash<hazelcast::client::decimal>
+struct HAZELCAST_API hash<hazelcast::client::big_decimal>
 {
-    std::size_t operator()(const hazelcast::client::decimal& f) const;
+    std::size_t operator()(const hazelcast::client::big_decimal& f) const;
 };
 } // namespace std
 namespace hazelcast {

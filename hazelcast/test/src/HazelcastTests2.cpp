@@ -55,7 +55,7 @@
 #include <hazelcast/util/concurrent/locks/LockSupport.h>
 #include <hazelcast/util/MurmurHash3.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/client/decimal.h>
+#include <hazelcast/client/big_decimal.h>
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
