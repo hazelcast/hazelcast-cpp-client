@@ -542,9 +542,6 @@ check_schema_field(const schema& schema,
 
 TEST_F(CompactSerializationTest, test_field_order_fixed_size)
 {
-    std::unordered_map<hazelcast::client::big_decimal, hazelcast::client::big_decimal> m(4);
-    m.insert(std::make_pair(hazelcast::client::big_decimal{1, 2},
-                            hazelcast::client::big_decimal{3, 4}));
     schema_writer schema_writer("typeName");
     auto writer = serialization::pimpl::create_compact_writer(&schema_writer);
     serialization::hz_serializer<employee_dto>::write(employee_dto{}, writer);

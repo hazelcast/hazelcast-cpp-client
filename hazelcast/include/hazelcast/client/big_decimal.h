@@ -92,7 +92,7 @@ from_bytes(std::vector<int8_t> v);
  * if i is a negative number, we take the two's complement on resulting vector,
  * to get negative representation of the number.
  * We also add one extra byte to the end of the vector to preserve the sign if
- * sign of the integer is not same as the most significant byte's sign.
+ * sign of the integer is not the same as the most significant byte's sign.
  * Otherwise we don't add it to have minimum size vector to represent the value.
  * @param i the number to convert to bytes
  * @return the vector of int8_t representing the number
