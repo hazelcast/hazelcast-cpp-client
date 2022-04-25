@@ -441,10 +441,10 @@ public:
      * integers.
      *
      * @param field_name name of the field.
-     *  @return the value of the field.
-     *  @throws hazelcast_serialization if the field does not exist in the
-     *  schema or the type of the field does not match with the one defined
-     *  in the schema.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     boost::optional<std::vector<boost::optional<int16_t>>>
     read_array_of_nullable_int16(const std::string& field_name);
@@ -454,10 +454,10 @@ public:
      * integers.
      *
      * @param field_name name of the field.
-     *  @return the value of the field.
-     *  @throws hazelcast_serialization if the field does not exist in the
-     *  schema or the type of the field does not match with the one defined
-     *  in the schema.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     boost::optional<std::vector<boost::optional<int32_t>>>
     read_array_of_nullable_int32(const std::string& field_name);
@@ -467,10 +467,10 @@ public:
      * integers.
      *
      * @param field_name name of the field.
-     *  @return the value of the field.
-     *  @throws hazelcast_serialization if the field does not exist in the
-     *  schema or the type of the field does not match with the one defined
-     *  in the schema.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     boost::optional<std::vector<boost::optional<int64_t>>>
     read_array_of_nullable_int64(const std::string& field_name);
@@ -480,10 +480,10 @@ public:
      * numbers.
      *
      * @param field_name name of the field.
-     *  @return the value of the field.
-     *  @throws hazelcast_serialization if the field does not exist in the
-     *  schema or the type of the field does not match with the one defined
-     *  in the schema.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     boost::optional<std::vector<boost::optional<float>>>
     read_array_of_nullable_float32(const std::string& field_name);
@@ -493,10 +493,10 @@ public:
      * numbers.
      *
      * @param field_name name of the field.
-     *  @return the value of the field.
-     *  @throws hazelcast_serialization if the field does not exist in the
-     *  schema or the type of the field does not match with the one defined
-     *  in the schema.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
      */
     boost::optional<std::vector<boost::optional<double>>>
     read_array_of_nullable_float64(const std::string& field_name);

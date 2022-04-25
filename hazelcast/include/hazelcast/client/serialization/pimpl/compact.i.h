@@ -213,8 +213,8 @@ compact_reader::read()
             index = 0;
             current_byte = object_data_input.read<byte>();
         }
-        values.value()[i] =
-          boost::make_optional<bool>(((current_byte >> index) & 1) != 0);
+        bool result = ((current_byte >> index) & 1) != 0;
+        values.value()[i] = boost::make_optional<bool>(std::move(result));
         index++;
     }
     return values;
@@ -347,13 +347,12 @@ compact_reader::read_primitive_array_as_nullable_array(
     }
     object_data_input.position(pos);
     int32_t item_count = object_data_input.read<int32_t>();
-    auto values = boost::make_optional<std::vector<boost::optional<T>>>(
-      std::vector<boost::optional<T>>(item_count));
+    std::vector<boost::optional<T>> values(item_count);
 
     for (int i = 0; i < item_count; ++i) {
-        values.value()[i] = boost::make_optional(object_data_input.read<T>());
+        values[i] = boost::make_optional(object_data_input.read<T>());
     }
-    return values;
+    return boost::make_optional(std::move(values));
 }
 
 template<>
