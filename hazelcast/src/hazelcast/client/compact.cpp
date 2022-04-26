@@ -291,6 +291,103 @@ compact_writer::write_nullable_float64(const std::string& field_name,
     }
 }
 
+void
+compact_writer::write_array_of_nullable_boolean(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<bool>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_nullable_boolean(field_name,
+                                                                value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_NULLABLE_BOOLEAN);
+    }
+}
+
+void
+compact_writer::write_array_of_nullable_int8(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int8_t>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_nullable_int8(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT8);
+    }
+}
+
+void
+compact_writer::write_array_of_nullable_int16(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int16_t>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_nullable_int16(field_name,
+                                                              value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT16);
+    }
+}
+
+void
+compact_writer::write_array_of_nullable_int32(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int32_t>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_nullable_int32(field_name,
+                                                              value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT32);
+    }
+}
+
+void
+compact_writer::write_array_of_nullable_int64(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int64_t>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_nullable_int64(field_name,
+                                                              value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT64);
+    }
+}
+
+void
+compact_writer::write_array_of_nullable_float32(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<float>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_nullable_float32(field_name,
+                                                                value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_NULLABLE_FLOAT32);
+    }
+}
+
+void
+compact_writer::write_array_of_nullable_float64(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<double>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_nullable_float64(field_name,
+                                                                value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_NULLABLE_FLOAT64);
+    }
+}
+
 namespace pimpl {
 compact_reader
 create_compact_reader(
@@ -664,6 +761,62 @@ compact_reader::read_nullable_float64(const std::string& field_name)
                                            pimpl::field_kind::NULLABLE_FLOAT64);
 }
 
+boost::optional<std::vector<boost::optional<bool>>>
+compact_reader::read_array_of_nullable_boolean(const std::string& field_name)
+{
+    return read_array_of_nullable<bool>(field_name,
+                                        pimpl::field_kind::ARRAY_OF_BOOLEAN,
+                                        pimpl::ARRAY_OF_NULLABLE_BOOLEAN);
+}
+
+boost::optional<std::vector<boost::optional<int8_t>>>
+compact_reader::read_array_of_nullable_int8(const std::string& field_name)
+{
+    return read_array_of_nullable<int8_t>(field_name,
+                                          pimpl::field_kind::ARRAY_OF_INT8,
+                                          pimpl::ARRAY_OF_NULLABLE_INT8);
+}
+
+boost::optional<std::vector<boost::optional<int16_t>>>
+compact_reader::read_array_of_nullable_int16(const std::string& field_name)
+{
+    return read_array_of_nullable<int16_t>(field_name,
+                                           pimpl::field_kind::ARRAY_OF_INT16,
+                                           pimpl::ARRAY_OF_NULLABLE_INT16);
+}
+
+boost::optional<std::vector<boost::optional<int32_t>>>
+compact_reader::read_array_of_nullable_int32(const std::string& field_name)
+{
+    return read_array_of_nullable<int32_t>(field_name,
+                                           pimpl::field_kind::ARRAY_OF_INT32,
+                                           pimpl::ARRAY_OF_NULLABLE_INT32);
+}
+
+boost::optional<std::vector<boost::optional<int64_t>>>
+compact_reader::read_array_of_nullable_int64(const std::string& field_name)
+{
+    return read_array_of_nullable<int64_t>(field_name,
+                                           pimpl::field_kind::ARRAY_OF_INT64,
+                                           pimpl::ARRAY_OF_NULLABLE_INT64);
+}
+
+boost::optional<std::vector<boost::optional<float>>>
+compact_reader::read_array_of_nullable_float32(const std::string& field_name)
+{
+    return read_array_of_nullable<float>(field_name,
+                                         pimpl::field_kind::ARRAY_OF_FLOAT32,
+                                         pimpl::ARRAY_OF_NULLABLE_FLOAT32);
+}
+
+boost::optional<std::vector<boost::optional<double>>>
+compact_reader::read_array_of_nullable_float64(const std::string& field_name)
+{
+    return read_array_of_nullable<double>(field_name,
+                                          pimpl::field_kind::ARRAY_OF_FLOAT64,
+                                          pimpl::ARRAY_OF_NULLABLE_FLOAT64);
+}
+
 namespace pimpl {
 
 compact_writer
@@ -885,6 +1038,69 @@ default_compact_writer::write_nullable_float64(
   const boost::optional<double>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_FLOAT64, value);
+}
+
+void
+default_compact_writer::write_array_of_nullable_boolean(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<bool>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_NULLABLE_BOOLEAN, value);
+}
+
+void
+default_compact_writer::write_array_of_nullable_int8(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int8_t>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_NULLABLE_INT8, value);
+}
+
+void
+default_compact_writer::write_array_of_nullable_int16(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int16_t>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_NULLABLE_INT16, value);
+}
+
+void
+default_compact_writer::write_array_of_nullable_int32(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int32_t>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_NULLABLE_INT32, value);
+}
+
+void
+default_compact_writer::write_array_of_nullable_int64(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<int64_t>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_NULLABLE_INT64, value);
+}
+
+void
+default_compact_writer::write_array_of_nullable_float32(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<float>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_NULLABLE_FLOAT32, value);
+}
+
+void
+default_compact_writer::write_array_of_nullable_float64(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<double>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_NULLABLE_FLOAT64, value);
 }
 
 void
