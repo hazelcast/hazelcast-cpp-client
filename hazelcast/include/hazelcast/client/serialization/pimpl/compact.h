@@ -53,7 +53,7 @@ create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
   const pimpl::schema& schema);
-class field_descriptor;
+struct field_descriptor;
 enum HAZELCAST_API field_kind
 {
     BOOLEAN = 0,
