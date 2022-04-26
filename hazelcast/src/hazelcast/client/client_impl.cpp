@@ -45,7 +45,7 @@
 #include "hazelcast/logger.h"
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/client_properties.h"
-
+#include "hazelcast/client/big_decimal.h"
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
 #endif
@@ -590,6 +590,79 @@ operator<<(std::ostream& stream, const address& address)
 {
     return stream << address.to_string();
 }
+
+bool
+operator==(const big_decimal& lhs, const big_decimal& rhs)
+{
+    return lhs.unscaled == rhs.unscaled && lhs.scale == rhs.scale;
+}
+
+bool
+operator<(const big_decimal& lhs, const big_decimal& rhs)
+{
+    if (lhs.scale != rhs.scale) {
+        return lhs.scale < rhs.scale;
+    }
+    return lhs.unscaled < rhs.unscaled;
+}
+
+namespace pimpl {
+
+void
+twos_complement(std::vector<int8_t>& a)
+{
+    // twos complement is calculated via flipping the bits and adding 1
+    // flip the bits
+    for (auto& item : a) {
+        item = ~item;
+    }
+    // add 1
+    int8_t carry = 1;
+    for (int i = a.size() - 1; i >= 0; i--) {
+        a[i] = a[i] + carry;
+        if (a[i] == 0) {
+            carry = 1;
+        } else {
+            break;
+        }
+    }
+}
+
+boost::multiprecision::cpp_int
+from_bytes(std::vector<int8_t> v)
+{
+    boost::multiprecision::cpp_int i;
+    bool is_negative = v[0] < 0;
+    if (is_negative) {
+        twos_complement(v);
+    }
+    import_bits(i, v.begin(), v.end(), 8);
+    if (is_negative) {
+        return -i;
+    }
+    return i;
+}
+
+std::vector<int8_t>
+to_bytes(const boost::multiprecision::cpp_int& i)
+{
+    std::vector<int8_t> v;
+    export_bits(i, std::back_inserter(v), 8);
+    if (i < 0) {
+        twos_complement(v);
+        if (v[0] > 0) {
+            // add -1 as the most significant to have a negative sign bit
+            v.insert(v.begin(), -1);
+        }
+    } else {
+        // add 0 as the most significant byte to have a positive sign bit
+        if (v[0] < 0) {
+            v.insert(v.begin(), 0);
+        }
+    }
+    return v;
+}
+} // namespace pimpl
 
 namespace serialization {
 int32_t
@@ -1152,4 +1225,14 @@ hash<hazelcast::client::address>::operator()(
     boost::hash_combine(seed, address.type_);
     return seed;
 }
+
+std::size_t
+hash<hazelcast::client::big_decimal>::operator()(
+  const hazelcast::client::big_decimal& dec) const
+{
+    std::size_t seed = 0;
+    boost::hash_combine(seed, dec.unscaled);
+    boost::hash_combine(seed, dec.scale);
+    return seed;
+};
 } // namespace std
