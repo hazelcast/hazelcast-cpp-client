@@ -25,7 +25,10 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/big_decimal.h"
-#include "hazelcast/client/temporals.h"
+#include "hazelcast/client/local_time.h"
+#include "hazelcast/client/local_date.h"
+#include "hazelcast/client/local_date_time.h"
+#include "hazelcast/client/offset_date_time.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

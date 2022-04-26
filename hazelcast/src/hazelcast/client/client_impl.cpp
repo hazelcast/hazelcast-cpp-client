@@ -46,6 +46,10 @@
 #include "hazelcast/client/member_selectors.h"
 #include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/big_decimal.h"
+#include "hazelcast/client/local_time.h"
+#include "hazelcast/client/local_date.h"
+#include "hazelcast/client/local_date_time.h"
+#include "hazelcast/client/offset_date_time.h"
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
 #endif
@@ -604,6 +608,110 @@ operator<(const big_decimal& lhs, const big_decimal& rhs)
         return lhs.scale < rhs.scale;
     }
     return lhs.unscaled < rhs.unscaled;
+}
+
+bool
+operator==(const local_time& lhs, const local_time& rhs)
+{
+    return lhs.hours == rhs.hours && lhs.minutes == rhs.minutes &&
+           lhs.seconds == rhs.seconds && lhs.nanos == rhs.nanos;
+}
+
+/**
+ * Glue method to enable boost::combine_has to call std::hash for the types
+ * under hazelcast::client namespace.
+ */
+template<typename T>
+std::size_t
+hash_value(const T& v)
+{
+    return std::hash<T>()(v);
+}
+
+bool
+operator<(const local_time& lhs, const local_time& rhs)
+{
+    if (lhs.hours < rhs.hours) {
+        return true;
+    }
+    if (rhs.hours < lhs.hours) {
+        return false;
+    }
+    if (lhs.minutes < rhs.minutes) {
+        return true;
+    }
+    if (rhs.minutes < lhs.minutes) {
+        return false;
+    }
+    if (lhs.seconds < rhs.seconds) {
+        return true;
+    }
+    if (rhs.seconds < lhs.seconds) {
+        return false;
+    }
+    return lhs.nanos < rhs.nanos;
+}
+
+bool
+operator==(const local_date& lhs, const local_date& rhs)
+{
+    return lhs.year == rhs.year && lhs.month == rhs.month &&
+           lhs.day_of_month == rhs.day_of_month;
+}
+
+bool
+operator<(const local_date& lhs, const local_date& rhs)
+{
+    if (lhs.year < rhs.year) {
+        return true;
+    }
+    if (rhs.year < lhs.year) {
+        return false;
+    }
+    if (lhs.month < rhs.month) {
+        return true;
+    }
+    if (rhs.month < lhs.month) {
+        return false;
+    }
+    return lhs.day_of_month < rhs.day_of_month;
+}
+
+bool
+operator==(const local_date_time& lhs, const local_date_time& rhs)
+{
+    return lhs.date == rhs.date && lhs.time == rhs.time;
+}
+
+bool
+operator<(const local_date_time& lhs, const local_date_time& rhs)
+{
+    if (lhs.date < rhs.date) {
+        return true;
+    }
+    if (rhs.date < lhs.date) {
+        return false;
+    }
+    return lhs.time < rhs.time;
+}
+
+bool
+operator==(const offset_date_time& lhs, const offset_date_time& rhs)
+{
+    return lhs.date_time == rhs.date_time &&
+           lhs.zone_offset_in_seconds == rhs.zone_offset_in_seconds;
+}
+
+bool
+operator<(const offset_date_time& lhs, const offset_date_time& rhs)
+{
+    if (lhs.date_time < rhs.date_time) {
+        return true;
+    }
+    if (rhs.date_time < lhs.date_time) {
+        return false;
+    }
+    return lhs.zone_offset_in_seconds < rhs.zone_offset_in_seconds;
 }
 
 namespace pimpl {
@@ -1234,5 +1342,48 @@ hash<hazelcast::client::big_decimal>::operator()(
     boost::hash_combine(seed, dec.unscaled);
     boost::hash_combine(seed, dec.scale);
     return seed;
-};
+}
+
+std::size_t
+hash<hazelcast::client::local_time>::operator()(
+  const hazelcast::client::local_time& v) const
+{
+    std::size_t seed = 0;
+    boost::hash_combine(seed, v.hours);
+    boost::hash_combine(seed, v.minutes);
+    boost::hash_combine(seed, v.seconds);
+    boost::hash_combine(seed, v.nanos);
+    return seed;
+}
+
+std::size_t
+hash<hazelcast::client::local_date>::operator()(
+  const hazelcast::client::local_date& v) const
+{
+    std::size_t seed = 0;
+    boost::hash_combine(seed, v.year);
+    boost::hash_combine(seed, v.month);
+    boost::hash_combine(seed, v.day_of_month);
+    return seed;
+}
+
+std::size_t
+hash<hazelcast::client::local_date_time>::operator()(
+  const hazelcast::client::local_date_time& v) const
+{
+    std::size_t seed = 0;
+    boost::hash_combine<hazelcast::client::local_date>(seed, v.date);
+    boost::hash_combine<hazelcast::client::local_time>(seed, v.time);
+    return seed;
+}
+
+std::size_t
+hash<hazelcast::client::offset_date_time>::operator()(
+  const hazelcast::client::offset_date_time& v) const
+{
+    std::size_t seed = 0;
+    boost::hash_combine<hazelcast::client::local_date_time>(seed, v.date_time);
+    boost::hash_combine(seed, v.zone_offset_in_seconds);
+    return seed;
+}
 } // namespace std
