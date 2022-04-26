@@ -810,7 +810,7 @@ public:
      * Writes a boolean value.
      *
      * @param field_name name of the field.
-     * @param value     value to write.
+     * @param value to be written.
      */
     void write_boolean(const std::string& field_name, bool value);
 
@@ -818,7 +818,7 @@ public:
      * Writes an 8-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     value to write.
+     * @param value to be written.
      */
     void write_int8(const std::string& field_name, int8_t value);
 
@@ -826,7 +826,7 @@ public:
      *  Writes a 16-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     value to write.
+     * @param value to be written.
      */
     void write_int16(const std::string& field_name, int16_t value);
 
@@ -875,7 +875,7 @@ public:
      * Writes an arbitrary precision and scale floating point number.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_decimal(const std::string& field_name,
                        const boost::optional<big_decimal>& value);
@@ -884,7 +884,7 @@ public:
      *  Writes a time consisting of hour, minute, second, and nanoseconds.
      *
      *  @param field_name name of the field.
-     *  @param value     to be written.
+     *  @param value to be written.
      */
     void write_time(const std::string& field_name,
                     const boost::optional<local_time>& value);
@@ -893,7 +893,7 @@ public:
      * Writes a date consisting of year, month, and day.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_date(const std::string& field_name,
                     const boost::optional<local_date>& value);
@@ -902,7 +902,7 @@ public:
      * Writes a timestamp consisting of date and time.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_timestamp(const std::string& field_name,
                          const boost::optional<local_date_time>& value);
@@ -912,7 +912,7 @@ public:
      * offset.
      *
      * @param field_name name of the field.
-     * @param value     to be written.
+     * @param value to be written.
      */
     void write_timestamp_with_timezone(
       const std::string& field_name,
@@ -951,7 +951,7 @@ public:
      * Writes an array of 16-bit two's complement signed integers.
      *
      * @param field_name name of the field.
-     * @param value    to be written.
+     * @param value to be written.
      */
     void write_array_of_int16(
       const std::string& field_name,
@@ -961,7 +961,7 @@ public:
      * Writes an array of 32-bit two's complement signed integers.
      *
      * @param field_name name of the field.
-     * @param value   to be written.
+     * @param value to be written..
      */
     void write_array_of_int32(
       const std::string& field_name,

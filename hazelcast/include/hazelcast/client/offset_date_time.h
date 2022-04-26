@@ -15,8 +15,6 @@
 */
 #pragma once
 
-#include <vector>
-#include <boost/multiprecision/cpp_int.hpp>
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/local_date_time.h"
 

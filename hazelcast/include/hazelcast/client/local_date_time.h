@@ -15,8 +15,6 @@
 */
 #pragma once
 
-#include <vector>
-#include <boost/multiprecision/cpp_int.hpp>
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/local_date.h"
 #include "hazelcast/client/local_time.h"
@@ -30,7 +28,7 @@ namespace hazelcast {
 namespace client {
 
 /**
- * * A date-time without a time-zone in the ISO-8601 calendar system,
+ * A date-time without a time-zone in the ISO-8601 calendar system,
  * such as {@code 2007-12-03T10:15:30}.
  * <p>
  * {@code LocalDateTime} is an immutable date-time object that represents a
