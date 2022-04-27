@@ -24,11 +24,6 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/big_decimal.h"
-#include "hazelcast/client/local_time.h"
-#include "hazelcast/client/local_date.h"
-#include "hazelcast/client/local_date_time.h"
-#include "hazelcast/client/offset_date_time.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -705,26 +700,12 @@ private:
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type
-    read();
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<local_time, typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type
-    read();
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<local_date, typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type
-    read();
-    template<typename T>
-    typename std::enable_if<std::is_same<local_date_time, T>::value,
-                            typename boost::optional<T>>::type
-    read();
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
+      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date_time,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
@@ -1400,27 +1381,12 @@ private:
     write(const T& value);
     template<typename T>
     typename std::enable_if<
-      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
-      void>::type
-    write(const T& value);
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<local_time, typename std::remove_cv<T>::type>::value,
-      void>::type
-    write(const T& value);
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<local_date, typename std::remove_cv<T>::type>::value,
-      void>::type
-    write(const T& value);
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<local_date_time, typename std::remove_cv<T>::type>::value,
-      void>::type
-    write(const T& value);
-    template<typename T>
-    typename std::enable_if<
-      std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
+      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date_time,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
       void>::type
     write(const T& value);
     template<typename T>

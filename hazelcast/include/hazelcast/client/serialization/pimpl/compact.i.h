@@ -17,6 +17,7 @@
 
 #include "hazelcast/client/serialization/pimpl/compact.h"
 #include "hazelcast/util/finally.h"
+#include "hazelcast/util/IOUtil.h"
 #include <type_traits>
 
 namespace hazelcast {
@@ -222,86 +223,17 @@ compact_reader::read()
 
 template<typename T>
 typename std::enable_if<
-  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
+  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
   typename boost::optional<T>>::type
 compact_reader::read()
 {
-    int32_t size = object_data_input.read<int32_t>();
-    std::vector<int8_t> bytes(size);
-    object_data_input.read_fully(bytes);
-    auto cppInt = client::pimpl::from_bytes(std::move(bytes));
-    int32_t scale = object_data_input.read<int32_t>();
-    return boost::make_optional(big_decimal{ std::move(cppInt), scale });
+    return boost::make_optional<T>(pimpl::read<T>(object_data_input));
 }
 
-template<typename T>
-typename std::enable_if<
-  std::is_same<local_time, typename std::remove_cv<T>::type>::value,
-  typename boost::optional<T>>::type
-compact_reader::read()
-{
-    byte hour = object_data_input.read<byte>();
-    byte minute = object_data_input.read<byte>();
-    byte second = object_data_input.read<byte>();
-    int32_t nano = object_data_input.read<int32_t>();
-    client::local_time time{ hour, minute, second, nano };
-    return boost::make_optional(time);
-}
-
-template<typename T>
-typename std::enable_if<
-  std::is_same<client::local_date, typename std::remove_cv<T>::type>::value,
-  typename boost::optional<T>>::type
-compact_reader::read()
-{
-    int32_t year = object_data_input.read<int32_t>();
-    byte month = object_data_input.read<byte>();
-    byte dayOfMonth = object_data_input.read<byte>();
-    client::local_date date{ (short unsigned int)year, month, dayOfMonth };
-    return boost::make_optional(date);
-}
-
-template<typename T>
-typename std::enable_if<std::is_same<client::local_date_time, T>::value,
-                        typename boost::optional<T>>::type
-compact_reader::read()
-{
-    int32_t year = object_data_input.read<int32_t>();
-    byte month = object_data_input.read<byte>();
-    byte dayOfMonth = object_data_input.read<byte>();
-
-    byte hour = object_data_input.read<byte>();
-    byte minute = object_data_input.read<byte>();
-    byte second = object_data_input.read<byte>();
-    int32_t nano = object_data_input.read<int32_t>();
-
-    client::local_time time{ hour, minute, second, nano };
-    client::local_date date{ (short unsigned int)year, month, dayOfMonth };
-    client::local_date_time date_time{ date, time };
-    return boost::make_optional(date_time);
-}
-
-template<typename T>
-typename std::enable_if<std::is_same<client::offset_date_time,
-                                     typename std::remove_cv<T>::type>::value,
-                        typename boost::optional<T>>::type
-compact_reader::read()
-{
-    int32_t year = object_data_input.read<int32_t>();
-    byte month = object_data_input.read<byte>();
-    byte dayOfMonth = object_data_input.read<byte>();
-
-    byte hour = object_data_input.read<byte>();
-    byte minute = object_data_input.read<byte>();
-    byte second = object_data_input.read<byte>();
-    int32_t nano = object_data_input.read<int32_t>();
-    int32_t zoneTotalSeconds = object_data_input.read<int32_t>();
-    client::local_time time{ hour, minute, second, nano };
-    client::local_date date{ (short unsigned int)year, month, dayOfMonth };
-    client::local_date_time date_time{ date, time };
-    client::offset_date_time offset_date_time{ date_time, zoneTotalSeconds };
-    return boost::make_optional(offset_date_time);
-}
 template<typename T>
 boost::optional<T>
 compact_reader::read_array_of_primitive(
@@ -611,71 +543,15 @@ default_compact_writer::write(const T& value)
 
 template<typename T>
 typename std::enable_if<
-  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value,
+  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
   void>::type
 default_compact_writer::write(const T& value)
 {
-    auto v = hazelcast::client::pimpl::to_bytes(value.unscaled);
-    object_data_output_.write(v);
-    object_data_output_.write<int32_t>(value.scale);
-}
-
-template<typename T>
-typename std::enable_if<std::is_same<hazelcast::client::local_time,
-                                     typename std::remove_cv<T>::type>::value,
-                        void>::type
-default_compact_writer::write(const T& value)
-{
-    object_data_output_.write<byte>(value.hours);
-    object_data_output_.write<byte>(value.minutes);
-    object_data_output_.write<byte>(value.seconds);
-    object_data_output_.write<int32_t>(value.nanos);
-}
-
-template<typename T>
-typename std::enable_if<std::is_same<hazelcast::client::local_date,
-                                     typename std::remove_cv<T>::type>::value,
-                        void>::type
-default_compact_writer::write(const T& value)
-{
-    object_data_output_.write<int32_t>(value.year);
-    object_data_output_.write<byte>(value.month);
-    object_data_output_.write<byte>(value.day_of_month);
-}
-
-template<typename T>
-typename std::enable_if<std::is_same<hazelcast::client::local_date_time,
-                                     typename std::remove_cv<T>::type>::value,
-                        void>::type
-default_compact_writer::write(const T& value)
-{
-    const hazelcast::client::local_date& date = value.date;
-    object_data_output_.write<int32_t>(date.year);
-    object_data_output_.write<byte>(date.month);
-    object_data_output_.write<byte>(date.day_of_month);
-    const hazelcast::client::local_time& time = value.time;
-    object_data_output_.write<byte>(time.hours);
-    object_data_output_.write<byte>(time.minutes);
-    object_data_output_.write<byte>(time.seconds);
-    object_data_output_.write<int32_t>(time.nanos);
-}
-
-template<typename T>
-typename std::enable_if<std::is_same<hazelcast::client::offset_date_time,
-                                     typename std::remove_cv<T>::type>::value,
-                        void>::type
-default_compact_writer::write(const T& value)
-{
-    const hazelcast::client::local_date& date = value.date_time.date;
-    object_data_output_.write<int32_t>(date.year);
-    object_data_output_.write<byte>(date.month);
-    object_data_output_.write<byte>(date.day_of_month);
-    const hazelcast::client::local_time& time = value.date_time.time;
-    object_data_output_.write<byte>(time.hours);
-    object_data_output_.write<byte>(time.minutes);
-    object_data_output_.write<byte>(time.seconds);
-    object_data_output_.write<int32_t>(time.nanos);
-    object_data_output_.write<int32_t>(value.zone_offset_in_seconds);
+    pimpl::write(object_data_output_, value);
 }
 
 template<typename T>
