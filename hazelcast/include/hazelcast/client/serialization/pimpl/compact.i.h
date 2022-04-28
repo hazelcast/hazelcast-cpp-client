@@ -231,7 +231,8 @@ typename std::enable_if<
   typename boost::optional<T>>::type
 compact_reader::read()
 {
-    return boost::make_optional<T>(pimpl::read<T>(object_data_input));
+    return boost::make_optional<T>(
+      pimpl::serialization_util::read<T>(object_data_input));
 }
 
 template<typename T>
@@ -551,7 +552,7 @@ typename std::enable_if<
   void>::type
 default_compact_writer::write(const T& value)
 {
-    pimpl::write(object_data_output_, value);
+    pimpl::serialization_util::write(object_data_output_, value);
 }
 
 template<typename T>
