@@ -66,6 +66,14 @@ public:
         pos_ += length;
     }
 
+    inline void read_fully(std::vector<int8_t>& bytes)
+    {
+        size_t length = bytes.size();
+        check_available(length);
+        memcpy(&(bytes[0]), &(buffer_[pos_]), length);
+        pos_ += length;
+    }
+
     inline int skip_bytes(int i)
     {
         check_available(i);

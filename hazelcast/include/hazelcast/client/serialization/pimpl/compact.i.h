@@ -17,6 +17,7 @@
 
 #include "hazelcast/client/serialization/pimpl/compact.h"
 #include "hazelcast/util/finally.h"
+#include "hazelcast/util/IOUtil.h"
 #include <type_traits>
 
 namespace hazelcast {
@@ -218,6 +219,20 @@ compact_reader::read()
         index++;
     }
     return values;
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
+  typename boost::optional<T>>::type
+compact_reader::read()
+{
+    return boost::make_optional<T>(
+      pimpl::serialization_util::read<T>(object_data_input));
 }
 
 template<typename T>
@@ -525,6 +540,19 @@ default_compact_writer::write(const T& value)
             index++;
         }
     }
+}
+
+template<typename T>
+typename std::enable_if<
+  std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+    std::is_same<local_date_time, typename std::remove_cv<T>::type>::value ||
+    std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
+  void>::type
+default_compact_writer::write(const T& value)
+{
+    pimpl::serialization_util::write(object_data_output_, value);
 }
 
 template<typename T>

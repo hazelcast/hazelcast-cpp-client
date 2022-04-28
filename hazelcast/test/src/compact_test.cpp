@@ -25,7 +25,6 @@
 #endif
 
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/client/big_decimal.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -97,6 +96,13 @@ struct inner_dto
     boost::optional<std::vector<double>> doubles;
     boost::optional<std::vector<boost::optional<std::string>>> strings;
     boost::optional<std::vector<boost::optional<named_dto>>> nn;
+    boost::optional<std::vector<boost::optional<big_decimal>>> bigDecimals;
+    boost::optional<std::vector<boost::optional<local_time>>> localTimes;
+    boost::optional<std::vector<boost::optional<local_date>>> localDates;
+    boost::optional<std::vector<boost::optional<local_date_time>>>
+      localDateTimes;
+    boost::optional<std::vector<boost::optional<offset_date_time>>>
+      offsetDateTimes;
     boost::optional<std::vector<boost::optional<bool>>> nullableBools;
     boost::optional<std::vector<boost::optional<int8_t>>> nullableBytes;
     boost::optional<std::vector<boost::optional<int16_t>>> nullableShorts;
@@ -112,7 +118,12 @@ operator==(const inner_dto& lhs, const inner_dto& rhs)
            lhs.shorts == rhs.shorts && lhs.ints == rhs.ints &&
            lhs.longs == rhs.longs && lhs.floats == rhs.floats &&
            lhs.doubles == rhs.doubles && lhs.strings == rhs.strings &&
-           lhs.nn == rhs.nn && lhs.nullableBools == rhs.nullableBools &&
+           lhs.nn == rhs.nn && lhs.bigDecimals == rhs.bigDecimals &&
+           lhs.localTimes == rhs.localTimes &&
+           lhs.localDates == rhs.localDates &&
+           lhs.localDateTimes == rhs.localDateTimes &&
+           lhs.offsetDateTimes == rhs.offsetDateTimes &&
+           lhs.nullableBools == rhs.nullableBools &&
            lhs.nullableBytes == rhs.nullableBytes &&
            lhs.nullableShorts == rhs.nullableShorts &&
            lhs.nullableInts == rhs.nullableInts &&
@@ -132,13 +143,18 @@ struct main_dto
     double d;
     std::string str;
     boost::optional<inner_dto> p;
-    boost::optional<bool> nullable_bool;
-    boost::optional<int8_t> nullable_b;
-    boost::optional<int16_t> nullable_s;
-    boost::optional<int32_t> nullable_i;
-    boost::optional<int64_t> nullable_l;
-    boost::optional<float> nullable_f;
-    boost::optional<double> nullable_d;
+    boost::optional<hazelcast::client::big_decimal> bigDecimal;
+    boost::optional<hazelcast::client::local_time> localTime;
+    boost::optional<hazelcast::client::local_date> localDate;
+    boost::optional<hazelcast::client::local_date_time> localDateTime;
+    boost::optional<hazelcast::client::offset_date_time> offsetDateTime;
+    boost::optional<bool> nullableBool;
+    boost::optional<int8_t> nullableB;
+    boost::optional<int16_t> nullableS;
+    boost::optional<int32_t> nullableI;
+    boost::optional<int64_t> nullableL;
+    boost::optional<float> nullableF;
+    boost::optional<double> nullableD;
 };
 
 bool
@@ -147,12 +163,46 @@ operator==(const main_dto& lhs, const main_dto& rhs)
     return lhs.boolean == rhs.boolean && lhs.b == rhs.b && lhs.s == rhs.s &&
            lhs.i == rhs.i && lhs.l == rhs.l && lhs.f == rhs.f &&
            lhs.d == rhs.d && lhs.str == rhs.str && lhs.p == rhs.p &&
-           lhs.nullable_bool == rhs.nullable_bool &&
-           lhs.nullable_b == rhs.nullable_b &&
-           lhs.nullable_s == rhs.nullable_s &&
-           lhs.nullable_i == rhs.nullable_i &&
-           lhs.nullable_l == rhs.nullable_l &&
-           lhs.nullable_f == rhs.nullable_f && lhs.nullable_d == rhs.nullable_d;
+           lhs.bigDecimal == rhs.bigDecimal && lhs.localTime == rhs.localTime &&
+           lhs.localDate == rhs.localDate &&
+           lhs.localDateTime == rhs.localDateTime &&
+           lhs.offsetDateTime == rhs.offsetDateTime &&
+           lhs.nullableBool == rhs.nullableBool &&
+           lhs.nullableB == rhs.nullableB && lhs.nullableS == rhs.nullableS &&
+           lhs.nullableI == rhs.nullableI && lhs.nullableL == rhs.nullableL &&
+           lhs.nullableF == rhs.nullableF && lhs.nullableD == rhs.nullableD;
+}
+
+hazelcast::client::local_time
+current_time()
+{
+    std::time_t t = std::time(nullptr); // get time now
+    std::tm* now = std::localtime(&t);
+    return hazelcast::client::local_time{ static_cast<uint8_t>(now->tm_hour),
+                                          static_cast<uint8_t>(now->tm_min),
+                                          static_cast<uint8_t>(now->tm_sec),
+                                          0 };
+}
+
+hazelcast::client::local_date
+current_date()
+{
+    std::time_t t = std::time(nullptr); // get time now
+    std::tm* now = std::localtime(&t);
+    return hazelcast::client::local_date{ now->tm_year + 1900,
+                                          static_cast<uint8_t>(now->tm_mon),
+                                          static_cast<uint8_t>(now->tm_mday) };
+}
+
+hazelcast::client::local_date_time
+current_timestamp()
+{
+    return hazelcast::client::local_date_time{ current_date(), current_time() };
+}
+hazelcast::client::offset_date_time
+current_timestamp_with_timezone()
+{
+    return hazelcast::client::offset_date_time{ current_timestamp(), 3600 };
 }
 
 inner_dto
@@ -170,9 +220,67 @@ create_inner_dto()
         boost::make_optional<std::vector<boost::optional<std::string>>>(
           { boost::make_optional<std::string>("test"), boost::none }),
         boost::make_optional<std::vector<boost::optional<named_dto>>>(
-          { boost::make_optional<named_dto>(
+          { boost::make_optional(
               named_dto{ boost::make_optional<std::string>("test"), 1 }),
-            boost::none })
+            boost::none }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::big_decimal>>>(
+          { boost::make_optional(hazelcast::client::big_decimal{
+              boost::multiprecision::cpp_int{ "12345" }, 0 }),
+            boost::make_optional(hazelcast::client::big_decimal{
+              boost::multiprecision::cpp_int{ "123456" }, 0 }) }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::local_time>>>(
+          { boost::make_optional(current_time()),
+            boost::none,
+            boost::make_optional(current_time()) }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::local_date>>>(
+          { boost::make_optional(current_date()),
+            boost::none,
+            boost::make_optional(current_date()) }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::local_date_time>>>(
+          { boost::make_optional(current_timestamp()), boost::none }),
+        boost::make_optional<
+          std::vector<boost::optional<hazelcast::client::offset_date_time>>>(
+          { boost::make_optional(current_timestamp_with_timezone()) }),
+        boost::make_optional<std::vector<boost::optional<bool>>>(
+          { boost::make_optional(true),
+            boost::make_optional(false),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int8_t>>>(
+          { boost::make_optional<int8_t>(0),
+            boost::make_optional<int8_t>(1),
+            boost::make_optional<int8_t>(2),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int16_t>>>(
+          { boost::make_optional<int16_t>(3),
+            boost::make_optional<int16_t>(4),
+            boost::make_optional<int16_t>(5),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int32_t>>>(
+          { boost::make_optional<int32_t>(9),
+            boost::make_optional<int32_t>(8),
+            boost::make_optional<int32_t>(7),
+            boost::make_optional<int32_t>(6),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<int64_t>>>(
+          { boost::make_optional<int64_t>(0),
+            boost::make_optional<int64_t>(1),
+            boost::make_optional<int64_t>(5),
+            boost::make_optional<int64_t>(7),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<float>>>(
+          { boost::make_optional(0.6543f),
+            boost::make_optional(-3.56f),
+            boost::make_optional(45.67f),
+            boost::none }),
+        boost::make_optional<std::vector<boost::optional<double>>>(
+          { boost::make_optional(456.456),
+            boost::make_optional(789.789),
+            boost::make_optional(321.321),
+            boost::none }),
     };
 }
 main_dto
@@ -188,6 +296,18 @@ create_main_dto()
                      -897543.3678909,
                      "this is main object created for testing!",
                      p,
+                     hazelcast::client::big_decimal{
+                       boost::multiprecision::cpp_int{ "12312313" }, 0 },
+                     hazelcast::client::local_time{ 1, 2, 3, 4 },
+                     hazelcast::client::local_date{ 2015, 12, 31 },
+                     hazelcast::client::local_date_time{
+                       hazelcast::client::local_date{ 2015, 12, 31 },
+                       hazelcast::client::local_time{ 1, 2, 3, 4 } },
+                     hazelcast::client::offset_date_time{
+                       hazelcast::client::local_date_time{
+                         hazelcast::client::local_date{ 2015, 12, 31 },
+                         hazelcast::client::local_time{ 1, 2, 3, 4 } },
+                       100 },
                      true,
                      113,
                      (short)-500,
@@ -299,6 +419,13 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         writer.write_array_of_float32("floats", object.floats);
         writer.write_array_of_float64("doubles", object.doubles);
         writer.write_array_of_string("strings", object.strings);
+        writer.write_array_of_decimal("bigDecimals", object.bigDecimals);
+        writer.write_array_of_time("localTimes", object.localTimes);
+        writer.write_array_of_date("localDates", object.localDates);
+        writer.write_array_of_timestamp("localDateTimes",
+                                        object.localDateTimes);
+        writer.write_array_of_timestamp_with_timezone("offsetDateTimes",
+                                                      object.offsetDateTimes);
         writer.write_array_of_compact("nn", object.nn);
         writer.write_array_of_nullable_boolean("nullableBools",
                                                object.nullableBools);
@@ -327,6 +454,13 @@ struct hz_serializer<compact::test::inner_dto> : public compact_serializer
         object.floats = reader.read_array_of_float32("floats");
         object.doubles = reader.read_array_of_float64("doubles");
         object.strings = reader.read_array_of_string("strings");
+        object.bigDecimals = reader.read_array_of_decimal("bigDecimals");
+        object.localTimes = reader.read_array_of_time("localTimes");
+        object.localDates = reader.read_array_of_date("localDates");
+        object.localDateTimes =
+          reader.read_array_of_timestamp("localDateTimes");
+        object.offsetDateTimes =
+          reader.read_array_of_timestamp_with_timezone("offsetDateTimes");
         object.nn =
           reader.read_array_of_compact<compact::test::named_dto>("nn");
         object.nullableBools =
@@ -362,15 +496,21 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         writer.write_int64("l", object.l);
         writer.write_float32("f", object.f);
         writer.write_float64("d", object.d);
-        writer.write_string("name", object.str);
+        writer.write_string("str", object.str);
+        writer.write_decimal("bigDecimal", object.bigDecimal);
+        writer.write_time("localTime", object.localTime);
+        writer.write_date("localDate", object.localDate);
+        writer.write_timestamp("localDateTime", object.localDateTime);
+        writer.write_timestamp_with_timezone("offsetDateTime",
+                                             object.offsetDateTime);
         writer.write_compact<compact::test::inner_dto>("p", object.p);
-        writer.write_nullable_boolean("nullable_bool", object.nullable_bool);
-        writer.write_nullable_int8("nullable_b", object.nullable_b);
-        writer.write_nullable_int16("nullable_s", object.nullable_s);
-        writer.write_nullable_int32("nullable_i", object.nullable_i);
-        writer.write_nullable_int64("nullable_l", object.nullable_l);
-        writer.write_nullable_float32("nullable_f", object.nullable_f);
-        writer.write_nullable_float64("nullable_d", object.nullable_d);
+        writer.write_nullable_boolean("nullableBool", object.nullableBool);
+        writer.write_nullable_int8("nullableB", object.nullableB);
+        writer.write_nullable_int16("nullableS", object.nullableS);
+        writer.write_nullable_int32("nullableI", object.nullableI);
+        writer.write_nullable_int64("nullableL", object.nullableL);
+        writer.write_nullable_float32("nullableF", object.nullableF);
+        writer.write_nullable_float64("nullableD", object.nullableD);
     }
 
     static compact::test::main_dto read(compact_reader& reader)
@@ -382,21 +522,42 @@ struct hz_serializer<compact::test::main_dto> : public compact_serializer
         auto l = reader.read_int64("l");
         auto f = reader.read_float32("f");
         auto d = reader.read_float64("d");
-        auto str = reader.read_string("name");
+        auto str = reader.read_string("str");
+        auto bigDecimal = reader.read_decimal("bigDecimal");
+        auto localTime = reader.read_time("localTime");
+        auto localDate = reader.read_date("localDate");
+        auto localDateTime = reader.read_timestamp("localDateTime");
+        auto offsetDateTime =
+          reader.read_timestamp_with_timezone("offsetDateTime");
         auto p = reader.read_compact<compact::test::inner_dto>("p");
-        auto nullable_bool = reader.read_nullable_boolean("nullable_bool");
-        auto nullable_b = reader.read_nullable_int8("nullable_b");
-        auto nullable_s = reader.read_nullable_int16("nullable_s");
-        auto nullable_i = reader.read_nullable_int32("nullable_i");
-        auto nullable_l = reader.read_nullable_int64("nullable_l");
-        auto nullable_f = reader.read_nullable_float32("nullable_f");
-        auto nullable_d = reader.read_nullable_float64("nullable_d");
-        return compact::test::main_dto{
-            boolean,    b,          s,          i,          l,
-            f,          d,          *str,       p,          nullable_bool,
-            nullable_b, nullable_s, nullable_i, nullable_l, nullable_f,
-            nullable_d
-        };
+        auto nullableBool = reader.read_nullable_boolean("nullableBool");
+        auto nullableB = reader.read_nullable_int8("nullableB");
+        auto nullableS = reader.read_nullable_int16("nullableS");
+        auto nullableI = reader.read_nullable_int32("nullableI");
+        auto nullableL = reader.read_nullable_int64("nullableL");
+        auto nullableF = reader.read_nullable_float32("nullableF");
+        auto nullableD = reader.read_nullable_float64("nullableD");
+        return compact::test::main_dto{ boolean,
+                                        b,
+                                        s,
+                                        i,
+                                        l,
+                                        f,
+                                        d,
+                                        *str,
+                                        p,
+                                        bigDecimal,
+                                        localTime,
+                                        localDate,
+                                        localDateTime,
+                                        offsetDateTime,
+                                        nullableBool,
+                                        nullableB,
+                                        nullableS,
+                                        nullableI,
+                                        nullableL,
+                                        nullableF,
+                                        nullableD };
     }
 
     static std::string type_name() { return "main"; }
@@ -568,22 +729,9 @@ TEST_F(CompactSerializationTest, test_schema_writer_counts)
 
 TEST_F(CompactSerializationTest, test_rabin_fingerprint_consistent_with_server)
 {
-    //    // TODO sancar rewrite as following when all types are implemented
-    //    schema_writer schema_writer("typename");
-    //    serialization::compact_writer writer =
-    //    create_compact_writer(&schema_writer);
-    //    serialization::hz_serializer<main_dto>::write(create_main_dto(),
-    //    writer); auto schema = std::move(schema_writer).build();
-    //    This magic number is generated via Java code for exact same class.
-    //    ASSERT_EQ(814479248787788739L, schema.schema_id());
-
-    schema_writer schema_writer("typeName");
-    schema_writer.add_field("a", field_kind::BOOLEAN);
-    schema_writer.add_field("b", field_kind::ARRAY_OF_BOOLEAN);
-    schema_writer.add_field("c", field_kind::TIMESTAMP_WITH_TIMEZONE);
-    auto schema = std::move(schema_writer).build();
+    const auto& schema = schema_of<main_dto>::schema_v;
     // This magic number is generated via Java code for exact same class.
-    ASSERT_EQ(-2132873845851116364, schema.schema_id());
+    ASSERT_EQ(814479248787788739L, schema.schema_id());
 }
 
 struct primitive_object

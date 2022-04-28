@@ -32,6 +32,11 @@
 #include "hazelcast/client/partition_aware.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Disposable.h"
+#include "hazelcast/client/big_decimal.h"
+#include "hazelcast/client/local_time.h"
+#include "hazelcast/client/local_date.h"
+#include "hazelcast/client/local_date_time.h"
+#include "hazelcast/client/offset_date_time.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -929,6 +934,157 @@ void HAZELCAST_API
 object_data_output::write_object(const char* object);
 
 namespace pimpl {
+class HAZELCAST_API serialization_util
+{
+public:
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<boost::multiprecision::cpp_int,
+                   typename std::remove_cv<T>::type>::value,
+      T>::type
+    read(client::serialization::object_data_input& object_data_input)
+    {
+        int32_t size = object_data_input.read<int32_t>();
+        std::vector<int8_t> bytes(size);
+        object_data_input.read_fully(bytes);
+        return client::pimpl::from_bytes(std::move(bytes));
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<boost::multiprecision::cpp_int,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(client::serialization::object_data_output& object_data_output,
+          const T& value)
+    {
+        auto v = hazelcast::client::pimpl::to_bytes(value);
+        object_data_output.write(v);
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::big_decimal,
+                   typename std::remove_cv<T>::type>::value,
+      T>::type
+    read(client::serialization::object_data_input& object_data_input)
+    {
+        auto cpp_int = read<boost::multiprecision::cpp_int>(object_data_input);
+        int32_t scale = object_data_input.read<int32_t>();
+        return client::big_decimal{ std::move(cpp_int), scale };
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::big_decimal,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(client::serialization::object_data_output& object_data_output,
+          const T& value)
+    {
+        write(object_data_output, value.unscaled);
+        object_data_output.write(value.scale);
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::local_time, typename std::remove_cv<T>::type>::value,
+      T>::type
+    read(client::serialization::object_data_input& object_data_input)
+    {
+        byte hour = object_data_input.read<byte>();
+        byte minute = object_data_input.read<byte>();
+        byte second = object_data_input.read<byte>();
+        int32_t nano = object_data_input.read<int32_t>();
+        return client::local_time{ hour, minute, second, nano };
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::local_time, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(client::serialization::object_data_output& object_data_output,
+          const T& value)
+    {
+        object_data_output.write<byte>(value.hours);
+        object_data_output.write<byte>(value.minutes);
+        object_data_output.write<byte>(value.seconds);
+        object_data_output.write<int32_t>(value.nanos);
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::local_date, typename std::remove_cv<T>::type>::value,
+      T>::type
+    read(client::serialization::object_data_input& object_data_input)
+    {
+        int32_t year = object_data_input.read<int32_t>();
+        byte month = object_data_input.read<byte>();
+        byte dayOfMonth = object_data_input.read<byte>();
+        return client::local_date{ year, month, dayOfMonth };
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::local_date, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(client::serialization::object_data_output& object_data_output,
+          const T& value)
+    {
+        object_data_output.write<int32_t>(value.year);
+        object_data_output.write<byte>(value.month);
+        object_data_output.write<byte>(value.day_of_month);
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::local_date_time,
+                   typename std::remove_cv<T>::type>::value,
+      T>::type
+    read(client::serialization::object_data_input& object_data_input)
+    {
+        auto date = read<client::local_date>(object_data_input);
+        auto time = read<client::local_time>(object_data_input);
+        return client::local_date_time{ date, time };
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::local_date_time,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(client::serialization::object_data_output& object_data_output,
+          const T& value)
+    {
+        write(object_data_output, value.date);
+        write(object_data_output, value.time);
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::offset_date_time,
+                   typename std::remove_cv<T>::type>::value,
+      T>::type
+    read(client::serialization::object_data_input& object_data_input)
+    {
+        auto local_date_time = read<client::local_date_time>(object_data_input);
+        int32_t zoneTotalSeconds = object_data_input.read<int32_t>();
+        return client::offset_date_time{ local_date_time, zoneTotalSeconds };
+    }
+
+    template<typename T>
+    static typename std::enable_if<
+      std::is_same<client::offset_date_time,
+                   typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(client::serialization::object_data_output& object_data_output,
+          const T& value)
+    {
+        write(object_data_output, value.date_time);
+        object_data_output.write<int32_t>(value.zone_offset_in_seconds);
+    }
+};
+
 class HAZELCAST_API PortableContext
 {
 public:

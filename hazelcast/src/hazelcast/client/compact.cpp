@@ -112,6 +112,67 @@ compact_writer::write_string(const std::string& field_name,
 }
 
 void
+compact_writer::write_decimal(const std::string& field_name,
+                              const boost::optional<big_decimal>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_decimal(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::DECIMAL);
+    }
+}
+
+void
+compact_writer::write_time(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::local_time>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_time(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::TIME);
+    }
+}
+
+void
+compact_writer::write_date(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::local_date>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_date(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::DATE);
+    }
+}
+
+void
+compact_writer::write_timestamp(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::local_date_time>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_timestamp(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::TIMESTAMP);
+    }
+}
+
+void
+compact_writer::write_timestamp_with_timezone(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::offset_date_time>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_timestamp_with_timezone(field_name,
+                                                              value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
+    }
+}
+
+void
 compact_writer::write_array_of_boolean(
   const std::string& field_name,
   const boost::optional<std::vector<bool>>& value)
@@ -208,6 +269,70 @@ compact_writer::write_array_of_string(
     } else {
         schema_writer->add_field(field_name,
                                  pimpl::field_kind::ARRAY_OF_STRING);
+    }
+}
+
+void
+compact_writer::write_array_of_decimal(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<big_decimal>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_decimal(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_DECIMAL);
+    }
+}
+
+void
+compact_writer::write_array_of_time(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<local_time>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_time(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_TIME);
+    }
+}
+
+void
+compact_writer::write_array_of_date(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<local_date>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_date(field_name, value);
+    } else {
+        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_DATE);
+    }
+}
+
+void
+compact_writer::write_array_of_timestamp(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<local_date_time>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_timestamp(field_name, value);
+    } else {
+        schema_writer->add_field(field_name,
+                                 pimpl::field_kind::ARRAY_OF_TIMESTAMP);
+    }
+}
+
+void
+compact_writer::write_array_of_timestamp_with_timezone(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<offset_date_time>>>& value)
+{
+    if (default_compact_writer != nullptr) {
+        default_compact_writer->write_array_of_timestamp_with_timezone(
+          field_name, value);
+    } else {
+        schema_writer->add_field(
+          field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
     }
 }
 
@@ -632,6 +757,40 @@ compact_reader::read_string(const std::string& field_name)
                                            pimpl::field_kind::STRING);
 }
 
+boost::optional<big_decimal>
+compact_reader::read_decimal(const std::string& field_name)
+{
+    return read_variable_size<big_decimal>(field_name, pimpl::field_kind::DECIMAL);
+}
+
+boost::optional<hazelcast::client::local_time>
+compact_reader::read_time(const std::string& field_name)
+{
+    return read_variable_size<hazelcast::client::local_time>(
+      field_name, pimpl::field_kind::TIME);
+}
+
+boost::optional<hazelcast::client::local_date>
+compact_reader::read_date(const std::string& field_name)
+{
+    return read_variable_size<hazelcast::client::local_date>(
+      field_name, pimpl::field_kind::DATE);
+}
+
+boost::optional<hazelcast::client::local_date_time>
+compact_reader::read_timestamp(const std::string& field_name)
+{
+    return read_variable_size<hazelcast::client::local_date_time>(
+      field_name, pimpl::field_kind::TIMESTAMP);
+}
+
+boost::optional<hazelcast::client::offset_date_time>
+compact_reader::read_timestamp_with_timezone(const std::string& field_name)
+{
+    return read_variable_size<hazelcast::client::offset_date_time>(
+      field_name, pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
+}
+
 boost::optional<std::vector<bool>>
 compact_reader::read_array_of_boolean(const std::string& field_name)
 {
@@ -707,6 +866,47 @@ compact_reader::read_array_of_string(const std::string& field_name)
     const auto& descriptor =
       get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_STRING);
     return read_array_of_variable_size<std::string>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<big_decimal>>>
+compact_reader::read_array_of_decimal(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_DECIMAL);
+    return read_array_of_variable_size<big_decimal>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<local_time>>>
+compact_reader::read_array_of_time(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_TIME);
+    return read_array_of_variable_size<local_time>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<local_date>>>
+compact_reader::read_array_of_date(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_DATE);
+    return read_array_of_variable_size<local_date>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<local_date_time>>>
+compact_reader::read_array_of_timestamp(const std::string& field_name)
+{
+    const auto& descriptor =
+      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP);
+    return read_array_of_variable_size<local_date_time>(descriptor);
+}
+
+boost::optional<std::vector<boost::optional<offset_date_time>>>
+compact_reader::read_array_of_timestamp_with_timezone(
+  const std::string& field_name)
+{
+    const auto& descriptor = get_field_descriptor(
+      field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
+    return read_array_of_variable_size<offset_date_time>(descriptor);
 }
 
 boost::optional<bool>
@@ -926,6 +1126,45 @@ default_compact_writer::write_string(const std::string& field_name,
 }
 
 void
+default_compact_writer::write_decimal(const std::string& field_name,
+                                      const boost::optional<big_decimal>& value)
+{
+    write_variable_size_field(field_name, field_kind::DECIMAL, value);
+}
+
+void
+default_compact_writer::write_time(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::local_time>& value)
+{
+    write_variable_size_field(field_name, field_kind::TIME, value);
+}
+void
+default_compact_writer::write_date(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::local_date>& value)
+{
+    write_variable_size_field(field_name, field_kind::DATE, value);
+}
+
+void
+default_compact_writer::write_timestamp(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::local_date_time>& value)
+{
+    write_variable_size_field(field_name, field_kind::TIMESTAMP, value);
+}
+
+void
+default_compact_writer::write_timestamp_with_timezone(
+  const std::string& field_name,
+  const boost::optional<hazelcast::client::offset_date_time>& value)
+{
+    write_variable_size_field(
+      field_name, field_kind::TIMESTAMP_WITH_TIMEZONE, value);
+}
+
+void
 default_compact_writer::write_array_of_boolean(
   const std::string& field_name,
   const boost::optional<std::vector<bool>>& value)
@@ -988,6 +1227,49 @@ default_compact_writer::write_array_of_string(
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_STRING, value);
+}
+
+void
+default_compact_writer::write_array_of_decimal(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<big_decimal>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_DECIMAL, value);
+}
+
+void
+default_compact_writer::write_array_of_time(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<local_time>>>& value)
+{
+    write_array_of_variable_size(field_name, field_kind::ARRAY_OF_TIME, value);
+}
+
+void
+default_compact_writer::write_array_of_date(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<local_date>>>& value)
+{
+    write_array_of_variable_size(field_name, field_kind::ARRAY_OF_DATE, value);
+}
+
+void
+default_compact_writer::write_array_of_timestamp(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<local_date_time>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_TIMESTAMP, value);
+}
+
+void
+default_compact_writer::write_array_of_timestamp_with_timezone(
+  const std::string& field_name,
+  const boost::optional<std::vector<boost::optional<offset_date_time>>>& value)
+{
+    write_array_of_variable_size(
+      field_name, field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE, value);
 }
 
 void

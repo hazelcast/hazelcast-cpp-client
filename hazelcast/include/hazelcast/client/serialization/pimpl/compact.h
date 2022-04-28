@@ -48,7 +48,7 @@ create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
   const pimpl::schema& schema);
-class field_descriptor;
+struct field_descriptor;
 enum HAZELCAST_API field_kind
 {
     BOOLEAN = 0,
@@ -73,6 +73,8 @@ enum HAZELCAST_API field_kind
     ARRAY_OF_TIME = 21,
     DATE = 22,
     ARRAY_OF_DATE = 23,
+    TIMESTAMP = 24,
+    ARRAY_OF_TIMESTAMP = 25,
     TIMESTAMP_WITH_TIMEZONE = 26,
     ARRAY_OF_TIMESTAMP_WITH_TIMEZONE = 27,
     COMPACT = 28,
@@ -213,6 +215,64 @@ public:
     boost::optional<std::string> read_string(const std::string& field_name);
 
     /**
+     * Reads an arbitrary precision and scale floating point number.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<big_decimal> read_decimal(const std::string& field_name);
+
+    /**
+     * Reads a time consisting of hour, minute, second, and nano seconds.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<local_time> read_time(const std::string& field_name);
+
+    /**
+     * Reads a date consisting of year, month, and day.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<local_date> read_date(const std::string& field_name);
+
+    /**
+     * Reads a timestamp consisting of date and time.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<local_date_time> read_timestamp(
+      const std::string& field_name);
+
+    /**
+     * Reads a timestamp with timezone consisting of date, time and timezone
+     * offset.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<offset_date_time> read_timestamp_with_timezone(
+      const std::string& field_name);
+
+    /**
      * Reads a compact object
      *
      * @param field_name name of the field.
@@ -319,6 +379,68 @@ public:
      */
     boost::optional<std::vector<boost::optional<std::string>>>
     read_array_of_string(const std::string& field_name);
+
+    /**
+     * Reads an array of arbitrary precision and scale floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<big_decimal>>>
+    read_array_of_decimal(const std::string& field_name);
+
+    /**
+     * Reads an array of times consisting of hour, minute, second, and
+     * nanoseconds.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<local_time>>>
+    read_array_of_time(const std::string& field_name);
+
+    /**
+     * Reads an array of dates consisting of year, month, and day.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<local_date>>>
+    read_array_of_date(const std::string& field_name);
+
+    /**
+     * Reads an array of timestamps consisting of date and time.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<local_date_time>>>
+    read_array_of_timestamp(const std::string& field_name);
+
+    /**
+     * Reads an array of timestamps with timezone consisting of date, time and
+     * timezone offset.
+     *
+     * @param field_name name of the field.
+     * @return the value of the field.
+     * @throws hazelcast_serialization if the field does not exist in the
+     * schema or the type of the field does not match with the one defined
+     * in the schema.
+     */
+    boost::optional<std::vector<boost::optional<offset_date_time>>>
+    read_array_of_timestamp_with_timezone(const std::string& field_name);
 
     /**
      * Reads an array of compact objects.
@@ -577,6 +699,16 @@ private:
       typename boost::optional<T>>::type
     read();
     template<typename T>
+    typename std::enable_if<
+      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date_time,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
     boost::optional<T> read_array_of_primitive(
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
@@ -659,7 +791,7 @@ public:
      * Writes a boolean value.
      *
      * @param field_name name of the field.
-     * @param value     value to write.
+     * @param value to be written.
      */
     void write_boolean(const std::string& field_name, bool value);
 
@@ -667,7 +799,7 @@ public:
      * Writes an 8-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     value to write.
+     * @param value to be written.
      */
     void write_int8(const std::string& field_name, int8_t value);
 
@@ -675,7 +807,7 @@ public:
      *  Writes a 16-bit two's complement signed integer.
      *
      * @param field_name name of the field.
-     * @param value     value to write.
+     * @param value to be written.
      */
     void write_int16(const std::string& field_name, int16_t value);
 
@@ -721,6 +853,53 @@ public:
                       const boost::optional<std::string>& value);
 
     /**
+     * Writes an arbitrary precision and scale floating point number.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_decimal(const std::string& field_name,
+                       const boost::optional<big_decimal>& value);
+
+    /**
+     *  Writes a time consisting of hour, minute, second, and nanoseconds.
+     *
+     *  @param field_name name of the field.
+     *  @param value to be written.
+     */
+    void write_time(const std::string& field_name,
+                    const boost::optional<local_time>& value);
+
+    /**
+     * Writes a date consisting of year, month, and day.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_date(const std::string& field_name,
+                    const boost::optional<local_date>& value);
+
+    /**
+     * Writes a timestamp consisting of date and time.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_timestamp(const std::string& field_name,
+                         const boost::optional<local_date_time>& value);
+
+    /**
+     * Writes a timestamp with timezone consisting of date, time and timezone
+     * offset.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<offset_date_time>& value);
+
+    /**
      * Writes a nested compact object.
      *
      * @param field_name name of the field.
@@ -753,7 +932,7 @@ public:
      * Writes an array of 16-bit two's complement signed integers.
      *
      * @param field_name name of the field.
-     * @param value    to be written.
+     * @param value to be written.
      */
     void write_array_of_int16(
       const std::string& field_name,
@@ -763,7 +942,7 @@ public:
      * Writes an array of 32-bit two's complement signed integers.
      *
      * @param field_name name of the field.
-     * @param value   to be written.
+     * @param value to be written.
      */
     void write_array_of_int32(
       const std::string& field_name,
@@ -808,6 +987,60 @@ public:
     void write_array_of_string(
       const std::string& field_name,
       const boost::optional<std::vector<boost::optional<std::string>>>& value);
+
+    /**
+     * Writes an array of arbitrary precision and scale floating point numbers.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_decimal(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<big_decimal>>>& value);
+
+    /**
+     * Writes an array of times consisting of hour, minute, second, and nano
+     * seconds.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_time(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_time>>>& value);
+
+    /**
+     * Writes an array of dates consisting of year, month, and day.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_date(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date>>>& value);
+
+    /**
+     * Writes an array of timestamps consisting of date and time.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_timestamp(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date_time>>>&
+        value);
+
+    /**
+     * Writes an array of timestamps with timezone consisting of date, time and
+     * timezone offset.
+     *
+     * @param field_name name of the field.
+     * @param value to be written.
+     */
+    void write_array_of_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<offset_date_time>>>&
+        value);
 
     /**
      * Writes an array of nested compact objects.
@@ -1007,6 +1240,17 @@ public:
     void write_float64(const std::string& field_name, double value);
     void write_string(const std::string& field_name,
                       const boost::optional<std::string>& value);
+    void write_decimal(const std::string& field_name,
+                       const boost::optional<big_decimal>& value);
+    void write_time(const std::string& field_name,
+                    const boost::optional<local_time>& value);
+    void write_date(const std::string& field_name,
+                    const boost::optional<local_date>& value);
+    void write_timestamp(const std::string& field_name,
+                         const boost::optional<local_date_time>& value);
+    void write_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<offset_date_time>& value);
     template<typename T>
     void write_compact(const std::string& field_name,
                        const boost::optional<T>& value);
@@ -1033,6 +1277,23 @@ public:
     void write_array_of_string(
       const std::string& field_name,
       const boost::optional<std::vector<boost::optional<std::string>>>& value);
+    void write_array_of_decimal(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<big_decimal>>>& value);
+    void write_array_of_time(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_time>>>& value);
+    void write_array_of_date(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date>>>& value);
+    void write_array_of_timestamp(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<local_date_time>>>&
+        value);
+    void write_array_of_timestamp_with_timezone(
+      const std::string& field_name,
+      const boost::optional<std::vector<boost::optional<offset_date_time>>>&
+        value);
     template<typename T>
     void write_array_of_compact(
       const std::string& field_name,
@@ -1117,7 +1378,16 @@ private:
     typename std::enable_if<std::is_same<std::vector<bool>, T>::value,
                             void>::type
     write(const T& value);
-
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<big_decimal, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_time, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
+        std::is_same<local_date_time,
+                     typename std::remove_cv<T>::type>::value ||
+        std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
+      void>::type
+    write(const T& value);
     template<typename T>
     void write_array_of_variable_size(
       const std::string& field_name,
