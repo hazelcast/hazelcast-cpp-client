@@ -889,7 +889,7 @@ public:
                          const boost::optional<local_date_time>& value);
 
     /**
-     * Reads a timestamp with timezone consisting of date, time and timezone
+     * Writes a timestamp with timezone consisting of date, time and timezone
      * offset.
      *
      * @param field_name name of the field.
@@ -942,7 +942,7 @@ public:
      * Writes an array of 32-bit two's complement signed integers.
      *
      * @param field_name name of the field.
-     * @param value to be written..
+     * @param value to be written.
      */
     void write_array_of_int32(
       const std::string& field_name,
@@ -999,11 +999,11 @@ public:
       const boost::optional<std::vector<boost::optional<big_decimal>>>& value);
 
     /**
-     *  Writes an array of times consisting of hour, minute, second, and nano
+     * Writes an array of times consisting of hour, minute, second, and nano
      * seconds.
      *
-     *  @param field_name name of the field.
-     *  @param value to be written.
+     * @param field_name name of the field.
+     * @param value to be written.
      */
     void write_array_of_time(
       const std::string& field_name,
@@ -1020,8 +1020,7 @@ public:
       const boost::optional<std::vector<boost::optional<local_date>>>& value);
 
     /**
-     * Writes an array of timestamps consisting of year, month, day, hour,
-     * minute, second, and nano seconds.
+     * Writes an array of timestamps consisting of date and time.
      *
      * @param field_name name of the field.
      * @param value to be written.

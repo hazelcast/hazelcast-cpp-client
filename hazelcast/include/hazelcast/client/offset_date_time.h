@@ -1,18 +1,18 @@
 /*
-* Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #pragma once
 
 #include "hazelcast/util/export.h"
@@ -34,7 +34,15 @@ namespace client {
  * nanoseconds, as well as the offset from UTC/Greenwich. For example, the value
  * "2nd October 2007 at 13:45:30.123456789 +02:00" can be stored in an {@code
  * offset_date_time}.
- *
+ * <p>
+ * The minimum supported {@code offset_date_time},
+ * '-999999999-01-01T00:00:00+18:00'. This is the local date-time of midnight at
+ * the start of the minimum date in the maximum offset (larger offsets are
+ * earlier on the time-line).
+ * The maximum supported {@code offset_date_time},
+ * '+999999999-12-31T23:59:59.999999999-18:00'. This is the local date-time just
+ * before midnight at the end of the maximum date in the minimum offset (larger
+ * negative offsets are later on the time-line).
  */
 struct HAZELCAST_API offset_date_time
 {
@@ -61,7 +69,7 @@ namespace std {
 template<>
 struct HAZELCAST_API hash<hazelcast::client::offset_date_time>
 {
-   std::size_t operator()(const hazelcast::client::offset_date_time& f) const;
+    std::size_t operator()(const hazelcast::client::offset_date_time& f) const;
 };
 } // namespace std
 

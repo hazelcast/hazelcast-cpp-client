@@ -45,12 +45,9 @@ namespace client {
  * For most applications written today, the ISO-8601 rules are entirely
  * suitable. However, any application that makes use of historical dates, and
  * requires them to be accurate will find the ISO-8601 approach unsuitable.
- *
+ *< p>
  * The minimum supported {@code local_date}, '-999999999-01-01'.
- * This could be used by an application as a "far past" date.
- *
- * The maximum supported {@code LocalDate}, '+999999999-12-31'.
- * This could be used by an application as a "far future" date.
+ * The maximum supported {@code local_date}, '+999999999-12-31'.
  */
 struct HAZELCAST_API local_date
 {
