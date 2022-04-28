@@ -32,8 +32,10 @@ namespace hazelcast {
 namespace client {
 namespace sql {
 
-sql_service::sql_service(hazelcast_client& client, client::spi::ClientContext& context)
-  : client_(client),client_context_(context)
+sql_service::sql_service(hazelcast_client& client,
+                         client::spi::ClientContext& context)
+  : client_(client)
+  , client_context_(context)
   , connection_manager_(context.get_connection_manager())
 {}
 
