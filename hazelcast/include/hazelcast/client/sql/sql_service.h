@@ -88,8 +88,8 @@ public:
 
 private:
     friend client::impl::hazelcast_client_instance_impl;
-    client::spi::ClientContext& client_context_;
     client::hazelcast_client& client_;
+    client::spi::ClientContext& client_context_;
     connection::ClientConnectionManagerImpl& connection_manager_;
 
     sql_service(hazelcast_client& client, client::spi::ClientContext& context);
