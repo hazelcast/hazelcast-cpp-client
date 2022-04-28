@@ -3,7 +3,7 @@
 #include <hazelcast/client/protocol/ClientMessage.h>
 #include <hazelcast/client/protocol/codec/codecs.h>
 #include <hazelcast/client/hazelcast_client.h>
-#include <hazelcast/client/sql/statement.h>
+#include <hazelcast/client/sql/sql_statement.h>
 #include <hazelcast/client/sql/hazelcast_sql_exception.h>
 
 #include "ClientTest.h"
@@ -56,22 +56,23 @@ std::unique_ptr<HazelcastServer> SqlTest::member_{};
 
 TEST_F(SqlTest, simple)
 {
-    sql::statement statement(client, R"sql(
+    sql::sql_statement statement(client, R"sql(
         SELECT * FROM (VALUES ('foo', 'bar'), (NULL, 'hello')) AS X(col1, col2)
     )sql");
 
-    auto result = client.execute_sql(statement).get();
+    sql::sql_service service = client.get_sql();
+    auto result = service.execute(statement).get();
 
     ASSERT_TRUE(result.is_row_set());
     EXPECT_EQ(-1, result.update_count());
     ASSERT_TRUE(result.row_metadata().has_value());
     ASSERT_EQ(2, result.row_metadata()->size());
     EXPECT_EQ("col1", result.row_metadata().value()[0].name());
-    EXPECT_EQ(hazelcast::client::sql::column_type::varchar,
+    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar,
               result.row_metadata().value()[0].type());
     EXPECT_TRUE(result.row_metadata().value()[0].nullable());
     EXPECT_EQ("col2", result.row_metadata().value()[1].name());
-    EXPECT_EQ(hazelcast::client::sql::column_type::varchar,
+    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar,
               result.row_metadata().value()[1].type());
     EXPECT_FALSE(result.row_metadata().value()[1].nullable());
 
@@ -86,11 +87,12 @@ TEST_F(SqlTest, simple)
 
 TEST_F(SqlTest, statement_with_params)
 {
-    auto result =
-      client
-        .execute_sql(
-          "SELECT CAST(? AS VARCHAR), CAST(? AS VARCHAR)", 123456, -42.73)
-        .get();
+    sql::sql_service service = client.get_sql();
+    auto result = service
+                    .execute("SELECT CAST(? AS VARCHAR), CAST(? AS VARCHAR)",
+                             123456,
+                             -42.73)
+                    .get();
 
     ASSERT_TRUE(result.is_row_set());
     EXPECT_EQ(-1, result.update_count());
@@ -104,7 +106,8 @@ TEST_F(SqlTest, statement_with_params)
 
 TEST_F(SqlTest, exception)
 {
-    EXPECT_THROW(client.execute_sql("FOO BAR", 42).get(),
+    sql::sql_service service = client.get_sql();
+    EXPECT_THROW(service.execute("FOO BAR", 42).get(),
                  hazelcast::client::sql::hazelcast_sql_exception);
 }
 

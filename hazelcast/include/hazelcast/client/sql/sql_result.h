@@ -24,7 +24,7 @@ namespace hazelcast {
 namespace client {
 namespace sql {
 
-class HAZELCAST_API row
+class HAZELCAST_API sql_row
 {
 public:
     template<typename T>
@@ -34,31 +34,36 @@ public:
     }
 
     std::size_t id_;
-    impl::page& page_;
+    impl::sql_page& page_;
 };
 
 // TODO multi-page support
-class HAZELCAST_API result
+class HAZELCAST_API sql_result
 {
 public:
-    result(int64_t update_count,
-           boost::optional<std::vector<column_metadata>> row_metadata,
-           boost::optional<impl::page> first_page);
+    sql_result(int64_t update_count,
+           boost::optional<std::vector<sql_column_metadata>> row_metadata,
+           boost::optional<impl::sql_page> first_page);
 
+    /**
+     * Returns the number of rows updated by the statement or -1 if this result
+     * is a row set. In case the result doesn't contain rows but the update
+     * count isn't applicable or known, 0 is returned.
+     */
     int64_t update_count() const;
 
     bool is_row_set() const;
 
-    boost::future<std::vector<row>> fetch_page();
+    boost::future<std::vector<sql_row>> fetch_page();
 
     bool has_more() const;
 
-    const boost::optional<std::vector<column_metadata>>& row_metadata() const;
+    const boost::optional<std::vector<sql_column_metadata>>& row_metadata() const;
 
 private:
     int64_t update_count_;
-    boost::optional<std::vector<column_metadata>> row_metadata_;
-    boost::optional<impl::page> current_page_;
+    boost::optional<std::vector<sql_column_metadata>> row_metadata_;
+    boost::optional<impl::sql_page> current_page_;
 };
 
 } // namespace sql

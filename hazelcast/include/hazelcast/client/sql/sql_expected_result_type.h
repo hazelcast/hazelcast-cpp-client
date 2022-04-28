@@ -15,30 +15,17 @@
  */
 #pragma once
 
-#include <string>
-
-#include "hazelcast/util/export.h"
-#include "hazelcast/client/sql/column_type.h"
-
 namespace hazelcast {
 namespace client {
 namespace sql {
 
-class HAZELCAST_API column_metadata
+enum class sql_expected_result_type
 {
-public:
-    column_metadata(std::string name, column_type type, bool nullable);
-
-    const std::string& name() const;
-    column_type type() const;
-    bool nullable() const;
-
-private:
-    std::string name_;
-    column_type type_;
-    bool nullable_;
+    any = 0,
+    rows = 1,
+    update_count = 2
 };
 
-} // namespace sql
+}
 } // namespace client
 } // namespace hazelcast
