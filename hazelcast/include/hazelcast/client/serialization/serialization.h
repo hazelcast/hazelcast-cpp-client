@@ -937,7 +937,7 @@ namespace pimpl {
 template<typename T>
 typename std::enable_if<std::is_same<boost::multiprecision::cpp_int,
                                      typename std::remove_cv<T>::type>::value,
-                        T>::type HAZELCAST_API
+                        T>::type
 read(client::serialization::object_data_input& object_data_input)
 {
     int32_t size = object_data_input.read<int32_t>();
@@ -949,7 +949,7 @@ read(client::serialization::object_data_input& object_data_input)
 template<typename T>
 typename std::enable_if<std::is_same<boost::multiprecision::cpp_int,
                                      typename std::remove_cv<T>::type>::value,
-                        void>::type HAZELCAST_API
+                        void>::type
 write(client::serialization::object_data_output& object_data_output,
       const T& value)
 {
@@ -960,7 +960,7 @@ write(client::serialization::object_data_output& object_data_output,
 template<typename T>
 typename std::enable_if<
   std::is_same<client::big_decimal, typename std::remove_cv<T>::type>::value,
-  T>::type HAZELCAST_API
+  T>::type
 read(client::serialization::object_data_input& object_data_input)
 {
     auto cpp_int = read<boost::multiprecision::cpp_int>(object_data_input);
@@ -971,7 +971,7 @@ read(client::serialization::object_data_input& object_data_input)
 template<typename T>
 typename std::enable_if<
   std::is_same<client::big_decimal, typename std::remove_cv<T>::type>::value,
-  void>::type HAZELCAST_API
+  void>::type
 write(client::serialization::object_data_output& object_data_output,
       const T& value)
 {
@@ -982,7 +982,7 @@ write(client::serialization::object_data_output& object_data_output,
 template<typename T>
 typename std::enable_if<
   std::is_same<client::local_time, typename std::remove_cv<T>::type>::value,
-  T>::type HAZELCAST_API
+  T>::type
 read(client::serialization::object_data_input& object_data_input)
 {
     byte hour = object_data_input.read<byte>();
@@ -995,7 +995,7 @@ read(client::serialization::object_data_input& object_data_input)
 template<typename T>
 typename std::enable_if<
   std::is_same<client::local_time, typename std::remove_cv<T>::type>::value,
-  void>::type HAZELCAST_API
+  void>::type
 write(client::serialization::object_data_output& object_data_output,
       const T& value)
 {
@@ -1008,7 +1008,7 @@ write(client::serialization::object_data_output& object_data_output,
 template<typename T>
 typename std::enable_if<
   std::is_same<client::local_date, typename std::remove_cv<T>::type>::value,
-  T>::type HAZELCAST_API
+  T>::type
 read(client::serialization::object_data_input& object_data_input)
 {
     int32_t year = object_data_input.read<int32_t>();
@@ -1020,7 +1020,7 @@ read(client::serialization::object_data_input& object_data_input)
 template<typename T>
 typename std::enable_if<
   std::is_same<client::local_date, typename std::remove_cv<T>::type>::value,
-  void>::type HAZELCAST_API
+  void>::type
 write(client::serialization::object_data_output& object_data_output,
       const T& value)
 {
@@ -1032,7 +1032,7 @@ write(client::serialization::object_data_output& object_data_output,
 template<typename T>
 typename std::enable_if<std::is_same<client::local_date_time,
                                      typename std::remove_cv<T>::type>::value,
-                        T>::type HAZELCAST_API
+                        T>::type
 read(client::serialization::object_data_input& object_data_input)
 {
     auto date = read<client::local_date>(object_data_input);
@@ -1043,7 +1043,7 @@ read(client::serialization::object_data_input& object_data_input)
 template<typename T>
 typename std::enable_if<std::is_same<client::local_date_time,
                                      typename std::remove_cv<T>::type>::value,
-                        void>::type HAZELCAST_API
+                        void>::type
 write(client::serialization::object_data_output& object_data_output,
       const T& value)
 {
@@ -1054,7 +1054,7 @@ write(client::serialization::object_data_output& object_data_output,
 template<typename T>
 typename std::enable_if<std::is_same<client::offset_date_time,
                                      typename std::remove_cv<T>::type>::value,
-                        T>::type HAZELCAST_API
+                        T>::type
 read(client::serialization::object_data_input& object_data_input)
 {
     auto local_date_time = read<client::local_date_time>(object_data_input);
@@ -1065,7 +1065,7 @@ read(client::serialization::object_data_input& object_data_input)
 template<typename T>
 typename std::enable_if<std::is_same<client::offset_date_time,
                                      typename std::remove_cv<T>::type>::value,
-                        void>::type HAZELCAST_API
+                        void>::type
 write(client::serialization::object_data_output& object_data_output,
       const T& value)
 {
