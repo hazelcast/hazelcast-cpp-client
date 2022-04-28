@@ -2074,10 +2074,10 @@ TEST(ClientMessageTest, test_decode_sql_column_metadata)
     std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
     msg.wrap_for_read();
 
-    auto col_metadata = msg.get<sql::column_metadata>();
+    auto col_metadata = msg.get<sql::sql_column_metadata>();
 
     EXPECT_EQ("foobar", col_metadata.name());
-    EXPECT_EQ(sql::column_type::boolean, col_metadata.type());
+    EXPECT_EQ(sql::sql_column_type::boolean, col_metadata.type());
     EXPECT_EQ(false, col_metadata.nullable());
 }
 
@@ -2096,12 +2096,12 @@ TEST(ClientMessageTest, test_decode_sql_page)
     std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
     msg.wrap_for_read();
 
-    auto page = msg.get<sql::impl::page>();
+    auto page = msg.get<sql::impl::sql_page>();
 
     EXPECT_EQ(true, page.last());
-    EXPECT_EQ((std::vector<sql::column_type>{
-                sql::column_type::varchar,
-                sql::column_type::varchar,
+    EXPECT_EQ((std::vector<sql::sql_column_type>{
+                sql::sql_column_type::varchar,
+                sql::sql_column_type::varchar,
               }),
               page.column_types());
     EXPECT_EQ((std::vector<std::vector<boost::optional<std::string>>>{
@@ -2123,7 +2123,7 @@ TEST(ClientMessageTest, test_decode_sql_error)
     std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
     msg.wrap_for_read();
 
-    auto err = msg.get<sql::impl::error>();
+    auto err = msg.get<sql::impl::sql_error>();
 
     EXPECT_EQ(42, err.code);
     EXPECT_EQ(boost::optional<std::string>{ "foo" }, err.message);

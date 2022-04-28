@@ -21,21 +21,112 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/sql/impl/query_id.h"
-#include "hazelcast/client/sql/column_metadata.h"
-#include "hazelcast/client/sql/column_type.h"
-#include "hazelcast/client/sql/result.h"
-#include "hazelcast/client/sql/statement.h"
+#include "hazelcast/client/sql/sql_column_metadata.h"
+#include "hazelcast/client/sql/sql_column_type.h"
+#include "hazelcast/client/sql/sql_result.h"
+#include "hazelcast/client/sql/sql_statement.h"
+#include "hazelcast/client/sql/hazelcast_sql_exception.h"
+#include "hazelcast/client/sql/sql_service.h"
 
 namespace hazelcast {
 namespace client {
 namespace sql {
 
-statement::statement(hazelcast_client& client, std::string query)
+sql_service::sql_service(hazelcast_client& client, client::spi::ClientContext& context)
+  : client_(client),client_context_(context)
+  , connection_manager_(context.get_connection_manager())
+{}
+
+boost::future<sql_result>
+sql_service::execute(const sql_statement& statement)
+{
+    using protocol::ClientMessage;
+
+    auto query_conn = connection_manager_.get_random_connection();
+
+    if (!query_conn) {
+        BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
+          "hazelcast_client_instance_impl::execute",
+          "No connection found for SQL"));
+    }
+
+    auto local_id = client_context_.random_uuid();
+    auto member_id = query_conn->get_remote_uuid();
+
+    sql::impl::query_id qid{
+        uuid_high(member_id),
+        uuid_low(member_id),
+        uuid_high(local_id),
+        uuid_low(local_id),
+    };
+
+    auto request = protocol::codec::sql_execute_encode(
+      statement.query(),
+      statement.serialized_parameters_,
+      static_cast<int64_t>(statement.timeout().count()),
+      static_cast<int32_t>(statement.cursor_buffer_size()),
+      statement.schema() ? &statement.schema().value() : nullptr,
+      static_cast<byte>(statement.expected_result_type()),
+      qid,
+      false);
+
+    auto invocation = spi::impl::ClientInvocation::create(
+      client_context_, request, "", query_conn);
+
+    auto result_fut = invocation->invoke().then(
+      boost::launch::sync,
+      [query_conn](boost::future<ClientMessage> response_fut) {
+          ClientMessage response = response_fut.get();
+
+          auto initial_frame_header = response.read_frame_header();
+          response.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN -
+                          ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+          int64_t update_count = response.get<int64_t>();
+
+          response.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
+                          protocol::ClientMessage::RESPONSE_HEADER_LEN -
+                          protocol::ClientMessage::INT64_SIZE);
+
+          auto row_metadata =
+            response.get_nullable<std::vector<sql_column_metadata>>();
+          auto first_page = response.get_nullable<impl::sql_page>();
+          auto error = response.get_nullable<impl::sql_error>();
+
+          if (error) {
+              BOOST_THROW_EXCEPTION(
+                sql::hazelcast_sql_exception(error->originating_member_id,
+                                             error->code,
+                                             error->message,
+                                             error->suggestion));
+          }
+
+          return sql_result{ update_count,
+                             std::move(row_metadata),
+                             std::move(first_page) };
+      });
+
+    return result_fut;
+}
+
+int64_t
+sql_service::uuid_high(const boost::uuids::uuid& uuid)
+{
+    return boost::endian::load_big_s64(uuid.begin());
+}
+
+int64_t
+sql_service::uuid_low(const boost::uuids::uuid& uuid)
+{
+    return boost::endian::load_big_s64(uuid.begin() + 8);
+}
+
+sql_statement::sql_statement(hazelcast_client& client, std::string query)
   : query_{ std::move(query) }
   , serialized_parameters_{}
   , cursor_buffer_size_{ 4096 }
   , timeout_{ -1 }
-  , expected_result_type_{ expected_result_type::any }
+  , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
   , serialization_service_{
       spi::ClientContext(client).get_serialization_service()
@@ -43,81 +134,81 @@ statement::statement(hazelcast_client& client, std::string query)
 {}
 
 const std::string&
-statement::query() const
+sql_statement::query() const
 {
     return query_;
 }
 
 std::size_t
-statement::cursor_buffer_size() const
+sql_statement::cursor_buffer_size() const
 {
     return cursor_buffer_size_;
 }
 
 std::chrono::milliseconds
-statement::timeout() const
+sql_statement::timeout() const
 {
     return timeout_;
 }
 
 void
-statement::timeout(std::chrono::milliseconds timeout)
+sql_statement::timeout(std::chrono::milliseconds timeout)
 {
     timeout_ = timeout;
 }
 
 void
-statement::cursor_buffer_size(std::size_t s)
+sql_statement::cursor_buffer_size(std::size_t s)
 {
     cursor_buffer_size_ = s;
 }
 
 const boost::optional<std::string>&
-statement::schema() const
+sql_statement::schema() const
 {
     return schema_;
 }
 
 void
-statement::schema(boost::optional<std::string> schema)
+sql_statement::schema(boost::optional<std::string> schema)
 {
     schema_ = std::move(schema);
 }
 
-sql::expected_result_type
-statement::expected_result_type() const
+sql::sql_expected_result_type
+sql_statement::expected_result_type() const
 {
     return expected_result_type_;
 }
 
 void
-statement::expected_result_type(sql::expected_result_type type)
+sql_statement::expected_result_type(sql::sql_expected_result_type type)
 {
     expected_result_type_ = type;
 }
 
-column_metadata::column_metadata(std::string name,
-                                 column_type type,
-                                 bool nullable)
+sql_column_metadata::sql_column_metadata(std::string name,
+                                         sql_column_type type,
+                                         bool nullable)
   : name_{ std::move(name) }
   , type_{ type }
   , nullable_{ nullable }
 {}
 
 const std::string&
-column_metadata::name() const
+sql_column_metadata::name() const
 {
     return name_;
 }
 
-column_type
-column_metadata::type() const
+sql_column_type
+sql_column_metadata::type() const
 {
     return type_;
 }
 
 bool
-column_metadata::nullable() const
+sql_column_metadata::nullable() const
 {
     return nullable_;
 }
@@ -160,46 +251,47 @@ query_id::local_id_low() const
 
 } // namespace impl
 
-result::result(int64_t update_count,
-               boost::optional<std::vector<column_metadata>> row_metadata,
-               boost::optional<impl::page> first_page)
+sql_result::sql_result(
+  int64_t update_count,
+  boost::optional<std::vector<sql_column_metadata>> row_metadata,
+  boost::optional<impl::sql_page> first_page)
   : update_count_(update_count)
   , row_metadata_(std::move(row_metadata))
   , current_page_(std::move(first_page))
 {}
 
 int64_t
-result::update_count() const
+sql_result::update_count() const
 {
     return update_count_;
 }
 
 bool
-result::is_row_set() const
+sql_result::is_row_set() const
 {
     return update_count() == -1;
 }
 
-boost::future<std::vector<row>>
-result::fetch_page()
+boost::future<std::vector<sql_row>>
+sql_result::fetch_page()
 {
-    std::vector<row> rows;
+    std::vector<sql_row> rows;
 
     for (std::size_t i = 0; i < current_page_->columns()[0].size(); i++) {
-        rows.push_back(row{ i, current_page_.value() });
+        rows.push_back(sql_row{ i, current_page_.value() });
     }
 
     return boost::make_ready_future(std::move(rows));
 }
 
 bool
-result::has_more() const
+sql_result::has_more() const
 {
     return current_page_ && !current_page_->last();
 }
 
-const boost::optional<std::vector<column_metadata>>&
-result::row_metadata() const
+const boost::optional<std::vector<sql_column_metadata>>&
+sql_result::row_metadata() const
 {
     return row_metadata_;
 }

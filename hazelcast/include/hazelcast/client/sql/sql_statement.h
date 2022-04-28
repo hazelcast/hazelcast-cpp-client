@@ -24,23 +24,17 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/sql/expected_result_type.h"
+#include "hazelcast/client/sql/sql_expected_result_type.h"
 
 namespace hazelcast {
 namespace client {
-
-namespace impl {
-class hazelcast_client_instance_impl;
-}
-
 namespace sql {
-
 class sql_service;
 
-class HAZELCAST_API statement
+class HAZELCAST_API sql_statement
 {
 public:
-    statement(hazelcast_client& client, std::string query);
+    sql_statement(hazelcast_client& client, std::string query);
 
     const std::string& query() const;
 
@@ -53,8 +47,8 @@ public:
     std::chrono::milliseconds timeout() const;
     void timeout(std::chrono::milliseconds timeout);
 
-    sql::expected_result_type expected_result_type() const;
-    void expected_result_type(sql::expected_result_type type);
+    sql_expected_result_type expected_result_type() const;
+    void expected_result_type(sql_expected_result_type type);
 
     const boost::optional<std::string>& schema() const;
     void schema(boost::optional<std::string> schema);
@@ -67,17 +61,17 @@ private:
     std::vector<data> serialized_parameters_;
     std::size_t cursor_buffer_size_;
     std::chrono::milliseconds timeout_;
-    sql::expected_result_type expected_result_type_;
+    sql::sql_expected_result_type expected_result_type_;
     boost::optional<std::string> schema_;
 
     serialization_service& serialization_service_;
 
-    friend hazelcast::client::impl::hazelcast_client_instance_impl;
+    friend hazelcast::client::sql::sql_service;
 };
 
 template<typename Param>
 void
-statement::add_parameter(const Param& param)
+sql_statement::add_parameter(const Param& param)
 {
     serialized_parameters_.emplace_back(serialization_service_.to_data(param));
 }

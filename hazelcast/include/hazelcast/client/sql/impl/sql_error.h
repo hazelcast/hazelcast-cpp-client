@@ -15,29 +15,26 @@
  */
 #pragma once
 
+#include <cstdint>
+#include <string>
+
+#include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
+
 namespace hazelcast {
 namespace client {
 namespace sql {
+namespace impl {
 
-enum class column_type
+struct sql_error
 {
-    varchar = 0,
-    boolean = 1,
-    tinyint = 2,
-    smallint = 3,
-    integer = 4,
-    bigint = 5,
-    decimal = 6,
-    real = 7,
-    double_ = 8,
-    date = 9,
-    time = 10,
-    timestamp = 11,
-    timestamp_with_timezone = 12,
-    object = 13,
-    null = 14
+    int32_t code;
+    boost::optional<std::string> message;
+    boost::uuids::uuid originating_member_id;
+    boost::optional<std::string> suggestion;
 };
 
+} // namespace impl
 } // namespace sql
 } // namespace client
 } // namespace hazelcast

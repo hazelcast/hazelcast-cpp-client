@@ -57,13 +57,15 @@
 namespace hazelcast {
 namespace client {
 hazelcast_client::hazelcast_client()
-  : client_impl_(new impl::hazelcast_client_instance_impl(client_config()))
+  : client_impl_(
+      new impl::hazelcast_client_instance_impl(*this, client_config()))
 {
     client_impl_->start();
 }
 
 hazelcast_client::hazelcast_client(client_config config)
-  : client_impl_(new impl::hazelcast_client_instance_impl(std::move(config)))
+  : client_impl_(
+      new impl::hazelcast_client_instance_impl(*this, std::move(config)))
 {
     client_impl_->start();
 }
@@ -138,10 +140,10 @@ hazelcast_client::get_cp_subsystem()
     return client_impl_->get_cp_subsystem();
 }
 
-boost::future<sql::result>
-hazelcast_client::execute_sql(const sql::statement& statement)
+sql::sql_service&
+hazelcast_client::get_sql()
 {
-    return client_impl_->execute_sql(statement);
+    return client_impl_->get_sql();
 }
 
 const boost::string_view
@@ -154,6 +156,7 @@ namespace impl {
 std::atomic<int32_t> hazelcast_client_instance_impl::CLIENT_ID(0);
 
 hazelcast_client_instance_impl::hazelcast_client_instance_impl(
+  hazelcast::client::hazelcast_client& client,
   client_config config)
   : client_config_(std::move(config))
   , client_properties_(client_config_.get_properties())
@@ -169,6 +172,7 @@ hazelcast_client_instance_impl::hazelcast_client_instance_impl(
   , random_generator_(std::random_device{}())
   , uuid_generator_{ random_generator_ }
   , cp_subsystem_(client_context_)
+  , sql_service_(client, client_context_)
   , proxy_session_manager_(client_context_)
 {
     auto& name = client_config_.get_instance_name();
@@ -465,90 +469,10 @@ hazelcast_client_instance_impl::get_cp_subsystem()
     return cp_subsystem_;
 }
 
-namespace {
-int64_t
-uuid_high(const boost::uuids::uuid& uuid)
+sql::sql_service&
+hazelcast_client_instance_impl::get_sql()
 {
-    return boost::endian::load_big_s64(uuid.begin());
-}
-
-int64_t
-uuid_low(const boost::uuids::uuid& uuid)
-{
-    return boost::endian::load_big_s64(uuid.begin() + 8);
-}
-} // namespace
-
-boost::future<sql::result>
-hazelcast_client_instance_impl::execute_sql(const sql::statement& statement)
-{
-    using protocol::ClientMessage;
-
-    auto query_conn = connection_manager_->get_random_connection();
-
-    if (!query_conn) {
-        BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
-          "hazelcast_client_instance_impl::execute_sql",
-          "No connection found for SQL"));
-    }
-
-    auto local_id = random_uuid();
-    auto member_id = query_conn->get_remote_uuid();
-
-    sql::impl::query_id qid{
-        uuid_high(member_id),
-        uuid_low(member_id),
-        uuid_high(local_id),
-        uuid_low(local_id),
-    };
-
-    auto request = protocol::codec::sql_execute_encode(
-      statement.query(),
-      statement.serialized_parameters_,
-      static_cast<int64_t>(statement.timeout().count()),
-      static_cast<int32_t>(statement.cursor_buffer_size()),
-      statement.schema() ? &statement.schema().value() : nullptr,
-      static_cast<byte>(statement.expected_result_type()),
-      qid,
-      false);
-
-    auto invocation = spi::impl::ClientInvocation::create(
-      client_context_, request, "", query_conn);
-
-    auto result_fut = invocation->invoke().then(
-      boost::launch::sync,
-      [query_conn](boost::future<ClientMessage> response_fut) {
-          ClientMessage response = response_fut.get();
-
-          auto initial_frame_header = response.read_frame_header();
-          response.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN -
-                          ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
-
-          int64_t update_count = response.get<int64_t>();
-
-          response.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
-                          protocol::ClientMessage::RESPONSE_HEADER_LEN -
-                          protocol::ClientMessage::INT64_SIZE);
-
-          auto row_metadata =
-            response.get_nullable<std::vector<sql::column_metadata>>();
-          auto first_page = response.get_nullable<sql::impl::page>();
-          auto error = response.get_nullable<sql::impl::error>();
-
-          if (error) {
-              BOOST_THROW_EXCEPTION(
-                sql::hazelcast_sql_exception(error->originating_member_id,
-                                             error->code,
-                                             error->message,
-                                             error->suggestion));
-          }
-
-          return sql::result{ update_count,
-                              std::move(row_metadata),
-                              std::move(first_page) };
-      });
-
-    return result_fut;
+    return sql_service_;
 }
 
 void

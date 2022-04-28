@@ -15,26 +15,30 @@
  */
 #pragma once
 
-#include <cstdint>
 #include <string>
 
-#include <boost/optional.hpp>
-#include <boost/uuid/uuid.hpp>
+#include "hazelcast/util/export.h"
+#include "hazelcast/client/sql/sql_column_type.h"
 
 namespace hazelcast {
 namespace client {
 namespace sql {
-namespace impl {
 
-struct error
+class HAZELCAST_API sql_column_metadata
 {
-    int32_t code;
-    boost::optional<std::string> message;
-    boost::uuids::uuid originating_member_id;
-    boost::optional<std::string> suggestion;
+public:
+    sql_column_metadata(std::string name, sql_column_type type, bool nullable);
+
+    const std::string& name() const;
+    sql_column_type type() const;
+    bool nullable() const;
+
+private:
+    std::string name_;
+    sql_column_type type_;
+    bool nullable_;
 };
 
-} // namespace impl
 } // namespace sql
 } // namespace client
 } // namespace hazelcast

@@ -18,19 +18,19 @@
 #include <string>
 
 #include "hazelcast/util/export.h"
-#include "hazelcast/client/sql/column_type.h"
+#include "hazelcast/client/sql/sql_column_type.h"
 
 namespace hazelcast {
 namespace client {
 namespace sql {
 namespace impl {
 
-class HAZELCAST_API page
+class HAZELCAST_API sql_page
 {
     using column = std::vector<boost::optional<std::string>>;
 
 public:
-    page(std::vector<column_type> column_types,
+    sql_page(std::vector<sql_column_type> column_types,
          std::vector<column> columns,
          bool last)
       : column_types_(std::move(column_types))
@@ -41,7 +41,7 @@ public:
     template<typename T>
     const boost::optional<T>& get_value(std::size_t c, std::size_t r) const;
 
-    const std::vector<column_type>& column_types() const
+    const std::vector<sql_column_type>& column_types() const
     {
         return column_types_;
     }
@@ -51,14 +51,14 @@ public:
     bool last() const { return last_; }
 
 private:
-    std::vector<column_type> column_types_;
+    std::vector<sql_column_type> column_types_;
     std::vector<column> columns_;
     bool last_;
 };
 
 template<>
 inline const boost::optional<std::string>&
-page::get_value<std::string>(std::size_t c, std::size_t r) const
+sql_page::get_value<std::string>(std::size_t c, std::size_t r) const
 {
     return columns_[c][r];
 }

@@ -43,10 +43,10 @@
 #include "hazelcast/client/query/paging_predicate.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/sql/impl/query_id.h"
-#include "hazelcast/client/sql/column_metadata.h"
-#include "hazelcast/client/sql/impl/page.h"
-#include "hazelcast/client/sql/impl/error.h"
-#include "hazelcast/client/sql/column_type.h"
+#include "hazelcast/client/sql/sql_column_metadata.h"
+#include "hazelcast/client/sql/impl/sql_page.h"
+#include "hazelcast/client/sql/impl/sql_error.h"
+#include "hazelcast/client/sql/sql_column_type.h"
 
 namespace hazelcast {
 namespace util {
@@ -816,7 +816,7 @@ public:
     }
 
     template<typename T>
-    typename std::enable_if<std::is_same<T, sql::column_metadata>::value,
+    typename std::enable_if<std::is_same<T, sql::sql_column_metadata>::value,
                             T>::type
     get()
     {
@@ -825,7 +825,7 @@ public:
 
         const frame_header_t header = read_frame_header();
 
-        auto type = static_cast<sql::column_type>(get<int32_t>());
+        auto type = static_cast<sql::sql_column_type>(get<int32_t>());
 
         bool nullable = true;
         int nullable_size = 0;
@@ -843,11 +843,11 @@ public:
 
         fast_forward_to_end_frame();
 
-        return sql::column_metadata(std::move(name), type, nullable);
+        return sql::sql_column_metadata(std::move(name), type, nullable);
     }
 
     template<typename T>
-    typename std::enable_if<std::is_same<T, sql::impl::page>::value, T>::type
+    typename std::enable_if<std::is_same<T, sql::impl::sql_page>::value, T>::type
     get()
     {
         // begin frame
@@ -862,14 +862,14 @@ public:
         using column = std::vector<boost::optional<std::string>>;
 
         std::vector<column> columns;
-        std::vector<sql::column_type> column_types;
+        std::vector<sql::sql_column_type> column_types;
 
         for (auto column_type_id : column_type_ids) {
-            auto column_type = static_cast<sql::column_type>(column_type_id);
+            auto column_type = static_cast<sql::sql_column_type>(column_type_id);
             column_types.push_back(column_type);
 
             switch (column_type) {
-                case sql::column_type::varchar:
+                case sql::sql_column_type::varchar:
                     columns.push_back(
                       get<std::vector<boost::optional<std::string>>>());
                     break;
@@ -882,11 +882,11 @@ public:
 
         fast_forward_to_end_frame();
 
-        return sql::impl::page{ column_types, columns, last };
+        return sql::impl::sql_page{ column_types, columns, last };
     }
 
     template<typename T>
-    typename std::enable_if<std::is_same<T, sql::impl::error>::value, T>::type
+    typename std::enable_if<std::is_same<T, sql::impl::sql_error>::value, T>::type
     get()
     {
         // begin frame
@@ -910,7 +910,7 @@ public:
 
         fast_forward_to_end_frame();
 
-        return sql::impl::error{ code,
+        return sql::impl::sql_error{ code,
                                  std::move(message),
                                  originating_member_id,
                                  std::move(suggestion) };
