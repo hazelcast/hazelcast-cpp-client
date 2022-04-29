@@ -172,7 +172,7 @@ hazelcast_client_instance_impl::hazelcast_client_instance_impl(
   , random_generator_(std::random_device{}())
   , uuid_generator_{ random_generator_ }
   , cp_subsystem_(client_context_)
-  , sql_service_(client, client_context_)
+  , sql_service_(client_context_)
   , proxy_session_manager_(client_context_)
 {
     auto& name = client_config_.get_instance_name();
