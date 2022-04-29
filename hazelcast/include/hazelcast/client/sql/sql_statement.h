@@ -57,6 +57,8 @@ private:
     using data = serialization::pimpl::data;
     using serialization_service = serialization::pimpl::SerializationService;
 
+    sql_statement(spi::ClientContext& client_context, std::string query);
+
     std::string query_;
     std::vector<data> serialized_parameters_;
     std::size_t cursor_buffer_size_;

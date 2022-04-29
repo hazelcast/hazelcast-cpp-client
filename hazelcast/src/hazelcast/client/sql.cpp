@@ -27,16 +27,13 @@
 #include "hazelcast/client/sql/sql_statement.h"
 #include "hazelcast/client/sql/hazelcast_sql_exception.h"
 #include "hazelcast/client/sql/sql_service.h"
-
+#include "hazelcast/client/hazelcast_client.h"
 namespace hazelcast {
 namespace client {
 namespace sql {
 
-sql_service::sql_service(hazelcast_client& client,
-                         client::spi::ClientContext& context)
-  : client_(client)
-  , client_context_(context)
-  , connection_manager_(context.get_connection_manager())
+sql_service::sql_service(client::spi::ClientContext& context)
+  : client_context_(context)
 {}
 
 boost::future<sql_result>
@@ -44,7 +41,8 @@ sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
 
-    auto query_conn = connection_manager_.get_random_connection();
+    auto query_conn =
+      client_context_.get_connection_manager().get_random_connection();
 
     if (!query_conn) {
         BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
@@ -133,6 +131,17 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
   , serialization_service_{
       spi::ClientContext(client).get_serialization_service()
   }
+{}
+
+sql_statement::sql_statement(spi::ClientContext& client_context,
+                             std::string query)
+  : query_{ std::move(query) }
+  , serialized_parameters_{}
+  , cursor_buffer_size_{ 4096 }
+  , timeout_{ -1 }
+  , expected_result_type_{ sql_expected_result_type::any }
+  , schema_{}
+  , serialization_service_{ client_context.get_serialization_service() }
 {}
 
 const std::string&

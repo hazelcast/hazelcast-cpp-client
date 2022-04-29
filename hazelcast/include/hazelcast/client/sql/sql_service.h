@@ -78,7 +78,7 @@ public:
     boost::future<sql_result> execute(const std::string& query,
                                       const Params&... params)
     {
-        sql_statement s{ client_, query };
+        sql_statement s{ client_context_, query };
         int _[] = { (s.add_parameter(params), 0)... };
         (void)_;
         return execute(s);
@@ -88,14 +88,11 @@ public:
 
 private:
     friend client::impl::hazelcast_client_instance_impl;
-    client::hazelcast_client& client_;
     client::spi::ClientContext& client_context_;
-    connection::ClientConnectionManagerImpl& connection_manager_;
 
-    sql_service(hazelcast_client& client, client::spi::ClientContext& context);
+    sql_service(client::spi::ClientContext& context);
 
     static int64_t uuid_high(const boost::uuids::uuid& uuid);
-
     static int64_t uuid_low(const boost::uuids::uuid& uuid);
 };
 } // namespace sql
