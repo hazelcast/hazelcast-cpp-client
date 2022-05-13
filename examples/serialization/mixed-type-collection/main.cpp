@@ -32,17 +32,22 @@ main()
 
     auto map = hz.get_map("map").get();
 
-    boost::optional<typed_data> the_value =
+    boost::optional<typed_data> value =
       map->get<std::string, typed_data>("key").get();
-    if (the_value) {
-        std::cout << "value type id is: " << the_value->get_type() << std::endl;
-        if (the_value->get_type().type_id ==
+    if (value) {
+        std::cout << "value type id is: " << value->get_type() << std::endl;
+        if (value->get_type().type_id ==
             serialization::pimpl::serialization_constants::
               CONSTANT_TYPE_BOOLEAN) {
             // we know for sure that the value is of type `bool` and we can get
             // it with no exception
-            bool value = *the_value->get<bool>();
-            std::cout << "value is: " << value << std::endl;
+            bool bool_value = *value->get<bool>();
+            std::cout << "value is: " << bool_value << std::endl;
+        } else {
+            // we don't know the type of the value, but we can still get it
+            // without exception
+            std::cout << "value is not boolean. Its type id is: "
+                      << value->get_type() << std::endl;
         }
     } else {
         std::cout << "value is not set" << std::endl;
