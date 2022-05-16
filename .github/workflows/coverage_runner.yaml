@@ -4,15 +4,47 @@ on:
   push:
     branches:
       - master
+  pull_request_target:
+    branches:
+      - master
+      - coverage_runner_base
 
 jobs:
-  coverage:
+  check_for_membership:
     runs-on: ubuntu-20.04
+    name: Check membership of given user  
+    outputs:
+      check-result: ${{ steps.composite.outputs.check-result }}
+    steps: 
+      - name: Action for membership check
+        id: composite
+        uses: hazelcast/hazelcast-tpm/membership@main
+        with:
+          organization-name: 'hazelcast'
+          member-name: ${{ github.event.pull_request.head.repo.owner.login }}
+          token: ${{ secrets.PAT }}
 
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: [check_for_membership]
+    if: github.event_name == 'push' || needs.check_for_membership.outputs.check-result == 'true' || github.event_name == 'workflow_dispatch'
     name: Create and upload coverage
     steps:
-      - name: Checkout code
+      - name: Checkout code for PR
+        if: github.event_name == 'pull_request_target'
         uses: actions/checkout@v2
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          
+      - name: Checkout repository for push event
+        if: github.event_name == 'push'
+        uses: actions/checkout@v2
+              
+      - name: Checkout PR coming from community.
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v2
+        with:
+          ref: refs/pull/${{ github.event.inputs.pr_number }}/merge
 
       - name: Install Necessary Packages
         run: |
@@ -68,8 +100,23 @@ jobs:
           path: |
             coverage.info
             coverage-html-reports
-
-      - name: Publish on Codecov
+            
+      - name: Publish results to Codecov for PR coming from hazelcast organization
+        if: ${{ github.event_name == 'pull_request_target' }}
         uses: codecov/codecov-action@v2
         with:
           files: coverage.info
+          override_pr: ${{ github.event.pull_request.number }}
+          
+      - name: Publish results to Codecov for Push
+        if: ${{ github.event_name == 'push' }}
+        uses: codecov/codecov-action@v2
+        with:
+          files: coverage.info
+          
+      - name: Publish result to Codecov for PR coming from community
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: codecov/codecov-action@v2
+        with:
+          files: coverage.info
+          override_pr: ${{ github.event.inputs.pr_number }}
