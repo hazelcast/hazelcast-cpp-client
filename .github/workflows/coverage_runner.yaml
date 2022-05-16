@@ -7,7 +7,6 @@ on:
   pull_request_target:
     branches:
       - master
-      - coverage_runner_base
 
 jobs:
   check_for_membership:
