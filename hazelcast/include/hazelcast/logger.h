@@ -3,6 +3,7 @@
 #include <string>
 #include <functional>
 #include <limits>
+#include <mutex>
 
 #include "hazelcast/util/export.h"
 
