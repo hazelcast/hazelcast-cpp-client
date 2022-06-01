@@ -96,6 +96,8 @@ time_t_to_localtime(const std::time_t& t)
 
 } // namespace
 
+std::mutex logger::cout_lock_;
+
 void
 logger::default_handler(const std::string& instance_name,
                         const std::string& cluster_name,
@@ -124,8 +126,7 @@ logger::default_handler(const std::string& instance_name,
           << '\n';
 
     {
-        static std::mutex cout_lock;
-        std::lock_guard<std::mutex> g(cout_lock);
+        std::lock_guard<std::mutex> g(cout_lock_);
         std::cout << sstrm.str() << std::flush;
     }
 }
