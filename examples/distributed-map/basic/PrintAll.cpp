@@ -15,14 +15,14 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-int main() {
-    auto hz = hazelcast::new_client().get();
+std::vector<std::shared_ptr<hazelcast::client::hazelcast_client>> clientPool_;
 
-    auto map = hz.get_map("map").get();
-    auto entries = map->entry_set<std::string, std::string>().get();
-    for (auto &entry : map->entry_set<std::string, std::string>().get()) {
-        std::cout << entry.first << " " << entry.second << std::endl;
-    }
+int main() {
+    hazelcast::client::hazelcast_client client = hazelcast::new_client().get();
+
+    clientPool_.emplace_back(std::make_shared<hazelcast::client::hazelcast_client>(std::move(client)));
+
+    clientPool_[0]->get_map("abc").get()->put(1, 1).get();
 
     std::cout << "Finished" << std::endl;
 

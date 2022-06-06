@@ -14,25 +14,112 @@
  * limitations under the License.
  */
 #include <hazelcast/client/hazelcast_client.h>
+#include "hazelcast/client/pipelining.h"
+
+struct HZClient {
+    std::shared_ptr<hazelcast::client::hazelcast_client> client_;
+};
+
+template <typename K, typename V>
+class TMap : public std::unordered_map<K, V> {
+};
+
+std::vector<HZClient> clientPool_;
+
+auto writeChunkSize_ = 10000;
+
+auto depth_ = 1000;
+
+auto mapName_ = "P1Stressed";
+
+std::mutex putMutex_;
+
+// Share TMap, HZClient code.
+
+template <typename K, typename V>
+long put(const TMap <K, V> &tMap) {
+    using namespace hazelcast::client;
+
+    long recordsWritten = 0;
+
+    auto &client = clientPool_[0];
+
+    try {
+
+        std::vector<std::shared_ptr<TMap < K, V>> > xTmpMaps;
+
+        std::shared_ptr<imap> hzMap = client.client_->get_map(mapName_).get();
+
+        long numRecords = tMap.size();
+
+        long totChunks = numRecords / writeChunkSize_;
+
+        long writtenChunks = 0;
+
+        if (numRecords % writeChunkSize_ > 0)
+            ++totChunks;
+
+        long i = 0;
+
+        typename std::vector<std::shared_ptr<TMap < K, V>> > ::iterator xItr = xTmpMaps.emplace(xTmpMaps.end(), std::make_shared<TMap < K, V>>());
+
+        std::lock_guard<std::mutex> lock(putMutex_);
+        {
+
+            for (auto &item: tMap) {
+
+                ++i;
+
+                (*xItr)->emplace(item);
+
+                if (i % writeChunkSize_ == 0 or i == numRecords) {
+
+                    std::shared_ptr<hazelcast::client::pipelining<int> > pipe = hazelcast::client::pipelining<int>::create(
+                            depth_);
+
+                    pipe->add(hzMap->put_all(**xItr).then(
+                            boost::launch::sync, [&](boost::future<void> f) {
+                                f.wait();
+
+                                return boost::optional<int>(0);
+                            }
+
+                    ));
+
+                    writtenChunks += pipe->results().size();   // <--This is not completing
+
+                    xItr = xTmpMaps.emplace(xTmpMaps.end(), std::make_shared<TMap < K, V>>());
+
+                }
+
+            }
+
+        }
+
+        recordsWritten = std::move(i);
+
+    } catch (hazelcast::client::exception::iexception &e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+    } catch (...) {
+
+        std::cout << "Failed in put(TMap)" << std::endl;
+
+    }
+
+    return recordsWritten;
+}
+
 
 int main() {
     auto hz = hazelcast::new_client().get();
 
-    auto map = hz.get_map("map").get();
-    map->put<std::string, std::string>("1", "Tokyo").get();
-    map->put<std::string, std::string>("2", "Paris").get();
-    map->put<std::string, std::string>("3", "New York").get();
-    std::cout << "Finished loading map" << std::endl;
+    clientPool_.emplace_back(HZClient{std::make_shared<hazelcast::client::hazelcast_client>(std::move(hz))});
 
-    auto binaryMap = hz.get_map("MyBinaryMap").get();
-    std::vector<char> value(100);
-    binaryMap->put(3, value).get();
-    std::cout << "Inserted an entry with key 3 and a binary value to the binary map->" << std::endl;
+    TMap<int, int> our_map;
+    our_map.emplace(1, 1);
+    our_map.emplace(2, 2);
 
-    auto valueFromMap = binaryMap->get<int32_t, std::vector<char>>(3).get();
-    if (valueFromMap) {
-        std::cout << "The binary map returned a binary array of size " << valueFromMap->size() << std::endl;
-    }
+    put(our_map);
 
     std::cout << "Finished" << std::endl;
 
