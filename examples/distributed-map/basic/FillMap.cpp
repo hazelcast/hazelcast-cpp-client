@@ -110,14 +110,20 @@ long put(const TMap <K, V> &tMap) {
 }
 
 
+TMap<int, int> populateData() {
+    TMap<int, int> our_map;
+    for (int i = 0; i < writeChunkSize_ * 1000; ++i) {
+        our_map.emplace(i, i);
+    }
+    return our_map;
+}
+
 int main() {
     auto hz = hazelcast::new_client().get();
 
     clientPool_.emplace_back(HZClient{std::make_shared<hazelcast::client::hazelcast_client>(std::move(hz))});
 
-    TMap<int, int> our_map;
-    our_map.emplace(1, 1);
-    our_map.emplace(2, 2);
+    TMap<int, int> our_map = populateData();
 
     put(our_map);
 
