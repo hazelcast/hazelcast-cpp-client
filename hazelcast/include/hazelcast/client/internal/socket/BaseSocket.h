@@ -97,29 +97,29 @@ namespace hazelcast {
 
                             bool success;
                             int64_t message_call_id;
-                            auto call_id = ++call_id_counter_;
-                            struct correlation_id {
-                                int32_t connnection_id;
-                                int32_t call_id;
-                            };
-                            union {
-                                int64_t id;
-                                correlation_id composed_id;
-                            } c_id_union;
-                            c_id_union.composed_id = {connection->get_connection_id(), call_id};
-                            message_call_id = c_id_union.id;
-                            success = connection->invocations.insert({message_call_id, invocation}).second;
-                            if (success) {
-                                message->set_correlation_id(c_id_union.id);
-                            }
-
-                            //message->print_frame_sizes();
+                            do {
+                                auto call_id = ++call_id_counter_;
+                                struct correlation_id {
+                                    int32_t connnection_id;
+                                    int32_t call_id;
+                                };
+                                union {
+                                    int64_t id;
+                                    correlation_id composed_id;
+                                } c_id_union;
+                                c_id_union.composed_id = {connection->get_connection_id(), call_id};
+                                message_call_id = c_id_union.id;
+                                success = connection->invocations.insert({message_call_id, invocation}).second;
+                                if (success) {
+                                    message->set_correlation_id(c_id_union.id);
+                                }
+                            } while (!success);
 
                             auto &datas = message->get_buffer();
                             std::vector<boost::asio::const_buffer> buffers;
                             buffers.reserve(datas.size());
                             for (const auto &data : datas) {
-                                buffers.push_back(boost::asio::buffer(data));
+                                buffers.emplace_back(boost::asio::buffer(data));
                             }
                             this->outbox_.push_back(buffers);
 
