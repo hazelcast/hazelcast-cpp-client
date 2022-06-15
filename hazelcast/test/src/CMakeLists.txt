@@ -3,11 +3,9 @@ cmake_minimum_required (VERSION 3.10)
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
 FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")
 
-set(GOOGLETEST_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/hazelcast/test/googletest/googletest/include)
-
 add_executable(client_test ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS})
 
-target_link_libraries(client_test PRIVATE hazelcast-cpp-client gtest)
+target_link_libraries(client_test PRIVATE hazelcast-cpp-client ${GTEST_TARGET})
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     find_package(Thrift QUIET)

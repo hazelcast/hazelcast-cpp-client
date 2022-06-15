@@ -1,15 +1,8 @@
-FROM fedora:latest
+FROM fedora:34
 
-RUN dnf groups install -y "Development Tools"
-RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.x86_64 cmake valgrind java-1.8.0-openjdk.x86_64 rsync passwd openssh-server ninja-build
-
-# needed for test
-RUN dnf install -y maven net-tools gcovr
-RUN dnf install -y fedora-repos-rawhide
-RUN dnf --disablerepo=* --enablerepo=rawhide --nogpg install -y thrift-devel
-
-# install boost
-RUN dnf install -y wget bzip2 && wget --quiet https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2 && tar xjf boost_1_75_0.tar.bz2 && rm boost_1_75_0.tar.bz2 && cd boost_1_75_0 && ./bootstrap.sh && ./b2 address-model=64 --with-thread --with-chrono install && cd .. && rm -rf boost_1_75_0
+RUN dnf groups install -y "Development Tools" && \
+    dnf install -y gcc-c++ gdb openssl-devel cmake java-1.8.0-openjdk.x86_64 rsync passwd \
+                   openssh-server ninja-build maven net-tools gcovr boost-devel thrift-devel
 
 RUN ssh-keygen -A
 
@@ -24,4 +17,3 @@ RUN useradd -m user \
   && yes password | passwd user
 
 CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config_test_clion"]
-
