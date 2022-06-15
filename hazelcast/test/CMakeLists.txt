@@ -31,8 +31,11 @@ if (NOT GTest_FOUND)
     add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
             ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
             EXCLUDE_FROM_ALL)
+
+    set(GTEST_TARGET gtest)
 else()
     message(STATUS "Found an existing googletest installation and it will be used.")
+    set(GTEST_TARGET GTest::gtest)
 endif(NOT GTest_FOUND)
 
 add_subdirectory(src)

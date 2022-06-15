@@ -228,9 +228,7 @@ namespace hazelcast {
                                                                     const unsigned char *data,
                                                                     size_t data_len,
                                                                     unsigned char *hash) const {
-#ifdef HZ_BUILD_WITH_SSL
-
-#if OPENSSL_VERSION_NUMBER > 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
                     HMAC_CTX *hmac = HMAC_CTX_new();
 #else
                     HMAC_CTX *hmac = new HMAC_CTX;
@@ -242,7 +240,7 @@ namespace hazelcast {
                     unsigned int len = 32;
                     HMAC_Final(hmac, hash, &len);
 
-#if OPENSSL_VERSION_NUMBER > 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
                     HMAC_CTX_free(hmac);
 #else
                     HMAC_CTX_cleanup(hmac);
@@ -250,37 +248,31 @@ namespace hazelcast {
 #endif
 
                     return len;
-#else
-                    util::Preconditions::check_ssl("ec2_request_signer::hmacSHA256Bytes");
-                    return 0;
-#endif
                 }
 
                 std::string ec2_request_signer::sha256_hashhex(const std::string &in) const {
-#ifdef HZ_BUILD_WITH_SSL
-#ifdef OPENSSL_FIPS
-                    unsigned int hashLen = 0;
-                        unsigned char hash[EVP_MAX_MD_SIZE];
-                        EVP_MD_CTX ctx;
-                        EVP_MD_CTX_init(&ctx);
-                        EVP_DigestInit_ex(&ctx, EVP_sha256(), NULL);
-                        EVP_DigestUpdate(&ctx, in.c_str(), in.size());
-                        EVP_DigestFinal_ex(&ctx, hash, &hashLen);
-                        EVP_MD_CTX_cleanup(&ctx);
-                        return convert_to_hex_string(hash, hashLen);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+                    EVP_MD_CTX *ctx_ptr = EVP_MD_CTX_new();
 #else
-                    unsigned char hash[SHA256_DIGEST_LENGTH];
-                    SHA256_CTX sha256;
-                    SHA256_Init(&sha256);
-                    SHA256_Update(&sha256, in.c_str(), in.size());
-                    SHA256_Final(hash, &sha256);
+                    EVP_MD_CTX ctx;
+                    EVP_MD_CTX *ctx_ptr = &ctx;
+                    EVP_MD_CTX_init(ctx_ptr);
+#endif
 
-                    return convert_to_hex_string(hash, SHA256_DIGEST_LENGTH);
-#endif // OPENSSL_FIPS
+                    unsigned int hash_len = 0;
+                    unsigned char hash[EVP_MAX_MD_SIZE];
+
+                    EVP_DigestInit_ex(ctx_ptr, EVP_sha256(), nullptr);
+                    EVP_DigestUpdate(ctx_ptr, in.c_str(), in.size());
+                    EVP_DigestFinal_ex(ctx_ptr, hash, &hash_len);
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+                    EVP_MD_CTX_free(ctx_ptr);
 #else
-                    util::Preconditions::check_ssl("ec2_request_signer::hmacSHA256Bytes");
-                    return "";
-#endif // HZ_BUILD_WITH_SSL
+                    EVP_MD_CTX_cleanup(ctx_ptr);
+#endif
+
+                    return convert_to_hex_string(hash, hash_len);
                 }
             }
 
@@ -571,7 +563,7 @@ namespace hazelcast {
                     try {
                         pt::read_xml(stream, tree);
                     } catch (pt::xml_parser_error &e) {
-                        HZ_LOG(lg, warning, 
+                        HZ_LOG(lg, warning,
                             boost::str(boost::format("The parsed xml stream has errors: %1%") % e.what()));
                         return privatePublicPairs;
                     }
@@ -588,7 +580,7 @@ namespace hazelcast {
 
                             if (privateIp) {
                                 privatePublicPairs[prIp] = pubIp;
-                                HZ_LOG(lg, finest, 
+                                HZ_LOG(lg, finest,
                                     boost::str(boost::format("Accepting EC2 instance [%1%][%2%]")
                                                % instanceItem.second.get_optional<std::string>("tagset.item.value").value_or("")
                                                % prIp)
