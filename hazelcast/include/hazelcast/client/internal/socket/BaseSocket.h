@@ -16,6 +16,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <deque>
 
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
@@ -95,25 +96,7 @@ namespace hazelcast {
                                 return;
                             }
 
-                            bool success;
-                            int64_t message_call_id;
-                            do {
-                                auto call_id = ++call_id_counter_;
-                                struct correlation_id {
-                                    int32_t connnection_id;
-                                    int32_t call_id;
-                                };
-                                union {
-                                    int64_t id;
-                                    correlation_id composed_id;
-                                } c_id_union;
-                                c_id_union.composed_id = {connection->get_connection_id(), call_id};
-                                message_call_id = c_id_union.id;
-                                success = connection->invocations.insert({message_call_id, invocation}).second;
-                                if (success) {
-                                    message->set_correlation_id(c_id_union.id);
-                                }
-                            } while (!success);
+                            add_invocation_to_map(connection, invocation, message);
 
                             auto &datas = message->get_buffer();
                             std::vector<boost::asio::const_buffer> buffers;
@@ -258,6 +241,30 @@ namespace hazelcast {
                         }
 
                         return true;
+                    }
+
+                    inline void add_invocation_to_map(const std::shared_ptr<connection::Connection> &connection,
+                                               const std::shared_ptr<spi::impl::ClientInvocation> &invocation,
+                                               std::shared_ptr<protocol::ClientMessage> message) {
+                        bool success;
+                        int64_t message_call_id;
+                        do {
+                            auto call_id = ++call_id_counter_;
+                            struct correlation_id {
+                                int32_t connnection_id;
+                                int32_t call_id;
+                            };
+                            union {
+                                int64_t id;
+                                correlation_id composed_id;
+                            } c_id_union;
+                            c_id_union.composed_id = {connection->get_connection_id(), call_id};
+                            message_call_id = c_id_union.id;
+                            success = connection->invocations.insert({message_call_id, invocation}).second;
+                            if (success) {
+                                message->set_correlation_id(c_id_union.id);
+                            }
+                        } while (!success);
                     }
 
                     client::config::socket_options &socket_options_;
