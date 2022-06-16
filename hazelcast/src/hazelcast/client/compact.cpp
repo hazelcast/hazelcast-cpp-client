@@ -760,7 +760,8 @@ compact_reader::read_string(const std::string& field_name)
 boost::optional<big_decimal>
 compact_reader::read_decimal(const std::string& field_name)
 {
-    return read_variable_size<big_decimal>(field_name, pimpl::field_kind::DECIMAL);
+    return read_variable_size<big_decimal>(field_name,
+                                           pimpl::field_kind::DECIMAL);
 }
 
 boost::optional<hazelcast::client::local_time>
