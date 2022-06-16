@@ -4,6 +4,6 @@
 # However, you should probably use git-clang-format or your IDE to format your
 # changes before committing.
 
-find hazelcast examples    \
+find hazelcast/generated-sources hazelcast/include hazelcast/src hazelcast/test/src examples \
   | grep -E '\.(cpp|h)$'   \
   | xargs clang-format -i
