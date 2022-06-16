@@ -243,28 +243,30 @@ namespace hazelcast {
                         return true;
                     }
 
+                    inline int64_t generate_new_call_id(const std::shared_ptr<connection::Connection> &connection) {
+                        auto call_id = ++call_id_counter_;
+                        struct correlation_id {
+                            int32_t connnection_id;
+                            int32_t call_id;
+                        };
+                        union {
+                            int64_t id;
+                            correlation_id composed_id;
+                        } c_id_union;
+
+                        c_id_union.composed_id = {connection->get_connection_id(), call_id};
+                        return c_id_union.id;
+                    }
+
                     inline void add_invocation_to_map(const std::shared_ptr<connection::Connection> &connection,
                                                const std::shared_ptr<spi::impl::ClientInvocation> &invocation,
                                                std::shared_ptr<protocol::ClientMessage> message) {
-                        bool success;
                         int64_t message_call_id;
                         do {
-                            auto call_id = ++call_id_counter_;
-                            struct correlation_id {
-                                int32_t connnection_id;
-                                int32_t call_id;
-                            };
-                            union {
-                                int64_t id;
-                                correlation_id composed_id;
-                            } c_id_union;
-                            c_id_union.composed_id = {connection->get_connection_id(), call_id};
-                            message_call_id = c_id_union.id;
-                            success = connection->invocations.insert({message_call_id, invocation}).second;
-                            if (success) {
-                                message->set_correlation_id(c_id_union.id);
-                            }
-                        } while (!success);
+                            message_call_id = generate_new_call_id(connection);
+                        } while (!connection->invocations.insert({message_call_id, invocation}).second);
+
+                        message->set_correlation_id(message_call_id);
                     }
 
                     client::config::socket_options &socket_options_;
