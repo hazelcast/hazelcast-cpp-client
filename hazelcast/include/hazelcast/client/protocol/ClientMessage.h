@@ -1020,8 +1020,8 @@ namespace hazelcast {
                 std::string operation_name_;
 
                 std::vector<std::vector<byte>> data_buffer_;
-                size_t buffer_index_;
-                size_t offset_;
+                size_t buffer_index_ {0};
+                size_t offset_ {0};
             };
 
             template<>

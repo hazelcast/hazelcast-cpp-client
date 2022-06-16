@@ -1524,6 +1524,37 @@ namespace hazelcast {
 
                 ASSERT_OPEN_EVENTUALLY(success_async_deferred);
             }
+
+            TEST_F(IssueTest, issue_980_frequent_heartbeat_should_not_interleave_data_messages_causing_corrupt_data) {
+                HazelcastServer server(*g_srvFactory);
+
+                hazelcast::client::client_config config;
+                config.set_property("hazelcast_client_heartbeat_interval", "10");
+                config.set_property("hazelcast_client_heartbeat_timeout", "50000");
+
+                auto hz = hazelcast::new_client(std::move(config)).get();
+
+                auto map = hz.get_map("large-payload-test-map").get();
+
+                std::string str("abcdefghijklmnopqrstuvwxyz");
+                std::string output_data;
+
+                // prepare a string of at least 800K characters
+                while (output_data.length() < 800000) {
+                    output_data += str;
+                }
+
+                // put data 100 times to keep the test short enough
+                constexpr int num_iterations = 100;
+                auto pipe = hazelcast::client::pipelining<std::string>::create(num_iterations);
+                std::vector<boost::future<boost::optional<std::string>>> futures;
+                for (int i = 0; i < num_iterations; ++i) {
+                    auto key = "testKeyForLargePayload_" + std::to_string(i);
+                    pipe->add(map->put(key, output_data));
+                }
+
+                ASSERT_NO_THROW(pipe->results());
+            }
         }
     }
 }
