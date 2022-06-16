@@ -111,33 +111,35 @@ public:
         do_read(std::move(connection));
     }
 
-                    void async_write(const std::shared_ptr<connection::Connection> connection,
-                                    const std::shared_ptr<spi::impl::ClientInvocation> invocation) override {
-                        check_connection(connection, invocation);
-                        auto message = invocation->get_client_message();
-                        socket_strand_.post([connection, invocation, message, this]() {
-                            if (!check_connection(connection, invocation)) {
-                                return;
-                            }
+    void async_write(
+      const std::shared_ptr<connection::Connection> connection,
+      const std::shared_ptr<spi::impl::ClientInvocation> invocation) override
+    {
+        check_connection(connection, invocation);
+        auto message = invocation->get_client_message();
+        socket_strand_.post([connection, invocation, message, this]() {
+            if (!check_connection(connection, invocation)) {
+                return;
+            }
 
-                            add_invocation_to_map(connection, invocation, message);
+            add_invocation_to_map(connection, invocation, message);
 
-                            auto &datas = message->get_buffer();
-                            std::vector<boost::asio::const_buffer> buffers;
-                            buffers.reserve(datas.size());
-                            for (const auto &data : datas) {
-                                buffers.emplace_back(boost::asio::buffer(data));
-                            }
-                            this->outbox_.push_back(buffers);
+            auto& datas = message->get_buffer();
+            std::vector<boost::asio::const_buffer> buffers;
+            buffers.reserve(datas.size());
+            for (const auto& data : datas) {
+                buffers.emplace_back(boost::asio::buffer(data));
+            }
+            this->outbox_.push_back(buffers);
 
-                            if (this->outbox_.size() > 1) {
-                                // async write is in progress
-                                return;
-                            }
+            if (this->outbox_.size() > 1) {
+                // async write is in progress
+                return;
+            }
 
-                            do_write(connection, invocation);
-                        });
-                    }
+            do_write(connection, invocation);
+        });
+    }
 
     // always called from within the socket_strand_
     void close() override
@@ -292,28 +294,36 @@ protected:
         return true;
     }
 
-    inline int64_t generate_new_call_id(const std::shared_ptr<connection::Connection> &connection) {
+    inline int64_t generate_new_call_id(
+      const std::shared_ptr<connection::Connection>& connection)
+    {
         auto call_id = ++call_id_counter_;
-        struct correlation_id {
+        struct correlation_id
+        {
             int32_t connnection_id;
             int32_t call_id;
         };
-        union {
+        union
+        {
             int64_t id;
             correlation_id composed_id;
         } c_id_union;
 
-        c_id_union.composed_id = {connection->get_connection_id(), call_id};
+        c_id_union.composed_id = { connection->get_connection_id(), call_id };
         return c_id_union.id;
     }
 
-    inline void add_invocation_to_map(const std::shared_ptr<connection::Connection> &connection,
-                                      const std::shared_ptr<spi::impl::ClientInvocation> &invocation,
-                                      std::shared_ptr<protocol::ClientMessage> message) {
+    inline void add_invocation_to_map(
+      const std::shared_ptr<connection::Connection>& connection,
+      const std::shared_ptr<spi::impl::ClientInvocation>& invocation,
+      std::shared_ptr<protocol::ClientMessage> message)
+    {
         int64_t message_call_id;
         do {
             message_call_id = generate_new_call_id(connection);
-        } while (!connection->invocations.insert({message_call_id, invocation}).second);
+        } while (
+          !connection->invocations.insert({ message_call_id, invocation })
+             .second);
 
         message->set_correlation_id(message_call_id);
     }
