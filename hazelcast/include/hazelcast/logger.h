@@ -3,6 +3,7 @@
 #include <string>
 #include <functional>
 #include <limits>
+#include <mutex>
 
 #include "hazelcast/util/export.h"
 
@@ -52,6 +53,7 @@ private:
     const std::string cluster_name_;
     const level level_;
     const handler_type handler_;
+    static std::mutex cout_lock_;
 };
 
 enum class logger::level : int
