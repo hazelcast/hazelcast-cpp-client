@@ -16,6 +16,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <deque>
 
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
@@ -40,7 +41,7 @@ namespace hazelcast {
                               connect_timeout_(connect_timeout_in_millis), resolver_(io_resolver),
                               socket_(io) {
                     }
-                    
+
 #ifdef HZ_BUILD_WITH_SSL
 
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
@@ -90,51 +91,27 @@ namespace hazelcast {
                                     const std::shared_ptr<spi::impl::ClientInvocation> invocation) override {
                         check_connection(connection, invocation);
                         auto message = invocation->get_client_message();
-                        socket_strand_.post([=]() {
+                        socket_strand_.post([connection, invocation, message, this]() {
                             if (!check_connection(connection, invocation)) {
                                 return;
                             }
 
-                            bool success;
-                            int64_t message_call_id;
-                            do {
-                                auto call_id = ++call_id_counter_;
-                                struct correlation_id {
-                                    int32_t connnection_id;
-                                    int32_t call_id;
-                                };
-                                union {
-                                    int64_t id;
-                                    correlation_id composed_id;
-                                } c_id_union;
-                                c_id_union.composed_id = {connection->get_connection_id(), call_id};
-                                message_call_id = c_id_union.id;
-                                message->set_correlation_id(c_id_union.id);
-                                success = connection->invocations.insert({message_call_id, invocation}).second;
-                            } while (!success);
-
-                            auto handler = [=](const boost::system::error_code &ec,
-                                               std::size_t bytes_written) {
-                                if (ec) {
-                                    auto message = (boost::format{
-                                            "Error %1% during invocation write for %2% on connection %3%"} %
-                                                    ec % *invocation % *connection).str();
-                                    connection->close(message);
-                                }
-                            };
+                            add_invocation_to_map(connection, invocation, message);
 
                             auto &datas = message->get_buffer();
-                            if (datas.size() == 1) {
-                                boost::asio::async_write(socket_, boost::asio::buffer(datas[0]),
-                                                         socket_strand_.wrap(handler));
-                            } else {
-                                std::vector<boost::asio::const_buffer> buffers;
-                                buffers.reserve(datas.size());
-                                for (auto &d : datas) {
-                                    buffers.push_back(boost::asio::buffer(d));
-                                }
-                                boost::asio::async_write(socket_, buffers, socket_strand_.wrap(handler));
+                            std::vector<boost::asio::const_buffer> buffers;
+                            buffers.reserve(datas.size());
+                            for (const auto &data : datas) {
+                                buffers.emplace_back(boost::asio::buffer(data));
                             }
+                            this->outbox_.push_back(buffers);
+
+                            if (this->outbox_.size() > 1) {
+                                // async write is in progress
+                                return;
+                            }
+
+                            do_write(connection, invocation);
                         });
                     }
 
@@ -223,10 +200,33 @@ namespace hazelcast {
                                                 }));
                     }
 
+                    void do_write(const std::shared_ptr<connection::Connection> connection,
+                               const std::shared_ptr<spi::impl::ClientInvocation> invocation) {
+                        auto handler = [connection, invocation, this](const boost::system::error_code &ec,
+                                                                      std::size_t bytes_written) {
+                            this->outbox_.pop_front();
+
+                            if (ec) {
+                                auto message = (boost::format{
+                                        "Error %1% during invocation write for %2% on connection %3%"} %
+                                                ec % *invocation % *connection).str();
+                                connection->close(message);
+                            } else {
+                                if (!this->outbox_.empty()) {
+                                    do_write(connection, invocation);
+                                }
+                            }
+                        };
+
+                        const auto &message = outbox_[0];
+
+                        boost::asio::async_write(socket_, message, socket_strand_.wrap(handler));
+                    }
+
                     virtual void post_connect() {
                     }
 
-                    bool check_connection(const std::shared_ptr<connection::Connection> &connection,
+                    static bool check_connection(const std::shared_ptr<connection::Connection> &connection,
                                           const std::shared_ptr<spi::impl::ClientInvocation> &invocation) {
                         if (!connection->is_alive()) {
                             invocation->notify_exception(
@@ -240,6 +240,32 @@ namespace hazelcast {
                         return true;
                     }
 
+                    inline int64_t generate_new_call_id(const std::shared_ptr<connection::Connection> &connection) {
+                        auto call_id = ++call_id_counter_;
+                        struct correlation_id {
+                            int32_t connnection_id;
+                            int32_t call_id;
+                        };
+                        union {
+                            int64_t id;
+                            correlation_id composed_id;
+                        } c_id_union;
+
+                        c_id_union.composed_id = {connection->get_connection_id(), call_id};
+                        return c_id_union.id;
+                    }
+
+                    inline void add_invocation_to_map(const std::shared_ptr<connection::Connection> &connection,
+                                               const std::shared_ptr<spi::impl::ClientInvocation> &invocation,
+                                               std::shared_ptr<protocol::ClientMessage> message) {
+                        int64_t message_call_id;
+                        do {
+                            message_call_id = generate_new_call_id(connection);
+                        } while (!connection->invocations.insert({message_call_id, invocation}).second);
+
+                        message->set_correlation_id(message_call_id);
+                    }
+
                     client::config::socket_options &socket_options_;
                     address remote_endpoint_;
                     boost::asio::io_context &io_;
@@ -248,6 +274,8 @@ namespace hazelcast {
                     boost::asio::ip::tcp::resolver &resolver_;
                     T socket_;
                     int32_t call_id_counter_{0};
+                    typedef std::deque<std::vector<boost::asio::const_buffer>> Outbox;
+                    Outbox outbox_;
                 };
             }
         }
