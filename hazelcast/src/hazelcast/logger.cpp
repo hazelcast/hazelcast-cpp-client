@@ -1,6 +1,5 @@
 #include <iomanip>
 #include <iostream>
-#include <mutex>
 #include <sstream>
 #include <chrono>
 #include <ctime>
@@ -42,7 +41,7 @@ logger::logger(std::string instance_name, std::string cluster_name, level level,
     : instance_name_{ std::move(instance_name) }
     , cluster_name_{ std::move(cluster_name) }
     , level_{ level }
-    , handler_{ std::move(handler) } 
+    , handler_{ std::move(handler) }
 {}
 
 bool logger::enabled(level lvl) noexcept {
@@ -69,10 +68,14 @@ std::tm time_t_to_localtime(const std::time_t &t) {
 
 }
 
-void logger::default_handler(const std::string &instance_name,
-                             const std::string &cluster_name,
-                             level lvl, 
-                             const std::string &msg) noexcept {
+std::mutex logger::cout_lock_;
+
+void
+logger::default_handler(const std::string& instance_name,
+                        const std::string& cluster_name,
+                        level lvl,
+                        const std::string& msg) noexcept
+{
 
     auto tp = std::chrono::system_clock::now();
     auto t = std::chrono::system_clock::to_time_t(tp);
@@ -80,7 +83,7 @@ void logger::default_handler(const std::string &instance_name,
 
     auto dur = tp.time_since_epoch();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(dur);
-    
+
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur - sec).count();
 
     std::ostringstream sstrm;
@@ -96,11 +99,10 @@ void logger::default_handler(const std::string &instance_name,
           << '\n';
 
     {
-        static std::mutex cout_lock;
-        std::lock_guard<std::mutex> g(cout_lock);
+        std::lock_guard<std::mutex> g(cout_lock_);
         std::cout << sstrm.str() << std::flush;
     }
-} 
+}
 
 
 } // namespace hazelcast
