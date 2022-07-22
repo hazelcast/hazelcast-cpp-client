@@ -34,7 +34,8 @@ namespace sql {
 
 sql_service::sql_service(client::spi::ClientContext& context)
   : client_context_(context)
-{}
+{
+}
 
 boost::future<sql_result>
 sql_service::execute(const sql_statement& statement)
@@ -61,7 +62,7 @@ sql_service::execute(const sql_statement& statement)
     };
 
     auto request = protocol::codec::sql_execute_encode(
-      statement.query(),
+      statement.sql(),
       statement.serialized_parameters_,
       static_cast<int64_t>(statement.timeout().count()),
       static_cast<int32_t>(statement.cursor_buffer_size()),
@@ -122,38 +123,75 @@ sql_service::uuid_low(const boost::uuids::uuid& uuid)
 }
 
 sql_statement::sql_statement(hazelcast_client& client, std::string query)
-  : query_{ std::move(query) }
+  : sql_{ std::move(query) }
   , serialized_parameters_{}
-  , cursor_buffer_size_{ 4096 }
-  , timeout_{ -1 }
+  , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
+  , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
   , serialization_service_{
       spi::ClientContext(client).get_serialization_service()
   }
-{}
+{
+}
 
 sql_statement::sql_statement(spi::ClientContext& client_context,
                              std::string query)
-  : query_{ std::move(query) }
+  : sql_{ std::move(query) }
   , serialized_parameters_{}
-  , cursor_buffer_size_{ 4096 }
-  , timeout_{ -1 }
+  , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
+  , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
   , serialization_service_{ client_context.get_serialization_service() }
-{}
-
-const std::string&
-sql_statement::query() const
 {
-    return query_;
 }
 
-std::size_t
+sql_statement&
+sql_statement::add_parameter()
+{
+    return *this;
+}
+
+const std::string&
+sql_statement::sql() const
+{
+    return sql_;
+}
+
+sql_statement&
+sql_statement::sql(std::string sql_string)
+{
+    util::Preconditions::check_not_empty(sql_string, "SQL cannot be empty");
+
+    sql_ = sql_string;
+
+    return *this;
+}
+
+sql_statement&
+sql_statement::clear_parameters()
+{
+    serialized_parameters_.clear();
+
+    return *this;
+}
+
+int32_t
 sql_statement::cursor_buffer_size() const
 {
     return cursor_buffer_size_;
+}
+
+sql_statement&
+sql_statement::cursor_buffer_size(int32_t size)
+{
+    util::Preconditions::check_positive(
+      size,
+      (boost::format("Cursor buffer size must be positive: %s") % size).str());
+    cursor_buffer_size_ = size;
+
+    return *this;
 }
 
 std::chrono::milliseconds
@@ -162,16 +200,12 @@ sql_statement::timeout() const
     return timeout_;
 }
 
-void
+sql_statement&
 sql_statement::timeout(std::chrono::milliseconds timeout)
 {
     timeout_ = timeout;
-}
 
-void
-sql_statement::cursor_buffer_size(std::size_t s)
-{
-    cursor_buffer_size_ = s;
+    return *this;
 }
 
 const boost::optional<std::string>&
@@ -180,10 +214,11 @@ sql_statement::schema() const
     return schema_;
 }
 
-void
+sql_statement&
 sql_statement::schema(boost::optional<std::string> schema)
 {
     schema_ = std::move(schema);
+    return *this;
 }
 
 sql::sql_expected_result_type
@@ -192,10 +227,11 @@ sql_statement::expected_result_type() const
     return expected_result_type_;
 }
 
-void
+sql_statement&
 sql_statement::expected_result_type(sql::sql_expected_result_type type)
 {
     expected_result_type_ = type;
+    return *this;
 }
 
 sql_column_metadata::sql_column_metadata(std::string name,
@@ -204,7 +240,8 @@ sql_column_metadata::sql_column_metadata(std::string name,
   : name_{ std::move(name) }
   , type_{ type }
   , nullable_{ nullable }
-{}
+{
+}
 
 const std::string&
 sql_column_metadata::name() const
@@ -234,7 +271,8 @@ query_id::query_id(int64_t member_id_high,
   , member_id_low_{ member_id_low }
   , local_id_high_{ local_id_high }
   , local_id_low_{ local_id_low }
-{}
+{
+}
 
 int64_t
 query_id::member_id_high() const
@@ -269,7 +307,8 @@ sql_result::sql_result(
   : update_count_(update_count)
   , row_metadata_(std::move(row_metadata))
   , current_page_(std::move(first_page))
-{}
+{
+}
 
 int64_t
 sql_result::update_count() const
