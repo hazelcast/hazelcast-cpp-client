@@ -124,7 +124,7 @@ std::shared_ptr<connection::Connection> sql_service::query_connection() {
 
         return connection;
     } catch (exception::iexception &e) {
-        rethrow(std::current_exception());
+        rethrow(std::current_exception(), e);
     }
 
      return client_context_.get_connection_manager().get_random_connection();
@@ -149,7 +149,7 @@ void sql_service::rethrow(std::exception_ptr exc_ptr, const exception::iexceptio
     } catch (exception::access_control &) {
         throw;
     } catch (...) {
-        impl::query_utils::throw_public_exception(exc_ptr, ie, client_id());
+        impl::query_utils::throw_public_exception(std::current_exception(), ie, client_id());
     }
 }
 
