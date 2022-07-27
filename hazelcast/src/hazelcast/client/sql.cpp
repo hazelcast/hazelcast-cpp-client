@@ -28,6 +28,9 @@
 #include "hazelcast/client/sql/hazelcast_sql_exception.h"
 #include "hazelcast/client/sql/sql_service.h"
 #include "hazelcast/client/hazelcast_client.h"
+#include "hazelcast/client/sql/impl/query_utils.h"
+#include "hazelcast/client/sql/impl/sql_error_code.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {
@@ -42,12 +45,11 @@ sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
 
-    auto query_conn =
-      client_context_.get_connection_manager().get_random_connection();
+    auto query_conn = query_connection();
 
     if (!query_conn) {
         BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
-          "hazelcast_client_instance_impl::execute",
+          "sql_service::execute",
           "No connection found for SQL"));
     }
 
@@ -110,6 +112,24 @@ sql_service::execute(const sql_statement& statement)
     return result_fut;
 }
 
+std::shared_ptr<connection::Connection> sql_service::query_connection() {
+    // TODO: Change as Java
+    try {
+        auto connection = client_context_.get_connection_manager().connection_for_sql();
+
+        if (!connection) {
+            exception::query e(static_cast<int32_t>(impl::sql_error_code::CONNECTION_PROBLEM), "Client is not connected");
+            rethrow(std::make_exception_ptr(e), e);
+        }
+
+        return connection;
+    } catch (exception::iexception &e) {
+        rethrow(std::current_exception());
+    }
+
+     return client_context_.get_connection_manager().get_random_connection();
+}
+
 int64_t
 sql_service::uuid_high(const boost::uuids::uuid& uuid)
 {
@@ -121,6 +141,26 @@ sql_service::uuid_low(const boost::uuids::uuid& uuid)
 {
     return boost::endian::load_big_s64(uuid.begin() + 8);
 }
+
+void sql_service::rethrow(std::exception_ptr exc_ptr, const exception::iexception &ie) {
+    // Make sure that access_control is thrown as a top-level exception
+    try {
+        std::rethrow_if_nested(exc_ptr);
+    } catch (exception::access_control &) {
+        throw;
+    } catch (...) {
+        impl::query_utils::throw_public_exception(exc_ptr, ie, client_id());
+    }
+}
+
+    boost::uuids::uuid sql_service::client_id() {
+        return client_context_.get_connection_manager().get_client_uuid();
+    }
+
+    constexpr std::chrono::milliseconds sql_statement::TIMEOUT_NOT_SET;
+constexpr std::chrono::milliseconds sql_statement::TIMEOUT_DISABLED;
+constexpr std::chrono::milliseconds sql_statement::DEFAULT_TIMEOUT;
+constexpr int32_t sql_statement::DEFAULT_CURSOR_BUFFER_SIZE;
 
 sql_statement::sql_statement(hazelcast_client& client, std::string query)
   : sql_{ std::move(query) }
@@ -145,12 +185,6 @@ sql_statement::sql_statement(spi::ClientContext& client_context,
   , schema_{}
   , serialization_service_{ client_context.get_serialization_service() }
 {
-}
-
-sql_statement&
-sql_statement::add_parameter()
-{
-    return *this;
 }
 
 const std::string&
@@ -261,6 +295,29 @@ sql_column_metadata::nullable() const
     return nullable_;
 }
 
+    hazelcast_sql_exception::hazelcast_sql_exception(boost::uuids::uuid originating_member_id,
+                                                     int32_t code,
+                                                     const boost::optional<std::string>& message,
+                                                     const boost::optional<std::string>& suggestion,
+                                                     std::exception_ptr cause)
+            : hazelcast_("",message ? message.value() : "", "", cause)
+            , originating_member_id_(originating_member_id)
+            , code_(code)
+            , suggestion_(suggestion)
+    {}
+
+    const boost::uuids::uuid &hazelcast_sql_exception::originating_member_id() const {
+        return originating_member_id_;
+    }
+
+    int32_t hazelcast_sql_exception::code() const {
+        return code_;
+    }
+
+    const boost::optional<std::string> &hazelcast_sql_exception::suggestion() const {
+        return suggestion_;
+    }
+
 namespace impl {
 
 query_id::query_id(int64_t member_id_high,
@@ -296,6 +353,23 @@ int64_t
 query_id::local_id_low() const
 {
     return local_id_low_;
+}
+
+void query_utils::throw_public_exception(std::exception_ptr e, const exception::iexception &ie, boost::uuids::uuid id) {
+    try {
+       std::rethrow_exception(e);
+    } catch (hazelcast_sql_exception &e) {
+        throw;
+    } catch (exception::query &e) {
+        auto originating_member_id = e.originating_member_uuid();
+        if (originating_member_id.is_nil()) {
+            originating_member_id = id;
+        }
+
+        throw hazelcast_sql_exception(originating_member_id, e.code(), e.get_message(), e.suggestion());
+    } catch (...) {
+        throw hazelcast_sql_exception(id, static_cast<int32_t>(sql_error_code::GENERIC), ie.get_message(), boost::none, e);
+    }
 }
 
 } // namespace impl

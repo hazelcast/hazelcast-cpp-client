@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <boost/uuid/nil_generator.hpp>
+
 #include "hazelcast/client/exception/iexception.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
@@ -162,7 +164,6 @@ DEFINE_EXCEPTION_CLASS(negative_array_size,
 DEFINE_EXCEPTION_CLASS(no_such_element, protocol::NO_SUCH_ELEMENT, true);
 DEFINE_EXCEPTION_CLASS(null_pointer, protocol::NULL_POINTER, true);
 DEFINE_EXCEPTION_CLASS(operation_timeout, protocol::OPERATION_TIMEOUT, true);
-DEFINE_EXCEPTION_CLASS(query, protocol::QUERY, true);
 DEFINE_EXCEPTION_CLASS(query_result_size_exceeded,
                        protocol::QUERY_RESULT_SIZE_EXCEEDED,
                        true);
@@ -318,6 +319,32 @@ DEFINE_RETRYABLE_EXCEPTION_CLASS(wrong_target, protocol::WRONG_TARGET);
 
 DEFINE_RETRYABLE_EXCEPTION_CLASS(target_not_replica,
                                  protocol::TARGET_NOT_REPLICA_EXCEPTION);
+
+class query : public hazelcast_
+{
+public:
+    explicit query(const std::string& source = "",
+                   const std::string& message = "",
+                   const std::string& details = "",
+                   std::exception_ptr cause = nullptr);
+
+    query(int32_t code,
+          std::string message,
+          std::exception_ptr cause = nullptr,
+          boost::uuids::uuid originating_member_id = boost::uuids::nil_uuid(),
+          std::string suggestion = "");
+
+    int32_t code() const;
+
+    const std::string &suggestion() const;
+
+    const boost::uuids::uuid &originating_member_uuid() const;
+
+private:
+    int32_t code_;
+    std::string suggestion_;
+    boost::uuids::uuid originating_member_uuid_;
+};
 
 class member_left : public execution
 {

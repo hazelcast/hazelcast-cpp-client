@@ -94,6 +94,12 @@ private:
 
     static int64_t uuid_high(const boost::uuids::uuid& uuid);
     static int64_t uuid_low(const boost::uuids::uuid& uuid);
+
+    std::shared_ptr<connection::Connection> query_connection();
+
+    void rethrow(std::exception_ptr exc_ptr, const exception::iexception &ie);
+
+    boost::uuids::uuid client_id();
 };
 } // namespace sql
 } // namespace client

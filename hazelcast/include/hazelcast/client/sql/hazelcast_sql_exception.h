@@ -15,41 +15,30 @@
  */
 #pragma once
 
-#include <stdexcept>
-
 #include <boost/uuid/uuid.hpp>
 #include <boost/optional.hpp>
 
 #include "hazelcast/util/export.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
 
 namespace hazelcast {
 namespace client {
 namespace sql {
 
-class HAZELCAST_API hazelcast_sql_exception : public std::runtime_error
+class HAZELCAST_API hazelcast_sql_exception : public exception::hazelcast_
 {
 public:
     hazelcast_sql_exception(boost::uuids::uuid originating_member_id,
                             int32_t code,
                             const boost::optional<std::string>& message,
-                            const boost::optional<std::string>& suggestion)
-    : std::runtime_error(message ? message.value() : "")
-    , originating_member_id_(originating_member_id)
-    , code_(code)
-    , suggestion_(suggestion)
-    {}
+                            const boost::optional<std::string>& suggestion,
+                            std::exception_ptr cause = nullptr);
 
-    boost::uuids::uuid originating_member_id() const {
-        return originating_member_id_;
-    }
+    const boost::uuids::uuid &originating_member_id() const;
 
-    int32_t code() const {
-        return code_;
-    }
+    int32_t code() const;
 
-    const boost::optional<std::string>& suggestion() const {
-        return suggestion_;
-    }
+    const boost::optional<std::string> &suggestion() const;
 
 private:
     boost::uuids::uuid originating_member_id_;

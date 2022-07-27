@@ -88,8 +88,8 @@ public:
      * @see template<typename Param> add_parameter(const Param& value)
      * @see clear_parameters()
      */
-    template<typename T, typename... Param>
-    sql_statement& set_parameters(const T& value, const Param... other_params);
+    template<typename... Param>
+    sql_statement& set_parameters(Param... params);
 
     /**
      * Adds a single parameter value to the end of the parameter values list.
@@ -211,8 +211,6 @@ private:
 
     sql_statement(spi::ClientContext& client_context, std::string query);
 
-    sql_statement& add_parameter();
-
     std::string sql_;
     std::vector<data> serialized_parameters_;
     std::size_t cursor_buffer_size_;
@@ -234,13 +232,13 @@ sql_statement::add_parameter(const Param& param)
     return *this;
 }
 
-template<typename T, typename... Param>
+template<typename... Param>
 sql_statement&
-sql_statement::set_parameters(const T& value, const Param... other_params)
+sql_statement::set_parameters(Param... params)
 {
-    add_parameter(value);
-
-    return set_parameters(other_params...);
+    int _[] = {0, ((void) add_parameter(params), 0)...};
+    (void)_;
+    return *this;
 }
 
 } // namespace sql
