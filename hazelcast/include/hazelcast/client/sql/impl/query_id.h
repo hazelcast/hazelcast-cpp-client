@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include <cstdint>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/export.h"
 
@@ -24,24 +24,10 @@ namespace client {
 namespace sql {
 namespace impl {
 
-class HAZELCAST_API query_id
+struct HAZELCAST_API query_id
 {
-public:
-    query_id(int64_t member_id_high,
-             int64_t member_id_low,
-             int64_t local_id_high,
-             int64_t local_id_low);
-
-    int64_t member_id_high() const;
-    int64_t member_id_low() const;
-    int64_t local_id_high() const;
-    int64_t local_id_low() const;
-
-private:
-    int64_t member_id_high_;
-    int64_t member_id_low_;
-    int64_t local_id_high_;
-    int64_t local_id_low_;
+    boost::uuids::uuid member_id;
+    boost::uuids::uuid local_id;
 };
 
 } // namespace impl

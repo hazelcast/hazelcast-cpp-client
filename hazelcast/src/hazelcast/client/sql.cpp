@@ -56,12 +56,7 @@ sql_service::execute(const sql_statement& statement)
     auto local_id = client_context_.random_uuid();
     auto member_id = query_conn->get_remote_uuid();
 
-    sql::impl::query_id qid{
-        uuid_high(member_id),
-        uuid_low(member_id),
-        uuid_high(local_id),
-        uuid_low(local_id),
-    };
+    sql::impl::query_id qid{member_id, local_id};
 
     auto request = protocol::codec::sql_execute_encode(
       statement.sql(),
@@ -78,44 +73,58 @@ sql_service::execute(const sql_statement& statement)
 
     auto result_fut = invocation->invoke().then(
       boost::launch::sync,
-      [query_conn](boost::future<ClientMessage> response_fut) {
-          ClientMessage response = response_fut.get();
-
-          auto initial_frame_header = response.read_frame_header();
-          response.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN -
-                          ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
-
-          int64_t update_count = response.get<int64_t>();
-
-          response.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
-                          protocol::ClientMessage::RESPONSE_HEADER_LEN -
-                          protocol::ClientMessage::INT64_SIZE);
-
-          auto row_metadata =
-            response.get_nullable<std::vector<sql_column_metadata>>();
-          auto first_page = response.get_nullable<impl::sql_page>();
-          auto error = response.get_nullable<impl::sql_error>();
-
-          if (error) {
-              BOOST_THROW_EXCEPTION(
-                sql::hazelcast_sql_exception(error->originating_member_id,
-                                             error->code,
-                                             error->message,
-                                             error->suggestion));
+      [this, query_conn](boost::future<ClientMessage> response_fut) {
+          try {
+              auto response = response_fut.get();
+              return handle_execute_response(response);
+          } catch (exception::iexception &e) {
+              rethrow(std::current_exception(), e);
           }
 
-          return sql_result{ update_count,
-                             std::move(row_metadata),
-                             std::move(first_page) };
       });
 
     return result_fut;
 }
 
+sql_result sql_service::handle_execute_response(protocol::ClientMessage &response) {
+    auto initial_frame_header = response.read_frame_header();
+    response.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN -
+                            protocol::ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+    int64_t update_count = response.get<int64_t>();
+
+    // skip initial_frame
+    response.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
+                    protocol::ClientMessage::RESPONSE_HEADER_LEN -
+                    protocol::ClientMessage::INT64_SIZE);
+
+    auto row_metadata =
+            response.get_nullable<std::vector<sql_column_metadata>>();
+    auto first_page = response.get_nullable<impl::sql_page>();
+    auto error = response.get_nullable<impl::sql_error>();
+
+    if (error) {
+        BOOST_THROW_EXCEPTION(
+                sql::hazelcast_sql_exception(error->originating_member_id,
+                                             error->code,
+                                             error->message,
+                                             error->suggestion));
+    }
+
+    return sql_result{ update_count,
+                       std::move(row_metadata),
+                       std::move(first_page) };
+}
+
 std::shared_ptr<connection::Connection> sql_service::query_connection() {
-    // TODO: Change as Java
     try {
-        auto connection = client_context_.get_connection_manager().connection_for_sql();
+        auto &cs = client_context_.get_client_cluster_service();
+        auto members = cs.get_member_list();
+        auto connection = client_context_.get_connection_manager().connection_for_sql([&]() {
+            return impl::query_utils::member_of_same_larger_version_group(members);
+        }, [&](boost::uuids::uuid id) {
+            return cs.get_member(id);
+        });
 
         if (!connection) {
             exception::query e(static_cast<int32_t>(impl::sql_error_code::CONNECTION_PROBLEM), "Client is not connected");
@@ -320,41 +329,6 @@ sql_column_metadata::nullable() const
 
 namespace impl {
 
-query_id::query_id(int64_t member_id_high,
-                   int64_t member_id_low,
-                   int64_t local_id_high,
-                   int64_t local_id_low)
-  : member_id_high_{ member_id_high }
-  , member_id_low_{ member_id_low }
-  , local_id_high_{ local_id_high }
-  , local_id_low_{ local_id_low }
-{
-}
-
-int64_t
-query_id::member_id_high() const
-{
-    return member_id_high_;
-}
-
-int64_t
-query_id::member_id_low() const
-{
-    return member_id_low_;
-}
-
-int64_t
-query_id::local_id_high() const
-{
-    return local_id_high_;
-}
-
-int64_t
-query_id::local_id_low() const
-{
-    return local_id_low_;
-}
-
 void query_utils::throw_public_exception(std::exception_ptr e, const exception::iexception &ie, boost::uuids::uuid id) {
     try {
        std::rethrow_exception(e);
@@ -371,6 +345,68 @@ void query_utils::throw_public_exception(std::exception_ptr e, const exception::
         throw hazelcast_sql_exception(id, static_cast<int32_t>(sql_error_code::GENERIC), ie.get_message(), boost::none, e);
     }
 }
+
+    boost::optional<member> query_utils::member_of_same_larger_version_group(const std::vector<member> &members) {
+        // The members should have at most 2 different version (ignoring the patch version).
+        // Find a random member from the larger same-version group.
+
+        // we don't use 2-element array to save on litter
+        boost::optional<member::version> version0;
+        boost::optional<member::version> version1;
+        size_t count0 = 0;
+        size_t count1 = 0;
+        size_t gross_majority = members.size() / 2;
+
+        for (const auto &m : members) {
+            if (m.is_lite_member()) {
+                continue;
+            }
+            auto v = m.get_version();
+            size_t current_count = 0;
+            if (!version0 || *version0 == v ) {
+                version0 = v;
+                current_count = ++count0;
+            } else if (!version1 || *version1 == v) {
+                version1 = v;
+                current_count = ++count1;
+            } else {
+                throw exception::runtime("query_utils::member_of_same_larger_version_group",
+                                         (boost::format("More than 2 distinct member versions found: %1% , %2%")  %version0 %version1).str());
+            }
+        }
+
+        assert(count1 == 0 || count0 > 0);
+
+        // no data members
+        if (count0 == 0) {
+            return boost::none;
+        }
+
+        size_t count;
+        member::version version{};
+        if (count0 > count1 || (count0 == count1 && *version0 > *version1)) {
+            count = count0;
+            version = *version0;
+        } else {
+            count = count1;
+            version = *version1;
+        }
+
+        // otherwise return a random member from the larger group
+        static thread_local std::mt19937 generator;
+        std::uniform_int_distribution<int> distribution(0, count);
+        auto random_member_index = distribution(generator);
+        for (const auto &m : members) {
+            if (!m.is_lite_member() && m.get_version() == version) {
+                random_member_index--;
+                if (random_member_index < 0) {
+                    return m;
+                }
+            }
+        }
+
+        throw exception::runtime("query_utils::member_of_same_larger_version_group", "should never get here");
+    }
 
 } // namespace impl
 

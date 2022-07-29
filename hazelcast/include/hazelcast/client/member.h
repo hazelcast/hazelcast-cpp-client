@@ -75,6 +75,18 @@ public:
         byte major;
         byte minor;
         byte patch;
+
+        bool operator==(const version &rhs) const;
+
+        bool operator!=(const version &rhs) const;
+
+        bool operator<(const version &rhs) const;
+
+        bool operator>(const version &rhs) const;
+
+        bool operator<=(const version &rhs) const;
+
+        bool operator>=(const version &rhs) const;
     };
 
     member();
@@ -83,7 +95,8 @@ public:
            boost::uuids::uuid uuid,
            bool lite,
            std::unordered_map<std::string, std::string> attr,
-           std::unordered_map<endpoint_qualifier, address> address_map);
+           std::unordered_map<endpoint_qualifier, address> address_map,
+           version v);
 
     member(address member_address);
 
@@ -125,6 +138,16 @@ public:
     const std::string* get_attribute(const std::string& key) const;
 
     /**
+     * Returns the Hazelcast codebase version of this member; this may or may not be different from the version reported by
+     * cluster version, for example when a node with a different codebase version is added to an
+     * existing cluster.
+     *
+     * @return the version of this member.
+     * @since 5.1
+     */
+    version get_version() const;
+
+    /**
      * check if an attribute is defined for given key.
      *
      * @tparam key for the attribute
@@ -142,6 +165,7 @@ private:
     bool lite_member_;
     std::unordered_map<std::string, std::string> attributes_;
     std::unordered_map<endpoint_qualifier, address> address_map_;
+    version version_;
 };
 
 std::ostream HAZELCAST_API&

@@ -623,7 +623,7 @@ public:
         auto addr = get<address>();
         auto attributes = get<std::unordered_map<std::string, std::string>>();
         // read version and ignore it
-        get<member::version>();
+        auto version = get<member::version>();
         auto address_map =
           get<std::unordered_map<endpoint_qualifier, address>>();
 
@@ -633,7 +633,8 @@ public:
                       uuid,
                       lite_member,
                       std::move(attributes),
-                      address_map);
+                      address_map,
+                      version);
     }
 
     template<typename T>
@@ -1209,13 +1210,16 @@ public:
     {
         add_begin_frame();
 
-        set(frame_header_t{ SIZE_OF_FRAME_LENGTH_AND_FLAGS + 4 * INT64_SIZE,
+        set(frame_header_t{ SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * sizeof(boost::uuids::uuid),
                             DEFAULT_FLAGS });
 
-        set(query_id.member_id_high());
-        set(query_id.member_id_low());
-        set(query_id.local_id_high());
-        set(query_id.local_id_low());
+        std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
+                    query_id.member_id.data,
+                    sizeof(boost::uuids::uuid));
+
+        std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
+                    query_id.local_id.data,
+                    sizeof(boost::uuids::uuid));
 
         add_end_frame(is_final);
     }

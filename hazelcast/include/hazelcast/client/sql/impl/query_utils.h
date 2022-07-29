@@ -24,6 +24,20 @@ namespace impl {
     class HAZELCAST_API query_utils {
     public:
         static void throw_public_exception(std::exception_ptr e, const exception::iexception &ie, boost::uuids::uuid id);
+
+        /**
+         * Finds a larger same-version group of data members from a collection of
+         * members and, if {@code localMember} is from that group, return that.
+         * Otherwise return a random member from the group. If the same-version
+         * groups have the same size, return a member from the newer group
+         * (preferably the local one).
+         * <p>
+         * Used for SqlExecute and SubmitJob(light=true) messages.
+         *
+         * @param members list of all members
+         * @return the chosen member or none, if no data member is found
+         */
+        static boost::optional<member> member_of_same_larger_version_group(const std::vector<member> &members);
     };
 }
 }

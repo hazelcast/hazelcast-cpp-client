@@ -90,7 +90,7 @@ private:
     friend client::impl::hazelcast_client_instance_impl;
     client::spi::ClientContext& client_context_;
 
-    sql_service(client::spi::ClientContext& context);
+    explicit sql_service(client::spi::ClientContext& context);
 
     static int64_t uuid_high(const boost::uuids::uuid& uuid);
     static int64_t uuid_low(const boost::uuids::uuid& uuid);
@@ -100,6 +100,8 @@ private:
     void rethrow(std::exception_ptr exc_ptr, const exception::iexception &ie);
 
     boost::uuids::uuid client_id();
+
+    sql_result handle_execute_response(protocol::ClientMessage &msg);
 };
 } // namespace sql
 } // namespace client

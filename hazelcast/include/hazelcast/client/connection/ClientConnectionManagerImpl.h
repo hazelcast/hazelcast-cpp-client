@@ -120,6 +120,18 @@ public:
 
     std::shared_ptr<Connection> get_random_connection();
 
+    /**
+     * Return:<ol>
+     *     <li>a random connection to a data member from the larger same-version
+     *         group
+     *     <li>if there's no such connection, return connection to a random data
+     *         member
+     *     <li>if there's no such connection, return any random connection
+     * </ol>
+     */
+    std::shared_ptr<connection::Connection> connection_for_sql(std::function<boost::optional<member>()> member_of_large_same_version_group,
+                                                               std::function<boost::optional<member>(boost::uuids::uuid)> get_cluster_member);
+
     boost::uuids::uuid get_client_uuid() const;
 
     void check_invocation_allowed();
@@ -132,6 +144,7 @@ private:
     static constexpr size_t EXECUTOR_CORE_POOL_SIZE = 10;
     static constexpr int32_t CLIENT = 1;
     static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
+    static constexpr int SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
 
     struct auth_response
     {
@@ -262,7 +275,7 @@ private:
     std::shared_ptr<Connection> connect(const address& address);
 
     address translate(const member& m);
-};
+    };
 } // namespace connection
 } // namespace client
 } // namespace hazelcast
