@@ -90,6 +90,15 @@ private:
     friend client::impl::hazelcast_client_instance_impl;
     client::spi::ClientContext& client_context_;
 
+    struct sql_execute_response_parameters {
+        int64_t update_count;
+        boost::optional<std::vector<sql_column_metadata>>row_metadata;
+        boost::optional<impl::sql_page> first_page;
+        boost::optional<impl::sql_error> error;
+        bool is_infinite_rows = false;
+        bool is_infinite_rows_exist = false;
+    };
+
     explicit sql_service(client::spi::ClientContext& context);
 
     static int64_t uuid_high(const boost::uuids::uuid& uuid);
@@ -102,6 +111,8 @@ private:
     boost::uuids::uuid client_id();
 
     sql_result handle_execute_response(protocol::ClientMessage &msg);
+
+    sql_execute_response_parameters decode_response(protocol::ClientMessage &msg) const;
 };
 } // namespace sql
 } // namespace client

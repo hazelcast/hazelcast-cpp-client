@@ -1090,7 +1090,8 @@ ClientClusterServiceImpl::create_snapshot(int32_t version,
                               m.get_uuid(),
                               m.is_lite_member(),
                               m.get_attributes(),
-                              m.address_map());
+                              m.address_map(),
+                              m.get_version());
             result.members.emplace(new_member.get_uuid(),
                                    std::move(new_member));
         }

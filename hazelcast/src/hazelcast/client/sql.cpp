@@ -86,34 +86,54 @@ sql_service::execute(const sql_statement& statement)
     return result_fut;
 }
 
-sql_result sql_service::handle_execute_response(protocol::ClientMessage &response) {
-    auto initial_frame_header = response.read_frame_header();
-    response.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN -
-                            protocol::ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+    sql_service::sql_execute_response_parameters sql_service::decode_response(protocol::ClientMessage &msg) const {
+        static constexpr size_t RESPONSE_UPDATE_COUNT_FIELD_OFFSET = protocol::ClientMessage::RESPONSE_HEADER_LEN;
+        static constexpr size_t RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET = RESPONSE_UPDATE_COUNT_FIELD_OFFSET + protocol::ClientMessage::INT64_SIZE;
 
-    int64_t update_count = response.get<int64_t>();
+        sql_execute_response_parameters response;
 
-    // skip initial_frame
-    response.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
-                    protocol::ClientMessage::RESPONSE_HEADER_LEN -
-                    protocol::ClientMessage::INT64_SIZE);
+        auto initial_frame_header = msg.read_frame_header();
+        msg.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN -
+                        protocol::ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-    auto row_metadata =
-            response.get_nullable<std::vector<sql_column_metadata>>();
-    auto first_page = response.get_nullable<impl::sql_page>();
-    auto error = response.get_nullable<impl::sql_error>();
+        response.update_count = msg.get<int64_t>();
 
-    if (error) {
-        BOOST_THROW_EXCEPTION(
-                sql::hazelcast_sql_exception(error->originating_member_id,
-                                             error->code,
-                                             error->message,
-                                             error->suggestion));
+        if (initial_frame_header.frame_len >= RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET + protocol::ClientMessage::INT8_SIZE) {
+            response.is_infinite_rows = msg.get<bool>();
+            response.is_infinite_rows_exist = true;
+            // skip initial_frame
+            msg.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
+                       (RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
+                        protocol::ClientMessage::INT8_SIZE));
+        } else {
+            response.is_infinite_rows_exist = false;
+            // skip initial_frame
+            msg.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
+                       RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET);
+        }
+
+        response.row_metadata =
+                msg.get_nullable<std::vector<sql_column_metadata>>();
+        response.first_page = msg.get_nullable<impl::sql_page>();
+        response.error = msg.get_nullable<impl::sql_error>();
+        
+        return response;
     }
 
-    return sql_result{ update_count,
-                       std::move(row_metadata),
-                       std::move(first_page) };
+sql_result sql_service::handle_execute_response(protocol::ClientMessage &msg) {
+    auto response = decode_response(msg);
+    if (response.error) {
+        BOOST_THROW_EXCEPTION(
+                sql::hazelcast_sql_exception(response.error->originating_member_id,
+                                             response.error->code,
+                                             response.error->message,
+                                             response.error->suggestion));
+    }
+
+    return sql_result{ response.update_count,
+                       std::move(response.row_metadata),
+                       std::move(response.first_page),
+                       response.is_infinite_rows};
 }
 
 std::shared_ptr<connection::Connection> sql_service::query_connection() {
@@ -166,7 +186,7 @@ void sql_service::rethrow(std::exception_ptr exc_ptr, const exception::iexceptio
         return client_context_.get_connection_manager().get_client_uuid();
     }
 
-    constexpr std::chrono::milliseconds sql_statement::TIMEOUT_NOT_SET;
+constexpr std::chrono::milliseconds sql_statement::TIMEOUT_NOT_SET;
 constexpr std::chrono::milliseconds sql_statement::TIMEOUT_DISABLED;
 constexpr std::chrono::milliseconds sql_statement::DEFAULT_TIMEOUT;
 constexpr int32_t sql_statement::DEFAULT_CURSOR_BUFFER_SIZE;
@@ -413,10 +433,12 @@ void query_utils::throw_public_exception(std::exception_ptr e, const exception::
 sql_result::sql_result(
   int64_t update_count,
   boost::optional<std::vector<sql_column_metadata>> row_metadata,
-  boost::optional<impl::sql_page> first_page)
+  boost::optional<impl::sql_page> first_page,
+  bool is_infinite_rows)
   : update_count_(update_count)
   , row_metadata_(std::move(row_metadata))
   , current_page_(std::move(first_page))
+  , is_infinite_rows_(is_infinite_rows)
 {
 }
 
@@ -455,6 +477,10 @@ sql_result::row_metadata() const
 {
     return row_metadata_;
 }
+
+    bool sql_result::is_infinite_rows() const {
+        return is_infinite_rows_;
+    }
 
 } // namespace sql
 } // namespace client

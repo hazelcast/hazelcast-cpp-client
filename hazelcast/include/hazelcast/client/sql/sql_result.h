@@ -43,7 +43,8 @@ class HAZELCAST_API sql_result
 public:
     sql_result(int64_t update_count,
            boost::optional<std::vector<sql_column_metadata>> row_metadata,
-           boost::optional<impl::sql_page> first_page);
+           boost::optional<impl::sql_page> first_page,
+           bool is_inifinite_rows);
 
     /**
      * Returns the number of rows updated by the statement or -1 if this result
@@ -60,10 +61,13 @@ public:
 
     const boost::optional<std::vector<sql_column_metadata>>& row_metadata() const;
 
+    bool is_infinite_rows() const;
+
 private:
     int64_t update_count_;
     boost::optional<std::vector<sql_column_metadata>> row_metadata_;
     boost::optional<impl::sql_page> current_page_;
+    bool is_infinite_rows_ = false;
 };
 
 } // namespace sql
