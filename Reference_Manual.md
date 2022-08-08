@@ -1246,8 +1246,9 @@ If you want to enable authentication, then the client can be configured in one o
 The following is an example configuration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
 
 ```c++
-hazelcast_client hz(client_config().set_credentials(
-std::make_shared<security::username_password_credentials>("test-user", "test-pass")));
+hazelcast::client::client_config config;
+config.set_credentials(std::make_shared<hazelcast::client::security::username_password_credentials>("test-user", "test-pass"));
+auto hz = hazelcast::new_client(std::move(config)).get();
 ```
 
 Note that the server needs to be configured to use the same username and password. An example server xml config is:
@@ -1260,6 +1261,7 @@ Note that the server needs to be configured to use the same username and passwor
                 </identity>
             </realm>
         </realms>
+        <member-authentication realm="usernamePasswordIdentityRealm"/>
     </security>
 ```
 
@@ -1269,22 +1271,74 @@ The following is an example configuration where we set the secret token bytes to
 
 ```c++
 std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
+config.set_credentials(std::make_shared<hazelcast::client::security::token_credentials>(my_token));
+auto hz = hazelcast::new_client(std::move(config)).get();
+```
+Implementing a custom login module is mandatory to use token authentication by itself. An example custom login module is:
+```Java
+import com.hazelcast.config.Config;
+import com.hazelcast.security.ClusterLoginModule;
+import com.hazelcast.security.Credentials;
+import com.hazelcast.security.CredentialsCallback;
+import com.hazelcast.security.TokenCredentials;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.util.Arrays;
 
-hazelcast_client hz(client_config().set_credentials(
-std::make_shared<security::token_credentials>(my_token)));
+public class TokenLoginModule extends ClusterLoginModule {
+
+    private String name;
+    private final byte[] expectedToken = Config.load().getSecurityConfig().getRealmConfig(
+            Config.load().getSecurityConfig().getClientRealm()).getTokenIdentityConfig().getToken();
+
+    @Override
+    protected boolean onLogin() throws LoginException {
+        CredentialsCallback cb = new CredentialsCallback();
+        try {
+            callbackHandler.handle(new Callback[] { cb });
+        } catch (IOException | UnsupportedCallbackException e) {
+            throw new LoginException("Problem getting credentials");
+        }
+        Credentials credentials = cb.getCredentials();
+        if (!(credentials instanceof TokenCredentials)) {
+            throw new FailedLoginException();
+        }
+        byte[] actualToken = ((TokenCredentials) credentials).getToken();
+        if (Arrays.equals(actualToken, expectedToken)) {
+            return true;
+        }
+        throw new LoginException("Invalid token");
+    }
+
+    @Override
+    protected String getName() {
+        return name;
+    }
+
+}
 ```
 
 Note that the server needs to be configured to use the same token. An example server xml config is:
 ```xml
     <security enabled="true">
-        <realms>
-            <realm name="tokenIdentityRealm">
-                <identity>
-                    <token encoding="base64">SGF6ZW</token>
-                </identity>
-            </realm>
-        </realms>
-    </security>
+    <realms>
+        <realm name="jaasRealm">
+            <authentication>
+                <jaas>
+                    <login-module class-name="path.to.file.TokenLoginModule" usage="REQUIRED">
+                    </login-module>
+                </jaas>
+            </authentication>
+            <identity>
+                <token>SGF6ZW</token>
+            </identity>
+        </realm>
+    </realms>
+    <client-authentication realm="jaasRealm"/>
+</security>
 ```
 
 ## 5.11. Configuring Backup Acknowledgment
@@ -2196,24 +2250,23 @@ See the following example.
 
 ```c++
 int main() {
-  auto hz = hazelcast::new_client().get();
-  
-  auto map = hz.get_map("EntryListenerExampleMap").get();
-  
-  auto registrationId = map->add_entry_listener(
-  entry_listener().on_added([](hazelcast::client::EntryEvent &&event) {
-        std::cout << "Entry added:" << event.getKey().get<int>().value() << " --> " << event.getValue().get<std::string>().value() << std::endl;
-    }).on_removed([](hazelcast::client::EntryEvent &&event) {
-        std::cout << "Entry removed:" << event.getKey().get<int>().value()
-        << " --> " << event.getValue().get<std::string>().value() << std::endl;
-    }), true).get();
-  
-  map->put(1, "My new entry").get();
-  map->remove<int, std::string>(1).get();
-  
-  /* ... */
-  
-  return 0;
+    auto hz = hazelcast::new_client().get();
+
+    auto map = hz.get_map("EntryListenerExampleMap").get();
+    
+    auto registrationId = map->add_entry_listener(
+            hazelcast::client::entry_listener().on_added([](hazelcast::client::entry_event &&event) { 
+                std::cout << "Entry added:" << event.get_key().get<int>().value() << " --> " << event.get_value().get<std::string>().value() << std::endl;
+            }).on_removed([](hazelcast::client::entry_event &&event) {
+                std::cout << "Entry removed:" << event.get_key().get<int>().value()
+                          << " --> " << event.get_value().get<std::string>().value() << std::endl;
+            }), true).get();
+
+    map->put(1, "My new entry").get();
+    map->remove<int, std::string>(1).get();
+    /* ... */
+
+    return 0;
 }
 ```
 
