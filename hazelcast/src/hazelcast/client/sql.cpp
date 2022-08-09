@@ -133,7 +133,7 @@ sql_result sql_service::handle_execute_response(protocol::ClientMessage &msg) {
     return sql_result{ response.update_count,
                        std::move(response.row_metadata),
                        std::move(response.first_page),
-                       response.is_infinite_rows};
+                       response.is_infinite_rows_exist ? boost::make_optional(response.is_infinite_rows) : boost::none};
 }
 
 std::shared_ptr<connection::Connection> sql_service::query_connection() {
@@ -434,7 +434,7 @@ sql_result::sql_result(
   int64_t update_count,
   boost::optional<std::vector<sql_column_metadata>> row_metadata,
   boost::optional<impl::sql_page> first_page,
-  bool is_infinite_rows)
+  boost::optional<bool> is_infinite_rows)
   : update_count_(update_count)
   , row_metadata_(std::move(row_metadata))
   , current_page_(std::move(first_page))
@@ -478,7 +478,7 @@ sql_result::row_metadata() const
     return row_metadata_;
 }
 
-    bool sql_result::is_infinite_rows() const {
+    boost::optional<bool> sql_result::is_infinite_rows() const {
         return is_infinite_rows_;
     }
 

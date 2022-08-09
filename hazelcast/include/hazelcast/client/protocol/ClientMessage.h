@@ -874,6 +874,10 @@ public:
                     columns.push_back(
                       get<std::vector<boost::optional<std::string>>>());
                     break;
+                case sql::sql_column_type::boolean:
+                    columns.push_back(
+                            get<std::vector<boost::optional<std::string>>>());
+                    break;
                 default:
                     assert(false);
 
