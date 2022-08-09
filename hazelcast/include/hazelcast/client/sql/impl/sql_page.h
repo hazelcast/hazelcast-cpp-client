@@ -27,7 +27,7 @@ namespace impl {
 
 class HAZELCAST_API sql_page
 {
-    using column = std::vector<boost::optional<std::string>>;
+    using column = std::vector<boost::any>;
 
 public:
     sql_page(std::vector<sql_column_type> column_types,

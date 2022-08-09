@@ -860,7 +860,7 @@ public:
 
         auto column_type_ids = get<std::vector<int32_t>>();
 
-        using column = std::vector<boost::optional<std::string>>;
+        using column = std::vector<boost::any>;
 
         std::vector<column> columns;
         std::vector<sql::sql_column_type> column_types;
@@ -871,17 +871,65 @@ public:
 
             switch (column_type) {
                 case sql::sql_column_type::varchar:
-                    columns.push_back(
+                    columns.emplace_back(
                       get<std::vector<boost::optional<std::string>>>());
                     break;
                 case sql::sql_column_type::boolean:
-                    columns.push_back(
-                            get<std::vector<boost::optional<std::string>>>());
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<bool>>>());
+                    break;
+                case sql::sql_column_type::tinyint:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<byte>>>());
+                    break;
+                case sql::sql_column_type::smallint:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<int16_t>>>());
+                    break;
+                case sql::sql_column_type::integer:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<int32_t>>>());
+                    break;
+                case sql::sql_column_type::bigint:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<int64_t>>>());
+                    break;
+                case sql::sql_column_type::real:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<float>>>());
+                    break;
+                case sql::sql_column_type::double_:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<double>>>());
+                    break;
+                case sql::sql_column_type::date:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<local_date>>>());
+                    break;
+                case sql::sql_column_type::time:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<local_time>>>());
+                    break;
+                case sql::sql_column_type::timestamp:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<local_date_time>>>());
+                    break;
+                case sql::sql_column_type::timestamp_with_timezone:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<offset_date_time>>>());
+                    break;
+                case sql::sql_column_type::decimal:
+                    columns.emplace_back(
+                            get<std::vector<boost::optional<big_decimal>>>());
+                    break;
+                case sql::sql_column_type::null: {
+                    auto size = get<int32_t>();
+                    columns.emplace_back(std::vector<boost::any>(static_cast<size_t>(size)));
+                }
                     break;
                 default:
-                    assert(false);
-
-                    // TODO add others
+                    throw exception::illegal_state("ClientMessage::get<sql::impl::sql_page>",
+                                                   (boost::format("Unknown type %1%") %column_type).str());
             }
         }
 
