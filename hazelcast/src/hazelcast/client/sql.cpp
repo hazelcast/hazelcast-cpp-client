@@ -40,23 +40,20 @@ sql_service::sql_service(client::spi::ClientContext& context)
 {
 }
 
+sql::impl::query_id sql_service::create_query_id(const std::shared_ptr<connection::Connection> &query_conn) {
+    auto local_id = client_context_.random_uuid();
+    auto member_id = query_conn->get_remote_uuid();
+
+    return {member_id, local_id};
+}
+
 boost::future<sql_result>
 sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
 
     auto query_conn = query_connection();
-
-    if (!query_conn) {
-        BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
-          "sql_service::execute",
-          "No connection found for SQL"));
-    }
-
-    auto local_id = client_context_.random_uuid();
-    auto member_id = query_conn->get_remote_uuid();
-
-    sql::impl::query_id qid{member_id, local_id};
+    sql::impl::query_id qid = create_query_id(query_conn);
 
     auto request = protocol::codec::sql_execute_encode(
       statement.sql(),
@@ -114,7 +111,7 @@ sql_service::execute(const sql_statement& statement)
 
         response.row_metadata =
                 msg.get_nullable<std::vector<sql_column_metadata>>();
-        response.first_page = msg.get_nullable<impl::sql_page>();
+        response.first_page = msg.get_nullable<sql_page>();
         response.error = msg.get_nullable<impl::sql_error>();
         
         return response;
@@ -155,8 +152,6 @@ std::shared_ptr<connection::Connection> sql_service::query_connection() {
     } catch (exception::iexception &e) {
         rethrow(std::current_exception(), e);
     }
-
-     return client_context_.get_connection_manager().get_random_connection();
 }
 
 int64_t
@@ -433,12 +428,13 @@ void query_utils::throw_public_exception(std::exception_ptr e, const exception::
 sql_result::sql_result(
   int64_t update_count,
   boost::optional<std::vector<sql_column_metadata>> row_metadata,
-  boost::optional<impl::sql_page> first_page,
+  boost::optional<sql_page> first_page,
   boost::optional<bool> is_infinite_rows)
   : update_count_(update_count)
   , row_metadata_(std::move(row_metadata))
-  , current_page_(std::move(first_page))
+  , first_page_(std::move(first_page))
   , is_infinite_rows_(is_infinite_rows)
+  , iterator_requested_(false)
 {
 }
 
@@ -454,32 +450,76 @@ sql_result::is_row_set() const
     return update_count() == -1;
 }
 
-boost::future<std::vector<sql_row>>
-sql_result::fetch_page()
-{
-    std::vector<sql_row> rows;
-
-    for (std::size_t i = 0; i < current_page_->columns()[0].size(); i++) {
-        rows.push_back(sql_row{ i, current_page_.value() });
-    }
-
-    return boost::make_ready_future(std::move(rows));
-}
-
-bool
-sql_result::has_more() const
-{
-    return current_page_ && !current_page_->last();
-}
-
-const boost::optional<std::vector<sql_column_metadata>>&
-sql_result::row_metadata() const
-{
-    return row_metadata_;
-}
-
     boost::optional<bool> sql_result::is_infinite_rows() const {
         return is_infinite_rows_;
+    }
+
+    sql_result::page_iterator_type sql_result::page_iterator() {
+        if (!first_page_) {
+            throw exception::illegal_state("sql_result::page_iterator", "This result contains only update count");
+        }
+
+        if (iterator_requested_) {
+            throw exception::illegal_state("sql_result::page_iterator", "Iterator can be requested only once");
+        }
+
+        iterator_requested_ = true;
+
+        return sql_result::page_iterator_type(*this, std::move(*first_page_));
+    }
+
+    sql_result::page_iterator_type::page_iterator_type(sql_result &result, boost::optional<sql_page> page)
+            : result_(result), page_(std::move(page)) {}
+
+    boost::future<sql_result::page_iterator_type> sql_result::page_iterator_type::operator++() {
+        return boost::future<page_iterator_type>();
+    }
+
+    const boost::optional<sql_page> &sql_result::page_iterator_type::operator*() {
+        return page_;
+    }
+
+    sql_page::sql_row::sql_row(size_t row_index, const sql_page &page,
+            boost::optional<std::vector<sql_column_metadata>> &row_metadata) : row_index_(row_index), page_(page),
+                                                                               row_metadata_(row_metadata) {}
+
+    const boost::optional<std::vector<sql_column_metadata>> &sql_page::sql_row::row_metadata() const {
+        return row_metadata_;
+    }
+
+    sql_page::sql_page(std::vector<sql_column_type> column_types,
+    std::vector<column> columns,
+    bool last,
+            boost::optional<std::vector<sql_column_metadata>> &row_metadata)
+    : column_types_(std::move(column_types))
+    , columns_(std::move(columns))
+    , last_(last)
+    , row_metadata_(row_metadata)
+    {
+        // fill the rows if empty
+        auto count = row_count();
+        for (std::size_t i = 0; i < count; ++i) {
+            rows_.emplace_back(i, *this, row_metadata_);
+        }
+    }
+
+    const std::vector<sql_column_type>& sql_page::column_types() const
+    {
+        return column_types_;
+    }
+
+    bool sql_page::last() const { return last_; }
+
+    std::size_t sql_page::column_count() const {
+        return column_types_.size();
+    }
+
+    std::size_t sql_page::row_count() const {
+        return columns_[0].size();
+    }
+
+    const std::vector<sql_page::sql_row> &sql_page::rows() const {
+        return rows_;
     }
 
 } // namespace sql

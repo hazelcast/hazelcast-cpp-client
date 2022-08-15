@@ -26,6 +26,9 @@
 
 namespace hazelcast {
 namespace client {
+    namespace impl {
+        class hazelcast_client_instance_impl;
+    }
 class hazelcast_client;
 namespace sql {
 
@@ -113,6 +116,8 @@ private:
     sql_result handle_execute_response(protocol::ClientMessage &msg);
 
     sql_execute_response_parameters decode_response(protocol::ClientMessage &msg) const;
+
+    impl::query_id create_query_id(const std::shared_ptr<connection::Connection> &query_conn);
 };
 } // namespace sql
 } // namespace client

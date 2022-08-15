@@ -19,32 +19,37 @@
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/sql/sql_page.h"
 
 namespace hazelcast {
 namespace client {
 namespace sql {
-
-class HAZELCAST_API sql_row
-{
-public:
-    template<typename T>
-    const boost::optional<T>& get_value(std::size_t column) const
-    {
-        return page_.template get_value<T>(column, id_);
-    }
-
-    std::size_t id_;
-    impl::sql_page& page_;
-};
-
-// TODO multi-page support
+// This class is NOT thread-safe. Do NOT use simultaneously from multiple threads.
 class HAZELCAST_API sql_result
 {
 public:
+    class page_iterator_type {
+    public:
+        page_iterator_type(sql_result &result, boost::optional<sql_page> page);
+
+        boost::future<page_iterator_type> operator++();
+
+        const boost::optional<sql_page> &operator*();
+
+    private:
+        sql_result &result_;
+        const boost::optional<sql_page> page_;
+    };
+
     sql_result(int64_t update_count,
            boost::optional<std::vector<sql_column_metadata>> row_metadata,
-           boost::optional<impl::sql_page> first_page,
+           boost::optional<sql_page> first_page,
            boost::optional<bool> is_inifinite_rows);
+
+    /**
+     * Return whether this result has rows to iterate using the \page_iterator() method.
+     */
+    bool is_row_set() const;
 
     /**
      * Returns the number of rows updated by the statement or -1 if this result
@@ -53,21 +58,28 @@ public:
      */
     int64_t update_count() const;
 
-    bool is_row_set() const;
+    /**
+     * Release the resources associated with the query result.
+     * <p>
+     * The query engine delivers the rows asynchronously. The query may become inactive even before all rows are
+     * consumed. The invocation of this command will cancel the execution of the query on all members if the query
+     * is still active. Otherwise it is no-op. For a result with an update count it is always no-op.
+     */
+    boost::future<void> close();
 
-    boost::future<std::vector<sql_row>> fetch_page();
-
-    bool has_more() const;
-
-    const boost::optional<std::vector<sql_column_metadata>>& row_metadata() const;
+    page_iterator_type page_iterator();
 
     boost::optional<bool> is_infinite_rows() const;
 
 private:
     int64_t update_count_;
     boost::optional<std::vector<sql_column_metadata>> row_metadata_;
-    boost::optional<impl::sql_page> current_page_;
+    boost::optional<sql_page> first_page_;
+
+    /** Whether the result set is unbounded. */
     boost::optional<bool> is_infinite_rows_;
+
+    bool iterator_requested_;
 };
 
 } // namespace sql
