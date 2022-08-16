@@ -20,6 +20,7 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/sql/sql_page.h"
+#include "hazelcast/client/sql/sql_row_metadata.h"
 
 namespace hazelcast {
 namespace client {
@@ -73,13 +74,16 @@ public:
 
 private:
     int64_t update_count_;
-    boost::optional<std::vector<sql_column_metadata>> row_metadata_;
+    boost::optional<sql_row_metadata> row_metadata_;
     boost::optional<sql_page> first_page_;
 
     /** Whether the result set is unbounded. */
     boost::optional<bool> is_infinite_rows_;
 
     bool iterator_requested_;
+
+    /** Whether the result is closed. When true, there is no need to send the "cancel" request to the server. */
+    bool closed;
 };
 
 } // namespace sql

@@ -30,6 +30,7 @@
 #include "hazelcast/client/hazelcast_client.h"
 #include "hazelcast/client/sql/impl/query_utils.h"
 #include "hazelcast/client/sql/impl/sql_error_code.h"
+#include "hazelcast/client/sql/sql_row_metadata.h"
 
 namespace hazelcast {
 namespace client {
@@ -113,7 +114,7 @@ sql_service::execute(const sql_statement& statement)
                 msg.get_nullable<std::vector<sql_column_metadata>>();
         response.first_page = msg.get_nullable<sql_page>();
         response.error = msg.get_nullable<impl::sql_error>();
-        
+
         return response;
     }
 
@@ -435,6 +436,7 @@ sql_result::sql_result(
   , first_page_(std::move(first_page))
   , is_infinite_rows_(is_infinite_rows)
   , iterator_requested_(false)
+  , closed(false)
 {
 }
 
@@ -466,6 +468,11 @@ sql_result::is_row_set() const
         iterator_requested_ = true;
 
         return sql_result::page_iterator_type(*this, std::move(*first_page_));
+    }
+
+    boost::future<void> sql_result::close() {
+
+        return boost::future<void>();
     }
 
     sql_result::page_iterator_type::page_iterator_type(sql_result &result, boost::optional<sql_page> page)
@@ -520,6 +527,38 @@ sql_result::is_row_set() const
 
     const std::vector<sql_page::sql_row> &sql_page::rows() const {
         return rows_;
+    }
+
+    sql_row_metadata::sql_row_metadata(std::vector<sql_column_metadata> columns) : columns_(std::move(columns))
+    {
+        assert(!columns_.empty());
+
+        for (std::size_t i = 0; i < columns_.size(); ++i) {
+            name_to_index_.emplace(columns_[i].name(), i);
+        }
+    }
+
+    std::size_t sql_row_metadata::column_count() const {
+        return columns_.size();
+    }
+
+    const sql_column_metadata &sql_row_metadata::column(std::size_t index) const {
+        if (index < columns_.size()) {
+            throw exception::index_out_of_bounds("sql_row_metadata::column(std::size_t index)",
+                                                 (boost::format("Column index is out of bounds: %1%") % index).str());
+        }
+
+        return columns_[index];
+    }
+
+    const std::vector<sql_column_metadata> sql_row_metadata::columns() const {
+        return columns_;
+    }
+
+    std::unordered_map<std::string, std::size_t>::const_iterator sql_row_metadata::find_column(const std::string &column_name) const {
+        util::Preconditions::check_not_empty(column_name, "Column name cannot be empty");
+
+        return name_to_index_.find(column_name);
     }
 
 } // namespace sql
