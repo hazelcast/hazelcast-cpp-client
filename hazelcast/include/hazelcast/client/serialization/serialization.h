@@ -223,8 +223,8 @@ struct global_serializer
 /**
  * Classes derived from this class should implement the following static
  * methods:
- * static int32_t getClassId() noexcept;
- * static int32_t getFactoryId() noexcept;
+ * static int32_t get_class_id() noexcept;
+ * static int32_t get_factory_id() noexcept;
  * static int32_t writeData(const T &object, object_data_output &out);
  * static T readData(object_data_input &in);
  */
@@ -234,8 +234,8 @@ struct identified_data_serializer
 /**
  * Classes derived from this class should implement the following static
  * methods:
- * static int32_t getClassId() noexcept;
- * static int32_t getFactoryId() noexcept;
+ * static int32_t get_class_id() noexcept;
+ * static int32_t get_factory_id() noexcept;
  * static int32_t write_portable(const T &object, portable_writer &out);
  * static T read_portable(portable_reader &in);
  */
@@ -1324,8 +1324,8 @@ public:
     void write_null_portable(const std::string& field_name)
     {
         T portable;
-        int32_t factoryId = hz_serializer<T>::getFactoryId();
-        int32_t classId = hz_serializer<T>::getClassId();
+        int32_t factoryId = hz_serializer<T>::get_factory_id();
+        int32_t classId = hz_serializer<T>::get_class_id();
         std::shared_ptr<ClassDefinition> nestedClassDef =
           context_.lookup_class_definition(
             factoryId, classId, context_.get_version());
@@ -2749,8 +2749,8 @@ DefaultPortableWriter::write_null_portable(const std::string& field_name)
 {
     set_position(field_name, field_type::TYPE_PORTABLE);
     object_data_output_.write<bool>(true);
-    object_data_output_.write<int32_t>(hz_serializer<T>::getFactoryId());
-    object_data_output_.write<int32_t>(hz_serializer<T>::getClassId());
+    object_data_output_.write<int32_t>(hz_serializer<T>::get_factory_id());
+    object_data_output_.write<int32_t>(hz_serializer<T>::get_class_id());
 }
 
 template<typename T>
