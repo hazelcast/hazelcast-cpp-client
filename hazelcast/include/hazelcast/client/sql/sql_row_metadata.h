@@ -31,8 +31,7 @@ namespace sql {
 class HAZELCAST_API sql_row_metadata
 {
 public:
-    /** Constant indicating that the column is not found. */
-    static constexpr int COLUMN_NOT_FOUND = -1;
+    using const_iterator = std::unordered_map<std::string, std::size_t>::const_iterator;
 
     sql_row_metadata(std::vector<sql_column_metadata> columns);
 
@@ -64,12 +63,16 @@ public:
      * from sql_row.
      *
      * @param column_name column name (case sensitive)
-     * @return the iterator pointing to the found item or std::unordered_map<std::string, std::size_t>::end() if not found.
+     * @return the iterator pointing to the found item or end() if not found.
      *
      * @see sql_row
      */
-    std::unordered_map<std::string, std::size_t>::const_iterator find_column(const std::string &column_name) const;
+    const_iterator find_column(const std::string &column_name) const;
 
+    /**
+     * Constant indicating that the column is not found.
+     */
+    const_iterator end() const;
 private:
     const std::vector<sql_column_metadata> columns_;
     std::unordered_map<std::string, std::size_t> name_to_index_;

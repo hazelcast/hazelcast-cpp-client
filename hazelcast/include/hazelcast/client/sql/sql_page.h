@@ -20,6 +20,7 @@
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/sql/sql_column_type.h"
+#include "sql_row_metadata.h"
 
 namespace hazelcast {
 namespace client {
@@ -33,8 +34,7 @@ public:
     class HAZELCAST_API sql_row
     {
     public:
-        sql_row(size_t row_index, const sql_page &page,
-                boost::optional<std::vector<sql_column_metadata>> &row_metadata);
+        sql_row(size_t row_index, const sql_page &page, const sql_row_metadata &row_metadata);
 
         /**
          * Gets the value of the column by index.
@@ -73,34 +73,30 @@ public:
         template<typename T>
         const boost::optional<T>& get_object(const std::string &column_name) const
         {
+            auto column_index = resolve_index(column_name);
             return page_.get_column_value<T>(column_index, row_index_);
         }
 
         /**
          * Gets the row metadata.
-         * @returns vector of column metadata, and returns boost::none if the result contains only an update count.
+         * @returns vector of column metadata, and returns empty vector if the result contains only an update count.
          *
          */
-        const boost::optional<std::vector<sql_column_metadata>>& row_metadata() const;
+        const sql_row_metadata &row_metadata() const;
 
     private:
         const std::size_t row_index_;
         const sql_page& page_;
-        boost::optional<std::vector<sql_column_metadata>> &row_metadata_;
+        const sql_row_metadata &row_metadata_;
+
+        std::size_t resolve_index(const std::string &column_name) const;
     };
+
+    friend class sql_row;
 
     sql_page(std::vector<sql_column_type> column_types,
          std::vector<column> columns,
-         bool last,
-         boost::optional<std::vector<sql_column_metadata>> &row_metadata);
-
-    template<typename T>
-    T get_column_value(std::size_t column_index, std::size_t row_index) const {
-        assert(column_index < column_count());
-        assert(row_index < row_count());
-
-        return boost::any_cast<T>(columns_[column_index][row_index]);
-    }
+         bool last);
 
     const std::vector<sql_column_type>& column_types() const;
 
@@ -112,11 +108,28 @@ public:
 
     const std::vector<sql_row> &rows() const;
 private:
+    friend class sql_result;
+
     const std::vector<sql_column_type> column_types_;
     const std::vector<column> columns_;
     std::vector<sql_row> rows_;
     const bool last_;
-    boost::optional<std::vector<sql_column_metadata>> &row_metadata_;
+    const sql_row_metadata *row_metadata_ = nullptr;
+
+    template<typename T>
+    T get_column_value(std::size_t column_index, std::size_t row_index) const {
+        assert(column_index < column_count());
+        assert(row_index < row_count());
+
+        return boost::any_cast<T>(columns_[column_index][row_index]);
+    }
+
+    /**
+     * set the row metadata on the page
+     * @param row_meta the row metadata pointer
+     */
+    sql_page &row_metadata(const sql_row_metadata *row_meta);
+
 };
 
 } // namespace sql

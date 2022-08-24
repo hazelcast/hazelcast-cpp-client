@@ -25,6 +25,8 @@
 namespace hazelcast {
 namespace client {
 namespace sql {
+    class sql_service;
+
 // This class is NOT thread-safe. Do NOT use simultaneously from multiple threads.
 class HAZELCAST_API sql_result
 {
@@ -42,10 +44,16 @@ public:
         const boost::optional<sql_page> page_;
     };
 
-    sql_result(int64_t update_count,
-           boost::optional<std::vector<sql_column_metadata>> row_metadata,
+    sql_result(spi::ClientContext& client_context, sql_service &service,
+               std::shared_ptr<connection::Connection> connection,
+               impl::query_id id, int64_t update_count,
+           boost::optional<std::vector<sql_column_metadata>> columns_metadata,
            boost::optional<sql_page> first_page,
-           boost::optional<bool> is_inifinite_rows);
+           boost::optional<bool> is_inifinite_rows, int32_t cursor_buffer_size);
+
+    sql_result(sql_result &&rhs);
+
+    void operator=(sql_result &&rhs);
 
     /**
      * Return whether this result has rows to iterate using the \page_iterator() method.
@@ -73,6 +81,13 @@ public:
     boost::optional<bool> is_infinite_rows() const;
 
 private:
+    friend class page_iterator_type;
+    friend class sql_service;
+
+    spi::ClientContext& client_context_;
+    sql_service &service_;
+    std::shared_ptr<connection::Connection> connection_;
+    impl::query_id query_id_;
     int64_t update_count_;
     boost::optional<sql_row_metadata> row_metadata_;
     boost::optional<sql_page> first_page_;
@@ -83,7 +98,13 @@ private:
     bool iterator_requested_;
 
     /** Whether the result is closed. When true, there is no need to send the "cancel" request to the server. */
-    bool closed;
+    bool closed_;
+
+    const int32_t cursor_buffer_size_;
+
+    explicit sql_result(spi::ClientContext& client_context, sql_service &service);
+
+    boost::future<sql_page> fetch_page();
 };
 
 } // namespace sql

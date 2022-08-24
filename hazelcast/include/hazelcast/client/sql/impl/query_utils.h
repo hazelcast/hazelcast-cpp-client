@@ -23,7 +23,7 @@ namespace sql {
 namespace impl {
     class HAZELCAST_API query_utils {
     public:
-        static void throw_public_exception(std::exception_ptr e, const exception::iexception &ie, boost::uuids::uuid id);
+        static void throw_public_exception(std::exception_ptr e, boost::uuids::uuid id);
 
         /**
          * Finds a larger same-version group of data members from a collection of

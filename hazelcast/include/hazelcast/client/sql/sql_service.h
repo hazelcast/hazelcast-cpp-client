@@ -89,17 +89,32 @@ public:
 
     boost::future<sql_result> execute(const sql_statement& statement);
 
+    /**
+     * Close remote query cursor.
+     *
+     * @param connection Connection.
+     * @param id    Query ID.
+     */
+    boost::future<void> close(const std::shared_ptr<connection::Connection> &connection, impl::query_id id);
+
 private:
     friend client::impl::hazelcast_client_instance_impl;
+    friend sql_result;
+
     client::spi::ClientContext& client_context_;
 
     struct sql_execute_response_parameters {
         int64_t update_count;
         boost::optional<std::vector<sql_column_metadata>>row_metadata;
-        boost::optional<impl::sql_page> first_page;
+        boost::optional<sql_page> first_page;
         boost::optional<impl::sql_error> error;
         bool is_infinite_rows = false;
         bool is_infinite_rows_exist = false;
+    };
+
+    struct sql_fetch_response_parameters {
+        boost::optional<sql_page> page;
+        boost::optional<impl::sql_error> error;
     };
 
     explicit sql_service(client::spi::ClientContext& context);
@@ -109,15 +124,23 @@ private:
 
     std::shared_ptr<connection::Connection> query_connection();
 
-    void rethrow(std::exception_ptr exc_ptr, const exception::iexception &ie);
+    void rethrow(std::exception_ptr exc_ptr);
+    void rethrow(std::exception_ptr cause_ptr, const std::shared_ptr<connection::Connection> &connection);
 
     boost::uuids::uuid client_id();
 
-    sql_result handle_execute_response(protocol::ClientMessage &msg);
+    sql_result handle_execute_response(protocol::ClientMessage &msg, std::shared_ptr<connection::Connection> connection,
+                                       impl::query_id id, int32_t cursor_buffer_size);
 
-    sql_execute_response_parameters decode_response(protocol::ClientMessage &msg) const;
+    sql_execute_response_parameters decode_execute_response(protocol::ClientMessage &msg) const;
 
     impl::query_id create_query_id(const std::shared_ptr<connection::Connection> &query_conn);
+
+    boost::future<sql_page> fetch_page(const impl::query_id &q_id, int32_t cursor_buffer_size, const std::shared_ptr<connection::Connection> &connection);
+
+    sql_fetch_response_parameters decode_fetch_response(protocol::ClientMessage message);
+
+    void handle_fetch_response_error(boost::optional<impl::sql_error> error);
 };
 } // namespace sql
 } // namespace client

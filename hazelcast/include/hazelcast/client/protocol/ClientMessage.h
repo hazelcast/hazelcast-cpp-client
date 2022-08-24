@@ -44,7 +44,7 @@
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/sql/impl/query_id.h"
 #include "hazelcast/client/sql/sql_column_metadata.h"
-#include "hazelcast/client/sql/impl/sql_page.h"
+#include "hazelcast/client/sql/sql_page.h"
 #include "hazelcast/client/sql/impl/sql_error.h"
 #include "hazelcast/client/sql/sql_column_type.h"
 
@@ -398,6 +398,16 @@ public:
             rd_ptr(INT32_SIZE));
     }
 
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, float>::value,
+                            T>::type inline get()
+    {
+        return boost::endian::
+          endian_load<float, 4, boost::endian::order::little>(
+            rd_ptr(INT32_SIZE));
+    }
+
     template<typename T>
     typename std::enable_if<std::is_same<T, uint64_t>::value,
                             T>::type inline get()
@@ -417,6 +427,15 @@ public:
     }
 
     template<typename T>
+    typename std::enable_if<std::is_same<T, double>::value,
+                            T>::type inline get()
+    {
+        return boost::endian::
+          endian_load<double, 8, boost::endian::order::little>(
+            rd_ptr(INT64_SIZE));
+    }
+
+    template<typename T>
     typename std::enable_if<std::is_same<T, std::string>::value,
                             T>::type inline get()
     {
@@ -427,6 +446,48 @@ public:
           len - ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS;
         return std::string(reinterpret_cast<const char*>(rd_ptr(str_bytes_len)),
                            str_bytes_len);
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, local_date>::value,
+            T>::type inline get()
+    {
+        auto year = get<int32_t>();
+        auto month = get<uint8_t>();
+        auto day_of_month = get<uint8_t>();
+        return {year, month, day_of_month};
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, local_time>::value,
+            T>::type inline get()
+    {
+        auto hour = get<uint8_t>();
+        auto minute = get<uint8_t>();
+        auto second = get<uint8_t>();
+        auto nano = get<int32_t>();
+
+        return {hour, minute, second, nano};
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, local_date_time>::value,
+            T>::type inline get()
+    {
+        auto date = get<local_date>();
+        auto time = get<local_time>();
+
+        return {std::move(date), std::move(time)};
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, offset_date_time>::value,
+            T>::type inline get()
+    {
+        auto date_time = get<local_date_time>();
+        auto offset_seconds = get<int32_t>();
+
+        return {std::move(date_time), offset_seconds};
     }
 
     template<typename T>
@@ -848,7 +909,20 @@ public:
     }
 
     template<typename T>
-    typename std::enable_if<std::is_same<T, sql::impl::sql_page>::value, T>::type
+    std::vector<boost::any> to_vector_of_any(std::vector<boost::optional<T>> values) {
+        auto size = values.size();
+        std::vector<boost::any> vector_of_any(size);
+        for (std::size_t i = 0;i < size; ++i) {
+            auto &value = values[i];
+            if (value) {
+                vector_of_any[i] = std::move(value);
+            }
+        }
+        return vector_of_any;
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, sql::sql_page>::value, T>::type
     get()
     {
         // begin frame
@@ -871,56 +945,43 @@ public:
 
             switch (column_type) {
                 case sql::sql_column_type::varchar:
-                    columns.emplace_back(
-                      get<std::vector<boost::optional<std::string>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<std::string>>>()));
                     break;
                 case sql::sql_column_type::boolean:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<bool>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<bool>>>()));
                     break;
                 case sql::sql_column_type::tinyint:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<byte>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<byte>>>()));
                     break;
                 case sql::sql_column_type::smallint:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<int16_t>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<int16_t>>>()));
                     break;
                 case sql::sql_column_type::integer:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<int32_t>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<int32_t>>>()));
                     break;
                 case sql::sql_column_type::bigint:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<int64_t>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<int64_t>>>()));
                     break;
                 case sql::sql_column_type::real:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<float>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<float>>>()));
                     break;
                 case sql::sql_column_type::double_:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<double>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<double>>>()));
                     break;
                 case sql::sql_column_type::date:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<local_date>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<local_date>>>()));
                     break;
                 case sql::sql_column_type::time:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<local_time>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<local_time>>>()));
                     break;
                 case sql::sql_column_type::timestamp:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<local_date_time>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<local_date_time>>>()));
                     break;
                 case sql::sql_column_type::timestamp_with_timezone:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<offset_date_time>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<offset_date_time>>>()));
                     break;
                 case sql::sql_column_type::decimal:
-                    columns.emplace_back(
-                            get<std::vector<boost::optional<big_decimal>>>());
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<big_decimal>>>()));
                     break;
                 case sql::sql_column_type::null: {
                     auto size = get<int32_t>();
@@ -928,14 +989,14 @@ public:
                 }
                     break;
                 default:
-                    throw exception::illegal_state("ClientMessage::get<sql::impl::sql_page>",
+                    throw exception::illegal_state("ClientMessage::get<sql::sql_page>",
                                                    (boost::format("Unknown type %1%") %column_type).str());
             }
         }
 
         fast_forward_to_end_frame();
 
-        return sql::impl::sql_page{ column_types, columns, last };
+        return sql::sql_page{ column_types, columns, last };
     }
 
     template<typename T>
