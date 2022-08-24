@@ -491,6 +491,20 @@ public:
     }
 
     template<typename T>
+    typename std::enable_if<std::is_same<T, big_decimal>::value,
+            T>::type inline get()
+    {
+        auto content_size = get<int32_t>();
+        auto mem_ptr = rd_ptr(content_size);
+        std::vector<int8_t> bytes(content_size);
+        std::memcpy(&bytes[0], mem_ptr, content_size);
+
+        auto scale = get<int32_t>();
+
+        return {pimpl::from_bytes(bytes), scale};
+    }
+
+    template<typename T>
     typename std::enable_if<
       std::is_same<T, std::vector<typename T::value_type>>::value &&
         !std::is_trivial<typename T::value_type>::value &&
