@@ -44,7 +44,7 @@ public:
          * @param column_index column index, zero-based.
          * @return value of the column
          *
-         * @throws hazelcast::client::exception::index_out_of_bounds_exception if the column index is out of bounds
+         * @throws hazelcast::client::exception::index_out_of_bounds if the column index is out of bounds
          * @throws boost::bad_any_cast if the type of the column type isn't assignable to the type \codeT\endcode
          *
          */
@@ -85,7 +85,7 @@ public:
         const sql_row_metadata &row_metadata() const;
 
     private:
-        const std::size_t row_index_;
+        std::size_t row_index_;
         const sql_page& page_;
         const sql_row_metadata &row_metadata_;
 
@@ -110,10 +110,10 @@ public:
 private:
     friend class sql_result;
 
-    const std::vector<sql_column_type> column_types_;
-    const std::vector<column> columns_;
+    std::vector<sql_column_type> column_types_;
+    std::vector<column> columns_;
     std::vector<sql_row> rows_;
-    const bool last_;
+    bool last_;
     const sql_row_metadata *row_metadata_ = nullptr;
 
     template<typename T>

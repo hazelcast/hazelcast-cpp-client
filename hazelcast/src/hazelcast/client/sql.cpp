@@ -249,7 +249,7 @@ void sql_service::rethrow(std::exception_ptr cause_ptr, const std::shared_ptr<co
                 impl::query_utils::throw_public_exception(std::current_exception(), this->client_id());
             }
 
-            return *std::move(page);
+            return std::move(*std::move(page));
         });
         
     }
@@ -559,7 +559,7 @@ sql_result::is_row_set() const
 
         iterator_requested_ = true;
 
-        return sql_result::page_iterator_type(*this, std::move(*first_page_));
+        return sql_result::page_iterator_type(this, std::move(*first_page_));
     }
 
     boost::future<void> sql_result::close() {
@@ -582,11 +582,15 @@ sql_result::is_row_set() const
 
     }
 
-    sql_result::page_iterator_type::page_iterator_type(sql_result &result, boost::optional<sql_page> page)
+    const boost::optional<sql_row_metadata> &sql_result::row_metadata() const {
+        return row_metadata_;
+    }
+
+    sql_result::page_iterator_type::page_iterator_type(sql_result *result, boost::optional<sql_page> page)
             : result_(result), page_(std::move(page)) {}
 
     boost::future<sql_result::page_iterator_type> sql_result::page_iterator_type::operator++() {
-        boost::future<sql_page> page_future = result_.fetch_page();
+        boost::future<sql_page> page_future = result_->fetch_page();
         
         return page_future.then([this] (boost::future<sql_page> page) {
             auto p = page.get();

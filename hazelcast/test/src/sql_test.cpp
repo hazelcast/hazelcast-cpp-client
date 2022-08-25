@@ -66,7 +66,7 @@ TEST_F(SqlTest, simple)
     ASSERT_TRUE(result.is_row_set());
     EXPECT_EQ(-1, result.update_count());
     ASSERT_TRUE(result.row_metadata().has_value());
-    ASSERT_EQ(2, result.row_metadata()->size());
+    ASSERT_EQ(2, result.row_metadata()->columns().size());
     EXPECT_EQ("col1", result.row_metadata().value()[0].name());
     EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar,
               result.row_metadata().value()[0].type());

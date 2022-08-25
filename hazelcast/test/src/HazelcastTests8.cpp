@@ -2046,7 +2046,11 @@ TEST(ClientMessageTest, test_encode_sql_query_id)
 
     protocol::ClientMessage msg;
 
-    msg.set(sql::impl::query_id{ -1LL, 1000000000000LL, 0LL, -42LL });
+    std::mt19937 random_generator(std::random_device{}());
+    boost::uuids::basic_random_generator<std::mt19937> uuid_generator(random_generator);
+    auto server_uuid = uuid_generator();
+    auto client_uuid = uuid_generator();
+    msg.set(sql::impl::query_id{ server_uuid, client_uuid });
 
     const std::vector<unsigned char> expected_bytes{
         6,   0,   0,   0,   0,   16,  38,  0, 0,  0,   0,   0,   255,
@@ -2096,7 +2100,7 @@ TEST(ClientMessageTest, test_decode_sql_page)
     std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
     msg.wrap_for_read();
 
-    auto page = msg.get<sql::impl::sql_page>();
+    auto page = msg.get<sql::sql_page>();
 
     EXPECT_EQ(true, page.last());
     EXPECT_EQ((std::vector<sql::sql_column_type>{
@@ -2104,10 +2108,22 @@ TEST(ClientMessageTest, test_decode_sql_page)
                 sql::sql_column_type::varchar,
               }),
               page.column_types());
+    auto &all_rows = page.rows();
+    ASSERT_EQ(2, all_rows.size());
+    auto &row1 = all_rows[0];
+    ASSERT_EQ(boost::make_optional<std::string>("foo"), row1.get_object<std::string>(0));
+    ASSERT_EQ(boost::make_optional<std::string>("test"), row1.get_object<std::string>(1));
+
+    auto &row2 = all_rows[1];
+    ASSERT_EQ(boost::make_optional<std::string>("bar"), row2.get_object<std::string>(0));
+    ASSERT_EQ(boost::make_optional<std::string>(""), row2.get_object<std::string>(1));
+
+/*
     EXPECT_EQ((std::vector<std::vector<boost::optional<std::string>>>{
                 { std::string("foo"), std::string("bar") },
                 { std::string("test"), std::string("") } }),
               page.columns());
+*/
 }
 
 TEST(ClientMessageTest, test_decode_sql_error)

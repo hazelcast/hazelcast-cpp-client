@@ -1004,7 +1004,7 @@ public:
                     break;
                 default:
                     throw exception::illegal_state("ClientMessage::get<sql::sql_page>",
-                                                   (boost::format("Unknown type %1%") %column_type).str());
+                                                   (boost::format("Unknown type %1%") %static_cast<int32_t>(column_type)).str());
             }
         }
 

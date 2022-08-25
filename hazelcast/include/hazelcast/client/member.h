@@ -21,6 +21,7 @@
 
 #include "hazelcast/client/address.h"
 #include <boost/uuid/uuid.hpp>
+#include <ostream>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -87,6 +88,8 @@ public:
         bool operator<=(const version &rhs) const;
 
         bool operator>=(const version &rhs) const;
+
+        friend std::ostream &operator<<(std::ostream &os, const version &version);
     };
 
     member();
@@ -96,7 +99,7 @@ public:
            bool lite,
            std::unordered_map<std::string, std::string> attr,
            std::unordered_map<endpoint_qualifier, address> address_map,
-           version v);
+           version v = {0, 0, 0});
 
     member(address member_address);
 

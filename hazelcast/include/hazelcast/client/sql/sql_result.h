@@ -33,15 +33,15 @@ class HAZELCAST_API sql_result
 public:
     class page_iterator_type {
     public:
-        page_iterator_type(sql_result &result, boost::optional<sql_page> page);
+        page_iterator_type(sql_result *result, boost::optional<sql_page> page);
 
         boost::future<page_iterator_type> operator++();
 
         const boost::optional<sql_page> &operator*();
 
     private:
-        sql_result &result_;
-        const boost::optional<sql_page> page_;
+        sql_result *result_;
+        boost::optional<sql_page> page_;
     };
 
     sql_result(spi::ClientContext& client_context, sql_service &service,
@@ -59,6 +59,14 @@ public:
      * Return whether this result has rows to iterate using the \page_iterator() method.
      */
     bool is_row_set() const;
+
+    /**
+     * Gets the row metadata.
+     *
+     * @returns row metadata and boost::none if the result doesn't have rows, but
+     *     only an update count
+     */
+    const boost::optional<sql_row_metadata> &row_metadata() const;
 
     /**
      * Returns the number of rows updated by the statement or -1 if this result

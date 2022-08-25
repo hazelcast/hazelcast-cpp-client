@@ -364,6 +364,11 @@ operator==(const endpoint_qualifier& lhs, const endpoint_qualifier& rhs)
     bool member::version::operator>=(const member::version &rhs) const {
         return !(*this < rhs);
     }
+
+    std::ostream &operator<<(std::ostream &os, const member::version &version) {
+        os << version.major << "." << version.minor << "." << version.patch;
+        return os;
+    }
 } // namespace client
 } // namespace hazelcast
 
