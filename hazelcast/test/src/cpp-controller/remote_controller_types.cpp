@@ -398,7 +398,7 @@ Response::write(::apache::thrift::protocol::TProtocol* oprot) const
     xfer += oprot->writeFieldEnd();
 
     xfer +=
-      oprot->writeFieldBegin("sql_result", ::apache::thrift::protocol::T_STRING, 3);
+      oprot->writeFieldBegin("result", ::apache::thrift::protocol::T_STRING, 3);
     xfer += oprot->writeBinary(this->result);
     xfer += oprot->writeFieldEnd();
 
