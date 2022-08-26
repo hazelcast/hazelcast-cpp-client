@@ -35,7 +35,7 @@ public:
     public:
         page_iterator_type(sql_result *result, boost::optional<sql_page> page);
 
-        boost::future<page_iterator_type> operator++();
+        boost::future<void> operator++();
 
         const boost::optional<sql_page> &operator*();
 
@@ -50,10 +50,6 @@ public:
            boost::optional<std::vector<sql_column_metadata>> columns_metadata,
            boost::optional<sql_page> first_page,
            boost::optional<bool> is_inifinite_rows, int32_t cursor_buffer_size);
-
-    sql_result(sql_result &&rhs);
-
-    void operator=(sql_result &&rhs);
 
     /**
      * Return whether this result has rows to iterate using the \page_iterator() method.
@@ -89,11 +85,10 @@ public:
     boost::optional<bool> is_infinite_rows() const;
 
 private:
-    friend class page_iterator_type;
     friend class sql_service;
 
-    spi::ClientContext& client_context_;
-    sql_service &service_;
+    spi::ClientContext* client_context_;
+    sql_service *service_;
     std::shared_ptr<connection::Connection> connection_;
     impl::query_id query_id_;
     int64_t update_count_;
@@ -108,9 +103,7 @@ private:
     /** Whether the result is closed. When true, there is no need to send the "cancel" request to the server. */
     bool closed_;
 
-    const int32_t cursor_buffer_size_;
-
-    explicit sql_result(spi::ClientContext& client_context, sql_service &service);
+    int32_t cursor_buffer_size_;
 
     boost::future<sql_page> fetch_page();
 };

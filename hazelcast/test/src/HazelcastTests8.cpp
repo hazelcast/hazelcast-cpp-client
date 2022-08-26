@@ -2046,17 +2046,16 @@ TEST(ClientMessageTest, test_encode_sql_query_id)
 
     protocol::ClientMessage msg;
 
-    std::mt19937 random_generator(std::random_device{}());
-    boost::uuids::basic_random_generator<std::mt19937> uuid_generator(random_generator);
-    auto server_uuid = uuid_generator();
-    auto client_uuid = uuid_generator();
+    boost::uuids::uuid server_uuid{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    boost::uuids::uuid client_uuid{21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36};
     msg.set(sql::impl::query_id{ server_uuid, client_uuid });
 
     const std::vector<unsigned char> expected_bytes{
-        6,   0,   0,   0,   0,   16,  38,  0, 0,  0,   0,   0,   255,
-        255, 255, 255, 255, 255, 255, 255, 0, 16, 165, 212, 232, 0,
-        0,   0,   0,   0,   0,   0,   0,   0, 0,  0,   214, 255, 255,
-        255, 255, 255, 255, 255, 6,   0,   0, 0,  0,   8
+        6,   0,   0,   0,   0,   16, // begin frame
+        38, 0, 0,  0,   0,   0, // query id frame header
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, // server uuid
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, // client uuid
+        6,   0,   0, 0,  0, 8 // end frame
     };
 
     std::vector<unsigned char> actual_bytes;
@@ -2117,13 +2116,6 @@ TEST(ClientMessageTest, test_decode_sql_page)
     auto &row2 = all_rows[1];
     ASSERT_EQ(boost::make_optional<std::string>("bar"), row2.get_object<std::string>(0));
     ASSERT_EQ(boost::make_optional<std::string>(""), row2.get_object<std::string>(1));
-
-/*
-    EXPECT_EQ((std::vector<std::vector<boost::optional<std::string>>>{
-                { std::string("foo"), std::string("bar") },
-                { std::string("test"), std::string("") } }),
-              page.columns());
-*/
 }
 
 TEST(ClientMessageTest, test_decode_sql_error)

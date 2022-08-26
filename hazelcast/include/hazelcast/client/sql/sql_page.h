@@ -49,7 +49,7 @@ public:
          *
          */
         template<typename T>
-        const boost::optional<T>& get_object(std::size_t column_index) const
+        boost::optional<T> get_object(std::size_t column_index) const
         {
             return page_.get_column_value<T>(column_index, row_index_);
         }
@@ -71,7 +71,7 @@ public:
          * @see sql_column_metadata#type()
          */
         template<typename T>
-        const boost::optional<T>& get_object(const std::string &column_name) const
+        boost::optional<T> get_object(const std::string &column_name) const
         {
             auto column_index = resolve_index(column_name);
             return page_.get_column_value<T>(column_index, row_index_);
@@ -106,7 +106,7 @@ public:
 
     std::size_t row_count() const;
 
-    const std::vector<sql_row> &rows() const;
+    const std::vector<sql_row> &rows();
 private:
     friend class sql_result;
 

@@ -929,7 +929,7 @@ public:
         for (std::size_t i = 0;i < size; ++i) {
             auto &value = values[i];
             if (value) {
-                vector_of_any[i] = std::move(value);
+                vector_of_any[i] = std::move(*value);
             }
         }
         return vector_of_any;
@@ -1010,7 +1010,7 @@ public:
 
         fast_forward_to_end_frame();
 
-        return sql::sql_page{ column_types, columns, last };
+        return sql::sql_page{ std::move(column_types), std::move(columns), last };
     }
 
     template<typename T>

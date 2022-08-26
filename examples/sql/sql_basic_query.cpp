@@ -15,13 +15,44 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
-
 int
 main()
 {
     auto hz = hazelcast::new_client().get();
 
+    // populate the map with some data
     auto map = hz.get_map("map").get();
+    for (int i = 0; i < 100; ++i) {
+        map->put(i, i).get();
+    }
+
+    auto sql = hz.get_sql();
+    // Create mapping for the integers. This needs to be done only once per map.
+    auto result = sql
+                    .execute(R"(
+                CREATE MAPPING integers
+                  TYPE IMap
+                    OPTIONS (
+                      'keyFormat' = 'int',
+                      'valueFormat' = 'int'
+                      )
+                    )")
+                    .get();
+
+    // Fetch values in between (40, 50)
+    result =
+      sql.execute("SELECT * FROM integers WHERE this > ? AND this < ?", 40, 50)
+        .get();
+
+    std::cout << "There are " << (*result.page_iterator())->row_count()
+              << " rows returned from the cluster database" << std::endl;
+
+    for (auto it = result.page_iterator(); !(*it)->last(); ++it) {
+        for (auto const& row : (*it)->rows()) {
+            std::cout << "(" << row.get_object<std::string>(0) << ", "
+                      << row.get_object<std::string>(1) << ")" << std::endl;
+        }
+    }
 
     std::cout << "Finished" << std::endl;
 

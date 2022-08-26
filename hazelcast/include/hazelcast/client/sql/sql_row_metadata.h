@@ -33,7 +33,7 @@ class HAZELCAST_API sql_row_metadata
 public:
     using const_iterator = std::unordered_map<std::string, std::size_t>::const_iterator;
 
-    sql_row_metadata(std::vector<sql_column_metadata> columns);
+    explicit sql_row_metadata(std::vector<sql_column_metadata> columns);
 
     /**
      * Gets the number of columns in the row.
@@ -56,7 +56,7 @@ public:
      *
      * @return columns metadata
      */
-    const std::vector<sql_column_metadata> columns() const;
+    const std::vector<sql_column_metadata> &columns() const;
 
     /**
      * Find index of the column with the given name. Returned index can be used to get column value
@@ -74,7 +74,7 @@ public:
      */
     const_iterator end() const;
 private:
-    const std::vector<sql_column_metadata> columns_;
+    std::vector<sql_column_metadata> columns_;
     std::unordered_map<std::string, std::size_t> name_to_index_;
 };
 

@@ -65,24 +65,25 @@ TEST_F(SqlTest, simple)
 
     ASSERT_TRUE(result.is_row_set());
     EXPECT_EQ(-1, result.update_count());
-    ASSERT_TRUE(result.row_metadata().has_value());
+    ASSERT_TRUE(result.row_metadata());
     ASSERT_EQ(2, result.row_metadata()->columns().size());
-    EXPECT_EQ("col1", result.row_metadata().value()[0].name());
-    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar,
-              result.row_metadata().value()[0].type());
-    EXPECT_TRUE(result.row_metadata().value()[0].nullable());
-    EXPECT_EQ("col2", result.row_metadata().value()[1].name());
-    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar,
-              result.row_metadata().value()[1].type());
-    EXPECT_FALSE(result.row_metadata().value()[1].nullable());
+    auto &column0 = result.row_metadata()->columns()[0];
+    EXPECT_EQ("col1", column0.name());
+    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column0.type());
+    EXPECT_TRUE(column0.nullable());
+    auto &column1 = result.row_metadata()->columns()[1];
+    EXPECT_EQ("col2", column1.name());
+    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column1.type());
+    EXPECT_FALSE(column1.nullable());
 
-    auto rows = result.fetch_page().get();
-
+    auto page = *result.page_iterator();
+    ASSERT_TRUE(page);
+    auto &rows = page->rows();
     EXPECT_EQ(2, rows.size());
-    EXPECT_EQ("foo", rows[0].get_value<std::string>(0).value());
-    EXPECT_EQ("bar", rows[0].get_value<std::string>(1).value());
-    EXPECT_FALSE(rows[1].get_value<std::string>(0).has_value());
-    EXPECT_EQ("hello", rows[1].get_value<std::string>(1).value());
+    EXPECT_EQ("foo", rows[0].get_object<std::string>(0).value());
+    EXPECT_EQ("bar", rows[0].get_object<std::string>(1).value());
+    EXPECT_FALSE(rows[1].get_object<std::string>(0).has_value());
+    EXPECT_EQ("hello", rows[1].get_object<std::string>(1).value());
 }
 
 TEST_F(SqlTest, statement_with_params)
@@ -97,11 +98,13 @@ TEST_F(SqlTest, statement_with_params)
     ASSERT_TRUE(result.is_row_set());
     EXPECT_EQ(-1, result.update_count());
 
-    auto rows = result.fetch_page().get();
+    auto page = *result.page_iterator();
+    ASSERT_TRUE(page);
 
+    auto &rows = page->rows();
     EXPECT_EQ(1, rows.size());
-    EXPECT_EQ("123456", rows[0].get_value<std::string>(0).value());
-    EXPECT_EQ("-42.73", rows[0].get_value<std::string>(1).value());
+    EXPECT_EQ("123456", rows[0].get_object<std::string>(0).value());
+    EXPECT_EQ("-42.73", rows[0].get_object<std::string>(1).value());
 }
 
 TEST_F(SqlTest, exception)
@@ -111,11 +114,22 @@ TEST_F(SqlTest, exception)
                  hazelcast::client::sql::hazelcast_sql_exception);
 }
 
-} // namespace test
-} // namespace client
-} // namespace hazelcast
+class sql_encode_test : public ::testing::Test {
+public:
+    sql_encode_test() : random_generator_(std::random_device{}())  {
+    }
 
-TEST(sql_encode_test, execute)
+protected:
+    std::mt19937 random_generator_;
+
+    query_id get_query_id() const {
+        boost::uuids::uuid server_uuid{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        boost::uuids::uuid client_uuid{21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36};
+        return { server_uuid, client_uuid };
+    }
+};
+
+TEST_F(sql_encode_test, execute)
 {
     std::string const query = "SELECT * FROM somewhere";
 
@@ -131,7 +145,7 @@ TEST(sql_encode_test, execute)
 
     unsigned char expected_res_type = 5;
 
-    query_id query_id{ 7777777LL, 88888888LL, 999999999LL, -1LL };
+    query_id query_id = get_query_id();
 
     bool skip_update_statistics = true;
 
@@ -146,18 +160,27 @@ TEST(sql_encode_test, execute)
       skip_update_statistics);
 
     std::vector<unsigned char> expected_bytes = {
-        36,  0,   0,   0,   0,   192, 0,   4,   33,  0,   0,   0,   0,   0,
+        // first frame
+        36,  0,   0,   0,   0,   192, 0,
+        4,   33,  0,   0,   0,   0,   0,
         0,   0,   0,   0,   255, 255, 255, 255, 42,  0,   0,   0,   0,   0,
-        0,   0,   210, 4,   0,   0,   5,   1,   29,  0,   0,   0,   0,   0,
+        0,   0,   210, 4,   0,   0,   5,   1,
+        // second frame (sql string)
+        29,  0,   0,   0,   0,   0,
         83,  69,  76,  69,  67,  84,  32,  42,  32,  70,  82,  79,  77,  32,
-        115, 111, 109, 101, 119, 104, 101, 114, 101, 6,   0,   0,   0,   0,
-        16,  6,   0,   0,   0,   0,   4,   15,  0,   0,   0,   0,   0,   115,
-        111, 109, 101, 98,  121, 116, 101, 115, 6,   0,   0,   0,   0,   8,
-        15,  0,   0,   0,   0,   0,   109, 121, 45,  115, 99,  104, 101, 109,
-        97,  6,   0,   0,   0,   0,   16,  38,  0,   0,   0,   0,   0,   241,
-        173, 118, 0,   0,   0,   0,   0,   56,  86,  76,  5,   0,   0,   0,
-        0,   255, 201, 154, 59,  0,   0,   0,   0,   255, 255, 255, 255, 255,
-        255, 255, 255, 6,   0,   0,   0,   0,   40
+        115, 111, 109, 101, 119, 104, 101, 114, 101,
+        // third frame std::vector<data> encoding for parameters
+        6,   0,   0,   0,   0, 16,
+        6,   0,   0,   0,   0,  4,
+        15,  0,   0,   0,   0,  0,
+        115, 111, 109, 101, 98, 121, 116, 101, 115,
+        6,   0,   0,   0,   0,  8, // end frame for parameters vector
+        15,  0,   0,   0,   0,  0, 109, 121, 45,  115, 99,  104, 101, 109, 97, // schema name string frame
+        6,   0,   0,   0,   0, 16, // begin frame for query_id
+        38, 0,   0,   0,   0,   0,
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,  // server uuid
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, // client uuid
+        6,   0,   0,   0,   0,   40 // end frame for query_id
     };
 
     std::vector<unsigned char> actual_bytes = {};
@@ -175,10 +198,10 @@ TEST(sql_encode_test, execute)
     EXPECT_EQ(expected_bytes, actual_bytes);
 }
 
-TEST(sql_encode_test, fetch)
+TEST_F(sql_encode_test, fetch)
 {
-    auto msg = hazelcast::client::protocol::codec::sql_fetch_encode(
-      query_id{ 1000000000000000000LL, 0, 1, 2 }, 7654321);
+    query_id query_id = get_query_id();
+    auto msg = hazelcast::client::protocol::codec::sql_fetch_encode(query_id, 7654321);
 
     std::vector<unsigned char> actual_bytes = {};
     for (auto buf : msg.get_buffer()) {
@@ -186,21 +209,24 @@ TEST(sql_encode_test, fetch)
     }
 
     std::vector<unsigned char> expected_bytes = {
+        // initial frame
         26, 0, 0,   0,   0,   192, 0,   5,   33,  0,   0,   0,   0,   0,  0, 0,
-        0,  0, 255, 255, 255, 255, 177, 203, 116, 0,   6,   0,   0,   0,  0, 16,
-        38, 0, 0,   0,   0,   0,   0,   0,   100, 167, 179, 182, 224, 13, 0, 0,
-        0,  0, 0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,  2, 0,
-        0,  0, 0,   0,   0,   0,   6,   0,   0,   0,   0,   40
+        0,  0, 255, 255, 255, 255, 177, 203, 116, 0,
+        6,   0,   0,   0,   0, 16, // begin frame for query_id
+        38, 0,   0,   0,   0,   0,
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,  // server uuid
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, // client uuid
+        6,   0,   0,   0,   0,   40 // end frame for query_id
     };
 
     ASSERT_EQ(actual_bytes.size(), expected_bytes.size());
     EXPECT_EQ(expected_bytes, actual_bytes);
 }
 
-TEST(sql_encode_test, close)
+TEST_F(sql_encode_test, close)
 {
-    auto msg = hazelcast::client::protocol::codec::sql_close_encode(query_id{
-      1000000000000000000LL, -1000000000000000000LL, 0, 111111111111111LL });
+    query_id query_id = get_query_id();
+    auto msg = hazelcast::client::protocol::codec::sql_close_encode(query_id);
 
     std::vector<unsigned char> actual_bytes = {};
     for (auto buf : msg.get_buffer()) {
@@ -208,13 +234,20 @@ TEST(sql_encode_test, close)
     }
 
     std::vector<unsigned char> expected_bytes = {
+        // initial frame
         22, 0,  0,  0,   0,   192, 0,   3,   33,  0,   0,   0,  0,  0,   0,
-        0,  0,  0,  255, 255, 255, 255, 6,   0,   0,   0,   0,  16, 38,  0,
-        0,  0,  0,  0,   0,   0,   100, 167, 179, 182, 224, 13, 0,  0,   156,
-        88, 76, 73, 31,  242, 0,   0,   0,   0,   0,   0,   0,  0,  199, 241,
-        78, 18, 14, 101, 0,   0,   6,   0,   0,   0,   0,   40
+        0,  0,  0,  255, 255, 255, 255,
+        6,   0,   0,   0,   0, 16, // begin frame for query_id
+        38, 0,   0,   0,   0,   0,
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,  // server uuid
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, // client uuid
+        6,   0,   0,   0,   0,   40 // end frame for query_id
     };
 
     ASSERT_EQ(actual_bytes.size(), expected_bytes.size());
     EXPECT_EQ(expected_bytes, actual_bytes);
 }
+
+} // namespace test
+} // namespace client
+} // namespace hazelcast

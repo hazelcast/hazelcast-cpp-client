@@ -55,6 +55,17 @@ else
     fi
 fi
 
+if [ -f "hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
+    echo "hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar already exists, not downloading from maven."
+else
+    echo "Downloading: hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar jar com.hazelcast:hazelcast-sql:${HAZELCAST_ENTERPRISE_VERSION}:jar"
+    mvn -q dependency:get -Dtransitive=false -DrepoUrl=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-sql:${HAZELCAST_ENTERPRISE_VERSION}:jar -Ddest=hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar
+    if [ $? -ne 0 ]; then
+        echo "Failed download hazelcast-sql jar com.hazelcast:hazelcast-sql:${HAZELCAST_ENTERPRISE_VERSION}:jar"
+        exit 1
+    fi
+fi
+
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
 echo "hazelcast-enterprise.jar already exists, not downloading from maven."
 else
@@ -77,6 +88,7 @@ else
 fi
 CLASSPATH="\
 hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:\
+hazelcast-sql-${HAZELCAST_ENTERPRISE_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar:\
 hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
