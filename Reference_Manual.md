@@ -2246,23 +2246,24 @@ See the following example.
 
 ```c++
 int main() {
-    auto hz = hazelcast::new_client().get();
-
-    auto map = hz.get_map("EntryListenerExampleMap").get();
-    
-    auto registrationId = map->add_entry_listener(
-            hazelcast::client::entry_listener().on_added([](hazelcast::client::entry_event &&event) { 
-                std::cout << "Entry added:" << event.get_key().get<int>().value() << " --> " << event.get_value().get<std::string>().value() << std::endl;
-            }).on_removed([](hazelcast::client::entry_event &&event) {
-                std::cout << "Entry removed:" << event.get_key().get<int>().value()
-                          << " --> " << event.get_value().get<std::string>().value() << std::endl;
-            }), true).get();
-
-    map->put(1, "My new entry").get();
-    map->remove<int, std::string>(1).get();
-    /* ... */
-
-    return 0;
+  auto hz = hazelcast::new_client().get();
+  
+  auto map = hz.get_map("EntryListenerExampleMap").get();
+  
+  auto registrationId = map->add_entry_listener(
+  entry_listener().on_added([](hazelcast::client::EntryEvent &&event) {
+        std::cout << "Entry added:" << event.getKey().get<int>().value() << " --> " << event.getValue().get<std::string>().value() << std::endl;
+    }).on_removed([](hazelcast::client::EntryEvent &&event) {
+        std::cout << "Entry removed:" << event.getKey().get<int>().value()
+        << " --> " << event.getValue().get<std::string>().value() << std::endl;
+    }), true).get();
+  
+  map->put(1, "My new entry").get();
+  map->remove<int, std::string>(1).get();
+  
+  /* ... */
+  
+  return 0;
 }
 ```
 
