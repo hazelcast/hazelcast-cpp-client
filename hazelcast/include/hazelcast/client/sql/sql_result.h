@@ -37,7 +37,7 @@ public:
 
         boost::future<void> operator++();
 
-        const boost::optional<sql_page> &operator*();
+        boost::optional<sql_page> &operator*();
 
     private:
         sql_result *result_;

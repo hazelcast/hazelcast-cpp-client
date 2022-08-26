@@ -585,7 +585,7 @@ sql_result::is_row_set() const
         });
     }
 
-    const boost::optional<sql_page> &sql_result::page_iterator_type::operator*() {
+    boost::optional<sql_page> &sql_result::page_iterator_type::operator*() {
         return page_;
     }
 
