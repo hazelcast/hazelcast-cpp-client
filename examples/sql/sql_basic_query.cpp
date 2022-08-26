@@ -47,7 +47,7 @@ main()
     std::cout << "There are " << (*result.page_iterator())->row_count()
               << " rows returned from the cluster database" << std::endl;
 
-    for (auto it = result.page_iterator(); !(*it)->last(); ++it) {
+    for (auto it = result.page_iterator(); !(*it)->last(); (++it).get()) {
         for (auto const& row : (*it)->rows()) {
             std::cout << "(" << row.get_object<std::string>(0) << ", "
                       << row.get_object<std::string>(1) << ")" << std::endl;
