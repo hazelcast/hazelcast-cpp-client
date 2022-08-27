@@ -1327,8 +1327,7 @@ Note that the server needs to be configured to use the same token. An example se
         <realm name="jaasRealm">
             <authentication>
                 <jaas>
-                    <login-module class-name="com.example.TokenLoginModule" usage="REQUIRED">
-                    </login-module>
+                    <login-module class-name="com.example.TokenLoginModule" usage="REQUIRED"/>
                 </jaas>
             </authentication>
         </realm>
