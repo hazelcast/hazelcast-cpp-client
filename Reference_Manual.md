@@ -1296,6 +1296,7 @@ public class TokenLoginModule extends ClusterLoginModule {
     @Override
     protected boolean onLogin() throws LoginException {
         CredentialsCallback cb = new CredentialsCallback();
+	name = cb.getCredentials().getName();
         try {
             callbackHandler.handle(new Callback[] { cb });
         } catch (IOException | UnsupportedCallbackException e) {
