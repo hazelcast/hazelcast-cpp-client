@@ -1256,12 +1256,14 @@ Note that the server needs to be configured to use the same username and passwor
     <security enabled="true">
         <realms>
             <realm name="usernamePasswordIdentityRealm">
-                <identity>
-                    <username-password username="test-user" password="test-pass" />
-                </identity>
+                <authentication>
+                    <simple>
+                        <user username="test-user" password="test-pass"/>
+                    </simple>
+                </authentication>
             </realm>
         </realms>
-        <member-authentication realm="usernamePasswordIdentityRealm"/>
+        <client-authentication realm="usernamePasswordIdentityRealm"/>
     </security>
 ```
 
