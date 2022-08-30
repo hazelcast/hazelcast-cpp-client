@@ -1834,7 +1834,7 @@ TEST_F(IssueTest,TestIssue1005){
     auto exp_lock = c.get_cp_subsystem().get_lock("exp_lock").get();
     exp_lock->lock();
     exp_lock->unlock();
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     exp_lock->lock();
     exp_lock->unlock();
 
