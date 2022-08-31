@@ -117,9 +117,14 @@ private:
     const sql_row_metadata *row_metadata_ = nullptr;
 
     template<typename T>
-    T get_column_value(std::size_t column_index, std::size_t row_index) const {
+    boost::optional<T> get_column_value(std::size_t column_index, std::size_t row_index) const {
         assert(column_index < column_count());
         assert(row_index < row_count());
+
+        auto &any_value = columns_[column_index][row_index];
+        if (any_value.empty()) {
+            return boost::none;
+        }
 
         return boost::any_cast<T>(columns_[column_index][row_index]);
     }

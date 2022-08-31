@@ -76,8 +76,9 @@ TEST_F(SqlTest, simple)
     EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column1.type());
     EXPECT_FALSE(column1.nullable());
 
-    auto page = *result.page_iterator();
-    ASSERT_TRUE(page);
+    auto page_it = result.page_iterator();
+    boost::optional<sql::sql_page> &page = *page_it;
+    ASSERT_TRUE(page.has_value());
     auto &rows = page->rows();
     EXPECT_EQ(2, rows.size());
     EXPECT_EQ("foo", rows[0].get_object<std::string>(0).value());

@@ -555,7 +555,7 @@ sql_result::is_row_set() const
 
         iterator_requested_ = true;
 
-        return sql_result::page_iterator_type(this, std::move(*first_page_));
+        return {this, std::move(first_page_)};
     }
 
     boost::future<void> sql_result::close() {
@@ -580,7 +580,7 @@ sql_result::is_row_set() const
     boost::future<void> sql_result::page_iterator_type::operator++() {
         boost::future<sql_page> page_future = result_->fetch_page();
         
-        return page_future.then([this] (boost::future<sql_page> page) {
+        return page_future.then(boost::launch::sync, [this] (boost::future<sql_page> page) {
             this->page_ = std::move(page.get());
         });
     }
