@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <boost/any.hpp>
+#include <boost/optional.hpp>
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/sql/sql_column_type.h"
