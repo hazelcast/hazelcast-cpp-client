@@ -1327,7 +1327,7 @@ consistency_lost::consistency_lost(const std::string& source,
                  std::exception_ptr cause,
                  boost::uuids::uuid originating_member_id,
                  std::string suggestion) : hazelcast_("", message, "", cause), code_(code),
-                 originating_member_uuid_(originating_member_id), suggestion_(suggestion)  {
+                 suggestion_(suggestion), originating_member_uuid_(originating_member_id) {
     }
 
     int32_t query::code() const {

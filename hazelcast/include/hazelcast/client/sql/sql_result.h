@@ -37,19 +37,21 @@ public:
 
         boost::future<void> operator++();
 
-        boost::optional<sql_page> &operator*();
+        const boost::optional<sql_page> &operator*() const;
 
     private:
         sql_result *result_;
         boost::optional<sql_page> page_;
     };
 
-    sql_result(spi::ClientContext& client_context, sql_service &service,
+    sql_result(spi::ClientContext *client_context, sql_service *service,
                std::shared_ptr<connection::Connection> connection,
                impl::query_id id, int64_t update_count,
            boost::optional<std::vector<sql_column_metadata>> columns_metadata,
            boost::optional<sql_page> first_page,
            boost::optional<bool> is_inifinite_rows, int32_t cursor_buffer_size);
+
+    sql_result();
 
     /**
      * Return whether this result has rows to iterate using the \page_iterator() method.

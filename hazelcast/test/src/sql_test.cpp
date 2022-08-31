@@ -77,7 +77,7 @@ TEST_F(SqlTest, simple)
     EXPECT_FALSE(column1.nullable());
 
     auto page_it = result.page_iterator();
-    boost::optional<sql::sql_page> &page = *page_it;
+    auto const &page = *page_it;
     ASSERT_TRUE(page.has_value());
     auto &rows = page->rows();
     EXPECT_EQ(2, rows.size());

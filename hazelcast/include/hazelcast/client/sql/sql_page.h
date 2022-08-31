@@ -34,7 +34,7 @@ public:
     class HAZELCAST_API sql_row
     {
     public:
-        sql_row(size_t row_index, const sql_page &page, const sql_row_metadata &row_metadata);
+        sql_row(size_t row_index, const sql_page *page, const sql_row_metadata *row_metadata);
 
         /**
          * Gets the value of the column by index.
@@ -51,7 +51,7 @@ public:
         template<typename T>
         boost::optional<T> get_object(std::size_t column_index) const
         {
-            return page_.get_column_value<T>(column_index, row_index_);
+            return page_->get_column_value<T>(column_index, row_index_);
         }
 
         /**
@@ -74,7 +74,7 @@ public:
         boost::optional<T> get_object(const std::string &column_name) const
         {
             auto column_index = resolve_index(column_name);
-            return page_.get_column_value<T>(column_index, row_index_);
+            return page_->get_column_value<T>(column_index, row_index_);
         }
 
         /**
@@ -86,17 +86,21 @@ public:
 
     private:
         std::size_t row_index_;
-        const sql_page& page_;
-        const sql_row_metadata &row_metadata_;
+        const sql_page* page_;
+        const sql_row_metadata *row_metadata_;
 
         std::size_t resolve_index(const std::string &column_name) const;
     };
 
-    friend class sql_row;
-
     sql_page(std::vector<sql_column_type> column_types,
          std::vector<column> columns,
          bool last);
+
+    sql_page(sql_page &&rhs) noexcept;
+
+    sql_page(const sql_page &rhs) noexcept;
+
+    sql_page &operator=(sql_page &&rhs) noexcept;
 
     const std::vector<sql_column_type>& column_types() const;
 
@@ -106,7 +110,7 @@ public:
 
     std::size_t row_count() const;
 
-    const std::vector<sql_row> &rows();
+    const std::vector<sql_row>& rows() const;
 private:
     friend class sql_result;
 
@@ -135,6 +139,7 @@ private:
      */
     sql_page &row_metadata(const sql_row_metadata *row_meta);
 
+    void construct_rows();
 };
 
 } // namespace sql
