@@ -213,7 +213,7 @@ private:
 
     std::string sql_;
     std::vector<data> serialized_parameters_;
-    std::size_t cursor_buffer_size_;
+    int32_t cursor_buffer_size_;
     std::chrono::milliseconds timeout_;
     sql::sql_expected_result_type expected_result_type_;
     boost::optional<std::string> schema_;

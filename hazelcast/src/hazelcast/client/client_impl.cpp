@@ -1186,19 +1186,19 @@ client_properties::cloud_base_url() const
 }
 
 namespace exception {
-iexception::iexception(const std::string& exception_name,
-                       const std::string& source,
-                       const std::string& message,
-                       const std::string& details,
+iexception::iexception(std::string exception_name,
+                       std::string source,
+                       std::string message,
+                       std::string details,
                        int32_t error_no,
                        std::exception_ptr cause,
                        bool is_runtime,
                        bool retryable)
-  : src_(source)
-  , msg_(message)
-  , details_(details)
+  : src_(std::move(source))
+  , msg_(std::move(message))
+  , details_(std::move(details))
   , error_code_(error_no)
-  , cause_(cause)
+  , cause_(std::move(cause))
   , runtime_exception_(is_runtime)
   , retryable_(retryable)
   , report_((boost::format("%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") %
@@ -1259,75 +1259,75 @@ iexception::is_retryable() const
 
 iexception::iexception() = default;
 
-retryable_hazelcast::retryable_hazelcast(const std::string& source,
-                                         const std::string& message,
-                                         const std::string& details,
+retryable_hazelcast::retryable_hazelcast(std::string source,
+                                         std::string message,
+                                         std::string details,
                                          std::exception_ptr cause)
   : retryable_hazelcast("retryable_hazelcast",
                         protocol::RETRYABLE_HAZELCAST,
-                        source,
-                        message,
-                        details,
-                        cause,
+                        std::move(source),
+                        std::move(message),
+                        std::move(details),
+                        std::move(cause),
                         true,
                         true)
 {}
 
-retryable_hazelcast::retryable_hazelcast(const std::string& error_name,
+retryable_hazelcast::retryable_hazelcast(std::string error_name,
                                          int32_t error_code,
-                                         const std::string& source,
-                                         const std::string& message,
-                                         const std::string& details,
+                                         std::string source,
+                                         std::string message,
+                                         std::string details,
                                          std::exception_ptr cause,
                                          bool runtime,
                                          bool retryable)
-  : hazelcast_(error_name,
+  : hazelcast_(std::move(error_name),
                error_code,
-               source,
-               message,
-               details,
-               cause,
+               std::move(source),
+               std::move(message),
+               std::move(details),
+               std::move(cause),
                runtime,
                retryable)
 {}
 
-member_left::member_left(const std::string& source,
-                         const std::string& message,
-                         const std::string& details,
+member_left::member_left(std::string source,
+                         std::string message,
+                         std::string details,
                          std::exception_ptr cause)
   : execution("member_left",
               protocol::MEMBER_LEFT,
-              source,
-              message,
-              details,
-              cause,
+              std::move(source),
+              std::move(message),
+              std::move(details),
+              std::move(cause),
               false,
               true)
 {}
 
-consistency_lost::consistency_lost(const std::string& source,
-                                   const std::string& message,
-                                   const std::string& details,
+consistency_lost::consistency_lost(std::string source,
+                                   std::string message,
+                                   std::string details,
                                    std::exception_ptr cause)
   : hazelcast_("consistency_lost",
                protocol::CONSISTENCY_LOST_EXCEPTION,
-               source,
-               message,
-               details,
-               cause,
+               std::move(source),
+               std::move(message),
+               std::move(details),
+               std::move(cause),
                true,
                false)
 {}
 
-    query::query(const std::string &source, const std::string &message, const std::string &details,
-                 std::exception_ptr cause) : hazelcast_(source, message, details, cause, false) {}
+    query::query(std::string source, std::string message, std::string details,
+                 std::exception_ptr cause) : hazelcast_(std::move(source), std::move(message), std::move(details), std::move(cause), false) {}
 
     query::query(int32_t code,
                  std::string message,
                  std::exception_ptr cause,
                  boost::uuids::uuid originating_member_id,
-                 std::string suggestion) : hazelcast_("", message, "", cause), code_(code),
-                 suggestion_(suggestion), originating_member_uuid_(originating_member_id) {
+                 std::string suggestion) : hazelcast_("", std::move(message), "", std::move(cause)), code_(code),
+                 suggestion_(std::move(suggestion)), originating_member_uuid_(originating_member_id) {
     }
 
     int32_t query::code() const {

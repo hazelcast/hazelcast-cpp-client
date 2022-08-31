@@ -30,8 +30,8 @@ class HAZELCAST_API hazelcast_sql_exception : public exception::hazelcast_
 public:
     hazelcast_sql_exception(boost::uuids::uuid originating_member_id,
                             int32_t code,
-                            const boost::optional<std::string>& message,
-                            const boost::optional<std::string>& suggestion,
+                            boost::optional<std::string> message,
+                            boost::optional<std::string> suggestion,
                             std::exception_ptr cause = nullptr);
 
     const boost::uuids::uuid &originating_member_id() const;

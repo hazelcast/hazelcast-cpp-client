@@ -113,7 +113,7 @@ sql_service::close(const std::shared_ptr<connection::Connection>& connection,
 }
 
 sql_service::sql_execute_response_parameters
-sql_service::decode_execute_response(protocol::ClientMessage& msg) const
+sql_service::decode_execute_response(protocol::ClientMessage& msg)
 {
     static constexpr size_t RESPONSE_UPDATE_COUNT_FIELD_OFFSET =
       protocol::ClientMessage::RESPONSE_HEADER_LEN;
@@ -128,19 +128,20 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg) const
 
     response.update_count = msg.get<int64_t>();
 
-    if (initial_frame_header.frame_len >=
-        RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
-          protocol::ClientMessage::INT8_SIZE) {
+    auto frame_len = static_cast<int32_t>(initial_frame_header.frame_len);
+    if (frame_len >=
+        static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
+          protocol::ClientMessage::INT8_SIZE)) {
         response.is_infinite_rows = msg.get<bool>();
         response.is_infinite_rows_exist = true;
         // skip initial_frame
-        msg.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
-                   (RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
+        msg.rd_ptr(frame_len -
+                   static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
                     protocol::ClientMessage::INT8_SIZE));
     } else {
         response.is_infinite_rows_exist = false;
         // skip initial_frame
-        msg.rd_ptr(static_cast<int32_t>(initial_frame_header.frame_len) -
+        msg.rd_ptr(static_cast<std::size_t>(frame_len) -
                    RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET);
     }
 
@@ -173,10 +174,10 @@ sql_service::handle_execute_response(
     auto response = decode_execute_response(msg);
     if (response.error) {
         BOOST_THROW_EXCEPTION(
-          sql::hazelcast_sql_exception(response.error->originating_member_id,
+          sql::hazelcast_sql_exception(std::move(response.error->originating_member_id),
                                        response.error->code,
-                                       response.error->message,
-                                       response.error->suggestion));
+                                       std::move(response.error->message),
+                                       std::move(response.error->suggestion)));
     }
 
     return sql_result{ &client_context_,
@@ -234,7 +235,7 @@ sql_service::uuid_low(const boost::uuids::uuid& uuid)
 }
 
 void
-sql_service::rethrow(std::exception_ptr exc_ptr)
+sql_service::rethrow(const std::exception_ptr& exc_ptr)
 {
     // Make sure that access_control is thrown as a top-level exception
     try {
@@ -297,7 +298,7 @@ sql_service::fetch_page(
               sql_fetch_response_parameters response_params =
                 this->decode_fetch_response(std::move(response_message));
 
-              this->handle_fetch_response_error(
+              hazelcast::client::sql::sql_service::handle_fetch_response_error(
                 std::move(response_params.error));
 
               page = std::move(response_params.page);
@@ -362,7 +363,7 @@ sql_statement::sql(std::string sql_string)
 {
     util::Preconditions::check_not_empty(sql_string, "SQL cannot be empty");
 
-    sql_ = sql_string;
+    sql_ = std::move(sql_string);
 
     return *this;
 }
@@ -462,13 +463,13 @@ sql_column_metadata::nullable() const
 hazelcast_sql_exception::hazelcast_sql_exception(
   boost::uuids::uuid originating_member_id,
   int32_t code,
-  const boost::optional<std::string>& message,
-  const boost::optional<std::string>& suggestion,
+  boost::optional<std::string> message,
+  boost::optional<std::string> suggestion,
   std::exception_ptr cause)
-  : hazelcast_("", message ? message.value() : "", "", cause)
-  , originating_member_id_(originating_member_id)
+  : hazelcast_("", message ? std::move(message).value() : "", "", std::move(cause))
+  , originating_member_id_(std::move(originating_member_id))
   , code_(code)
-  , suggestion_(suggestion)
+  , suggestion_(std::move(suggestion))
 {
 }
 
@@ -530,20 +531,18 @@ query_utils::member_of_same_larger_version_group(
     boost::optional<member::version> version1;
     size_t count0 = 0;
     size_t count1 = 0;
-    size_t gross_majority = members.size() / 2;
 
     for (const auto& m : members) {
         if (m.is_lite_member()) {
             continue;
         }
         auto v = m.get_version();
-        size_t current_count = 0;
         if (!version0 || *version0 == v) {
             version0 = v;
-            current_count = ++count0;
+            ++count0;
         } else if (!version1 || *version1 == v) {
             version1 = v;
-            current_count = ++count1;
+            ++count1;
         } else {
             throw exception::runtime(
               "query_utils::member_of_same_larger_version_group",
@@ -562,7 +561,7 @@ query_utils::member_of_same_larger_version_group(
     }
 
     size_t count;
-    member::version version{};
+    member::version version;
     if (count0 > count1 || (count0 == count1 && *version0 > *version1)) {
         count = count0;
         version = *version0;
@@ -677,7 +676,7 @@ sql_result::row_metadata() const
     return row_metadata_;
 }
 
-sql_result::sql_result() {}
+sql_result::sql_result() = default;
 
 sql_result::page_iterator_type::page_iterator_type(
   sql_result* result,

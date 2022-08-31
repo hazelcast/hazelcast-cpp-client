@@ -124,7 +124,7 @@ private:
 
     std::shared_ptr<connection::Connection> query_connection();
 
-    void rethrow(std::exception_ptr exc_ptr);
+    void rethrow(const std::exception_ptr& exc_ptr);
     void rethrow(std::exception_ptr cause_ptr, const std::shared_ptr<connection::Connection> &connection);
 
     boost::uuids::uuid client_id();
@@ -132,15 +132,15 @@ private:
     sql_result handle_execute_response(protocol::ClientMessage &msg, std::shared_ptr<connection::Connection> connection,
                                        impl::query_id id, int32_t cursor_buffer_size);
 
-    sql_execute_response_parameters decode_execute_response(protocol::ClientMessage &msg) const;
+    static sql_execute_response_parameters decode_execute_response(protocol::ClientMessage &msg) ;
 
     impl::query_id create_query_id(const std::shared_ptr<connection::Connection> &query_conn);
 
     boost::future<sql_page> fetch_page(const impl::query_id &q_id, int32_t cursor_buffer_size, const std::shared_ptr<connection::Connection> &connection);
 
-    sql_fetch_response_parameters decode_fetch_response(protocol::ClientMessage message);
+    static sql_fetch_response_parameters decode_fetch_response(protocol::ClientMessage message);
 
-    void handle_fetch_response_error(boost::optional<impl::sql_error> error);
+    static void handle_fetch_response_error(boost::optional<impl::sql_error> error);
 };
 } // namespace sql
 } // namespace client
