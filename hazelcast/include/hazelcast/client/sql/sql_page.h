@@ -103,6 +103,8 @@ public:
 
     sql_page &operator=(sql_page &&rhs) noexcept;
 
+    sql_page &operator=(const sql_page &rhs) noexcept;
+
     const std::vector<sql_column_type>& column_types() const;
 
     bool last() const;

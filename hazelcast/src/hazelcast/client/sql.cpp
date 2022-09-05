@@ -765,6 +765,18 @@ sql_page::operator=(sql_page&& rhs) noexcept
     return *this;
 }
 
+sql_page&
+sql_page::operator=(const sql_page& rhs) noexcept
+{
+    column_types_ = rhs.column_types_;
+    columns_ = rhs.columns_;
+    last_ = rhs.last_;
+    row_metadata_ = rhs.row_metadata_;
+
+    construct_rows();
+    return *this;
+}
+
 void
 sql_page::construct_rows()
 {
