@@ -32,7 +32,7 @@ namespace impl {
          * groups have the same size, return a member from the newer group
          * (preferably the local one).
          * <p>
-         * Used for SqlExecute and SubmitJob(light=true) messages.
+         * Used for SqlExecute messages.
          *
          * @param members list of all members
          * @return the chosen member or none, if no data member is found
