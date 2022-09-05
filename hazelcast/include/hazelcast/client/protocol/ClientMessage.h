@@ -452,9 +452,9 @@ public:
     typename std::enable_if<std::is_same<T, local_date>::value,
             T>::type inline get()
     {
-        auto year = get<int32_t>();
-        auto month = get<uint8_t>();
-        auto day_of_month = get<uint8_t>();
+        auto year = static_cast<uint8_t>(get<int32_t>());
+        auto month = static_cast<uint8_t>(get<int8_t>());
+        auto day_of_month = static_cast<uint8_t>(get<int8_t>());
         return {year, month, day_of_month};
     }
 
@@ -462,9 +462,9 @@ public:
     typename std::enable_if<std::is_same<T, local_time>::value,
             T>::type inline get()
     {
-        auto hour = get<uint8_t>();
-        auto minute = get<uint8_t>();
-        auto second = get<uint8_t>();
+        auto hour = static_cast<uint8_t>(get<int8_t>());
+        auto minute = static_cast<uint8_t>(get<int8_t>());
+        auto second = static_cast<uint8_t>(get<int8_t>());
         auto nano = get<int32_t>();
 
         return {hour, minute, second, nano};
@@ -477,7 +477,7 @@ public:
         auto date = get<local_date>();
         auto time = get<local_time>();
 
-        return {std::move(date), std::move(time)};
+        return {date, time};
     }
 
     template<typename T>
@@ -487,7 +487,7 @@ public:
         auto date_time = get<local_date_time>();
         auto offset_seconds = get<int32_t>();
 
-        return {std::move(date_time), offset_seconds};
+        return {date_time, offset_seconds};
     }
 
     template<typename T>
@@ -950,60 +950,61 @@ public:
 
         using column = std::vector<boost::any>;
 
-        std::vector<column> columns;
-        std::vector<sql::sql_column_type> column_types;
+        auto number_of_columns = column_type_ids.size();
+        std::vector<column> columns(number_of_columns);
+        std::vector<sql::sql_column_type> column_types(number_of_columns);
 
-        for (auto column_type_id : column_type_ids) {
-            auto column_type = static_cast<sql::sql_column_type>(column_type_id);
-            column_types.push_back(column_type);
+        for (std::size_t i = 0;i < number_of_columns; ++i) {
+            auto column_type = static_cast<sql::sql_column_type>(column_type_ids[i]);
+            column_types[i] = column_type;
 
             switch (column_type) {
                 case sql::sql_column_type::varchar:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<std::string>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<std::string>>>());
                     break;
                 case sql::sql_column_type::boolean:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<bool>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<bool>>>());
                     break;
                 case sql::sql_column_type::tinyint:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<byte>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<byte>>>());
                     break;
                 case sql::sql_column_type::smallint:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<int16_t>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<int16_t>>>());
                     break;
                 case sql::sql_column_type::integer:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<int32_t>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<int32_t>>>());
                     break;
                 case sql::sql_column_type::bigint:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<int64_t>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<int64_t>>>());
                     break;
                 case sql::sql_column_type::real:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<float>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<float>>>());
                     break;
                 case sql::sql_column_type::double_:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<double>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<double>>>());
                     break;
                 case sql::sql_column_type::date:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<local_date>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<local_date>>>());
                     break;
                 case sql::sql_column_type::time:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<local_time>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<local_time>>>());
                     break;
                 case sql::sql_column_type::timestamp:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<local_date_time>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<local_date_time>>>());
                     break;
                 case sql::sql_column_type::timestamp_with_timezone:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<offset_date_time>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<offset_date_time>>>());
                     break;
                 case sql::sql_column_type::decimal:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<big_decimal>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<big_decimal>>>());
                     break;
                 case sql::sql_column_type::null: {
                     auto size = get<int32_t>();
-                    columns.emplace_back(std::vector<boost::any>(static_cast<size_t>(size)));
+                    columns[i] = std::vector<boost::any>(static_cast<size_t>(size));
                 }
                     break;
                 case sql::sql_column_type::object:
-                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<serialization::pimpl::data>>>()));
+                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<serialization::pimpl::data>>>());
                     break;
                 default:
                     throw exception::illegal_state("ClientMessage::get<sql::sql_page>",
