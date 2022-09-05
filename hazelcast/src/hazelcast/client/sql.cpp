@@ -131,13 +131,13 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
     auto frame_len = static_cast<int32_t>(initial_frame_header.frame_len);
     if (frame_len >=
         static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
-          protocol::ClientMessage::INT8_SIZE)) {
+                             protocol::ClientMessage::INT8_SIZE)) {
         response.is_infinite_rows = msg.get<bool>();
         response.is_infinite_rows_exist = true;
         // skip initial_frame
         msg.rd_ptr(frame_len -
                    static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
-                    protocol::ClientMessage::INT8_SIZE));
+                                        protocol::ClientMessage::INT8_SIZE));
     } else {
         response.is_infinite_rows_exist = false;
         // skip initial_frame
@@ -173,11 +173,11 @@ sql_service::handle_execute_response(
 {
     auto response = decode_execute_response(msg);
     if (response.error) {
-        BOOST_THROW_EXCEPTION(
-          sql::hazelcast_sql_exception(std::move(response.error->originating_member_id),
-                                       response.error->code,
-                                       std::move(response.error->message),
-                                       std::move(response.error->suggestion)));
+        BOOST_THROW_EXCEPTION(sql::hazelcast_sql_exception(
+          std::move(response.error->originating_member_id),
+          response.error->code,
+          std::move(response.error->message),
+          std::move(response.error->suggestion)));
     }
 
     return sql_result{ &client_context_,
@@ -466,7 +466,10 @@ hazelcast_sql_exception::hazelcast_sql_exception(
   boost::optional<std::string> message,
   boost::optional<std::string> suggestion,
   std::exception_ptr cause)
-  : hazelcast_("", message ? std::move(message).value() : "", "", std::move(cause))
+  : hazelcast_("",
+               message ? std::move(message).value() : "",
+               "",
+               std::move(cause))
   , originating_member_id_(std::move(originating_member_id))
   , code_(code)
   , suggestion_(std::move(suggestion))
@@ -590,8 +593,8 @@ query_utils::member_of_same_larger_version_group(
 } // namespace impl
 
 sql_result::sql_result(
-  spi::ClientContext*client_context,
-  sql_service *service,
+  spi::ClientContext* client_context,
+  sql_service* service,
   std::shared_ptr<connection::Connection> connection,
   impl::query_id id,
   int64_t update_count,
@@ -614,6 +617,8 @@ sql_result::sql_result(
         row_metadata_.emplace(std::move(*columns_metadata));
         assert(first_page_);
         first_page_->row_metadata(row_metadata_.get_ptr());
+        first_page_->serialization_service(
+          &client_context_->get_serialization_service());
     }
 }
 
@@ -691,10 +696,13 @@ sql_result::page_iterator_type::operator++()
 {
     boost::future<sql_page> page_future = result_->fetch_page();
 
-    return page_future.then(boost::launch::sync,
-                            [this](boost::future<sql_page> page) {
-                                this->page_ = std::move(page.get());
-                            });
+    return page_future.then(
+      boost::launch::sync, [this](boost::future<sql_page> page) {
+          page_ = std::move(page.get());
+          page_->serialization_service(
+            &result_->client_context_->get_serialization_service());
+          page_->row_metadata(result_->row_metadata_.get_ptr());
+      });
 }
 
 const boost::optional<sql_page>&
@@ -744,12 +752,18 @@ sql_page::sql_page(std::vector<sql_column_type> column_types,
 sql_page::sql_page(sql_page&& rhs) noexcept
   : column_types_(std::move(rhs.column_types_))
   , columns_(std::move(rhs.columns_))
-  , last_(rhs.last_), row_metadata_(rhs.row_metadata_) {
+  , last_(rhs.last_)
+  , row_metadata_(rhs.row_metadata_)
+{
     construct_rows();
 }
 
-sql_page::sql_page(const sql_page& rhs) noexcept : column_types_(rhs.column_types_)
-  , columns_(rhs.columns_), last_(rhs.last_), row_metadata_(rhs.row_metadata_) {
+sql_page::sql_page(const sql_page& rhs) noexcept
+  : column_types_(rhs.column_types_)
+  , columns_(rhs.columns_)
+  , last_(rhs.last_)
+  , row_metadata_(rhs.row_metadata_)
+{
     construct_rows();
 }
 
@@ -816,11 +830,16 @@ sql_page::rows() const
     return rows_;
 }
 
-sql_page&
+void
 sql_page::row_metadata(const sql_row_metadata* row_meta)
 {
     row_metadata_ = row_meta;
-    return *this;
+}
+
+void
+sql_page::serialization_service(serialization::pimpl::SerializationService* ss)
+{
+    serialization_service_ = ss;
 }
 
 sql_row_metadata::sql_row_metadata(std::vector<sql_column_metadata> columns)

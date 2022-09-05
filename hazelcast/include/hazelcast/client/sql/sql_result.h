@@ -108,6 +108,11 @@ private:
     int32_t cursor_buffer_size_;
 
     boost::future<sql_page> fetch_page();
+
+    template<typename T>
+    boost::optional<T> to_object(serialization::pimpl::data data) {
+        return client_context_->get_serialization_service().to_object<T>(data);
+    }
 };
 
 } // namespace sql

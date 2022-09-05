@@ -1002,6 +1002,9 @@ public:
                     columns.emplace_back(std::vector<boost::any>(static_cast<size_t>(size)));
                 }
                     break;
+                case sql::sql_column_type::object:
+                    columns.emplace_back(to_vector_of_any(get<std::vector<boost::optional<serialization::pimpl::data>>>()));
+                    break;
                 default:
                     throw exception::illegal_state("ClientMessage::get<sql::sql_page>",
                                                    (boost::format("Unknown type %1%") %static_cast<int32_t>(column_type)).str());

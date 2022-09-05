@@ -22,6 +22,7 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/sql/sql_column_type.h"
 #include "hazelcast/client/sql/sql_row_metadata.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 namespace hazelcast {
 namespace client {
@@ -35,18 +36,23 @@ public:
     class HAZELCAST_API sql_row
     {
     public:
-        sql_row(size_t row_index, const sql_page *page, const sql_row_metadata *row_metadata);
+        sql_row(size_t row_index,
+                const sql_page* page,
+                const sql_row_metadata* row_metadata);
 
         /**
          * Gets the value of the column by index.
          * <p>
-         * The class of the returned value depends on the SQL type of the column. No implicit conversions are performed on the value.
+         * The class of the returned value depends on the SQL type of the
+         * column. No implicit conversions are performed on the value.
          *
          * @param column_index column index, zero-based.
          * @return value of the column
          *
-         * @throws hazelcast::client::exception::index_out_of_bounds if the column index is out of bounds
-         * @throws boost::bad_any_cast if the type of the column type isn't assignable to the type \codeT\endcode
+         * @throws hazelcast::client::exception::index_out_of_bounds if the
+         * column index is out of bounds
+         * @throws boost::bad_any_cast if the type of the column type isn't
+         * assignable to the type \codeT\endcode
          *
          */
         template<typename T>
@@ -58,21 +64,24 @@ public:
         /**
          * Gets the value of the column by column name.
          * <p>
-         * Column name should be one of those defined in row_metadata, case-sensitive.
-         * <p>
-         * The class of the returned value depends on the SQL type of the column. No implicit conversions are performed on the value.
+         * Column name should be one of those defined in row_metadata,
+         * case-sensitive. <p> The class of the returned value depends on the
+         * SQL type of the column. No implicit conversions are performed on the
+         * value.
          *
          * @param column_name column name
          * @return value of the column
          *
-         * @throws hazelcast::client::exception::illegal_argument if a column with the given name is not found
-         * @throws boost::any_cast_exception if the type of the column type isn't assignable to the type \codeT\endcode
+         * @throws hazelcast::client::exception::illegal_argument if a column
+         * with the given name is not found
+         * @throws boost::any_cast_exception if the type of the column type
+         * isn't assignable to the type \codeT\endcode
          *
          * @see sql_column_metadata#name()
          * @see sql_column_metadata#type()
          */
         template<typename T>
-        boost::optional<T> get_object(const std::string &column_name) const
+        boost::optional<T> get_object(const std::string& column_name) const
         {
             auto column_index = resolve_index(column_name);
             return page_->get_column_value<T>(column_index, row_index_);
@@ -80,30 +89,31 @@ public:
 
         /**
          * Gets the row metadata.
-         * @returns vector of column metadata, and returns empty vector if the result contains only an update count.
+         * @returns vector of column metadata, and returns empty vector if the
+         * result contains only an update count.
          *
          */
-        const sql_row_metadata &row_metadata() const;
+        const sql_row_metadata& row_metadata() const;
 
     private:
         std::size_t row_index_;
         const sql_page* page_;
-        const sql_row_metadata *row_metadata_;
+        const sql_row_metadata* row_metadata_;
 
-        std::size_t resolve_index(const std::string &column_name) const;
+        std::size_t resolve_index(const std::string& column_name) const;
     };
 
     sql_page(std::vector<sql_column_type> column_types,
-         std::vector<column> columns,
-         bool last);
+             std::vector<column> columns,
+             bool last);
 
-    sql_page(sql_page &&rhs) noexcept;
+    sql_page(sql_page&& rhs) noexcept;
 
-    sql_page(const sql_page &rhs) noexcept;
+    sql_page(const sql_page& rhs) noexcept;
 
-    sql_page &operator=(sql_page &&rhs) noexcept;
+    sql_page& operator=(sql_page&& rhs) noexcept;
 
-    sql_page &operator=(const sql_page &rhs) noexcept;
+    sql_page& operator=(const sql_page& rhs) noexcept;
 
     const std::vector<sql_column_type>& column_types() const;
 
@@ -114,6 +124,7 @@ public:
     std::size_t row_count() const;
 
     const std::vector<sql_row>& rows() const;
+
 private:
     friend class sql_result;
 
@@ -121,26 +132,42 @@ private:
     std::vector<column> columns_;
     std::vector<sql_row> rows_;
     bool last_;
-    const sql_row_metadata *row_metadata_ = nullptr;
+    const sql_row_metadata* row_metadata_ = nullptr;
+    serialization::pimpl::SerializationService* serialization_service_;
 
     template<typename T>
-    boost::optional<T> get_column_value(std::size_t column_index, std::size_t row_index) const {
+    boost::optional<T> get_column_value(std::size_t column_index,
+                                        std::size_t row_index) const
+    {
         assert(column_index < column_count());
         assert(row_index < row_count());
 
-        auto &any_value = columns_[column_index][row_index];
+        auto& any_value = columns_[column_index][row_index];
         if (any_value.empty()) {
             return boost::none;
         }
 
-        return boost::any_cast<T>(columns_[column_index][row_index]);
+        if (column_types_[column_index] != sql_column_type::object) {
+            return boost::any_cast<T>(any_value);
+        }
+
+        // this is the object type, hence the value is `data`
+        // and we need to de-serialize it
+        return serialization_service_->to_object<T>(
+          boost::any_cast<serialization::pimpl::data>(any_value));
     }
 
     /**
      * set the row metadata on the page
      * @param row_meta the row metadata pointer
      */
-    sql_page &row_metadata(const sql_row_metadata *row_meta);
+    void row_metadata(const sql_row_metadata* row_meta);
+
+    /**
+     * sets the serialization service to be used if column type is object
+     * @param ss the serialization service pointer
+     */
+    void serialization_service(serialization::pimpl::SerializationService* ss);
 
     void construct_rows();
 };

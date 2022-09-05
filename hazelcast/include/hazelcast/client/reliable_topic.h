@@ -179,7 +179,6 @@ private:
             }
 
             auto runner = this->shared_from_this();
-            std::shared_ptr<int> a;
             ringbuffer_->read_many(sequence_, 1, batch_size_)
               .then(executor_, [runner](boost::future<rb::read_result_set> f) {
                   if (runner->cancelled_) {
