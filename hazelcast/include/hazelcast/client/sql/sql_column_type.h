@@ -15,11 +15,13 @@
  */
 #pragma once
 
+#include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {
 
-enum class sql_column_type
+enum class HAZELCAST_API sql_column_type
 {
     /** VARCHAR type, represented by std::string */
     varchar = 0,

@@ -31,7 +31,7 @@ namespace sql {
 class HAZELCAST_API sql_result
 {
 public:
-    class page_iterator_type {
+    class HAZELCAST_API page_iterator_type {
     public:
         page_iterator_type(sql_result *result, boost::optional<sql_page> page);
 

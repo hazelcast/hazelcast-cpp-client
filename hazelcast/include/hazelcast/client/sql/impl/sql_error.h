@@ -21,12 +21,14 @@
 #include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
 
+#include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {
 namespace impl {
 
-struct sql_error
+struct HAZELCAST_API sql_error
 {
     int32_t code;
     boost::optional<std::string> message;

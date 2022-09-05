@@ -15,12 +15,14 @@
  */
 #pragma once
 
+#include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {
 namespace impl {
 
-enum class sql_error_code
+enum class HAZELCAST_API sql_error_code
 {
     /** Generic error. */
     GENERIC = -1,

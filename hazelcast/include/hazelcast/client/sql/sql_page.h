@@ -21,7 +21,7 @@
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/sql/sql_column_type.h"
-#include "sql_row_metadata.h"
+#include "hazelcast/client/sql/sql_row_metadata.h"
 
 namespace hazelcast {
 namespace client {

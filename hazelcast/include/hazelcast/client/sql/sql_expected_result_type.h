@@ -15,11 +15,13 @@
  */
 #pragma once
 
+#include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {
 
-enum class sql_expected_result_type
+enum class HAZELCAST_API sql_expected_result_type
 {
     any = 0,
     rows = 1,
