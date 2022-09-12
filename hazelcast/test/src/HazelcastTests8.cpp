@@ -1825,6 +1825,20 @@ TEST_F(
 
     ASSERT_NO_THROW(pipe->results());
 }
+TEST_F(IssueTest,TestIssue1005){
+    HazelcastServerFactory fac("hazelcast/test/resources/lock-expiration.xml");
+    HazelcastServer serv(fac);
+    client_config con;
+    con.set_cluster_name("TestIssue1005");
+    auto c = hazelcast::new_client(std::move(con)).get();
+    auto exp_lock = c.get_cp_subsystem().get_lock("exp_lock").get();
+    exp_lock->lock();
+    exp_lock->unlock();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    exp_lock->lock();
+    exp_lock->unlock();
+
+}
 } // namespace test
 } // namespace client
 } // namespace hazelcast
