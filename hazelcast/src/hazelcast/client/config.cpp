@@ -1128,6 +1128,7 @@ bool abstract_dom_config_processor::get_bool_value(std::string value){
     else if(value == "false"){
         return false;
     }
+    return false;
 }
 int abstract_dom_config_processor::get_integer_value(std::string parameter_name, std::string value){
     try{
