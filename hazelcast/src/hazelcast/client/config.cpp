@@ -1380,7 +1380,7 @@ void client_dom_config_processor::handle_network(const boost::property_tree::ptr
 void client_dom_config_processor::handle_cluster_members(const boost::property_tree::ptree& node, hazelcast::client::config::client_network_config* client_network_config){
     for(auto& pair : node){
         if(matches("address" , pair.first)){
-            int port;//port is not included in the example usage in hazelcast-client-full-example.xml
+            int port = 5701;//port is not included in the example usage in hazelcast-client-full-example.xml
             client_network_config->add_address(hazelcast::client::address(pair.second.data(),port));
         }
     }
