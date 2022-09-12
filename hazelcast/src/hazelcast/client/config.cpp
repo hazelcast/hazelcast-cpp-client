@@ -1068,28 +1068,28 @@ client_config_sections::client_config_sections(std::string name, bool multiple_o
 std::string client_config_sections::get_name(){
     return name;
 }
-static client_config_sections HAZELCAST_CLIENT("hazelcast-client", false);
-static client_config_sections IMPORT("import", true);
-static client_config_sections SECURITY("security", false);
-static client_config_sections PROXY_FACTORIES("proxy-factories", false);
-static client_config_sections PROPERTIES("properties", false);
-static client_config_sections SERIALIZATION("serialization", false);
-static client_config_sections NATIVE_MEMORY("native-memory", false);
-static client_config_sections LISTENERS("listeners", false);
-static client_config_sections NETWORK("network", false);
-static client_config_sections LOAD_BALANCER("load-balancer", false);
-static client_config_sections NEAR_CACHE("near-cache", true);
-static client_config_sections QUERY_CACHES("query-caches", false);
-static client_config_sections BACKUP_ACK_TO_CLIENT("backup-ack-to-client-enabled", false);
-static client_config_sections INSTANCE_NAME("instance-name", false);
-static client_config_sections CONNECTION_STRATEGY("connection-strategy", false);
-static client_config_sections USER_CODE_DEPLOYMENT("user-code-deployment", false);
-static client_config_sections FLAKE_ID_GENERATOR("flake-id-generator", true);
-static client_config_sections RELIABLE_TOPIC("reliable-topic", true);
-static client_config_sections LABELS("client-labels", false);
-static client_config_sections CLUSTER_NAME("cluster-name", false);
-static client_config_sections METRICS("metrics", false);
-static client_config_sections INSTANCE_TRACKING("instance-tracking", false);
+client_config_sections HAZELCAST_CLIENT("hazelcast-client", false);
+client_config_sections IMPORT("import", true);
+client_config_sections SECURITY("security", false);
+client_config_sections PROXY_FACTORIES("proxy-factories", false);
+client_config_sections PROPERTIES("properties", false);
+client_config_sections SERIALIZATION("serialization", false);
+client_config_sections NATIVE_MEMORY("native-memory", false);
+client_config_sections LISTENERS("listeners", false);
+client_config_sections NETWORK("network", false);
+client_config_sections LOAD_BALANCER("load-balancer", false);
+client_config_sections NEAR_CACHE("near-cache", true);
+client_config_sections QUERY_CACHES("query-caches", false);
+client_config_sections BACKUP_ACK_TO_CLIENT("backup-ack-to-client-enabled", false);
+client_config_sections INSTANCE_NAME("instance-name", false);
+client_config_sections CONNECTION_STRATEGY("connection-strategy", false);
+client_config_sections USER_CODE_DEPLOYMENT("user-code-deployment", false);
+client_config_sections FLAKE_ID_GENERATOR("flake-id-generator", true);
+client_config_sections RELIABLE_TOPIC("reliable-topic", true);
+client_config_sections LABELS("client-labels", false);
+client_config_sections CLUSTER_NAME("cluster-name", false);
+client_config_sections METRICS("metrics", false);
+client_config_sections INSTANCE_TRACKING("instance-tracking", false);
 
 std::vector<client_config_sections> values = {HAZELCAST_CLIENT, IMPORT, SECURITY, PROXY_FACTORIES, PROPERTIES, SERIALIZATION, NATIVE_MEMORY,
                                                LISTENERS, NETWORK, LOAD_BALANCER, NEAR_CACHE, QUERY_CACHES, BACKUP_ACK_TO_CLIENT, INSTANCE_NAME,
