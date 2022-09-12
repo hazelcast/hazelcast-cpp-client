@@ -37,9 +37,9 @@
 #include "hazelcast/client/config/eviction_strategy_type.h"
 #include "hazelcast/client/cluster.h"
 #include "hazelcast/client/initial_membership_event.h"
-#include "hazelcast/client/config/xml_config_locator.h"
-#include "hazelcast/client/config/xml_dom_config_processor.h"
-#include "hazelcast/client/config/xml_variable_replacer.h"
+#include "hazelcast/client/internal/config/xml_config_locator.h"
+#include "hazelcast/client/internal/config/xml_dom_config_processor.h"
+#include "hazelcast/client/internal/config/xml_variable_replacer.h"
 
 namespace hazelcast {
 namespace client {

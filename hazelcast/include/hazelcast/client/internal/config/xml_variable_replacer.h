@@ -19,8 +19,8 @@
 #include <vector>
 #include "hazelcast/util/export.h"
 #include <boost/property_tree/ptree.hpp>
-#include <hazelcast/client/client_config.h>
-#include <hazelcast/client/client_properties.h>
+#include "hazelcast/client/client_config.h"
+#include "hazelcast/client/client_properties.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
