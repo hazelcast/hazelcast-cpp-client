@@ -926,6 +926,7 @@ bool abstract_config_locator::load_from_working_directory(std::string config_fil
         if(in->fail()){
             throw hazelcast::client::exception::hazelcast_("Failed to open file: " + config_file_path);
         }
+        return true;
     }catch (const std::runtime_error& e){
         throw hazelcast::client::exception::hazelcast_(e.what());
     }
