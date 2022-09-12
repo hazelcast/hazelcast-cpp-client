@@ -1325,12 +1325,7 @@ void client_dom_config_processor::handle_security(const boost::property_tree::pt
                 hazelcast::client::security::username_password_credentials>(
                 get_attribute(child,"username"), get_attribute(child, "password")));
         } else if (matches("token", node_name)) {
-            std::vector<hazelcast::byte> token;
-
-            for(char it : pair.second.data()){
-                token.push_back(it);
-            }
-            client_config->set_credentials(std::make_shared<hazelcast::client::security::token_credentials>(token));
+            // TODO
         } else if (matches("credentials-factory", node_name)) {//not supported
 
         } else if (matches("kerberos", node_name)) {//not supported
