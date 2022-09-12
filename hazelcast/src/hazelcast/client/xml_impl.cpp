@@ -946,7 +946,7 @@ bool abstract_config_locator::load_from_working_directory(std::string config_fil
     return false;
 }
 bool abstract_config_locator::load_from_system_property(std::string property_key, std::vector<std::string> accepted_suffixes){
-    load_from_system_property(property_key, false, accepted_suffixes);
+    return load_from_system_property(property_key, false, accepted_suffixes);
 }
 void abstract_config_locator::load_system_property_file_resource(std::string config_system_property){
     configuration_file = fopen(config_system_property.c_str(), "r");
