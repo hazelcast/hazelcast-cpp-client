@@ -18,11 +18,9 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <fstream>
-
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/serialization_config.h"
 #include "hazelcast/client/config/ssl_config.h"
-#include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/config/client_flake_id_generator_config.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
@@ -31,12 +29,7 @@
 #include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/config/reliable_topic_config.h"
 #include "hazelcast/client/config/client_connection_strategy_config.h"
-#include "hazelcast/client/config/logger_config.h"
-#include "hazelcast/client/config/index_config.h"
-#include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
-#include "hazelcast/client/query/predicates.h"
 #include "hazelcast/client/lifecycle_listener.h"
-#include "hazelcast/client/config/eviction_strategy_type.h"
 #include "hazelcast/client/cluster.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/internal/config/xml_config_locator.h"
@@ -151,7 +144,7 @@ abstract_dom_config_processor::get_integer_value(std::string parameter_name,
     try {
         return std::stoi(value);
     } catch (const std::exception& e) {
-        throw new hazelcast::client::exception::invalid_configuration(
+        throw hazelcast::client::exception::invalid_configuration(
           "Invalid integer value for parameter " + parameter_name + ": " +
           value);
     }
@@ -173,7 +166,7 @@ abstract_dom_config_processor::get_long_value(std::string parameter_name,
     try {
         return std::stol(value);
     } catch (const std::exception& e) {
-        throw new hazelcast::client::exception::invalid_configuration(
+        throw hazelcast::client::exception::invalid_configuration(
           "Invalid long value for parameter " + parameter_name + ": " + value);
     }
 }
@@ -194,7 +187,7 @@ abstract_dom_config_processor::get_double_value(std::string parameter_name,
     try {
         return std::stod(value);
     } catch (const std::exception& e) {
-        throw new hazelcast::client::exception::invalid_configuration(
+        throw hazelcast::client::exception::invalid_configuration(
           "Invalid double value for parameter " + parameter_name + ": " +
           value);
     }
