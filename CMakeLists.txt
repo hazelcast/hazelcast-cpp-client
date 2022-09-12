@@ -97,7 +97,7 @@ endif ()
 add_library(
         ${PROJECT_NAME}
         ${SOURCE_FILES} ${HEADER_FILES}
-        hazelcast/include/hazelcast/client/config/xml_dom_config_processor.h hazelcast/include/hazelcast/client/config/xml_config_locator.h hazelcast/include/hazelcast/client/config/xml_variable_replacer.h)
+)
 
 # set library's version and soversion
 set_target_properties(
