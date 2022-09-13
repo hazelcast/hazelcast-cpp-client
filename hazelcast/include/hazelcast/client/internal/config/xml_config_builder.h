@@ -36,7 +36,7 @@ namespace config {
 class HAZELCAST_API abstract_config_builder
 {
 private:
-    static hazelcast::client::client_property* VALIDATION_ENABLED_PROP;
+    const static hazelcast::client::client_property* VALIDATION_ENABLED_PROP;
 
 protected:
     bool should_validate_the_schema();

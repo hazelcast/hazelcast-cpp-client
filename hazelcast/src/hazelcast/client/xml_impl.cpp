@@ -13,7 +13,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include <atomic>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -1156,7 +1155,7 @@ xml_client_config_locator::locate_from_system_property()
 }
 
 
-auto abstract_config_builder::VALIDATION_ENABLED_PROP =
+const hazelcast::client::client_property* abstract_config_builder::VALIDATION_ENABLED_PROP =
   new hazelcast::client::client_property(
     "hazelcast.config.schema.validation.enabled",
     "true");
