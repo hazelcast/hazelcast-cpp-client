@@ -37,6 +37,8 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/lifecycle_listener.h"
 #include "hazelcast/client/membership_listener.h"
+#include "hazelcast/client/internal/config/xml_config_locator.h"
+#include "hazelcast/client/internal/config/xml_config_builder.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -447,6 +449,9 @@ public:
      */
     bool backup_acks_enabled();
 
+    static client_config load();
+
+
 private:
     friend class reliable_topic;
 
@@ -499,6 +504,8 @@ private:
     std::unordered_set<std::string> labels_;
 
     bool backup_acks_enabled_ = true;
+
+    static client_config load_from_file();
 };
 
 } // namespace client

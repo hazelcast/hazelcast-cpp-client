@@ -29,41 +29,65 @@
 
 namespace hazelcast {
 namespace client {
+namespace internal {
 namespace config {
 class HAZELCAST_API abstract_dom_config_processor
 {
 protected:
     bool strict;
     bool dom_level_3;
-    bool matches(std::string config1, std::string config2);
-    hazelcast::client::serialization_config parse_serialization(boost::property_tree::ptree node);
-    void fill_properties(boost::property_tree::ptree node, hazelcast::client::client_properties properties);
-    static std::string get_attribute(boost::property_tree::ptree node, std::string attribute);
+    bool matches(const std::string& config1, const std::string& config2);
+    hazelcast::client::serialization_config parse_serialization(
+      boost::property_tree::ptree node);
+    //void fill_properties(
+     // const boost::property_tree::ptree& node,
+     // const hazelcast::client::client_properties& properties);
+    static std::string get_attribute(boost::property_tree::ptree node,
+                                     const std::string& attribute);
     static bool get_bool_value(std::string value);
-    static int get_integer_value(std::string parameter_name, std::string value);
-    static int get_integer_value(std::string parameter_name, std::string value, int default_value);
-    static long get_long_value(std::string parameter_name, std::string value);
-    static long get_long_value(std::string parameter_name, std::string value, long default_value);
-    static double get_double_value(std::string parameter_name, std::string value);
-    static double get_double_value(std::string parameter_name, std::string value, double default_value);
+    static int get_integer_value(const std::string& parameter_name,
+                                 const std::string& value);
+    static int get_integer_value(const std::string& parameter_name,
+                                 const std::string& value,
+                                 int default_value);
+    static long get_long_value(const std::string& parameter_name,
+                               const std::string& value);
+    static long get_long_value(const std::string& parameter_name,
+                               const std::string& value,
+                               long default_value);
+    static double get_double_value(const std::string& parameter_name,
+                                   const std::string& value);
+    static double get_double_value(const std::string& parameter_name,
+                                   const std::string& value,
+                                   double default_value);
+
 public:
-    static boost::property_tree::ptree pair_to_node(std::string node_name, boost::property_tree::ptree node_content);
-    std::unordered_set<std::string> * occurrence_set = new std::unordered_set<std::string>();
-    static void fill_properties(const boost::property_tree::ptree& node, hazelcast::client::client_properties properties, bool dom_level_3);
-    static void fill_properties(const boost::property_tree::ptree& node, std::unordered_map<std::string , std::string> properties, bool dom_level_3);
+    static boost::property_tree::ptree pair_to_node(
+      const std::string& node_name,
+      const boost::property_tree::ptree& node_content);
+    std::unordered_set<std::string>* occurrence_set =
+      new std::unordered_set<std::string>();
+    //static void fill_properties(
+      //const boost::property_tree::ptree& node,
+      //const hazelcast::client::client_properties& properties,
+      //bool dom_level_3);
+    static void fill_properties(
+      const boost::property_tree::ptree& node,
+      std::unordered_map<std::string, std::string>* properties,
+      bool dom_level_3);
     explicit abstract_dom_config_processor(bool dom_level_3);
     abstract_dom_config_processor(bool dom_level_3, bool strict);
 };
-class HAZELCAST_API client_config_sections
+/*class HAZELCAST_API client_config_sections
 {
 private:
     std::string name;
     bool multiple_occurrence;
     static std::vector<client_config_sections> values;
-public:
 
+public:
     client_config_sections(std::string name, bool multiple_occurrence);
-    static bool can_occur_multiple_times(std::string name);
+    static bool can_occur_multiple_times(const std::string& name);
     std::string get_name();
     static client_config_sections HAZELCAST_CLIENT;
     static client_config_sections IMPORT;
@@ -87,28 +111,44 @@ public:
     static client_config_sections CLUSTER_NAME;
     static client_config_sections METRICS;
     static client_config_sections INSTANCE_TRACKING;
-};
-class HAZELCAST_API client_dom_config_processor: public abstract_dom_config_processor
+};*/
+class HAZELCAST_API client_dom_config_processor
+  : public abstract_dom_config_processor
 {
 private:
-    void handle_node(const boost::property_tree::ptree& node, std::string &node_name);
+    void handle_node(const boost::property_tree::ptree& node,
+                     std::string& node_name);
     void handle_security(const boost::property_tree::ptree& node);
     void handle_network(const boost::property_tree::ptree& node);
     void handle_serialization(const boost::property_tree::ptree& node);
-    void handle_socket_options(const boost::property_tree::ptree& node, hazelcast::client::config::client_network_config* client_network_config);
-    void handle_ssl_config(const boost::property_tree::ptree& node, hazelcast::client::config::client_network_config* client_network_config);
-    void handle_hazelcast_cloud(const boost::property_tree::ptree& node, hazelcast::client::config::client_network_config* client_network_config);
-    hazelcast::client::config::eviction_config get_eviction_config(const boost::property_tree::ptree& node);
+    void handle_socket_options(
+      const boost::property_tree::ptree& node,
+      hazelcast::client::config::client_network_config* client_network_config);
+    void handle_ssl_config(
+      const boost::property_tree::ptree& node,
+      hazelcast::client::config::client_network_config* client_network_config);
+    void handle_hazelcast_cloud(
+      const boost::property_tree::ptree& node,
+      hazelcast::client::config::client_network_config* client_network_config);
+    hazelcast::client::config::eviction_config get_eviction_config(
+      const boost::property_tree::ptree& node);
     void handle_connection_strategy(const boost::property_tree::ptree& node);
     void handle_labels(const boost::property_tree::ptree& node);
     void handle_proxy_factories(const boost::property_tree::ptree& node);
     void handle_backup_ack_to_client(const boost::property_tree::ptree& node);
     void handle_load_balancer(const boost::property_tree::ptree& node);
-    void handle_connection_retry(const boost::property_tree::ptree& node,hazelcast::client::config::client_connection_strategy_config strategy_config);
+    void handle_connection_retry(
+      const boost::property_tree::ptree& node,
+      hazelcast::client::config::client_connection_strategy_config
+        strategy_config);
+
 protected:
-    void handle_cluster_members(const boost::property_tree::ptree& node, hazelcast::client::config::client_network_config* client_network_config);
+    void handle_cluster_members(
+      const boost::property_tree::ptree& node,
+      hazelcast::client::config::client_network_config* client_network_config);
     void handle_flake_id_generator(const boost::property_tree::ptree& node);
-    void handle_flake_id_generator_node(const boost::property_tree::ptree& node);
+    void handle_flake_id_generator_node(
+      const boost::property_tree::ptree& node);
     void handle_reliable_topic(const boost::property_tree::ptree& node);
     void handle_reliable_topic_node(const boost::property_tree::ptree& node);
     void handle_near_cache(const boost::property_tree::ptree& node);
@@ -117,13 +157,20 @@ protected:
     void handle_listeners(const boost::property_tree::ptree& node);
     void handle_realms(const boost::property_tree::ptree& node);
     void handle_realm(const boost::property_tree::ptree& node);
+
 public:
+    bool can_occur_multiple_times(const std::string& name);
     hazelcast::client::client_config* client_config;
-    client_dom_config_processor(bool dom_level_3, hazelcast::client::client_config* client_config);
-    client_dom_config_processor( bool dom_level_3, hazelcast::client::client_config* client_config, bool strict);
+    client_dom_config_processor(
+      bool dom_level_3,
+      hazelcast::client::client_config* client_config);
+    client_dom_config_processor(bool dom_level_3,
+                                hazelcast::client::client_config* client_config,
+                                bool strict);
     void build_config(const boost::property_tree::ptree& root_node);
 };
 } // namespace config
+}
 } // namespace client
 } // namespace hazelcast
 

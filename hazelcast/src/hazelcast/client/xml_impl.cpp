@@ -30,70 +30,104 @@
 #include "hazelcast/client/config/reliable_topic_config.h"
 #include "hazelcast/client/config/client_connection_strategy_config.h"
 #include "hazelcast/client/lifecycle_listener.h"
-#include "hazelcast/client/cluster.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/internal/config/xml_config_locator.h"
 #include "hazelcast/client/internal/config/xml_dom_config_processor.h"
 #include "hazelcast/client/internal/config/xml_variable_replacer.h"
+#include "hazelcast/client/internal/config/xml_config_builder.h"
+#include "hazelcast/client/hazelcast_client.h"
+#include <utility>
+#include <boost/property_tree/xml_parser.hpp>
+
+
 namespace hazelcast {
 namespace client {
+namespace internal {
 namespace config {
-
-client_config_sections::client_config_sections(std::string name, bool multiple_occurrence){
+/*
+client_config_sections::client_config_sections(std::string name,
+                                               bool multiple_occurrence)
+{
     this->name = name;
     this->multiple_occurrence = multiple_occurrence;
 }
-std::string client_config_sections::get_name(){
+std::string
+client_config_sections::get_name()
+{
     return name;
 }
-client_config_sections HAZELCAST_CLIENT("hazelcast-client", false);
-client_config_sections IMPORT("import", true);
-client_config_sections SECURITY("security", false);
-client_config_sections PROXY_FACTORIES("proxy-factories", false);
-client_config_sections PROPERTIES("properties", false);
-client_config_sections SERIALIZATION("serialization", false);
-client_config_sections NATIVE_MEMORY("native-memory", false);
-client_config_sections LISTENERS("listeners", false);
-client_config_sections NETWORK("network", false);
-client_config_sections LOAD_BALANCER("load-balancer", false);
-client_config_sections NEAR_CACHE("near-cache", true);
-client_config_sections QUERY_CACHES("query-caches", false);
-client_config_sections BACKUP_ACK_TO_CLIENT("backup-ack-to-client-enabled", false);
-client_config_sections INSTANCE_NAME("instance-name", false);
-client_config_sections CONNECTION_STRATEGY("connection-strategy", false);
-client_config_sections USER_CODE_DEPLOYMENT("user-code-deployment", false);
-client_config_sections FLAKE_ID_GENERATOR("flake-id-generator", true);
-client_config_sections RELIABLE_TOPIC("reliable-topic", true);
-client_config_sections LABELS("client-labels", false);
-client_config_sections CLUSTER_NAME("cluster-name", false);
-client_config_sections METRICS("metrics", false);
-client_config_sections INSTANCE_TRACKING("instance-tracking", false);
 
-std::vector<client_config_sections> values = { HAZELCAST_CLIENT,
-                                               IMPORT,
-                                               SECURITY,
-                                               PROXY_FACTORIES,
-                                               PROPERTIES,
-                                               SERIALIZATION,
-                                               NATIVE_MEMORY,
-                                               LISTENERS,
-                                               NETWORK,
-                                               LOAD_BALANCER,
-                                               NEAR_CACHE,
-                                               QUERY_CACHES,
-                                               BACKUP_ACK_TO_CLIENT,
-                                               INSTANCE_NAME,
-                                               CONNECTION_STRATEGY,
-                                               USER_CODE_DEPLOYMENT,
-                                               FLAKE_ID_GENERATOR,
-                                               RELIABLE_TOPIC,
-                                               LABELS,
-                                               CLUSTER_NAME,
-                                               METRICS,
-                                               INSTANCE_TRACKING };
+client_config_sections client_config_sections::HAZELCAST_CLIENT(
+  "hazelcast-client",
+  false);
+client_config_sections client_config_sections::IMPORT("import", true);
+client_config_sections client_config_sections::SECURITY("security", false);
+client_config_sections client_config_sections::PROXY_FACTORIES(
+  "proxy-factories",
+  false);
+client_config_sections client_config_sections::PROPERTIES("properties", false);
+client_config_sections client_config_sections::SERIALIZATION("serialization",
+                                                             false);
+client_config_sections client_config_sections::NATIVE_MEMORY("native-memory",
+                                                             false);
+client_config_sections client_config_sections::LISTENERS("listeners", false);
+client_config_sections client_config_sections::NETWORK("network", false);
+client_config_sections client_config_sections::LOAD_BALANCER("load-balancer",
+                                                             false);
+client_config_sections client_config_sections::NEAR_CACHE("near-cache", true);
+client_config_sections client_config_sections::QUERY_CACHES("query-caches",
+                                                            false);
+client_config_sections client_config_sections::BACKUP_ACK_TO_CLIENT(
+  "backup-ack-to-client-enabled",
+  false);
+client_config_sections client_config_sections::INSTANCE_NAME("instance-name",
+                                                             false);
+client_config_sections client_config_sections::CONNECTION_STRATEGY(
+  "connection-strategy",
+  false);
+client_config_sections client_config_sections::USER_CODE_DEPLOYMENT(
+  "user-code-deployment",
+  false);
+client_config_sections client_config_sections::FLAKE_ID_GENERATOR(
+  "flake-id-generator",
+  true);
+client_config_sections client_config_sections::RELIABLE_TOPIC("reliable-topic",
+                                                              true);
+client_config_sections client_config_sections::LABELS("client-labels", false);
+client_config_sections client_config_sections::CLUSTER_NAME("cluster-name",
+                                                            false);
+client_config_sections client_config_sections::METRICS("metrics", false);
+client_config_sections client_config_sections::INSTANCE_TRACKING(
+  "instance-tracking",
+  false);
+
+std::vector<client_config_sections> client_config_sections::values = {
+    client_config_sections::HAZELCAST_CLIENT,
+    client_config_sections::IMPORT,
+    client_config_sections::SECURITY,
+    client_config_sections::PROXY_FACTORIES,
+    client_config_sections::PROPERTIES,
+    client_config_sections::SERIALIZATION,
+    client_config_sections::NATIVE_MEMORY,
+    client_config_sections::LISTENERS,
+    client_config_sections::NETWORK,
+    client_config_sections::LOAD_BALANCER,
+    client_config_sections::NEAR_CACHE,
+    client_config_sections::QUERY_CACHES,
+    client_config_sections::BACKUP_ACK_TO_CLIENT,
+    client_config_sections::INSTANCE_NAME,
+    client_config_sections::CONNECTION_STRATEGY,
+    client_config_sections::USER_CODE_DEPLOYMENT,
+    client_config_sections::FLAKE_ID_GENERATOR,
+    client_config_sections::RELIABLE_TOPIC,
+    client_config_sections::LABELS,
+    client_config_sections::CLUSTER_NAME,
+    client_config_sections::METRICS,
+    client_config_sections::INSTANCE_TRACKING
+};
 
 bool
-client_config_sections::can_occur_multiple_times(std::string name)
+client_config_sections::can_occur_multiple_times(const std::string& name)
 {
     for (client_config_sections section : values) {
         if (name == section.get_name()) {
@@ -101,7 +135,7 @@ client_config_sections::can_occur_multiple_times(std::string name)
         }
     }
     return true;
-}
+}*/
 
 abstract_dom_config_processor::abstract_dom_config_processor(bool dom_level_3)
 {
@@ -116,13 +150,14 @@ abstract_dom_config_processor::abstract_dom_config_processor(bool dom_level_3,
 }
 
 bool
-abstract_dom_config_processor::matches(std::string config1, std::string config2)
+abstract_dom_config_processor::matches(const std::string& config1,
+                                       const std::string& config2)
 {
     return config1 == config2;
 }
 std::string
 abstract_dom_config_processor::get_attribute(boost::property_tree::ptree node,
-                                             std::string attribute)
+                                             const std::string& attribute)
 {
     return node.get_child("<xmlattr>." + attribute).data();
 }
@@ -138,8 +173,9 @@ abstract_dom_config_processor::get_bool_value(std::string value)
     return false;
 }
 int
-abstract_dom_config_processor::get_integer_value(std::string parameter_name,
-                                                 std::string value)
+abstract_dom_config_processor::get_integer_value(
+  const std::string& parameter_name,
+  const std::string& value)
 {
     try {
         return std::stoi(value);
@@ -150,9 +186,10 @@ abstract_dom_config_processor::get_integer_value(std::string parameter_name,
     }
 }
 int
-abstract_dom_config_processor::get_integer_value(std::string parameter_name,
-                                                 std::string value,
-                                                 int default_value)
+abstract_dom_config_processor::get_integer_value(
+  const std::string& parameter_name,
+  const std::string& value,
+  int default_value)
 {
     if (value.empty()) {
         return default_value;
@@ -160,8 +197,8 @@ abstract_dom_config_processor::get_integer_value(std::string parameter_name,
     return get_integer_value(parameter_name, value);
 }
 long
-abstract_dom_config_processor::get_long_value(std::string parameter_name,
-                                              std::string value)
+abstract_dom_config_processor::get_long_value(const std::string& parameter_name,
+                                              const std::string& value)
 {
     try {
         return std::stol(value);
@@ -171,8 +208,8 @@ abstract_dom_config_processor::get_long_value(std::string parameter_name,
     }
 }
 long
-abstract_dom_config_processor::get_long_value(std::string parameter_name,
-                                              std::string value,
+abstract_dom_config_processor::get_long_value(const std::string& parameter_name,
+                                              const std::string& value,
                                               long default_value)
 {
     if (value.empty()) {
@@ -181,8 +218,9 @@ abstract_dom_config_processor::get_long_value(std::string parameter_name,
     return get_long_value(parameter_name, value);
 }
 double
-abstract_dom_config_processor::get_double_value(std::string parameter_name,
-                                                std::string value)
+abstract_dom_config_processor::get_double_value(
+  const std::string& parameter_name,
+  const std::string& value)
 {
     try {
         return std::stod(value);
@@ -193,9 +231,10 @@ abstract_dom_config_processor::get_double_value(std::string parameter_name,
     }
 }
 double
-abstract_dom_config_processor::get_double_value(std::string parameter_name,
-                                                std::string value,
-                                                double default_value)
+abstract_dom_config_processor::get_double_value(
+  const std::string& parameter_name,
+  const std::string& value,
+  double default_value)
 {
     if (value.empty()) {
         return default_value;
@@ -249,38 +288,50 @@ abstract_dom_config_processor::parse_serialization(
     }
     return *serialization_config;
 }
-void
-abstract_dom_config_processor::fill_properties(
-  boost::property_tree::ptree node,
-  hazelcast::client::client_properties properties)
-{
-    fill_properties(node, std::move(properties), dom_level_3);
-}
+/*
 void
 abstract_dom_config_processor::fill_properties(
   const boost::property_tree::ptree& node,
-  hazelcast::client::client_properties properties,
-  bool dom_level_3)
+  const hazelcast::client::client_properties& properties)
 {
-    /* TODO
-  *
-     */
-}
+    fill_properties(node, properties, dom_level_3);
+}*//*
 void
 abstract_dom_config_processor::fill_properties(
   const boost::property_tree::ptree& node,
-  std::unordered_map<std::string, std::string> properties,
+  const hazelcast::client::client_properties& properties,
   bool dom_level_3)
 {
-    /* TODO
-    *
-     */
+    for (auto& pair : node){
+        if(pair.first == "<xmlcomment>"){
+            continue;
+        }
+        std::string property_name =  get_attribute(pair.second,"name");
+        std::string value = pair.second.data();
+
+    }
+}*/
+void
+abstract_dom_config_processor::fill_properties(
+  const boost::property_tree::ptree& node,
+  std::unordered_map<std::string, std::string>* properties,
+  bool dom_level_3)
+{
+    for (auto& pair : node){
+        if(pair.first == "<xmlcomment>"){
+            continue;
+        }
+        std::string property_name =  get_attribute(pair.second,"name");
+        std::string value = pair.second.data();
+        properties->emplace(property_name, value);
+
+    }
 }
 
 boost::property_tree::ptree
 abstract_dom_config_processor::pair_to_node(
-  std::string node_name,
-  boost::property_tree::ptree node_content)
+  const std::string& node_name,
+  const boost::property_tree::ptree& node_content)
 {
     boost::property_tree::ptree temp;
     temp.add_child(node_name, node_content);
@@ -302,12 +353,24 @@ client_dom_config_processor::client_dom_config_processor(
 {
     this->client_config = client_config;
 }
+bool client_dom_config_processor::can_occur_multiple_times(const std::string& name){
+    if(matches(name, "import") || matches(name ,"flake-id-generator" )  || matches(name, "reliable-topic") ){
+        return true;
+    }
+    return false;
+}
 void
 client_dom_config_processor::build_config(
   const boost::property_tree::ptree& root_node)
 {
     for (auto& pair : root_node) {
         std::string node_name = pair.first;
+        if (node_name == "<xmlattr>") {
+            continue;
+        }
+        if (node_name == "<xmlcomment>") {
+            continue;
+        }
         auto node = pair_to_node(pair.first, pair.second);
         if (occurrence_set->find(node_name) == occurrence_set->end()) {
             handle_node(node, node_name);
@@ -316,7 +379,7 @@ client_dom_config_processor::build_config(
               "Duplicate '" + node_name +
               "' definition found in the configuration");
         }
-        if (!client_config_sections::can_occur_multiple_times(node_name)) {
+        if (!can_occur_multiple_times(node_name)) {
             occurrence_set->insert(node_name);
         }
     }
@@ -326,68 +389,62 @@ client_dom_config_processor::handle_node(
   const boost::property_tree::ptree& node,
   std::string& node_name)
 {
-    if (matches(node_name, client_config_sections::SECURITY.get_name())) {
+    if (matches(node_name, "security")) {
         handle_security(node);
-    } else if (matches(node_name,
-                       client_config_sections::PROXY_FACTORIES.get_name())) {
+    } else if (matches(node_name,"proxy-factories")) {
         handle_proxy_factories(node);
     } else if (matches(node_name,
-                       client_config_sections::PROPERTIES.get_name())) {
-        fill_properties(node, client_config->get_properties());
+                       "properties")) {
+        //fill_properties(node, client_config->get_properties());
     } else if (matches(node_name,
-                       client_config_sections::SERIALIZATION.get_name())) {
+                       "serialization")) {
         handle_serialization(node);
     } else if (matches(node_name,
-                       client_config_sections::NATIVE_MEMORY
-                         .get_name())) { // not supported
+                       "native-memory")) { // not supported
 
     } else if (matches(node_name,
-                       client_config_sections::LISTENERS.get_name())) {
+                       "listeners")) {
         handle_listeners(node);
-    } else if (matches(node_name, client_config_sections::NETWORK.get_name())) {
+    } else if (matches(node_name, "network")) {
         handle_network(node);
     } else if (matches(node_name,
-                       client_config_sections::LOAD_BALANCER.get_name())) {
+                       "load-balancer")) {
         handle_load_balancer(node);
     } else if (matches(node_name,
-                       client_config_sections::NEAR_CACHE.get_name())) {
+                       "near-cache")) {
         handle_near_cache(node);
-    } else if (matches(node_name,
-                       client_config_sections::QUERY_CACHES
-                         .get_name())) { // not supported
+    } else if (matches(node_name,"query-cache")) { // not supported
 
     } else if (matches(node_name,
-                       client_config_sections::INSTANCE_NAME.get_name())) {
+                       "instance-name")) {
         client_config->set_instance_name(node.data());
     } else if (matches(
                  node_name,
-                 client_config_sections::CONNECTION_STRATEGY.get_name())) {
+                 "connection-strategy")) {
         handle_connection_strategy(node);
     } else if (matches(node_name,
-                       client_config_sections::USER_CODE_DEPLOYMENT
-                         .get_name())) { // not supported
+                       "user-code-deployment")) { // not supported
 
     } else if (matches(node_name,
-                       client_config_sections::FLAKE_ID_GENERATOR.get_name())) {
+                       "flake-id-generator")) {
         handle_flake_id_generator(node);
     } else if (matches(node_name,
-                       client_config_sections::RELIABLE_TOPIC.get_name())) {
+                       "reliable-topic")) {
         handle_reliable_topic(node);
-    } else if (matches(node_name, client_config_sections::LABELS.get_name())) {
+    } else if (matches(node_name, "client-labels")) {
         handle_labels(node);
     } else if (matches(
                  node_name,
-                 client_config_sections::BACKUP_ACK_TO_CLIENT.get_name())) {
+                 "backup-ack-to-client-enabled")) {
         handle_backup_ack_to_client(node);
     } else if (matches(node_name,
-                       client_config_sections::CLUSTER_NAME.get_name())) {
+                       "cluster-name")) {
         client_config->set_cluster_name(node.data());
     } else if (matches(node_name,
-                       client_config_sections::METRICS.get_name())) { //?????
+                       "metrics")) { //?????
 
-    } else if (matches(node_name,
-                       client_config_sections::INSTANCE_TRACKING
-                         .get_name())) { //?????
+    } else if (matches(node_name,"instance-tracking")) {//?????
+
     }
 }
 
@@ -859,149 +916,630 @@ client_dom_config_processor::handle_load_balancer(
     }*/
 }
 
-std::string SYSPROP_MEMBER_CONFIG = "hazelcast.config" ;
-std::string SYSPROP_CLIENT_CONFIG = "hazelcast.client.config" ;
-std::string SYSPROP_CLIENT_FAILOVER_CONFIG = "hazelcast.client.failover.config";
-std::vector<std::string> XML_ACCEPTED_SUFFIXES = {"xml"};
-std::string XML_ACCEPTED_SUFFIXES_STRING = "[xml]";
-std::vector<std::string> YAML_ACCEPTED_SUFFIXES = {"yaml", "yml"};
-std::string YAML_ACCEPTED_SUFFIXES_STRING = "[yaml, yml]";
-std::vector<std::string> ALL_ACCEPTED_SUFFIXES = {"xml", "yaml", "yml"};
-std::string ALL_ACCEPTED_SUFFIXES_STRING = "[xml, yaml, yml]";
+std::string declarative_config_util::SYSPROP_MEMBER_CONFIG = "hazelcast.config";
+std::string declarative_config_util::SYSPROP_CLIENT_CONFIG =
+  "hazelcast.client.config";
+std::string declarative_config_util::SYSPROP_CLIENT_FAILOVER_CONFIG =
+  "hazelcast.client.failover.config";
+std::vector<std::string> declarative_config_util::XML_ACCEPTED_SUFFIXES = {
+    "xml"
+};
+std::string declarative_config_util::XML_ACCEPTED_SUFFIXES_STRING = "[xml]";
+std::vector<std::string> declarative_config_util::YAML_ACCEPTED_SUFFIXES = {
+    "yaml",
+    "yml"
+};
+std::string declarative_config_util::YAML_ACCEPTED_SUFFIXES_STRING =
+  "[yaml, yml]";
+std::vector<std::string> declarative_config_util::ALL_ACCEPTED_SUFFIXES = {
+    "xml",
+    "yaml",
+    "yml"
+};
+std::string declarative_config_util::ALL_ACCEPTED_SUFFIXES_STRING =
+  "[xml, yaml, yml]";
 
-void declarative_config_util::validate_suffix_in_system_property(std::string property_key){
-    std::string config_system_property = "temp";//System.getProperty(propertyKey); TODO
+void
+declarative_config_util::validate_suffix_in_system_property(
+  const std::string& property_key)
+{
+    std::string config_system_property =
+      ""; // System.getProperty(propertyKey); TODO
     if (config_system_property.empty()) {
         return;
     }
-    if (!is_accepted_suffix_configured(config_system_property, ALL_ACCEPTED_SUFFIXES)) {
-        throw_unaccepted_suffix_in_system_property(property_key, config_system_property, ALL_ACCEPTED_SUFFIXES);
+    if (!is_accepted_suffix_configured(config_system_property,
+                                       ALL_ACCEPTED_SUFFIXES)) {
+        throw_unaccepted_suffix_in_system_property(
+          property_key, config_system_property, ALL_ACCEPTED_SUFFIXES);
     }
 }
-void declarative_config_util::throw_unaccepted_suffix_in_system_property(std::string property_key, std::string config_resource, std::vector<std::string> accepted_suffixes){
+void
+declarative_config_util::throw_unaccepted_suffix_in_system_property(
+  const std::string& property_key,
+  const std::string& config_resource,
+  const std::vector<std::string>& accepted_suffixes)
+{
 
-    std::string message = "The suffix of the resource \'" + config_resource + "\' referenced in \'" + property_key + "\' is not in the list of accepted " + "suffixes: \'[" + boost::algorithm::join(accepted_suffixes, ", ") +"]\'";
+    std::string message =
+      "The suffix of the resource \'" + config_resource +
+      "\' referenced in \'" + property_key +
+      "\' is not in the list of accepted " + "suffixes: \'[" +
+      boost::algorithm::join(accepted_suffixes, ", ") + "]\'";
     throw hazelcast::client::exception::hazelcast_(message);
 }
-bool declarative_config_util::is_accepted_suffix_configured(std::string config_file, std::vector<std::string> accepted_suffixes){
+bool
+declarative_config_util::is_accepted_suffix_configured(
+  const std::string& config_file,
+  std::vector<std::string> accepted_suffixes)
+{
     std::string config_file_lower;
-    if(config_file.empty()){
+    if (config_file.empty()) {
         config_file_lower = config_file;
-    }
-    else{
+    } else {
         config_file_lower = config_file;
         boost::algorithm::to_lower(config_file_lower);
     }
-    int last_dot_index = config_file_lower.find_last_of(".");
-    if(last_dot_index == -1){
+    int last_dot_index = (int)config_file_lower.find_last_of('.');
+    if (last_dot_index == -1) {
         return false;
     }
-    std::string config_file_suffix = config_file_lower.substr(last_dot_index + 1);
-    return std::find(accepted_suffixes.begin(), accepted_suffixes.end(), config_file_suffix) != accepted_suffixes.end();
+    std::string config_file_suffix =
+      config_file_lower.substr(last_dot_index + 1);
+    return std::find(accepted_suffixes.begin(),
+                     accepted_suffixes.end(),
+                     config_file_suffix) != accepted_suffixes.end();
 }
 
+std::ifstream*
+abstract_config_locator::get_in()
+{
+    return in;
+}
+
+/*
 bool abstract_config_locator::locate_everywhere(){
     return locate_from_system_property_or_fail_on_unaccepted_suffix()
            || locate_in_work_directory()
            || locate_default();
-}
-bool abstract_config_locator::load_from_working_directory(std::string config_file_path){
-    try{
+}*/
+bool
+abstract_config_locator::load_from_working_directory(
+  const std::string& config_file_path)
+{
+    try {
         std::FILE* file;
-        file = fopen(config_file_path.c_str(),"r");
-        if(file == nullptr){
-            std::cout << "FINEST: " << "Could not find " + config_file_path + " in the working directory." << std::endl;
+        file = fopen(config_file_path.c_str(), "r");
+        if (file == nullptr) {
+            std::cout << "FINEST: "
+                      << "Could not find " + config_file_path +
+                           " in the working directory."
+                      << std::endl;
             return false;
         }
-        std::cout << "INFO: Loading " + config_file_path + " from the working directory." << std::endl;
+        std::cout << "INFO: Loading " + config_file_path +
+                       " from the working directory."
+                  << std::endl;
         configuration_file = file;
-        in->open(config_file_path,std::ios::in);
-        if(in->fail()){
-            throw hazelcast::client::exception::hazelcast_("Failed to open file: " + config_file_path);
+        in = new std::ifstream();
+        in->open(config_file_path, std::ios::in);
+        if (in->fail()) {
+            throw hazelcast::client::exception::hazelcast_(
+              "Failed to open file: " + config_file_path);
         }
         return true;
-    }catch (const std::runtime_error& e){
+    } catch (const std::runtime_error& e) {
         throw hazelcast::client::exception::hazelcast_(e.what());
     }
 }
 
-bool abstract_config_locator::load_from_working_directory(std::string config_file_prefix, std::vector<std::string> accepted_suffixes){
-    if(accepted_suffixes.empty()){
-        throw std::invalid_argument("Parameter acceptedSuffixes must not be empty");
+bool
+abstract_config_locator::load_from_working_directory(
+  const std::string& config_file_prefix,
+  const std::vector<std::string>& accepted_suffixes)
+{
+    if (accepted_suffixes.empty()) {
+        throw std::invalid_argument(
+          "Parameter acceptedSuffixes must not be empty");
     }
-    for(const auto& suffix : accepted_suffixes){
-        if(suffix.empty()){
-            throw std::invalid_argument("Parameter acceptedSuffixes must not contain empty strings");
+    for (const auto& suffix : accepted_suffixes) {
+        if (suffix.empty()) {
+            throw std::invalid_argument(
+              "Parameter acceptedSuffixes must not contain empty strings");
         }
-        if(load_from_working_directory(config_file_prefix + "." + suffix)){
+        if (load_from_working_directory(config_file_prefix + "." + suffix)) {
             return true;
         }
     }
     return false;
 }
-bool abstract_config_locator::load_from_system_property(std::string property_key, std::vector<std::string> accepted_suffixes){
+bool
+abstract_config_locator::load_from_system_property(
+  const std::string& property_key,
+  const std::vector<std::string>& accepted_suffixes)
+{
     return load_from_system_property(property_key, false, accepted_suffixes);
 }
-void abstract_config_locator::load_system_property_file_resource(std::string config_system_property){
+void
+abstract_config_locator::load_system_property_file_resource(
+  const std::string& config_system_property)
+{
     configuration_file = fopen(config_system_property.c_str(), "r");
-    std::cout << "Using configuration file at " << config_system_property << std::endl;
-    if(configuration_file == nullptr){
-        std::string msg = "Config file at " + config_system_property + " doesn't exist.";
+    std::cout << "Using configuration file at " << config_system_property
+              << std::endl;
+    if (configuration_file == nullptr) {
+        std::string msg =
+          "Config file at " + config_system_property + " doesn't exist.";
         throw hazelcast::client::exception::hazelcast_(msg);
     }
     in->open(config_system_property);
-    if(in->fail()){
-        throw hazelcast::client::exception::hazelcast_("Failed to open file: " + config_system_property);
+    if (in->fail()) {
+        throw hazelcast::client::exception::hazelcast_("Failed to open file: " +
+                                                       config_system_property);
     }
-
 }
 
-bool abstract_config_locator::load_from_system_property(std::string property_key,bool fail_on_unaccepted_suffix, std::vector<std::string> accepted_suffixes){
-    if(accepted_suffixes.empty()){
-        throw hazelcast::client::exception::illegal_argument("Parameter acceptedSuffixes must not be empty");
+bool
+abstract_config_locator::load_from_system_property(
+  const std::string& property_key,
+  bool fail_on_unaccepted_suffix,
+  const std::vector<std::string>& accepted_suffixes)
+{
+    if (accepted_suffixes.empty()) {
+        throw hazelcast::client::exception::illegal_argument(
+          "Parameter acceptedSuffixes must not be empty");
     }
     try {
-        std::string config_system_property = "temp";//System.getProperty(propertyKey); TODO
+        std::string config_system_property =
+          "temp"; // System.getProperty(propertyKey); TODO
 
         if (config_system_property.empty()) {
-            std::cout << "FINEST: " << "Could not find " + property_key + " System property";
+            std::cout << "FINEST: "
+                      << "Could not find " + property_key + " System property";
             return false;
         }
 
-        if (!declarative_config_util::is_accepted_suffix_configured(config_system_property, accepted_suffixes)) {
+        if (!declarative_config_util::is_accepted_suffix_configured(
+              config_system_property, accepted_suffixes)) {
             if (fail_on_unaccepted_suffix) {
-                declarative_config_util::throw_unaccepted_suffix_in_system_property(property_key, config_system_property, accepted_suffixes);
+                declarative_config_util::
+                  throw_unaccepted_suffix_in_system_property(
+                    property_key, config_system_property, accepted_suffixes);
             } else {
                 return false;
             }
         }
 
-        std::cout << "INFO: " << "Loading configuration " + config_system_property + " from System property" << property_key << std::endl;
+        std::cout << "INFO: "
+                  << "Loading configuration " + config_system_property +
+                       " from System property"
+                  << property_key << std::endl;
         load_system_property_file_resource(config_system_property);
         return true;
     } catch (const hazelcast::client::exception::hazelcast_& e) {
         throw hazelcast::client::exception::hazelcast_(e.what());
     } catch (const std::runtime_error& e) {
-        throw  hazelcast::client::exception::hazelcast_(e.what());
+        throw hazelcast::client::exception::hazelcast_(e.what());
     }
-
 }
-bool abstract_config_locator::load_from_system_property_or_fail_on_unaccepted_suffix(std::string property_key, std::vector<std::string> accepted_suffixes){
+bool
+abstract_config_locator::load_from_system_property_or_fail_on_unaccepted_suffix(
+  const std::string& property_key,
+  const std::vector<std::string>& accepted_suffixes)
+{
     return load_from_system_property(property_key, true, accepted_suffixes);
 }
-bool abstract_config_locator::is_config_present(){
+bool
+abstract_config_locator::is_config_present()
+{
     return in != nullptr || configuration_file != nullptr;
 }
-bool xml_client_config_locator::locate_from_system_property_or_fail_on_unaccepted_suffix(){
-    return load_from_system_property_or_fail_on_unaccepted_suffix(declarative_config_util::SYSPROP_CLIENT_CONFIG, declarative_config_util::XML_ACCEPTED_SUFFIXES);
+bool
+xml_client_config_locator::
+  locate_from_system_property_or_fail_on_unaccepted_suffix()
+{
+    return load_from_system_property_or_fail_on_unaccepted_suffix(
+      declarative_config_util::SYSPROP_CLIENT_CONFIG,
+      declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
-bool xml_client_config_locator::locate_in_work_directory(){
+bool
+xml_client_config_locator::locate_in_work_directory()
+{
     return load_from_working_directory("hazelcast-client.xml");
 }
-bool xml_client_config_locator::locate_from_system_property(){
-    return load_from_system_property(declarative_config_util::SYSPROP_CLIENT_CONFIG, declarative_config_util::XML_ACCEPTED_SUFFIXES);
+bool
+xml_client_config_locator::locate_from_system_property()
+{
+    return load_from_system_property(
+      declarative_config_util::SYSPROP_CLIENT_CONFIG,
+      declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
 
+
+auto abstract_config_builder::VALIDATION_ENABLED_PROP =
+  new hazelcast::client::client_property(
+    "hazelcast.config.schema.validation.enabled",
+    "true");
+
+bool
+abstract_config_builder::should_validate_the_schema()
+{
+    return true; // TODO
+}
+
+std::string
+abstract_xml_config_helper::get_release_version()
+{
+    return hazelcast::client::version().to_string();
+}
+void
+abstract_xml_config_helper::schema_validation(boost::property_tree::ptree doc)
+{
+    // TODO property_tree doesn't support validation
+}
+
+std::string
+abstract_xml_config_builder::get_attribute(boost::property_tree::ptree node,
+                                           const std::string& att_name)
+{
+    return node.get_child("<xmlattr>." + att_name).data();
+}
+
+void
+abstract_xml_config_builder::process(boost::property_tree::ptree* root)
+{
+    replace_imports(root);
+    replace_variables(root);
+}
+
+void
+abstract_xml_config_builder::replace_variables(
+  boost::property_tree::ptree* root)
+{
+    bool fail_fast = false;
+    auto replacers = new std::vector<property_replacer>();
+    boost::property_tree::ptree node;
+    try {
+        node = root->get_child("config-replacers");
+        try {
+            std::string fail_fast_attr =
+              get_attribute(node, "fail-if-value-missing");
+            if (fail_fast_attr == "true") {
+                fail_fast = true;
+            }
+            for (auto& n : node) {
+                if(n.first == "<xmlattr>"){
+                    continue ;
+                }
+                std::string value = n.first;
+                if ("replacer" == value) {
+
+                    replacers->push_back(create_replacer(n.second));
+                }
+            }
+        } catch (const boost::exception& e) {
+
+        }
+    } catch (const boost::exception& e) {
+
+    }
+    config_replacer_helper::traverse_children_and_replace_variables(
+      root, *replacers, fail_fast, *(new xml_dom_variable_replacer()));
+}
+void
+abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
+{
+    replace_variables(root);
+
+    // there is something to give error here
+
+    for (auto& child : *root) {
+        if (child.first == "import") {
+            boost::property_tree::ptree temp;
+            temp.add_child(child.first, child.second);
+            std::string resource =
+              get_attribute(temp.get_child(child.first), "resource");
+            std::ifstream* stream = new std::ifstream();
+            stream->open(resource);
+            if (stream->fail()) {
+                throw hazelcast::client::exception::invalid_configuration(
+                  "Failed to load resource: " + resource);
+            }
+            if (!currently_imported_files->emplace(resource).second) {
+                throw hazelcast::client::exception::invalid_configuration(
+                  "Resource '" + resource +
+                  "' is already loaded! This can be due to" +
+                  " duplicate or cyclic imports.");
+            }
+            boost::property_tree::ptree imported_root =
+              parse(stream).get_child("hazelcast-client");
+            replace_imports(&imported_root);
+            for (auto& imported_node : imported_root) {
+                if (imported_node.first == "<xmlattr>") {
+                    continue;
+                }
+                root->put_child(imported_node.first, imported_node.second);
+            }
+            for (auto it = root->begin(); it != root->end(); it++) {
+                if (it->first == "import") {
+                    root->erase(it);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+property_replacer
+abstract_xml_config_builder::create_replacer(
+  const boost::property_tree::ptree& node)
+{
+    std::string replacer_class = get_attribute(node, "class-name");
+    std::unordered_map<std::string, std::string>* properties_  = new std::unordered_map<std::string, std::string>();
+    for (auto& n : node) {
+        std::string value = n.first;
+        if ("properties" == value) {
+            fill_properties(n.second, properties_);
+        }
+    }
+    property_replacer replacer;
+    replacer.init(properties_);
+    return replacer;
+}
+
+std::string
+abstract_xml_config_helper::get_namespace_type()
+{
+    return "client-config";
+}
+abstract_xml_config_builder::abstract_xml_config_builder() = default;
+
+void
+abstract_xml_config_builder::fill_properties(
+  const boost::property_tree::ptree& node,
+  std::unordered_map<std::string, std::string>* properties_)
+{
+    abstract_dom_config_processor::fill_properties(
+      node, properties_, dom_level_3);
+}
+void
+abstract_xml_config_builder::set_properties_internal(
+  std::unordered_map<std::string, std::string> properties_)
+{
+    this->properties = &properties_;
+}
+std::unordered_map<std::string, std::string>*
+abstract_xml_config_builder::get_properties()
+{
+    return properties;
+}
+
+xml_client_config_builder::xml_client_config_builder(
+  const std::string& resource)
+{
+    std::ifstream stream(resource, std::ifstream::in);
+    this->in = &stream;
+}
+
+xml_client_config_builder::xml_client_config_builder(std::ifstream* in)
+{
+    this->in = in;
+}
+
+xml_client_config_builder::xml_client_config_builder()
+  : xml_client_config_builder(new xml_client_config_locator())
+{
+}
+
+xml_client_config_builder::xml_client_config_builder(
+  xml_client_config_locator* locator)
+{
+    this->in = locator->get_in();
+}
+boost::property_tree::ptree
+xml_client_config_builder::parse(std::ifstream* input_stream)
+{
+    boost::property_tree::ptree tree;
+    try {
+        boost::property_tree::read_xml(*input_stream, tree);
+        input_stream->close();
+        return tree;
+    } catch (const boost::exception& e) {
+        std::string msg = "Failed to parse Config Stream     HazelcastClient startup interrupted."; // TODO
+        input_stream->close();
+        throw hazelcast::client::exception::invalid_configuration(msg);
+    }
+}
+xml_client_config_builder
+xml_client_config_builder::set_properties(
+  std::unordered_map<std::string, std::string> properties)
+{
+    set_properties_internal(std::move(properties));
+    return *this;
+}
+hazelcast::client::client_config
+xml_client_config_builder::build()
+{
+    hazelcast::client::client_config client_config;
+    parse_and_build_config(&client_config);
+    in->close();
+    return client_config;
+}
+
+void
+xml_client_config_builder::parse_and_build_config(
+  hazelcast::client::client_config* client_config)
+{
+    auto root = parse(in);
+    try {
+        root = root.get_child("hazelcast-client");
+    } catch (const boost::exception& e) {
+        throw hazelcast::client::exception::invalid_configuration(
+          "Invalid root element in xml configuration! Expected: <hazelcast-client>");
+    }
+    try {
+        root.data();
+    } catch (const boost::exception& e) {
+        dom_level_3 = false;
+    }
+    process(&root);
+    if (should_validate_the_schema()) {
+        schema_validation(root);
+    }
+    client_dom_config_processor x(dom_level_3, client_config, false);
+    x.build_config(root);
+}
+
+property_replacer::property_replacer() = default;
+
+void
+property_replacer::init(std::unordered_map<std::string, std::string>* properties_)
+{
+    this->properties = properties_;
+}
+std::string
+property_replacer::get_prefix()
+{
+    return "";
+}
+
+std::string
+property_replacer::get_replacement(const std::string& variable)
+{
+    return properties->at(variable);
+}
+
+config_replacer_helper::config_replacer_helper() = default;
+
+void
+config_replacer_helper::traverse_children_and_replace_variables(
+  boost::property_tree::ptree* root,
+  const property_replacer& replacer,
+  bool fail_fast,
+  xml_dom_variable_replacer variable_replacer)
+{
+    try {
+        try{
+            auto attributes = root->get_child("<xmlattr>");
+            for (auto& attribute : attributes) {
+                // auto attr = pair_to_node(attribute.first,attribute.second);
+                variable_replacer.replace_variables(
+                  &attribute.second, replacer, fail_fast);
+            }
+        } catch (const boost::exception& e) {
+
+        }
+
+        if (!root->data().empty()) {
+            variable_replacer.replace_variables(root, replacer, fail_fast);
+        }
+        for (auto& pair : *root) {
+            // auto child = pair_to_node(pair.first,pair.second);
+            if(pair.first == "<xmlcomment>"){
+                continue ;
+            }
+            traverse_children_and_replace_variables(
+              &pair.second, replacer, fail_fast, variable_replacer);
+        }
+    } catch (const boost::exception& e) {
+    }
+}
+void
+config_replacer_helper::traverse_children_and_replace_variables(
+  boost::property_tree::ptree* root,
+  const std::vector<property_replacer>& replacers,
+  bool fail_fast,
+  const xml_dom_variable_replacer& variable_replacer)
+{
+    for (const property_replacer& replacer : replacers) {
+        traverse_children_and_replace_variables(
+          root, replacer, fail_fast, variable_replacer);
+    }
+}
+
+void
+abstract_dom_variable_replacer::handle_missing_variable(
+  const std::string& variable,
+  const std::string& node_name,
+  bool fail_fast)
+{
+    std::string message =
+      "Could not find a replacement for " + variable + " on node " + node_name;
+    if (fail_fast) {
+        throw hazelcast::client::exception::invalid_configuration(message);
+    }
+    std::cout << "WARNING: " << message << std::endl;
+}
+bool
+abstract_dom_variable_replacer::non_replaceable_node(
+  const boost::property_tree::ptree& node)
+{ // this is for YAML
+    return false;
+}
+std::string
+abstract_dom_variable_replacer::replace_value(
+  const boost::property_tree::ptree& node,
+  property_replacer replacer,
+  bool fail_fast,
+  const std::string& value)
+{
+    std::string sb = "";
+    sb = sb + value;
+    std::string replacer_prefix = "$" + replacer.get_prefix() + "{";
+    int end_index = -1;
+    int start_index = (int)sb.find(replacer_prefix);
+    while (start_index > -1) {
+        end_index = (int)sb.find('}', start_index);
+        if (end_index == -1) {
+            std::cout << "WARNING: "
+                      << "Bad variable syntax. Could not find a closing curly bracket '}' for prefix " +
+                           replacer_prefix + " on node: " + "node_name"
+                      << std::endl; // TODO
+            break;
+        }
+        std::string variable =
+          sb.substr(start_index + replacer_prefix.length(), end_index - replacer_prefix.length());
+        std::string variable_replacement = replacer.get_replacement(variable);
+        if (!variable_replacement.empty()) {
+            sb.replace(start_index, end_index + 1, variable_replacement);
+            end_index = start_index + (int)variable_replacement.length();
+        } else {
+            handle_missing_variable(sb.substr(start_index, end_index + 1),
+                                    "node_name",
+                                    fail_fast); // TODO "node_name" is misssing
+        }
+        start_index = (int)sb.find(replacer_prefix, end_index);
+    }
+    return sb;
+}
+void
+abstract_dom_variable_replacer::replace_variable_in_node_value(
+  boost::property_tree::ptree* node,
+  property_replacer replacer,
+  bool fail_fast)
+{
+    if (non_replaceable_node(*node)) {
+        return;
+    }
+    std::string value = node->data();
+    if (!value.empty()) {
+        std::string replaced_value =
+          replace_value(*node, std::move(replacer), fail_fast, value);
+        node->put_value(replaced_value);
+    }
+}
+
+xml_dom_variable_replacer::xml_dom_variable_replacer() = default;
+void
+xml_dom_variable_replacer::replace_variables(
+  boost::property_tree::ptree* node,
+  property_replacer replacer,
+  bool fail_fast)
+{
+    replace_variable_in_node_value(node, std::move(replacer), fail_fast);
+}
+
+}
 }
 }
 }

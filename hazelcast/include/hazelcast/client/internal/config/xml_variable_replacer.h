@@ -29,60 +29,89 @@
 
 namespace hazelcast {
 namespace client {
+namespace internal {
 namespace config {
+
 class HAZELCAST_API config_replacer
 {
 public:
-    virtual void init(hazelcast::client::client_properties properties);
-    virtual std::string get_prefix();
-    virtual std::string get_replacement(std::string masked_value);
+    virtual void init(std::unordered_map<std::string, std::string>* properties) = 0;
+    virtual std::string get_prefix() = 0;
+    virtual std::string get_replacement(const std::string& variable) = 0;
 };
+
 class HAZELCAST_API property_replacer : public config_replacer
 {
 private:
-    hazelcast::client::client_properties properties;
+
+    std::unordered_map<std::string, std::string>* properties = new std::unordered_map<std::string, std::string>();
+
 public:
     property_replacer();
-    void init(hazelcast::client::client_properties properties) override;
+    void init(std::unordered_map<std::string, std::string>* properties) override;
     std::string get_prefix() override;
-    std::string get_replacement(std::string variable) override;
+    std::string get_replacement(const std::string& variable) override;
 };
+
 class HAZELCAST_API dom_variable_replacer
 {
 public:
-    virtual void replace_variables(boost::property_tree::ptree node,config_replacer  replacer, bool fail_fast);
+    virtual void replace_variables(boost::property_tree::ptree* node,
+                                   property_replacer replacer,
+                                   bool fail_fast) = 0;
 };
+
+class HAZELCAST_API abstract_dom_variable_replacer
+  : public dom_variable_replacer
+{
+private:
+    bool non_replaceable_node(const boost::property_tree::ptree& node);
+    static void handle_missing_variable(const std::string& variable,
+                                        const std::string& node_name,
+                                        bool fail_fast);
+
+protected:
+    static std::string replace_value(const boost::property_tree::ptree& node,
+                                     property_replacer replacer,
+                                     bool fail_fast,
+                                     const std::string& value);
+
+public:
+    void replace_variable_in_node_value(boost::property_tree::ptree* node,
+                                        property_replacer replacer,
+                                        bool fail_fast);
+};
+
+class HAZELCAST_API xml_dom_variable_replacer
+  : public abstract_dom_variable_replacer
+{
+public:
+    xml_dom_variable_replacer();
+    void replace_variables(boost::property_tree::ptree* node,
+                           property_replacer replacer,
+                           bool fail_fast) override;
+};
+
 class HAZELCAST_API config_replacer_helper
 {
 private:
     config_replacer_helper();
-    static void traverse_children_and_replace_variables(boost::property_tree::ptree root, config_replacer replacer, bool fail_fast,
-                                                        dom_variable_replacer variable_replacer);
-    static boost::property_tree::ptree pair_to_node(std::string node_name, boost::property_tree::ptree node_content);
+    static void traverse_children_and_replace_variables(
+      boost::property_tree::ptree* root,
+      const property_replacer& replacer,
+      bool fail_fast,
+      xml_dom_variable_replacer variable_replacer);
 
 public:
-    static void traverse_children_and_replace_variables(boost::property_tree::ptree root, std::vector<config_replacer> replacers, bool fail_fast,
-                                                        dom_variable_replacer variable_replacer);
-};
-class HAZELCAST_API abstract_dom_variable_replacer : public dom_variable_replacer
-{
-private:
-    bool non_replaceable_node(boost::property_tree::ptree node);
-    static void handle_missing_variable(std::string variable, std::string node_name, bool fail_fast);
-protected:
-    static std::string replace_value(boost::property_tree::ptree node, config_replacer replacer, bool fail_fast, std::string value, std::string node_name);
-public:
-    void replace_variable_in_node_value(boost::property_tree::ptree node, config_replacer replacer, bool fail_fast, std::string node_name);
-};
-class HAZELCAST_API xml_dom_variable_replacer : public abstract_dom_variable_replacer
-{
-public:
-    xml_dom_variable_replacer();
-    void replace_variables(boost::property_tree::ptree node, config_replacer replacer, bool fail_fast) override;
-
+    static void traverse_children_and_replace_variables(
+      boost::property_tree::ptree* root,
+      const std::vector<property_replacer>& replacers,
+      bool fail_fast,
+      const xml_dom_variable_replacer& variable_replacer);
 };
 
 } // namespace config
+}
 } // namespace client
 } // namespace hazelcast
 

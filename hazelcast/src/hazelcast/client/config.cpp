@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 #include <atomic>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string/trim.hpp>
-
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/serialization_config.h"
 #include "hazelcast/client/config/ssl_config.h"
@@ -38,8 +35,6 @@
 #include "hazelcast/client/cluster.h"
 #include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/internal/config/xml_config_locator.h"
-#include "hazelcast/client/internal/config/xml_dom_config_processor.h"
-#include "hazelcast/client/internal/config/xml_variable_replacer.h"
 
 namespace hazelcast {
 namespace client {
@@ -86,6 +81,28 @@ serialization_config::get_byte_order() const
 {
     return byte_order_;
 }
+client_config client_config::load()
+{
+    return load_from_file();
+}
+
+client_config client_config::load_from_file()
+{
+    internal::config::declarative_config_util::validate_suffix_in_system_property(internal::config::declarative_config_util::SYSPROP_CLIENT_CONFIG);
+
+    auto xml_config_locator = new internal::config::xml_client_config_locator();
+    if (xml_config_locator->locate_from_system_property()) {
+        // 1. Try loading XML config from the configuration provided in system property
+        return (new  hazelcast::client::internal::config::xml_client_config_builder(xml_config_locator))->build();
+    } else if (xml_config_locator->locate_in_work_directory()) {
+        // 2. Try loading XML config from the working directory
+        return (new  hazelcast::client::internal::config::xml_client_config_builder(xml_config_locator))->build();
+    } else {
+        // 3. Loading the default configuration
+        return client_config();
+    }
+}
+
 
 namespace config {
 ssl_config::ssl_config()

@@ -29,58 +29,77 @@
 
 namespace hazelcast {
 namespace client {
+namespace internal {
 namespace config {
 class HAZELCAST_API declarative_config_util
 {
 private:
-    declarative_config_util()= default;
+    declarative_config_util() = default;
+
 public:
     static std::string SYSPROP_MEMBER_CONFIG;
-    static std::string SYSPROP_CLIENT_CONFIG ;
+    static std::string SYSPROP_CLIENT_CONFIG;
     static std::string SYSPROP_CLIENT_FAILOVER_CONFIG;
     static std::vector<std::string> XML_ACCEPTED_SUFFIXES;
-    static std::string XML_ACCEPTED_SUFFIXES_STRING ;
+    static std::string XML_ACCEPTED_SUFFIXES_STRING;
     static std::vector<std::string> YAML_ACCEPTED_SUFFIXES;
     static std::string YAML_ACCEPTED_SUFFIXES_STRING;
     static std::vector<std::string> ALL_ACCEPTED_SUFFIXES;
     static std::string ALL_ACCEPTED_SUFFIXES_STRING;
-    static void validate_suffix_in_system_property(std::string property_key);
-    static void throw_unaccepted_suffix_in_system_property(std::string property_key, std::string config_resource, std::vector<std::string> accepted_suffixes);
-    static bool is_accepted_suffix_configured(std::string config_file, std::vector<std::string> accepted_suffixes);
+    static void validate_suffix_in_system_property(
+      const std::string& property_key);
+    static void throw_unaccepted_suffix_in_system_property(
+      const std::string& property_key,
+      const std::string& config_resource,
+      const std::vector<std::string>& accepted_suffixes);
+    static bool is_accepted_suffix_configured(
+      const std::string& config_file,
+      std::vector<std::string> accepted_suffixes);
 };
 class HAZELCAST_API abstract_config_locator
 {
 private:
     std::ifstream* in;
-    std::FILE * configuration_file;
-    bool load_from_system_property(std::string property_key, bool fail_on_unaccepted_suffix, std::vector<std::string> accepted_suffixes);
-    void load_system_property_file_resource(std::string config_system_property);
+    std::FILE* configuration_file;
+    bool load_from_system_property(
+      const std::string& property_key,
+      bool fail_on_unaccepted_suffix,
+      const std::vector<std::string>& accepted_suffixes);
+    void load_system_property_file_resource(
+      const std::string& config_system_property);
 
 protected:
-    bool load_from_working_directory(std::string config_file_path);
-    bool load_from_working_directory(std::string config_file_prefix, std::vector<std::string> accepted_suffixes);
-    bool load_from_system_property(std::string property_key, std::vector<std::string> accepted_suffixes);
-    bool load_from_system_property_or_fail_on_unaccepted_suffix(std::string property_key, std::vector<std::string> accepted_suffixes);
+    bool load_from_working_directory(const std::string& config_file_path);
+    bool load_from_working_directory(
+      const std::string& config_file_prefix,
+      const std::vector<std::string>& accepted_suffixes);
+    bool load_from_system_property(const std::string& property_key,
+                                   const std::vector<std::string>& accepted_suffixes);
+    bool load_from_system_property_or_fail_on_unaccepted_suffix(
+      const std::string& property_key,
+      const std::vector<std::string>& accepted_suffixes);
+
 public:
     std::ifstream* get_in();
-    std::FILE* get_configuration_file();
     bool is_config_present();
-    virtual bool locate_from_system_property();
-    virtual bool locate_from_system_property_or_fail_on_unaccepted_suffix();
-    virtual bool locate_in_work_directory();
-    virtual bool locate_default();
+    // virtual bool locate_from_system_property();
+    // virtual bool locate_from_system_property_or_fail_on_unaccepted_suffix();
+    // virtual bool locate_in_work_directory();
+    // virtual bool locate_default();
     bool locate_everywhere();
 };
 class HAZELCAST_API xml_client_config_locator : public abstract_config_locator
 {
 protected:
-    bool locate_from_system_property_or_fail_on_unaccepted_suffix() override;
-    bool locate_in_work_directory() override;
+    bool locate_from_system_property_or_fail_on_unaccepted_suffix();
+
 public:
-    bool locate_from_system_property() override;
+    bool locate_from_system_property();
+    bool locate_in_work_directory();
 };
 
 } // namespace config
+}
 } // namespace client
 } // namespace hazelcast
 
