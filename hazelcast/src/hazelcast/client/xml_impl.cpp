@@ -916,27 +916,27 @@ client_dom_config_processor::handle_load_balancer(
     }*/
 }
 
-std::string declarative_config_util::SYSPROP_MEMBER_CONFIG = "hazelcast.config";
-std::string declarative_config_util::SYSPROP_CLIENT_CONFIG =
+const std::string declarative_config_util::SYSPROP_MEMBER_CONFIG = "hazelcast.config";
+const std::string declarative_config_util::SYSPROP_CLIENT_CONFIG =
   "hazelcast.client.config";
-std::string declarative_config_util::SYSPROP_CLIENT_FAILOVER_CONFIG =
+const std::string declarative_config_util::SYSPROP_CLIENT_FAILOVER_CONFIG =
   "hazelcast.client.failover.config";
-std::vector<std::string> declarative_config_util::XML_ACCEPTED_SUFFIXES = {
+const std::vector<std::string> declarative_config_util::XML_ACCEPTED_SUFFIXES = {
     "xml"
 };
-std::string declarative_config_util::XML_ACCEPTED_SUFFIXES_STRING = "[xml]";
-std::vector<std::string> declarative_config_util::YAML_ACCEPTED_SUFFIXES = {
+const std::string declarative_config_util::XML_ACCEPTED_SUFFIXES_STRING = "[xml]";
+const std::vector<std::string> declarative_config_util::YAML_ACCEPTED_SUFFIXES = {
     "yaml",
     "yml"
 };
-std::string declarative_config_util::YAML_ACCEPTED_SUFFIXES_STRING =
+const std::string declarative_config_util::YAML_ACCEPTED_SUFFIXES_STRING =
   "[yaml, yml]";
-std::vector<std::string> declarative_config_util::ALL_ACCEPTED_SUFFIXES = {
+const std::vector<std::string> declarative_config_util::ALL_ACCEPTED_SUFFIXES = {
     "xml",
     "yaml",
     "yml"
 };
-std::string declarative_config_util::ALL_ACCEPTED_SUFFIXES_STRING =
+const std::string declarative_config_util::ALL_ACCEPTED_SUFFIXES_STRING =
   "[xml, yaml, yml]";
 
 void

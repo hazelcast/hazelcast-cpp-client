@@ -37,15 +37,15 @@ private:
     declarative_config_util() = default;
 
 public:
-    static std::string SYSPROP_MEMBER_CONFIG;
-    static std::string SYSPROP_CLIENT_CONFIG;
-    static std::string SYSPROP_CLIENT_FAILOVER_CONFIG;
-    static std::vector<std::string> XML_ACCEPTED_SUFFIXES;
-    static std::string XML_ACCEPTED_SUFFIXES_STRING;
-    static std::vector<std::string> YAML_ACCEPTED_SUFFIXES;
-    static std::string YAML_ACCEPTED_SUFFIXES_STRING;
-    static std::vector<std::string> ALL_ACCEPTED_SUFFIXES;
-    static std::string ALL_ACCEPTED_SUFFIXES_STRING;
+    const static std::string SYSPROP_MEMBER_CONFIG;
+    const static std::string SYSPROP_CLIENT_CONFIG;
+    const static std::string SYSPROP_CLIENT_FAILOVER_CONFIG;
+    const static std::vector<std::string> XML_ACCEPTED_SUFFIXES;
+    const static std::string XML_ACCEPTED_SUFFIXES_STRING;
+    const static std::vector<std::string> YAML_ACCEPTED_SUFFIXES;
+    const static std::string YAML_ACCEPTED_SUFFIXES_STRING;
+    const static std::vector<std::string> ALL_ACCEPTED_SUFFIXES;
+    const static std::string ALL_ACCEPTED_SUFFIXES_STRING;
     static void validate_suffix_in_system_property(
       const std::string& property_key);
     static void throw_unaccepted_suffix_in_system_property(
