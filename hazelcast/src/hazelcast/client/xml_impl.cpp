@@ -252,7 +252,7 @@ abstract_dom_config_processor::parse_serialization(
             std::string value = child.second.data();
             serialization_config->set_portable_version(
               get_integer_value(child.first, value));
-        } else if (matches("check-class-def-errors", name)) {
+        } else if (matches("check-class-def-errors", name)) {//doesn't exist
             std::string value = child.second.data();
             // serializationConfig.setCheckClassDefErrors(getBooleanValue(value));
         } else if (matches("use-native-byte-order", name)) {
@@ -477,7 +477,15 @@ client_dom_config_processor::handle_security(
                 get_attribute(child, "username"),
                 get_attribute(child, "password")));
         } else if (matches("token", node_name)) {
-            // TODO
+            auto token = pair.second.data();
+            std::vector<hazelcast::byte> my_token;
+            for(int i = 0; i < token.length(); i++){
+                my_token.push_back(token[i]);
+            }
+            client_config->set_credentials(
+                std::make_shared<hazelcast::client::security::token_credentials>(
+                  my_token));
+
         } else if (matches("credentials-factory", node_name)) { // not supported
 
         } else if (matches("kerberos", node_name)) { // not supported
@@ -522,8 +530,9 @@ client_dom_config_processor::handle_network(
 
         } else if (matches("ssl", node_name)) {
             handle_ssl_config(child, client_network_config);
-        } // else if (AliasedDiscoveryConfigUtils.supports(node_name)) {//not supported
-          //  handleAliasedDiscoveryStrategy(child, clientNetworkConfig, nodeName);}
+        }  //else if (AliasedDiscoveryConfigUtils.supports(node_name)) { // not supported
+
+        //}
         else if (matches("discovery-strategies", node_name)) { // not supported
 
         } else if (matches("auto-detection", node_name)) { // not supported
@@ -534,6 +543,8 @@ client_dom_config_processor::handle_network(
 
         } else if (matches("hazelcast-cloud", node_name)) {
             handle_hazelcast_cloud(child, client_network_config);
+        } else if (matches("aws", node_name)) {
+            handle_aws(child, client_network_config);
         }
     }
     client_config->set_network_config(*client_network_config);
@@ -546,7 +557,7 @@ client_dom_config_processor::handle_cluster_members(
 {
     for (auto& pair : node) {
         if (matches("address", pair.first)) {
-            int port = 5701; // port is not included in the example usage in hazelcast-client-full-example.xml
+            int port = 5701; // TODO port is not included in the example usage in hazelcast-client-full-example.xml
             client_network_config->add_address(
               hazelcast::client::address(pair.second.data(), port));
         }
@@ -587,6 +598,48 @@ client_dom_config_processor::handle_ssl_config(
 {
 }
 void
+client_dom_config_processor::handle_aws(
+  const boost::property_tree::ptree& node,
+  hazelcast::client::config::client_network_config* client_network_config)
+{
+    auto enabled =  get_bool_value(get_attribute(node, "enabled"));
+    client_network_config->get_aws_config().set_enabled(enabled);
+    auto aws_con = new hazelcast::client::config::client_aws_config();
+    for(auto& pair : node){
+        if(pair.first == "<xmlattr>"){
+            continue ;
+        }
+        if(matches(pair.first, "access-key")){
+            aws_con->set_access_key(pair.second.data());
+        } else if(matches(pair.first, "secret-key")){
+            aws_con->set_secret_key(pair.second.data());
+        } else if(matches(pair.first, "region")){
+            aws_con->set_region(pair.second.data());
+        } else if(matches(pair.first, "host-header")){
+            aws_con->set_host_header(pair.second.data());
+        } else if(matches(pair.first, "connection-timeout-seconds")){
+
+        } else if(matches(pair.first, "hz-port")){
+
+        } else if(matches(pair.first, "read-timeout-seconds")){
+
+        } else if(matches(pair.first, "connection-retries")){
+
+        } else if(matches(pair.first, "use-public-ip")){
+
+        } else if(matches(pair.first, "tag-key")){
+            aws_con->set_tag_key(pair.second.data());
+        } else if(matches(pair.first, "tag-value")){
+            aws_con->set_tag_value(pair.second.data());
+        } else if(matches(pair.first, "security-group-name")){
+            aws_con->set_security_group_name(pair.second.data());
+        } else if(matches(pair.first, "iam-role")){
+            aws_con->set_iam_role(pair.second.data());
+        }
+        client_network_config->set_aws_config(*aws_con);
+    }
+}
+void
 client_dom_config_processor::handle_hazelcast_cloud(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
@@ -619,6 +672,7 @@ void
 client_dom_config_processor::client_dom_config_processor::
   handle_flake_id_generator_node(const boost::property_tree::ptree& node)
 {
+
     std::string name = get_attribute(node, "name");
     auto config =
       new hazelcast::client::config::client_flake_id_generator_config(name);
@@ -805,7 +859,7 @@ client_dom_config_processor::handle_connection_strategy(
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         if (matches("connection-retry", node_name)) {
-            handle_connection_retry(child, strategy_config);
+            handle_connection_retry(child, &strategy_config);
         }
     }
     client_config->set_connection_strategy_config(strategy_config);
@@ -813,10 +867,9 @@ client_dom_config_processor::handle_connection_strategy(
 void
 client_dom_config_processor::handle_connection_retry(
   const boost::property_tree::ptree& node,
-  hazelcast::client::config::client_connection_strategy_config strategy_config)
+  hazelcast::client::config::client_connection_strategy_config* strategy_config)
 {
-    auto connection_retry_config =
-      new hazelcast::client::config::connection_retry_config();
+    auto connection_retry_config = new hazelcast::client::config::connection_retry_config();
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
@@ -840,7 +893,7 @@ client_dom_config_processor::handle_connection_retry(
               get_double_value(node_name, pair.second.data()));
         }
     }
-    strategy_config.set_retry_config(*connection_retry_config);
+    strategy_config->set_retry_config(*connection_retry_config);
 }
 
 void
@@ -848,7 +901,7 @@ client_dom_config_processor::handle_labels(
   const boost::property_tree::ptree& node)
 {
     for (auto& child : node) {
-        client_config->add_label(child.first);
+        client_config->add_label(child.second.data());
     }
 }
 void

@@ -1837,8 +1837,60 @@ TEST_F(IssueTest,TestIssue1005){
     std::this_thread::sleep_for(std::chrono::seconds(1));
     exp_lock->lock();
     exp_lock->unlock();
-
 }
+TEST_F(IssueTest, XML){
+    auto client = hazelcast::new_client().get();
+    auto con = &client.get_client_config();
+    ASSERT_EQ(con->get_properties().at("prop1"),"1");
+    ASSERT_EQ(con->get_properties().at("prop2"),"2");
+    ASSERT_EQ(con->get_serialization_config().get_portable_version(),3);
+    ASSERT_EQ(con->get_serialization_config().get_byte_order(), boost::endian::order::big);
+    ASSERT_EQ(con->get_network_config().is_smart_routing() ,true);
+    ASSERT_EQ(con->is_redo_operation() ,true);
+    ASSERT_EQ(con->get_network_config().get_connection_timeout() ,std::chrono::milliseconds(60000));
+    ASSERT_EQ(con->get_network_config().get_socket_options().get_buffer_size_in_bytes(),128);
+    ASSERT_EQ(con->get_network_config().get_socket_options().is_keep_alive() ,true);
+    ASSERT_EQ(con->get_network_config().get_socket_options().is_reuse_address() ,true);
+    ASSERT_EQ(con->get_network_config().get_socket_options().is_tcp_no_delay() ,false);
+    ASSERT_EQ(con->get_network_config().get_socket_options().get_linger_seconds() ,3);
+    ASSERT_EQ(con->get_network_config().get_cloud_config().enabled ,false);
+    ASSERT_EQ(con->get_network_config().get_cloud_config().discovery_token ,"EXAMPLE_TOKEN");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_access_key() ,"my-access-key");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_secret_key() ,"my-secret-key");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_host_header() ,"ec2.amazonaws.com");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_region() ,"us-west-1");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_tag_key() ,"type");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_tag_value() ,"hz-nodes");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_security_group_name() ,"hazelcast-sg");
+    ASSERT_EQ(con->get_network_config().get_aws_config().get_iam_role() ,"dummy");
+    ASSERT_EQ(con->get_near_cache_config("default")->get_time_to_live_seconds() ,90);
+    ASSERT_EQ(con->get_near_cache_config("default")->get_max_idle_seconds() ,100);
+    ASSERT_EQ(con->get_near_cache_config("default")->is_invalidate_on_change() ,true);
+    ASSERT_EQ(con->get_near_cache_config("default")->get_in_memory_format() ,hazelcast::client::config::in_memory_format::OBJECT);
+    ASSERT_EQ(con->get_near_cache_config("default")->get_local_update_policy() ,hazelcast::client::config::near_cache_config::local_update_policy::INVALIDATE);
+    ASSERT_EQ(con->get_near_cache_config("default")->is_cache_local_entries() ,false);
+    /*
+    ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_size(),10000);
+    ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_eviction_policy(), hazelcast::client::config::eviction_policy::LRU);
+    ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;*/
+    ASSERT_EQ(con->get_instance_name().get(), "client_name");//if this passes variable replacer works
+    ASSERT_EQ(con->get_connection_strategy_config().is_async_start(), true);
+    ASSERT_EQ(con->get_connection_strategy_config().get_reconnect_mode(), hazelcast::client::config::client_connection_strategy_config::ASYNC);
+    ASSERT_EQ(con->get_connection_strategy_config().get_retry_config().get_cluster_connect_timeout(), std::chrono::milliseconds(5000));
+    ASSERT_EQ(con->get_connection_strategy_config().get_retry_config().get_initial_backoff_duration(), std::chrono::milliseconds(2000));
+    ASSERT_EQ(con->get_connection_strategy_config().get_retry_config().get_jitter(), 0.5);
+    ASSERT_EQ(con->get_connection_strategy_config().get_retry_config().get_max_backoff_duration(), std::chrono::milliseconds(60000));
+    ASSERT_EQ(con->get_connection_strategy_config().get_retry_config().get_multiplier(), 3);
+    ASSERT_EQ(con->get_flake_id_generator_config("default")->get_prefetch_count(), 100);
+    ASSERT_EQ(con->get_flake_id_generator_config("default")->get_prefetch_validity_duration(), std::chrono::milliseconds(600000));
+    ASSERT_EQ(con->get_reliable_topic_config("rel-topic").get_read_batch_size(), 100);
+    ASSERT_EQ(*con->get_labels().find("admin"), "admin");
+    ASSERT_EQ(*con->get_labels().find("foo"), "foo");
+    ASSERT_EQ(con->backup_acks_enabled(),true);
+    ASSERT_EQ(con->get_cluster_name(),"my-cluster");//if this passes import works
+    ASSERT_EQ(con->get_credentials().get()->name(),"client1");//cant test token and username-password at the same time, but I checked, token works too.
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast

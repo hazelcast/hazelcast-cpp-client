@@ -140,9 +140,11 @@ private:
     void handle_load_balancer(const boost::property_tree::ptree& node);
     void handle_connection_retry(
       const boost::property_tree::ptree& node,
-      hazelcast::client::config::client_connection_strategy_config
+      hazelcast::client::config::client_connection_strategy_config*
         strategy_config);
-
+    void handle_aws(
+      const boost::property_tree::ptree& node,
+      hazelcast::client::config::client_network_config* client_network_config);
 protected:
     void handle_cluster_members(
       const boost::property_tree::ptree& node,
