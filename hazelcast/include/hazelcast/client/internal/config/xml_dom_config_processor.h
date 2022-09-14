@@ -62,7 +62,6 @@ protected:
                                    double default_value);
 
 public:
-    void static fill_properties(const boost::property_tree::ptree& node, hazelcast::client::client_config* config);
     static boost::property_tree::ptree pair_to_node(
       const std::string& node_name,
       const boost::property_tree::ptree& node_content);
