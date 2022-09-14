@@ -1202,7 +1202,7 @@ iexception::iexception(std::string exception_name,
   , runtime_exception_(is_runtime)
   , retryable_(retryable)
   , report_((boost::format("%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") %
-             exception_name % message % error_no % details % source)
+             exception_name % msg_ % error_code_ % details_ % src_)
               .str())
 {}
 
