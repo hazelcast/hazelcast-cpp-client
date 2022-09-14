@@ -479,8 +479,8 @@ client_dom_config_processor::handle_security(
         } else if (matches("token", node_name)) {
             auto token = pair.second.data();
             std::vector<hazelcast::byte> my_token;
-            for(int i = 0; i < token.length(); i++){
-                my_token.push_back(token[i]);
+            for(char i : token){
+                my_token.push_back(i);
             }
             client_config->set_credentials(
                 std::make_shared<hazelcast::client::security::token_credentials>(
