@@ -1872,7 +1872,8 @@ TEST_F(IssueTest, XML){
     /*
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_size(),10000);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_eviction_policy(), hazelcast::client::config::eviction_policy::LRU);
-    ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;*/
+    ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;
+     */
     ASSERT_EQ(con->get_instance_name().get(), "client_name");//if this passes variable replacer works
     ASSERT_EQ(con->get_connection_strategy_config().is_async_start(), true);
     ASSERT_EQ(con->get_connection_strategy_config().get_reconnect_mode(), hazelcast::client::config::client_connection_strategy_config::ASYNC);

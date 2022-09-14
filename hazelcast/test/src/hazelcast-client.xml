@@ -76,17 +76,9 @@
             <buffer-size>128</buffer-size>
         </socket-options>
         <ssl enabled="false">
-            <factory-class-name>com.hazelcast.nio.ssl.BasicSSLContextFactory</factory-class-name>
             <properties>
-                <property name="protocol">TLS</property>
-
-                <property name="trustStore">/opt/hazelcast-client.truststore</property>
-                <property name="trustStorePassword">secret.123456</property>
-                <property name="trustStoreType">JKS</property>
-
-                <property name="keyStore">/opt/hazelcast-client.keystore</property>
-                <property name="keyStorePassword">keystorePassword123</property>
-                <property name="keyStoreType">JKS</property>
+                <property name="protocol">TLSv1.2</property>
+                <property name="verify-file">/opt/hazelcast-client.truststore</property>
             </properties>
         </ssl>
         <auto-detection enabled="false"/>
