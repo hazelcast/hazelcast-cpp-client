@@ -326,6 +326,22 @@ abstract_dom_config_processor::fill_properties(
 
     }
 }
+void
+abstract_dom_config_processor::fill_properties(
+  const boost::property_tree::ptree& node,
+  hazelcast::client::client_config* config
+)
+{
+    for (auto& pair : node){
+        if(pair.first == "<xmlcomment>"){
+            continue;
+        }
+        std::string property_name =  get_attribute(pair.second,"name");
+        std::string value = pair.second.data();
+        config->set_property(property_name, value);
+
+    }
+}
 
 boost::property_tree::ptree
 abstract_dom_config_processor::pair_to_node(
@@ -353,7 +369,7 @@ client_dom_config_processor::client_dom_config_processor(
     this->client_config = client_config;
 }
 bool client_dom_config_processor::can_occur_multiple_times(const std::string& name){
-    if(matches(name, "import") || matches(name ,"flake-id-generator" )  || matches(name, "reliable-topic") ){
+    if(matches(name, "import") || matches(name ,"flake-id-generator" )  || matches(name, "reliable-topic") || matches(name, "near-cache")){
         return true;
     }
     return false;
@@ -394,7 +410,7 @@ client_dom_config_processor::handle_node(
         handle_proxy_factories(node);
     } else if (matches(node_name,
                        "properties")) {
-        //fill_properties(node, client_config->get_properties());
+        fill_properties(node, client_config);
     } else if (matches(node_name,
                        "serialization")) {
         handle_serialization(node);
