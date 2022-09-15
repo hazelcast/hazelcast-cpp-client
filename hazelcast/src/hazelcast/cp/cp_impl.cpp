@@ -83,7 +83,10 @@ proxy_session_manager::create_new_session(const raft_group_id& group_id)
     auto response = request_new_session(group_id);
     auto result = sessions_.emplace(
       group_id, session_state{ response.id, response.ttl_millis });
-    assert(result.second);
+    if(!result.second){
+        sessions_.erase(result.first);
+        result = sessions_.emplace(group_id, session_state{response.id, response.ttl_millis});
+    }
     auto session =
       sessions_
         .emplace(group_id, session_state{ response.id, response.ttl_millis })
