@@ -58,14 +58,14 @@ class HAZELCAST_API dom_variable_replacer
 public:
     virtual void replace_variables(boost::property_tree::ptree* node,
                                    property_replacer replacer,
-                                   bool fail_fast) = 0;
+                                   bool fail_fast,
+                                   std::string node_name) = 0;
 };
 
 class HAZELCAST_API abstract_dom_variable_replacer
   : public dom_variable_replacer
 {
 private:
-    bool non_replaceable_node(const boost::property_tree::ptree& node);
     static void handle_missing_variable(const std::string& variable,
                                         const std::string& node_name,
                                         bool fail_fast);
@@ -74,12 +74,14 @@ protected:
     static std::string replace_value(const boost::property_tree::ptree& node,
                                      property_replacer replacer,
                                      bool fail_fast,
-                                     const std::string& value);
+                                     const std::string& value,
+                                     const std::string& node_name);
 
 public:
     void replace_variable_in_node_value(boost::property_tree::ptree* node,
                                         property_replacer replacer,
-                                        bool fail_fast);
+                                        bool fail_fast,
+                                        const std::string& node_name);
 };
 
 class HAZELCAST_API xml_dom_variable_replacer
@@ -89,7 +91,8 @@ public:
     xml_dom_variable_replacer();
     void replace_variables(boost::property_tree::ptree* node,
                            property_replacer replacer,
-                           bool fail_fast) override;
+                           bool fail_fast,
+                           std::string node_name) override;
 };
 
 class HAZELCAST_API config_replacer_helper
@@ -111,7 +114,7 @@ public:
 };
 
 } // namespace config
-}
+} // namespace internal
 } // namespace client
 } // namespace hazelcast
 

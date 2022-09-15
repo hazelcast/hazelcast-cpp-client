@@ -54,14 +54,14 @@ protected:
     void schema_validation(boost::property_tree::ptree doc);
 
 public:
-    std::string get_release_version();
-    std::string get_namespace_type();
+    static std::string get_release_version();
+    static std::string get_namespace_type();
 };
 
 class HAZELCAST_API abstract_xml_config_builder
   : public abstract_xml_config_helper
 {
-    std::string get_attribute(boost::property_tree::ptree node,
+    static std::string get_attribute(boost::property_tree::ptree node,
                               const std::string& att_name);
     void fill_properties(
       const boost::property_tree::ptree& node,
@@ -93,15 +93,14 @@ private:
     std::ifstream* in;
     void parse_and_build_config(
       hazelcast::client::client_config* client_config);
-    void check_root_element(boost::property_tree::ptree root);
 
 protected:
     boost::property_tree::ptree parse(std::ifstream* input_stream) override;
 
 public:
-    xml_client_config_builder(xml_client_config_locator* locator);
-    xml_client_config_builder(const std::string& resource);
-    xml_client_config_builder(std::ifstream* in);
+    explicit xml_client_config_builder(xml_client_config_locator* locator);
+    explicit xml_client_config_builder(const std::string& resource);
+    explicit xml_client_config_builder(std::ifstream* in);
     xml_client_config_builder();
     hazelcast::client::client_config build();
     xml_client_config_builder set_properties(

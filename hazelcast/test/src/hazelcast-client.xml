@@ -44,7 +44,6 @@
         </replacer>
     </config-replacers>
 
-
     <instance-name>${INSTANCENAME}</instance-name>
 
     <properties>
@@ -101,14 +100,6 @@
         <username-password username="client1" password="s3crEt"/>
 
     </security>
-
-
-
-    <listeners>
-        <listener>com.hazelcast.examples.MembershipListener</listener>
-        <listener>com.hazelcast.examples.MigrationListener</listener>
-    </listeners>
-
 
 
     <serialization>

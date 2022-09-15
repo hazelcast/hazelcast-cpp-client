@@ -36,25 +36,16 @@ class HAZELCAST_API abstract_dom_config_processor
 protected:
     bool strict;
     bool dom_level_3;
-    bool matches(const std::string& config1, const std::string& config2);
+    static bool matches(const std::string& config1, const std::string& config2);
     hazelcast::client::serialization_config parse_serialization(
       boost::property_tree::ptree node);
-    //void fill_properties(
-     // const boost::property_tree::ptree& node,
-     // const hazelcast::client::client_properties& properties);
     static std::string get_attribute(boost::property_tree::ptree node,
                                      const std::string& attribute);
     static bool get_bool_value(std::string value);
     static int get_integer_value(const std::string& parameter_name,
                                  const std::string& value);
-    static int get_integer_value(const std::string& parameter_name,
-                                 const std::string& value,
-                                 int default_value);
     static long get_long_value(const std::string& parameter_name,
                                const std::string& value);
-    static long get_long_value(const std::string& parameter_name,
-                               const std::string& value,
-                               long default_value);
     static double get_double_value(const std::string& parameter_name,
                                    const std::string& value);
     static double get_double_value(const std::string& parameter_name,
@@ -68,10 +59,6 @@ public:
       const boost::property_tree::ptree& node_content);
     std::unordered_set<std::string>* occurrence_set =
       new std::unordered_set<std::string>();
-    //static void fill_properties(
-      //const boost::property_tree::ptree& node,
-      //const hazelcast::client::client_properties& properties,
-      //bool dom_level_3);
     static void fill_properties(
       const boost::property_tree::ptree& node,
       std::unordered_map<std::string, std::string>* properties,
@@ -101,9 +88,9 @@ private:
     hazelcast::client::config::eviction_config get_eviction_config(
       const boost::property_tree::ptree& node);
     void handle_connection_strategy(const boost::property_tree::ptree& node);
-    void handle_labels(const boost::property_tree::ptree& node);
+    void handle_labels(const boost::property_tree::ptree& node) const;
     void handle_proxy_factories(const boost::property_tree::ptree& node);
-    void handle_backup_ack_to_client(const boost::property_tree::ptree& node);
+    void handle_backup_ack_to_client(const boost::property_tree::ptree& node) const;
     void handle_load_balancer(const boost::property_tree::ptree& node);
     void handle_connection_retry(
       const boost::property_tree::ptree& node,
