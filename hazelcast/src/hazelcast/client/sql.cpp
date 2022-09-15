@@ -575,7 +575,7 @@ query_utils::member_of_same_larger_version_group(
 
     // otherwise return a random member from the larger group
     static thread_local std::mt19937 generator;
-    std::uniform_int_distribution<int> distribution(0, count);
+    std::uniform_int_distribution<int> distribution(0, count - 1);
     auto random_member_index = distribution(generator);
     for (const auto& m : members) {
         if (!m.is_lite_member() && m.get_version() == version) {
