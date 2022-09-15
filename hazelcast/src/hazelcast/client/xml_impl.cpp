@@ -406,7 +406,7 @@ client_dom_config_processor::handle_ssl_config(
     std::unordered_map<std::string, std::string> prop_map;
     try{
         auto properties = node.get_child("properties");
-        for(auto& pair : node){
+        for(auto& pair : properties){
             if(matches(pair.first, "property")){
                 auto property_name = get_attribute(pair.second, "name");
                 auto property_value = pair.second.data();
@@ -748,7 +748,8 @@ client_dom_config_processor::handle_backup_ack_to_client(
 void
 client_dom_config_processor::handle_load_balancer(
   const boost::property_tree::ptree& node)
-{ // TODO not sure how to configure load_balancer
+{
+    // TODO not sure how to configure load_balancer
     /*
     std::string type = get_attribute(node,"type");
     if (matches("random", type)) {
@@ -1267,7 +1268,7 @@ config_replacer_helper::traverse_children_and_replace_variables(
         }
 
         if (!root->data().empty()) {
-            variable_replacer.replace_variables(root, replacer, fail_fast, "hazelcast-client");//TODO
+            variable_replacer.replace_variables(root, replacer, fail_fast, "hazelcast-client");
         }
         for (auto& pair : *root) {
             if(pair.first == "<xmlcomment>"){

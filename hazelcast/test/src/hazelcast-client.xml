@@ -74,7 +74,7 @@
             <linger-seconds>3</linger-seconds>
             <buffer-size>128</buffer-size>
         </socket-options>
-        <ssl enabled="false">
+        <ssl enabled="true">
             <properties>
                 <property name="protocol">TLSv1.2</property>
             </properties>
