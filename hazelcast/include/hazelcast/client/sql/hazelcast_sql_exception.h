@@ -28,7 +28,8 @@ namespace sql {
 class HAZELCAST_API hazelcast_sql_exception : public exception::hazelcast_
 {
 public:
-    hazelcast_sql_exception(boost::uuids::uuid originating_member_id,
+    hazelcast_sql_exception(std::string source,
+                            boost::uuids::uuid originating_member_id,
                             int32_t code,
                             boost::optional<std::string> message,
                             boost::optional<std::string> suggestion,

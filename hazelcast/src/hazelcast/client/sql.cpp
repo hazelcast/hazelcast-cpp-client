@@ -174,6 +174,7 @@ sql_service::handle_execute_response(
     auto response = decode_execute_response(msg);
     if (response.error) {
         BOOST_THROW_EXCEPTION(sql::hazelcast_sql_exception(
+          "sql_service::handle_execute_response",
           std::move(response.error->originating_member_id),
           response.error->code,
           std::move(response.error->message),
@@ -315,10 +316,12 @@ void
 sql_service::handle_fetch_response_error(boost::optional<impl::sql_error> error)
 {
     if (error) {
-        throw hazelcast_sql_exception(error->originating_member_id,
-                                      error->code,
-                                      error->message,
-                                      error->suggestion);
+        throw hazelcast_sql_exception(
+          "sql_service::handle_fetch_response_error",
+          error->originating_member_id,
+          error->code,
+          error->message,
+          error->suggestion);
     }
 }
 
@@ -461,12 +464,13 @@ sql_column_metadata::nullable() const
 }
 
 hazelcast_sql_exception::hazelcast_sql_exception(
+  std::string source,
   boost::uuids::uuid originating_member_id,
   int32_t code,
   boost::optional<std::string> message,
   boost::optional<std::string> suggestion,
   std::exception_ptr cause)
-  : hazelcast_("",
+  : hazelcast_(std::move(source),
                message ? std::move(message).value() : "",
                "",
                std::move(cause))
@@ -510,10 +514,14 @@ query_utils::throw_public_exception(std::exception_ptr exc,
             originating_member_id = id;
         }
 
-        throw hazelcast_sql_exception(
-          originating_member_id, e.code(), e.get_message(), e.suggestion());
+        throw hazelcast_sql_exception("query_utils::throw_public_exception",
+                                      originating_member_id,
+                                      e.code(),
+                                      e.get_message(),
+                                      e.suggestion());
     } catch (exception::iexception& ie) {
         throw hazelcast_sql_exception(
+          "query_utils::throw_public_exception",
           id,
           static_cast<int32_t>(sql_error_code::GENERIC),
           ie.get_message(),
