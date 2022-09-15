@@ -402,7 +402,7 @@ client_dom_config_processor::handle_ssl_config(
         ssl_con.set_enabled(enabled);
         return ;
     }
-    boost::asio::ssl::context* ctx;
+    //boost::asio::ssl::context* ctx;
     std::unordered_map<std::string, std::string> prop_map;
     try{
         auto properties = node.get_child("properties");
@@ -416,6 +416,8 @@ client_dom_config_processor::handle_ssl_config(
     } catch (const boost::exception& e){
         return ;
     }
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tls_client);
+    /*
     try{
         auto protocol = prop_map.at("protocol");
         if(matches(protocol,"TLS")){
@@ -431,32 +433,32 @@ client_dom_config_processor::handle_ssl_config(
     }catch(std::out_of_range& e){
         boost::asio::ssl::context context(boost::asio::ssl::context::method::tls_client);
         ctx = &context;
-    }
+    }*/
 
     for(auto& property : prop_map){
         if(matches(property.first , "verify-file")){
-            ctx->load_verify_file(property.second);
+            ctx.load_verify_file(property.second);
         } else if(matches(property.first , "verify-path")){
-            ctx->add_verify_path(property.second);
+            ctx.add_verify_path(property.second);
         }else if(matches(property.first , "verify-mode")){
             if(matches(property.second,"verify-none")){
-                ctx->set_verify_mode(boost::asio::ssl::verify_none);
+                ctx.set_verify_mode(boost::asio::ssl::verify_none);
             }else if(matches(property.second,"verify-peer")){
-                ctx->set_verify_mode(boost::asio::ssl::verify_peer);
+                ctx.set_verify_mode(boost::asio::ssl::verify_peer);
             }else if(matches(property.second,"verify-client-once")){
-                ctx->set_verify_mode(boost::asio::ssl::verify_client_once);
+                ctx.set_verify_mode(boost::asio::ssl::verify_client_once);
             }else if(matches(property.second,"verify-fail-if-no-peer-cert")){
-                ctx->set_verify_mode(boost::asio::ssl::verify_fail_if_no_peer_cert);
+                ctx.set_verify_mode(boost::asio::ssl::verify_fail_if_no_peer_cert);
             }
         }else if(matches(property.first , "default-verify-paths")){
-            ctx->set_default_verify_paths();
+            ctx.set_default_verify_paths();
         }else if(matches(property.first , "private-key-file")){
-            ctx->use_private_key_file(property.second,boost::asio::ssl::context::file_format::pem);
+            ctx.use_private_key_file(property.second,boost::asio::ssl::context::file_format::pem);
         }else if(matches(property.first , "rsa-private-key-file")){
-            ctx->use_rsa_private_key_file(property.second, boost::asio::ssl::context::pem);
+            ctx.use_rsa_private_key_file(property.second, boost::asio::ssl::context::pem);
         }
     }
-    ssl_con.set_context(std::move(*ctx));
+    ssl_con.set_context(std::move(ctx));
     client_network_config->set_ssl_config(ssl_con);
 }
 void
@@ -801,7 +803,7 @@ declarative_config_util::throw_unaccepted_suffix_in_system_property(
       "\' referenced in \'" + property_key +
       "\' is not in the list of accepted " + "suffixes: \'[" +
       boost::algorithm::join(accepted_suffixes, ", ") + "]\'";
-    throw hazelcast::client::exception::hazelcast_(message);
+    throw hazelcast::client::exception::hazelcast_(std::move(message));
 }
 bool
 declarative_config_util::is_accepted_suffix_configured(
@@ -837,9 +839,10 @@ abstract_config_locator::load_from_working_directory(
   const std::string& config_file_path)
 {
     try {
-        std::FILE* file;
-        file = fopen(config_file_path.c_str(), "r");
-        if (file == nullptr) {
+        auto stream = new std::ifstream();
+        in = stream;
+        in->open(config_file_path, std::ios::in);
+        if (!in->is_open()) {
             std::cout << "FINEST: "
                       << "Could not find " + config_file_path +
                            " in the working directory."
@@ -849,17 +852,14 @@ abstract_config_locator::load_from_working_directory(
         std::cout << "INFO: Loading " + config_file_path +
                        " from the working directory."
                   << std::endl;
-        configuration_file = file;
-        auto stream = new std::ifstream();
-        in = stream;
-        in->open(config_file_path, std::ios::in);
+
         if (in->fail()) {
             throw hazelcast::client::exception::hazelcast_(
               "Failed to open file: " + config_file_path);
         }
         return true;
     } catch (const std::runtime_error& e) {
-        throw hazelcast::client::exception::hazelcast_(e.what());
+        throw hazelcast::client::exception::hazelcast_(boost::diagnostic_information(e));
     }
 }
 
@@ -868,10 +868,8 @@ abstract_config_locator::load_from_working_directory(
   const std::string& config_file_prefix,
   const std::vector<std::string>& accepted_suffixes)
 {
-    if (accepted_suffixes.empty()) {
-        throw std::invalid_argument(
-          "Parameter acceptedSuffixes must not be empty");
-    }
+    util::Preconditions::check_not_empty(
+      accepted_suffixes, "Parameter accepted_suffixes must not be empty");
     for (const auto& suffix : accepted_suffixes) {
         if (suffix.empty()) {
             throw std::invalid_argument(
@@ -897,15 +895,15 @@ void
 abstract_config_locator::load_system_property_file_resource(
   const std::string& config_system_property)
 {
-    configuration_file = fopen(config_system_property.c_str(), "r");
     std::cout << "Using configuration file at " << config_system_property
               << std::endl;
-    if (configuration_file == nullptr) {
+    in->open(config_system_property);
+    if (!in->is_open()) {
         std::string msg =
           "Config file at " + config_system_property + " doesn't exist.";
         throw hazelcast::client::exception::hazelcast_(msg);
     }
-    in->open(config_system_property);
+
     if (in->fail()) {
         throw hazelcast::client::exception::hazelcast_("Failed to open file: " +
                                                        config_system_property);
@@ -949,10 +947,14 @@ abstract_config_locator::load_from_system_property(
                   << property_key << std::endl;
         load_system_property_file_resource(config_system_property);
         return true;
-    } catch (const hazelcast::client::exception::hazelcast_& e) {
-        throw hazelcast::client::exception::hazelcast_(e.what());
-    } catch (const std::runtime_error& e) {
-        throw hazelcast::client::exception::hazelcast_(e.what());
+    } catch (hazelcast::client::exception::hazelcast_& e) {
+        throw;
+    } catch (hazelcast::client::exception::iexception& e) {
+        throw hazelcast::client::exception::hazelcast_(
+          "abstract_config_locator::load_from_system_property",
+          e.get_message(),
+          "",
+          std::current_exception());
     }
 }
 bool
@@ -1330,7 +1332,9 @@ abstract_dom_variable_replacer::replace_value(
         }
         std::string variable =
           sb.substr(start_index + replacer_prefix.length(), end_index - replacer_prefix.length());
+
         std::string variable_replacement = replacer.get_replacement(variable);
+
         if (!variable_replacement.empty()) {
             sb.replace(start_index, end_index + 1, variable_replacement);
             end_index = start_index + (int)variable_replacement.length();

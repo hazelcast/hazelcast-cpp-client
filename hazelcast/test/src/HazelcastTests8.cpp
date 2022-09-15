@@ -1839,8 +1839,8 @@ TEST_F(IssueTest,TestIssue1005){
     exp_lock->unlock();
 }
 TEST_F(IssueTest, XML){
-    auto client = hazelcast::new_client().get();
-    auto con = &client.get_client_config();
+    auto conf = hazelcast::client::client_config::load();
+    auto con = &conf;
     ASSERT_EQ(con->get_properties().at("prop1"),"1");
     ASSERT_EQ(con->get_properties().at("prop2"),"2");
     ASSERT_EQ(con->get_serialization_config().get_portable_version(),3);
@@ -1889,7 +1889,8 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(*con->get_labels().find("foo"), "foo");
     ASSERT_EQ(con->backup_acks_enabled(),true);
     ASSERT_EQ(con->get_cluster_name(),"my-cluster");//if this passes import works
-    ASSERT_EQ(con->get_credentials().get()->name(),"client1");//cant test token and username-password at the same time, but I checked, token works too.
+    ASSERT_EQ(con->get_credentials().get()->name(),"client1");//can't test token and username-password at the same time, but I checked, token works too.
+
 }
 
 } // namespace test

@@ -60,7 +60,6 @@ class HAZELCAST_API abstract_config_locator
 {
 private:
     std::ifstream* in;
-    std::FILE* configuration_file;
     bool load_from_system_property(
       const std::string& property_key,
       bool fail_on_unaccepted_suffix,

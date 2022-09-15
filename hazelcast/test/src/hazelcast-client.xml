@@ -80,7 +80,7 @@
             </properties>
         </ssl>
         <auto-detection enabled="false"/>
-        <aws enabled="false">
+        <aws enabled="true">
             <access-key>my-access-key</access-key>
             <secret-key>my-secret-key</secret-key>
             <region>us-west-1</region>
