@@ -12,7 +12,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-*/
+ */
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -122,50 +122,27 @@ hazelcast::client::serialization_config
 abstract_dom_config_processor::parse_serialization(
   boost::property_tree::ptree node)
 {
-    auto serialization_config = new hazelcast::client::serialization_config();
+    hazelcast::client::serialization_config serialization_config ;
     for (auto& child : node) {
         std::string name = child.first;
         if (matches("portable-version", name)) {
             std::string value = child.second.data();
-            serialization_config->set_portable_version(
+            serialization_config.set_portable_version(
               get_integer_value(child.first, value));
         } else if (matches("use-native-byte-order", name)) {
-            serialization_config->set_byte_order(boost::endian::order::native);
+            serialization_config.set_byte_order(boost::endian::order::native);
         } else if (matches("byte-order", name)) {
             std::string value = child.second.data();
             if (matches("BIG_ENDIAN", value)) {
-                serialization_config->set_byte_order(boost::endian::order::big);
+                serialization_config.set_byte_order(boost::endian::order::big);
             } else if (matches("LITTLE_ENDIAN", value)) {
-                serialization_config->set_byte_order(
+                serialization_config.set_byte_order(
                   boost::endian::order::little);
             }
         }
     }
-    return *serialization_config;
+    return serialization_config;
 }
-/*
-void
-abstract_dom_config_processor::fill_properties(
-  const boost::property_tree::ptree& node,
-  const hazelcast::client::client_properties& properties)
-{
-    fill_properties(node, properties, dom_level_3);
-}*//*
-void
-abstract_dom_config_processor::fill_properties(
-  const boost::property_tree::ptree& node,
-  const hazelcast::client::client_properties& properties,
-  bool dom_level_3)
-{
-    for (auto& pair : node){
-        if(pair.first == "<xmlcomment>"){
-            continue;
-        }
-        std::string property_name =  get_attribute(pair.second,"name");
-        std::string value = pair.second.data();
-
-    }
-}*/
 void
 abstract_dom_config_processor::fill_properties(
   const boost::property_tree::ptree& node,
@@ -303,7 +280,7 @@ client_dom_config_processor::handle_node(
 
 void
 client_dom_config_processor::handle_security(
-  const boost::property_tree::ptree& node)
+  const boost::property_tree::ptree& node) const
 {
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
@@ -321,15 +298,15 @@ client_dom_config_processor::handle_security(
                 my_token.push_back(i);
             }
             client_config->set_credentials(
-                std::make_shared<hazelcast::client::security::token_credentials>(
-                  my_token));
+              std::make_shared<hazelcast::client::security::token_credentials>(
+                my_token));
 
         }
     }
 }
 void
 client_dom_config_processor::handle_serialization(
-  const boost::property_tree::ptree& node)
+  const boost::property_tree::ptree& node) const
 {
     hazelcast::client::serialization_config serialization_config =
       parse_serialization(node);
@@ -337,36 +314,35 @@ client_dom_config_processor::handle_serialization(
 }
 void
 client_dom_config_processor::handle_network(
-  const boost::property_tree::ptree& node)
+  const boost::property_tree::ptree& node) const
 {
-    auto client_network_config =
-      new hazelcast::client::config::client_network_config();
+    hazelcast::client::config::client_network_config client_network_config ;
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         if (matches("cluster-members", node_name)) {
-            handle_cluster_members(child, client_network_config);
+            handle_cluster_members(child, &client_network_config);
         } else if (matches("smart-routing", node_name)) {
-            client_network_config->set_smart_routing(
+            client_network_config.set_smart_routing(
               get_bool_value(pair.second.data()));
         } else if (matches("redo-operation", node_name)) {
             client_config->set_redo_operation(
               get_bool_value(pair.second.data()));
         } else if (matches("connection-timeout", node_name)) {
-            client_network_config->set_connection_timeout(
+            client_network_config.set_connection_timeout(
               std::chrono::milliseconds(
                 get_integer_value(node_name, pair.second.data())));
         } else if (matches("socket-options", node_name)) {
-            handle_socket_options(child, client_network_config);
+            handle_socket_options(child, &client_network_config);
         }  else if (matches("ssl", node_name)) {
-            handle_ssl_config(child, client_network_config);
+            handle_ssl_config(child, &client_network_config);
         }else if (matches("hazelcast-cloud", node_name)) {
-            handle_hazelcast_cloud(child, client_network_config);
+            handle_hazelcast_cloud(child, &client_network_config);
         } else if (matches("aws", node_name)) {
-            handle_aws(child, client_network_config);
+            handle_aws(child, &client_network_config);
         }
     }
-    client_config->set_network_config(*client_network_config);
+    client_config->set_network_config(client_network_config);
 }
 
 void
@@ -415,7 +391,7 @@ client_dom_config_processor::handle_ssl_config(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
-    auto ssl_con = new hazelcast::client::config::ssl_config();
+    hazelcast::client::config::ssl_config ssl_con;
     auto enabled = false;
     try{
         enabled = get_bool_value(get_attribute(node, "enabled"));
@@ -423,10 +399,10 @@ client_dom_config_processor::handle_ssl_config(
         return ;
     }
     if(!enabled){
-        ssl_con->set_enabled(enabled);
+        ssl_con.set_enabled(enabled);
         return ;
     }
-    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tls_client);
+    boost::asio::ssl::context* ctx;
     std::unordered_map<std::string, std::string> prop_map;
     try{
         auto properties = node.get_child("properties");
@@ -443,41 +419,45 @@ client_dom_config_processor::handle_ssl_config(
     try{
         auto protocol = prop_map.at("protocol");
         if(matches(protocol,"TLS")){
-            boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tls_client);
+            boost::asio::ssl::context context(boost::asio::ssl::context::method::tls_client);
+            ctx = &context;
         } else if(matches(protocol,"TLSv1.2")){
-            boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv12_client);
-        } else if(matches(protocol,"TLSv1.2")){
-            boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tlsv13_client);
+            boost::asio::ssl::context context(boost::asio::ssl::context::method::tlsv12_client);
+            ctx = &context;
+        } else if(matches(protocol,"TLSv1.3")){
+            boost::asio::ssl::context context(boost::asio::ssl::context::method::tlsv13_client);
+            ctx = &context;
         }
     }catch(std::out_of_range& e){
-        boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tls_client);
+        boost::asio::ssl::context context(boost::asio::ssl::context::method::tls_client);
+        ctx = &context;
     }
 
     for(auto& property : prop_map){
         if(matches(property.first , "verify-file")){
-            ctx.load_verify_file(property.second);
+            ctx->load_verify_file(property.second);
         } else if(matches(property.first , "verify-path")){
-            ctx.add_verify_path(property.second);
+            ctx->add_verify_path(property.second);
         }else if(matches(property.first , "verify-mode")){
             if(matches(property.second,"verify-none")){
-                ctx.set_verify_mode(boost::asio::ssl::verify_none);
+                ctx->set_verify_mode(boost::asio::ssl::verify_none);
             }else if(matches(property.second,"verify-peer")){
-                ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+                ctx->set_verify_mode(boost::asio::ssl::verify_peer);
             }else if(matches(property.second,"verify-client-once")){
-                ctx.set_verify_mode(boost::asio::ssl::verify_client_once);
+                ctx->set_verify_mode(boost::asio::ssl::verify_client_once);
             }else if(matches(property.second,"verify-fail-if-no-peer-cert")){
-                ctx.set_verify_mode(boost::asio::ssl::verify_fail_if_no_peer_cert);
+                ctx->set_verify_mode(boost::asio::ssl::verify_fail_if_no_peer_cert);
             }
         }else if(matches(property.first , "default-verify-paths")){
-            ctx.set_default_verify_paths();
+            ctx->set_default_verify_paths();
         }else if(matches(property.first , "private-key-file")){
-            ctx.use_private_key_file(property.second,boost::asio::ssl::context::file_format::pem);
+            ctx->use_private_key_file(property.second,boost::asio::ssl::context::file_format::pem);
         }else if(matches(property.first , "rsa-private-key-file")){
-            ctx.use_rsa_private_key_file(property.second, boost::asio::ssl::context::pem);
+            ctx->use_rsa_private_key_file(property.second, boost::asio::ssl::context::pem);
         }
     }
-    ssl_con->set_context(std::move(ctx));
-    client_network_config->set_ssl_config(*ssl_con);
+    ssl_con.set_context(std::move(*ctx));
+    client_network_config->set_ssl_config(ssl_con);
 }
 void
 client_dom_config_processor::handle_aws(
@@ -486,29 +466,29 @@ client_dom_config_processor::handle_aws(
 {
     auto enabled =  get_bool_value(get_attribute(node, "enabled"));
     client_network_config->get_aws_config().set_enabled(enabled);
-    auto aws_con = new hazelcast::client::config::client_aws_config();
+    hazelcast::client::config::client_aws_config aws_con;
     for(auto& pair : node){
         if(pair.first == "<xmlattr>"){
             continue ;
         }
         if(matches(pair.first, "access-key")){
-            aws_con->set_access_key(pair.second.data());
+            aws_con.set_access_key(pair.second.data());
         } else if(matches(pair.first, "secret-key")){
-            aws_con->set_secret_key(pair.second.data());
+            aws_con.set_secret_key(pair.second.data());
         } else if(matches(pair.first, "region")){
-            aws_con->set_region(pair.second.data());
+            aws_con.set_region(pair.second.data());
         } else if(matches(pair.first, "host-header")){
-            aws_con->set_host_header(pair.second.data());
+            aws_con.set_host_header(pair.second.data());
         } else if(matches(pair.first, "tag-key")){
-            aws_con->set_tag_key(pair.second.data());
+            aws_con.set_tag_key(pair.second.data());
         } else if(matches(pair.first, "tag-value")){
-            aws_con->set_tag_value(pair.second.data());
+            aws_con.set_tag_value(pair.second.data());
         } else if(matches(pair.first, "security-group-name")){
-            aws_con->set_security_group_name(pair.second.data());
+            aws_con.set_security_group_name(pair.second.data());
         } else if(matches(pair.first, "iam-role")){
-            aws_con->set_iam_role(pair.second.data());
+            aws_con.set_iam_role(pair.second.data());
         }
-        client_network_config->set_aws_config(*aws_con);
+        client_network_config->set_aws_config(aws_con);
     }
 }
 void
@@ -542,25 +522,24 @@ client_dom_config_processor::client_dom_config_processor::
 
 void
 client_dom_config_processor::client_dom_config_processor::
-  handle_flake_id_generator_node(const boost::property_tree::ptree& node)
+  handle_flake_id_generator_node(const boost::property_tree::ptree& node) const
 {
 
     std::string name = get_attribute(node, "name");
-    auto config =
-      new hazelcast::client::config::client_flake_id_generator_config(name);
+    hazelcast::client::config::client_flake_id_generator_config config(name);
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         boost::algorithm::to_lower(node_name);
         if (matches("prefetch-count", node_name)) {
-            config->set_prefetch_count(
+            config.set_prefetch_count(
               get_integer_value(pair.first, pair.second.data()));
         } else if (matches("prefetch-validity-millis", node_name)) {
-            config->set_prefetch_validity_duration(std::chrono::milliseconds(
+            config.set_prefetch_validity_duration(std::chrono::milliseconds(
               get_long_value(node_name, pair.second.data())));
         }
     }
-    client_config->add_flake_id_generator_config(*config);
+    client_config->add_flake_id_generator_config(config);
 }
 
 void
@@ -571,19 +550,19 @@ client_dom_config_processor::handle_reliable_topic(
 }
 void
 client_dom_config_processor::handle_reliable_topic_node(
-  const boost::property_tree::ptree& node)
+  const boost::property_tree::ptree& node) const
 {
     std::string name = get_attribute(node, "name");
-    auto config = new hazelcast::client::config::reliable_topic_config(name);
+    hazelcast::client::config::reliable_topic_config config(name);
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         if (matches("read-batch-size", node_name)) {
-            config->set_read_batch_size(
+            config.set_read_batch_size(
               get_integer_value(pair.first, pair.second.data()));
         }
     }
-    client_config->add_reliable_topic_config(*config);
+    client_config->add_reliable_topic_config(config);
 }
 void
 client_dom_config_processor::handle_near_cache(
@@ -593,16 +572,16 @@ client_dom_config_processor::handle_near_cache(
 }
 void
 client_dom_config_processor::handle_near_cache_node(
-  const boost::property_tree::ptree& node)
+  const boost::property_tree::ptree& node) const
 {
     hazelcast::client::config::near_cache_config* near_cache_config;
     try {
         std::string name = get_attribute(node, "name");
-        near_cache_config =
-          new hazelcast::client::config::near_cache_config(name);
+        hazelcast::client::config::near_cache_config near_cache(name);
+        near_cache_config =&near_cache;
     } catch (const boost::exception& e) {
-        near_cache_config =
-          new hazelcast::client::config::near_cache_config("default");
+        hazelcast::client::config::near_cache_config near_cache("default");
+        near_cache_config =&near_cache;
     }
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
@@ -640,11 +619,6 @@ client_dom_config_processor::handle_near_cache_node(
               get_eviction_config(pair.second));
         }
     }
-    /*if (serializeKeys != null && !serializeKeys &&
-    nearCacheConfig.getInMemoryFormat() == InMemoryFormat.NATIVE) { std::cout <<
-    "WARNING: " << "The Near Cache doesn't support keys by-reference with NATIVE
-    in-memory-format. This setting will have no effect!" << std::endl;
-    }*/
     client_config->add_near_cache_config(*near_cache_config);
 }
 hazelcast::client::config::eviction_config
@@ -686,7 +660,7 @@ client_dom_config_processor::get_eviction_config(
 }
 void
 client_dom_config_processor::handle_connection_strategy(
-  const boost::property_tree::ptree& node)
+  const boost::property_tree::ptree& node) const
 {
     auto strategy_config =
       hazelcast::client::config::client_connection_strategy_config();
@@ -729,31 +703,31 @@ client_dom_config_processor::handle_connection_retry(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_connection_strategy_config* strategy_config)
 {
-    auto connection_retry_config = new hazelcast::client::config::connection_retry_config();
+    hazelcast::client::config::connection_retry_config connection_retry_config;
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         if (matches("initial-backoff-millis", node_name)) {
-            connection_retry_config->set_initial_backoff_duration(
+            connection_retry_config.set_initial_backoff_duration(
               std::chrono::milliseconds(
                 get_integer_value(node_name, pair.second.data())));
         } else if (matches("max-backoff-millis", node_name)) {
-            connection_retry_config->set_max_backoff_duration(
+            connection_retry_config.set_max_backoff_duration(
               std::chrono::milliseconds(
                 get_integer_value(node_name, pair.second.data())));
         } else if (matches("multiplier", node_name)) {
-            connection_retry_config->set_multiplier(
+            connection_retry_config.set_multiplier(
               get_double_value(node_name, pair.second.data()));
         } else if (matches("cluster-connect-timeout-millis", node_name)) {
-            connection_retry_config->set_cluster_connect_timeout(
+            connection_retry_config.set_cluster_connect_timeout(
               std::chrono::milliseconds(
                 get_long_value(node_name, pair.second.data())));
         } else if (matches("jitter", node_name)) {
-            connection_retry_config->set_jitter(
+            connection_retry_config.set_jitter(
               get_double_value(node_name, pair.second.data()));
         }
     }
-    strategy_config->set_retry_config(*connection_retry_config);
+    strategy_config->set_retry_config(connection_retry_config);
 }
 
 void
@@ -774,7 +748,7 @@ client_dom_config_processor::handle_backup_ack_to_client(
 void
 client_dom_config_processor::handle_load_balancer(
   const boost::property_tree::ptree& node)
-{ // not sure how to configure load_balancer
+{ // TODO not sure how to configure load_balancer
     /*
     std::string type = get_attribute(node,"type");
     if (matches("random", type)) {
@@ -875,7 +849,8 @@ abstract_config_locator::load_from_working_directory(
                        " from the working directory."
                   << std::endl;
         configuration_file = file;
-        in = new std::ifstream();
+        auto stream = new std::ifstream();
+        in = stream;
         in->open(config_file_path, std::ios::in);
         if (in->fail()) {
             throw hazelcast::client::exception::hazelcast_(
@@ -1025,7 +1000,7 @@ abstract_xml_config_helper::get_release_version()
     return hazelcast::client::version().to_string();
 }
 void
-abstract_xml_config_helper::schema_validation(boost::property_tree::ptree doc)
+abstract_xml_config_helper::schema_validation(const boost::property_tree::ptree& doc)
 {
     // TODO property_tree doesn't support validation
 }
@@ -1049,7 +1024,7 @@ abstract_xml_config_builder::replace_variables(
   boost::property_tree::ptree* root)
 {
     bool fail_fast = false;
-    auto replacers = new std::vector<property_replacer>();
+    std::vector<property_replacer> replacers;
     boost::property_tree::ptree node;
     try {
         node = root->get_child("config-replacers");
@@ -1065,8 +1040,7 @@ abstract_xml_config_builder::replace_variables(
                 }
                 std::string value = n.first;
                 if ("replacer" == value) {
-
-                    replacers->push_back(create_replacer(n.second));
+                    replacers.push_back(create_replacer(n.second));
                 }
             }
         } catch (const boost::exception& e) {
@@ -1075,8 +1049,9 @@ abstract_xml_config_builder::replace_variables(
     } catch (const boost::exception& e) {
 
     }
+    xml_dom_variable_replacer rep;
     config_replacer_helper::traverse_children_and_replace_variables(
-      root, *replacers, fail_fast, *(new xml_dom_variable_replacer()));
+      root, replacers, fail_fast, rep);
 }
 void
 abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
@@ -1136,7 +1111,7 @@ abstract_xml_config_builder::create_replacer(
   const boost::property_tree::ptree& node)
 {
     std::string replacer_class = get_attribute(node, "class-name");
-    auto properties_  = new std::unordered_map<std::string, std::string>();
+    auto  properties_ = new std::unordered_map<std::string, std::string>();
     for (auto& n : node) {
         std::string value = n.first;
         if ("properties" == value) {
@@ -1348,7 +1323,7 @@ abstract_dom_variable_replacer::replace_value(
         if (end_index == -1) {
             std::cout << "WARNING: "
                       << "Bad variable syntax. Could not find a closing curly bracket '}' for prefix " <<
-                           replacer_prefix << " on node: " << node_name
+              replacer_prefix << " on node: " << node_name
                       << std::endl;
             break;
         }

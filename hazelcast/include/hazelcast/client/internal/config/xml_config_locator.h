@@ -81,12 +81,6 @@ protected:
 
 public:
     std::ifstream* get_in();
-    bool is_config_present();
-    // virtual bool locate_from_system_property();
-    // virtual bool locate_from_system_property_or_fail_on_unaccepted_suffix();
-    // virtual bool locate_in_work_directory();
-    // virtual bool locate_default();
-    bool locate_everywhere();
 };
 class HAZELCAST_API xml_client_config_locator : public abstract_config_locator
 {

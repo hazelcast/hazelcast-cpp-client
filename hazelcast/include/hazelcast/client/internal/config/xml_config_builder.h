@@ -51,7 +51,7 @@ class HAZELCAST_API abstract_xml_config_helper : public abstract_config_builder
 
 protected:
     bool dom_level_3 = true;
-    void schema_validation(boost::property_tree::ptree doc);
+    void schema_validation(const boost::property_tree::ptree& doc);
 
 public:
     static std::string get_release_version();

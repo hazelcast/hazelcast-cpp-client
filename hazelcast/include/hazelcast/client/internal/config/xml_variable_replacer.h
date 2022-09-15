@@ -78,10 +78,10 @@ protected:
                                      const std::string& node_name);
 
 public:
-    void replace_variable_in_node_value(boost::property_tree::ptree* node,
-                                        property_replacer replacer,
-                                        bool fail_fast,
-                                        const std::string& node_name);
+    static void replace_variable_in_node_value(boost::property_tree::ptree* node,
+                                               property_replacer replacer,
+                                               bool fail_fast,
+                                               const std::string& node_name);
 };
 
 class HAZELCAST_API xml_dom_variable_replacer

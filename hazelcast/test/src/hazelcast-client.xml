@@ -77,7 +77,6 @@
         <ssl enabled="false">
             <properties>
                 <property name="protocol">TLSv1.2</property>
-                <property name="verify-file">/opt/hazelcast-client.truststore</property>
             </properties>
         </ssl>
         <auto-detection enabled="false"/>
