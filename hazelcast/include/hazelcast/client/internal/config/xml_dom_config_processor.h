@@ -31,10 +31,19 @@ namespace hazelcast {
 namespace client {
 namespace internal {
 namespace config {
+/**
+ * Base class of the config processors working from DOM objects
+ */
 class HAZELCAST_API abstract_dom_config_processor
 {
 protected:
+    /**
+     * Enables strict parsing mode in which config entries are parsed as-is When disabled, dashes are ignored
+     */
     bool strict;
+    /**
+     * Tells whether the traversed DOM is a level 3 one
+     */
     bool dom_level_3;
     static bool matches(const std::string& config1, const std::string& config2);
     static hazelcast::client::serialization_config parse_serialization(
@@ -57,6 +66,9 @@ public:
     static boost::property_tree::ptree pair_to_node(
       const std::string& node_name,
       const boost::property_tree::ptree& node_content);
+    /**
+     * Set collecting already seen elements. Used to detect duplicates in the configurations.
+     */
     std::unordered_set<std::string>* occurrence_set =
       new std::unordered_set<std::string>();
     static void fill_properties(
@@ -90,7 +102,6 @@ private:
     void handle_connection_strategy(const boost::property_tree::ptree& node) const;
     void handle_labels(const boost::property_tree::ptree& node) const;
     void handle_backup_ack_to_client(const boost::property_tree::ptree& node) const;
-    void handle_load_balancer(const boost::property_tree::ptree& node);
     static void handle_connection_retry(
       const boost::property_tree::ptree& node,
       hazelcast::client::config::client_connection_strategy_config*

@@ -35,13 +35,12 @@ namespace config {
 
 class HAZELCAST_API abstract_config_builder
 {
-private:
-    const static hazelcast::client::client_property* VALIDATION_ENABLED_PROP;
-
 protected:
     bool should_validate_the_schema();
 };
-
+/**
+ * Contains Hazelcast XML Configuration helper methods and variables.
+ */
 class HAZELCAST_API abstract_xml_config_helper : public abstract_config_builder
 {
     std::string xmlns =
@@ -57,7 +56,9 @@ public:
     static std::string get_release_version();
     static std::string get_namespace_type();
 };
-
+/**
+ * Contains logic for replacing system variables in the XML file and importing XML files from different locations.
+ */
 class HAZELCAST_API abstract_xml_config_builder
   : public abstract_xml_config_helper
 {
@@ -77,15 +78,32 @@ private:
 
 protected:
     void process(boost::property_tree::ptree* root);
+    /**
+     * Reads XML from InputStream and parses.
+     * @param input_stream InputStream to read from
+     * @return ptree after parsing XML
+     * Throws:Exception – if the XML configuration cannot be parsed or is invalid
+     */
     virtual boost::property_tree::ptree parse(std::ifstream* input_stream) = 0;
+    /**
+     * Sets the used properties. Can be null if no properties should be used.
+     * Properties are used to resolve ${variable} occurrences in the XML file.
+     * @param properties – the new properties
+     */
     void set_properties_internal(
       std::unordered_map<std::string, std::string> properties);
 
 public:
+    /**
+     * Gets the current used properties. Can be null if no properties are set.
+     * @return the current used properties
+     */
     std::unordered_map<std::string, std::string>* get_properties();
     abstract_xml_config_builder();
 };
-
+/**
+ * Loads the client_config using XML.
+ */
 class HAZELCAST_API xml_client_config_builder
   : public abstract_xml_config_builder
 {
@@ -98,10 +116,21 @@ protected:
     boost::property_tree::ptree parse(std::ifstream* input_stream) override;
 
 public:
+    /**
+     * Constructs a xml_client_config_builder that loads the configuration with the provided xml_client_config_locator.
+     * it is expected that it already located the configuration XML to load from.
+     * No further attempt to locate the configuration XML is made if the configuration XML is not located already.
+     * @param locator – the configured locator to use
+     */
     explicit xml_client_config_builder(xml_client_config_locator* locator);
     explicit xml_client_config_builder(const std::string& resource);
     explicit xml_client_config_builder(std::ifstream* in);
-    xml_client_config_builder();
+    /**
+     * Loads the client config using the following resolution mechanism:
+     * 1. First it checks if a system property 'hazelcast.client.config' is set. If it exist ,it assumes
+     * it is a file reference. The configuration file or resource will be loaded only if the postfix of its name ends with `.xml`.
+     * 2. It checks if a hazelcast-client.xml is available in the working dir
+     */
     hazelcast::client::client_config build();
     xml_client_config_builder set_properties(
       std::unordered_map<std::string, std::string> properties);

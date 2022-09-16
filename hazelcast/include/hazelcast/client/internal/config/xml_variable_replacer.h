@@ -31,37 +31,71 @@ namespace hazelcast {
 namespace client {
 namespace internal {
 namespace config {
-
+/**
+ * Interface to be implemented by pluggable variable replacers for the configuration files. The replacers can be configured in
+ * XML configuration files and they are used to replace custom strings during loading the configuration.
+ *
+ * A Variable to be replaced within the configuration file has following form:
+ * "$" PREFIX "{" MASKED_VALUE "}"
+ *
+ * where the PREFIX is the value returned by get_prefix() method and MASKED_VALUE is a value provided to
+ * the get_replacement(std::string) method. The result of get_replacement(std::string) method call replaces the whole
+ * Variable String.
+ */
 class HAZELCAST_API config_replacer
 {
 public:
-    virtual void init(std::unordered_map<std::string, std::string>* properties) = 0;
+    /**
+     * Initialization method called before first usage of the config replacer.
+     * @param properties – properties configured
+     */
+    virtual void init(std::unordered_map<std::string, std::string> properties) = 0;
+    /**
+     * Variable replacer prefix string. The value returned should be a constant unique short alphanumeric string without whitespaces.
+     * @return constant prefix of this replacer
+     */
     virtual std::string get_prefix() = 0;
-    virtual std::string get_replacement(const std::string& variable) = 0;
+    /**
+     * Provides String which should be used as a variable replacement for given masked value.
+     * @param variable - – the masked value
+     * @return either not empty String to be used as a replacement for the variable; or empty string when this replacer is not able to handle the masked value.
+     */
+    virtual std::string get_replacement(const std::string& masked_value) = 0;
 };
-
+/**
+ * ConfigReplacer for replacing property names with property values for properties provided in init(Properties) method.
+ */
 class HAZELCAST_API property_replacer : public config_replacer
 {
 private:
 
-    std::unordered_map<std::string, std::string>* properties = new std::unordered_map<std::string, std::string>();
+    std::unordered_map<std::string, std::string> properties;
 
 public:
     property_replacer();
-    void init(std::unordered_map<std::string, std::string>* properties) override;
+    void init(std::unordered_map<std::string, std::string> properties) override;
     std::string get_prefix() override;
     std::string get_replacement(const std::string& variable) override;
 };
-
+/**
+ * Virtual class for replacing variable in DOM Nodes.
+ */
 class HAZELCAST_API dom_variable_replacer
 {
 public:
+    /**
+     * Replaces variables in the given Node with the provided config_replacer.
+     * @param node – The node in which the variables to be replaced
+     * @param replacer  – The replacer to be used for replacing the variables
+     * @param fail_fast – Indicating whether or not a InvalidConfigurationException should be thrown if no replacement found for the variables in the node
+     * @param node_name - node name
+     * Throws: InvalidConfigurationException – if no replacement is found for a variable and failFast is true
+     */
     virtual void replace_variables(boost::property_tree::ptree* node,
                                    property_replacer replacer,
                                    bool fail_fast,
                                    std::string node_name) = 0;
 };
-
 class HAZELCAST_API abstract_dom_variable_replacer
   : public dom_variable_replacer
 {

@@ -61,7 +61,7 @@
 
     <network>
         <cluster-members>
-            <address>127.0.0.1</address>
+            <address>127.0.0.1:5701</address>
             <address>127.0.0.2</address>
         </cluster-members>
         <smart-routing>true</smart-routing>
@@ -82,6 +82,7 @@
         <auto-detection enabled="false"/>
         <aws enabled="true">
             <access-key>my-access-key</access-key>
+            <default-verify-paths>true</default-verify-paths>
             <secret-key>my-secret-key</secret-key>
             <region>us-west-1</region>
             <host-header>ec2.amazonaws.com</host-header>

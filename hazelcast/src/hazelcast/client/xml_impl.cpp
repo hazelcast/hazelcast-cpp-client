@@ -248,9 +248,6 @@ client_dom_config_processor::handle_node(
     }  else if (matches(node_name, "network")) {
         handle_network(node);
     } else if (matches(node_name,
-                       "load-balancer")) {
-        handle_load_balancer(node);
-    } else if (matches(node_name,
                        "near-cache")) {
         handle_near_cache(node);
     }  else if (matches(node_name,
@@ -352,9 +349,28 @@ client_dom_config_processor::handle_cluster_members(
 {
     for (auto& pair : node) {
         if (matches("address", pair.first)) {
-            int port = 5701; // TODO port is not included in the example usage in hazelcast-client-full-example.xml
-            client_network_config->add_address(
-              hazelcast::client::address(pair.second.data(), port));
+            auto pos = pair.second.data().find(':');
+            if(pos == std::string::npos){
+                client_network_config->add_address(
+                  hazelcast::client::address(pair.second.data(), 5701));
+                client_network_config->add_address(
+                  hazelcast::client::address(pair.second.data(), 5702));
+                client_network_config->add_address(
+                  hazelcast::client::address(pair.second.data(), 5703));
+                client_network_config->add_address(
+                  hazelcast::client::address(pair.second.data(), 5704));
+            }
+            else{
+                int port = 5701;
+                auto url = pair.second.data().substr(0,pos);
+                try{
+                    port = stoi(pair.second.data().substr(pos + 1, std::string::npos));
+                }catch(const std::invalid_argument& e){
+                    throw hazelcast::client::exception::invalid_configuration("Port must be an integer");
+                }
+                client_network_config->add_address(
+                  hazelcast::client::address(url, port));
+            }
         }
     }
 }
@@ -387,7 +403,7 @@ client_dom_config_processor::handle_socket_options(
     }
 }
 void
-client_dom_config_processor::handle_ssl_config(//TODO
+client_dom_config_processor::handle_ssl_config(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
@@ -402,7 +418,6 @@ client_dom_config_processor::handle_ssl_config(//TODO
         ssl_con.set_enabled(enabled);
         return ;
     }
-    //boost::asio::ssl::context* ctx;
     std::unordered_map<std::string, std::string> prop_map;
     try{
         auto properties = node.get_child("properties");
@@ -416,25 +431,21 @@ client_dom_config_processor::handle_ssl_config(//TODO
     } catch (const boost::exception& e){
         return ;
     }
-    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tls_client);
-    /*
+
+    auto ssl_protocol = boost::asio::ssl::context::method::tls_client;
     try{
         auto protocol = prop_map.at("protocol");
-        if(matches(protocol,"TLS")){
-            boost::asio::ssl::context context(boost::asio::ssl::context::method::tls_client);
-            ctx = &context;
-        } else if(matches(protocol,"TLSv1.2")){
-            boost::asio::ssl::context context(boost::asio::ssl::context::method::tlsv12_client);
-            ctx = &context;
-        } else if(matches(protocol,"TLSv1.3")){
-            boost::asio::ssl::context context(boost::asio::ssl::context::method::tlsv13_client);
-            ctx = &context;
-        }
-    }catch(std::out_of_range& e){
-        boost::asio::ssl::context context(boost::asio::ssl::context::method::tls_client);
-        ctx = &context;
-    }*/
+        if(matches(protocol,"TLS")){// default value
 
+        } else if(matches(protocol,"TLSv1.2")){
+            ssl_protocol = boost::asio::ssl::context::method::tlsv12_client;
+        } else if(matches(protocol,"TLSv1.3")){
+            ssl_protocol = boost::asio::ssl::context::method::tlsv13_client;
+        }
+    }catch(std::out_of_range& e){//using default value if not specified
+
+    }
+    boost::asio::ssl::context ctx(ssl_protocol);
     for(auto& property : prop_map){
         if(matches(property.first , "verify-file")){
             ctx.load_verify_file(property.second);
@@ -451,11 +462,17 @@ client_dom_config_processor::handle_ssl_config(//TODO
                 ctx.set_verify_mode(boost::asio::ssl::verify_fail_if_no_peer_cert);
             }
         }else if(matches(property.first , "default-verify-paths")){
-            ctx.set_default_verify_paths();
+            if(get_bool_value(property.second)){
+                ctx.set_default_verify_paths();
+            }
         }else if(matches(property.first , "private-key-file")){
             ctx.use_private_key_file(property.second,boost::asio::ssl::context::file_format::pem);
         }else if(matches(property.first , "rsa-private-key-file")){
             ctx.use_rsa_private_key_file(property.second, boost::asio::ssl::context::pem);
+        }else if(matches(property.first , "certificate-file")){
+            ctx.use_certificate_file(property.second, boost::asio::ssl::context::pem);
+        }else if(matches(property.first , "certificate-chain-file")){
+            ctx.use_certificate_chain_file(property.second);
         }
     }
     ssl_con.set_context(std::move(ctx));
@@ -747,22 +764,6 @@ client_dom_config_processor::handle_backup_ack_to_client(
     client_config->backup_acks_enabled(get_bool_value(node.data()));
 }
 
-void
-client_dom_config_processor::handle_load_balancer(
-  const boost::property_tree::ptree& node)
-{
-    // TODO not sure how to configure load_balancer
-    /*
-    std::string type = get_attribute(node,"type");
-    if (matches("random", type)) {
-        clientConfig.setLoadBalancer(new RandomLB());
-    } else if (matches("round-robin", type)) {
-        clientConfig.setLoadBalancer(new RoundRobinLB());
-    } else if (matches("custom", type)) {
-        String loadBalancerClassName = parseCustomLoadBalancerClassName(node);
-        clientConfig.setLoadBalancerClassName(loadBalancerClassName);
-    }*/
-}
 
 const std::string declarative_config_util::SYSPROP_CLIENT_CONFIG =
   "hazelcast.client.config";
@@ -779,8 +780,8 @@ const std::vector<std::string> declarative_config_util::ALL_ACCEPTED_SUFFIXES = 
 void
 declarative_config_util::validate_suffix_in_system_property(
   const std::string& property_key)
-{
-    std::string config_system_property =
+{//hazelcast.client.config
+    std::string config_system_property = //hazelcast::client::client_properties
       ""; // System.getProperty(propertyKey); TODO
     if (config_system_property.empty()) {
         return;
@@ -803,7 +804,7 @@ declarative_config_util::throw_unaccepted_suffix_in_system_property(
       "\' referenced in \'" + property_key +
       "\' is not in the list of accepted " + "suffixes: \'[" +
       boost::algorithm::join(accepted_suffixes, ", ") + "]\'";
-    throw hazelcast::client::exception::hazelcast_(std::move(message));
+    throw hazelcast::client::exception::hazelcast_(message);
 }
 bool
 declarative_config_util::is_accepted_suffix_configured(
@@ -838,6 +839,7 @@ bool
 abstract_config_locator::load_from_working_directory(
   const std::string& config_file_path)
 {
+
     try {
         auto stream = new std::ifstream();
         in = stream;
@@ -985,16 +987,10 @@ xml_client_config_locator::locate_from_system_property()
       declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
 
-
-const hazelcast::client::client_property* abstract_config_builder::VALIDATION_ENABLED_PROP =
-  new hazelcast::client::client_property(
-    "hazelcast.config.schema.validation.enabled",
-    "true");
-
 bool
 abstract_config_builder::should_validate_the_schema()
 {
-    return true; // TODO
+    return false; //validation hasn't been implemented yet
 }
 
 std::string
@@ -1005,7 +1001,7 @@ abstract_xml_config_helper::get_release_version()
 void
 abstract_xml_config_helper::schema_validation(const boost::property_tree::ptree& doc)
 {
-    // TODO property_tree doesn't support validation
+    // validation hasn't implemented yet.
 }
 
 std::string
@@ -1046,7 +1042,7 @@ abstract_xml_config_builder::replace_variables(
                     replacers.push_back(create_replacer(n.second));
                 }
             }
-        } catch (const boost::exception& e) {
+        } catch (const boost::exception& ) {// checks for get_child
 
         }
     } catch (const boost::exception& e) {
@@ -1114,15 +1110,15 @@ abstract_xml_config_builder::create_replacer(
   const boost::property_tree::ptree& node)
 {
     std::string replacer_class = get_attribute(node, "class-name");
-    auto  properties_ = new std::unordered_map<std::string, std::string>();
+    std::unordered_map<std::string, std::string>  properties_;
     for (auto& n : node) {
         std::string value = n.first;
         if ("properties" == value) {
-            fill_properties(n.second, properties_);
+            fill_properties(n.second, &properties_);
         }
     }
     property_replacer replacer;
-    replacer.init(properties_);
+    replacer.init(std::move(properties_));//std::move
     return replacer;
 }
 
@@ -1163,11 +1159,6 @@ xml_client_config_builder::xml_client_config_builder(
 xml_client_config_builder::xml_client_config_builder(std::ifstream* in)
 {
     this->in = in;
-}
-
-xml_client_config_builder::xml_client_config_builder()
-  : xml_client_config_builder(new xml_client_config_locator())
-{
 }
 
 xml_client_config_builder::xml_client_config_builder(
@@ -1233,7 +1224,7 @@ xml_client_config_builder::parse_and_build_config(
 property_replacer::property_replacer() = default;
 
 void
-property_replacer::init(std::unordered_map<std::string, std::string>* properties_)
+property_replacer::init(std::unordered_map<std::string, std::string> properties_)
 {
     this->properties = properties_;
 }
@@ -1246,7 +1237,11 @@ property_replacer::get_prefix()
 std::string
 property_replacer::get_replacement(const std::string& variable)
 {
-    return (*properties->find(variable)).second;
+    auto val = properties.find(variable);
+    if(val == properties.end()){
+        return "";
+    }
+    return (*val).second;
 }
 
 config_replacer_helper::config_replacer_helper() = default;

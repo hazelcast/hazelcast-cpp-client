@@ -1839,6 +1839,16 @@ TEST_F(IssueTest,TestIssue1005){
     exp_lock->unlock();
 }
 TEST_F(IssueTest, XML){
+    std::ifstream  src("hazelcast/test/resources/hazelcast-client.xml", std::ios::in);
+    std::ofstream  dst("hazelcast-client.xml",   std::ios::out);
+    dst << src.rdbuf();
+    src.close();
+    dst.close();
+    std::ifstream  src1("hazelcast/test/resources/import.xml", std::ios::in);
+    std::ofstream  dst1("import.xml",   std::ios::out);
+    dst1 << src1.rdbuf();
+    src1.close();
+    dst1.close();
     auto conf = hazelcast::client::client_config::load();
     auto con = &conf;
     ASSERT_TRUE(con->get_properties().count("prop1"));
@@ -1892,7 +1902,8 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(con->backup_acks_enabled(),true);
     ASSERT_EQ(con->get_cluster_name(),"my-cluster");//if this passes import works
     ASSERT_EQ(con->get_credentials().get()->name(),"client1");//can't test token and username-password at the same time, but I checked, token works too.
-
+    std::remove("hazelcast-client.xml");
+    std::remove("import.xml");
 }
 
 } // namespace test
