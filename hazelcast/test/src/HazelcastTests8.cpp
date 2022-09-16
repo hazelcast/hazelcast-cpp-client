@@ -1841,6 +1841,8 @@ TEST_F(IssueTest,TestIssue1005){
 TEST_F(IssueTest, XML){
     auto conf = hazelcast::client::client_config::load();
     auto con = &conf;
+    ASSERT_TRUE(con->get_properties().count("prop1"));
+    ASSERT_TRUE(con->get_properties().count("prop2"));
     ASSERT_EQ(con->get_properties().at("prop1"),"1");
     ASSERT_EQ(con->get_properties().at("prop2"),"2");
     ASSERT_EQ(con->get_serialization_config().get_portable_version(),3);
