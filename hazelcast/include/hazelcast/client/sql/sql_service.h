@@ -82,7 +82,7 @@ public:
                                       const Params&... params)
     {
         sql_statement s{ client_context_, query };
-        int _[] = { (s.add_parameter(params), 0)... };
+        int _[] = {0, (s.add_parameter(params), 0)... };
         (void)_;
         return execute(s);
     }
