@@ -387,7 +387,7 @@ client_dom_config_processor::handle_socket_options(
     }
 }
 void
-client_dom_config_processor::handle_ssl_config(
+client_dom_config_processor::handle_ssl_config(//TODO
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
@@ -402,7 +402,8 @@ client_dom_config_processor::handle_ssl_config(
         ssl_con.set_enabled(enabled);
         return ;
     }
-    //boost::asio::ssl::context* ctx;
+
+    boost::asio::ssl::context ctx(boost::asio::ssl::context::tls_client);
     std::unordered_map<std::string, std::string> prop_map;
     try{
         auto properties = node.get_child("properties");
@@ -416,7 +417,6 @@ client_dom_config_processor::handle_ssl_config(
     } catch (const boost::exception& e){
         return ;
     }
-    boost::asio::ssl::context ctx(boost::asio::ssl::context::method::tls_client);
     /*
     try{
         auto protocol = prop_map.at("protocol");
@@ -1246,7 +1246,7 @@ property_replacer::get_prefix()
 std::string
 property_replacer::get_replacement(const std::string& variable)
 {
-    return properties->at(variable);
+    return (*properties->find(variable)).second;
 }
 
 config_replacer_helper::config_replacer_helper() = default;
