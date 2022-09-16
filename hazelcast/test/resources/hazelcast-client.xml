@@ -61,8 +61,8 @@
 
     <network>
         <cluster-members>
-            <address>127.0.0.1:5701</address>
             <address>127.0.0.2</address>
+            <address>127.0.0.1:5701</address>
         </cluster-members>
         <smart-routing>true</smart-routing>
         <redo-operation>true</redo-operation>
@@ -77,6 +77,9 @@
         <ssl enabled="true">
             <properties>
                 <property name="protocol">TLSv1.2</property>
+                <property name="verify-file">hazelcast/test/resources/server2-cert.pem</property>
+                <property name="certificate-file">hazelcast/test/resources/client1-cert.pem</property>
+                <property name="private-key-file">hazelcast/test/resources/client1-key.pem</property>
             </properties>
         </ssl>
         <auto-detection enabled="false"/>
@@ -98,26 +101,12 @@
 
     <security>
         <username-password username="client1" password="s3crEt"/>
-
     </security>
-
 
     <serialization>
         <portable-version>3</portable-version>
         <byte-order>BIG_ENDIAN</byte-order>
     </serialization>
-
-
-
-
-    <proxy-factories>
-        <proxy-factory class-name="com.hazelcast.examples.ProxyXYZ1" service="sampleService1"/>
-        <proxy-factory class-name="com.hazelcast.examples.ProxyXYZ2" service="sampleService1"/>
-        <proxy-factory class-name="com.hazelcast.examples.ProxyXYZ3" service="sampleService3"/>
-    </proxy-factories>
-
-
-    <load-balancer type="random"/>
 
     <near-cache name="default">
         <time-to-live-seconds>90</time-to-live-seconds>
@@ -141,7 +130,7 @@
 
 
 
-    <connection-strategy async-start="true" reconnect-mode="ASYNC">
+    <connection-strategy async-start="false" reconnect-mode="ASYNC">
         <connection-retry>
             <initial-backoff-millis>2000</initial-backoff-millis>
             <max-backoff-millis>60000</max-backoff-millis>

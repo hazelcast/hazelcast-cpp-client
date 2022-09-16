@@ -441,6 +441,12 @@ client_dom_config_processor::handle_ssl_config(
             ssl_protocol = boost::asio::ssl::context::method::tlsv12_client;
         } else if(matches(protocol,"TLSv1.3")){
             ssl_protocol = boost::asio::ssl::context::method::tlsv13_client;
+        } else if(matches(protocol,"SSLv2")){
+            ssl_protocol = boost::asio::ssl::context::method::sslv2_client;
+        } else if(matches(protocol,"SSLv3")){
+            ssl_protocol = boost::asio::ssl::context::method::sslv3_client;
+        } else if(matches(protocol,"SSLv2.3")){
+            ssl_protocol = boost::asio::ssl::context::method::sslv23_client;
         }
     }catch(std::out_of_range& e){//using default value if not specified
 

@@ -1839,6 +1839,8 @@ TEST_F(IssueTest,TestIssue1005){
     exp_lock->unlock();
 }
 TEST_F(IssueTest, XML){
+    HazelcastServerFactory fac("hazelcast/test/resources/xml-config-test.xml");
+    HazelcastServer serv(fac);
     std::ifstream  src("hazelcast/test/resources/hazelcast-client.xml", std::ios::in);
     std::ofstream  dst("hazelcast-client.xml",   std::ios::out);
     dst << src.rdbuf();
@@ -1850,11 +1852,40 @@ TEST_F(IssueTest, XML){
     src1.close();
     dst1.close();
     auto conf = hazelcast::client::client_config::load();
-    auto con = &conf;
+    auto client = new_client(std::move(conf)).get();
+    auto con = &client.get_client_config();
     ASSERT_TRUE(con->get_properties().count("prop1"));
     ASSERT_TRUE(con->get_properties().count("prop2"));
     ASSERT_EQ(con->get_properties().at("prop1"),"1");
     ASSERT_EQ(con->get_properties().at("prop2"),"2");
+    ASSERT_EQ(con->get_network_config().get_addresses().size(),5);
+    std::vector<int> ports;
+    bool p1 = false,p2 = false ,p3 = false ,p4 = false;
+    for(auto& address : con->get_network_config().get_addresses()){
+        if(address.get_host() == "127.0.0.1"){
+            ASSERT_EQ(address.get_port(), 5701);
+        }
+        else{
+            ASSERT_EQ(address.get_host(),"127.0.0.2");
+            if(address.get_port() == 5701){
+                ASSERT_FALSE(p1);
+                p1 = true;
+            } else if(address.get_port() == 5702){
+                ASSERT_FALSE(p2);
+                p2 = true;
+            } else if(address.get_port() == 5703){
+                ASSERT_FALSE(p3);
+                p3 = true;
+            } else if(address.get_port() == 5704){
+                ASSERT_FALSE(p4);
+                p4 = true;
+            }
+        }
+    }
+    ASSERT_TRUE(p1);
+    ASSERT_TRUE(p2);
+    ASSERT_TRUE(p3);
+    ASSERT_TRUE(p4);
     ASSERT_EQ(con->get_serialization_config().get_portable_version(),3);
     ASSERT_EQ(con->get_serialization_config().get_byte_order(), boost::endian::order::big);
     ASSERT_EQ(con->get_network_config().is_smart_routing() ,true);
@@ -1887,7 +1918,7 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;
      */
     ASSERT_EQ(con->get_instance_name().get(), "client_name");//if this passes variable replacer works
-    ASSERT_EQ(con->get_connection_strategy_config().is_async_start(), true);
+    ASSERT_EQ(con->get_connection_strategy_config().is_async_start(), false);
     ASSERT_EQ(con->get_connection_strategy_config().get_reconnect_mode(), hazelcast::client::config::client_connection_strategy_config::ASYNC);
     ASSERT_EQ(con->get_connection_strategy_config().get_retry_config().get_cluster_connect_timeout(), std::chrono::milliseconds(5000));
     ASSERT_EQ(con->get_connection_strategy_config().get_retry_config().get_initial_backoff_duration(), std::chrono::milliseconds(2000));
@@ -1900,8 +1931,9 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(*con->get_labels().find("admin"), "admin");
     ASSERT_EQ(*con->get_labels().find("foo"), "foo");
     ASSERT_EQ(con->backup_acks_enabled(),true);
-    ASSERT_EQ(con->get_cluster_name(),"my-cluster");//if this passes import works
+    ASSERT_EQ(con->get_cluster_name(),"XML");//if this passes import works
     ASSERT_EQ(con->get_credentials().get()->name(),"client1");//can't test token and username-password at the same time, but I checked, token works too.
+    ASSERT_TRUE(con->get_network_config().get_ssl_config().is_enabled());
     std::remove("hazelcast-client.xml");
     std::remove("import.xml");
 }

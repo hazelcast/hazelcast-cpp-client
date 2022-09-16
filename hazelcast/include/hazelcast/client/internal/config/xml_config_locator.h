@@ -53,10 +53,10 @@ public:
      */
     const static std::vector<std::string> ALL_ACCEPTED_SUFFIXES;
     /**
-     * alidates if the config file referenced in property_key has an accepted suffix.
+     * Validates if the config file referenced in property_key has an accepted suffix.
      * If the system property is not set, the validation passes without throwing exception.
      * @param property_key – The name of the system property to validate
-     * Throws: HazelcastException – If the suffix of the config file name is not in the accepted suffix list
+     * @throw HazelcastException – If the suffix of the config file name is not in the accepted suffix list
      */
     static void validate_suffix_in_system_property(
       const std::string& property_key);
@@ -66,7 +66,7 @@ public:
      * @param property_key – The name of the system property key holding the reference to the configuration file
      * @param config_resource – The value of the system property
      * @param accepted_suffixes – The list of the accepted suffixes
-     * Throws: HazelcastException – Thrown unconditionally with a message referring to the unaccepted suffix of the file referenced by property_key
+     * @throw HazelcastException – Thrown unconditionally with a message referring to the unaccepted suffix of the file referenced by property_key
      */
     static void throw_unaccepted_suffix_in_system_property(
       const std::string& property_key,

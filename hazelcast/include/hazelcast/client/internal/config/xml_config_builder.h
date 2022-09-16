@@ -82,7 +82,7 @@ protected:
      * Reads XML from InputStream and parses.
      * @param input_stream InputStream to read from
      * @return ptree after parsing XML
-     * Throws:Exception – if the XML configuration cannot be parsed or is invalid
+     * @throw Exception – if the XML configuration cannot be parsed or is invalid
      */
     virtual boost::property_tree::ptree parse(std::ifstream* input_stream) = 0;
     /**
