@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!--
+  This is a full example hazelcast-client.xml that includes all the
+  configuration elements and attributes of a Hazelcast client.
+
+  To use this, rename it to hazelcast-client.xml and place it in
+  the directory where you start your Hazelcast client.
+
+  To learn how to configure Hazelcast, please see the schema at
+  https://hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd
+  or the Reference Manual at https://docs.hazelcast.com/
+-->
+
+<!--suppress XmlDefaultAttributeValue -->
+<hazelcast-client xmlns="http://www.hazelcast.com/schema/client-config"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
+                  http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd">
+
+
+
+    <import resource="import.xml"/>
+    <config-replacers fail-if-value-missing="false">
+        <replacer class-name="class_name">
+            <properties>
+                <property name="INSTANCENAME">client_name</property>
+            </properties>
+        </replacer>
+    </config-replacers>
+
+    <instance-name>${INSTANCENAME}</instance-name>
+
+    <properties>
+        <property name="prop1">1</property>
+        <property name="prop2">2</property>
+    </properties>
+
+    <client-labels>
+        <label>admin</label>
+        <label>foo</label>
+    </client-labels>
+
+
+    <backup-ack-to-client-enabled>true</backup-ack-to-client-enabled>
+
+    <network>
+        <cluster-members>
+            <address>127.0.0.2</address>
+            <address>127.0.0.1:5701</address>
+        </cluster-members>
+        <smart-routing>true</smart-routing>
+        <redo-operation>true</redo-operation>
+        <connection-timeout>60000</connection-timeout>
+        <socket-options>
+            <tcp-no-delay>false</tcp-no-delay>
+            <keep-alive>true</keep-alive>
+            <reuse-address>true</reuse-address>
+            <linger-seconds>3</linger-seconds>
+            <buffer-size>128</buffer-size>
+        </socket-options>
+        <ssl enabled="true">
+            <properties>
+                <property name="protocol">TLSv1.2</property>
+                <property name="verify-file">hazelcast/test/resources/server2-cert.pem</property>
+                <property name="certificate-file">hazelcast/test/resources/client1-cert.pem</property>
+                <property name="private-key-file">hazelcast/test/resources/client1-key.pem</property>
+            </properties>
+        </ssl>
+        <auto-detection enabled="false"/>
+        <aws enabled="true">
+            <access-key>my-access-key</access-key>
+            <default-verify-paths>true</default-verify-paths>
+            <secret-key>my-secret-key</secret-key>
+            <region>us-west-1</region>
+            <host-header>ec2.amazonaws.com</host-header>
+            <tag-key>type</tag-key>
+            <tag-value>hz-nodes</tag-value>
+            <security-group-name>hazelcast-sg</security-group-name>
+            <iam-role>dummy</iam-role>
+        </aws>
+        <hazelcast-cloud enabled="false">
+            <discovery-token>EXAMPLE_TOKEN</discovery-token>
+        </hazelcast-cloud>
+    </network>
+
+    <security>
+        <username-password username="client1" password="s3crEt"/>
+    </security>
+
+    <serialization>
+        <portable-version>3</portable-version>
+        <byte-order>BIG_ENDIAN</byte-order>
+    </serialization>
+
+    <near-cache name="default">
+        <time-to-live-seconds>90</time-to-live-seconds>
+        <max-idle-seconds>100</max-idle-seconds>
+        <in-memory-format>OBJECT</in-memory-format>
+        <invalidate-on-change>true</invalidate-on-change>
+        <serialize-keys>true</serialize-keys>
+        <local-update-policy>INVALIDATE</local-update-policy>
+    </near-cache>
+
+    <near-cache name="NearCacheEvictionConfigExample">
+        <eviction eviction-policy="LRU" max-size-policy="ENTRY_COUNT" size="10000"
+                  comparator-class-name="com.hazelcast.examples.MyEvictionComparator"/>
+    </near-cache>
+
+    <flake-id-generator name="default">
+        <prefetch-count>100</prefetch-count>
+        <prefetch-validity-millis>600000</prefetch-validity-millis>
+    </flake-id-generator>
+
+
+
+
+    <connection-strategy async-start="false" reconnect-mode="ASYNC">
+        <connection-retry>
+            <initial-backoff-millis>2000</initial-backoff-millis>
+            <max-backoff-millis>60000</max-backoff-millis>
+            <multiplier>3</multiplier>
+            <cluster-connect-timeout-millis>5000</cluster-connect-timeout-millis>
+            <jitter>0.5</jitter>
+        </connection-retry>
+    </connection-strategy>
+
+
+
+    <reliable-topic name="rel-topic">
+        <read-batch-size>100</read-batch-size>
+        <topic-overload-policy>DISCARD_NEWEST</topic-overload-policy>
+    </reliable-topic>
+
+
+</hazelcast-client>

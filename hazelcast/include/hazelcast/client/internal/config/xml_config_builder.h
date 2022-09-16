@@ -84,7 +84,7 @@ protected:
      * @return ptree after parsing XML
      * @throw Exception – if the XML configuration cannot be parsed or is invalid
      */
-    virtual boost::property_tree::ptree parse(std::ifstream* input_stream) = 0;
+    virtual boost::property_tree::ptree parse(std::ifstream input_stream) = 0;
     /**
      * Sets the used properties. Can be null if no properties should be used.
      * Properties are used to resolve ${variable} occurrences in the XML file.
@@ -108,12 +108,12 @@ class HAZELCAST_API xml_client_config_builder
   : public abstract_xml_config_builder
 {
 private:
-    std::ifstream* in;
+    std::shared_ptr<std::ifstream> in;
     void parse_and_build_config(
       hazelcast::client::client_config* client_config);
 
 protected:
-    boost::property_tree::ptree parse(std::ifstream* input_stream) override;
+    boost::property_tree::ptree parse(std::ifstream input_stream) override;
 
 public:
     /**
@@ -124,7 +124,7 @@ public:
      */
     explicit xml_client_config_builder(xml_client_config_locator* locator);
     explicit xml_client_config_builder(const std::string& resource);
-    explicit xml_client_config_builder(std::ifstream* in);
+    explicit xml_client_config_builder(std::shared_ptr<std::ifstream> in);
     /**
      * Loads the client config using the following resolution mechanism:
      * 1. First it checks if a system property 'hazelcast.client.config' is set. If it exist ,it assumes

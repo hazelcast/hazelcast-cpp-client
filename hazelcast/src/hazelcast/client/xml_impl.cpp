@@ -770,16 +770,10 @@ client_dom_config_processor::handle_backup_ack_to_client(
     client_config->backup_acks_enabled(get_bool_value(node.data()));
 }
 
+const std::string declarative_config_util::SYSPROP_CLIENT_CONFIG = "hazelcast.client.config";
 
-const std::string declarative_config_util::SYSPROP_CLIENT_CONFIG =
-  "hazelcast.client.config";
 const std::vector<std::string> declarative_config_util::XML_ACCEPTED_SUFFIXES = {
     "xml"
-};
-const std::vector<std::string> declarative_config_util::ALL_ACCEPTED_SUFFIXES = {
-    "xml",
-    "yaml",
-    "yml"
 };
 
 
@@ -787,15 +781,20 @@ void
 declarative_config_util::validate_suffix_in_system_property(
   const std::string& property_key)
 {//hazelcast.client.config
-    std::string config_system_property = //hazelcast::client::client_properties
-      ""; // System.getProperty(propertyKey); TODO
+    std::string config_system_property;
+    if(property_key == "hazelcast.client.config"){
+        config_system_property = hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT;
+    }
+    else{
+        config_system_property = "";
+    }
     if (config_system_property.empty()) {
         return;
     }
     if (!is_accepted_suffix_configured(config_system_property,
-                                       ALL_ACCEPTED_SUFFIXES)) {
+                                       XML_ACCEPTED_SUFFIXES)) {
         throw_unaccepted_suffix_in_system_property(
-          property_key, config_system_property, ALL_ACCEPTED_SUFFIXES);
+          property_key, config_system_property, XML_ACCEPTED_SUFFIXES);
     }
 }
 void
@@ -835,7 +834,7 @@ declarative_config_util::is_accepted_suffix_configured(
                      config_file_suffix) != accepted_suffixes.end();
 }
 
-std::ifstream*
+std::shared_ptr<std::ifstream>
 abstract_config_locator::get_in()
 {
     return in;
@@ -847,8 +846,8 @@ abstract_config_locator::load_from_working_directory(
 {
 
     try {
-        auto stream = new std::ifstream();
-        in = stream;
+        std::ifstream stream;
+        in = std::make_shared<std::ifstream>(std::move(stream));
         in->open(config_file_path, std::ios::in);
         if (!in->is_open()) {
             std::cout << "FINEST: "
@@ -905,6 +904,8 @@ abstract_config_locator::load_system_property_file_resource(
 {
     std::cout << "Using configuration file at " << config_system_property
               << std::endl;
+    std::ifstream stream;
+    in = std::make_shared<std::ifstream>(std::move(stream)) ;
     in->open(config_system_property);
     if (!in->is_open()) {
         std::string msg =
@@ -929,8 +930,7 @@ abstract_config_locator::load_from_system_property(
           "Parameter acceptedSuffixes must not be empty");
     }
     try {
-        std::string config_system_property =
-          "temp"; // System.getProperty(propertyKey); TODO
+        std::string config_system_property = hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT;
 
         if (config_system_property.empty()) {
             std::cout << "FINEST: "
@@ -977,7 +977,7 @@ xml_client_config_locator::
   locate_from_system_property_or_fail_on_unaccepted_suffix()
 {
     return load_from_system_property_or_fail_on_unaccepted_suffix(
-      declarative_config_util::SYSPROP_CLIENT_CONFIG,
+      hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
       declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
 bool
@@ -989,7 +989,7 @@ bool
 xml_client_config_locator::locate_from_system_property()
 {
     return load_from_system_property(
-      declarative_config_util::SYSPROP_CLIENT_CONFIG,
+      hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
       declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
 
@@ -1080,9 +1080,9 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
             temp.add_child(child.first, child.second);
             std::string resource =
               get_attribute(temp.get_child(child.first), "resource");
-            auto stream = new std::ifstream();
-            stream->open(resource);
-            if (stream->fail()) {
+            std::ifstream stream;
+            stream.open(resource);
+            if (stream.fail()) {
                 throw hazelcast::client::exception::invalid_configuration(
                   "Failed to load resource: " + resource);
             }
@@ -1093,7 +1093,7 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
                   " duplicate or cyclic imports.");
             }
             boost::property_tree::ptree imported_root =
-              parse(stream).get_child("hazelcast-client");
+              parse(std::move(stream)).get_child("hazelcast-client");
             replace_imports(&imported_root);
             for (auto& imported_node : imported_root) {
                 if (imported_node.first == "<xmlattr>") {
@@ -1159,12 +1159,12 @@ xml_client_config_builder::xml_client_config_builder(
   const std::string& resource)
 {
     std::ifstream stream(resource, std::ifstream::in);
-    this->in = &stream;
+    this->in = std::make_shared<std::ifstream>(std::move(stream));
 }
 
-xml_client_config_builder::xml_client_config_builder(std::ifstream* in)
+xml_client_config_builder::xml_client_config_builder(std::shared_ptr<std::ifstream> in)
 {
-    this->in = in;
+    this->in = std::move(in);
 }
 
 xml_client_config_builder::xml_client_config_builder(
@@ -1173,17 +1173,17 @@ xml_client_config_builder::xml_client_config_builder(
     this->in = locator->get_in();
 }
 boost::property_tree::ptree
-xml_client_config_builder::parse(std::ifstream* input_stream)
+xml_client_config_builder::parse(std::ifstream input_stream)
 {
     boost::property_tree::ptree tree;
     try {
-        boost::property_tree::read_xml(*input_stream, tree);
-        input_stream->close();
+        boost::property_tree::read_xml(input_stream, tree);
+        input_stream.close();
         return tree;
     } catch (const boost::exception& e) {
         std::string msg = "Failed to parse Config Stream\nException: " + boost::diagnostic_information(e)
                           + "\nHazelcastClient startup interrupted.";
-        input_stream->close();
+        input_stream.close();
         throw hazelcast::client::exception::invalid_configuration(msg);
     }
 }
@@ -1207,7 +1207,7 @@ void
 xml_client_config_builder::parse_and_build_config(
   hazelcast::client::client_config* client_config)
 {
-    auto root = parse(in);
+    auto root = parse(std::move(*in));
     try {
         root = root.get_child("hazelcast-client");
     } catch (const boost::exception& e) {

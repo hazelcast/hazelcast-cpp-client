@@ -49,10 +49,6 @@ public:
      */
     const static std::vector<std::string> XML_ACCEPTED_SUFFIXES;
     /**
-     * Array of the suffixes accepted in Hazelcast configuration files.
-     */
-    const static std::vector<std::string> ALL_ACCEPTED_SUFFIXES;
-    /**
      * Validates if the config file referenced in property_key has an accepted suffix.
      * If the system property is not set, the validation passes without throwing exception.
      * @param property_key – The name of the system property to validate
@@ -88,7 +84,7 @@ public:
 class HAZELCAST_API abstract_config_locator
 {
 private:
-    std::ifstream* in;//unique pointer yap TODO
+    std::shared_ptr<std::ifstream> in;
     bool load_from_system_property(
       const std::string& property_key,
       bool fail_on_unaccepted_suffix,
@@ -127,7 +123,7 @@ protected:
       const std::vector<std::string>& accepted_suffixes);
 
 public:
-    std::ifstream* get_in();
+    std::shared_ptr<std::ifstream> get_in();
 };
 /**
  * A support class for the xml_client_config_builder to locate the client xml configuration.
