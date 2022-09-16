@@ -387,7 +387,7 @@ client_dom_config_processor::handle_socket_options(
     }
 }
 void
-client_dom_config_processor::handle_ssl_config(
+client_dom_config_processor::handle_ssl_config(//TODO
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
@@ -1246,7 +1246,7 @@ property_replacer::get_prefix()
 std::string
 property_replacer::get_replacement(const std::string& variable)
 {
-    return properties->at(variable);
+    return (*properties->find(variable)).second;
 }
 
 config_replacer_helper::config_replacer_helper() = default;
