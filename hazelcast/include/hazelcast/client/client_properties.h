@@ -99,7 +99,7 @@ public:
 
     const client_property& cloud_base_url() const;
 
-    //const client_property& sysprop_client_config() const;
+    const client_property& sysprop_client_config() const;
 
     /**
      * Client will be sending heartbeat messages to members and this is the
@@ -269,8 +269,8 @@ public:
     /**
      * System property used for defining the configuring file used for client configuration.
      */
-    //static constexpr const char* SYSPROP_CLIENT_CONFIG = "hazelcast.client.config";
-    //static constexpr const char* SYSPROP_CLIENT_CONFIG_DEFAULT = "hazelcast-client.xml";
+    static constexpr const char* SYSPROP_CLIENT_CONFIG = "hazelcast.client.config";
+    static constexpr const char* SYSPROP_CLIENT_CONFIG_DEFAULT = "hazelcast-client.xml";
 
     /**
      * Returns the configured boolean value of a {@link ClientProperty}.
@@ -322,6 +322,7 @@ private:
     client_property backup_timeout_millis_;
     client_property fail_on_indeterminate_state_;
     client_property cloud_base_url_;
+    client_property sysprop_client_config_;
 
     std::unordered_map<std::string, std::string> properties_map_;
 };
