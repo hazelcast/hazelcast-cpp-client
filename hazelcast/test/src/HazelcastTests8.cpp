@@ -1838,10 +1838,12 @@ TEST_F(IssueTest,TestIssue1005){
     exp_lock->lock();
     exp_lock->unlock();
 }
+
 TEST_F(IssueTest, XML){
+    /*
     HazelcastServerFactory fac("hazelcast/test/resources/xml-config-test.xml");
     HazelcastServer serv(fac);
-    /*
+
     std::ifstream  src("hazelcast/test/resources/hazelcast-client.xml", std::ios::in);
     std::ofstream  dst("hazelcast-client.xml",   std::ios::out);
     dst << src.rdbuf();
@@ -1851,7 +1853,7 @@ TEST_F(IssueTest, XML){
     std::ofstream  dst1("import.xml",   std::ios::out);
     dst1 << src1.rdbuf();
     src1.close();
-    dst1.close();*/
+    dst1.close();
     auto conf = hazelcast::client::client_config::load();
     auto client = new_client(std::move(conf)).get();
     auto con = &client.get_client_config();
@@ -1917,7 +1919,7 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_size(),10000);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_eviction_policy(), hazelcast::client::config::eviction_policy::LRU);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;
-     */
+
     ASSERT_EQ(con->get_instance_name().get(), "client_name");//if this passes variable replacer works
     ASSERT_EQ(con->get_connection_strategy_config().is_async_start(), false);
     ASSERT_EQ(con->get_connection_strategy_config().get_reconnect_mode(), hazelcast::client::config::client_connection_strategy_config::ASYNC);
@@ -1934,7 +1936,7 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(con->backup_acks_enabled(),true);
     ASSERT_EQ(con->get_cluster_name(),"XML");//if this passes import works
     ASSERT_EQ(con->get_credentials().get()->name(),"client1");//can't test token and username-password at the same time, but I checked, token works too.
-    ASSERT_TRUE(con->get_network_config().get_ssl_config().is_enabled());
+    ASSERT_TRUE(con->get_network_config().get_ssl_config().is_enabled());*/
     //std::remove("hazelcast-client.xml");
     //std::remove("import.xml");
 }
