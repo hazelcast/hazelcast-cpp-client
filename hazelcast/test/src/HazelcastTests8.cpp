@@ -1840,7 +1840,6 @@ TEST_F(IssueTest,TestIssue1005){
 }
 
 TEST_F(IssueTest, XML){
-    /*
     HazelcastServerFactory fac("hazelcast/test/resources/xml-config-test.xml");
     HazelcastServer serv(fac);
     std::ifstream  src("hazelcast/test/resources/hazelcast-client.xml", std::ios::in);
@@ -1859,34 +1858,12 @@ TEST_F(IssueTest, XML){
     ASSERT_TRUE(con->get_properties().count("prop2"));
     ASSERT_EQ(con->get_properties().at("prop1"),"1");
     ASSERT_EQ(con->get_properties().at("prop2"),"2");
-    ASSERT_EQ(con->get_network_config().get_addresses().size(),5);
-    std::vector<int> ports;
-    bool p1 = false,p2 = false ,p3 = false ,p4 = false;
+    ASSERT_EQ(con->get_network_config().get_addresses().size(),1);
     for(auto& address : con->get_network_config().get_addresses()){
         if(address.get_host() == "127.0.0.1"){
             ASSERT_EQ(address.get_port(), 5701);
         }
-        else{
-            ASSERT_EQ(address.get_host(),"127.0.0.2");
-            if(address.get_port() == 5701){
-                ASSERT_FALSE(p1);
-                p1 = true;
-            } else if(address.get_port() == 5702){
-                ASSERT_FALSE(p2);
-                p2 = true;
-            } else if(address.get_port() == 5703){
-                ASSERT_FALSE(p3);
-                p3 = true;
-            } else if(address.get_port() == 5704){
-                ASSERT_FALSE(p4);
-                p4 = true;
-            }
-        }
     }
-    ASSERT_TRUE(p1);
-    ASSERT_TRUE(p2);
-    ASSERT_TRUE(p3);
-    ASSERT_TRUE(p4);
     ASSERT_EQ(con->get_serialization_config().get_portable_version(),3);
     ASSERT_EQ(con->get_serialization_config().get_byte_order(), boost::endian::order::big);
     ASSERT_EQ(con->get_network_config().is_smart_routing() ,true);
@@ -1913,11 +1890,11 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(con->get_near_cache_config("default")->get_in_memory_format() ,hazelcast::client::config::in_memory_format::OBJECT);
     ASSERT_EQ(con->get_near_cache_config("default")->get_local_update_policy() ,hazelcast::client::config::near_cache_config::local_update_policy::INVALIDATE);
     ASSERT_EQ(con->get_near_cache_config("default")->is_cache_local_entries() ,false);
-
+    /*
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_size(),10000);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_eviction_policy(), hazelcast::client::config::eviction_policy::LRU);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;
-
+    */
     ASSERT_EQ(con->get_instance_name().get(), "client_name");//if this passes variable replacer works
     ASSERT_EQ(con->get_connection_strategy_config().is_async_start(), false);
     ASSERT_EQ(con->get_connection_strategy_config().get_reconnect_mode(), hazelcast::client::config::client_connection_strategy_config::ASYNC);
@@ -1939,7 +1916,7 @@ TEST_F(IssueTest, XML){
     std::remove("import.xml");
     client.shutdown().get();
     ASSERT_EQ(hazelcast::client::client_config::load("hazelcast/test/resources/load-from-xml-test.xml").get_cluster_name(),"load-from-file");
-    */
+
 }
 
 } // namespace test

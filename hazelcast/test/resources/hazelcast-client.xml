@@ -61,7 +61,6 @@
 
     <network>
         <cluster-members>
-            <address>127.0.0.2</address>
             <address>127.0.0.1:5701</address>
         </cluster-members>
         <smart-routing>true</smart-routing>
