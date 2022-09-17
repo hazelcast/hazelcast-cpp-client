@@ -1936,6 +1936,8 @@ TEST_F(IssueTest, XML){
     ASSERT_TRUE(con->get_network_config().get_ssl_config().is_enabled());
     std::remove("hazelcast-client.xml");
     std::remove("import.xml");
+    client.shutdown().get();
+    ASSERT_EQ(hazelcast::client::client_config::load("hazelcast/test/resources/load-from-xml-test.xml").get_cluster_name(),"load-from-file");
 }
 
 } // namespace test

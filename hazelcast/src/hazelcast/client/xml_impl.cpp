@@ -981,6 +981,9 @@ xml_client_config_locator::
       hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
       declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
+bool xml_client_config_locator::locate_in_work_directory(const std::string& path){
+    return load_from_working_directory(path);
+}
 bool
 xml_client_config_locator::locate_in_work_directory()
 {

@@ -132,10 +132,10 @@ class HAZELCAST_API xml_client_config_locator : public abstract_config_locator
 {
 protected:
     bool locate_from_system_property_or_fail_on_unaccepted_suffix() override;
-
 public:
     bool locate_from_system_property() override;
     bool locate_in_work_directory() override;
+    bool locate_in_work_directory(const std::string& path);
 };
 
 } // namespace config
