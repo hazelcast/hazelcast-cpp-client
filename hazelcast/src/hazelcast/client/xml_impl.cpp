@@ -783,7 +783,7 @@ declarative_config_util::validate_suffix_in_system_property(
 {//hazelcast.client.config
     std::string config_system_property;
     if(property_key == "hazelcast.client.config"){
-        config_system_property = hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT;
+        config_system_property = "hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT";
     }
     else{
         config_system_property = "";
@@ -930,7 +930,7 @@ abstract_config_locator::load_from_system_property(
           "Parameter acceptedSuffixes must not be empty");
     }
     try {
-        std::string config_system_property = hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT;
+        std::string config_system_property = "temp";// hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT;
 
         if (config_system_property.empty()) {
             std::cout << "FINEST: "
@@ -977,7 +977,7 @@ xml_client_config_locator::
   locate_from_system_property_or_fail_on_unaccepted_suffix()
 {
     return load_from_system_property_or_fail_on_unaccepted_suffix(
-      hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
+      "hazl",
       declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
 bool
@@ -989,7 +989,7 @@ bool
 xml_client_config_locator::locate_from_system_property()
 {
     return load_from_system_property(
-      hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
+      "sssda",
       declarative_config_util::XML_ACCEPTED_SUFFIXES);
 }
 

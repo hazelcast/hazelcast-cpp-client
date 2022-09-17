@@ -1915,7 +1915,7 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(con->get_near_cache_config("default")->get_in_memory_format() ,hazelcast::client::config::in_memory_format::OBJECT);
     ASSERT_EQ(con->get_near_cache_config("default")->get_local_update_policy() ,hazelcast::client::config::near_cache_config::local_update_policy::INVALIDATE);
     ASSERT_EQ(con->get_near_cache_config("default")->is_cache_local_entries() ,false);
-    /*
+
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_size(),10000);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_eviction_policy(), hazelcast::client::config::eviction_policy::LRU);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;
