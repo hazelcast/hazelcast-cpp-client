@@ -69,9 +69,8 @@ class HAZELCAST_API abstract_xml_config_builder
       std::unordered_map<std::string, std::string>* properties);
 
 private:
-    std::unordered_map<std::string, std::string>* properties = new std::unordered_map<std::string, std::string>();
-    std::unordered_set<std::string>* currently_imported_files =
-      new std::unordered_set<std::string>();
+    std::unordered_map<std::string, std::string> properties;
+    std::unordered_set<std::string> currently_imported_files;
     void replace_variables(boost::property_tree::ptree* root);
     void replace_imports(boost::property_tree::ptree* root);
     property_replacer create_replacer(const boost::property_tree::ptree& node);
@@ -98,7 +97,7 @@ public:
      * Gets the current used properties. Can be null if no properties are set.
      * @return the current used properties
      */
-    std::unordered_map<std::string, std::string>* get_properties();
+    std::unordered_map<std::string, std::string> get_properties();
     abstract_xml_config_builder();
 };
 /**

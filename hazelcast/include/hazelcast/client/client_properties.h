@@ -270,7 +270,7 @@ public:
      * System property used for defining the configuring file used for client configuration.
      */
     static constexpr const char* SYSPROP_CLIENT_CONFIG = "hazelcast.client.config";
-    static constexpr const char* SYSPROP_CLIENT_CONFIG_DEFAULT = "hazelcast-client.xml";
+    static constexpr const char* SYSPROP_CLIENT_CONFIG_DEFAULT = "";
 
     /**
      * Returns the configured boolean value of a {@link ClientProperty}.

@@ -89,17 +89,19 @@ client_config client_config::load()
 client_config client_config::load_from_file()
 {
     internal::config::declarative_config_util::validate_suffix_in_system_property(internal::config::declarative_config_util::SYSPROP_CLIENT_CONFIG);
-
-    auto xml_config_locator = new internal::config::xml_client_config_locator();
-    if (xml_config_locator->locate_from_system_property()) {
+    internal::config::xml_client_config_locator xml_config_locator;
+    if (xml_config_locator.locate_from_system_property()) {
         // 1. Try loading XML config from the configuration provided in system property
-        return (new  hazelcast::client::internal::config::xml_client_config_builder(xml_config_locator))->build();
-    } else if (xml_config_locator->locate_in_work_directory()) {
+        hazelcast::client::internal::config::xml_client_config_builder builder(&xml_config_locator);
+        return builder.build();
+    } else if (xml_config_locator.locate_in_work_directory()) {
         // 2. Try loading XML config from the working directory
-        return (new  hazelcast::client::internal::config::xml_client_config_builder(xml_config_locator))->build();
+        hazelcast::client::internal::config::xml_client_config_builder builder(&xml_config_locator);
+        return builder.build();
     } else {
         // 3. Loading the default configuration
-        return client_config();
+        std::cout << "INFO: Loading default client configuration." << std::endl;
+        return {};
     }
 }
 

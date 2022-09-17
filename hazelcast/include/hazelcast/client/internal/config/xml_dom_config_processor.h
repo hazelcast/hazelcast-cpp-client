@@ -69,8 +69,7 @@ public:
     /**
      * Set collecting already seen elements. Used to detect duplicates in the configurations.
      */
-    std::unordered_set<std::string>* occurrence_set =
-      new std::unordered_set<std::string>();
+    std::unordered_set<std::string> occurrence_set;
     static void fill_properties(
       const boost::property_tree::ptree& node,
       std::unordered_map<std::string, std::string>* properties,

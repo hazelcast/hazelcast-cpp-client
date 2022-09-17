@@ -220,7 +220,7 @@ client_dom_config_processor::build_config(
             continue;
         }
         auto node = pair_to_node(pair.first, pair.second);
-        if (occurrence_set->find(node_name) == occurrence_set->end()) {
+        if (occurrence_set.find(node_name) == occurrence_set.end()) {
             handle_node(node, node_name);
         } else {
             throw hazelcast::client::exception::invalid_configuration(
@@ -228,7 +228,7 @@ client_dom_config_processor::build_config(
               "' definition found in the configuration");
         }
         if (!can_occur_multiple_times(node_name)) {
-            occurrence_set->insert(node_name);
+            occurrence_set.insert(node_name);
         }
     }
 }
@@ -797,6 +797,7 @@ declarative_config_util::validate_suffix_in_system_property(
           property_key, config_system_property, XML_ACCEPTED_SUFFIXES);
     }
 }
+
 void
 declarative_config_util::throw_unaccepted_suffix_in_system_property(
   const std::string& property_key,
@@ -934,7 +935,7 @@ abstract_config_locator::load_from_system_property(
 
         if (config_system_property.empty()) {
             std::cout << "FINEST: "
-                      << "Could not find " + property_key + " System property";
+                      << "Could not find " + property_key + " system property" << std::endl;
             return false;
         }
 
@@ -1086,7 +1087,7 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
                 throw hazelcast::client::exception::invalid_configuration(
                   "Failed to load resource: " + resource);
             }
-            if (!currently_imported_files->emplace(resource).second) {
+            if (!currently_imported_files.emplace(resource).second) {
                 throw hazelcast::client::exception::invalid_configuration(
                   "Resource '" + resource +
                   "' is already loaded! This can be due to" +
@@ -1147,9 +1148,9 @@ void
 abstract_xml_config_builder::set_properties_internal(
   std::unordered_map<std::string, std::string> properties_)
 {
-    this->properties = &properties_;
+    this->properties = std::move(properties_);
 }
-std::unordered_map<std::string, std::string>*
+std::unordered_map<std::string, std::string>
 abstract_xml_config_builder::get_properties()
 {
     return properties;
