@@ -93,7 +93,7 @@ client_config client_config::load(const std::string& path)
 
 client_config client_config::load_from_file()
 {
-    internal::config::declarative_config_util::validate_suffix_in_system_property(internal::config::declarative_config_util::SYSPROP_CLIENT_CONFIG);
+    internal::config::declarative_config_util::validate_suffix_in_system_property("hazelcast.client.config");
     internal::config::xml_client_config_locator xml_config_locator;
     if (xml_config_locator.locate_from_system_property()) {
         // 1. Try loading XML config from the configuration provided in system property

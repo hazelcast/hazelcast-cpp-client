@@ -770,12 +770,6 @@ client_dom_config_processor::handle_backup_ack_to_client(
     client_config->backup_acks_enabled(get_bool_value(node.data()));
 }
 
-const std::string declarative_config_util::SYSPROP_CLIENT_CONFIG = "hazelcast.client.config";
-
-const std::vector<std::string> declarative_config_util::XML_ACCEPTED_SUFFIXES = {
-    "xml"
-};
-
 
 void
 declarative_config_util::validate_suffix_in_system_property(
@@ -792,9 +786,9 @@ declarative_config_util::validate_suffix_in_system_property(
         return;
     }
     if (!is_accepted_suffix_configured(config_system_property,
-                                       XML_ACCEPTED_SUFFIXES)) {
+                                       {"xml"})) {
         throw_unaccepted_suffix_in_system_property(
-          property_key, config_system_property, XML_ACCEPTED_SUFFIXES);
+          property_key, config_system_property, {"xml"});
     }
 }
 
@@ -979,7 +973,7 @@ xml_client_config_locator::
 {
     return load_from_system_property_or_fail_on_unaccepted_suffix(
       hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
-      declarative_config_util::XML_ACCEPTED_SUFFIXES);
+      {"xml"});
 }
 bool xml_client_config_locator::locate_in_work_directory(const std::string& path){
     return load_from_working_directory(path);
@@ -994,7 +988,7 @@ xml_client_config_locator::locate_from_system_property()
 {
     return load_from_system_property(
       hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
-      declarative_config_util::XML_ACCEPTED_SUFFIXES);
+      {"xml"});
 }
 
 bool

@@ -41,14 +41,6 @@ private:
 
 public:
     /**
-     * System property used for defining the configuring file used for client configuration.
-     */
-    const static std::string SYSPROP_CLIENT_CONFIG;
-    /**
-     * Array of accepted suffixes for XML configuration files.
-     */
-    const static std::vector<std::string> XML_ACCEPTED_SUFFIXES;
-    /**
      * Validates if the config file referenced in property_key has an accepted suffix.
      * If the system property is not set, the validation passes without throwing exception.
      * @param property_key – The name of the system property to validate
