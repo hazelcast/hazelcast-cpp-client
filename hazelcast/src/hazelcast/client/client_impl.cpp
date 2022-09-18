@@ -57,7 +57,7 @@
 namespace hazelcast {
 namespace client {
 hazelcast_client::hazelcast_client()
-  : client_impl_(new impl::hazelcast_client_instance_impl(client_config::load()))
+  : client_impl_(new impl::hazelcast_client_instance_impl(client_config()))
 {
     client_impl_->start();
 }

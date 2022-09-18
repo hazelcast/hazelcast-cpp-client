@@ -35,7 +35,7 @@
 
 
 
-    <import resource="import.xml"/>
+    <import resource="hazelcast/test/resources/import.xml"/>
     <config-replacers fail-if-value-missing="false">
         <replacer class-name="class_name">
             <properties>

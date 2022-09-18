@@ -1842,6 +1842,7 @@ TEST_F(IssueTest,TestIssue1005){
 TEST_F(IssueTest, XML){
     HazelcastServerFactory fac("hazelcast/test/resources/xml-config-test.xml");
     HazelcastServer serv(fac);
+    /*
     std::ifstream  src("hazelcast/test/resources/hazelcast-client.xml", std::ios::in);
     std::ofstream  dst("hazelcast-client.xml",   std::ios::out);
     dst << src.rdbuf();
@@ -1851,8 +1852,8 @@ TEST_F(IssueTest, XML){
     std::ofstream  dst1("import.xml",   std::ios::out);
     dst1 << src1.rdbuf();
     src1.close();
-    dst1.close();
-    auto client = new_client().get();
+    dst1.close();*/
+    auto client = new_client(std::move(hazelcast::client::client_config::load("hazelcast/test/resources/hazelcast-client.xml"))).get();
     auto con = &client.get_client_config();
     ASSERT_TRUE(con->get_properties().count("prop1"));
     ASSERT_TRUE(con->get_properties().count("prop2"));
