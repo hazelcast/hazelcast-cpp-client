@@ -57,7 +57,7 @@
 namespace hazelcast {
 namespace client {
 hazelcast_client::hazelcast_client()
-  : client_impl_(new impl::hazelcast_client_instance_impl(client_config()))
+  : client_impl_(new impl::hazelcast_client_instance_impl(client_config::load()))
 {
     client_impl_->start();
 }
@@ -1041,7 +1041,6 @@ client_properties::client_properties(
   , fail_on_indeterminate_state_(FAIL_ON_INDETERMINATE_OPERATION_STATE,
                                  FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT)
   , cloud_base_url_(CLOUD_URL_BASE, CLOUD_URL_BASE_DEFAULT),
-  sysprop_client_config_(SYSPROP_CLIENT_CONFIG,SYSPROP_CLIENT_CONFIG_DEFAULT),
    properties_map_(properties)
 {}
 
@@ -1168,12 +1167,6 @@ const client_property&
 client_properties::cloud_base_url() const
 {
     return cloud_base_url_;
-}
-
-const client_property&
-client_properties::sysprop_client_config() const
-{
-    return sysprop_client_config_;
 }
 
 

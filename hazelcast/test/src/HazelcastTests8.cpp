@@ -1840,10 +1840,8 @@ TEST_F(IssueTest,TestIssue1005){
 }
 
 TEST_F(IssueTest, XML){
-
     HazelcastServerFactory fac("hazelcast/test/resources/xml-config-test.xml");
     HazelcastServer serv(fac);
-    /*
     std::ifstream  src("hazelcast/test/resources/hazelcast-client.xml", std::ios::in);
     std::ofstream  dst("hazelcast-client.xml",   std::ios::out);
     dst << src.rdbuf();
@@ -1854,10 +1852,8 @@ TEST_F(IssueTest, XML){
     dst1 << src1.rdbuf();
     src1.close();
     dst1.close();
-     */
-    auto client = new_client(std::move(hazelcast::client::client_config::load("hazelcast/test/resources/hazelcast-client.xml"))).get();
+    auto client = new_client().get();
     auto con = &client.get_client_config();
-    /*
     ASSERT_TRUE(con->get_properties().count("prop1"));
     ASSERT_TRUE(con->get_properties().count("prop2"));
     ASSERT_EQ(con->get_properties().at("prop1"),"1");
@@ -1894,11 +1890,11 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(con->get_near_cache_config("default")->get_in_memory_format() ,hazelcast::client::config::in_memory_format::OBJECT);
     ASSERT_EQ(con->get_near_cache_config("default")->get_local_update_policy() ,hazelcast::client::config::near_cache_config::local_update_policy::INVALIDATE);
     ASSERT_EQ(con->get_near_cache_config("default")->is_cache_local_entries() ,false);
-
+    /*
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_size(),10000);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_eviction_policy(), hazelcast::client::config::eviction_policy::LRU);
     ASSERT_EQ(con.get_near_cache_config("NearCacheEvictionConfigExample")->get_eviction_config().get_maximum_size_policy(),hazelcast::client::config::eviction_config::max_size_policy::ENTRY_COUNT);;
-
+    */
     ASSERT_EQ(con->get_instance_name().get(), "client_name");//if this passes variable replacer works
     ASSERT_EQ(con->get_connection_strategy_config().is_async_start(), false);
     ASSERT_EQ(con->get_connection_strategy_config().get_reconnect_mode(), hazelcast::client::config::client_connection_strategy_config::ASYNC);
@@ -1919,9 +1915,10 @@ TEST_F(IssueTest, XML){
     std::remove("hazelcast-client.xml");
     std::remove("import.xml");
     client.shutdown().get();
-    ASSERT_EQ(hazelcast::client::client_config::load("hazelcast/test/resources/load-from-xml-test.xml").get_cluster_name(),"load-from-file");
-    */
-      ASSERT_EQ(1,1);
+    ASSERT_EQ(hazelcast::client::client_config::load("hazelcast/test/resources/load-from-xml-test.xml").get_cluster_name(),"test");
+    setenv("hazelcast.client.config","hazelcast/test/resources/load-from-xml-test.xml",1);
+    auto conf = hazelcast::client::client_config::load();
+    ASSERT_EQ(conf.get_cluster_name(),"test");
 }
 
 } // namespace test

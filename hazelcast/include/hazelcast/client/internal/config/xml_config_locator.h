@@ -42,17 +42,17 @@ private:
 public:
     /**
      * Validates if the config file referenced in property_key has an accepted suffix.
-     * If the system property is not set, the validation passes without throwing exception.
-     * @param property_key – The name of the system property to validate
+     * If the environment variable is not set, the validation passes without throwing exception.
+     * @param property_key – The name of the environment variable to validate
      * @throw HazelcastException – If the suffix of the config file name is not in the accepted suffix list
      */
     static void validate_suffix_in_system_property(
       const std::string& property_key);
     /**
      * Throws HazelcastException unconditionally referring to that the configuration file referenced
-     * in the system property property_key has a suffix not in the accepted suffix list defined in accepted_suffixes.
-     * @param property_key – The name of the system property key holding the reference to the configuration file
-     * @param config_resource – The value of the system property
+     * in the environment variable property_key has a suffix not in the accepted suffix list defined in accepted_suffixes.
+     * @param property_key – The name of the environment variable holding the reference to the configuration file
+     * @param config_resource – The value of the environment variable
      * @param accepted_suffixes – The list of the accepted suffixes
      * @throw HazelcastException – Thrown unconditionally with a message referring to the unaccepted suffix of the file referenced by property_key
      */
@@ -86,8 +86,8 @@ private:
 
 protected:
     /**
-     * Locates the configuration file in a system property.
-     * @return true if the configuration file is found in the system property
+     * Locates the configuration file in an environment variable.
+     * @return true if the configuration file is found in the environment variable
      * @throw HazelcastException – if there was a problem locating the configuration file
      */
     virtual bool locate_from_system_property() = 0;
@@ -98,10 +98,10 @@ protected:
      */
     virtual bool locate_in_work_directory() = 0;
     /**
-     * Locates the configuration file in a system property or throws HazelcastException if the suffix
+     * Locates the configuration file in a environment variable or throws HazelcastException if the suffix
      * of the referenced file is not in the accepted list of the locator.
-     * @return true if the configuration file is found in the system property
-     * @throw HazelcastException – if there was a problem locating the configuration file or the suffix of the file referenced in the system property is not an accepted suffix
+     * @return true if the configuration file is found in environment variables
+     * @throw HazelcastException – if there was a problem locating the configuration file or the suffix of the file referenced in the environment variable is not an accepted suffix
      */
     virtual bool locate_from_system_property_or_fail_on_unaccepted_suffix() = 0;
     bool load_from_working_directory(const std::string& config_file_path);

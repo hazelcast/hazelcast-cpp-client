@@ -775,12 +775,13 @@ void
 declarative_config_util::validate_suffix_in_system_property(
   const std::string& property_key)
 {//hazelcast.client.config
-    std::string config_system_property;
-    if(property_key == "hazelcast.client.config"){
-        config_system_property = hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT;
-    }
-    else{
+    const char * env;
+    env = std::getenv(property_key.c_str());
+    std::string config_system_property ;
+    if(!env){
         config_system_property = "";
+    } else{
+        config_system_property = std::string(env);
     }
     if (config_system_property.empty()) {
         return;
@@ -925,11 +926,17 @@ abstract_config_locator::load_from_system_property(
           "Parameter acceptedSuffixes must not be empty");
     }
     try {
-        std::string config_system_property = hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG_DEFAULT;
-
+        const char * env;
+        env = std::getenv(property_key.c_str());
+        std::string config_system_property ;
+        if(!env){
+            config_system_property = "";
+        } else{
+            config_system_property = std::string(env);
+        }
         if (config_system_property.empty()) {
             std::cout << "FINEST: "
-                      << "Could not find " + property_key + " system property" << std::endl;
+                      << "Could not find " + property_key + " environment variable" << std::endl;
             return false;
         }
 
@@ -946,7 +953,7 @@ abstract_config_locator::load_from_system_property(
 
         std::cout << "INFO: "
                   << "Loading configuration " + config_system_property +
-                       " from System property"
+                       " from environment variable"
                   << property_key << std::endl;
         load_system_property_file_resource(config_system_property);
         return true;
@@ -972,7 +979,7 @@ xml_client_config_locator::
   locate_from_system_property_or_fail_on_unaccepted_suffix()
 {
     return load_from_system_property_or_fail_on_unaccepted_suffix(
-      hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
+      "hazelcast.client.config",
       {"xml"});
 }
 bool xml_client_config_locator::locate_in_work_directory(const std::string& path){
@@ -987,7 +994,7 @@ bool
 xml_client_config_locator::locate_from_system_property()
 {
     return load_from_system_property(
-      hazelcast::client::client_properties::SYSPROP_CLIENT_CONFIG,
+      "hazelcast.client.config",
       {"xml"});
 }
 

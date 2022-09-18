@@ -33,6 +33,6 @@
                   xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
                   http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd">
 
-    <cluster-name>load-from-file</cluster-name>
+    <cluster-name>test</cluster-name>
 
 </hazelcast-client>
