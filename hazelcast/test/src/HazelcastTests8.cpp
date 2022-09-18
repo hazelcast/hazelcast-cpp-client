@@ -1854,8 +1854,10 @@ TEST_F(IssueTest, XML){
     dst1 << src1.rdbuf();
     src1.close();
     dst1.close();
+     */
     auto client = new_client(std::move(hazelcast::client::client_config::load("hazelcast/test/resources/hazelcast-client.xml"))).get();
     auto con = &client.get_client_config();
+    /*
     ASSERT_TRUE(con->get_properties().count("prop1"));
     ASSERT_TRUE(con->get_properties().count("prop2"));
     ASSERT_EQ(con->get_properties().at("prop1"),"1");
