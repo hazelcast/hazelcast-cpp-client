@@ -1840,10 +1840,10 @@ TEST_F(IssueTest,TestIssue1005){
 }
 
 TEST_F(IssueTest, XML){
-    /*
+
     HazelcastServerFactory fac("hazelcast/test/resources/xml-config-test.xml");
     HazelcastServer serv(fac);
-
+    /*
     std::ifstream  src("hazelcast/test/resources/hazelcast-client.xml", std::ios::in);
     std::ofstream  dst("hazelcast-client.xml",   std::ios::out);
     dst << src.rdbuf();
