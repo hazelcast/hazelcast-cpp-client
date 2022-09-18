@@ -34,5 +34,8 @@
                   http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd">
 
     <cluster-name>test</cluster-name>
+    <security>
+        <token>token</token>
+    </security>
 
 </hazelcast-client>

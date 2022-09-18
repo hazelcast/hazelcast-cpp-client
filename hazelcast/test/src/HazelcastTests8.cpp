@@ -1910,7 +1910,7 @@ TEST_F(IssueTest, XML){
     ASSERT_EQ(*con->get_labels().find("foo"), "foo");
     ASSERT_EQ(con->backup_acks_enabled(),true);
     ASSERT_EQ(con->get_cluster_name(),"XML");//if this passes import works
-    ASSERT_EQ(con->get_credentials().get()->name(),"client1");//can't test token and username-password at the same time, but I checked, token works too.
+    ASSERT_EQ(con->get_credentials().get()->name(),"client1");
     ASSERT_TRUE(con->get_network_config().get_ssl_config().is_enabled());
     std::remove("hazelcast-client.xml");
     std::remove("import.xml");
@@ -1919,6 +1919,7 @@ TEST_F(IssueTest, XML){
     setenv("hazelcast.client.config","hazelcast/test/resources/load-from-xml-test.xml",1);
     auto conf = hazelcast::client::client_config::load();
     ASSERT_EQ(conf.get_cluster_name(),"test");
+    ASSERT_EQ(conf.get_credentials().get()->name(),"<token>");
 }
 
 } // namespace test
