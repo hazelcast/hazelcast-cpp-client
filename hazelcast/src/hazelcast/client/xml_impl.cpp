@@ -1028,7 +1028,7 @@ abstract_xml_config_builder::replace_variables(
 
         }
     } catch (const boost::exception& e) {//config_replacers not found
-
+        return;
     }
     xml_dom_variable_replacer rep;
     config_replacer_helper::traverse_children_and_replace_variables(
