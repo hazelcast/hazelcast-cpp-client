@@ -1916,10 +1916,10 @@ TEST_F(IssueTest, XML){
     std::remove("import.xml");
     client.shutdown().get();
     ASSERT_EQ(hazelcast::client::client_config::load("hazelcast/test/resources/load-from-xml-test.xml").get_cluster_name(),"test");
-    setenv("hazelcast.client.config","hazelcast/test/resources/load-from-xml-test.xml",1);
-    auto conf = hazelcast::client::client_config::load();
-    ASSERT_EQ(conf.get_cluster_name(),"test");
-    ASSERT_EQ(conf.get_credentials().get()->name(),"<token>");
+    //setenv("hazelcast.client.config","hazelcast/test/resources/load-from-xml-test.xml",1);
+    //auto conf = hazelcast::client::client_config::load();
+    //ASSERT_EQ(conf.get_cluster_name(),"test");
+    //ASSERT_EQ(conf.get_credentials().get()->name(),"<token>");
 }
 
 } // namespace test
