@@ -410,7 +410,7 @@ client_dom_config_processor::handle_ssl_config(
     auto enabled = false;
     try{
         enabled = get_bool_value(get_attribute(node, "enabled"));
-    } catch (const boost::exception& e){
+    } catch (const boost::exception& e){//attribute not found/not enabled
         return ;
     }
     if(!enabled){
@@ -427,7 +427,7 @@ client_dom_config_processor::handle_ssl_config(
                 prop_map.emplace(property_name,property_value);
             }
         }
-    } catch (const boost::exception& e){
+    } catch (const boost::exception& e){//properties not found
         return ;
     }
 
@@ -525,7 +525,7 @@ client_dom_config_processor::handle_hazelcast_cloud(
         std::string enable = get_attribute(node, "enabled");
         boost::algorithm::trim(enable);
         enabled = get_bool_value(enable);
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//enabled not found
     }
     client_network_config->get_cloud_config().enabled = enabled;
     for (auto& pair : node) {
@@ -600,7 +600,7 @@ client_dom_config_processor::handle_near_cache_node(
     std::string name;
     try {
         name = get_attribute(node, "name");
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//if name is not explicitly specified then name = default
         name = "default";
     }
     hazelcast::client::config::near_cache_config near_cache_config(name);
@@ -647,7 +647,7 @@ client_dom_config_processor::get_eviction_config(
     try {
         auto attr = get_attribute(node, "size");
         eviction_config.set_size(get_integer_value("size", attr));
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//size attribute not found
     }
     try {
         auto attr = get_attribute(node, "max-size-policy");
@@ -655,7 +655,7 @@ client_dom_config_processor::get_eviction_config(
             eviction_config.set_maximum_size_policy(
               hazelcast::client::config::eviction_config::ENTRY_COUNT);
         }
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//max-size-policy attribute not found
     }
     try {
         auto attr = get_attribute(node, "eviction-policy");
@@ -672,7 +672,7 @@ client_dom_config_processor::get_eviction_config(
             eviction_config.set_eviction_policy(
               hazelcast::client::config::eviction_policy::RANDOM);
         }
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//eviction-policy attribute not found
     }
     return eviction_config;
 }
@@ -686,7 +686,7 @@ client_dom_config_processor::handle_connection_strategy(
         std::string attr_val = get_attribute(node, "async-start");
         boost::algorithm::trim(attr_val);
         strategy_config.set_async_start(get_bool_value(attr_val));
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//if async-start is not explicitly made true, it is false
         strategy_config.set_async_start(false);
     }
     try {
@@ -705,7 +705,7 @@ client_dom_config_processor::handle_connection_strategy(
               hazelcast::client::config::client_connection_strategy_config::
                 reconnect_mode::ASYNC);
         }
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//reconnect-mode attribute not found
     }
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
@@ -1044,10 +1044,10 @@ abstract_xml_config_builder::replace_variables(
                     replacers.push_back(create_replacer(n.second));
                 }
             }
-        } catch (const boost::exception& ) {// checks for get_child
+        } catch (const boost::exception& ) {//attribute not found
 
         }
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//config_replacers not found
 
     }
     xml_dom_variable_replacer rep;
@@ -1233,7 +1233,7 @@ config_replacer_helper::traverse_children_and_replace_variables(
                 variable_replacer.replace_variables(
                   &attribute.second, replacer, fail_fast, attribute.first);
             }
-        } catch (const boost::exception& e) {
+        } catch (const boost::exception& e) {//attribute not found
 
         }
 
@@ -1247,7 +1247,7 @@ config_replacer_helper::traverse_children_and_replace_variables(
             traverse_children_and_replace_variables(
               &pair.second, replacer, fail_fast, variable_replacer);
         }
-    } catch (const boost::exception& e) {
+    } catch (const boost::exception& e) {//attribute not found
     }
 }
 void
