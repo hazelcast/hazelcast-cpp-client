@@ -621,17 +621,21 @@ client_dom_config_processor::handle_near_cache_node(
     } catch (const boost::exception& e) {
         name = "default";
     }
+    std::cout << "handle_near_cache_node init" << std::endl;
     hazelcast::client::config::near_cache_config near_cache_config(name);
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         if (matches("time-to-live-seconds", node_name)) {
+            std::cout << "handle_near_cache_node ttl" << std::endl;
             near_cache_config.set_time_to_live_seconds(
               get_integer_value(pair.first, pair.second.data()));
         } else if (matches("max-idle-seconds", node_name)) {
+            std::cout << "handle_near_cache_node mis" << std::endl;
             near_cache_config.set_max_idle_seconds(
               get_integer_value(pair.first, pair.second.data()));
         } else if (matches("in-memory-format", node_name)) { // NO NATIVE ??
+            std::cout << "handle_near_cache_node mem" << std::endl;
             if (pair.second.data() == "BINARY") {
                 near_cache_config.set_in_memory_format(
                   hazelcast::client::config::in_memory_format::BINARY);
@@ -640,21 +644,26 @@ client_dom_config_processor::handle_near_cache_node(
                   hazelcast::client::config::in_memory_format::OBJECT);
             }
         } else if (matches("invalidate-on-change", node_name)) {
+            std::cout << "handle_near_cache_node invalidate" << std::endl;
             near_cache_config.set_invalidate_on_change(
               get_bool_value(pair.second.data()));
         } else if (matches("local-update-policy", node_name)) {
+            std::cout << "handle_near_cache_node update" << std::endl;
             if (pair.second.data() == "CACHE") {
                 near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::CACHE);
             } else if (pair.second.data() == "INVALIDATE") {
+                std::cout << "handle_near_cache_node INV" << std::endl;
                 near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::INVALIDATE);
             }
         } else if (matches("eviction", node_name)) {
+            std::cout << "handle_near_cache_node evic" << std::endl;
             near_cache_config.set_eviction_config(
               get_eviction_config(pair.second));
         }
     }
+    std::cout << "handle_near_cache_node end" << std::endl;
     client_config->add_near_cache_config(near_cache_config);
 }
 hazelcast::client::config::eviction_config
