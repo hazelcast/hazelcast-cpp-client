@@ -219,6 +219,13 @@ public:
     eviction_config& get_eviction_config();
 
     /**
+     * The eviction configuration.
+     *
+     * @return The eviction configuration.
+     */
+    const eviction_config& get_eviction_config() const;
+
+    /**
      * Sets the eviction configuration.
      *
      * @param evictionConfig The eviction configuration.

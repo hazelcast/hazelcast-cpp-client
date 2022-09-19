@@ -120,9 +120,6 @@ protected:
 public:
     static bool can_occur_multiple_times(const std::string& name);
     hazelcast::client::client_config* client_config;
-    client_dom_config_processor(
-      bool dom_level_3,
-      hazelcast::client::client_config* client_config);
     client_dom_config_processor(bool dom_level_3,
                                 hazelcast::client::client_config* client_config,
                                 bool strict);

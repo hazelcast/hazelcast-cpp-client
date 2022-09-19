@@ -86,10 +86,6 @@ client_config client_config::load()
     return load_from_file();
 }
 
-client_config client_config::load(const std::string& path)
-{
-    return load_from_file(path);
-}
 
 client_config client_config::load_from_file()
 {
@@ -108,18 +104,6 @@ client_config client_config::load_from_file()
         std::cout << "INFO: Loading default client configuration." << std::endl;
         return {};
     }
-}
-
-client_config client_config::load_from_file(const std::string& path){
-    internal::config::xml_client_config_locator xml_config_locator;
-    if (xml_config_locator.locate_in_work_directory(path)) {
-        hazelcast::client::internal::config::xml_client_config_builder builder(&xml_config_locator);
-        return builder.build();
-    } else {
-        std::cout << "INFO: Loading default client configuration." << std::endl;
-        return {};
-    }
-
 }
 
 
@@ -1062,6 +1046,12 @@ near_cache_config::set_local_update_policy(
 
 eviction_config&
 near_cache_config::get_eviction_config()
+{
+    return eviction_config_;
+}
+
+const eviction_config&
+near_cache_config::get_eviction_config() const
 {
     return eviction_config_;
 }

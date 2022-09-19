@@ -451,8 +451,6 @@ public:
 
     static client_config load();
 
-    static client_config load(const std::string& path);
-
 private:
     friend class reliable_topic;
 
@@ -508,7 +506,6 @@ private:
 
     static client_config load_from_file();
 
-    static client_config load_from_file(const std::string& path);
 };
 
 } // namespace client

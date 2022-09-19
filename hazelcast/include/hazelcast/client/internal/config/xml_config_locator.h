@@ -97,23 +97,9 @@ protected:
      * @throw HazelcastException – if there was a problem locating the configuration file
      */
     virtual bool locate_in_work_directory() = 0;
-    /**
-     * Locates the configuration file in a environment variable or throws HazelcastException if the suffix
-     * of the referenced file is not in the accepted list of the locator.
-     * @return true if the configuration file is found in environment variables
-     * @throw HazelcastException – if there was a problem locating the configuration file or the suffix of the file referenced in the environment variable is not an accepted suffix
-     */
-    virtual bool locate_from_system_property_or_fail_on_unaccepted_suffix() = 0;
     bool load_from_working_directory(const std::string& config_file_path);
-    bool load_from_working_directory(
-      const std::string& config_file_prefix,
-      const std::vector<std::string>& accepted_suffixes);
     bool load_from_system_property(const std::string& property_key,
                                    const std::vector<std::string>& accepted_suffixes);
-    bool load_from_system_property_or_fail_on_unaccepted_suffix(
-      const std::string& property_key,
-      const std::vector<std::string>& accepted_suffixes);
-
 public:
     std::shared_ptr<std::ifstream> get_in();
 };
@@ -122,12 +108,9 @@ public:
  */
 class HAZELCAST_API xml_client_config_locator : public abstract_config_locator
 {
-protected:
-    bool locate_from_system_property_or_fail_on_unaccepted_suffix() override;
 public:
     bool locate_from_system_property() override;
     bool locate_in_work_directory() override;
-    bool locate_in_work_directory(const std::string& path);
 };
 
 } // namespace config

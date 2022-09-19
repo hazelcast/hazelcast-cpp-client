@@ -184,14 +184,6 @@ abstract_dom_config_processor::pair_to_node(
     temp.add_child(node_name, node_content);
     return temp.get_child(node_name);
 }
-
-client_dom_config_processor::client_dom_config_processor(
-  bool dom_level_3,
-  hazelcast::client::client_config* client_config)
-  : abstract_dom_config_processor(dom_level_3)
-{
-    this->client_config = client_config;
-}
 client_dom_config_processor::client_dom_config_processor(
   bool dom_level_3,
   hazelcast::client::client_config* client_config,
@@ -856,28 +848,6 @@ abstract_config_locator::load_from_working_directory(
         throw hazelcast::client::exception::hazelcast_(boost::diagnostic_information(e));
     }
 }
-
-bool
-abstract_config_locator::load_from_working_directory(
-  const std::string& config_file_prefix,
-  const std::vector<std::string>& accepted_suffixes)
-{
-    util::Preconditions::check_not_empty(
-      accepted_suffixes, "Parameter accepted_suffixes must not be empty");
-    for (const auto& suffix : accepted_suffixes) {
-        if (suffix.empty()) {
-            throw std::invalid_argument(
-              "Parameter acceptedSuffixes must not contain empty strings");
-        }
-        auto config_file_path = config_file_prefix;
-        config_file_path.append(".");
-        config_file_path.append(suffix);
-        if (load_from_working_directory(config_file_path)) {
-            return true;
-        }
-    }
-    return false;
-}
 bool
 abstract_config_locator::load_from_system_property(
   const std::string& property_key,
@@ -957,24 +927,6 @@ abstract_config_locator::load_from_system_property(
           "",
           std::current_exception());
     }
-}
-bool
-abstract_config_locator::load_from_system_property_or_fail_on_unaccepted_suffix(
-  const std::string& property_key,
-  const std::vector<std::string>& accepted_suffixes)
-{
-    return load_from_system_property(property_key, true, accepted_suffixes);
-}
-bool
-xml_client_config_locator::
-  locate_from_system_property_or_fail_on_unaccepted_suffix()
-{
-    return load_from_system_property_or_fail_on_unaccepted_suffix(
-      "hazelcast.client.config",
-      {"xml"});
-}
-bool xml_client_config_locator::locate_in_work_directory(const std::string& path){
-    return load_from_working_directory(path);
 }
 bool
 xml_client_config_locator::locate_in_work_directory()
