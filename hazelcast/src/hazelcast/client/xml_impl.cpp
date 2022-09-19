@@ -1244,6 +1244,9 @@ config_replacer_helper::traverse_children_and_replace_variables(
   const xml_dom_variable_replacer& variable_replacer)
 {
     std::cout << "traverse_children_and_replace_variables" << std::endl;
+    if(replacers.empty()){
+        return;
+    }
     for (const property_replacer& replacer : replacers) {
         traverse_children_and_replace_variables(
           root, replacer, fail_fast, variable_replacer);
