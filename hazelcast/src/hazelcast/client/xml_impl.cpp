@@ -1055,8 +1055,13 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
         if (child.first == "import") {
             boost::property_tree::ptree temp;
             temp.add_child(child.first, child.second);
-            std::string resource =
-              get_attribute(temp.get_child(child.first), "resource");
+            std::string resource;
+            try{
+                resource =
+                  get_attribute(temp.get_child(child.first), "resource");
+            }catch(const boost::exception& e ){
+                throw hazelcast::client::exception::invalid_configuration("Resource of import can't be empty");
+            }
             std::ifstream stream;
             stream.open(resource);
             if (stream.fail()) {
@@ -1069,8 +1074,13 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
                   "' is already loaded! This can be due to" +
                   " duplicate or cyclic imports.");
             }
-            boost::property_tree::ptree imported_root = parse(std::move(stream));
-            imported_root = imported_root.get_child("hazelcast-client");
+            boost::property_tree::ptree imported_root;// = parse(std::move(stream));
+            boost::property_tree::read_xml(stream,imported_root);
+            try{
+                imported_root = imported_root.get_child("hazelcast-client");
+            }catch(const boost::exception& e){
+                throw hazelcast::client::exception::invalid_configuration("Imported file " + resource + " is invalid");
+            }
             replace_imports(&imported_root);
             for (auto& imported_node : imported_root) {
                 if (imported_node.first == "<xmlattr>") {
