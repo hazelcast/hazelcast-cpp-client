@@ -1080,19 +1080,20 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
             }catch(const boost::exception& e){
                 throw hazelcast::client::exception::invalid_configuration("Imported file " + resource + " is invalid");
             }
-            //replace_imports(&imported_root);
+            replace_imports(&imported_root);
             for (auto& imported_node : imported_root) {
                 if (imported_node.first == "<xmlattr>") {
                     continue;
                 }
                 root->put_child(imported_node.first, imported_node.second);
             }
-            for (auto it = root->begin(); it != root->end(); it++) {
-                if (it->first == "import") {
-                    root->erase(it);
-                    break;
-                }
-            }
+            root->erase("import");
+            //for (auto it = root->begin(); it != root->end(); it++) {
+              //  if (it->first == "import") {
+                //    root->erase(it);
+                  //  break;
+                //}
+            //}
         }
     }
 }
