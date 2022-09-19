@@ -16,7 +16,6 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/join.hpp>
-#include <fstream>
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/serialization_config.h"
 #include "hazelcast/client/config/ssl_config.h"
@@ -616,49 +615,47 @@ client_dom_config_processor::handle_near_cache_node(
   const boost::property_tree::ptree& node) const
 {
     std::cout << "handle_near_cache_node" << std::endl;
-    hazelcast::client::config::near_cache_config* near_cache_config;
+    std::string name;
     try {
-        std::string name = get_attribute(node, "name");
-        hazelcast::client::config::near_cache_config near_cache(name);
-        near_cache_config =&near_cache;
+        name = get_attribute(node, "name");
     } catch (const boost::exception& e) {
-        hazelcast::client::config::near_cache_config near_cache("default");
-        near_cache_config =&near_cache;
+        name = "default";
     }
+    hazelcast::client::config::near_cache_config near_cache_config(name);
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         if (matches("time-to-live-seconds", node_name)) {
-            near_cache_config->set_time_to_live_seconds(
+            near_cache_config.set_time_to_live_seconds(
               get_integer_value(pair.first, pair.second.data()));
         } else if (matches("max-idle-seconds", node_name)) {
-            near_cache_config->set_max_idle_seconds(
+            near_cache_config.set_max_idle_seconds(
               get_integer_value(pair.first, pair.second.data()));
         } else if (matches("in-memory-format", node_name)) { // NO NATIVE ??
             if (pair.second.data() == "BINARY") {
-                near_cache_config->set_in_memory_format(
+                near_cache_config.set_in_memory_format(
                   hazelcast::client::config::in_memory_format::BINARY);
             } else if (pair.second.data() == "OBJECT") {
-                near_cache_config->set_in_memory_format(
+                near_cache_config.set_in_memory_format(
                   hazelcast::client::config::in_memory_format::OBJECT);
             }
         } else if (matches("invalidate-on-change", node_name)) {
-            near_cache_config->set_invalidate_on_change(
+            near_cache_config.set_invalidate_on_change(
               get_bool_value(pair.second.data()));
         } else if (matches("local-update-policy", node_name)) {
             if (pair.second.data() == "CACHE") {
-                near_cache_config->set_local_update_policy(
+                near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::CACHE);
             } else if (pair.second.data() == "INVALIDATE") {
-                near_cache_config->set_local_update_policy(
+                near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::INVALIDATE);
             }
         } else if (matches("eviction", node_name)) {
-            near_cache_config->set_eviction_config(
+            near_cache_config.set_eviction_config(
               get_eviction_config(pair.second));
         }
     }
-    client_config->add_near_cache_config(*near_cache_config);
+    client_config->add_near_cache_config(near_cache_config);
 }
 hazelcast::client::config::eviction_config
 client_dom_config_processor::get_eviction_config(
