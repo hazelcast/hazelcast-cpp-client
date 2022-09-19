@@ -1319,29 +1319,47 @@ consistency_lost::consistency_lost(std::string source,
                false)
 {}
 
-    query::query(std::string source, std::string message, std::string details,
-                 std::exception_ptr cause) : hazelcast_(std::move(source), std::move(message), std::move(details), std::move(cause), false) {}
+query::query(std::string source,
+             std::string message,
+             std::string details,
+             std::exception_ptr cause)
+  : hazelcast_(std::move(source),
+               std::move(message),
+               std::move(details),
+               std::move(cause),
+               false)
+{
+}
 
-    query::query(int32_t code,
-                 std::string message,
-                 std::exception_ptr cause,
-                 boost::uuids::uuid originating_member_id,
-                 std::string suggestion) : hazelcast_("", std::move(message), "", std::move(cause)), code_(code),
-                 suggestion_(std::move(suggestion)), originating_member_uuid_(originating_member_id) {
-    }
+query::query(int32_t code,
+             std::string message,
+             std::exception_ptr cause,
+             boost::uuids::uuid originating_member_id,
+             std::string suggestion)
+  : hazelcast_("", std::move(message), "", std::move(cause))
+  , code_(code)
+  , suggestion_(std::move(suggestion))
+  , originating_member_uuid_(originating_member_id)
+{
+}
 
-    int32_t query::code() const {
-        return code_;
-    }
+int32_t
+query::code() const
+{
+    return code_;
+}
 
-    const std::string &query::suggestion() const {
-        return suggestion_;
-    }
+const std::string&
+query::suggestion() const
+{
+    return suggestion_;
+}
 
-    const boost::uuids::uuid &query::originating_member_uuid() const {
-        return originating_member_uuid_;
-    }
-
+const boost::uuids::uuid&
+query::originating_member_uuid() const
+{
+    return originating_member_uuid_;
+}
 
 } // namespace exception
 } // namespace client

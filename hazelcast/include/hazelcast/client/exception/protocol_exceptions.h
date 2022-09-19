@@ -33,43 +33,47 @@ namespace exception {
     class HAZELCAST_API ClassName : public iexception                          \
     {                                                                          \
     public:                                                                    \
-        ClassName(std::string source,                                   \
-                  std::string message,                                  \
-                  std::string details = "",                             \
+        ClassName(std::string source,                                          \
+                  std::string message,                                         \
+                  std::string details = "",                                    \
                   std::exception_ptr cause = nullptr,                          \
                   bool retryable = false)                                      \
           : ClassName(#ClassName,                                              \
                       errorNo,                                                 \
-                      std::move(source),                                                  \
-                      std::move(message),                                                 \
-                      std::move(details),                                                 \
-                      std::move(cause),                                                   \
+                      std::move(source),                                       \
+                      std::move(message),                                      \
+                      std::move(details),                                      \
+                      std::move(cause),                                        \
                       isRuntime,                                               \
                       retryable)                                               \
-        {}                                                                     \
-        explicit ClassName(std::string message)                         \
-          : ClassName("", std::move(message))                                             \
-        {}                                                                     \
+        {                                                                      \
+        }                                                                      \
+        explicit ClassName(std::string message)                                \
+          : ClassName("", std::move(message))                                  \
+        {                                                                      \
+        }                                                                      \
         ClassName()                                                            \
           : ClassName("", "")                                                  \
-        {}                                                                     \
-        ClassName(std::string errorName,                                \
+        {                                                                      \
+        }                                                                      \
+        ClassName(std::string errorName,                                       \
                   int32_t errorCode,                                           \
-                  std::string source,                                   \
-                  std::string message,                                  \
-                  std::string details,                                  \
+                  std::string source,                                          \
+                  std::string message,                                         \
+                  std::string details,                                         \
                   std::exception_ptr cause,                                    \
                   bool runtime,                                                \
                   bool retryable)                                              \
-          : iexception(std::move(errorName),                                              \
-                       std::move(source),                                                 \
-                       std::move(message),                                                \
-                       std::move(details),                                                \
+          : iexception(std::move(errorName),                                   \
+                       std::move(source),                                      \
+                       std::move(message),                                     \
+                       std::move(details),                                     \
                        errorCode,                                              \
-                       std::move(cause),                                                  \
+                       std::move(cause),                                       \
                        runtime,                                                \
                        retryable)                                              \
-        {}                                                                     \
+        {                                                                      \
+        }                                                                      \
     };
 
 // ---------  Non-runtime starts here
@@ -292,19 +296,20 @@ public:
     class HAZELCAST_API ClassName : public retryable_hazelcast                 \
     {                                                                          \
     public:                                                                    \
-        explicit ClassName(std::string source = "",                     \
-                           std::string message = "",                    \
-                           std::string details = "",                    \
+        explicit ClassName(std::string source = "",                            \
+                           std::string message = "",                           \
+                           std::string details = "",                           \
                            std::exception_ptr cause = nullptr)                 \
           : retryable_hazelcast(#ClassName,                                    \
                                 errorNo,                                       \
-                                std::move(source),                                        \
-                                std::move(message),                                       \
-                                std::move(details),                                       \
-                                std::move(cause),                                         \
+                                std::move(source),                             \
+                                std::move(message),                            \
+                                std::move(details),                            \
+                                std::move(cause),                              \
                                 false,                                         \
                                 true)                                          \
-        {}                                                                     \
+        {                                                                      \
+        }                                                                      \
     };
 
 /** List of Retryable exceptions **/
@@ -336,9 +341,9 @@ public:
 
     int32_t code() const;
 
-    const std::string &suggestion() const;
+    const std::string& suggestion() const;
 
-    const boost::uuids::uuid &originating_member_uuid() const;
+    const boost::uuids::uuid& originating_member_uuid() const;
 
 private:
     int32_t code_;

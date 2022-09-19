@@ -236,7 +236,7 @@ template<typename... Param>
 sql_statement&
 sql_statement::set_parameters(Param... params)
 {
-    int _[] = {0, ((void) add_parameter(params), 0)...};
+    int _[] = { 0, ((void)add_parameter(params), 0)... };
     (void)_;
     return *this;
 }

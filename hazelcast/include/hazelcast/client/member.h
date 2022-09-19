@@ -77,19 +77,20 @@ public:
         byte minor;
         byte patch;
 
-        bool operator==(const version &rhs) const;
+        bool operator==(const version& rhs) const;
 
-        bool operator!=(const version &rhs) const;
+        bool operator!=(const version& rhs) const;
 
-        bool operator<(const version &rhs) const;
+        bool operator<(const version& rhs) const;
 
-        bool operator>(const version &rhs) const;
+        bool operator>(const version& rhs) const;
 
-        bool operator<=(const version &rhs) const;
+        bool operator<=(const version& rhs) const;
 
-        bool operator>=(const version &rhs) const;
+        bool operator>=(const version& rhs) const;
 
-        friend std::ostream &operator<<(std::ostream &os, const version &version);
+        friend std::ostream& operator<<(std::ostream& os,
+                                        const version& version);
     };
 
     member();
@@ -99,7 +100,7 @@ public:
            bool lite,
            std::unordered_map<std::string, std::string> attr,
            std::unordered_map<endpoint_qualifier, address> address_map,
-           version v = {0, 0, 0});
+           version v = { 0, 0, 0 });
 
     member(address member_address);
 
@@ -141,8 +142,9 @@ public:
     const std::string* get_attribute(const std::string& key) const;
 
     /**
-     * Returns the Hazelcast codebase version of this member; this may or may not be different from the version reported by
-     * cluster version, for example when a node with a different codebase version is added to an
+     * Returns the Hazelcast codebase version of this member; this may or may
+     * not be different from the version reported by cluster version, for
+     * example when a node with a different codebase version is added to an
      * existing cluster.
      *
      * @return the version of this member.

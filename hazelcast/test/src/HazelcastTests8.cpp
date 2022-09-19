@@ -2060,16 +2060,20 @@ TEST(ClientMessageTest, test_encode_sql_query_id)
 
     protocol::ClientMessage msg;
 
-    boost::uuids::uuid server_uuid{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-    boost::uuids::uuid client_uuid{21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36};
+    boost::uuids::uuid server_uuid{ 1, 2,  3,  4,  5,  6,  7,  8,
+                                    9, 10, 11, 12, 13, 14, 15, 16 };
+    boost::uuids::uuid client_uuid{ 21, 22, 23, 24, 25, 26, 27, 28,
+                                    29, 30, 31, 32, 33, 34, 35, 36 };
     msg.set(sql::impl::query_id{ server_uuid, client_uuid });
 
     const std::vector<unsigned char> expected_bytes{
-        6,   0,   0,   0,   0,   16, // begin frame
-        38, 0, 0,  0,   0,   0, // query id frame header
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, // server uuid
-        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, // client uuid
-        6,   0,   0, 0,  0, 8 // end frame
+        6,  0,  0,  0,  0,  16, // begin frame
+        38, 0,  0,  0,  0,  0,  // query id frame header
+        1,  2,  3,  4,  5,  6,  7,  8,
+        9,  10, 11, 12, 13, 14, 15, 16, // server uuid
+        21, 22, 23, 24, 25, 26, 27, 28,
+        29, 30, 31, 32, 33, 34, 35, 36, // client uuid
+        6,  0,  0,  0,  0,  8           // end frame
     };
 
     std::vector<unsigned char> actual_bytes;
@@ -2121,15 +2125,19 @@ TEST(ClientMessageTest, test_decode_sql_page)
                 sql::sql_column_type::varchar,
               }),
               page.column_types());
-    auto &all_rows = page.rows();
+    auto& all_rows = page.rows();
     ASSERT_EQ(2, all_rows.size());
-    auto &row1 = all_rows[0];
-    ASSERT_EQ(boost::make_optional<std::string>("foo"), row1.get_object<std::string>(0));
-    ASSERT_EQ(boost::make_optional<std::string>("test"), row1.get_object<std::string>(1));
+    auto& row1 = all_rows[0];
+    ASSERT_EQ(boost::make_optional<std::string>("foo"),
+              row1.get_object<std::string>(0));
+    ASSERT_EQ(boost::make_optional<std::string>("test"),
+              row1.get_object<std::string>(1));
 
-    auto &row2 = all_rows[1];
-    ASSERT_EQ(boost::make_optional<std::string>("bar"), row2.get_object<std::string>(0));
-    ASSERT_EQ(boost::make_optional<std::string>(""), row2.get_object<std::string>(1));
+    auto& row2 = all_rows[1];
+    ASSERT_EQ(boost::make_optional<std::string>("bar"),
+              row2.get_object<std::string>(0));
+    ASSERT_EQ(boost::make_optional<std::string>(""),
+              row2.get_object<std::string>(1));
 }
 
 TEST(ClientMessageTest, test_decode_sql_error)

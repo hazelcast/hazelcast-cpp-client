@@ -398,10 +398,8 @@ public:
             rd_ptr(INT32_SIZE));
     }
 
-
     template<typename T>
-    typename std::enable_if<std::is_same<T, float>::value,
-                            T>::type inline get()
+    typename std::enable_if<std::is_same<T, float>::value, T>::type inline get()
     {
         return boost::endian::
           endian_load<float, 4, boost::endian::order::little>(
@@ -450,49 +448,49 @@ public:
 
     template<typename T>
     typename std::enable_if<std::is_same<T, local_date>::value,
-            T>::type inline get()
+                            T>::type inline get()
     {
         auto year = static_cast<uint8_t>(get<int32_t>());
         auto month = static_cast<uint8_t>(get<int8_t>());
         auto day_of_month = static_cast<uint8_t>(get<int8_t>());
-        return {year, month, day_of_month};
+        return { year, month, day_of_month };
     }
 
     template<typename T>
     typename std::enable_if<std::is_same<T, local_time>::value,
-            T>::type inline get()
+                            T>::type inline get()
     {
         auto hour = static_cast<uint8_t>(get<int8_t>());
         auto minute = static_cast<uint8_t>(get<int8_t>());
         auto second = static_cast<uint8_t>(get<int8_t>());
         auto nano = get<int32_t>();
 
-        return {hour, minute, second, nano};
+        return { hour, minute, second, nano };
     }
 
     template<typename T>
     typename std::enable_if<std::is_same<T, local_date_time>::value,
-            T>::type inline get()
+                            T>::type inline get()
     {
         auto date = get<local_date>();
         auto time = get<local_time>();
 
-        return {date, time};
+        return { date, time };
     }
 
     template<typename T>
     typename std::enable_if<std::is_same<T, offset_date_time>::value,
-            T>::type inline get()
+                            T>::type inline get()
     {
         auto date_time = get<local_date_time>();
         auto offset_seconds = get<int32_t>();
 
-        return {date_time, offset_seconds};
+        return { date_time, offset_seconds };
     }
 
     template<typename T>
     typename std::enable_if<std::is_same<T, big_decimal>::value,
-            T>::type inline get()
+                            T>::type inline get()
     {
         auto content_size = get<int32_t>();
         auto mem_ptr = rd_ptr(content_size);
@@ -501,7 +499,7 @@ public:
 
         auto scale = get<int32_t>();
 
-        return {pimpl::from_bytes(bytes), scale};
+        return { pimpl::from_bytes(bytes), scale };
     }
 
     template<typename T>
@@ -923,11 +921,13 @@ public:
     }
 
     template<typename T>
-    std::vector<boost::any> to_vector_of_any(std::vector<boost::optional<T>> values) {
+    std::vector<boost::any> to_vector_of_any(
+      std::vector<boost::optional<T>> values)
+    {
         auto size = values.size();
         std::vector<boost::any> vector_of_any(size);
-        for (std::size_t i = 0;i < size; ++i) {
-            auto &value = values[i];
+        for (std::size_t i = 0; i < size; ++i) {
+            auto& value = values[i];
             if (value) {
                 vector_of_any[i] = std::move(*value);
             }
@@ -954,71 +954,93 @@ public:
         std::vector<column> columns(number_of_columns);
         std::vector<sql::sql_column_type> column_types(number_of_columns);
 
-        for (std::size_t i = 0;i < number_of_columns; ++i) {
-            auto column_type = static_cast<sql::sql_column_type>(column_type_ids[i]);
+        for (std::size_t i = 0; i < number_of_columns; ++i) {
+            auto column_type =
+              static_cast<sql::sql_column_type>(column_type_ids[i]);
             column_types[i] = column_type;
 
             switch (column_type) {
                 case sql::sql_column_type::varchar:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<std::string>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<std::string>>>());
                     break;
                 case sql::sql_column_type::boolean:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<bool>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<bool>>>());
                     break;
                 case sql::sql_column_type::tinyint:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<byte>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<byte>>>());
                     break;
                 case sql::sql_column_type::smallint:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<int16_t>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<int16_t>>>());
                     break;
                 case sql::sql_column_type::integer:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<int32_t>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<int32_t>>>());
                     break;
                 case sql::sql_column_type::bigint:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<int64_t>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<int64_t>>>());
                     break;
                 case sql::sql_column_type::real:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<float>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<float>>>());
                     break;
                 case sql::sql_column_type::double_:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<double>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<double>>>());
                     break;
                 case sql::sql_column_type::date:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<local_date>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<local_date>>>());
                     break;
                 case sql::sql_column_type::time:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<local_time>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<local_time>>>());
                     break;
                 case sql::sql_column_type::timestamp:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<local_date_time>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<local_date_time>>>());
                     break;
                 case sql::sql_column_type::timestamp_with_timezone:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<offset_date_time>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<offset_date_time>>>());
                     break;
                 case sql::sql_column_type::decimal:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<big_decimal>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<boost::optional<big_decimal>>>());
                     break;
                 case sql::sql_column_type::null: {
                     auto size = get<int32_t>();
-                    columns[i] = std::vector<boost::any>(static_cast<size_t>(size));
-                }
-                    break;
+                    columns[i] =
+                      std::vector<boost::any>(static_cast<size_t>(size));
+                } break;
                 case sql::sql_column_type::object:
-                    columns[i] = to_vector_of_any(get<std::vector<boost::optional<serialization::pimpl::data>>>());
+                    columns[i] = to_vector_of_any(
+                      get<std::vector<
+                        boost::optional<serialization::pimpl::data>>>());
                     break;
                 default:
-                    throw exception::illegal_state("ClientMessage::get<sql::sql_page>",
-                                                   (boost::format("Unknown type %1%") %static_cast<int32_t>(column_type)).str());
+                    throw exception::illegal_state(
+                      "ClientMessage::get<sql::sql_page>",
+                      (boost::format("Unknown type %1%") %
+                       static_cast<int32_t>(column_type))
+                        .str());
             }
         }
 
         fast_forward_to_end_frame();
 
-        return sql::sql_page{ std::move(column_types), std::move(columns), last };
+        return sql::sql_page{ std::move(column_types),
+                              std::move(columns),
+                              last };
     }
 
     template<typename T>
-    typename std::enable_if<std::is_same<T, sql::impl::sql_error>::value, T>::type
+    typename std::enable_if<std::is_same<T, sql::impl::sql_error>::value,
+                            T>::type
     get()
     {
         // begin frame
@@ -1043,9 +1065,9 @@ public:
         fast_forward_to_end_frame();
 
         return sql::impl::sql_error{ code,
-                                 std::move(message),
-                                 originating_member_id,
-                                 std::move(suggestion) };
+                                     std::move(message),
+                                     originating_member_id,
+                                     std::move(suggestion) };
     }
 
     template<typename T>
@@ -1341,7 +1363,8 @@ public:
     {
         add_begin_frame();
 
-        set(frame_header_t{ SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * sizeof(boost::uuids::uuid),
+        set(frame_header_t{ SIZE_OF_FRAME_LENGTH_AND_FLAGS +
+                              2 * sizeof(boost::uuids::uuid),
                             DEFAULT_FLAGS });
 
         std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),

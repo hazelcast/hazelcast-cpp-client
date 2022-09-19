@@ -54,7 +54,8 @@ cluster::remove_membership_listener(boost::uuids::uuid registration_id)
 }
 
 member::member()
-  : lite_member_(false), version_{0, 0, 0}
+  : lite_member_(false)
+  , version_{ 0, 0, 0 }
 {}
 
 member::member(address member_address,
@@ -74,13 +75,13 @@ member::member(address member_address,
 member::member(address member_address)
   : address_(member_address)
   , lite_member_(false)
-  , version_{0, 0, 0}
+  , version_{ 0, 0, 0 }
 {}
 
 member::member(boost::uuids::uuid uuid)
   : uuid_(uuid)
   , lite_member_(false)
-  , version_{0, 0, 0}
+  , version_{ 0, 0, 0 }
 {}
 
 const address&
@@ -136,8 +137,9 @@ member::get_attribute(const std::string& key) const
 }
 
 member::version
-member::get_version() const {
-   return version_;
+member::get_version() const
+{
+    return version_;
 }
 
 bool
@@ -331,44 +333,56 @@ operator==(const endpoint_qualifier& lhs, const endpoint_qualifier& rhs)
     return lhs.type == rhs.type && lhs.identifier == rhs.identifier;
 }
 
-    bool member::version::operator==(const member::version &rhs) const {
-        return major == rhs.major &&
-               minor == rhs.minor &&
-               patch == rhs.patch;
-    }
+bool
+member::version::operator==(const member::version& rhs) const
+{
+    return major == rhs.major && minor == rhs.minor && patch == rhs.patch;
+}
 
-    bool member::version::operator!=(const member::version &rhs) const {
-        return !(rhs == *this);
-    }
+bool
+member::version::operator!=(const member::version& rhs) const
+{
+    return !(rhs == *this);
+}
 
-    bool member::version::operator<(const member::version &rhs) const {
-        if (major < rhs.major)
-            return true;
-        if (rhs.major < major)
-            return false;
-        if (minor < rhs.minor)
-            return true;
-        if (rhs.minor < minor)
-            return false;
-        return patch < rhs.patch;
-    }
+bool
+member::version::operator<(const member::version& rhs) const
+{
+    if (major < rhs.major)
+        return true;
+    if (rhs.major < major)
+        return false;
+    if (minor < rhs.minor)
+        return true;
+    if (rhs.minor < minor)
+        return false;
+    return patch < rhs.patch;
+}
 
-    bool member::version::operator>(const member::version &rhs) const {
-        return rhs < *this;
-    }
+bool
+member::version::operator>(const member::version& rhs) const
+{
+    return rhs < *this;
+}
 
-    bool member::version::operator<=(const member::version &rhs) const {
-        return !(rhs < *this);
-    }
+bool
+member::version::operator<=(const member::version& rhs) const
+{
+    return !(rhs < *this);
+}
 
-    bool member::version::operator>=(const member::version &rhs) const {
-        return !(*this < rhs);
-    }
+bool
+member::version::operator>=(const member::version& rhs) const
+{
+    return !(*this < rhs);
+}
 
-    std::ostream &operator<<(std::ostream &os, const member::version &version) {
-        os << version.major << "." << version.minor << "." << version.patch;
-        return os;
-    }
+std::ostream&
+operator<<(std::ostream& os, const member::version& version)
+{
+    os << version.major << "." << version.minor << "." << version.patch;
+    return os;
+}
 } // namespace client
 } // namespace hazelcast
 

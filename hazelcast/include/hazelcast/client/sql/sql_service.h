@@ -26,9 +26,9 @@
 
 namespace hazelcast {
 namespace client {
-    namespace impl {
-        class hazelcast_client_instance_impl;
-    }
+namespace impl {
+class hazelcast_client_instance_impl;
+}
 class hazelcast_client;
 namespace sql {
 
@@ -82,7 +82,7 @@ public:
                                       const Params&... params)
     {
         sql_statement s{ client_context_, query };
-        int _[] = {0, (s.add_parameter(params), 0)... };
+        int _[] = { 0, (s.add_parameter(params), 0)... };
         (void)_;
         return execute(s);
     }
@@ -95,7 +95,9 @@ public:
      * @param connection Connection.
      * @param id    Query ID.
      */
-    boost::future<void> close(const std::shared_ptr<connection::Connection> &connection, impl::query_id id);
+    boost::future<void> close(
+      const std::shared_ptr<connection::Connection>& connection,
+      impl::query_id id);
 
 private:
     friend client::impl::hazelcast_client_instance_impl;
@@ -103,16 +105,18 @@ private:
 
     client::spi::ClientContext& client_context_;
 
-    struct sql_execute_response_parameters {
+    struct sql_execute_response_parameters
+    {
         int64_t update_count;
-        boost::optional<std::vector<sql_column_metadata>>row_metadata;
+        boost::optional<std::vector<sql_column_metadata>> row_metadata;
         boost::optional<sql_page> first_page;
         boost::optional<impl::sql_error> error;
         bool is_infinite_rows = false;
         bool is_infinite_rows_exist = false;
     };
 
-    struct sql_fetch_response_parameters {
+    struct sql_fetch_response_parameters
+    {
         boost::optional<sql_page> page;
         boost::optional<impl::sql_error> error;
     };
@@ -125,22 +129,33 @@ private:
     std::shared_ptr<connection::Connection> query_connection();
 
     void rethrow(const std::exception_ptr& exc_ptr);
-    void rethrow(std::exception_ptr cause_ptr, const std::shared_ptr<connection::Connection> &connection);
+    void rethrow(std::exception_ptr cause_ptr,
+                 const std::shared_ptr<connection::Connection>& connection);
 
     boost::uuids::uuid client_id();
 
-    sql_result handle_execute_response(protocol::ClientMessage &msg, std::shared_ptr<connection::Connection> connection,
-                                       impl::query_id id, int32_t cursor_buffer_size);
+    sql_result handle_execute_response(
+      protocol::ClientMessage& msg,
+      std::shared_ptr<connection::Connection> connection,
+      impl::query_id id,
+      int32_t cursor_buffer_size);
 
-    static sql_execute_response_parameters decode_execute_response(protocol::ClientMessage &msg) ;
+    static sql_execute_response_parameters decode_execute_response(
+      protocol::ClientMessage& msg);
 
-    impl::query_id create_query_id(const std::shared_ptr<connection::Connection> &query_conn);
+    impl::query_id create_query_id(
+      const std::shared_ptr<connection::Connection>& query_conn);
 
-    boost::future<sql_page> fetch_page(const impl::query_id &q_id, int32_t cursor_buffer_size, const std::shared_ptr<connection::Connection> &connection);
+    boost::future<sql_page> fetch_page(
+      const impl::query_id& q_id,
+      int32_t cursor_buffer_size,
+      const std::shared_ptr<connection::Connection>& connection);
 
-    static sql_fetch_response_parameters decode_fetch_response(protocol::ClientMessage message);
+    static sql_fetch_response_parameters decode_fetch_response(
+      protocol::ClientMessage message);
 
-    static void handle_fetch_response_error(boost::optional<impl::sql_error> error);
+    static void handle_fetch_response_error(
+      boost::optional<impl::sql_error> error);
 };
 } // namespace sql
 } // namespace client

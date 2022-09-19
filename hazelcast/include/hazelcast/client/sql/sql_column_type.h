@@ -59,10 +59,12 @@ enum class HAZELCAST_API sql_column_type
     /** TIMESTAMP type, represented by hazelcast::client::local_date_time */
     timestamp = 11,
 
-    /** TIMESTAMP_WITH_TIME_ZONE type, represented by hazelcast::client::offset_date_time */
+    /** TIMESTAMP_WITH_TIME_ZONE type, represented by
+       hazelcast::client::offset_date_time */
     timestamp_with_timezone = 12,
 
-    /** OBJECT type, could be represented by any Hazelcast serializable class. */
+    /** OBJECT type, could be represented by any Hazelcast serializable class.
+     */
     object = 13,
 
     /**

@@ -26,7 +26,6 @@
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/proxy/SerializingProxy.h"
 
-
 namespace hazelcast {
 namespace cp {
 namespace internal {

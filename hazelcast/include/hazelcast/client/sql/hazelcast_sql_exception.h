@@ -38,7 +38,7 @@ public:
     /**
      * Gets ID of the member that caused or initiated an error condition.
      */
-    const boost::uuids::uuid &originating_member_id() const;
+    const boost::uuids::uuid& originating_member_id() const;
 
     /**
      * Gets the internal error code associated with the exception.
@@ -48,7 +48,7 @@ public:
     /**
      * Gets the suggested SQL statement to remediate experienced error
      */
-    const boost::optional<std::string> &suggestion() const;
+    const boost::optional<std::string>& suggestion() const;
 
 private:
     boost::uuids::uuid originating_member_id_;

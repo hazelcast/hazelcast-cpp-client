@@ -31,7 +31,8 @@ namespace sql {
 class HAZELCAST_API sql_row_metadata
 {
 public:
-    using const_iterator = std::unordered_map<std::string, std::size_t>::const_iterator;
+    using const_iterator =
+      std::unordered_map<std::string, std::size_t>::const_iterator;
 
     explicit sql_row_metadata(std::vector<sql_column_metadata> columns);
 
@@ -40,7 +41,7 @@ public:
      *
      * @return the number of columns in the row
      */
-     std::size_t column_count() const;
+    std::size_t column_count() const;
 
     /**
      * Gets column metadata.
@@ -49,30 +50,31 @@ public:
      * @return column metadata
      * @throws IndexOutOfBoundsException If the column index is out of bounds
      */
-    const sql_column_metadata &column(std::size_t index) const;
+    const sql_column_metadata& column(std::size_t index) const;
 
     /**
      * Gets columns metadata.
      *
      * @return columns metadata
      */
-    const std::vector<sql_column_metadata> &columns() const;
+    const std::vector<sql_column_metadata>& columns() const;
 
     /**
-     * Find index of the column with the given name. Returned index can be used to get column value
-     * from sql_row.
+     * Find index of the column with the given name. Returned index can be used
+     * to get column value from sql_row.
      *
      * @param column_name column name (case sensitive)
      * @return the iterator pointing to the found item or end() if not found.
      *
      * @see sql_row
      */
-    const_iterator find_column(const std::string &column_name) const;
+    const_iterator find_column(const std::string& column_name) const;
 
     /**
      * Constant indicating that the column is not found.
      */
     const_iterator end() const;
+
 private:
     std::vector<sql_column_metadata> columns_;
     std::unordered_map<std::string, std::size_t> name_to_index_;

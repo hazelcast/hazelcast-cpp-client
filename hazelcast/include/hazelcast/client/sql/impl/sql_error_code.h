@@ -27,7 +27,8 @@ enum class HAZELCAST_API sql_error_code
     /** Generic error. */
     GENERIC = -1,
 
-    /** A network connection problem between members, or between a client and a member. */
+    /** A network connection problem between members, or between a client and a
+       member. */
     CONNECTION_PROBLEM = 1001,
 };
 

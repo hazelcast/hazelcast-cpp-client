@@ -129,8 +129,11 @@ public:
      *     <li>if there's no such connection, return any random connection
      * </ol>
      */
-    std::shared_ptr<connection::Connection> connection_for_sql(std::function<boost::optional<member>()> member_of_large_same_version_group,
-                                                               std::function<boost::optional<member>(boost::uuids::uuid)> get_cluster_member);
+    std::shared_ptr<connection::Connection> connection_for_sql(
+      std::function<boost::optional<member>()>
+        member_of_large_same_version_group,
+      std::function<boost::optional<member>(boost::uuids::uuid)>
+        get_cluster_member);
 
     boost::uuids::uuid get_client_uuid() const;
 
@@ -275,7 +278,7 @@ private:
     std::shared_ptr<Connection> connect(const address& address);
 
     address translate(const member& m);
-    };
+};
 } // namespace connection
 } // namespace client
 } // namespace hazelcast
