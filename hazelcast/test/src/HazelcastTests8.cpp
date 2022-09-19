@@ -1852,7 +1852,7 @@ TEST_F(IssueTest, XML){
     dst1 << src1.rdbuf();
     src1.close();
     dst1.close();
-    auto client = new_client().get();
+    auto client = new_client(std::move(hazelcast::client::client_config::load())).get();
     auto con = &client.get_client_config();
     ASSERT_TRUE(con->get_properties().count("prop1"));
     ASSERT_TRUE(con->get_properties().count("prop2"));
