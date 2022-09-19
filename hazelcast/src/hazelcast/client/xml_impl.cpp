@@ -121,7 +121,6 @@ hazelcast::client::serialization_config
 abstract_dom_config_processor::parse_serialization(
   boost::property_tree::ptree node)
 {
-    std::cout << "parse_serialization" << std::endl;
     hazelcast::client::serialization_config serialization_config ;
     for (auto& child : node) {
         std::string name = child.first;
@@ -149,7 +148,6 @@ abstract_dom_config_processor::fill_properties(
   std::unordered_map<std::string, std::string>* properties,
   bool dom_level_3)
 {
-    std::cout << "fill_properties" << std::endl;
     for (auto& pair : node){
         if(pair.first == "<xmlcomment>"){
             continue;
@@ -166,7 +164,6 @@ abstract_dom_config_processor::fill_properties(
   hazelcast::client::client_config* config
 )
 {
-    std::cout << "fill_properties" << std::endl;
     for (auto& pair : node){
         if(pair.first == "<xmlcomment>"){
             continue;
@@ -213,7 +210,6 @@ void
 client_dom_config_processor::build_config(
   const boost::property_tree::ptree& root_node)
 {
-    std::cout << "build_config" << std::endl;
     for (auto& pair : root_node) {
         std::string node_name = pair.first;
         if (node_name == "<xmlattr>") {
@@ -282,7 +278,6 @@ void
 client_dom_config_processor::handle_security(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_security" << std::endl;
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
@@ -309,7 +304,6 @@ void
 client_dom_config_processor::handle_serialization(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_serialization" << std::endl;
     hazelcast::client::serialization_config serialization_config =
       parse_serialization(node);
     client_config->set_serialization_config(serialization_config);
@@ -318,7 +312,6 @@ void
 client_dom_config_processor::handle_network(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_network" << std::endl;
     hazelcast::client::config::client_network_config client_network_config ;
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
@@ -353,7 +346,6 @@ client_dom_config_processor::handle_cluster_members(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
-    std::cout << "handle_cluster_members" << std::endl;
     for (auto& pair : node) {
         if (matches("address", pair.first)) {
             auto pos = pair.second.data().find(':');
@@ -387,7 +379,6 @@ client_dom_config_processor::handle_socket_options(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
-    std::cout << "handle_socket_options" << std::endl;
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
@@ -415,7 +406,6 @@ client_dom_config_processor::handle_ssl_config(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
-    std::cout << "handle_ssl_config" << std::endl;
     hazelcast::client::config::ssl_config ssl_con;
     auto enabled = false;
     try{
@@ -498,7 +488,6 @@ client_dom_config_processor::handle_aws(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
-    std::cout << "handle_aws" << std::endl;
     auto enabled =  get_bool_value(get_attribute(node, "enabled"));
     client_network_config->get_aws_config().set_enabled(enabled);
     hazelcast::client::config::client_aws_config aws_con;
@@ -531,7 +520,6 @@ client_dom_config_processor::handle_hazelcast_cloud(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_network_config* client_network_config)
 {
-    std::cout << "handle_hazelcast_cloud" << std::endl;
     bool enabled = false;
     try {
         std::string enable = get_attribute(node, "enabled");
@@ -553,7 +541,6 @@ void
 client_dom_config_processor::client_dom_config_processor::
   handle_flake_id_generator(const boost::property_tree::ptree& node)
 {
-    std::cout << "handle_flake_id_generator" << std::endl;
     handle_flake_id_generator_node(node);
 }
 
@@ -561,7 +548,6 @@ void
 client_dom_config_processor::client_dom_config_processor::
   handle_flake_id_generator_node(const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_flake_id_generator_node" << std::endl;
     std::string name = get_attribute(node, "name");
     hazelcast::client::config::client_flake_id_generator_config config(name);
     for (auto& pair : node) {
@@ -583,14 +569,12 @@ void
 client_dom_config_processor::handle_reliable_topic(
   const boost::property_tree::ptree& node)
 {
-    std::cout << "handle_reliable_topic" << std::endl;
     handle_reliable_topic_node(node);
 }
 void
 client_dom_config_processor::handle_reliable_topic_node(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_reliable_topic_node" << std::endl;
     std::string name = get_attribute(node, "name");
     hazelcast::client::config::reliable_topic_config config(name);
     for (auto& pair : node) {
@@ -607,35 +591,29 @@ void
 client_dom_config_processor::handle_near_cache(
   const boost::property_tree::ptree& node)
 {
-    std::cout << "handle_near_cache" << std::endl;
     handle_near_cache_node(node);
 }
 void
 client_dom_config_processor::handle_near_cache_node(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_near_cache_node" << std::endl;
     std::string name;
     try {
         name = get_attribute(node, "name");
     } catch (const boost::exception& e) {
         name = "default";
     }
-    std::cout << "handle_near_cache_node init" << std::endl;
     hazelcast::client::config::near_cache_config near_cache_config(name);
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
         std::string node_name = pair.first;
         if (matches("time-to-live-seconds", node_name)) {
-            std::cout << "handle_near_cache_node ttl" << std::endl;
             near_cache_config.set_time_to_live_seconds(
               get_integer_value(pair.first, pair.second.data()));
         } else if (matches("max-idle-seconds", node_name)) {
-            std::cout << "handle_near_cache_node mis" << std::endl;
             near_cache_config.set_max_idle_seconds(
               get_integer_value(pair.first, pair.second.data()));
         } else if (matches("in-memory-format", node_name)) { // NO NATIVE ??
-            std::cout << "handle_near_cache_node mem" << std::endl;
             if (pair.second.data() == "BINARY") {
                 near_cache_config.set_in_memory_format(
                   hazelcast::client::config::in_memory_format::BINARY);
@@ -644,33 +622,27 @@ client_dom_config_processor::handle_near_cache_node(
                   hazelcast::client::config::in_memory_format::OBJECT);
             }
         } else if (matches("invalidate-on-change", node_name)) {
-            std::cout << "handle_near_cache_node invalidate" << std::endl;
             near_cache_config.set_invalidate_on_change(
               get_bool_value(pair.second.data()));
         } else if (matches("local-update-policy", node_name)) {
-            std::cout << "handle_near_cache_node update" << std::endl;
             if (pair.second.data() == "CACHE") {
                 near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::CACHE);
             } else if (pair.second.data() == "INVALIDATE") {
-                std::cout << "handle_near_cache_node INV" << std::endl;
                 near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::INVALIDATE);
             }
         } else if (matches("eviction", node_name)) {
-            std::cout << "handle_near_cache_node evic" << std::endl;
             near_cache_config.set_eviction_config(
               get_eviction_config(pair.second));
         }
     }
-    std::cout << "handle_near_cache_node end" << std::endl;
     client_config->add_near_cache_config(near_cache_config);
 }
 hazelcast::client::config::eviction_config
 client_dom_config_processor::get_eviction_config(
   const boost::property_tree::ptree& node)
 {
-    std::cout << "get_eviction_config" << std::endl;
     auto eviction_config = hazelcast::client::config::eviction_config();
     try {
         auto attr = get_attribute(node, "size");
@@ -708,7 +680,6 @@ void
 client_dom_config_processor::handle_connection_strategy(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_connection_strategy" << std::endl;
     auto strategy_config =
       hazelcast::client::config::client_connection_strategy_config();
     try {
@@ -750,7 +721,6 @@ client_dom_config_processor::handle_connection_retry(
   const boost::property_tree::ptree& node,
   hazelcast::client::config::client_connection_strategy_config* strategy_config)
 {
-    std::cout << "handle_connection_retry" << std::endl;
     hazelcast::client::config::connection_retry_config connection_retry_config;
     for (auto& pair : node) {
         auto child = pair_to_node(pair.first, pair.second);
@@ -782,7 +752,6 @@ void
 client_dom_config_processor::handle_labels(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_labels" << std::endl;
     for (auto& child : node) {
         client_config->add_label(child.second.data());
     }
@@ -791,7 +760,6 @@ void
 client_dom_config_processor::handle_backup_ack_to_client(
   const boost::property_tree::ptree& node) const
 {
-    std::cout << "handle_backup_ack_to_client" << std::endl;
     client_config->backup_acks_enabled(get_bool_value(node.data()));
 }
 
@@ -800,7 +768,6 @@ void
 declarative_config_util::validate_suffix_in_system_property(
   const std::string& property_key)
 {
-    std::cout << "validate_suffix_in_system_property" << std::endl;
     const char * env;
     env = std::getenv(property_key.c_str());
     std::string config_system_property ;
@@ -825,7 +792,6 @@ declarative_config_util::throw_unaccepted_suffix_in_system_property(
   const std::string& config_resource,
   const std::vector<std::string>& accepted_suffixes)
 {
-    std::cout << "throw_unaccepted_suffix_in_system_property" << std::endl;
     std::string message =
       "The suffix of the resource \'" + config_resource +
       "\' referenced in \'" + property_key +
@@ -838,7 +804,6 @@ declarative_config_util::is_accepted_suffix_configured(
   const std::string& config_file,
   std::vector<std::string> accepted_suffixes)
 {
-    std::cout << "is_accepted_suffix_configured" << std::endl;
     std::string config_file_lower;
     if (config_file.empty()) {
         config_file_lower = config_file;
@@ -860,7 +825,6 @@ declarative_config_util::is_accepted_suffix_configured(
 std::shared_ptr<std::ifstream>
 abstract_config_locator::get_in()
 {
-    std::cout << "get_in" << std::endl;
     return in;
 }
 
@@ -868,7 +832,6 @@ bool
 abstract_config_locator::load_from_working_directory(
   const std::string& config_file_path)
 {
-    std::cout << "load_from_working_directory" << std::endl;
     try {
         std::ifstream stream;
         in = std::make_shared<std::ifstream>(std::move(stream));
@@ -899,7 +862,6 @@ abstract_config_locator::load_from_working_directory(
   const std::string& config_file_prefix,
   const std::vector<std::string>& accepted_suffixes)
 {
-    std::cout << "load_from_working_directory" << std::endl;
     util::Preconditions::check_not_empty(
       accepted_suffixes, "Parameter accepted_suffixes must not be empty");
     for (const auto& suffix : accepted_suffixes) {
@@ -921,14 +883,12 @@ abstract_config_locator::load_from_system_property(
   const std::string& property_key,
   const std::vector<std::string>& accepted_suffixes)
 {
-    std::cout << "load_from_system_property" << std::endl;
     return load_from_system_property(property_key, false, accepted_suffixes);
 }
 void
 abstract_config_locator::load_system_property_file_resource(
   const std::string& config_system_property)
 {
-    std::cout << "load_system_property_file_resource" << std::endl;
     std::cout << "Using configuration file at " << config_system_property
               << std::endl;
     std::ifstream stream;
@@ -952,7 +912,6 @@ abstract_config_locator::load_from_system_property(
   bool fail_on_unaccepted_suffix,
   const std::vector<std::string>& accepted_suffixes)
 {
-    std::cout << "load_from_system_property" << std::endl;
     if (accepted_suffixes.empty()) {
         throw hazelcast::client::exception::illegal_argument(
           "Parameter acceptedSuffixes must not be empty");
@@ -985,7 +944,7 @@ abstract_config_locator::load_from_system_property(
 
         std::cout << "INFO: "
                   << "Loading configuration " + config_system_property +
-                       " from environment variable"
+                       " from environment variable "
                   << property_key << std::endl;
         load_system_property_file_resource(config_system_property);
         return true;
@@ -1004,32 +963,27 @@ abstract_config_locator::load_from_system_property_or_fail_on_unaccepted_suffix(
   const std::string& property_key,
   const std::vector<std::string>& accepted_suffixes)
 {
-    std::cout << "load_from_system_property_or_fail_on_unaccepted_suffix" << std::endl;
     return load_from_system_property(property_key, true, accepted_suffixes);
 }
 bool
 xml_client_config_locator::
   locate_from_system_property_or_fail_on_unaccepted_suffix()
 {
-    std::cout << "locate_from_system_property_or_fail_on_unaccepted_suffix" << std::endl;
     return load_from_system_property_or_fail_on_unaccepted_suffix(
       "hazelcast.client.config",
       {"xml"});
 }
 bool xml_client_config_locator::locate_in_work_directory(const std::string& path){
-    std::cout << "locate_in_work_directory" << std::endl;
     return load_from_working_directory(path);
 }
 bool
 xml_client_config_locator::locate_in_work_directory()
 {
-    std::cout << "locate_in_work_directory" << std::endl;
     return load_from_working_directory("hazelcast-client.xml");
 }
 bool
 xml_client_config_locator::locate_from_system_property()
 {
-    std::cout << "locate_from_system_property" << std::endl;
     return load_from_system_property(
       "hazelcast.client.config",
       {"xml"});
@@ -1062,7 +1016,6 @@ abstract_xml_config_builder::get_attribute(boost::property_tree::ptree node,
 void
 abstract_xml_config_builder::process(boost::property_tree::ptree* root)
 {
-    std::cout << "process" << std::endl;
     replace_imports(root);
     replace_variables(root);
 }
@@ -1071,7 +1024,6 @@ void
 abstract_xml_config_builder::replace_variables(
   boost::property_tree::ptree* root)
 {
-    std::cout << "replace_variables" << std::endl;
     bool fail_fast = false;
     std::vector<property_replacer> replacers;
     boost::property_tree::ptree node;
@@ -1105,7 +1057,6 @@ abstract_xml_config_builder::replace_variables(
 void
 abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
 {
-    std::cout << "replace_imports" << std::endl;
     replace_variables(root);
     bool imports_ended = false;
     for(auto& child : *root){
@@ -1160,7 +1111,6 @@ property_replacer
 abstract_xml_config_builder::create_replacer(
   const boost::property_tree::ptree& node)
 {
-    std::cout << "create_replacer" << std::endl;
     std::string replacer_class = get_attribute(node, "class-name");
     std::unordered_map<std::string, std::string>  properties_;
     for (auto& n : node) {
@@ -1186,7 +1136,6 @@ abstract_xml_config_builder::fill_properties(
   const boost::property_tree::ptree& node,
   std::unordered_map<std::string, std::string>* properties_)
 {
-    std::cout << "fill_properties" << std::endl;
     abstract_dom_config_processor::fill_properties(
       node, properties_, dom_level_3);
 }
@@ -1199,7 +1148,6 @@ xml_client_config_builder::xml_client_config_builder(
 boost::property_tree::ptree
 xml_client_config_builder::parse(std::ifstream input_stream)
 {
-    std::cout << "parse" << std::endl;
     boost::property_tree::ptree tree;
     try {
         boost::property_tree::read_xml(input_stream, tree);
@@ -1216,7 +1164,6 @@ xml_client_config_builder::parse(std::ifstream input_stream)
 hazelcast::client::client_config
 xml_client_config_builder::build()
 {
-    std::cout << "build" << std::endl;
     hazelcast::client::client_config client_config;
     parse_and_build_config(&client_config);
     in->close();
@@ -1227,7 +1174,6 @@ void
 xml_client_config_builder::parse_and_build_config(
   hazelcast::client::client_config* client_config)
 {
-    std::cout << "parse_and_build_config" << std::endl;
     auto root = parse(std::move(*in));
     try {
         root = root.get_child("hazelcast-client");
@@ -1264,7 +1210,6 @@ property_replacer::get_prefix()
 std::string
 property_replacer::get_replacement(const std::string& variable)
 {
-    std::cout << "get_replacement" << std::endl;
     auto val = properties.find(variable);
     if(val == properties.end()){
         return "";
@@ -1281,7 +1226,6 @@ config_replacer_helper::traverse_children_and_replace_variables(
   bool fail_fast,
   xml_dom_variable_replacer variable_replacer)
 {
-    std::cout << "traverse_children_and_replace_variables" << std::endl;
     try {
         try{
             auto attributes = root->get_child("<xmlattr>");
@@ -1313,7 +1257,6 @@ config_replacer_helper::traverse_children_and_replace_variables(
   bool fail_fast,
   const xml_dom_variable_replacer& variable_replacer)
 {
-    std::cout << "traverse_children_and_replace_variables" << std::endl;
     for (const property_replacer& replacer : replacers) {
         traverse_children_and_replace_variables(
           root, replacer, fail_fast, variable_replacer);
@@ -1326,7 +1269,6 @@ abstract_dom_variable_replacer::handle_missing_variable(
   const std::string& node_name,
   bool fail_fast)
 {
-    std::cout << "handle_missing_variable" << std::endl;
     std::string message =
       "Could not find a replacement for " + variable + " on node " + node_name;
     if (fail_fast) {
@@ -1342,7 +1284,6 @@ abstract_dom_variable_replacer::replace_value(
   const std::string& value,
   const std::string& node_name)
 {
-    std::cout << "replace_value" << std::endl;
     std::string sb = "";
     sb = sb + value;
     std::string replacer_prefix = "$" + replacer.get_prefix() + "{";
@@ -1381,7 +1322,6 @@ abstract_dom_variable_replacer::replace_variable_in_node_value(
   bool fail_fast,
   const std::string& node_name)
 {
-    std::cout << "replace_variable_in_node_value" << std::endl;
     std::string value = node->data();
     if (!value.empty()) {
         std::string replaced_value =

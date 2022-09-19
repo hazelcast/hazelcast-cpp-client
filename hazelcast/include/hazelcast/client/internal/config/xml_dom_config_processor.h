@@ -57,9 +57,6 @@ protected:
                                const std::string& value);
     static double get_double_value(const std::string& parameter_name,
                                    const std::string& value);
-    static double get_double_value(const std::string& parameter_name,
-                                   const std::string& value,
-                                   double default_value);
 
 public:
     void static fill_properties(const boost::property_tree::ptree& node, hazelcast::client::client_config* config);
