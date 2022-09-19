@@ -1074,14 +1074,13 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
                   "' is already loaded! This can be due to" +
                   " duplicate or cyclic imports.");
             }
-            boost::property_tree::ptree imported_root;// = parse(std::move(stream));
-            boost::property_tree::read_xml(stream,imported_root);
+            boost::property_tree::ptree imported_root = parse(std::move(stream));
             try{
                 imported_root = imported_root.get_child("hazelcast-client");
             }catch(const boost::exception& e){
                 throw hazelcast::client::exception::invalid_configuration("Imported file " + resource + " is invalid");
             }
-            replace_imports(&imported_root);
+            //replace_imports(&imported_root);
             for (auto& imported_node : imported_root) {
                 if (imported_node.first == "<xmlattr>") {
                     continue;
