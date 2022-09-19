@@ -1051,6 +1051,7 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
             imports_ended = true;
         }
     }
+    std::cout << "replace_imports1" << std::endl;
     for (auto& child : *root) {
         if (child.first == "import") {
             boost::property_tree::ptree temp;
@@ -1081,20 +1082,20 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
                 throw hazelcast::client::exception::invalid_configuration("Imported file " + resource + " is invalid");
             }
             replace_imports(&imported_root);
-            /*
+            std::cout << "replace_imports2" << std::endl;
             for (auto& imported_node : imported_root) {
                 if (imported_node.first == "<xmlattr>") {
                     continue;
                 }
                 root->put_child(imported_node.first, imported_node.second);
             }
+            std::cout << "replace_imports3" << std::endl;
             for (auto it = root->begin(); it != root->end(); it++) {
                 if (it->first == "import") {
                     root->erase(it);
                     break;
                 }
-            }*/
-
+            }
         }
     }
 }
