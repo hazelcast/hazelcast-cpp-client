@@ -828,7 +828,7 @@ abstract_config_locator::load_from_working_directory(
         std::ifstream stream;
         in = std::make_shared<std::ifstream>(std::move(stream));
         in->open(config_file_path, std::ios::in);
-        if (!in->is_open() && !in->good()) {
+        if (!in->is_open()) {
             std::cout << "FINEST: "
                       << "Could not find " + config_file_path +
                            " in the working directory."
