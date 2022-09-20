@@ -50,16 +50,16 @@ jobs:
       - name: Install Boost
         run: |
           Invoke-WebRequest `
-              "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz" `
-              -OutFile "boost_1_76_0.tar.gz" `
+              "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz" `
+              -OutFile "boost_1_78_0.tar.gz" `
               -UserAgent "''"
-          tar xzf boost_1_76_0.tar.gz
-          rm boost_1_76_0.tar.gz
-          cd boost_1_76_0
+          tar xzf boost_1_78_0.tar.gz
+          rm boost_1_78_0.tar.gz
+          cd boost_1_78_0
           .\bootstrap.bat
           .\b2 address-model=${{ matrix.arch.address_model }} --with-thread --with-chrono install
           cd ..
-          Remove-Item boost_1_76_0 -Recurse -Force
+          Remove-Item boost_1_78_0 -Recurse -Force
 
       - name: Install Thrift
         run: |
