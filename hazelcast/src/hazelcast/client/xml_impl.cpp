@@ -1090,10 +1090,13 @@ abstract_xml_config_builder::replace_imports(boost::property_tree::ptree* root)
                 root->put_child(imported_node.first, imported_node.second);
             }
             std::cout << "replace_imports3" << std::endl;
-            for (auto it = root->begin(); it != root->end(); it++) {
+            for (auto it = root->begin(); it != root->end();) {
                 if (it->first == "import") {
-                    root->erase(it);
+                    it = root->erase(it);
                     break;
+                }
+                else{
+                    ++it;
                 }
             }
         }
