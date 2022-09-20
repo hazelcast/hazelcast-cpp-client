@@ -43,7 +43,6 @@
             </properties>
         </replacer>
     </config-replacers>
-    <cluster-name>XML</cluster-name>
     <instance-name>${INSTANCENAME}</instance-name>
 
     <properties>

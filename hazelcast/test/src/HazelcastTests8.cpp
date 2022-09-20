@@ -1856,17 +1856,11 @@ public:
         dst << src.rdbuf();
         src.close();
         dst.close();
-        std::ifstream  src1("hazelcast/test/resources/import.xml", std::ios::in);
-        std::ofstream  dst1("import.xml",   std::ios::out);
-        dst1 << src1.rdbuf();
-        src1.close();
-        dst1.close();
     }
 
     void TearDown() override
     {
         std::remove("hazelcast-client.xml");
-        std::remove("import.xml");
         char del[100];
         std::strncpy(del,"hazelcast.client.config=",100);
         putenv(del);
