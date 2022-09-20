@@ -56,7 +56,7 @@ jobs:
           tar xzf boost_1_78_0.tar.gz
           rm boost_1_78_0.tar.gz
           cd boost_1_78_0
-          .\bootstrap.bat
+          .\bootstrap.bat msvc
           .\b2 toolset=msvc address-model=${{ matrix.arch.address_model }} --with-thread --with-chrono install
           cd ..
           Remove-Item boost_1_78_0 -Recurse -Force
