@@ -31,6 +31,7 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/cp/cp.h"
+#include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
 
 namespace hazelcast {
 namespace client {
@@ -796,6 +797,31 @@ ErrorHolder::to_string() const
     return out.str();
 }
 
+namespace builtin {
+sql::sql_column_metadata
+custom_type_factory::create_sql_column_metadata(std::string name,
+                                                int32_t type,
+                                                bool is_nullable_exists,
+                                                bool nullability)
+{
+    using namespace hazelcast::client::sql;
+    if (type < static_cast<int32_t>(sql_column_type::varchar) ||
+        type > static_cast<int32_t>(sql_column_type::null)) {
+        throw hazelcast::client::exception::hazelcast_(
+          "custom_type_factory::create_sql_column_metadata",
+          (boost::format("Unexpected SQL column type = [%1%]") % type).str());
+    }
+
+    if (is_nullable_exists) {
+        return sql_column_metadata(
+          std::move(name), static_cast<sql_column_type>(type), nullability);
+    }
+
+    return sql_column_metadata(
+      std::move(name), static_cast<sql_column_type>(type), true);
+}
+
+} // namespace builtin
 } // namespace codec
 } // namespace protocol
 } // namespace client

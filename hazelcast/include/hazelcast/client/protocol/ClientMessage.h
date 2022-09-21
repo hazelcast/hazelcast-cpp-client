@@ -47,6 +47,7 @@
 #include "hazelcast/client/sql/sql_page.h"
 #include "hazelcast/client/sql/impl/sql_error.h"
 #include "hazelcast/client/sql/sql_column_type.h"
+#include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
 
 namespace hazelcast {
 namespace util {
@@ -899,14 +900,16 @@ public:
 
         const frame_header_t header = read_frame_header();
 
-        auto type = static_cast<sql::sql_column_type>(get<int32_t>());
+        auto type = get<int32_t>();
 
         bool nullable = true;
         int nullable_size = 0;
+        bool nullable_exist = false;
         if (header.frame_len - SIZE_OF_FRAME_LENGTH_AND_FLAGS >=
             INT32_SIZE + INT8_SIZE) {
             nullable = get<bool>();
             nullable_size = INT8_SIZE;
+            nullable_exist = true;
         }
 
         // skip bytes in initial frame
@@ -917,7 +920,8 @@ public:
 
         fast_forward_to_end_frame();
 
-        return sql::sql_column_metadata(std::move(name), type, nullable);
+        return codec::builtin::custom_type_factory::create_sql_column_metadata(
+          std::move(name), type, nullable_exist, nullable);
     }
 
     template<typename T>
