@@ -15,6 +15,180 @@ using hazelcast::client::sql::impl::query_id;
 
 namespace hazelcast {
 namespace client {
+
+namespace test {
+struct portable_pojo_key {
+    int64_t key;
+};
+
+struct portable_pojo_nested
+{
+    int32_t val;
+};
+
+struct portable_pojo
+{
+    explicit portable_pojo(int64_t val) {
+        bool_val = val % 2 == 0;
+
+        tiny_int_val = static_cast<byte>(val);
+        small_int_val = static_cast<int16_t>(val);
+        int_val = static_cast<int32_t>(val);
+        big_int_val = static_cast<int64_t>(val);;
+        real_val = static_cast<float>(val);;
+        double_val = static_cast<double>(val);;
+
+        char_val = 'c';
+        varchar_val = std::to_string(val);
+        int_array_val.push_back(val);
+
+        portable_val = {static_cast<int32_t>(val)};
+    }
+
+    portable_pojo(bool bool_val,
+                  byte tiny_int_val,
+                  int16_t small_int_val,
+                  int32_t int_val,
+                  int64_t big_int_val,
+                  float real_val,
+                  double double_val,
+                  char char_val,
+                  std::string varchar_val,
+                  std::vector<int64_t> int_array_val,
+                  portable_pojo_nested portable_val)
+      : bool_val(bool_val)
+      , tiny_int_val(tiny_int_val)
+      , small_int_val(small_int_val)
+      , int_val(int_val)
+      , big_int_val(big_int_val)
+      , real_val(real_val)
+      , double_val(double_val)
+      , char_val(char_val)
+      , varchar_val(std::move(varchar_val))
+      , int_array_val(std::move(int_array_val))
+      , portable_val(std::move(portable_val))
+    {
+    }
+
+    bool bool_val;
+
+    byte tiny_int_val;
+    int16_t small_int_val;
+    int32_t int_val;
+    int64_t big_int_val;
+    float real_val;
+    double double_val;
+
+    char char_val;
+    std::string varchar_val;
+    std::vector<int64_t> int_array_val;
+
+    portable_pojo_nested portable_val;
+};
+
+} // namespace test
+
+namespace serialization {
+template<>
+class hz_serializer<test::portable_pojo_key> : public portable_serializer
+{
+public:
+    static constexpr int32_t PORTABLE_FACTORY_ID = 1;
+    static constexpr int32_t PORTABLE_KEY_CLASS_ID = 2;
+
+    static int32_t get_class_id() noexcept { return PORTABLE_KEY_CLASS_ID; }
+    static int32_t get_factory_id() noexcept { return PORTABLE_FACTORY_ID; }
+    static void write_portable(const test::portable_pojo_key& object,
+                                  portable_writer& out)
+    {
+        out.write("key", object.key);
+    }
+    static test::portable_pojo_key read_portable(portable_reader& in)
+    {
+        auto val = in.read<int64_t>("key");
+        return { val };
+    }
+};
+
+constexpr int32_t hz_serializer<test::portable_pojo_key>::PORTABLE_FACTORY_ID;
+constexpr int32_t hz_serializer<test::portable_pojo_key>::PORTABLE_KEY_CLASS_ID;
+
+template<>
+class hz_serializer<test::portable_pojo_nested> : public portable_serializer
+{
+public:
+    static constexpr int32_t PORTABLE_FACTORY_ID = 1;
+    static constexpr int32_t PORTABLE_NESTED_CLASS_ID = 4;
+
+    static int32_t get_class_id() noexcept { return PORTABLE_NESTED_CLASS_ID; }
+    static int32_t get_factory_id() noexcept { return PORTABLE_FACTORY_ID; }
+    static void write_portable(const test::portable_pojo_nested& object,
+                                  portable_writer& out)
+    {
+        out.write("val", object.val);
+    }
+    static test::portable_pojo_nested read_portable(portable_reader& in)
+    {
+        auto val = in.read<int32_t>("val");
+        return { val };
+    }
+};
+
+constexpr int32_t hz_serializer<test::portable_pojo_nested>::PORTABLE_FACTORY_ID;
+constexpr int32_t hz_serializer<test::portable_pojo_nested>::PORTABLE_NESTED_CLASS_ID;
+
+template<>
+class hz_serializer<test::portable_pojo> : public portable_serializer
+{
+public:
+    static constexpr int32_t PORTABLE_FACTORY_ID = 1;
+    static constexpr int32_t PORTABLE_VALUE_CLASS_ID = 3;
+
+    static int32_t get_class_id() noexcept { return PORTABLE_VALUE_CLASS_ID; }
+    static int32_t get_factory_id() noexcept { return PORTABLE_FACTORY_ID; }
+    static void write_portable(const test::portable_pojo& object,
+                                  portable_writer& out)
+    {
+        out.write("booleanVal", object.bool_val);
+
+        out.write("tinyIntVal", object.tiny_int_val);
+        out.write("smallIntVal", object.small_int_val);
+        out.write("intVal", object.int_val);
+        out.write("bigIntVal", object.big_int_val);
+        out.write("realVal", object.real_val);
+        out.write("doubleVal", object.double_val);
+
+        out.write("charVal", object.char_val);
+        out.write("varcharVal", object.varchar_val);
+        out.write("int_array_val", object.int_array_val);
+
+        out.write_portable("portableVal", &object.portable_val);
+    }
+
+    static test::portable_pojo read_portable(portable_reader& in)
+    {
+        return
+        {
+            in.read<bool>("booleanVal"),
+              in.read<byte>("tinyIntVal"),
+              in.read<int16_t>("smallIntVal"),
+                in.read<int32_t>("intVal"),
+              in.read<int64_t>("bigIntVal"),
+                in.read<float>("realVal"),
+              in.read<double>("doubleVal"),
+                in.read<char>("charVal"),
+              in.read<std::string>("varcharVal"),
+                in.read<std::vector<int64_t>>("int_array_val").value(),
+              in.read_portable<test::portable_pojo_nested>("portableVal").value()
+        };
+    }
+};
+
+constexpr int32_t hz_serializer<test::portable_pojo>::PORTABLE_FACTORY_ID;
+constexpr int32_t hz_serializer<test::portable_pojo>::PORTABLE_VALUE_CLASS_ID;
+
+} // namespace serialization
+
 namespace test {
 
 class SqlTest : public ClientTest
@@ -40,20 +214,32 @@ protected:
         server_factory_.reset(new HazelcastServerFactory(
           "hazelcast/test/resources/hazelcast-sql.xml"));
         member_.reset(new HazelcastServer(*server_factory_));
+        member2_.reset(new HazelcastServer(*server_factory_));
     }
     static void TearDownTestSuite()
     {
         member_.reset();
+        member2_.reset();
         server_factory_.reset();
+    }
+
+    portable_pojo_key key(int64_t i) {
+        return {i};
+    }
+
+    portable_pojo value(int64_t i) {
+        return portable_pojo{i};
     }
 
 private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
     static std::unique_ptr<HazelcastServer> member_;
+    static std::unique_ptr<HazelcastServer> member2_;
 };
 
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_{};
 std::unique_ptr<HazelcastServer> SqlTest::member_{};
+std::unique_ptr<HazelcastServer> SqlTest::member2_{};
 
 TEST_F(SqlTest, simple)
 {
@@ -116,17 +302,55 @@ TEST_F(SqlTest, exception)
                  hazelcast::client::sql::hazelcast_sql_exception);
 }
 
+// ported from Java SqlBasicClientTest.testSelect
+TEST_F(SqlTest, select)
+{
+    sql::sql_service service = client.get_sql();
+
+    auto sql =
+      (boost::format(
+         "CREATE OR REPLACE MAPPING portable_map TYPE IMap OPTIONS( "
+         "'keyFormat'='portable'"
+         ", 'keyPortableFactoryId'='%1%'"
+         ", 'keyPortableClassId'='%2%'"
+         ", 'keyPortableClassVersion'='0'"
+         ", 'valueFormat'='portable'"
+         ", 'valuePortableFactoryId'='%3%'"
+         ", 'valuePortableClassId'='%4%'"
+         ", 'valuePortableClassVersion'='0'"
+         ")")
+       %serialization::hz_serializer<portable_pojo_key>::PORTABLE_FACTORY_ID
+       %serialization::hz_serializer<portable_pojo_key>::PORTABLE_KEY_CLASS_ID
+       %serialization::hz_serializer<portable_pojo>::PORTABLE_FACTORY_ID
+       %serialization::hz_serializer<portable_pojo>::PORTABLE_VALUE_CLASS_ID)
+        .str();
+
+    sql::sql_result result;
+    try {
+        result = service.execute(sql).get();
+        ASSERT_EQ(0, result.update_count());
+        result.close().get();
+    } catch (exception::iexception &e) {
+        result.close().get();
+        FAIL();
+    }
+
+    auto map = client.get_map(get_test_name()).get();
+
+    constexpr int64_t DATA_SET_SIZE = 4096;
+    for (int64_t i = 0; i < DATA_SET_SIZE; ++i) {
+        map->put(key(i), value(i)).get();
+    }
+}
+
 class sql_encode_test : public ::testing::Test
 {
 public:
     sql_encode_test()
-      : random_generator_(std::random_device{}())
     {
     }
 
 protected:
-    std::mt19937 random_generator_;
-
     query_id get_query_id() const
     {
         boost::uuids::uuid server_uuid{ 1, 2,  3,  4,  5,  6,  7,  8,

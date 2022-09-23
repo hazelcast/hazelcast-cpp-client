@@ -89,7 +89,7 @@ assert_equal(const std::string& expected_string,
 
     std::vector<int8_t> actual_vector = pimpl::to_bytes(expected_int);
     ASSERT_EQ(expected_vector, actual_vector);
-    cpp_int actual_int = pimpl::from_bytes(expected_vector);
+    cpp_int actual_int = pimpl::from_bytes(std::move(expected_vector));
     ASSERT_EQ(expected_int, actual_int);
 }
 

@@ -500,7 +500,7 @@ public:
 
         auto scale = get<int32_t>();
 
-        return { pimpl::from_bytes(bytes), scale };
+        return { pimpl::from_bytes(std::move(bytes)), scale };
     }
 
     template<typename T>
