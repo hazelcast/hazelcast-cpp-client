@@ -24,7 +24,7 @@ namespace client {
 namespace protocol {
 namespace codec {
 namespace builtin {
-class custom_type_factory
+class HAZELCAST_API custom_type_factory
 {
 public:
     static sql::sql_column_metadata create_sql_column_metadata(
