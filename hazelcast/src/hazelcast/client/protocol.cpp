@@ -813,12 +813,12 @@ custom_type_factory::create_sql_column_metadata(std::string name,
     }
 
     if (is_nullable_exists) {
-        return sql_column_metadata(
-          std::move(name), static_cast<sql_column_type>(type), nullability);
+        return sql_column_metadata{
+          std::move(name), static_cast<sql_column_type>(type), nullability};
     }
 
-    return sql_column_metadata(
-      std::move(name), static_cast<sql_column_type>(type), true);
+    return sql_column_metadata{
+      std::move(name), static_cast<sql_column_type>(type), true};
 }
 
 } // namespace builtin

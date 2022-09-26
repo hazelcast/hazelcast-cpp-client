@@ -24,19 +24,14 @@ namespace hazelcast {
 namespace client {
 namespace sql {
 
-class HAZELCAST_API sql_column_metadata
+struct HAZELCAST_API sql_column_metadata
 {
-public:
-    sql_column_metadata(std::string name, sql_column_type type, bool nullable);
+    std::string name;
+    sql_column_type type;
+    bool nullable;
 
-    const std::string& name() const;
-    sql_column_type type() const;
-    bool nullable() const;
-
-private:
-    std::string name_;
-    sql_column_type type_;
-    bool nullable_;
+    friend bool operator==(const sql_column_metadata& lhs,
+                    const sql_column_metadata& rhs);
 };
 
 } // namespace sql

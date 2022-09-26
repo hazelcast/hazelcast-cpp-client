@@ -2097,9 +2097,9 @@ TEST(ClientMessageTest, test_decode_sql_column_metadata)
 
     auto col_metadata = msg.get<sql::sql_column_metadata>();
 
-    EXPECT_EQ("foobar", col_metadata.name());
-    EXPECT_EQ(sql::sql_column_type::boolean, col_metadata.type());
-    EXPECT_EQ(false, col_metadata.nullable());
+    EXPECT_EQ("foobar", col_metadata.name);
+    EXPECT_EQ(sql::sql_column_type::boolean, col_metadata.type);
+    EXPECT_EQ(false, col_metadata.nullable);
 }
 
 TEST(ClientMessageTest, test_decode_sql_page)

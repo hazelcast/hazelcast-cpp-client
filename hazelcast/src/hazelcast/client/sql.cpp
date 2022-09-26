@@ -436,33 +436,6 @@ sql_statement::expected_result_type(sql::sql_expected_result_type type)
     return *this;
 }
 
-sql_column_metadata::sql_column_metadata(std::string name,
-                                         sql_column_type type,
-                                         bool nullable)
-  : name_{ std::move(name) }
-  , type_{ type }
-  , nullable_{ nullable }
-{
-}
-
-const std::string&
-sql_column_metadata::name() const
-{
-    return name_;
-}
-
-sql_column_type
-sql_column_metadata::type() const
-{
-    return type_;
-}
-
-bool
-sql_column_metadata::nullable() const
-{
-    return nullable_;
-}
-
 hazelcast_sql_exception::hazelcast_sql_exception(
   std::string source,
   boost::uuids::uuid originating_member_id,
@@ -674,7 +647,9 @@ sql_result::close()
         return boost::make_ready_future();
     }
 
-    return service_->close(connection_, query_id_);
+    auto f = service_->close(connection_, query_id_);
+    closed_ = true;
+    return std::move(f);
 }
 
 boost::future<sql_page>
@@ -856,7 +831,7 @@ sql_row_metadata::sql_row_metadata(std::vector<sql_column_metadata> columns)
     assert(!columns_.empty());
 
     for (std::size_t i = 0; i < columns_.size(); ++i) {
-        name_to_index_.emplace(columns_[i].name(), i);
+        name_to_index_.emplace(columns_[i].name, i);
     }
 }
 
@@ -869,7 +844,7 @@ sql_row_metadata::column_count() const
 const sql_column_metadata&
 sql_row_metadata::column(std::size_t index) const
 {
-    if (index < columns_.size()) {
+    if (index > columns_.size()) {
         throw exception::index_out_of_bounds(
           "sql_row_metadata::column(std::size_t index)",
           (boost::format("Column index is out of bounds: %1%") % index).str());
@@ -897,6 +872,18 @@ sql_row_metadata::const_iterator
 sql_row_metadata::end() const
 {
     return name_to_index_.end();
+}
+bool
+operator==(const sql_row_metadata& lhs, const sql_row_metadata& rhs)
+{
+    return lhs.columns_ == rhs.columns_;
+}
+
+bool
+operator==(const sql_column_metadata& lhs,
+           const sql_column_metadata& rhs) {
+    return lhs.name == rhs.name && lhs.type == rhs.type &&
+           lhs.nullable == rhs.nullable;
 }
 
 } // namespace sql

@@ -17,9 +17,18 @@ namespace hazelcast {
 namespace client {
 
 namespace test {
-struct portable_pojo_key {
+struct portable_pojo_key
+{
     int64_t key;
+
+    friend bool operator==(const portable_pojo_key& lhs,
+                           const portable_pojo_key& rhs);
 };
+bool
+operator==(const portable_pojo_key& lhs, const portable_pojo_key& rhs)
+{
+    return lhs.key == rhs.key;
+}
 
 struct portable_pojo_nested
 {
@@ -28,7 +37,10 @@ struct portable_pojo_nested
 
 struct portable_pojo
 {
-    explicit portable_pojo(int64_t val) {
+    portable_pojo() = default;
+
+    explicit portable_pojo(int64_t val)
+    {
         bool_val = val % 2 == 0;
 
         tiny_int_val = static_cast<byte>(val);
@@ -40,9 +52,8 @@ struct portable_pojo
 
         char_val = 'c';
         varchar_val = std::to_string(val);
-        int_array_val.push_back(val);
 
-        portable_val = {static_cast<int32_t>(val)};
+        portable_val = { static_cast<int32_t>(val) };
     }
 
     portable_pojo(bool bool_val,
@@ -54,7 +65,6 @@ struct portable_pojo
                   double double_val,
                   char char_val,
                   std::string varchar_val,
-                  std::vector<int64_t> int_array_val,
                   portable_pojo_nested portable_val)
       : bool_val(bool_val)
       , tiny_int_val(tiny_int_val)
@@ -65,7 +75,6 @@ struct portable_pojo
       , double_val(double_val)
       , char_val(char_val)
       , varchar_val(std::move(varchar_val))
-      , int_array_val(std::move(int_array_val))
       , portable_val(std::move(portable_val))
     {
     }
@@ -81,7 +90,6 @@ struct portable_pojo
 
     char char_val;
     std::string varchar_val;
-    std::vector<int64_t> int_array_val;
 
     portable_pojo_nested portable_val;
 };
@@ -99,7 +107,7 @@ public:
     static int32_t get_class_id() noexcept { return PORTABLE_KEY_CLASS_ID; }
     static int32_t get_factory_id() noexcept { return PORTABLE_FACTORY_ID; }
     static void write_portable(const test::portable_pojo_key& object,
-                                  portable_writer& out)
+                               portable_writer& out)
     {
         out.write("key", object.key);
     }
@@ -123,7 +131,7 @@ public:
     static int32_t get_class_id() noexcept { return PORTABLE_NESTED_CLASS_ID; }
     static int32_t get_factory_id() noexcept { return PORTABLE_FACTORY_ID; }
     static void write_portable(const test::portable_pojo_nested& object,
-                                  portable_writer& out)
+                               portable_writer& out)
     {
         out.write("val", object.val);
     }
@@ -134,8 +142,10 @@ public:
     }
 };
 
-constexpr int32_t hz_serializer<test::portable_pojo_nested>::PORTABLE_FACTORY_ID;
-constexpr int32_t hz_serializer<test::portable_pojo_nested>::PORTABLE_NESTED_CLASS_ID;
+constexpr int32_t
+  hz_serializer<test::portable_pojo_nested>::PORTABLE_FACTORY_ID;
+constexpr int32_t
+  hz_serializer<test::portable_pojo_nested>::PORTABLE_NESTED_CLASS_ID;
 
 template<>
 class hz_serializer<test::portable_pojo> : public portable_serializer
@@ -147,7 +157,7 @@ public:
     static int32_t get_class_id() noexcept { return PORTABLE_VALUE_CLASS_ID; }
     static int32_t get_factory_id() noexcept { return PORTABLE_FACTORY_ID; }
     static void write_portable(const test::portable_pojo& object,
-                                  portable_writer& out)
+                               portable_writer& out)
     {
         out.write("booleanVal", object.bool_val);
 
@@ -160,26 +170,23 @@ public:
 
         out.write("charVal", object.char_val);
         out.write("varcharVal", object.varchar_val);
-        out.write("int_array_val", object.int_array_val);
 
         out.write_portable("portableVal", &object.portable_val);
     }
 
     static test::portable_pojo read_portable(portable_reader& in)
     {
-        return
-        {
+        return {
             in.read<bool>("booleanVal"),
-              in.read<byte>("tinyIntVal"),
-              in.read<int16_t>("smallIntVal"),
-                in.read<int32_t>("intVal"),
-              in.read<int64_t>("bigIntVal"),
-                in.read<float>("realVal"),
-              in.read<double>("doubleVal"),
-                in.read<char>("charVal"),
-              in.read<std::string>("varcharVal"),
-                in.read<std::vector<int64_t>>("int_array_val").value(),
-              in.read_portable<test::portable_pojo_nested>("portableVal").value()
+            in.read<byte>("tinyIntVal"),
+            in.read<int16_t>("smallIntVal"),
+            in.read<int32_t>("intVal"),
+            in.read<int64_t>("bigIntVal"),
+            in.read<float>("realVal"),
+            in.read<double>("doubleVal"),
+            in.read<char>("charVal"),
+            in.read<std::string>("varcharVal"),
+            in.read_portable<test::portable_pojo_nested>("portableVal").value()
         };
     }
 };
@@ -188,7 +195,21 @@ constexpr int32_t hz_serializer<test::portable_pojo>::PORTABLE_FACTORY_ID;
 constexpr int32_t hz_serializer<test::portable_pojo>::PORTABLE_VALUE_CLASS_ID;
 
 } // namespace serialization
+} // namespace client
+} // namespace hazelcast
 
+namespace std {
+template<>
+struct HAZELCAST_API hash<hazelcast::client::test::portable_pojo_key>
+{
+    std::size_t operator()(const hazelcast::client::test::portable_pojo_key& k) const noexcept {
+        return std::hash<int64_t>{}(k.key);
+    }
+};
+} // namespace std
+
+namespace hazelcast {
+namespace client {
 namespace test {
 
 class SqlTest : public ClientTest
@@ -231,6 +252,88 @@ protected:
         return portable_pojo{i};
     }
 
+    static const std::vector<std::string> &fields() {
+        static std::vector<std::string> fields{
+            "key",
+            "booleanVal",
+            "tinyIntVal",
+            "smallIntVal",
+            "intVal",
+            "bigIntVal",
+            "realVal",
+            "doubleVal",
+            "charVal",
+            "varcharVal",
+            "portableVal",
+        };
+
+        return fields;
+    }
+
+    static const std::vector<sql::sql_column_type> field_types()
+    {
+        using namespace sql;
+        static std::vector<sql_column_type> column_types{
+            sql_column_type::bigint,  sql_column_type::boolean,
+            sql_column_type::tinyint, sql_column_type::smallint,
+            sql_column_type::integer, sql_column_type::real,
+            sql_column_type::double_, sql_column_type::varchar,
+            sql_column_type::varchar, sql_column_type::object,
+        };
+
+        return column_types;
+    }
+
+    static std::string sql(const std::string& map_name)
+    {
+        auto const& columns = fields();
+
+        std::ostringstream res;
+        res << "SELECT ";
+        for (std::size_t i = 0; i < columns.size(); ++i) {
+            if (i != 0) {
+                res << ", ";
+            }
+
+            res << columns[i];
+        }
+
+        res << " FROM " << map_name;
+        return res.str();
+    }
+
+    sql::sql_result query(const std::string& map_name)
+    {
+        auto sql_string = sql(map_name);
+        sql::sql_statement s(client, sql_string);
+        s.cursor_buffer_size(256);
+        return client.get_sql().execute(s).get();
+    }
+
+    static void check_row_metada(const sql::sql_row_metadata& row_metadata)
+    {
+        const auto& columns = fields();
+        const auto& column_types = field_types();
+
+        ASSERT_EQ(columns.size(), row_metadata.column_count());
+
+        for (std::size_t i = 0; i < columns.size(); ++i) {
+            auto const& field = columns[i];
+            auto field_type = column_types[i];
+
+            auto it = row_metadata.find_column(field);
+            ASSERT_NE(row_metadata.end(), it);
+
+            auto const& column_meta_data = row_metadata.column(it->second);
+            ASSERT_EQ(field, column_meta_data.name);
+            ASSERT_EQ(field_type, column_meta_data.type);
+            ASSERT_TRUE(column_meta_data.nullable);
+        }
+
+        ASSERT_THROW(row_metadata.column(columns.size()),
+                     hazelcast::client::exception::index_out_of_bounds);
+    }
+
 private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
     static std::unique_ptr<HazelcastServer> member_;
@@ -255,13 +358,13 @@ TEST_F(SqlTest, simple)
     ASSERT_TRUE(result.row_metadata());
     ASSERT_EQ(2, result.row_metadata()->columns().size());
     auto& column0 = result.row_metadata()->columns()[0];
-    EXPECT_EQ("col1", column0.name());
-    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column0.type());
-    EXPECT_TRUE(column0.nullable());
+    EXPECT_EQ("col1", column0.name);
+    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column0.type);
+    EXPECT_TRUE(column0.nullable);
     auto& column1 = result.row_metadata()->columns()[1];
-    EXPECT_EQ("col2", column1.name());
-    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column1.type());
-    EXPECT_FALSE(column1.nullable());
+    EXPECT_EQ("col2", column1.name);
+    EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column1.type);
+    EXPECT_FALSE(column1.nullable);
 
     auto page_it = result.page_iterator();
     auto const& page = *page_it;
@@ -307,18 +410,21 @@ TEST_F(SqlTest, select)
 {
     sql::sql_service service = client.get_sql();
 
+    auto map_name = get_test_name();
+
     auto sql =
       (boost::format(
-         "CREATE OR REPLACE MAPPING portable_map TYPE IMap OPTIONS( "
+         "CREATE OR REPLACE MAPPING %1% TYPE IMap OPTIONS( "
          "'keyFormat'='portable'"
-         ", 'keyPortableFactoryId'='%1%'"
-         ", 'keyPortableClassId'='%2%'"
+         ", 'keyPortableFactoryId'='%2%'"
+         ", 'keyPortableClassId'='%3%'"
          ", 'keyPortableClassVersion'='0'"
          ", 'valueFormat'='portable'"
-         ", 'valuePortableFactoryId'='%3%'"
-         ", 'valuePortableClassId'='%4%'"
+         ", 'valuePortableFactoryId'='%4%'"
+         ", 'valuePortableClassId'='%5%'"
          ", 'valuePortableClassVersion'='0'"
          ")")
+       %map_name
        %serialization::hz_serializer<portable_pojo_key>::PORTABLE_FACTORY_ID
        %serialization::hz_serializer<portable_pojo_key>::PORTABLE_KEY_CLASS_ID
        %serialization::hz_serializer<portable_pojo>::PORTABLE_FACTORY_ID
@@ -326,20 +432,38 @@ TEST_F(SqlTest, select)
         .str();
 
     sql::sql_result result;
-    try {
-        result = service.execute(sql).get();
-        ASSERT_EQ(0, result.update_count());
-        result.close().get();
-    } catch (exception::iexception &e) {
-        result.close().get();
-        FAIL();
-    }
+    ASSERT_NO_THROW(result = service.execute(sql).get());
 
-    auto map = client.get_map(get_test_name()).get();
+    auto map = client.get_map(map_name).get();
 
     constexpr int64_t DATA_SET_SIZE = 4096;
+    std::unordered_map<portable_pojo_key, portable_pojo> entries(DATA_SET_SIZE);
     for (int64_t i = 0; i < DATA_SET_SIZE; ++i) {
-        map->put(key(i), value(i)).get();
+        entries[key(i)] = value(i);
+    }
+
+    map->put_all(entries).get();
+
+    ASSERT_EQ(DATA_SET_SIZE, map->size().get());
+
+    sql::sql_result res = query(map_name);
+
+    auto const &row_metadata = res.row_metadata().value();
+    check_row_metada(row_metadata);
+
+    for (auto it = res.page_iterator();*it; ++it) {
+        auto const& page = *it;
+        for (const auto &row : page->rows()) {
+            ASSERT_EQ(row_metadata, res.row_metadata().value());
+
+            auto key = row.get_object<portable_pojo_key>(
+              row_metadata.find_column("key")->second);
+            ASSERT_TRUE(key);
+
+            auto value0 = map->get<portable_pojo_key, portable_pojo>(*key).get();
+            ASSERT_TRUE(value0);
+            auto const &value = *value0;
+        }
     }
 }
 
