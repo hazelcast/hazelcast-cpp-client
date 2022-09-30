@@ -36,7 +36,9 @@ public:
         msg.skip_frame_header_bytes();
 
         auto type = msg.get<byte>();
-        auto count = msg.get<int32_t>();
+        auto count0 = msg.get<int32_t>();
+        assert(count0 >= 0);
+        auto count = static_cast<std::size_t>(count0);
 
         std::vector<boost::optional<T>> res(count);
 

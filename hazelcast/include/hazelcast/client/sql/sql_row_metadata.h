@@ -78,7 +78,7 @@ public:
      */
     const_iterator end() const;
 
-    friend bool operator==(const sql_row_metadata& lhs,
+    friend bool HAZELCAST_API operator==(const sql_row_metadata& lhs,
                            const sql_row_metadata& rhs);
 
 private:
