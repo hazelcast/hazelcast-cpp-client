@@ -37,8 +37,7 @@ public:
     {
     public:
         sql_row(size_t row_index,
-                const sql_page* page,
-                const sql_row_metadata* row_metadata);
+                const sql_page* page);
 
         /**
          * Gets the value of the column by index.
@@ -96,11 +95,12 @@ public:
         const sql_row_metadata& row_metadata() const;
 
     private:
+        friend class sql_page;
         std::size_t row_index_;
         const sql_page* page_;
-        const sql_row_metadata* row_metadata_;
 
         std::size_t resolve_index(const std::string& column_name) const;
+
     };
 
     sql_page(std::vector<sql_column_type> column_types,

@@ -18,6 +18,7 @@
 
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/protocol/codec/builtin/sql_page_codec.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/sql/impl/query_id.h"
@@ -147,7 +148,7 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
 
     response.row_metadata =
       msg.get_nullable<std::vector<sql_column_metadata>>();
-    response.first_page = msg.get_nullable<sql_page>();
+    response.first_page = msg.get_nullable<sql::sql_page>(protocol::codec::builtin::sql_page_codec::decode);
     response.error = msg.get_nullable<impl::sql_error>();
 
     return response;
@@ -159,7 +160,8 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
     // empty initial frame
     message.skip_frame();
 
-    auto page = message.get<boost::optional<sql_page>>();
+    auto page = message.get_nullable<sql::sql_page>(
+      protocol::codec::builtin::sql_page_codec::decode);
     auto error = message.get<boost::optional<impl::sql_error>>();
     return { std::move(page), std::move(error) };
 }
@@ -672,6 +674,9 @@ sql_result::page_iterator_type::page_iterator_type(
   : result_(result)
   , page_(std::move(page))
 {
+    page_->serialization_service(
+      &result_->client_context_->get_serialization_service());
+    page_->row_metadata(result_->row_metadata_.get_ptr());
 }
 
 boost::future<void>
@@ -693,21 +698,27 @@ sql_result::page_iterator_type::operator*() const
 {
     return page_;
 }
+sql_result::page_iterator_type::operator bool() const
+{
+    if (!page_) {
+        return false;
+    }
+
+    return page_->last_;
+}
 
 sql_page::sql_row::sql_row(size_t row_index,
-                           const sql_page* page,
-                           const sql_row_metadata* row_metadata)
+                           const sql_page* page)
   : row_index_(row_index)
   , page_(page)
-  , row_metadata_(row_metadata)
 {
 }
 
 std::size_t
 sql_page::sql_row::resolve_index(const std::string& column_name) const
 {
-    auto it = row_metadata_->find_column(column_name);
-    if (it == row_metadata_->end()) {
+    auto it = page_->row_metadata_->find_column(column_name);
+    if (it == page_->row_metadata_->end()) {
         throw exception::illegal_argument(
           "sql_page::get_object(const std::string &)",
           (boost::format("Column %1% doesn't exist") % column_name).str());
@@ -719,7 +730,7 @@ sql_page::sql_row::resolve_index(const std::string& column_name) const
 const sql_row_metadata&
 sql_page::sql_row::row_metadata() const
 {
-    return *row_metadata_;
+    return *page_->row_metadata_;
 }
 
 sql_page::sql_page(std::vector<sql_column_type> column_types,
@@ -778,8 +789,9 @@ void
 sql_page::construct_rows()
 {
     auto count = row_count();
+    rows_.clear();
     for (size_t i = 0; i < count; ++i) {
-        rows_.emplace_back(i, this, row_metadata_);
+        rows_.emplace_back(i, this);
     }
 }
 
@@ -844,7 +856,7 @@ sql_row_metadata::column_count() const
 const sql_column_metadata&
 sql_row_metadata::column(std::size_t index) const
 {
-    if (index > columns_.size()) {
+    if (index >= columns_.size()) {
         throw exception::index_out_of_bounds(
           "sql_row_metadata::column(std::size_t index)",
           (boost::format("Column index is out of bounds: %1%") % index).str());

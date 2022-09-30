@@ -44,7 +44,6 @@
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/sql/impl/query_id.h"
 #include "hazelcast/client/sql/sql_column_metadata.h"
-#include "hazelcast/client/sql/sql_page.h"
 #include "hazelcast/client/sql/impl/sql_error.h"
 #include "hazelcast/client/sql/sql_column_type.h"
 #include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
@@ -890,6 +889,13 @@ public:
         return header;
     }
 
+    /**
+     * skips the header bytes of the frame
+     */
+    void skip_frame_header_bytes() {
+        rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+    }
+
     template<typename T>
     typename std::enable_if<std::is_same<T, sql::sql_column_metadata>::value,
                             T>::type
@@ -925,124 +931,6 @@ public:
     }
 
     template<typename T>
-    std::vector<boost::any> to_vector_of_any(
-      std::vector<boost::optional<T>> values)
-    {
-        auto size = values.size();
-        std::vector<boost::any> vector_of_any(size);
-        for (std::size_t i = 0; i < size; ++i) {
-            auto& value = values[i];
-            if (value) {
-                vector_of_any[i] = std::move(*value);
-            }
-        }
-        return vector_of_any;
-    }
-
-    template<typename T>
-    typename std::enable_if<std::is_same<T, sql::sql_page>::value, T>::type
-    get()
-    {
-        // begin frame
-        skip_frame();
-
-        bool last = peek(SIZE_OF_FRAME_LENGTH_AND_FLAGS +
-                         1)[SIZE_OF_FRAME_LENGTH_AND_FLAGS] == 1;
-        skip_frame();
-
-        auto column_type_ids = get<std::vector<int32_t>>();
-
-        using column = std::vector<boost::any>;
-
-        auto number_of_columns = column_type_ids.size();
-        std::vector<column> columns(number_of_columns);
-        std::vector<sql::sql_column_type> column_types(number_of_columns);
-
-        for (std::size_t i = 0; i < number_of_columns; ++i) {
-            auto column_type =
-              static_cast<sql::sql_column_type>(column_type_ids[i]);
-            column_types[i] = column_type;
-
-            switch (column_type) {
-                case sql::sql_column_type::varchar:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<std::string>>>());
-                    break;
-                case sql::sql_column_type::boolean:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<bool>>>());
-                    break;
-                case sql::sql_column_type::tinyint:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<byte>>>());
-                    break;
-                case sql::sql_column_type::smallint:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<int16_t>>>());
-                    break;
-                case sql::sql_column_type::integer:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<int32_t>>>());
-                    break;
-                case sql::sql_column_type::bigint:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<int64_t>>>());
-                    break;
-                case sql::sql_column_type::real:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<float>>>());
-                    break;
-                case sql::sql_column_type::double_:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<double>>>());
-                    break;
-                case sql::sql_column_type::date:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<local_date>>>());
-                    break;
-                case sql::sql_column_type::time:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<local_time>>>());
-                    break;
-                case sql::sql_column_type::timestamp:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<local_date_time>>>());
-                    break;
-                case sql::sql_column_type::timestamp_with_timezone:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<offset_date_time>>>());
-                    break;
-                case sql::sql_column_type::decimal:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<boost::optional<big_decimal>>>());
-                    break;
-                case sql::sql_column_type::null: {
-                    auto size = get<int32_t>();
-                    columns[i] =
-                      std::vector<boost::any>(static_cast<size_t>(size));
-                } break;
-                case sql::sql_column_type::object:
-                    columns[i] = to_vector_of_any(
-                      get<std::vector<
-                        boost::optional<serialization::pimpl::data>>>());
-                    break;
-                default:
-                    throw exception::illegal_state(
-                      "ClientMessage::get<sql::sql_page>",
-                      (boost::format("Unknown type %1%") %
-                       static_cast<int32_t>(column_type))
-                        .str());
-            }
-        }
-
-        fast_forward_to_end_frame();
-
-        return sql::sql_page{ std::move(column_types),
-                              std::move(columns),
-                              last };
-    }
-
-    template<typename T>
     typename std::enable_if<std::is_same<T, sql::impl::sql_error>::value,
                             T>::type
     get()
@@ -1075,14 +963,17 @@ public:
     }
 
     template<typename T>
-    boost::optional<T> get_nullable()
+    boost::optional<T> get_nullable(std::function<T(ClientMessage&)> decoder =
+                                      [](ClientMessage& msg) {
+                                          return msg.get<T>();
+                                      })
     {
         if (next_frame_is_null_frame()) {
             // skip next frame with null flag
             rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
             return boost::none;
         }
-        return boost::make_optional(get<T>());
+        return boost::make_optional(decoder(*this));
     }
 
     template<typename T>

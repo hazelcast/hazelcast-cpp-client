@@ -32,6 +32,7 @@
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/cp/cp.h"
 #include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
+#include "hazelcast/client/protocol/codec/builtin/sql_page_codec.h"
 
 namespace hazelcast {
 namespace client {
@@ -819,6 +820,115 @@ custom_type_factory::create_sql_column_metadata(std::string name,
 
     return sql_column_metadata{
       std::move(name), static_cast<sql_column_type>(type), true};
+}
+
+sql::sql_page sql_page_codec::decode(ClientMessage& msg)
+{
+    // begin frame
+    msg.skip_frame();
+
+    bool last =
+      msg.peek(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS +
+               1)[ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS] == 1;
+
+    msg.skip_frame();
+
+    auto column_type_ids = msg.get<std::vector<int32_t>>();
+
+    using column = std::vector<boost::any>;
+
+    using namespace sql;
+
+    auto number_of_columns = column_type_ids.size();
+    std::vector<column> columns(number_of_columns);
+    std::vector<sql_column_type> column_types(number_of_columns);
+
+    for (std::size_t i = 0; i < number_of_columns; ++i) {
+        auto column_type = static_cast<sql_column_type>(column_type_ids[i]);
+        column_types[i] = column_type;
+
+        switch (column_type) {
+            case sql::sql_column_type::varchar:
+                columns[i] = to_vector_of_any(
+                  msg.get<std::vector<boost::optional<std::string>>>());
+                break;
+            case sql::sql_column_type::boolean:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<bool>(msg));
+                break;
+            case sql::sql_column_type::tinyint:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<byte>(msg));
+                break;
+            case sql::sql_column_type::smallint:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<int16_t>(msg));
+                break;
+            case sql::sql_column_type::integer:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<int32_t>(msg));
+                break;
+            case sql::sql_column_type::bigint:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<int64_t>(msg));
+                break;
+            case sql::sql_column_type::real:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<float>(msg));
+                break;
+            case sql::sql_column_type::double_:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<double>(msg));
+                break;
+            case sql::sql_column_type::date:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<local_date>(
+                    msg));
+                break;
+            case sql::sql_column_type::time:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<local_time>(
+                    msg));
+                break;
+            case sql::sql_column_type::timestamp:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<
+                    local_date_time>(msg));
+                break;
+            case sql::sql_column_type::timestamp_with_timezone:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<
+                    offset_date_time>(msg));
+                break;
+            case sql::sql_column_type::decimal:
+                columns[i] = to_vector_of_any(
+                  builtin::list_cn_fixed_size_codec::decode<big_decimal>(
+                    msg));
+                break;
+            case sql::sql_column_type::null: {
+                auto size = msg.get<int32_t>();
+                columns[i] =
+                  std::vector<boost::any>(static_cast<size_t>(size));
+            } break;
+            case sql::sql_column_type::object:
+                columns[i] = to_vector_of_any(
+                  msg.get<std::vector<
+                    boost::optional<serialization::pimpl::data>>>());
+                break;
+            default:
+                throw exception::illegal_state(
+                  "ClientMessage::get<sql::sql_page>",
+                  (boost::format("Unknown type %1%") %
+                   static_cast<int32_t>(column_type))
+                    .str());
+        }
+    }
+
+    msg.fast_forward_to_end_frame();
+
+    return sql::sql_page{ std::move(column_types),
+                          std::move(columns),
+                          last };
 }
 
 } // namespace builtin

@@ -41,6 +41,8 @@ public:
 
         const boost::optional<sql_page>& operator*() const;
 
+        operator bool() const;
+
     private:
         sql_result* result_;
         boost::optional<sql_page> page_;

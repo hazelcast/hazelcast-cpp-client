@@ -262,9 +262,9 @@ protected:
             "bigIntVal",
             "realVal",
             "doubleVal",
-            "charVal",
+            //"charVal",
             "varcharVal",
-            "portableVal",
+            //"portableVal",
         };
 
         return fields;
@@ -276,9 +276,10 @@ protected:
         static std::vector<sql_column_type> column_types{
             sql_column_type::bigint,  sql_column_type::boolean,
             sql_column_type::tinyint, sql_column_type::smallint,
-            sql_column_type::integer, sql_column_type::real,
-            sql_column_type::double_, sql_column_type::varchar,
-            sql_column_type::varchar, sql_column_type::object,
+            sql_column_type::integer, sql_column_type::bigint,
+            sql_column_type::real, sql_column_type::double_,
+            //sql_column_type::varchar,
+            sql_column_type::varchar, //sql_column_type::object,
         };
 
         return column_types;
@@ -334,6 +335,21 @@ protected:
                      hazelcast::client::exception::index_out_of_bounds);
     }
 
+    template <typename T>
+    void check_row_value(sql::sql_column_type expected_type, const T &expected_value, const sql::sql_page::sql_row &row, const std::string &column_name) {
+        auto column_index = row.row_metadata().find_column(column_name);
+        ASSERT_NE(row.row_metadata().end(), column_index);
+
+        ASSERT_EQ(expected_type, row.row_metadata().column(column_index->second).type);
+
+        auto value_by_index = row.template get_object<T>(column_index->second);
+        ASSERT_TRUE(value_by_index);
+        ASSERT_EQ(expected_value, *value_by_index);
+
+        auto value_by_name = row.template get_object<T>(column_index->first);
+        ASSERT_TRUE(value_by_name);
+        ASSERT_EQ(expected_value, *value_by_name);
+    }
 private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
     static std::unique_ptr<HazelcastServer> member_;
@@ -412,9 +428,32 @@ TEST_F(SqlTest, select)
 
     auto map_name = get_test_name();
 
+    auto map = client.get_map(map_name).get();
+
+    constexpr int64_t DATA_SET_SIZE = 4096;
+    std::unordered_map<portable_pojo_key, portable_pojo> entries(DATA_SET_SIZE);
+    for (int64_t i = 0; i < DATA_SET_SIZE; ++i) {
+        entries[key(i)] = value(i);
+    }
+
+    map->put_all(entries).get();
+
+    ASSERT_EQ(DATA_SET_SIZE, map->size().get());
+
     auto sql =
       (boost::format(
-         "CREATE OR REPLACE MAPPING %1% TYPE IMap OPTIONS( "
+         "CREATE OR REPLACE MAPPING %1% ("
+           "key BIGINT EXTERNAL NAME \"__key.key\", "
+           "booleanVal BOOLEAN, "
+           "tinyIntVal TINYINT, "
+           "smallIntVal SMALLINT, "
+           "intVal INTEGER, "
+           "bigIntVal BIGINT, "
+           "realVal REAL, "
+           "doubleVal DOUBLE, "
+           //"charVal VARCHAR, "
+           "varcharVal VARCHAR "
+           ") TYPE IMap OPTIONS( "
          "'keyFormat'='portable'"
          ", 'keyPortableFactoryId'='%2%'"
          ", 'keyPortableClassId'='%3%'"
@@ -431,38 +470,40 @@ TEST_F(SqlTest, select)
        %serialization::hz_serializer<portable_pojo>::PORTABLE_VALUE_CLASS_ID)
         .str();
 
-    sql::sql_result result;
+    using namespace sql;
+    
+    sql_result result;
     ASSERT_NO_THROW(result = service.execute(sql).get());
 
-    auto map = client.get_map(map_name).get();
-
-    constexpr int64_t DATA_SET_SIZE = 4096;
-    std::unordered_map<portable_pojo_key, portable_pojo> entries(DATA_SET_SIZE);
-    for (int64_t i = 0; i < DATA_SET_SIZE; ++i) {
-        entries[key(i)] = value(i);
-    }
-
-    map->put_all(entries).get();
-
-    ASSERT_EQ(DATA_SET_SIZE, map->size().get());
-
-    sql::sql_result res = query(map_name);
+    sql_result res = query(map_name);
 
     auto const &row_metadata = res.row_metadata().value();
     check_row_metada(row_metadata);
 
-    for (auto it = res.page_iterator();*it; ++it) {
+    for (auto it = res.page_iterator();it;(++it).get()) {
         auto const& page = *it;
         for (const auto &row : page->rows()) {
             ASSERT_EQ(row_metadata, res.row_metadata().value());
 
-            auto key = row.get_object<portable_pojo_key>(
+            auto key0 = row.get_object<int64_t>(
               row_metadata.find_column("key")->second);
-            ASSERT_TRUE(key);
+            ASSERT_TRUE(key0);
 
-            auto value0 = map->get<portable_pojo_key, portable_pojo>(*key).get();
+            portable_pojo_key key{*key0};
+            auto value0 = map->get<portable_pojo_key, portable_pojo>(key).get();
             ASSERT_TRUE(value0);
-            auto const &value = *value0;
+            auto const &val = *value0;
+
+            check_row_value(sql_column_type::bigint, key.key, row, "key");
+            check_row_value(sql_column_type::boolean, val.bool_val, row, "booleanVal");
+            check_row_value(sql_column_type::tinyint, val.tiny_int_val, row, "tinyIntVal");
+            check_row_value(sql_column_type::smallint, val.small_int_val, row, "smallIntVal");
+            check_row_value(sql_column_type::integer, val.int_val, row, "intVal");
+            check_row_value(sql_column_type::bigint, val.big_int_val, row, "bigIntVal");
+            check_row_value(sql_column_type::real, val.real_val, row, "realVal");
+            check_row_value(sql_column_type::double_, val.double_val, row, "doubleVal");
+            check_row_value(sql_column_type::varchar, val.varchar_val, row, "varchar_val");
+
         }
     }
 }

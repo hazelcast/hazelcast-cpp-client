@@ -44,8 +44,6 @@
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/initial_membership_event.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
-#include <hazelcast/client/iqueue.h>
 #include <hazelcast/client/iset.h>
 #include <hazelcast/client/item_listener.h>
 #include <hazelcast/client/itopic.h>
@@ -69,6 +67,7 @@
 #include "serialization/Serializables.h"
 #include "CountDownLatchWaiter.h"
 #include "remote_controller_client.h"
+#include "hazelcast/client/protocol/codec/builtin/sql_page_codec.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -2117,7 +2116,7 @@ TEST(ClientMessageTest, test_decode_sql_page)
     std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
     msg.wrap_for_read();
 
-    auto page = msg.get<sql::sql_page>();
+    auto page = protocol::codec::builtin::sql_page_codec::decode(msg);
 
     EXPECT_EQ(true, page.last());
     EXPECT_EQ((std::vector<sql::sql_column_type>{
