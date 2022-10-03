@@ -651,7 +651,7 @@ sql_result::close()
 
     auto f = service_->close(connection_, query_id_);
     closed_ = true;
-    return std::move(f);
+    return f;
 }
 
 boost::future<sql_page>
