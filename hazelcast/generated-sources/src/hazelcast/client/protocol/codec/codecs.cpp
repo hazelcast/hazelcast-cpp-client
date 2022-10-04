@@ -120,7 +120,7 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 770) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto version = msg.get<int32_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
@@ -131,7 +131,7 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
         return;
     }
     if (messageType == 771) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto version = msg.get<int32_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
@@ -243,7 +243,7 @@ client_localbackuplistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 3842) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto source_invocation_correlation_id = msg.get<int64_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
@@ -797,7 +797,7 @@ map_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 71426) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -858,7 +858,7 @@ map_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 71682) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -915,7 +915,7 @@ map_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 71938) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -1479,7 +1479,7 @@ map_addnearcacheinvalidationlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 81666) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto source_uuid = msg.get<boost::uuids::uuid>();
         auto partition_uuid = msg.get<boost::uuids::uuid>();
@@ -1797,7 +1797,7 @@ multimap_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 134402) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -1853,7 +1853,7 @@ multimap_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 134658) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -2365,7 +2365,7 @@ queue_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 200962) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto uuid = msg.get<boost::uuids::uuid>();
         auto event_type = msg.get<int32_t>();
@@ -2476,7 +2476,7 @@ topic_addmessagelistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 262658) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto publish_time = msg.get<int64_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -2723,7 +2723,7 @@ list_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 330498) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto uuid = msg.get<boost::uuids::uuid>();
         auto event_type = msg.get<int32_t>();
@@ -3146,7 +3146,7 @@ set_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 396034) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto uuid = msg.get<boost::uuids::uuid>();
         auto event_type = msg.get<int32_t>();
@@ -4186,7 +4186,7 @@ replicatedmap_addentrylistenertokeywithpredicate_handler::handle(
 {
     auto messageType = msg.get_message_type();
     if (messageType == 854530) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -4243,7 +4243,7 @@ replicatedmap_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 854786) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -4300,7 +4300,7 @@ replicatedmap_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 855042) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -4352,7 +4352,7 @@ replicatedmap_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 855298) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
@@ -4475,7 +4475,7 @@ replicatedmap_addnearcacheentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 856578) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_t*>(
+        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
           msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();

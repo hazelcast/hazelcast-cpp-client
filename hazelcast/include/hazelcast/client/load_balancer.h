@@ -48,7 +48,7 @@ public:
      * notifications.
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     load_balancer& init(Handler&& h) &
     {
         init_ = std::forward<Handler>(h);
@@ -56,7 +56,7 @@ public:
     }
 
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     load_balancer&& init(Handler&& h) &&
     {
         init_ = std::forward<Handler>(h);
@@ -69,7 +69,7 @@ public:
      * @param h The function to be used for finding the next member.
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     load_balancer& next(Handler&& h) &
     {
         next_ = std::forward<Handler>(h);
@@ -77,7 +77,7 @@ public:
     }
 
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     load_balancer&& next(Handler&& h) &&
     {
         next_ = std::forward<Handler>(h);

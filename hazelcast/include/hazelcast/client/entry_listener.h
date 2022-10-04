@@ -55,7 +55,7 @@ public:
      * parameter of type `EntryEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_added(Handler&& h) &
     {
         added_ = std::forward<Handler>(h);
@@ -67,7 +67,7 @@ public:
      * \copydoc entry_listener::on_added
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_added(Handler&& h) &&
     {
         on_added(std::forward<Handler>(h));
@@ -80,7 +80,7 @@ public:
      * parameter of type `EntryEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_removed(Handler&& h) &
     {
         removed_ = std::forward<Handler>(h);
@@ -92,7 +92,7 @@ public:
      * \copydoc entry_listener::on_removed
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_removed(Handler&& h) &&
     {
         on_removed(std::forward<Handler>(h));
@@ -105,7 +105,7 @@ public:
      * parameter of type `EntryEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_updated(Handler&& h) &
     {
         updated_ = std::forward<Handler>(h);
@@ -117,7 +117,7 @@ public:
      * \copydoc entry_listener::on_updated
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_updated(Handler&& h) &&
     {
         on_updated(std::forward<Handler>(h));
@@ -130,7 +130,7 @@ public:
      * parameter of type `EntryEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_evicted(Handler&& h) &
     {
         evicted_ = std::forward<Handler>(h);
@@ -142,7 +142,7 @@ public:
      * \copydoc entry_listener::on_evicted
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_evicted(Handler&& h) &&
     {
         on_evicted(std::forward<Handler>(h));
@@ -155,7 +155,7 @@ public:
      * parameter of type `EntryEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_expired(Handler&& h) &
     {
         expired_ = std::forward<Handler>(h);
@@ -167,7 +167,7 @@ public:
      * \copydoc entry_listener::on_expired
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_expired(Handler&& h) &&
     {
         on_expired(std::forward<Handler>(h));
@@ -180,7 +180,7 @@ public:
      * parameter of type `EntryEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_merged(Handler&& h) &
     {
         merged_ = std::forward<Handler>(h);
@@ -192,7 +192,7 @@ public:
      * \copydoc entry_listener::on_merged
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_merged(Handler&& h) &&
     {
         on_merged(std::forward<Handler>(h));
@@ -205,7 +205,7 @@ public:
      * single parameter of type `MapEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_map_evicted(Handler&& h) &
     {
         map_evicted_ = std::forward<Handler>(h);
@@ -217,7 +217,7 @@ public:
      * \copydoc entry_listener::on_map_evicted
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_map_evicted(Handler&& h) &&
     {
         on_map_evicted(std::forward<Handler>(h));
@@ -230,7 +230,7 @@ public:
      * single parameter of type `map_event &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener& on_map_cleared(Handler&& h) &
     {
         map_cleared_ = std::forward<Handler>(h);
@@ -242,7 +242,7 @@ public:
      * \copydoc entry_listener::on_map_cleared
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     entry_listener&& on_map_cleared(Handler&& h) &&
     {
         on_map_cleared(std::forward<Handler>(h));

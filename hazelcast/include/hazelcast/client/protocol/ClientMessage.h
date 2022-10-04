@@ -221,13 +221,13 @@ public:
         BACKUP_EVENT_FLAG = 1 << 7
     };
 
-    struct HAZELCAST_API frame_header_t
+    struct HAZELCAST_API frame_header_type
     {
         boost::endian::little_int32_t frame_len;
         boost::endian::little_int16_t flags;
 
-        friend bool HAZELCAST_API operator==(const frame_header_t& lhs,
-                                             const frame_header_t& rhs)
+        friend bool HAZELCAST_API operator==(const frame_header_type& lhs,
+                                             const frame_header_type& rhs)
         {
             return lhs.frame_len == rhs.frame_len && lhs.flags == rhs.flags;
         }
@@ -533,7 +533,7 @@ public:
     {
         T result;
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto content_length =
           static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
@@ -559,7 +559,7 @@ public:
     {
         T result;
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto content_length =
           static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
@@ -630,7 +630,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto port = get<int32_t>();
         // skip bytes in initial frame
@@ -685,7 +685,7 @@ public:
         rd_ptr(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
         // initial frame
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto uuid = get<boost::uuids::uuid>();
         auto lite_member = get<bool>();
@@ -726,7 +726,7 @@ public:
     typename std::enable_if<std::is_same<T, serialization::pimpl::data>::value,
                             T>::type inline get()
     {
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto data_size =
           static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
@@ -743,7 +743,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto line_number = get<int32_t>();
         // skip bytes in initial frame
@@ -783,7 +783,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
 
         auto cost = get<int64_t>();
@@ -855,7 +855,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto error_code = get<int32_t>();
         // skip bytes in initial frame
@@ -879,9 +879,9 @@ public:
      * Reads the header of the current frame.
      * The cursor must be at a frame's beginning.
      */
-    frame_header_t read_frame_header()
+    frame_header_type read_frame_header()
     {
-        frame_header_t header{};
+        frame_header_type header{};
         auto pos = rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
         std::memcpy(&header.frame_len, pos, sizeof(header.frame_len));
         pos += sizeof(header.frame_len);
@@ -904,7 +904,7 @@ public:
         // skip begin frame
         skip_frame();
 
-        const frame_header_t header = read_frame_header();
+        const frame_header_type header = read_frame_header();
 
         auto type = get<int32_t>();
 
@@ -1078,7 +1078,7 @@ public:
         bool isNull = (nullptr == value);
         if (isNull) {
             auto* h =
-              reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+              reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -1091,9 +1091,9 @@ public:
     inline void set(const std::string& value, bool is_final = false)
     {
         auto h =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         auto len = value.length();
-        h->frame_len = sizeof(frame_header_t) + len;
+        h->frame_len = sizeof(frame_header_type) + len;
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
         }
@@ -1110,7 +1110,7 @@ public:
     {
         add_begin_frame();
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
@@ -1129,7 +1129,7 @@ public:
     {
         add_begin_frame();
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
@@ -1147,7 +1147,7 @@ public:
     {
         add_begin_frame();
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
@@ -1181,7 +1181,7 @@ public:
     {
         if (value.data_size() == 0) {
             auto* h =
-              reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+              reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -1189,9 +1189,9 @@ public:
             return;
         }
         auto& bytes = value.to_byte_array();
-        auto frame_length = sizeof(frame_header_t) + bytes.size();
+        auto frame_length = sizeof(frame_header_type) + bytes.size();
         auto fp = wr_ptr(frame_length);
-        auto* header = reinterpret_cast<frame_header_t*>(fp);
+        auto* header = reinterpret_cast<frame_header_type*>(fp);
         header->frame_len = frame_length;
         header->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
         std::memcpy(
@@ -1232,21 +1232,21 @@ public:
     void set(const std::vector<T>& values, bool is_final = false)
     {
         auto* h =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *h = begin_frame();
 
         for (auto& item : values) {
             set(item);
         }
 
-        h = reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+        h = reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *h = end_frame();
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
         }
     }
 
-    void set(const frame_header_t& header)
+    void set(const frame_header_type& header)
     {
         auto pos = wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
         std::memcpy(pos, &header.frame_len, sizeof(header.frame_len));
@@ -1258,7 +1258,7 @@ public:
     {
         add_begin_frame();
 
-        set(frame_header_t{ SIZE_OF_FRAME_LENGTH_AND_FLAGS +
+        set(frame_header_type{ SIZE_OF_FRAME_LENGTH_AND_FLAGS +
                               2 * sizeof(boost::uuids::uuid),
                             DEFAULT_FLAGS });
 
@@ -1324,7 +1324,7 @@ public:
 
     inline void skip_frame()
     {
-        auto* f = reinterpret_cast<frame_header_t*>(
+        auto* f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         rd_ptr(static_cast<int32_t>(f->frame_len) -
                SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -1332,9 +1332,9 @@ public:
 
     void fast_forward_to_end_frame();
 
-    static const frame_header_t& null_frame();
-    static const frame_header_t& begin_frame();
-    static const frame_header_t& end_frame();
+    static const frame_header_type& null_frame();
+    static const frame_header_type& begin_frame();
+    static const frame_header_type& end_frame();
 
     void drop_fragmentation_frame();
 
@@ -1342,9 +1342,9 @@ public:
                                                   const ClientMessage& message);
 
 private:
-    static const frame_header_t NULL_FRAME;
-    static const frame_header_t BEGIN_FRAME;
-    static const frame_header_t END_FRAME;
+    static const frame_header_type NULL_FRAME;
+    static const frame_header_type BEGIN_FRAME;
+    static const frame_header_type END_FRAME;
 
     template<typename T>
     void set_primitive_vector(const std::vector<T>& values,
@@ -1353,7 +1353,7 @@ private:
         int32_t len =
           SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * sizeof(T);
         auto memory = wr_ptr(len);
-        auto* h = reinterpret_cast<frame_header_t*>(memory);
+        auto* h = reinterpret_cast<frame_header_type*>(memory);
         h->frame_len = len;
         h->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
 
@@ -1400,14 +1400,14 @@ private:
     void add_begin_frame()
     {
         auto* f =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *f = begin_frame();
     }
 
     void add_end_frame(bool is_final)
     {
         auto ef =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *ef = end_frame();
         if (is_final) {
             ef->flags |= IS_FINAL_FLAG;

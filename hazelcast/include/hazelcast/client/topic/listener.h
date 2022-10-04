@@ -54,7 +54,7 @@ public:
      * parameter of type `Message &&`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     listener& on_received(Handler&& h) &
     {
         received_ = std::move(h);
@@ -65,7 +65,7 @@ public:
      * \copydoc Listener::on_received
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     listener&& on_received(Handler&& h) &&
     {
         on_received(std::move(h));

@@ -41,15 +41,15 @@ const std::string ClientTypes::CPP = "CPP";
 
 constexpr size_t ClientMessage::EXPECTED_DATA_BLOCK_SIZE;
 
-const ClientMessage::frame_header_t ClientMessage::NULL_FRAME{
+const ClientMessage::frame_header_type ClientMessage::NULL_FRAME{
     ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS,
     ClientMessage::IS_NULL_FLAG
 };
-const ClientMessage::frame_header_t ClientMessage::BEGIN_FRAME{
+const ClientMessage::frame_header_type ClientMessage::BEGIN_FRAME{
     ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS,
     ClientMessage::BEGIN_DATA_STRUCTURE_FLAG
 };
-const ClientMessage::frame_header_t ClientMessage::END_FRAME{
+const ClientMessage::frame_header_type ClientMessage::END_FRAME{
     ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS,
     ClientMessage::END_DATA_STRUCTURE_FLAG
 };
@@ -62,7 +62,7 @@ ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame)
   : retryable_(false)
 {
     auto* initial_frame =
-      reinterpret_cast<frame_header_t*>(wr_ptr(REQUEST_HEADER_LEN));
+      reinterpret_cast<frame_header_type*>(wr_ptr(REQUEST_HEADER_LEN));
     initial_frame->frame_len = initial_frame_size;
     initial_frame->flags =
       is_fingle_frame
@@ -110,7 +110,7 @@ ClientMessage::set(
   bool is_final)
 {
     auto* f =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len =
       values.size() * (UUID_SIZE + INT64_SIZE) + SIZE_OF_FRAME_LENGTH_AND_FLAGS;
     f->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
@@ -125,7 +125,7 @@ void
 ClientMessage::set(const std::vector<boost::uuids::uuid>& values, bool is_final)
 {
     auto* h =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     h->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * UUID_SIZE;
     h->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
     for (auto& v : values) {
@@ -170,7 +170,7 @@ ClientMessage::set(const codec::holder::paging_predicate_holder& p,
     add_begin_frame();
 
     auto f =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT32_SIZE + INT8_SIZE;
     f->flags = DEFAULT_FLAGS;
     set(p.page_size);
@@ -214,7 +214,7 @@ ClientMessage::fill_message_from(util::ByteBuffer& byte_buff,
              ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS) {
         // start of the frame here
         auto read_ptr = static_cast<byte*>(byte_buff.ix());
-        auto* f = reinterpret_cast<frame_header_t*>(read_ptr);
+        auto* f = reinterpret_cast<frame_header_type*>(read_ptr);
         auto frame_len =
           static_cast<size_t>(static_cast<int32_t>(f->frame_len));
         is_final =
@@ -385,7 +385,7 @@ ClientMessage::fast_forward_to_end_frame()
     int number_expected_frames = 1;
     while (number_expected_frames) {
         auto* f =
-          reinterpret_cast<frame_header_t*>(rd_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(rd_ptr(sizeof(frame_header_type)));
 
         int16_t flags = f->flags;
         if (is_flag_set(flags, END_DATA_STRUCTURE_FLAG)) {
@@ -395,23 +395,23 @@ ClientMessage::fast_forward_to_end_frame()
         }
 
         // skip current frame
-        rd_ptr(static_cast<int32_t>(f->frame_len) - sizeof(frame_header_t));
+        rd_ptr(static_cast<int32_t>(f->frame_len) - sizeof(frame_header_type));
     }
 }
 
-const ClientMessage::frame_header_t&
+const ClientMessage::frame_header_type&
 ClientMessage::null_frame()
 {
     return NULL_FRAME;
 }
 
-const ClientMessage::frame_header_t&
+const ClientMessage::frame_header_type&
 ClientMessage::begin_frame()
 {
     return BEGIN_FRAME;
 }
 
-const ClientMessage::frame_header_t&
+const ClientMessage::frame_header_type&
 ClientMessage::end_frame()
 {
     return END_FRAME;
@@ -431,7 +431,7 @@ ClientMessage::set(const cp::raft_group_id& o, bool is_final)
     add_begin_frame();
 
     auto f =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT64_SIZE;
     f->flags = DEFAULT_FLAGS;
     set(o.seed);
@@ -451,7 +451,7 @@ ClientMessage::get()
 
     // skip header of the frame
     auto f =
-      reinterpret_cast<frame_header_t*>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     auto seed = get<int64_t>();
     auto id = get<int64_t>();
     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS -

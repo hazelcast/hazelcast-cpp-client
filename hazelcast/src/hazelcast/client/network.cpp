@@ -243,7 +243,7 @@ ClientConnectionManagerImpl::authenticate_on_cluster(
         }
         auto response = f.get();
         auto* initial_frame =
-          reinterpret_cast<protocol::ClientMessage::frame_header_t*>(
+          reinterpret_cast<protocol::ClientMessage::frame_header_type*>(
             response.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN));
         result = { response.get<byte>(),
                    response.get<boost::uuids::uuid>(),

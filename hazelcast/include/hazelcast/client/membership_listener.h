@@ -65,7 +65,7 @@ public:
      * parameter of type `const MembershipEvent &`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     membership_listener& on_joined(Handler&& h) &
     {
         joined_ = std::forward<Handler>(h);
@@ -76,7 +76,7 @@ public:
      * \copydoc membership_listener::on_joined
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     membership_listener&& on_joined(Handler&& h) &&
     {
         on_joined(std::forward<Handler>(h));
@@ -89,7 +89,7 @@ public:
      * parameter of type `const MembershipEvent &`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     membership_listener& on_left(Handler&& h) &
     {
         left_ = std::forward<Handler>(h);
@@ -100,7 +100,7 @@ public:
      * \copydoc membership_listener::on_left
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     membership_listener&& on_left(Handler&& h) &&
     {
         on_left(std::forward<Handler>(h));
@@ -113,7 +113,7 @@ public:
      * single parameter of type `const InitialMembershipEvent &`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     membership_listener& on_init(Handler&& h) &
     {
         init_ = std::forward<Handler>(h);
@@ -124,7 +124,7 @@ public:
      * \copydoc membership_listener::on_init
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     membership_listener&& on_init(Handler&& h) &&
     {
         on_init(std::forward<Handler>(h));
