@@ -403,15 +403,15 @@ TEST_F(SqlTest, simple)
     sql::sql_service service = client.get_sql();
     auto result = service.execute(statement).get();
 
-    ASSERT_TRUE(result.is_row_set());
+    ASSERT_TRUE(result.row_set());
     EXPECT_EQ(-1, result.update_count());
-    ASSERT_TRUE(result.row_metadata());
-    ASSERT_EQ(2, result.row_metadata()->columns().size());
-    auto& column0 = result.row_metadata()->columns()[0];
+    ASSERT_NO_THROW(result.row_metadata());
+    ASSERT_EQ(2, result.row_metadata().columns().size());
+    auto& column0 = result.row_metadata().columns()[0];
     EXPECT_EQ("col1", column0.name);
     EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column0.type);
     EXPECT_TRUE(column0.nullable);
-    auto& column1 = result.row_metadata()->columns()[1];
+    auto& column1 = result.row_metadata().columns()[1];
     EXPECT_EQ("col2", column1.name);
     EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column1.type);
     EXPECT_FALSE(column1.nullable);
@@ -436,7 +436,7 @@ TEST_F(SqlTest, statement_with_params)
                              -42.73)
                     .get();
 
-    ASSERT_TRUE(result.is_row_set());
+    ASSERT_TRUE(result.row_set());
     EXPECT_EQ(-1, result.update_count());
 
     auto page = *result.page_iterator();
@@ -510,7 +510,7 @@ TEST_F(SqlTest, select)
 
     sql_result res = query(map_name);
 
-    auto const& row_metadata = res.row_metadata().value();
+    auto const& row_metadata = res.row_metadata();
     check_row_metada(row_metadata);
 
     std::unordered_set<int64_t> unique_keys;
@@ -518,7 +518,7 @@ TEST_F(SqlTest, select)
     for (;it; (++it).get()) {
         auto const& page = *it;
         for (const auto& row : page->rows()) {
-            ASSERT_EQ(row_metadata, res.row_metadata().value());
+            ASSERT_EQ(row_metadata, res.row_metadata());
 
             auto key0 =
               row.get_object<int64_t>(row_metadata.find_column("key")->second);

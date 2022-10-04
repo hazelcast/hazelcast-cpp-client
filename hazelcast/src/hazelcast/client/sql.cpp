@@ -183,16 +183,13 @@ sql_service::handle_execute_response(
           std::move(response.error->suggestion)));
     }
 
-    return sql_result{ &client_context_,
+    return { &client_context_,
                        this,
                        std::move(connection),
                        id,
                        response.update_count,
                        std::move(response.row_metadata),
                        std::move(response.first_page),
-                       response.is_infinite_rows_exist
-                         ? boost::make_optional(response.is_infinite_rows)
-                         : boost::none,
                        cursor_buffer_size };
 }
 
@@ -583,7 +580,6 @@ sql_result::sql_result(
   int64_t update_count,
   boost::optional<std::vector<sql_column_metadata>> columns_metadata,
   boost::optional<sql_page> first_page,
-  boost::optional<bool> is_infinite_rows,
   int32_t cursor_buffer_size)
   : client_context_(client_context)
   , service_(service)
@@ -591,7 +587,6 @@ sql_result::sql_result(
   , query_id_(id)
   , update_count_(update_count)
   , first_page_(std::move(first_page))
-  , is_infinite_rows_(is_infinite_rows)
   , iterator_requested_(false)
   , closed_(false)
   , cursor_buffer_size_(cursor_buffer_size)
@@ -612,15 +607,9 @@ sql_result::update_count() const
 }
 
 bool
-sql_result::is_row_set() const
+sql_result::row_set() const
 {
     return update_count() == -1;
-}
-
-boost::optional<bool>
-sql_result::is_infinite_rows() const
-{
-    return is_infinite_rows_;
 }
 
 sql_result::page_iterator_type
@@ -660,10 +649,15 @@ sql_result::fetch_page()
     return service_->fetch_page(query_id_, cursor_buffer_size_, connection_);
 }
 
-const boost::optional<sql_row_metadata>&
+const sql_row_metadata&
 sql_result::row_metadata() const
 {
-    return row_metadata_;
+    if (!row_metadata_) {
+        throw exception::illegal_state(
+          "sql_result::row_metadata", "This result contains only update count");
+    }
+
+    return row_metadata_.value();
 }
 
 sql_result::sql_result() = default;

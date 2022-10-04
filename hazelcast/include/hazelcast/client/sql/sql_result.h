@@ -29,6 +29,36 @@ class sql_service;
 
 // This class is NOT thread-safe. Do NOT use simultaneously from multiple
 // threads.
+/**
+ * SQL query result. Depending on the statement type it represents a pages of
+ * rows or an update count.
+ * <p>
+ * <h4>Usage for page of rows</h4>
+ *
+ * <ol>
+ *     <li>Use page_iterator() to iterate the pages. see page_iterator_type</li>
+ *     <li>Use close() to release the resources associated with the result.</li>
+ * </ol>
+
+* <p>
+  * Code example:
+  * <pre>
+  * auto result = hz.get_sql().execute("SELECT * FROM person");
+  * for (auto it = result.page_iterator(); it; (++it).get()) {
+  *    for (auto const &row : (*it).rows()) {
+  *       // Process the row.
+  *    }
+  * }
+ * </pre>
+ *
+ * <h4>Usage for update count</h4>
+ *
+ * <pre>
+ *     auto updated = hz.get_sql().execute("UPDATE ...").get().update_count();
+ * </pre>
+ *
+  * You don't need to call close() in this case.
+ */
 class HAZELCAST_API sql_result
 {
 public:
@@ -56,24 +86,25 @@ public:
       int64_t update_count,
       boost::optional<std::vector<sql_column_metadata>> columns_metadata,
       boost::optional<sql_page> first_page,
-      boost::optional<bool> is_inifinite_rows,
       int32_t cursor_buffer_size);
 
     sql_result();
 
     /**
-     * Return whether this result has rows to iterate using the \page_iterator()
+     * Return whether this result has rows to iterate using the page_iterator()
      * method.
      */
-    bool is_row_set() const;
+    bool row_set() const;
 
     /**
      * Gets the row metadata.
      *
-     * @returns row metadata and boost::none if the result doesn't have rows,
-     * but only an update count
+     * @returns the metadata of the rows in this result.
+     *
+     * @throws illegal_state_exception if this result doesn't have rows, but
+     * only an update count
      */
-    const boost::optional<sql_row_metadata>& row_metadata() const;
+    const sql_row_metadata& row_metadata() const;
 
     /**
      * Returns the number of rows updated by the statement or -1 if this result
@@ -93,9 +124,19 @@ public:
      */
     boost::future<void> close();
 
+    /**
+     * Returns an iterator over the result pages.
+     *
+     * The iterator may be requested only once.
+     *
+     * @return the iterator to be used over the result.
+     * The iterator iterates page by page over the result.
+     *
+     * @throws exception::illegal_state if the iterator is requested more than
+     * once or if this result does not have any pages.
+     *
+     */
     page_iterator_type page_iterator();
-
-    boost::optional<bool> is_infinite_rows() const;
 
 private:
     friend class sql_service;
@@ -107,9 +148,6 @@ private:
     int64_t update_count_;
     boost::optional<sql_row_metadata> row_metadata_;
     boost::optional<sql_page> first_page_;
-
-    /** Whether the result set is unbounded. */
-    boost::optional<bool> is_infinite_rows_;
 
     bool iterator_requested_;
 
