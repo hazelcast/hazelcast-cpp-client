@@ -197,6 +197,7 @@ public:
     {
         INT8_SIZE = 1,
         UINT8_SIZE = 1,
+        BOOL_SIZE = 1,
         INT16_SIZE = 2,
         UINT16_SIZE = 2,
         INT32_SIZE = 4,
@@ -355,13 +356,13 @@ public:
     typename std::enable_if<std::is_same<T, int8_t>::value,
                             T>::type inline get()
     {
-        return *rd_ptr(UINT8_SIZE);
+        return *rd_ptr(INT8_SIZE);
     }
 
     template<typename T>
     typename std::enable_if<std::is_same<T, bool>::value, T>::type inline get()
     {
-        return *rd_ptr(UINT8_SIZE);
+        return *rd_ptr(BOOL_SIZE);
     }
 
     template<typename T>
@@ -691,7 +692,7 @@ public:
         auto lite_member = get<bool>();
         // skip rest of the bytes in initial frame
         rd_ptr(static_cast<int32_t>(f->frame_len) -
-               SIZE_OF_FRAME_LENGTH_AND_FLAGS - UUID_SIZE - UINT8_SIZE);
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS - UUID_SIZE - BOOL_SIZE);
 
         auto addr = get<address>();
         auto attributes = get<std::unordered_map<std::string, std::string>>();
@@ -912,9 +913,9 @@ public:
         int nullable_size = 0;
         bool nullable_exist = false;
         if (header.frame_len - SIZE_OF_FRAME_LENGTH_AND_FLAGS >=
-            INT32_SIZE + INT8_SIZE) {
+            INT32_SIZE + BOOL_SIZE) {
             nullable = get<bool>();
-            nullable_size = INT8_SIZE;
+            nullable_size = BOOL_SIZE;
             nullable_exist = true;
         }
 
@@ -1015,7 +1016,7 @@ public:
 
     inline void set(int8_t value) { *wr_ptr(INT8_SIZE) = value; }
 
-    inline void set(bool value) { *wr_ptr(UINT8_SIZE) = value ? 1 : 0; }
+    inline void set(bool value) { *wr_ptr(BOOL_SIZE) = value ? 1 : 0; }
 
     inline void set(char value) { *wr_ptr(UINT8_SIZE) = value; }
 

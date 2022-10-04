@@ -171,7 +171,7 @@ ClientMessage::set(const codec::holder::paging_predicate_holder& p,
 
     auto f =
       reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-    f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT32_SIZE + INT8_SIZE;
+    f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT32_SIZE + BYTE_SIZE;
     f->flags = DEFAULT_FLAGS;
     set(p.page_size);
     set(p.page);

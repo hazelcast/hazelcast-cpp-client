@@ -132,13 +132,13 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
     auto frame_len = static_cast<int32_t>(initial_frame_header.frame_len);
     if (frame_len >=
         static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
-                             protocol::ClientMessage::INT8_SIZE)) {
+                             protocol::ClientMessage::BOOL_SIZE)) {
         response.is_infinite_rows = msg.get<bool>();
         response.is_infinite_rows_exist = true;
         // skip initial_frame
         msg.rd_ptr(frame_len -
                    static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
-                                        protocol::ClientMessage::INT8_SIZE));
+                                        protocol::ClientMessage::BOOL_SIZE));
     } else {
         response.is_infinite_rows_exist = false;
         // skip initial_frame
