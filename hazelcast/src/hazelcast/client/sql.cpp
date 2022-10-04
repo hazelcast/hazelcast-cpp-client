@@ -870,9 +870,6 @@ sql_row_metadata::columns() const
 sql_row_metadata::const_iterator
 sql_row_metadata::find_column(const std::string& column_name) const
 {
-    util::Preconditions::check_not_empty(column_name,
-                                         "Column name cannot be empty");
-
     return name_to_index_.find(column_name);
 }
 
