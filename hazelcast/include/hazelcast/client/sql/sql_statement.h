@@ -31,6 +31,13 @@ namespace client {
 namespace sql {
 class sql_service;
 
+/**
+ * Definition of an SQL statement.
+ * <p>
+ * This object is mutable. Properties are read once before the execution is
+ * started. Changes to properties do not affect the behavior of already running
+ * statements.
+ */
 class HAZELCAST_API sql_statement
 {
 public:
@@ -53,6 +60,11 @@ public:
     /** Default cursor buffer size. */
     static constexpr int32_t DEFAULT_CURSOR_BUFFER_SIZE = 4096;
 
+    /**
+     * Creates a statement with the given query.
+     * @param client The hazelcast client to be used for the statement.
+     * @param query The query string.
+     */
     sql_statement(hazelcast_client& client, std::string query);
 
     /**
@@ -132,7 +144,7 @@ public:
      * default value is expected to work well for most workloads. A bigger
      * buffer size may give you a slight performance boost for queries with
      * large result sets at the cost of increased memory consumption. <p>
-     * Defaults to DEFAULT_CURSOR_BUFFER_SIZE.
+     * Defaults to sql_statement::DEFAULT_CURSOR_BUFFER_SIZE.
      *
      * @param size cursor buffer size (measured in the number of rows)
      * @return this instance for chaining
@@ -154,9 +166,10 @@ public:
      * Sets the execution timeout in milliseconds.
      * <p>
      * If the timeout is reached for a running statement, it will be cancelled
-     * forcefully. <p> Zero value means no timeout. TIMEOUT_NOT_SET means that
-     * the value from sql_config::statement_timeout() will be used. Other
-     * negative values are prohibited. <p> Defaults to TIMEOUT_NOT_SET .
+     * forcefully. <p> Zero value means no timeout.
+     * sql_statement::TIMEOUT_NOT_SET means that the value from
+     * sql_config::statement_timeout() will be used. Other negative values are
+     * prohibited. <p> Defaults to sql_statement::TIMEOUT_NOT_SET .
      *
      * @param timeout execution timeout in milliseconds, \c0 for no timeout,
      * \c-1 to user member's default timeout
