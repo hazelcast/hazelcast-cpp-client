@@ -199,9 +199,14 @@ constexpr int32_t hz_serializer<test::portable_pojo>::PORTABLE_VALUE_CLASS_ID;
 } // namespace client
 } // namespace hazelcast
 
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT
+#endif
 namespace std {
 template<>
-struct HAZELCAST_API hash<hazelcast::client::test::portable_pojo_key>
+struct DLL_EXPORT hash<hazelcast::client::test::portable_pojo_key>
 {
     std::size_t operator()(
       const hazelcast::client::test::portable_pojo_key& k) const noexcept
