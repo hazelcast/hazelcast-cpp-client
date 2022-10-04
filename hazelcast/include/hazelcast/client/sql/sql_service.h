@@ -59,18 +59,28 @@ namespace sql {
  * SQL statements are not atomic. <em>INSERT</em>/<em>SINK</em> can fail and
  * commit part of the data. <p> <h1>Usage</h1> Before you can access any object
  * using SQL, a <em>mapping</em> has to be created. See the reference manual for
- * the <em>CREATE MAPPING</em> command. <p> When a query is executed, an {@link
- * sql_result} is returned. You may get row iterator from the result. The result
+ * the <em>CREATE MAPPING</em> command. <p> When a query is executed, an
+ * sql_result is returned. You may get row iterator from the result. The result
  * must be closed at the end. The code snippet below demonstrates a typical
  * usage pattern: <pre>
- *     HazelcastInstance instance = ...;
+ *     auto hz = hazelcast::new_client().get();
  *
- *     try (SqlResult result = instance.sql().execute("SELECT * FROM person")) {
- *         for (SqlRow row : result) {
- *             long personId = row.getObject("personId");
- *             String name = row.getObject("name");
- *             ...
+ *     try {
+ *         // Get the SQL service from the client and execute a query
+ *         auto result = hz.get_sql().execute("SELECT * FROM person").get();
+ *         for (auto it = result.page_iterator(); it; (++it).get()) {
+ *              // iterate over the rows in the page
+ *              for (auto const &row : (*it).rows()) {
+ *                  auto person_id = row.get<int64_t>("personId");
+ *                  auto name = row.get<std::string>("name");
+ *                  ...
+ *              }
  *         }
+ *
+ *         // Close the result when done.
+ *         result.close().get();
+ *     } catch (hazelcast::client::exception &e) {
+ *          std::cerr << "Query failed: " << e.what() << std::endl;
  *     }
  * </pre>
  */
@@ -88,16 +98,6 @@ public:
     }
 
     boost::future<sql_result> execute(const sql_statement& statement);
-
-    /**
-     * Close remote query cursor.
-     *
-     * @param connection Connection.
-     * @param id    Query ID.
-     */
-    boost::future<void> close(
-      const std::shared_ptr<connection::Connection>& connection,
-      impl::query_id id);
 
 private:
     friend client::impl::hazelcast_client_instance_impl;
@@ -156,6 +156,16 @@ private:
 
     static void handle_fetch_response_error(
       boost::optional<impl::sql_error> error);
+
+    /**
+     * Close remote query cursor.
+     *
+     * @param connection Connection.
+     * @param id    Query ID.
+     */
+    boost::future<void> close(
+      const std::shared_ptr<connection::Connection>& connection,
+      impl::query_id id);
 };
 } // namespace sql
 } // namespace client
