@@ -53,6 +53,8 @@ public:
          * @throws boost::bad_any_cast if the type of the column type isn't
          * assignable to the type \codeT\endcode
          *
+         * @see row_metadata()
+         * @see sql_column_metadata::type
          */
         template<typename T>
         boost::optional<T> get_object(std::size_t column_index) const
@@ -76,8 +78,10 @@ public:
          * @throws boost::any_cast_exception if the type of the column type
          * isn't assignable to the type \codeT\endcode
          *
-         * @see sql_column_metadata#name()
-         * @see sql_column_metadata#type()
+         * @see row_metadata()
+         * @see sql_row_metadata::find_column
+         * @see sql_column_metadata::name
+         * @see sql_column_metadata::type
          */
         template<typename T>
         boost::optional<T> get_object(const std::string& column_name) const
