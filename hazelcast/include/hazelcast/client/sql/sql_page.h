@@ -28,6 +28,9 @@ namespace hazelcast {
 namespace client {
 namespace sql {
 
+/**
+ * A finite set of rows returned to the client.
+ */
 class HAZELCAST_API sql_page
 {
     using column = std::vector<boost::any>;
@@ -95,6 +98,7 @@ public:
          * @returns vector of column metadata, and returns empty vector if the
          * result contains only an update count.
          *
+         * @see sql_row_metadata
          */
         const sql_row_metadata& row_metadata() const;
 
