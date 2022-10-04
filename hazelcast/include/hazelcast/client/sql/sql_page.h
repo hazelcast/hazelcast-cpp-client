@@ -111,26 +111,73 @@ public:
 
     };
 
+    /**
+     * Constructs an sql_page from the response returned from the server.
+     * @param column_types The types of the columns in each row of the page.
+     * @param columns The values of each column for all rows of the page.
+     * @param last true if this is the last page in \sql_result, false otherwise.
+     */
     sql_page(std::vector<sql_column_type> column_types,
              std::vector<column> columns,
              bool last);
 
+    /**
+     * Move constructor.
+     *
+     * @param rhs The other sql_page to move from.
+     */
     sql_page(sql_page&& rhs) noexcept;
 
+    /**
+     * Copy constructor.
+     *
+     * @param rhs The other sql_page to copy from.
+     */
     sql_page(const sql_page& rhs) noexcept;
 
+    /**
+     * Assignment operator.
+     * @param rhs The other sql_page to move from.
+     * @return this sql_page.
+     */
     sql_page& operator=(sql_page&& rhs) noexcept;
 
+    /**
+     * Assignment operator.
+     * @param rhs The other sql_page to copy from.
+     * @return this sql_page.
+     */
     sql_page& operator=(const sql_page& rhs) noexcept;
 
+    /**
+     * Returns the types of the columns in each row.
+     * @return the vector of column types in each row
+     */
     const std::vector<sql_column_type>& column_types() const;
 
+    /**
+     *
+     * @return true if this is the last page of the sql_result, false otherwise
+     */
     bool last() const;
 
+    /**
+     * Returns the number of columns in each row.
+     * @return the number of columns in each row.
+     */
     std::size_t column_count() const;
 
+    /**
+     * Returns the number of rows in this page.
+     * @return the number of rows in this page.
+     */
     std::size_t row_count() const;
 
+
+    /**
+     * Returns the rows of this page.
+     * @return the vector of rows in this page.
+     */
     const std::vector<sql_row>& rows() const;
 
 private:
