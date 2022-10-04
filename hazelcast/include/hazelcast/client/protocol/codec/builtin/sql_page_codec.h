@@ -50,6 +50,10 @@ private:
         }
         return vector_of_any;
     }
+
+    static std::vector<boost::any> decode_column_values(
+      ClientMessage& msg,
+      sql::sql_column_type column_type);
 };
 
 } // namespace builtin
