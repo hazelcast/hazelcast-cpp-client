@@ -67,10 +67,21 @@ public:
     public:
         page_iterator_type(sql_result* result, boost::optional<sql_page> page);
 
+        /**
+         * Fetches the new page for the result.
+         */
         boost::future<void> operator++();
 
+        /**
+         * Returns the current page the iterator points to.
+         * @return the current page the iterator points to or boost::none if no
+         * page exist.
+         */
         const boost::optional<sql_page>& operator*() const;
 
+        /**
+         * @return true if the iterator points to a page, false otherwise.
+         */
         operator bool() const;
 
     private:

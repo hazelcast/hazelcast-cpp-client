@@ -86,7 +86,7 @@ sql_service::execute(const sql_statement& statement)
               return handle_execute_response(
                 response, query_conn, qid, cursor_buffer_size);
           } catch (...) {
-              rethrow(std::current_exception());
+              rethrow(std::current_exception(), query_conn);
           }
           assert(0);
           return sql_result();
@@ -199,12 +199,11 @@ sql_service::query_connection()
     std::shared_ptr<connection::Connection> connection;
     try {
         auto& cs = client_context_.get_client_cluster_service();
-        auto members = cs.get_member_list();
         connection =
           client_context_.get_connection_manager().connection_for_sql(
             [&]() {
                 return impl::query_utils::member_of_same_larger_version_group(
-                  members);
+                  cs.get_member_list());
             },
             [&](boost::uuids::uuid id) { return cs.get_member(id); });
 
@@ -220,18 +219,6 @@ sql_service::query_connection()
     }
 
     return connection;
-}
-
-int64_t
-sql_service::uuid_high(const boost::uuids::uuid& uuid)
-{
-    return boost::endian::load_big_s64(uuid.begin());
-}
-
-int64_t
-sql_service::uuid_low(const boost::uuids::uuid& uuid)
-{
-    return boost::endian::load_big_s64(uuid.begin() + 8);
 }
 
 void
@@ -404,6 +391,15 @@ sql_statement::timeout() const
 sql_statement&
 sql_statement::timeout(std::chrono::milliseconds timeout)
 {
+    auto timeout_msecs = timeout.count();
+    if (timeout_msecs < 0 && timeout != TIMEOUT_NOT_SET) {
+        throw exception::illegal_argument(
+          "sql_statement::timeout(std::chrono::milliseconds timeout)",
+          (boost::format("Timeout must be non-negative or -1: %1% msecs") %
+           timeout_msecs)
+            .str());
+    }
+
     timeout_ = timeout;
 
     return *this;
@@ -490,7 +486,8 @@ query_utils::throw_public_exception(std::exception_ptr exc,
                                       originating_member_id,
                                       e.code(),
                                       e.get_message(),
-                                      e.suggestion());
+                                      e.suggestion(),
+                                      exc);
     } catch (exception::iexception& ie) {
         throw hazelcast_sql_exception(
           "query_utils::throw_public_exception",
@@ -615,6 +612,11 @@ sql_result::row_set() const
 sql_result::page_iterator_type
 sql_result::page_iterator()
 {
+    if (closed_) {
+        throw exception::query(static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
+                               "Query was cancelled by the user");
+    }
+
     if (!first_page_) {
         throw exception::illegal_state(
           "sql_result::page_iterator",

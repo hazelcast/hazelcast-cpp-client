@@ -87,6 +87,24 @@ namespace sql {
 class HAZELCAST_API sql_service
 {
 public:
+    /**
+     * Convenient method to execute a distributed query with the given
+     * parameter values.
+     * <p>
+     * Converts passed SQL string and parameter values into an sql_statement
+     * object and invokes execute(const sql_statement& statement).
+     *
+     * @param sql       SQL string
+     * @param arguments query parameter values that will be passed to
+     * sql_statement::add_parameter(const Param& param)
+     * @return result of the execution
+     *
+     * @throws illegal_argument if the SQL string is empty
+     * @throws hazelcast_sql_exception in case of execution error
+     * @see sql_service
+     * @see sql_statement
+     * @see execute(const sql_statement& statement)
+     */
     template<typename... Params>
     boost::future<sql_result> execute(const std::string& query,
                                       const Params&... params)
@@ -97,6 +115,14 @@ public:
         return execute(s);
     }
 
+    /**
+     * Executes an SQL statement.
+     *
+     * @param statement statement to be executed
+     * @return result of the execution
+     * @throws hazelcast_sql_exception in case of execution error
+     * @see sql_service
+     */
     boost::future<sql_result> execute(const sql_statement& statement);
 
 private:
@@ -122,9 +148,6 @@ private:
     };
 
     explicit sql_service(client::spi::ClientContext& context);
-
-    static int64_t uuid_high(const boost::uuids::uuid& uuid);
-    static int64_t uuid_low(const boost::uuids::uuid& uuid);
 
     std::shared_ptr<connection::Connection> query_connection();
 

@@ -30,6 +30,9 @@ enum class HAZELCAST_API sql_error_code
     /** A network connection problem between members, or between a client and a
        member. */
     CONNECTION_PROBLEM = 1001,
+
+    /** Query was cancelled due to user request. */
+    CANCELLED_BY_USER = 1003,
 };
 
 } // namespace impl
