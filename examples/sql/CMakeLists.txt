@@ -14,3 +14,4 @@
 # limitations under the License.
 #
 add_executable(sql_basic_query sql_basic_query.cpp)
+add_executable(sql_query_with_portable sql_query_with_portable.cpp)

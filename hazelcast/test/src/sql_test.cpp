@@ -545,7 +545,7 @@ TEST_F(SqlTest, select)
             check_row_value(
               sql_column_type::double_, val.double_val, row, "doubleVal");
             check_row_value(
-              sql_column_type::varchar, val.varchar_val, row, "varchar_val");
+              sql_column_type::varchar, val.varchar_val, row, "varcharVal");
 
             unique_keys.emplace(*key0);
 
@@ -555,12 +555,11 @@ TEST_F(SqlTest, select)
                          exception::index_out_of_bounds);
             ASSERT_THROW(row.get_object<int>("unknown_field"), exception::illegal_argument);
         }
-        
-        ASSERT_THROW((++it).get(), exception::no_such_element);
-        ASSERT_THROW(res.page_iterator(), exception::illegal_state);
-
-        ASSERT_EQ(DATA_SET_SIZE, unique_keys.size());
     }
+
+    ASSERT_THROW(res.page_iterator(), exception::illegal_state);
+
+    ASSERT_EQ(DATA_SET_SIZE, unique_keys.size());
 
     ASSERT_NO_THROW(res.close().get());
 

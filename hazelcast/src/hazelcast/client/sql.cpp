@@ -687,6 +687,11 @@ sql_result::page_iterator_type::page_iterator_type(
 boost::future<void>
 sql_result::page_iterator_type::operator++()
 {
+    if (page_->last()) {
+        page_.reset();
+        return boost::make_ready_future();
+    }
+
     boost::future<sql_page> page_future = result_->fetch_page();
 
     return page_future.then(
@@ -703,13 +708,10 @@ sql_result::page_iterator_type::operator*() const
 {
     return page_;
 }
+
 sql_result::page_iterator_type::operator bool() const
 {
-    if (!page_) {
-        return false;
-    }
-
-    return page_->last_;
+    return page_.has_value();
 }
 
 sql_page::sql_row::sql_row(size_t row_index,
@@ -736,6 +738,16 @@ const sql_row_metadata&
 sql_page::sql_row::row_metadata() const
 {
     return *page_->row_metadata_;
+}
+
+void
+sql_page::sql_row::check_index(size_t index) const
+{
+    if (index >= row_metadata().column_count()) {
+        throw exception::index_out_of_bounds(
+          "sql_page::sql_row::check_index",
+          (boost::format("Column index is out of range: %1%") % index).str());
+    }
 }
 
 sql_page::sql_page(std::vector<sql_column_type> column_types,

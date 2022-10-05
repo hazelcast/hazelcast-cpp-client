@@ -62,6 +62,8 @@ public:
         template<typename T>
         boost::optional<T> get_object(std::size_t column_index) const
         {
+            check_index(column_index);
+
             return page_->get_column_value<T>(column_index, row_index_);
         }
 
@@ -109,6 +111,7 @@ public:
 
         std::size_t resolve_index(const std::string& column_name) const;
 
+        void check_index(size_t index) const;
     };
 
     /**
