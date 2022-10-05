@@ -175,6 +175,7 @@ private:
     {
         return client_context_->get_serialization_service().to_object<T>(data);
     }
+    void check_closed() const;
 };
 
 } // namespace sql

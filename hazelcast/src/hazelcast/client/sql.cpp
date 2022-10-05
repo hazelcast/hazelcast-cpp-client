@@ -594,6 +594,9 @@ sql_result::sql_result(
         first_page_->row_metadata(row_metadata_.get_ptr());
         first_page_->serialization_service(
           &client_context_->get_serialization_service());
+        update_count_ = -1;
+    } else {
+        closed_ = true;
     }
 }
 
@@ -612,10 +615,7 @@ sql_result::row_set() const
 sql_result::page_iterator_type
 sql_result::page_iterator()
 {
-    if (closed_) {
-        throw exception::query(static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
-                               "Query was cancelled by the user");
-    }
+    check_closed();
 
     if (!first_page_) {
         throw exception::illegal_state(
@@ -631,6 +631,14 @@ sql_result::page_iterator()
     iterator_requested_ = true;
 
     return { this, std::move(first_page_) };
+}
+void
+sql_result::check_closed() const
+{
+    if (closed_) {
+        throw exception::query(static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
+                               "Query was cancelled by the user");
+    }
 }
 
 boost::future<void>
@@ -648,6 +656,7 @@ sql_result::close()
 boost::future<sql_page>
 sql_result::fetch_page()
 {
+    check_closed();
     return service_->fetch_page(query_id_, cursor_buffer_size_, connection_);
 }
 
@@ -838,6 +847,7 @@ sql_row_metadata::sql_row_metadata(std::vector<sql_column_metadata> columns)
 {
     assert(!columns_.empty());
 
+    name_to_index_.reserve(columns_.size());
     for (std::size_t i = 0; i < columns_.size(); ++i) {
         name_to_index_.emplace(columns_[i].name, i);
     }

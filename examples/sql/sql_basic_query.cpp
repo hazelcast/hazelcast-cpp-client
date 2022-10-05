@@ -18,6 +18,8 @@
 int
 main()
 {
+    using namespace hazelcast::client::sql;
+
     auto hz = hazelcast::new_client().get();
 
     // populate the map with some data
@@ -44,15 +46,27 @@ main()
       sql.execute("SELECT * FROM integers WHERE this > ? AND this < ?", 40, 50)
         .get();
 
-    std::cout << "There are " << (*result.page_iterator())->row_count()
+    auto it = result.page_iterator();
+    std::cout << "There are " << (*it)->row_count()
               << " rows returned from the cluster database" << std::endl;
 
-    for (auto it = result.page_iterator(); !(*it)->last(); (++it).get()) {
+    for (; it; (++it).get()) {
         for (auto const& row : (*it)->rows()) {
             std::cout << "(" << row.get_object<std::string>(0) << ", "
                       << row.get_object<std::string>(1) << ")" << std::endl;
         }
     }
+
+    // we can do the same query with an sql_statement that we compose
+    // and pass to the execute method
+    sql_statement statement(
+      hz, "SELECT * FROM integers WHERE this > ? AND this < ?");
+    statement.set_parameters(40, 50);
+    result = sql.execute(statement).get();
+
+    it = result.page_iterator();
+    std::cout << "There are " << (*it)->row_count()
+              << " rows returned from the cluster database" << std::endl;
 
     std::cout << "Finished" << std::endl;
 
