@@ -1,0 +1,8 @@
+You need to configure the server to stat with jet enabled. You can do this by adding the following line to the
+hazelcast config xml file (or similarly with yaml or embedded server configuration):
+
+```
+<jet enabled="true" />
+```
+
+A sample xml file is shared in this example folder.
