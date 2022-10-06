@@ -23,7 +23,7 @@ main()
     auto hz = hazelcast::new_client().get();
 
     // populate the map with some data
-    auto map = hz.get_map("map").get();
+    auto map = hz.get_map("integer").get();
     for (int i = 0; i < 100; ++i) {
         map->put(i, i).get();
     }
