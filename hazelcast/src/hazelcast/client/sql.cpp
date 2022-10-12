@@ -195,14 +195,15 @@ sql_service::handle_execute_response(
           std::move(response.error->suggestion)));
     }
 
-    return std::make_shared<sql_result>(&client_context_,
-             this,
-             std::move(connection),
-             id,
-             response.update_count,
-             std::move(response.row_metadata),
-             std::move(response.first_page),
-             cursor_buffer_size );
+    return std::shared_ptr<sql_result>(
+      new sql_result(&client_context_,
+                     this,
+                     std::move(connection),
+                     id,
+                     response.update_count,
+                     std::move(response.row_metadata),
+                     std::move(response.first_page),
+                     cursor_buffer_size));
 }
 
 std::shared_ptr<connection::Connection>

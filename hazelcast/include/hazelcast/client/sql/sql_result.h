@@ -91,28 +91,6 @@ public:
     };
 
     /**
-     * This is a PRIVATE API. Do NOT use it.
-     *
-     * @param client_context The client context object
-     * @param service The sql service to be used
-     * @param connection The connection used for the sql query
-     * @param id The query id of the sql query
-     * @param update_count The update count of the sql result
-     * @param row_metadata The row metadata of the sql result
-     * @param first_page The first page of the sql result
-     * @param cursor_buffer_size The cursor buffer size of the sql result
-     */
-    sql_result(
-      spi::ClientContext* client_context,
-      sql_service* service,
-      std::shared_ptr<connection::Connection> connection,
-      impl::query_id id,
-      int64_t update_count,
-      std::shared_ptr<sql_row_metadata> row_metadata,
-      std::shared_ptr<sql_page> first_page,
-      int32_t cursor_buffer_size);
-
-    /**
      * Return whether this result has rows to iterate using the page_iterator()
      * method.
      */
@@ -178,6 +156,28 @@ private:
     bool closed_;
 
     int32_t cursor_buffer_size_;
+
+    /**
+     * This is a PRIVATE API. Do NOT use it.
+     *
+     * @param client_context The client context object
+     * @param service The sql service to be used
+     * @param connection The connection used for the sql query
+     * @param id The query id of the sql query
+     * @param update_count The update count of the sql result
+     * @param row_metadata The row metadata of the sql result
+     * @param first_page The first page of the sql result
+     * @param cursor_buffer_size The cursor buffer size of the sql result
+     */
+    sql_result(
+      spi::ClientContext* client_context,
+      sql_service* service,
+      std::shared_ptr<connection::Connection> connection,
+      impl::query_id id,
+      int64_t update_count,
+      std::shared_ptr<sql_row_metadata> row_metadata,
+      std::shared_ptr<sql_page> first_page,
+      int32_t cursor_buffer_size);
 
     boost::future<std::shared_ptr<sql_page>> fetch_page();
 
