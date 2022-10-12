@@ -1,0 +1,5 @@
+<hazelcast xmlns="http://www.hazelcast.com/schema/config">
+
+    <jet enabled="true" />
+
+</hazelcast>

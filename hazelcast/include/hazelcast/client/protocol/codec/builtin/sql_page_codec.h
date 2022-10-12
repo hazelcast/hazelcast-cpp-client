@@ -33,7 +33,9 @@ namespace builtin {
 class HAZELCAST_API sql_page_codec
 {
 public:
-    static sql::sql_page decode(ClientMessage& msg);
+    static std::shared_ptr<sql::sql_page> decode(
+      ClientMessage& msg,
+      std::shared_ptr<sql::sql_row_metadata> row_metadata = nullptr);
 
 private:
     template<typename T>

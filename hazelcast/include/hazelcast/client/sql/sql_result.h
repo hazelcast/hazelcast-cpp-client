@@ -59,13 +59,14 @@ class sql_service;
  *
   * You don't need to call close() in this case.
  */
-class HAZELCAST_API sql_result
+class HAZELCAST_API sql_result : public std::enable_shared_from_this<sql_result>
 {
 public:
     class HAZELCAST_API page_iterator_type
     {
     public:
-        page_iterator_type(sql_result* result, boost::optional<sql_page> page);
+        page_iterator_type(std::shared_ptr<sql_result> result,
+                           std::shared_ptr<sql_page> page);
 
         /**
          * Fetches the new page for the result.
@@ -77,7 +78,7 @@ public:
          * @return the current page the iterator points to or boost::none if no
          * page exist.
          */
-        const boost::optional<sql_page>& operator*() const;
+        std::shared_ptr<sql_page> operator*() const;
 
         /**
          * @return true if the iterator points to a page, false otherwise.
@@ -85,21 +86,31 @@ public:
         operator bool() const;
 
     private:
-        sql_result* result_;
-        boost::optional<sql_page> page_;
+        std::shared_ptr<sql_result> result_;
+        std::shared_ptr<sql_page> page_;
     };
 
+    /**
+     * This is a PRIVATE API. Do NOT use it.
+     *
+     * @param client_context The client context object
+     * @param service The sql service to be used
+     * @param connection The connection used for the sql query
+     * @param id The query id of the sql query
+     * @param update_count The update count of the sql result
+     * @param row_metadata The row metadata of the sql result
+     * @param first_page The first page of the sql result
+     * @param cursor_buffer_size The cursor buffer size of the sql result
+     */
     sql_result(
       spi::ClientContext* client_context,
       sql_service* service,
       std::shared_ptr<connection::Connection> connection,
       impl::query_id id,
       int64_t update_count,
-      boost::optional<std::vector<sql_column_metadata>> columns_metadata,
-      boost::optional<sql_page> first_page,
+      std::shared_ptr<sql_row_metadata> row_metadata,
+      std::shared_ptr<sql_page> first_page,
       int32_t cursor_buffer_size);
-
-    sql_result();
 
     /**
      * Return whether this result has rows to iterate using the page_iterator()
@@ -157,8 +168,8 @@ private:
     std::shared_ptr<connection::Connection> connection_;
     impl::query_id query_id_;
     int64_t update_count_;
-    boost::optional<sql_row_metadata> row_metadata_;
-    boost::optional<sql_page> first_page_;
+    std::shared_ptr<sql_row_metadata> row_metadata_;
+    std::shared_ptr<sql_page> first_page_;
 
     bool iterator_requested_;
 
@@ -168,7 +179,7 @@ private:
 
     int32_t cursor_buffer_size_;
 
-    boost::future<sql_page> fetch_page();
+    boost::future<std::shared_ptr<sql_page>> fetch_page();
 
     template<typename T>
     boost::optional<T> to_object(serialization::pimpl::data data)

@@ -18,6 +18,7 @@
 #include <vector>
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/sql/sql_column_type.h"
@@ -26,12 +27,19 @@
 
 namespace hazelcast {
 namespace client {
+namespace protocol {
+namespace codec {
+namespace builtin {
+class sql_page_codec;
+}
+} // namespace codec
+} // namespace protocol
 namespace sql {
 
 /**
  * A finite set of rows returned to the client.
  */
-class HAZELCAST_API sql_page
+class HAZELCAST_API sql_page : public std::enable_shared_from_this<sql_page>
 {
     using column = std::vector<boost::any>;
 
@@ -39,8 +47,7 @@ public:
     class HAZELCAST_API sql_row
     {
     public:
-        sql_row(size_t row_index,
-                const sql_page* page);
+        sql_row(size_t row_index, std::shared_ptr<sql_page> page);
 
         /**
          * Gets the value of the column by index.
@@ -107,7 +114,7 @@ public:
     private:
         friend class sql_page;
         std::size_t row_index_;
-        const sql_page* page_;
+        std::shared_ptr<sql_page> page_;
 
         std::size_t resolve_index(const std::string& column_name) const;
 
@@ -118,39 +125,14 @@ public:
      * Constructs an sql_page from the response returned from the server.
      * @param column_types The types of the columns in each row of the page.
      * @param columns The values of each column for all rows of the page.
-     * @param last true if this is the last page in \sql_result, false otherwise.
+     * @param last true if this is the last page in \sql_result, false
+     * otherwise.
+     * @param row_metadata The metadata of the rows of the page.
      */
     sql_page(std::vector<sql_column_type> column_types,
              std::vector<column> columns,
-             bool last);
-
-    /**
-     * Move constructor.
-     *
-     * @param rhs The other sql_page to move from.
-     */
-    sql_page(sql_page&& rhs) noexcept;
-
-    /**
-     * Copy constructor.
-     *
-     * @param rhs The other sql_page to copy from.
-     */
-    sql_page(const sql_page& rhs) noexcept;
-
-    /**
-     * Assignment operator.
-     * @param rhs The other sql_page to move from.
-     * @return this sql_page.
-     */
-    sql_page& operator=(sql_page&& rhs) noexcept;
-
-    /**
-     * Assignment operator.
-     * @param rhs The other sql_page to copy from.
-     * @return this sql_page.
-     */
-    sql_page& operator=(const sql_page& rhs) noexcept;
+             bool last,
+             std::shared_ptr<sql_row_metadata> row_metadata = nullptr);
 
     /**
      * Returns the types of the columns in each row.
@@ -176,7 +158,6 @@ public:
      */
     std::size_t row_count() const;
 
-
     /**
      * Returns the rows of this page.
      * @return the vector of rows in this page.
@@ -185,12 +166,13 @@ public:
 
 private:
     friend class sql_result;
+    friend class protocol::codec::builtin::sql_page_codec;
 
     std::vector<sql_column_type> column_types_;
     std::vector<column> columns_;
     std::vector<sql_row> rows_;
     bool last_;
-    const sql_row_metadata* row_metadata_ = nullptr;
+    std::shared_ptr<sql_row_metadata> row_metadata_ = nullptr;
     serialization::pimpl::SerializationService* serialization_service_;
 
     template<typename T>
@@ -217,9 +199,9 @@ private:
 
     /**
      * set the row metadata on the page
-     * @param row_meta the row metadata pointer
+     * @param row_metadata the row metadata pointer
      */
-    void row_metadata(const sql_row_metadata* row_meta);
+    void row_metadata(std::shared_ptr<sql_row_metadata> row_metadata);
 
     /**
      * sets the serialization service to be used if column type is object

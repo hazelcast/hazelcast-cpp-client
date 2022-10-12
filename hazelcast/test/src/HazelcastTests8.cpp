@@ -2116,15 +2116,22 @@ TEST(ClientMessageTest, test_decode_sql_page)
     std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
     msg.wrap_for_read();
 
-    auto page = protocol::codec::builtin::sql_page_codec::decode(msg);
+    std::vector<sql::sql_column_metadata> columns_metadata{
+        {"foo", sql::sql_column_type::varchar, true},
+        {"test", sql::sql_column_type::varchar, true},
+    };
+    auto row_metadata =
+      std::make_shared<sql::sql_row_metadata>(std::move(columns_metadata));
+    auto page = protocol::codec::builtin::sql_page_codec::decode(msg,
+                                                                 row_metadata);
 
-    EXPECT_EQ(true, page.last());
+    EXPECT_EQ(true, page->last());
     EXPECT_EQ((std::vector<sql::sql_column_type>{
                 sql::sql_column_type::varchar,
                 sql::sql_column_type::varchar,
               }),
-              page.column_types());
-    auto& all_rows = page.rows();
+              page->column_types());
+    auto& all_rows = page->rows();
     ASSERT_EQ(2, all_rows.size());
     auto& row1 = all_rows[0];
     ASSERT_EQ(boost::make_optional<std::string>("foo"),

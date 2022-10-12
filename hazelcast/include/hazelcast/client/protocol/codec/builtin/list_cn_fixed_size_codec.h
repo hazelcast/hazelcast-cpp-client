@@ -76,6 +76,8 @@ public:
                         ++read_count;
                     }
                 }
+
+                assert(read_count == res.size());
         }
 
         return res;

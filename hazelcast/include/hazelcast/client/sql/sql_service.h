@@ -106,7 +106,7 @@ public:
      * @see execute(const sql_statement& statement)
      */
     template<typename... Params>
-    boost::future<sql_result> execute(const std::string& query,
+    boost::future<std::shared_ptr<sql_result>> execute(const std::string& query,
                                       const Params&... params)
     {
         sql_statement s{ client_context_, query };
@@ -123,7 +123,8 @@ public:
      * @throws hazelcast_sql_exception in case of execution error
      * @see sql_service
      */
-    boost::future<sql_result> execute(const sql_statement& statement);
+    boost::future<std::shared_ptr<sql_result>> execute(
+      const sql_statement& statement);
 
 private:
     friend client::impl::hazelcast_client_instance_impl;
@@ -134,8 +135,8 @@ private:
     struct sql_execute_response_parameters
     {
         int64_t update_count;
-        boost::optional<std::vector<sql_column_metadata>> row_metadata;
-        boost::optional<sql_page> first_page;
+        std::shared_ptr<sql_row_metadata> row_metadata;
+        std::shared_ptr<sql_page> first_page;
         boost::optional<impl::sql_error> error;
         bool is_infinite_rows = false;
         bool is_infinite_rows_exist = false;
@@ -143,7 +144,7 @@ private:
 
     struct sql_fetch_response_parameters
     {
-        boost::optional<sql_page> page;
+        std::shared_ptr<sql_page> page;
         boost::optional<impl::sql_error> error;
     };
 
@@ -157,7 +158,7 @@ private:
 
     boost::uuids::uuid client_id();
 
-    sql_result handle_execute_response(
+    std::shared_ptr<sql_result> handle_execute_response(
       protocol::ClientMessage& msg,
       std::shared_ptr<connection::Connection> connection,
       impl::query_id id,
@@ -169,7 +170,7 @@ private:
     impl::query_id create_query_id(
       const std::shared_ptr<connection::Connection>& query_conn);
 
-    boost::future<sql_page> fetch_page(
+    boost::future<std::shared_ptr<sql_page>> fetch_page(
       const impl::query_id& q_id,
       int32_t cursor_buffer_size,
       const std::shared_ptr<connection::Connection>& connection);

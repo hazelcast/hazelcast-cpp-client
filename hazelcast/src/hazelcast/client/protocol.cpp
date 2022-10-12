@@ -822,7 +822,9 @@ custom_type_factory::create_sql_column_metadata(std::string name,
       std::move(name), static_cast<sql_column_type>(type), true};
 }
 
-sql::sql_page sql_page_codec::decode(ClientMessage& msg)
+std::shared_ptr<sql::sql_page>
+sql_page_codec::decode(ClientMessage& msg,
+                       std::shared_ptr<sql::sql_row_metadata> row_metadata)
 {
     // begin frame
     msg.skip_frame();
@@ -851,9 +853,11 @@ sql::sql_page sql_page_codec::decode(ClientMessage& msg)
 
     msg.fast_forward_to_end_frame();
 
-    return sql::sql_page{ std::move(column_types),
-                          std::move(columns),
-                          last };
+    auto page = std::make_shared<sql::sql_page>(
+      std::move(column_types), std::move(columns), last, row_metadata);
+    // se have to construct the rows properly
+    page->construct_rows();
+    return page;
 }
 std::vector<boost::any>
 sql_page_codec::decode_column_values(ClientMessage& msg,

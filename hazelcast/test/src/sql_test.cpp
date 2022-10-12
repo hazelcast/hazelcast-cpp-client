@@ -312,7 +312,7 @@ protected:
         return res.str();
     }
 
-    sql::sql_result query(const std::string& map_name)
+    std::shared_ptr<sql::sql_result> query(const std::string& map_name)
     {
         auto sql_string = sql(map_name);
         sql::sql_statement s(client, sql_string);
@@ -400,25 +400,53 @@ TEST_F(SqlTest, simple)
         SELECT * FROM (VALUES ('foo', 'bar'), (NULL, 'hello')) AS X(col1, col2)
     )sql");
 
-    sql::sql_service service = client.get_sql();
+    auto &service = client.get_sql();
     auto result = service.execute(statement).get();
 
-    ASSERT_TRUE(result.row_set());
-    EXPECT_EQ(-1, result.update_count());
-    ASSERT_NO_THROW(result.row_metadata());
-    ASSERT_EQ(2, result.row_metadata().columns().size());
-    auto& column0 = result.row_metadata().columns()[0];
+    ASSERT_TRUE(result->row_set());
+    EXPECT_EQ(-1, result->update_count());
+    ASSERT_NO_THROW(result->row_metadata());
+    ASSERT_EQ(2, result->row_metadata().columns().size());
+    auto& column0 = result->row_metadata().columns()[0];
     EXPECT_EQ("col1", column0.name);
     EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column0.type);
     EXPECT_TRUE(column0.nullable);
-    auto& column1 = result.row_metadata().columns()[1];
+    auto& column1 = result->row_metadata().columns()[1];
     EXPECT_EQ("col2", column1.name);
     EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column1.type);
     EXPECT_FALSE(column1.nullable);
 
-    auto page_it = result.page_iterator();
+    auto page_it = result->page_iterator();
     auto const& page = *page_it;
-    ASSERT_TRUE(page.has_value());
+    ASSERT_TRUE(page);
+    auto& rows = page->rows();
+    EXPECT_EQ(2, rows.size());
+    EXPECT_EQ("foo", rows[0].get_object<std::string>(0).value());
+    EXPECT_EQ("bar", rows[0].get_object<std::string>(1).value());
+    EXPECT_FALSE(rows[1].get_object<std::string>(0).has_value());
+    EXPECT_EQ("hello", rows[1].get_object<std::string>(1).value());
+}
+
+TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
+{
+    sql::sql_statement statement(client, R"sql(
+        SELECT * FROM (VALUES ('foo', 'bar'), (NULL, 'hello')) AS X(col1, col2)
+    )sql");
+
+    auto &service = client.get_sql();
+
+    std::shared_ptr<sql::sql_page> page;
+
+    {
+        auto result = service.execute(statement).get();
+
+        ASSERT_TRUE(result->row_set());
+
+        page = *result->page_iterator();
+    }
+    // result is destroyed at this point
+
+    ASSERT_TRUE(page);
     auto& rows = page->rows();
     EXPECT_EQ(2, rows.size());
     EXPECT_EQ("foo", rows[0].get_object<std::string>(0).value());
@@ -429,17 +457,17 @@ TEST_F(SqlTest, simple)
 
 TEST_F(SqlTest, statement_with_params)
 {
-    sql::sql_service service = client.get_sql();
+    auto &service = client.get_sql();
     auto result = service
                     .execute("SELECT CAST(? AS VARCHAR), CAST(? AS VARCHAR)",
                              123456,
                              -42.73)
                     .get();
 
-    ASSERT_TRUE(result.row_set());
-    EXPECT_EQ(-1, result.update_count());
+    ASSERT_TRUE(result->row_set());
+    EXPECT_EQ(-1, result->update_count());
 
-    auto page = *result.page_iterator();
+    auto page = *result->page_iterator();
     ASSERT_TRUE(page);
 
     auto& rows = page->rows();
@@ -505,20 +533,20 @@ TEST_F(SqlTest, select)
 
     using namespace sql;
 
-    sql_result result;
+    std::shared_ptr<sql_result> result;
     ASSERT_NO_THROW(result = service.execute(sql).get());
 
-    sql_result res = query(map_name);
+    auto res = query(map_name);
 
-    auto const& row_metadata = res.row_metadata();
+    auto const& row_metadata = res->row_metadata();
     check_row_metada(row_metadata);
 
     std::unordered_set<int64_t> unique_keys;
-    auto it = res.page_iterator();
+    auto it = res->page_iterator();
     for (;it; (++it).get()) {
         auto const& page = *it;
         for (const auto& row : page->rows()) {
-            ASSERT_EQ(row_metadata, res.row_metadata());
+            ASSERT_EQ(row_metadata, res->row_metadata());
 
             auto key0 =
               row.get_object<int64_t>(row_metadata.find_column("key")->second);
@@ -557,11 +585,11 @@ TEST_F(SqlTest, select)
         }
     }
 
-    ASSERT_THROW(res.page_iterator(), exception::illegal_state);
+    ASSERT_THROW(res->page_iterator(), exception::illegal_state);
 
     ASSERT_EQ(DATA_SET_SIZE, unique_keys.size());
 
-    ASSERT_NO_THROW(res.close().get());
+    ASSERT_NO_THROW(res->close().get());
 
     // If this request spawns multiple pages, then:
     // 1) Ensure that results are cleared when the whole result set is fetched

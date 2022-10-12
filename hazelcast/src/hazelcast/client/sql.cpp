@@ -53,7 +53,7 @@ sql_service::create_query_id(
     return { member_id, local_id };
 }
 
-boost::future<sql_result>
+boost::future<std::shared_ptr<sql_result>>
 sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
@@ -80,7 +80,6 @@ sql_service::execute(const sql_statement& statement)
       boost::launch::sync,
       [this, query_conn, qid, cursor_buffer_size](
         boost::future<ClientMessage> response_fut) {
-          boost::optional<sql_result> result;
           try {
               auto response = response_fut.get();
               return handle_execute_response(
@@ -89,7 +88,7 @@ sql_service::execute(const sql_statement& statement)
               rethrow(std::current_exception(), query_conn);
           }
           assert(0);
-          return sql_result();
+          return std::shared_ptr<sql_result>();
       });
 }
 
@@ -146,9 +145,20 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
                    RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET);
     }
 
-    response.row_metadata =
-      msg.get_nullable<std::vector<sql_column_metadata>>();
-    response.first_page = msg.get_nullable<sql::sql_page>(protocol::codec::builtin::sql_page_codec::decode);
+    auto column_metadata = msg.get_nullable<std::vector<sql_column_metadata>>();
+    if (column_metadata) {
+        response.row_metadata = std::make_shared<sql_row_metadata>(std::move(column_metadata.value()));
+    }
+    auto row_metadata = response.row_metadata;
+    auto page = msg.get_nullable<std::shared_ptr<sql::sql_page>>(
+      [row_metadata](protocol::ClientMessage& msg) {
+          return protocol::codec::builtin::sql_page_codec::decode(msg,
+                                                                  row_metadata);
+      });
+    if (page) {
+        response.first_page = *std::move(page);
+    }
+
     response.error = msg.get_nullable<impl::sql_error>();
 
     return response;
@@ -160,13 +170,15 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
     // empty initial frame
     message.skip_frame();
 
-    auto page = message.get_nullable<sql::sql_page>(
-      protocol::codec::builtin::sql_page_codec::decode);
+    auto page =
+      message.get_nullable<std::shared_ptr<sql::sql_page>>([](protocol::ClientMessage& msg) {
+          return protocol::codec::builtin::sql_page_codec::decode(msg);
+      });
     auto error = message.get<boost::optional<impl::sql_error>>();
-    return { std::move(page), std::move(error) };
+    return { *std::move(page), std::move(error) };
 }
 
-sql_result
+std::shared_ptr<sql_result>
 sql_service::handle_execute_response(
   protocol::ClientMessage& msg,
   std::shared_ptr<connection::Connection> connection,
@@ -183,14 +195,14 @@ sql_service::handle_execute_response(
           std::move(response.error->suggestion)));
     }
 
-    return { &client_context_,
-                       this,
-                       std::move(connection),
-                       id,
-                       response.update_count,
-                       std::move(response.row_metadata),
-                       std::move(response.first_page),
-                       cursor_buffer_size };
+    return std::make_shared<sql_result>(&client_context_,
+             this,
+             std::move(connection),
+             id,
+             response.update_count,
+             std::move(response.row_metadata),
+             std::move(response.first_page),
+             cursor_buffer_size );
 }
 
 std::shared_ptr<connection::Connection>
@@ -263,7 +275,7 @@ sql_service::client_id()
     return client_context_.get_connection_manager().get_client_uuid();
 }
 
-boost::future<sql_page>
+boost::future<std::shared_ptr<sql_page>>
 sql_service::fetch_page(
   const impl::query_id& q_id,
   int32_t cursor_buffer_size,
@@ -278,7 +290,7 @@ sql_service::fetch_page(
 
     return response_future.then(
       boost::launch::sync, [this](boost::future<protocol::ClientMessage> f) {
-          boost::optional<sql_page> page;
+          std::shared_ptr<sql_page> page;
           try {
               auto response_message = f.get();
 
@@ -294,7 +306,7 @@ sql_service::fetch_page(
                 std::current_exception(), this->client_id());
           }
 
-          return std::move(*std::move(page));
+          return std::move(page);
       });
 }
 
@@ -575,23 +587,23 @@ sql_result::sql_result(
   std::shared_ptr<connection::Connection> connection,
   impl::query_id id,
   int64_t update_count,
-  boost::optional<std::vector<sql_column_metadata>> columns_metadata,
-  boost::optional<sql_page> first_page,
+  std::shared_ptr<sql_row_metadata> row_metadata,
+  std::shared_ptr<sql_page> first_page,
   int32_t cursor_buffer_size)
   : client_context_(client_context)
   , service_(service)
   , connection_(std::move(connection))
   , query_id_(id)
   , update_count_(update_count)
+  , row_metadata_(std::move(row_metadata))
   , first_page_(std::move(first_page))
   , iterator_requested_(false)
   , closed_(false)
   , cursor_buffer_size_(cursor_buffer_size)
 {
-    if (columns_metadata) {
-        row_metadata_.emplace(std::move(*columns_metadata));
+    if (row_metadata_) {
         assert(first_page_);
-        first_page_->row_metadata(row_metadata_.get_ptr());
+        first_page_->row_metadata(row_metadata_);
         first_page_->serialization_service(
           &client_context_->get_serialization_service());
         update_count_ = -1;
@@ -630,14 +642,15 @@ sql_result::page_iterator()
 
     iterator_requested_ = true;
 
-    return { this, std::move(first_page_) };
+    return { shared_from_this(), first_page_ };
 }
 void
 sql_result::check_closed() const
 {
     if (closed_) {
-        throw exception::query(static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
-                               "Query was cancelled by the user");
+        throw exception::query(
+          static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
+          "Query was cancelled by the user");
     }
 }
 
@@ -653,7 +666,7 @@ sql_result::close()
     return f;
 }
 
-boost::future<sql_page>
+boost::future<std::shared_ptr<sql_page>>
 sql_result::fetch_page()
 {
     check_closed();
@@ -668,20 +681,18 @@ sql_result::row_metadata() const
           "sql_result::row_metadata", "This result contains only update count");
     }
 
-    return row_metadata_.value();
+    return *row_metadata_;
 }
 
-sql_result::sql_result() = default;
-
 sql_result::page_iterator_type::page_iterator_type(
-  sql_result* result,
-  boost::optional<sql_page> page)
-  : result_(result)
+  std::shared_ptr<sql_result> result,
+  std::shared_ptr<sql_page> page)
+  : result_(std::move(result))
   , page_(std::move(page))
 {
     page_->serialization_service(
       &result_->client_context_->get_serialization_service());
-    page_->row_metadata(result_->row_metadata_.get_ptr());
+    page_->row_metadata(result_->row_metadata_);
 }
 
 boost::future<void>
@@ -692,18 +703,18 @@ sql_result::page_iterator_type::operator++()
         return boost::make_ready_future();
     }
 
-    boost::future<sql_page> page_future = result_->fetch_page();
+    auto page_future = result_->fetch_page();
 
     return page_future.then(
-      boost::launch::sync, [this](boost::future<sql_page> page) {
+      boost::launch::sync, [this](boost::future<std::shared_ptr<sql_page>> page) {
           page_ = std::move(page.get());
           page_->serialization_service(
             &result_->client_context_->get_serialization_service());
-          page_->row_metadata(result_->row_metadata_.get_ptr());
+          page_->row_metadata(result_->row_metadata_);
       });
 }
 
-const boost::optional<sql_page>&
+std::shared_ptr<sql_page>
 sql_result::page_iterator_type::operator*() const
 {
     return page_;
@@ -711,13 +722,12 @@ sql_result::page_iterator_type::operator*() const
 
 sql_result::page_iterator_type::operator bool() const
 {
-    return page_.has_value();
+    return static_cast<bool>(page_);
 }
 
-sql_page::sql_row::sql_row(size_t row_index,
-                           const sql_page* page)
+sql_page::sql_row::sql_row(size_t row_index, std::shared_ptr<sql_page> page)
   : row_index_(row_index)
-  , page_(page)
+  , page_(std::move(page))
 {
 }
 
@@ -752,54 +762,13 @@ sql_page::sql_row::check_index(size_t index) const
 
 sql_page::sql_page(std::vector<sql_column_type> column_types,
                    std::vector<column> columns,
-                   bool last)
+                   bool last,
+                   std::shared_ptr<sql_row_metadata> row_metadata)
   : column_types_(std::move(column_types))
   , columns_(std::move(columns))
   , last_(last)
+  , row_metadata_(std::move(row_metadata))
 {
-    construct_rows();
-}
-
-sql_page::sql_page(sql_page&& rhs) noexcept
-  : column_types_(std::move(rhs.column_types_))
-  , columns_(std::move(rhs.columns_))
-  , last_(rhs.last_)
-  , row_metadata_(rhs.row_metadata_)
-{
-    construct_rows();
-}
-
-sql_page::sql_page(const sql_page& rhs) noexcept
-  : column_types_(rhs.column_types_)
-  , columns_(rhs.columns_)
-  , last_(rhs.last_)
-  , row_metadata_(rhs.row_metadata_)
-{
-    construct_rows();
-}
-
-sql_page&
-sql_page::operator=(sql_page&& rhs) noexcept
-{
-    column_types_ = std::move(rhs.column_types_);
-    columns_ = std::move(rhs.columns_);
-    last_ = rhs.last_;
-    row_metadata_ = rhs.row_metadata_;
-
-    construct_rows();
-    return *this;
-}
-
-sql_page&
-sql_page::operator=(const sql_page& rhs) noexcept
-{
-    column_types_ = rhs.column_types_;
-    columns_ = rhs.columns_;
-    last_ = rhs.last_;
-    row_metadata_ = rhs.row_metadata_;
-
-    construct_rows();
-    return *this;
 }
 
 void
@@ -808,7 +777,7 @@ sql_page::construct_rows()
     auto count = row_count();
     rows_.clear();
     for (size_t i = 0; i < count; ++i) {
-        rows_.emplace_back(i, this);
+        rows_.emplace_back(i, shared_from_this());
     }
 }
 
@@ -843,9 +812,9 @@ sql_page::rows() const
 }
 
 void
-sql_page::row_metadata(const sql_row_metadata* row_meta)
+sql_page::row_metadata(std::shared_ptr<sql_row_metadata> row_meta)
 {
-    row_metadata_ = row_meta;
+    row_metadata_ = std::move(row_meta);
 }
 
 void
@@ -907,8 +876,8 @@ operator==(const sql_row_metadata& lhs, const sql_row_metadata& rhs)
 }
 
 bool
-operator==(const sql_column_metadata& lhs,
-           const sql_column_metadata& rhs) {
+operator==(const sql_column_metadata& lhs, const sql_column_metadata& rhs)
+{
     return lhs.name == rhs.name && lhs.type == rhs.type &&
            lhs.nullable == rhs.nullable;
 }
