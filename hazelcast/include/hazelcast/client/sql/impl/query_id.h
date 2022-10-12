@@ -16,6 +16,7 @@
 #pragma once
 
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <ostream>
 
 #include "hazelcast/util/export.h"
@@ -30,12 +31,8 @@ struct HAZELCAST_API query_id
     boost::uuids::uuid member_id;
     boost::uuids::uuid local_id;
 
-    friend std::ostream& operator<<(std::ostream& os, const query_id& id)
-    {
-        os << "query_id{member_id: " << id.member_id
-           << " local_id: " << id.local_id << "}";
-        return os;
-    }
+    friend std::ostream& HAZELCAST_API operator<<(std::ostream& os,
+                                                  const query_id& id);
 };
 
 } // namespace impl

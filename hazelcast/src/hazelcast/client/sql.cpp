@@ -481,6 +481,13 @@ hazelcast_sql_exception::suggestion() const
 
 namespace impl {
 
+std::ostream& operator<<(std::ostream& os, const query_id& id)
+{
+    os << "query_id{member_id: " << boost::uuids::to_string(id.member_id)
+       << " local_id: " << boost::uuids::to_string(id.local_id) << "}";
+    return os;
+}
+
 void
 query_utils::throw_public_exception(std::exception_ptr exc,
                                     boost::uuids::uuid id)
