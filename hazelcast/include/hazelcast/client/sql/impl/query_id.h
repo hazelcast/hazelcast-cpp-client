@@ -30,10 +30,10 @@ struct HAZELCAST_API query_id
 {
     boost::uuids::uuid member_id;
     boost::uuids::uuid local_id;
-
-    friend std::ostream& HAZELCAST_API operator<<(std::ostream& os,
-                                                  const query_id& id);
 };
+
+std::ostream HAZELCAST_API &
+operator<<(std::ostream& os, const query_id& id);
 
 } // namespace impl
 } // namespace sql
