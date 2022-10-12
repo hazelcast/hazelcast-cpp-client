@@ -46,7 +46,7 @@ main()
       sql.execute("SELECT * FROM integers WHERE this > ? AND this < ?", 40, 50)
         .get();
 
-    auto it = result.page_iterator();
+    auto it = result->page_iterator();
     std::cout << "There are " << (*it)->row_count()
               << " rows returned from the cluster database" << std::endl;
 
@@ -64,7 +64,7 @@ main()
     statement.set_parameters(40, 50);
     result = sql.execute(statement).get();
 
-    it = result.page_iterator();
+    it = result->page_iterator();
     std::cout << "There are " << (*it)->row_count()
               << " rows returned from the cluster database" << std::endl;
 
