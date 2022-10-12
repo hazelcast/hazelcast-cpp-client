@@ -34,7 +34,7 @@ main()
     // second
     auto result = sql.execute("SELECT * from TABLE(generate_stream(1))").get();
 
-    auto it = result.page_iterator();
+    auto it = result->page_iterator();
     std::cout << "There are " << (*it)->row_count()
               << " rows returned from the cluster database in the first page"
               << std::endl;
@@ -51,7 +51,7 @@ main()
 
     // Close the result so that it will cancel the query resources at the server
     // side as well as client side.
-    result.close().get();
+    result->close().get();
 
     std::cout << "Finished" << std::endl;
 

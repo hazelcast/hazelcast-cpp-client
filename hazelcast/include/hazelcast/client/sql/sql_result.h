@@ -91,6 +91,11 @@ public:
     };
 
     /**
+     * The destructor closes the result if it were open.
+     */
+    virtual ~sql_result();
+
+    /**
      * Return whether this result has rows to iterate using the page_iterator()
      * method.
      */
@@ -179,6 +184,7 @@ private:
       std::shared_ptr<sql_page> first_page,
       int32_t cursor_buffer_size);
 
+private:
     boost::future<std::shared_ptr<sql_page>> fetch_page();
 
     template<typename T>

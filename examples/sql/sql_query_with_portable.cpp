@@ -99,18 +99,18 @@ main()
                     )")
                     .get();
 
-    std::cout << "Mapping created. Affected row count:" << result.update_count()
+    std::cout << "Mapping created. Affected row count:" << result->update_count()
               << std::endl;
 
     // One can select all rows of the table with *.
     result = sql.execute("SELECT * FROM person_table").get();
     std::cout << "Query(SELECT * FROM person_table) result:" << std::endl;
-    print_result(result);
+    print_result(*result);
 
     // Fetch people older than 38
     result = sql.execute("SELECT * FROM person_table WHERE age > ?", 38).get();
     std::cout << "Query(SELECT * FROM person_table WHERE age > 38) result:" << std::endl;
-    print_result(result);
+    print_result(*result);
 
     std::cout << "Finished" << std::endl;
 

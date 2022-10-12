@@ -307,7 +307,7 @@ sql_service::fetch_page(
                 std::current_exception(), this->client_id());
           }
 
-          return std::move(page);
+          return page;
       });
 }
 
@@ -683,6 +683,21 @@ sql_result::row_metadata() const
     }
 
     return *row_metadata_;
+}
+
+sql_result::~sql_result()
+{
+    try {
+        close().get();
+    } catch (...) {
+        // ignore
+        HZ_LOG(client_context_->get_logger(),
+               info,
+               (boost::format("[sql_result::~sql_result()] Exception while "
+                              "closing the query result. Query id: %1%") %
+                query_id_)
+                 .str());
+    }
 }
 
 sql_result::page_iterator_type::page_iterator_type(

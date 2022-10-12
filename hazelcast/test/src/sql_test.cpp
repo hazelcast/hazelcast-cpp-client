@@ -5,6 +5,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/sql/sql_statement.h>
 #include <hazelcast/client/sql/hazelcast_sql_exception.h>
+#include <hazelcast/client/sql/impl/sql_error_code.h>
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
@@ -453,6 +454,34 @@ TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
     EXPECT_EQ("bar", rows[0].get_object<std::string>(1).value());
     EXPECT_FALSE(rows[1].get_object<std::string>(0).has_value());
     EXPECT_EQ("hello", rows[1].get_object<std::string>(1).value());
+}
+
+TEST_F(SqlTest, sql_result_destructor_closes_the_result)
+{
+
+    std::shared_ptr<sql::sql_result::page_iterator_type> it;
+    {
+        auto result = client.get_sql()
+                        .execute("SELECT * from TABLE(generate_stream(1))")
+                        .get();
+
+        ASSERT_TRUE(result->row_set());
+
+        it = std::make_shared<sql::sql_result::page_iterator_type>(
+          std::move(result->page_iterator()));
+    }
+    // result is destroyed at this point, trying to increment the iterator
+    // should throw exception since the result should have been closed
+    try {
+        (++(*it)).get();
+    } catch (const hazelcast::client::exception::query& e) {
+        ASSERT_EQ(
+          static_cast<int32_t>(sql::impl::sql_error_code::CANCELLED_BY_USER),
+          e.code());
+    } catch (...) {
+        FAIL()
+          << "Expected exception of type hazelcast::client::exception::query";
+    }
 }
 
 TEST_F(SqlTest, statement_with_params)
