@@ -325,7 +325,7 @@ DEFINE_RETRYABLE_EXCEPTION_CLASS(wrong_target, protocol::WRONG_TARGET);
 DEFINE_RETRYABLE_EXCEPTION_CLASS(target_not_replica,
                                  protocol::TARGET_NOT_REPLICA_EXCEPTION);
 
-class query : public hazelcast_
+class HAZELCAST_API query : public hazelcast_
 {
 public:
     explicit query(std::string source = "",
@@ -351,7 +351,7 @@ private:
     boost::uuids::uuid originating_member_uuid_;
 };
 
-class member_left : public execution
+class HAZELCAST_API member_left : public execution
 {
 public:
     explicit member_left(std::string source = "",
@@ -367,7 +367,7 @@ public:
 // ----------------------------------------
 // -----------------    Client side runtime exceptions start here
 // --------------------------------
-class consistency_lost : public hazelcast_
+class HAZELCAST_API consistency_lost : public hazelcast_
 {
 public:
     explicit consistency_lost(std::string source = "",
