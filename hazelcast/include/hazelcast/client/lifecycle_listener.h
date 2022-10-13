@@ -53,7 +53,7 @@ public:
      * parameters. \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener& on_starting(Handler&& h) &
     {
         starting_ = std::forward<Handler>(h);
@@ -64,7 +64,7 @@ public:
      * \copydoc lifecycle_listener::on_starting
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener&& on_starting(Handler&& h) &&
     {
         on_starting(std::forward<Handler>(h));
@@ -77,7 +77,7 @@ public:
      * parameters. \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener& on_started(Handler&& h) &
     {
         started_ = std::forward<Handler>(h);
@@ -88,7 +88,7 @@ public:
      * \copydoc lifecycle_listener::on_started
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener&& on_started(Handler&& h) &&
     {
         on_started(std::forward<Handler>(h));
@@ -101,7 +101,7 @@ public:
      * parameters. \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener& on_shutting_down(Handler&& h) &
     {
         shutting_down_ = std::forward<Handler>(h);
@@ -112,7 +112,7 @@ public:
      * \copydoc lifecycle_listener::on_shutting_down
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener&& on_shutting_down(Handler&& h) &&
     {
         on_shutting_down(std::forward<Handler>(h));
@@ -125,7 +125,7 @@ public:
      * parameters. \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener& on_shutdown(Handler&& h) &
     {
         shutdown_ = std::forward<Handler>(h);
@@ -136,7 +136,7 @@ public:
      * \copydoc lifecycle_listener::on_shutdown
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener&& on_shutdown(Handler&& h) &&
     {
         on_shutdown(std::forward<Handler>(h));
@@ -149,7 +149,7 @@ public:
      * parameters. \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener& on_connected(Handler&& h) &
     {
         connected_ = std::forward<Handler>(h);
@@ -160,7 +160,7 @@ public:
      * \copydoc lifecycle_listener::on_connected
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener&& on_connected(Handler&& h) &&
     {
         on_connected(std::forward<Handler>(h));
@@ -173,7 +173,7 @@ public:
      * any parameters. \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener& on_disconnected(Handler&& h) &
     {
         disconnected_ = std::forward<Handler>(h);
@@ -184,7 +184,7 @@ public:
      * \copydoc lifecycle_listener::on_disconnected
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     lifecycle_listener&& on_disconnected(Handler&& h) &&
     {
         on_disconnected(std::forward<Handler>(h));

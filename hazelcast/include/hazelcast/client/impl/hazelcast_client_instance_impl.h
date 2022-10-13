@@ -17,7 +17,7 @@
 
 #include <atomic>
 #include <memory>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 #include <random>
 #include <boost/uuid/uuid.hpp>
@@ -55,6 +55,7 @@
 #include "hazelcast/cp/cp.h"
 #include "hazelcast/cp/cp_impl.h"
 #include "hazelcast/logger.h"
+#include "hazelcast/client/sql/sql_service.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -63,6 +64,7 @@
 
 namespace hazelcast {
 namespace client {
+class hazelcast_client;
 namespace connection {
 class ClientConnectionManagerImpl;
 class AddressProvider;
@@ -106,7 +108,8 @@ public:
      * Note: client_config will be copied.
      * @param config client configuration to start the client with
      */
-    explicit hazelcast_client_instance_impl(client_config config);
+    explicit hazelcast_client_instance_impl(hazelcast_client& client,
+                                            client_config config);
 
     /**
      * Destructor
@@ -216,6 +219,8 @@ public:
 
     cp::cp_subsystem& get_cp_subsystem();
 
+    sql::sql_service& get_sql();
+
 private:
     client_config client_config_;
     client_properties client_properties_;
@@ -249,6 +254,7 @@ private:
     boost::uuids::basic_random_generator<std::mt19937> uuid_generator_;
     std::mutex uuid_generator_lock_;
     cp::cp_subsystem cp_subsystem_;
+    sql::sql_service sql_service_;
     cp::internal::session::proxy_session_manager proxy_session_manager_;
 
     hazelcast_client_instance_impl(const hazelcast_client_instance_impl& rhs) =

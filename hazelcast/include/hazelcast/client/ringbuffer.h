@@ -260,7 +260,7 @@ public:
     {
         auto msg = f.get();
         auto* initial_frame =
-          reinterpret_cast<protocol::ClientMessage::frame_header_t*>(
+          reinterpret_cast<protocol::ClientMessage::frame_header_type*>(
             msg.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN));
         auto read_count = msg.get<int32_t>();
         auto next_seq = msg.get<int64_t>();

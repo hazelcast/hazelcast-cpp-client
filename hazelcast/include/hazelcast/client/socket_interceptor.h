@@ -50,7 +50,7 @@ public:
      * parameter of type `const Socket &`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     socket_interceptor& on_connect(Handler&& h) &
     {
         connect_ = std::forward<Handler>(h);
@@ -61,7 +61,7 @@ public:
      * \copydoc SocketInterceptor::on_connect
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     socket_interceptor&& on_connect(Handler&& h) &&
     {
         on_connect(std::forward<Handler>(h));

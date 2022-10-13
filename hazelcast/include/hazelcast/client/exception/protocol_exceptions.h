@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <boost/uuid/nil_generator.hpp>
+
 #include "hazelcast/client/exception/iexception.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
@@ -31,43 +33,47 @@ namespace exception {
     class HAZELCAST_API ClassName : public iexception                          \
     {                                                                          \
     public:                                                                    \
-        ClassName(const std::string& source,                                   \
-                  const std::string& message,                                  \
-                  const std::string& details = "",                             \
+        ClassName(std::string source,                                          \
+                  std::string message,                                         \
+                  std::string details = "",                                    \
                   std::exception_ptr cause = nullptr,                          \
                   bool retryable = false)                                      \
           : ClassName(#ClassName,                                              \
                       errorNo,                                                 \
-                      source,                                                  \
-                      message,                                                 \
-                      details,                                                 \
-                      cause,                                                   \
+                      std::move(source),                                       \
+                      std::move(message),                                      \
+                      std::move(details),                                      \
+                      std::move(cause),                                        \
                       isRuntime,                                               \
                       retryable)                                               \
-        {}                                                                     \
-        explicit ClassName(const std::string& message)                         \
-          : ClassName("", message)                                             \
-        {}                                                                     \
+        {                                                                      \
+        }                                                                      \
+        explicit ClassName(std::string message)                                \
+          : ClassName("", std::move(message))                                  \
+        {                                                                      \
+        }                                                                      \
         ClassName()                                                            \
           : ClassName("", "")                                                  \
-        {}                                                                     \
-        ClassName(const std::string& errorName,                                \
+        {                                                                      \
+        }                                                                      \
+        ClassName(std::string errorName,                                       \
                   int32_t errorCode,                                           \
-                  const std::string& source,                                   \
-                  const std::string& message,                                  \
-                  const std::string& details,                                  \
+                  std::string source,                                          \
+                  std::string message,                                         \
+                  std::string details,                                         \
                   std::exception_ptr cause,                                    \
                   bool runtime,                                                \
                   bool retryable)                                              \
-          : iexception(errorName,                                              \
-                       source,                                                 \
-                       message,                                                \
-                       details,                                                \
+          : iexception(std::move(errorName),                                   \
+                       std::move(source),                                      \
+                       std::move(message),                                     \
+                       std::move(details),                                     \
                        errorCode,                                              \
-                       cause,                                                  \
+                       std::move(cause),                                       \
                        runtime,                                                \
                        retryable)                                              \
-        {}                                                                     \
+        {                                                                      \
+        }                                                                      \
     };
 
 // ---------  Non-runtime starts here
@@ -162,7 +168,6 @@ DEFINE_EXCEPTION_CLASS(negative_array_size,
 DEFINE_EXCEPTION_CLASS(no_such_element, protocol::NO_SUCH_ELEMENT, true);
 DEFINE_EXCEPTION_CLASS(null_pointer, protocol::NULL_POINTER, true);
 DEFINE_EXCEPTION_CLASS(operation_timeout, protocol::OPERATION_TIMEOUT, true);
-DEFINE_EXCEPTION_CLASS(query, protocol::QUERY, true);
 DEFINE_EXCEPTION_CLASS(query_result_size_exceeded,
                        protocol::QUERY_RESULT_SIZE_EXCEEDED,
                        true);
@@ -272,18 +277,18 @@ DEFINE_EXCEPTION_CLASS(version_mismatch,
 class HAZELCAST_API retryable_hazelcast : public hazelcast_
 {
 public:
-    retryable_hazelcast(const std::string& error_name,
+    retryable_hazelcast(std::string error_name,
                         int32_t error_code,
-                        const std::string& source,
-                        const std::string& message,
-                        const std::string& details,
+                        std::string source,
+                        std::string message,
+                        std::string details,
                         std::exception_ptr cause,
                         bool runtime,
                         bool retryable);
 
-    explicit retryable_hazelcast(const std::string& source = "",
-                                 const std::string& message = "",
-                                 const std::string& details = "",
+    explicit retryable_hazelcast(std::string source = "",
+                                 std::string message = "",
+                                 std::string details = "",
                                  std::exception_ptr cause = nullptr);
 };
 
@@ -291,19 +296,20 @@ public:
     class HAZELCAST_API ClassName : public retryable_hazelcast                 \
     {                                                                          \
     public:                                                                    \
-        explicit ClassName(const std::string& source = "",                     \
-                           const std::string& message = "",                    \
-                           const std::string& details = "",                    \
+        explicit ClassName(std::string source = "",                            \
+                           std::string message = "",                           \
+                           std::string details = "",                           \
                            std::exception_ptr cause = nullptr)                 \
           : retryable_hazelcast(#ClassName,                                    \
                                 errorNo,                                       \
-                                source,                                        \
-                                message,                                       \
-                                details,                                       \
-                                cause,                                         \
+                                std::move(source),                             \
+                                std::move(message),                            \
+                                std::move(details),                            \
+                                std::move(cause),                              \
                                 false,                                         \
                                 true)                                          \
-        {}                                                                     \
+        {                                                                      \
+        }                                                                      \
     };
 
 /** List of Retryable exceptions **/
@@ -319,12 +325,38 @@ DEFINE_RETRYABLE_EXCEPTION_CLASS(wrong_target, protocol::WRONG_TARGET);
 DEFINE_RETRYABLE_EXCEPTION_CLASS(target_not_replica,
                                  protocol::TARGET_NOT_REPLICA_EXCEPTION);
 
-class member_left : public execution
+class HAZELCAST_API query : public hazelcast_
 {
 public:
-    explicit member_left(const std::string& source = "",
-                         const std::string& message = "",
-                         const std::string& details = "",
+    explicit query(std::string source = "",
+                   std::string message = "",
+                   std::string details = "",
+                   std::exception_ptr cause = nullptr);
+
+    query(int32_t code,
+          std::string message,
+          std::exception_ptr cause = nullptr,
+          boost::uuids::uuid originating_member_id = boost::uuids::nil_uuid(),
+          std::string suggestion = "");
+
+    int32_t code() const;
+
+    const std::string& suggestion() const;
+
+    const boost::uuids::uuid& originating_member_uuid() const;
+
+private:
+    int32_t code_;
+    std::string suggestion_;
+    boost::uuids::uuid originating_member_uuid_;
+};
+
+class HAZELCAST_API member_left : public execution
+{
+public:
+    explicit member_left(std::string source = "",
+                         std::string message = "",
+                         std::string details = "",
                          std::exception_ptr cause = nullptr);
 };
 
@@ -335,12 +367,12 @@ public:
 // ----------------------------------------
 // -----------------    Client side runtime exceptions start here
 // --------------------------------
-class consistency_lost : public hazelcast_
+class HAZELCAST_API consistency_lost : public hazelcast_
 {
 public:
-    explicit consistency_lost(const std::string& source = "",
-                              const std::string& message = "",
-                              const std::string& details = "",
+    explicit consistency_lost(std::string source = "",
+                              std::string message = "",
+                              std::string details = "",
                               std::exception_ptr cause = nullptr);
 };
 

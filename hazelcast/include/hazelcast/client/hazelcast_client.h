@@ -345,6 +345,12 @@ public:
      */
     cp::cp_subsystem& get_cp_subsystem();
 
+    /**
+     *
+     * @return a service to execute distributed SQL queries.
+     */
+    sql::sql_service& get_sql();
+
 private:
     hazelcast_client();
 

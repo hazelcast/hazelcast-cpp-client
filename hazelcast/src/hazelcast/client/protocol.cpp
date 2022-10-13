@@ -31,6 +31,8 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/cp/cp.h"
+#include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
+#include "hazelcast/client/protocol/codec/builtin/sql_page_codec.h"
 
 namespace hazelcast {
 namespace client {
@@ -39,15 +41,15 @@ const std::string ClientTypes::CPP = "CPP";
 
 constexpr size_t ClientMessage::EXPECTED_DATA_BLOCK_SIZE;
 
-const ClientMessage::frame_header_t ClientMessage::NULL_FRAME{
+const ClientMessage::frame_header_type ClientMessage::NULL_FRAME{
     ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS,
     ClientMessage::IS_NULL_FLAG
 };
-const ClientMessage::frame_header_t ClientMessage::BEGIN_FRAME{
+const ClientMessage::frame_header_type ClientMessage::BEGIN_FRAME{
     ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS,
     ClientMessage::BEGIN_DATA_STRUCTURE_FLAG
 };
-const ClientMessage::frame_header_t ClientMessage::END_FRAME{
+const ClientMessage::frame_header_type ClientMessage::END_FRAME{
     ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS,
     ClientMessage::END_DATA_STRUCTURE_FLAG
 };
@@ -60,7 +62,7 @@ ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame)
   : retryable_(false)
 {
     auto* initial_frame =
-      reinterpret_cast<frame_header_t*>(wr_ptr(REQUEST_HEADER_LEN));
+      reinterpret_cast<frame_header_type*>(wr_ptr(REQUEST_HEADER_LEN));
     initial_frame->frame_len = initial_frame_size;
     initial_frame->flags =
       is_fingle_frame
@@ -108,7 +110,7 @@ ClientMessage::set(
   bool is_final)
 {
     auto* f =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len =
       values.size() * (UUID_SIZE + INT64_SIZE) + SIZE_OF_FRAME_LENGTH_AND_FLAGS;
     f->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
@@ -123,7 +125,7 @@ void
 ClientMessage::set(const std::vector<boost::uuids::uuid>& values, bool is_final)
 {
     auto* h =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     h->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * UUID_SIZE;
     h->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
     for (auto& v : values) {
@@ -168,7 +170,7 @@ ClientMessage::set(const codec::holder::paging_predicate_holder& p,
     add_begin_frame();
 
     auto f =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT32_SIZE + INT8_SIZE;
     f->flags = DEFAULT_FLAGS;
     set(p.page_size);
@@ -212,7 +214,7 @@ ClientMessage::fill_message_from(util::ByteBuffer& byte_buff,
              ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS) {
         // start of the frame here
         auto read_ptr = static_cast<byte*>(byte_buff.ix());
-        auto* f = reinterpret_cast<frame_header_t*>(read_ptr);
+        auto* f = reinterpret_cast<frame_header_type*>(read_ptr);
         auto frame_len =
           static_cast<size_t>(static_cast<int32_t>(f->frame_len));
         is_final =
@@ -383,7 +385,7 @@ ClientMessage::fast_forward_to_end_frame()
     int number_expected_frames = 1;
     while (number_expected_frames) {
         auto* f =
-          reinterpret_cast<frame_header_t*>(rd_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(rd_ptr(sizeof(frame_header_type)));
 
         int16_t flags = f->flags;
         if (is_flag_set(flags, END_DATA_STRUCTURE_FLAG)) {
@@ -393,23 +395,23 @@ ClientMessage::fast_forward_to_end_frame()
         }
 
         // skip current frame
-        rd_ptr(static_cast<int32_t>(f->frame_len) - sizeof(frame_header_t));
+        rd_ptr(static_cast<int32_t>(f->frame_len) - sizeof(frame_header_type));
     }
 }
 
-const ClientMessage::frame_header_t&
+const ClientMessage::frame_header_type&
 ClientMessage::null_frame()
 {
     return NULL_FRAME;
 }
 
-const ClientMessage::frame_header_t&
+const ClientMessage::frame_header_type&
 ClientMessage::begin_frame()
 {
     return BEGIN_FRAME;
 }
 
-const ClientMessage::frame_header_t&
+const ClientMessage::frame_header_type&
 ClientMessage::end_frame()
 {
     return END_FRAME;
@@ -429,7 +431,7 @@ ClientMessage::set(const cp::raft_group_id& o, bool is_final)
     add_begin_frame();
 
     auto f =
-      reinterpret_cast<frame_header_t*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT64_SIZE;
     f->flags = DEFAULT_FLAGS;
     set(o.seed);
@@ -449,7 +451,7 @@ ClientMessage::get()
 
     // skip header of the frame
     auto f =
-      reinterpret_cast<frame_header_t*>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+      reinterpret_cast<frame_header_type*>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     auto seed = get<int64_t>();
     auto id = get<int64_t>();
     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS -
@@ -796,6 +798,136 @@ ErrorHolder::to_string() const
     return out.str();
 }
 
+namespace builtin {
+sql::sql_column_metadata
+custom_type_factory::create_sql_column_metadata(std::string name,
+                                                int32_t type,
+                                                bool is_nullable_exists,
+                                                bool nullability)
+{
+    using namespace hazelcast::client::sql;
+    if (type < static_cast<int32_t>(sql_column_type::varchar) ||
+        type > static_cast<int32_t>(sql_column_type::null)) {
+        throw hazelcast::client::exception::hazelcast_(
+          "custom_type_factory::create_sql_column_metadata",
+          (boost::format("Unexpected SQL column type = [%1%]") % type).str());
+    }
+
+    if (is_nullable_exists) {
+        return sql_column_metadata{
+          std::move(name), static_cast<sql_column_type>(type), nullability};
+    }
+
+    return sql_column_metadata{
+      std::move(name), static_cast<sql_column_type>(type), true};
+}
+
+std::shared_ptr<sql::sql_page>
+sql_page_codec::decode(ClientMessage& msg,
+                       std::shared_ptr<sql::sql_row_metadata> row_metadata)
+{
+    // begin frame
+    msg.skip_frame();
+
+    bool last =
+      msg.peek(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS +
+               1)[ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS] == 1;
+
+    msg.skip_frame();
+
+    auto column_type_ids = msg.get<std::vector<int32_t>>();
+
+    using column = std::vector<boost::any>;
+
+    using namespace sql;
+
+    auto number_of_columns = column_type_ids.size();
+    std::vector<column> columns(number_of_columns);
+    std::vector<sql_column_type> column_types(number_of_columns);
+
+    for (std::size_t i = 0; i < number_of_columns; ++i) {
+        auto column_type = static_cast<sql_column_type>(column_type_ids[i]);
+        column_types[i] = column_type;
+        columns[i] = sql_page_codec::decode_column_values(msg, column_type);
+    }
+
+    msg.fast_forward_to_end_frame();
+
+    auto page = std::make_shared<sql::sql_page>(
+      std::move(column_types), std::move(columns), last, row_metadata);
+    // se have to construct the rows properly
+    page->construct_rows();
+    return page;
+}
+std::vector<boost::any>
+sql_page_codec::decode_column_values(ClientMessage& msg,
+                                     sql::sql_column_type column_type)
+{
+    switch (column_type) {
+        case sql::sql_column_type::varchar:
+            return to_vector_of_any(
+              msg.get<std::vector<boost::optional<std::string>>>());
+        case sql::sql_column_type::boolean:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<bool>(msg));
+        case sql::sql_column_type::tinyint:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<byte>(msg));
+        case sql::sql_column_type::smallint:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<int16_t>(msg));
+        case sql::sql_column_type::integer:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<int32_t>(msg));
+        case sql::sql_column_type::bigint:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<int64_t>(msg));
+        case sql::sql_column_type::real:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<float>(msg));
+        case sql::sql_column_type::double_:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<double>(msg));
+        case sql::sql_column_type::date:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<local_date>(
+                msg));
+        case sql::sql_column_type::time:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<local_time>(
+                msg));
+        case sql::sql_column_type::timestamp:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<
+                local_date_time>(msg));
+        case sql::sql_column_type::timestamp_with_timezone:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<
+                offset_date_time>(msg));
+        case sql::sql_column_type::decimal:
+            return to_vector_of_any(
+              builtin::list_cn_fixed_size_codec::decode<big_decimal>(
+                msg));
+        case sql::sql_column_type::null: {
+            auto size = msg.get<int32_t>();
+            return
+              std::vector<boost::any>(static_cast<size_t>(size));
+        }
+        case sql::sql_column_type::object:
+            return to_vector_of_any(
+              msg.get<std::vector<
+                boost::optional<serialization::pimpl::data>>>());
+        default:
+            throw exception::illegal_state(
+              "ClientMessage::get<sql::sql_page>",
+              (boost::format("Unknown type %1%") %
+               static_cast<int32_t>(column_type))
+                .str());
+    }
+
+}
+
+} // namespace builtin
 } // namespace codec
 } // namespace protocol
 } // namespace client

@@ -94,7 +94,7 @@ public:
      * parameter of type `Message &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     reliable_listener& on_received(Handler&& h) &
     {
         received_ = std::move(h);
@@ -105,7 +105,7 @@ public:
      * \copydoc reliable_listener::on_received
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     reliable_listener&& on_received(Handler&& h) &&
     {
         on_received(std::move(h));
@@ -121,7 +121,7 @@ public:
      * parameter of type `int64_t` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     reliable_listener& on_store_sequence_id(Handler&& h) &
     {
         store_sequence_id_ = std::move(h);
@@ -132,7 +132,7 @@ public:
      * \copydoc reliable_listener::on_store_sequence
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     reliable_listener&& on_store_sequence_id(Handler&& h) &&
     {
         on_store_sequence_id(std::move(h));
@@ -148,7 +148,7 @@ public:
      * parameter of type `const IException &` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     reliable_listener& terminate_on_exception(Handler&& h) &
     {
         terminal_ = std::move(h);
@@ -159,7 +159,7 @@ public:
      * \copydoc reliable_listener::terminate_on_exception
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     reliable_listener&& terminate_on_exception(Handler&& h) &&
     {
         terminate_on_exception(std::move(h));

@@ -52,10 +52,10 @@ public:
 
     // TODO: Remove isRuntime and retryable and use the derived class concept as
     // in Java
-    iexception(const std::string& exception_name,
-               const std::string& source,
-               const std::string& message,
-               const std::string& details,
+    iexception(std::string exception_name,
+               std::string source,
+               std::string message,
+               std::string details,
                int32_t error_no,
                std::exception_ptr cause,
                bool is_runtime,

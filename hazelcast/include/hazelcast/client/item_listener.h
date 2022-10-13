@@ -57,7 +57,7 @@ public:
      * parameter of type `ItemEvent &&` \return `*this`
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     item_listener& on_added(Handler&& h) &
     {
         added_ = std::forward<Handler>(h);
@@ -68,7 +68,7 @@ public:
      * \copydoc ItemListener::on_added
      */
     template<typename Handler,
-             typename = util::enable_if_rvalue_ref_t<Handler&&>>
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
     item_listener&& on_added(Handler&& h) &&
     {
         on_added(std::forward<Handler>(h));

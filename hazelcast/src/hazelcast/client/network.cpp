@@ -56,6 +56,8 @@ const endpoint_qualifier ClientConnectionManagerImpl::PUBLIC_ENDPOINT_QUALIFIER{
     "public"
 };
 
+constexpr int ClientConnectionManagerImpl::SQL_CONNECTION_RANDOM_ATTEMPTS;
+
 ClientConnectionManagerImpl::ClientConnectionManagerImpl(
   spi::ClientContext& client,
   std::unique_ptr<AddressProvider> address_provider)
@@ -241,7 +243,7 @@ ClientConnectionManagerImpl::authenticate_on_cluster(
         }
         auto response = f.get();
         auto* initial_frame =
-          reinterpret_cast<protocol::ClientMessage::frame_header_t*>(
+          reinterpret_cast<protocol::ClientMessage::frame_header_type*>(
             response.rd_ptr(protocol::ClientMessage::RESPONSE_HEADER_LEN));
         result = { response.get<byte>(),
                    response.get<boost::uuids::uuid>(),
@@ -916,6 +918,47 @@ ClientConnectionManagerImpl::translate(const member& m)
     }
 
     return *address_provider_->translate(m.get_address());
+}
+
+std::shared_ptr<connection::Connection>
+ClientConnectionManagerImpl::connection_for_sql(
+  std::function<boost::optional<member>()> member_of_large_same_version_group,
+  std::function<boost::optional<member>(boost::uuids::uuid)> get_cluster_member)
+{
+    if (smart_routing_enabled_) {
+        // There might be a race - the chosen member might be just connected or
+        // disconnected - try a couple of times, the
+        // memberOfLargerSameVersionGroup returns a random connection, we might
+        // be lucky...
+        for (int i = 0; i < SQL_CONNECTION_RANDOM_ATTEMPTS; i++) {
+            auto member = member_of_large_same_version_group();
+            if (!member) {
+                break;
+            }
+            auto connection = active_connections_.get(member->get_uuid());
+            if (connection) {
+                return connection;
+            }
+        }
+    }
+
+    // Otherwise iterate over connections and return the first one that's not to
+    // a lite member
+    std::shared_ptr<connection::Connection> first_connection;
+    for (const auto& connection_entry : active_connections_.entry_set()) {
+        if (!first_connection) {
+            first_connection = connection_entry.second;
+        }
+        const auto& member_id = connection_entry.first;
+        auto member = get_cluster_member(member_id);
+        if (!member || member->is_lite_member()) {
+            continue;
+        }
+        return connection_entry.second;
+    }
+
+    // Failed to get a connection to a data member
+    return first_connection;
 }
 
 ReadHandler::ReadHandler(Connection& connection, size_t buffer_size)

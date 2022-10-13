@@ -236,7 +236,7 @@ struct identified_data_serializer
  * methods:
  * static int32_t get_class_id() noexcept;
  * static int32_t get_factory_id() noexcept;
- * static int32_t write_portable(const T &object, portable_writer &out);
+ * static void write_portable(const T &object, portable_writer &out);
  * static T read_portable(portable_reader &in);
  */
 struct portable_serializer

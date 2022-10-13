@@ -44,8 +44,6 @@
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/initial_membership_event.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
-#include <hazelcast/client/iqueue.h>
 #include <hazelcast/client/iset.h>
 #include <hazelcast/client/item_listener.h>
 #include <hazelcast/client/itopic.h>
@@ -69,6 +67,7 @@
 #include "serialization/Serializables.h"
 #include "CountDownLatchWaiter.h"
 #include "remote_controller_client.h"
+#include "hazelcast/client/protocol/codec/builtin/sql_page_codec.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -2052,6 +2051,122 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].first));
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].second));
     }
+}
+
+TEST(ClientMessageTest, test_encode_sql_query_id)
+{
+    // TODO this test can be removed once the query_id encoder is generated.
+
+    protocol::ClientMessage msg;
+
+    boost::uuids::uuid server_uuid{ 1, 2,  3,  4,  5,  6,  7,  8,
+                                    9, 10, 11, 12, 13, 14, 15, 16 };
+    boost::uuids::uuid client_uuid{ 21, 22, 23, 24, 25, 26, 27, 28,
+                                    29, 30, 31, 32, 33, 34, 35, 36 };
+    msg.set(sql::impl::query_id{ server_uuid, client_uuid });
+
+    const std::vector<unsigned char> expected_bytes{
+        6,  0,  0,  0,  0,  16, // begin frame
+        38, 0,  0,  0,  0,  0,  // query id frame header
+        1,  2,  3,  4,  5,  6,  7,  8,
+        9,  10, 11, 12, 13, 14, 15, 16, // server uuid
+        21, 22, 23, 24, 25, 26, 27, 28,
+        29, 30, 31, 32, 33, 34, 35, 36, // client uuid
+        6,  0,  0,  0,  0,  8           // end frame
+    };
+
+    std::vector<unsigned char> actual_bytes;
+    for (const auto& piece : msg.get_buffer()) {
+        actual_bytes.insert(actual_bytes.end(), piece.begin(), piece.end());
+    }
+
+    EXPECT_EQ(expected_bytes, actual_bytes);
+}
+
+TEST(ClientMessageTest, test_decode_sql_column_metadata)
+{
+    const unsigned char bytes[] = {
+        6, 0, 0, 0, 0, 16,  11,  0,   0,  0,  0,   0, 1, 0, 0, 0, 0, 12,
+        0, 0, 0, 0, 0, 102, 111, 111, 98, 97, 114, 6, 0, 0, 0, 0, 8,
+    };
+
+    protocol::ClientMessage msg;
+    std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
+    msg.wrap_for_read();
+
+    auto col_metadata = msg.get<sql::sql_column_metadata>();
+
+    EXPECT_EQ("foobar", col_metadata.name);
+    EXPECT_EQ(sql::sql_column_type::boolean, col_metadata.type);
+    EXPECT_EQ(false, col_metadata.nullable);
+}
+
+TEST(ClientMessageTest, test_decode_sql_page)
+{
+    const unsigned char bytes[] = {
+        6,  0,  0,   0, 0, 16,  7,   0,   0,   0,   0, 0, 1, 14, 0,  0,
+        0,  0,  0,   0, 0, 0,   0,   0,   0,   0,   0, 6, 0, 0,  0,  0,
+        16, 9,  0,   0, 0, 0,   0,   102, 111, 111, 9, 0, 0, 0,  0,  0,
+        98, 97, 114, 6, 0, 0,   0,   0,   8,   6,   0, 0, 0, 0,  16, 10,
+        0,  0,  0,   0, 0, 116, 101, 115, 116, 6,   0, 0, 0, 0,  0,  6,
+        0,  0,  0,   0, 8, 6,   0,   0,   0,   0,   8,
+    };
+
+    protocol::ClientMessage msg;
+    std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
+    msg.wrap_for_read();
+
+    std::vector<sql::sql_column_metadata> columns_metadata{
+        {"foo", sql::sql_column_type::varchar, true},
+        {"test", sql::sql_column_type::varchar, true},
+    };
+    auto row_metadata =
+      std::make_shared<sql::sql_row_metadata>(std::move(columns_metadata));
+    auto page = protocol::codec::builtin::sql_page_codec::decode(msg,
+                                                                 row_metadata);
+
+    EXPECT_EQ(true, page->last());
+    EXPECT_EQ((std::vector<sql::sql_column_type>{
+                sql::sql_column_type::varchar,
+                sql::sql_column_type::varchar,
+              }),
+              page->column_types());
+    auto& all_rows = page->rows();
+    ASSERT_EQ(2, all_rows.size());
+    auto& row1 = all_rows[0];
+    ASSERT_EQ(boost::make_optional<std::string>("foo"),
+              row1.get_object<std::string>(0));
+    ASSERT_EQ(boost::make_optional<std::string>("test"),
+              row1.get_object<std::string>(1));
+
+    auto& row2 = all_rows[1];
+    ASSERT_EQ(boost::make_optional<std::string>("bar"),
+              row2.get_object<std::string>(0));
+    ASSERT_EQ(boost::make_optional<std::string>(""),
+              row2.get_object<std::string>(1));
+}
+
+TEST(ClientMessageTest, test_decode_sql_error)
+{
+    const unsigned char bytes[] = {
+        6,  0,   0,   0,  0,   16,  27, 0,  0,   0,   0,   0,   42,  0,  0,
+        0,  0,   235, 72, 204, 144, 69, 69, 157, 199, 201, 252, 246, 76, 74,
+        22, 201, 185, 9,  0,   0,   0,  0,  0,   102, 111, 111, 9,   0,  0,
+        0,  0,   0,   98, 97,  114, 6,  0,  0,   0,   0,   8,
+    };
+
+    protocol::ClientMessage msg;
+    std::memcpy(msg.wr_ptr(sizeof(bytes)), bytes, sizeof(bytes));
+    msg.wrap_for_read();
+
+    auto err = msg.get<sql::impl::sql_error>();
+
+    EXPECT_EQ(42, err.code);
+    EXPECT_EQ(boost::optional<std::string>{ "foo" }, err.message);
+    EXPECT_EQ(
+      boost::uuids::string_generator{}("c79d4545-90cc-48eb-b9c9-164a4cf6fcc9"),
+      err.originating_member_id);
+    EXPECT_EQ(boost::optional<std::string>{ "bar" }, err.suggestion);
 }
 
 } // namespace test

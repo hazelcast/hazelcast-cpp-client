@@ -21,26 +21,32 @@
 #pragma warning(disable : 4251) // for dll export
 #endif
 
-#include <string>
+#include <cassert>
 #include <memory>
-#include <vector>
-#include <assert.h>
-#include <unordered_map>
 #include <ostream>
-#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/optional.hpp>
 #include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 
-#include <hazelcast/client/query/paging_predicate.h>
 #include "hazelcast/client/address.h"
-#include "hazelcast/client/member.h"
-#include "hazelcast/client/serialization/pimpl/data.h"
-#include "hazelcast/client/map/data_entry_view.h"
-#include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/config/index_config.h"
+#include "hazelcast/client/exception/protocol_exceptions.h"
+#include "hazelcast/client/map/data_entry_view.h"
+#include "hazelcast/client/member.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
+#include "hazelcast/client/query/paging_predicate.h"
+#include "hazelcast/client/serialization/pimpl/data.h"
+#include "hazelcast/client/sql/impl/query_id.h"
+#include "hazelcast/client/sql/sql_column_metadata.h"
+#include "hazelcast/client/sql/impl/sql_error.h"
+#include "hazelcast/client/sql/sql_column_type.h"
+#include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
 
 namespace hazelcast {
 namespace util {
@@ -191,6 +197,7 @@ public:
     {
         INT8_SIZE = 1,
         UINT8_SIZE = 1,
+        BOOL_SIZE = 1,
         INT16_SIZE = 2,
         UINT16_SIZE = 2,
         INT32_SIZE = 4,
@@ -215,13 +222,13 @@ public:
         BACKUP_EVENT_FLAG = 1 << 7
     };
 
-    struct HAZELCAST_API frame_header_t
+    struct HAZELCAST_API frame_header_type
     {
         boost::endian::little_int32_t frame_len;
         boost::endian::little_int16_t flags;
 
-        friend bool HAZELCAST_API operator==(const frame_header_t& lhs,
-                                             const frame_header_t& rhs)
+        friend bool HAZELCAST_API operator==(const frame_header_type& lhs,
+                                             const frame_header_type& rhs)
         {
             return lhs.frame_len == rhs.frame_len && lhs.flags == rhs.flags;
         }
@@ -349,13 +356,13 @@ public:
     typename std::enable_if<std::is_same<T, int8_t>::value,
                             T>::type inline get()
     {
-        return *rd_ptr(UINT8_SIZE);
+        return *rd_ptr(INT8_SIZE);
     }
 
     template<typename T>
     typename std::enable_if<std::is_same<T, bool>::value, T>::type inline get()
     {
-        return *rd_ptr(UINT8_SIZE);
+        return *rd_ptr(BOOL_SIZE);
     }
 
     template<typename T>
@@ -393,6 +400,14 @@ public:
     }
 
     template<typename T>
+    typename std::enable_if<std::is_same<T, float>::value, T>::type inline get()
+    {
+        return boost::endian::
+          endian_load<float, 4, boost::endian::order::little>(
+            rd_ptr(INT32_SIZE));
+    }
+
+    template<typename T>
     typename std::enable_if<std::is_same<T, uint64_t>::value,
                             T>::type inline get()
     {
@@ -411,6 +426,15 @@ public:
     }
 
     template<typename T>
+    typename std::enable_if<std::is_same<T, double>::value,
+                            T>::type inline get()
+    {
+        return boost::endian::
+          endian_load<double, 8, boost::endian::order::little>(
+            rd_ptr(INT64_SIZE));
+    }
+
+    template<typename T>
     typename std::enable_if<std::is_same<T, std::string>::value,
                             T>::type inline get()
     {
@@ -421,6 +445,62 @@ public:
           len - ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS;
         return std::string(reinterpret_cast<const char*>(rd_ptr(str_bytes_len)),
                            str_bytes_len);
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, local_date>::value,
+                            T>::type inline get()
+    {
+        auto year = static_cast<uint8_t>(get<int32_t>());
+        auto month = static_cast<uint8_t>(get<int8_t>());
+        auto day_of_month = static_cast<uint8_t>(get<int8_t>());
+        return { year, month, day_of_month };
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, local_time>::value,
+                            T>::type inline get()
+    {
+        auto hour = static_cast<uint8_t>(get<int8_t>());
+        auto minute = static_cast<uint8_t>(get<int8_t>());
+        auto second = static_cast<uint8_t>(get<int8_t>());
+        auto nano = get<int32_t>();
+
+        return { hour, minute, second, nano };
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, local_date_time>::value,
+                            T>::type inline get()
+    {
+        auto date = get<local_date>();
+        auto time = get<local_time>();
+
+        return { date, time };
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, offset_date_time>::value,
+                            T>::type inline get()
+    {
+        auto date_time = get<local_date_time>();
+        auto offset_seconds = get<int32_t>();
+
+        return { date_time, offset_seconds };
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, big_decimal>::value,
+                            T>::type inline get()
+    {
+        auto content_size = get<int32_t>();
+        auto mem_ptr = rd_ptr(content_size);
+        std::vector<int8_t> bytes(content_size);
+        std::memcpy(&bytes[0], mem_ptr, content_size);
+
+        auto scale = get<int32_t>();
+
+        return { pimpl::from_bytes(std::move(bytes)), scale };
     }
 
     template<typename T>
@@ -454,7 +534,7 @@ public:
     {
         T result;
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto content_length =
           static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
@@ -480,7 +560,7 @@ public:
     {
         T result;
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto content_length =
           static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
@@ -551,7 +631,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto port = get<int32_t>();
         // skip bytes in initial frame
@@ -606,18 +686,18 @@ public:
         rd_ptr(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
         // initial frame
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto uuid = get<boost::uuids::uuid>();
         auto lite_member = get<bool>();
         // skip rest of the bytes in initial frame
         rd_ptr(static_cast<int32_t>(f->frame_len) -
-               SIZE_OF_FRAME_LENGTH_AND_FLAGS - UUID_SIZE - UINT8_SIZE);
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS - UUID_SIZE - BOOL_SIZE);
 
         auto addr = get<address>();
         auto attributes = get<std::unordered_map<std::string, std::string>>();
         // read version and ignore it
-        get<member::version>();
+        auto version = get<member::version>();
         auto address_map =
           get<std::unordered_map<endpoint_qualifier, address>>();
 
@@ -627,7 +707,8 @@ public:
                       uuid,
                       lite_member,
                       std::move(attributes),
-                      address_map);
+                      address_map,
+                      version);
     }
 
     template<typename T>
@@ -646,7 +727,7 @@ public:
     typename std::enable_if<std::is_same<T, serialization::pimpl::data>::value,
                             T>::type inline get()
     {
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto data_size =
           static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
@@ -663,7 +744,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto line_number = get<int32_t>();
         // skip bytes in initial frame
@@ -703,7 +784,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
 
         auto cost = get<int64_t>();
@@ -775,7 +856,7 @@ public:
         // skip begin frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto error_code = get<int32_t>();
         // skip bytes in initial frame
@@ -795,15 +876,105 @@ public:
         return h;
     }
 
+    /**
+     * Reads the header of the current frame.
+     * The cursor must be at a frame's beginning.
+     */
+    frame_header_type read_frame_header()
+    {
+        frame_header_type header{};
+        auto pos = rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        std::memcpy(&header.frame_len, pos, sizeof(header.frame_len));
+        pos += sizeof(header.frame_len);
+        std::memcpy(&header.flags, pos, sizeof(header.flags));
+        return header;
+    }
+
+    /**
+     * skips the header bytes of the frame
+     */
+    void skip_frame_header_bytes() {
+        rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+    }
+
     template<typename T>
-    boost::optional<T> get_nullable()
+    typename std::enable_if<std::is_same<T, sql::sql_column_metadata>::value,
+                            T>::type
+    get()
+    {
+        // skip begin frame
+        skip_frame();
+
+        const frame_header_type header = read_frame_header();
+
+        auto type = get<int32_t>();
+
+        bool nullable = true;
+        int nullable_size = 0;
+        bool nullable_exist = false;
+        if (header.frame_len - SIZE_OF_FRAME_LENGTH_AND_FLAGS >=
+            INT32_SIZE + BOOL_SIZE) {
+            nullable = get<bool>();
+            nullable_size = BOOL_SIZE;
+            nullable_exist = true;
+        }
+
+        // skip bytes in initial frame
+        rd_ptr(static_cast<int32_t>(header.frame_len) -
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS - INT32_SIZE - nullable_size);
+
+        std::string name = get<std::string>();
+
+        fast_forward_to_end_frame();
+
+        return codec::builtin::custom_type_factory::create_sql_column_metadata(
+          std::move(name), type, nullable_exist, nullable);
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, sql::impl::sql_error>::value,
+                            T>::type
+    get()
+    {
+        // begin frame
+        skip_frame();
+
+        const auto header = read_frame_header();
+
+        auto code = get<int>();
+        auto originating_member_id = get<boost::uuids::uuid>();
+
+        // skip bytes in initial frame
+        rd_ptr(static_cast<int32_t>(header.frame_len) -
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS - INT32_SIZE - UUID_SIZE);
+
+        auto message = get_nullable<std::string>();
+
+        boost::optional<std::string> suggestion;
+        if (!next_frame_is_data_structure_end_frame()) {
+            suggestion = get_nullable<std::string>();
+        }
+
+        fast_forward_to_end_frame();
+
+        return sql::impl::sql_error{ code,
+                                     std::move(message),
+                                     originating_member_id,
+                                     std::move(suggestion) };
+    }
+
+    template<typename T>
+    boost::optional<T> get_nullable(std::function<T(ClientMessage&)> decoder =
+                                      [](ClientMessage& msg) {
+                                          return msg.get<T>();
+                                      })
     {
         if (next_frame_is_null_frame()) {
             // skip next frame with null flag
             rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
             return boost::none;
         }
-        return boost::make_optional(get<T>());
+        return boost::make_optional(decoder(*this));
     }
 
     template<typename T>
@@ -845,7 +1016,7 @@ public:
 
     inline void set(int8_t value) { *wr_ptr(INT8_SIZE) = value; }
 
-    inline void set(bool value) { *wr_ptr(UINT8_SIZE) = value ? 1 : 0; }
+    inline void set(bool value) { *wr_ptr(BOOL_SIZE) = value ? 1 : 0; }
 
     inline void set(char value) { *wr_ptr(UINT8_SIZE) = value; }
 
@@ -908,7 +1079,7 @@ public:
         bool isNull = (nullptr == value);
         if (isNull) {
             auto* h =
-              reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+              reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -921,9 +1092,9 @@ public:
     inline void set(const std::string& value, bool is_final = false)
     {
         auto h =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         auto len = value.length();
-        h->frame_len = sizeof(frame_header_t) + len;
+        h->frame_len = sizeof(frame_header_type) + len;
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
         }
@@ -940,7 +1111,7 @@ public:
     {
         add_begin_frame();
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
@@ -959,7 +1130,7 @@ public:
     {
         add_begin_frame();
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
@@ -977,7 +1148,7 @@ public:
     {
         add_begin_frame();
 
-        auto f = reinterpret_cast<frame_header_t*>(
+        auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
@@ -1011,7 +1182,7 @@ public:
     {
         if (value.data_size() == 0) {
             auto* h =
-              reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+              reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -1019,9 +1190,9 @@ public:
             return;
         }
         auto& bytes = value.to_byte_array();
-        auto frame_length = sizeof(frame_header_t) + bytes.size();
+        auto frame_length = sizeof(frame_header_type) + bytes.size();
         auto fp = wr_ptr(frame_length);
-        auto* header = reinterpret_cast<frame_header_t*>(fp);
+        auto* header = reinterpret_cast<frame_header_type*>(fp);
         header->frame_len = frame_length;
         header->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
         std::memcpy(
@@ -1062,19 +1233,47 @@ public:
     void set(const std::vector<T>& values, bool is_final = false)
     {
         auto* h =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *h = begin_frame();
 
         for (auto& item : values) {
             set(item);
         }
 
-        h = reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+        h = reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *h = end_frame();
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
         }
     }
+
+    void set(const frame_header_type& header)
+    {
+        auto pos = wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        std::memcpy(pos, &header.frame_len, sizeof(header.frame_len));
+        pos += sizeof(header.frame_len);
+        std::memcpy(pos, &header.flags, sizeof(header.flags));
+    }
+
+    void set(const sql::impl::query_id& query_id, bool is_final = false)
+    {
+        add_begin_frame();
+
+        set(frame_header_type{ SIZE_OF_FRAME_LENGTH_AND_FLAGS +
+                              2 * sizeof(boost::uuids::uuid),
+                            DEFAULT_FLAGS });
+
+        std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
+                    query_id.member_id.data,
+                    sizeof(boost::uuids::uuid));
+
+        std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
+                    query_id.local_id.data,
+                    sizeof(boost::uuids::uuid));
+
+        add_end_frame(is_final);
+    }
+
     //----- Setter methods end ---------------------
 
     //----- utility methods -------------------
@@ -1126,7 +1325,7 @@ public:
 
     inline void skip_frame()
     {
-        auto* f = reinterpret_cast<frame_header_t*>(
+        auto* f = reinterpret_cast<frame_header_type*>(
           rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         rd_ptr(static_cast<int32_t>(f->frame_len) -
                SIZE_OF_FRAME_LENGTH_AND_FLAGS);
@@ -1134,9 +1333,9 @@ public:
 
     void fast_forward_to_end_frame();
 
-    static const frame_header_t& null_frame();
-    static const frame_header_t& begin_frame();
-    static const frame_header_t& end_frame();
+    static const frame_header_type& null_frame();
+    static const frame_header_type& begin_frame();
+    static const frame_header_type& end_frame();
 
     void drop_fragmentation_frame();
 
@@ -1144,9 +1343,9 @@ public:
                                                   const ClientMessage& message);
 
 private:
-    static const frame_header_t NULL_FRAME;
-    static const frame_header_t BEGIN_FRAME;
-    static const frame_header_t END_FRAME;
+    static const frame_header_type NULL_FRAME;
+    static const frame_header_type BEGIN_FRAME;
+    static const frame_header_type END_FRAME;
 
     template<typename T>
     void set_primitive_vector(const std::vector<T>& values,
@@ -1155,7 +1354,7 @@ private:
         int32_t len =
           SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * sizeof(T);
         auto memory = wr_ptr(len);
-        auto* h = reinterpret_cast<frame_header_t*>(memory);
+        auto* h = reinterpret_cast<frame_header_type*>(memory);
         h->frame_len = len;
         h->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
 
@@ -1202,14 +1401,14 @@ private:
     void add_begin_frame()
     {
         auto* f =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *f = begin_frame();
     }
 
     void add_end_frame(bool is_final)
     {
         auto ef =
-          reinterpret_cast<frame_header_t*>(wr_ptr(sizeof(frame_header_t)));
+          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
         *ef = end_frame();
         if (is_final) {
             ef->flags |= IS_FINAL_FLAG;
