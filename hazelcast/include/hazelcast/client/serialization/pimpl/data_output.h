@@ -49,16 +49,39 @@ public:
      *
      * @return reference to the internal byte buffer.
      */
-    const std::vector<byte>& to_byte_array() const;
+    const std::vector<byte>& to_byte_array() const
+    {
+        return output_stream_;
+    }
 
     /**
      *
      * @param bytes The bytes to be appended to the current buffer
      */
-    void append_bytes(const std::vector<byte>& bytes);
-    void write_zero_bytes(size_t number_of_bytes);
-    size_t position();
-    void position(size_t new_pos);
+    void append_bytes(const std::vector<byte>& bytes)
+    {
+        output_stream_.insert(output_stream_.end(), bytes.begin(), bytes.end());
+    }
+
+    void write_zero_bytes(size_t number_of_bytes)
+    {
+        output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
+    }
+
+    size_t position()
+    {
+        return output_stream_.size();
+    }
+
+    void position(size_t new_pos)
+    {
+        if (is_no_write_) {
+            return;
+        }
+        if (output_stream_.size() < new_pos) {
+            output_stream_.resize(new_pos, 0);
+        }
+    }
 
     /**
      * @param value to be written
