@@ -626,7 +626,7 @@ data_output::write_zero_bytes(size_t number_of_bytes)
     output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
 }
 
-inline size_t
+size_t
 data_output::position()
 {
     return output_stream_.size();
