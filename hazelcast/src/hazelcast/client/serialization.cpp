@@ -608,41 +608,6 @@ data_output::data_output(boost::endian::order byte_order, bool dont_write)
     }
 }
 
-const std::vector<byte>&
-data_output::to_byte_array() const
-{
-    return output_stream_;
-}
-
-void
-data_output::append_bytes(const std::vector<byte>& bytes)
-{
-    output_stream_.insert(output_stream_.end(), bytes.begin(), bytes.end());
-}
-
-void
-data_output::write_zero_bytes(size_t number_of_bytes)
-{
-    output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
-}
-
-inline size_t
-data_output::position()
-{
-    return output_stream_.size();
-}
-
-void
-data_output::position(size_t new_pos)
-{
-    if (is_no_write_) {
-        return;
-    }
-    if (output_stream_.size() < new_pos) {
-        output_stream_.resize(new_pos, 0);
-    }
-}
-
 template<>
 void
 data_output::write(byte i)
