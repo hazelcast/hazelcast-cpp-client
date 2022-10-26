@@ -10,6 +10,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        boost:
+          - version: 1.71.0
+          - version: 1.76.0
+
         build_type:
           - type: Debug
             warn_as_err: ON
@@ -32,7 +36,7 @@ jobs:
 
     name: >-
       Ubuntu-x86_64
-      (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{matrix.boost.version}}, ${{ matrix.with_openssl.name }})
 
     steps:
       - name: Install Necessary Packages
@@ -44,7 +48,7 @@ jobs:
 
       - name: Install Boost
         run: |
-          sudo ./scripts/install-boost.sh 1.76.0
+          sudo ./scripts/install-boost.sh ${{matrix.boost.version}}
 
       - name: Install Thrift
         run: |
