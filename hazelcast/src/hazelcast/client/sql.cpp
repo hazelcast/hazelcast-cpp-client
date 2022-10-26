@@ -730,7 +730,7 @@ sql_result::page_iterator_type::operator++()
 
     return page_future.then(
       boost::launch::sync, [this](boost::future<std::shared_ptr<sql_page>> page) {
-          page_ = std::move(page.get());
+          page_ = page.get();
           page_->serialization_service(
             &result_->client_context_->get_serialization_service());
           page_->row_metadata(result_->row_metadata_);
