@@ -2,6 +2,11 @@ name: nightly-Ubuntu-x86_64
 
 on:
   workflow_dispatch:
+    inputs:
+      run_tests:
+        type: boolean
+        description: Enable/Disable test stage
+        default: true
   schedule:
     - cron: '0 20 * * *'
 
@@ -69,6 +74,7 @@ jobs:
               -DBUILD_EXAMPLES=OFF
 
       - name: Test
+        if: ${{ inputs.run_tests }}
         env:
           BUILD_DIR: build
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}

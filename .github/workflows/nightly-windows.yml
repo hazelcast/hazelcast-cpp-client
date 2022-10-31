@@ -2,6 +2,11 @@ name: nightly-Windows
 
 on:
   workflow_dispatch:
+    inputs:
+      run_tests:
+        type: boolean
+        description: Enable/Disable test stage
+        default: true
   schedule:
     - cron: '0 2 * * *'
 
@@ -127,6 +132,7 @@ jobs:
               -DBUILD_EXAMPLES=OFF
 
       - name: Test
+        if: ${{ inputs.run_tests }}
         env:
           BUILD_DIR: build
           BUILD_CONFIGURATION: ${{ matrix.build_type }}
