@@ -75,13 +75,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install OpenSSL
+      - uses: nick-fields/retry@v2
+        name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
-        run: |
-          choco install openssl ${{ matrix.arch.choco_options }}
-          Invoke-WebRequest `
-              "https://curl.se/ca/cacert.pem" `
-              -OutFile "C:\cacert.pem"
+        with:
+          timeout_minutes: 10
+          max_attempts : 4
+          retry_on: error
+          command: |
+            choco install openssl ${{ matrix.arch.choco_options }}
+            Invoke-WebRequest `
+                "https://curl.se/ca/cacert.pem" `
+                -OutFile "C:\cacert.pem"
 
       - name: Install Boost
         run: |
