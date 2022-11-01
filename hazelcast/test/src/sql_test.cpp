@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <boost/algorithm/string.hpp>
+
 #include <hazelcast/client/protocol/ClientMessage.h>
 #include <hazelcast/client/protocol/codec/codecs.h>
 #include <hazelcast/client/hazelcast_client.h>
@@ -225,6 +227,8 @@ class SqlTest : public ClientTest
 {
 public:
     hazelcast_client client;
+    member::version srv_version;
+    std::string map_name;
 
     static client_config get_config()
     {
@@ -235,7 +239,13 @@ public:
 
     SqlTest()
       : client{ hazelcast::new_client(get_config()).get() }
+      , srv_version { server_factory_->server_version() }
+      , map_name { random_map_name() }
+    {}
+
+    ~SqlTest() override
     {
+        client.get_map(map_name).get()->clear_data();
     }
 
 protected:
@@ -253,9 +263,49 @@ protected:
         server_factory_.reset();
     }
 
+    void create_mapping( std::string format = "INTEGER" )
+    {
+        if ( srv_version < member::version { 5 , 0 , 0 } )
+            return;
+
+        std::string query = (
+            boost::format(
+                "CREATE MAPPING %1% ( "
+                    "__key INT, "
+                    "this %2% "
+                ") "
+                "TYPE IMap "
+                "OPTIONS ("
+                    "'keyFormat' = 'int', "
+                    "'valueFormat' = '%3%' "
+                ")"
+            ) % map_name % format % boost::to_lower_copy( format )
+        ).str();
+
+        client.get_sql().execute( query ).get();
+    }
+
+    void populate_map( int num_of_entries )
+    {
+        auto map = client.get_map(map_name).get();
+
+        for ( auto i = 0; i < num_of_entries; ++i )
+            map->put( i , i );
+    }
+
     portable_pojo_key key(int64_t i) { return { i }; }
 
     portable_pojo value(int64_t i) { return portable_pojo{ i }; }
+
+    int count_rows( sql::sql_result::page_iterator_type& it )
+    {
+        int sum {};
+
+        for (; it; (++it).get())
+            sum += (*it)->row_count();
+
+        return sum;
+    }
 
     static const std::vector<std::string>& fields()
     {
@@ -503,6 +553,26 @@ TEST_F(SqlTest, statement_with_params)
     EXPECT_EQ(1, rows.size());
     EXPECT_EQ("123456", rows[0].get_object<std::string>(0).value());
     EXPECT_EQ("-42.73", rows[0].get_object<std::string>(1).value());
+}
+
+TEST_F(SqlTest, test_execute)
+{
+    static constexpr int N_ENTRIES = 11;
+
+    create_mapping();
+    populate_map( N_ENTRIES );
+
+    auto result = client.get_sql().execute(
+        (
+            boost::format( "SELECT * FROM %1%" ) % map_name
+        ).str()
+    ).get();
+
+    EXPECT_TRUE( result->row_set() );
+
+    auto itr = result->page_iterator();
+
+    EXPECT_EQ( count_rows( itr ) , N_ENTRIES );
 }
 
 TEST_F(SqlTest, exception)

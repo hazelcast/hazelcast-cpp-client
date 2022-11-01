@@ -35,9 +35,12 @@ namespace test {
 class HazelcastServerFactory
 {
 public:
+
     HazelcastServerFactory(const std::string& server_xml_config_file_path);
 
     remote::Member start_server();
+
+    member::version server_version() const;
 
     bool shutdown_server(const remote::Member& member);
 
@@ -50,6 +53,7 @@ public:
 private:
     std::shared_ptr<logger> logger_;
     std::string cluster_id_;
+    member::version srv_version_;
 
     std::string read_from_xml_file(const std::string& xml_file_path);
 };
