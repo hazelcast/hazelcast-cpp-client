@@ -41,7 +41,7 @@ jobs:
 
     name: >-
       macOS-x86_64
-      (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }}, ${{matrix.boost.version}})
 
     env:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
