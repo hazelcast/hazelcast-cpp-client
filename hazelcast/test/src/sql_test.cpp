@@ -468,7 +468,7 @@ TEST_F(SqlTest, sql_result_destructor_closes_the_result)
         ASSERT_TRUE(result->row_set());
 
         it = std::make_shared<sql::sql_result::page_iterator_type>(
-          std::move(result->page_iterator()));
+          result->page_iterator());
     }
     // result is destroyed at this point, trying to increment the iterator
     // should throw exception since the result should have been closed

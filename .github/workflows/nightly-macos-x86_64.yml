@@ -2,6 +2,11 @@ name: nightly-macOS-x86_64
 
 on:
   workflow_dispatch:
+    inputs:
+      run_tests:
+        type: boolean
+        description: Enable/Disable test stage
+        default: true
   schedule:
     - cron: '0 0 * * *'
 
@@ -10,6 +15,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        boost:
+            - version: 1.71.0
+            - version: 1.76.0
+
         build_type:
           - type: Debug
             warn_as_err: ON
@@ -32,17 +41,18 @@ jobs:
 
     name: >-
       macOS-x86_64
-      (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }}, ${{matrix.boost.version}})
 
     env:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
+      - uses: actions/checkout@v2
+
       - name: Install Dependencies
         run: |
-          brew install boost openssl@1.1 thrift
-
-      - uses: actions/checkout@v2
+          brew install openssl@1.1 thrift
+          ./scripts/install-boost.sh ${{matrix.boost.version}}
 
       - name: Build & Install
         env:
@@ -59,6 +69,7 @@ jobs:
               -DBUILD_EXAMPLES=OFF
 
       - name: Test
+        if: ${{ inputs.run_tests }}
         env:
           BUILD_DIR: build
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}

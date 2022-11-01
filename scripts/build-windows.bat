@@ -23,7 +23,7 @@ REM remove the given build directory if already exists
 
 @echo Configuring...
 cmake -S . -B %BUILD_DIR% ^
-      -G %SOLUTION_TYPE% -A %PLATFORM% ^
+      -A %PLATFORM% ^
       -DCMAKE_CONFIGURATION_TYPES=%BUILD_CONFIGURATION%  ^
       %* ^
       || exit /b 1 

@@ -2,6 +2,11 @@ name: nightly-Windows
 
 on:
   workflow_dispatch:
+    inputs:
+      run_tests:
+        type: boolean
+        description: Enable/Disable test stage
+        default: true
   schedule:
     - cron: '0 2 * * *'
 
@@ -10,6 +15,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        vc_boost:
+          - name: msvc-2019_boost_1710
+            image: 'windows-2019'
+            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.gz'
+            boost_archive_name: 'boost_1_71_0.tar.gz'
+            boost_folder_name: 'boost_1_71_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_71'
+          - name: msvc-2019_boost_1800
+            image: 'windows-2019'
+            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
+            boost_archive_name: 'boost_1_80_0.tar.gz'
+            boost_folder_name: 'boost_1_80_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_80'
+          - name: msvc-2022_boost_1780
+            image: 'windows-2022'
+            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
+            boost_archive_name: 'boost_1_78_0.tar.gz'
+            boost_folder_name: 'boost_1_78_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_78'
+          - name: msvc-2022_boost_1800
+            image: 'windows-2022'
+            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
+            boost_archive_name: 'boost_1_80_0.tar.gz'
+            boost_folder_name: 'boost_1_80_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_80'
+          - name: msvc-latest_boost_1800
+            image: 'windows-latest'
+            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
+            boost_archive_name: 'boost_1_80_0.tar.gz'
+            boost_folder_name: 'boost_1_80_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_80'
         arch:
           - cmake: Win32
             choco_options: '--x86'
@@ -31,35 +67,40 @@ jobs:
           - toggle: ON
             name: 'SSL'
 
-    runs-on: windows-latest
+    runs-on: ${{ matrix.vc_boost.image }}
     name: >-
       Windows
-      (${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install OpenSSL
+      - uses: nick-fields/retry@v2
+        name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
-        run: |
-          choco install openssl ${{ matrix.arch.choco_options }}
-          Invoke-WebRequest `
-              "https://curl.se/ca/cacert.pem" `
-              -OutFile "C:\cacert.pem"
+        with:
+          timeout_minutes: 10
+          max_attempts : 4
+          retry_on: error
+          command: |
+            choco install openssl ${{ matrix.arch.choco_options }}
+            Invoke-WebRequest `
+                "https://curl.se/ca/cacert.pem" `
+                -OutFile "C:\cacert.pem"
 
       - name: Install Boost
         run: |
           Invoke-WebRequest `
-              "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz" `
-              -OutFile "boost_1_76_0.tar.gz" `
+              "${{ matrix.vc_boost.boost_url }}" `
+              -OutFile "${{ matrix.vc_boost.boost_archive_name }}" `
               -UserAgent "''"
-          tar xzf boost_1_76_0.tar.gz
-          rm boost_1_76_0.tar.gz
-          cd boost_1_76_0
+          tar xzf ${{ matrix.vc_boost.boost_archive_name }}
+          rm ${{ matrix.vc_boost.boost_archive_name }}
+          cd ${{ matrix.vc_boost.boost_folder_name }}
           .\bootstrap.bat
-          .\b2 address-model=${{ matrix.arch.address_model }} --with-thread --with-chrono install
+          .\b2 address-model=${{ matrix.arch.address_model }} --with-atomic --with-thread --with-chrono install
           cd ..
-          Remove-Item boost_1_76_0 -Recurse -Force
+          Remove-Item ${{ matrix.vc_boost.boost_folder_name }} -Recurse -Force
 
       - name: Install Thrift
         run: |
@@ -73,7 +114,7 @@ jobs:
                    -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
                    -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
                    -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
-                   -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=C:\Boost\include\boost-1_76 -DCMAKE_INSTALL_PREFIX=C:\Thrift
+                   -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=${{ matrix.vc_boost.boost_include_folder }} -DCMAKE_INSTALL_PREFIX=C:\Thrift
           cmake --build . --target install --config ${{ matrix.build_type }}
           mkdir C:\Thrift\bin
           cd ../..
@@ -96,6 +137,7 @@ jobs:
               -DBUILD_EXAMPLES=OFF
 
       - name: Test
+        if: ${{ inputs.run_tests }}
         env:
           BUILD_DIR: build
           BUILD_CONFIGURATION: ${{ matrix.build_type }}
