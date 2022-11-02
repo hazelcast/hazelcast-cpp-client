@@ -83,7 +83,7 @@ jobs:
               -DBUILD_EXAMPLES=OFF
 
       - name: Test
-        if: ${{ inputs.run_tests }}
+        if: ${{ inputs.run_tests || github.event_name == 'schedule' }}
         env:
           BUILD_DIR: build
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
