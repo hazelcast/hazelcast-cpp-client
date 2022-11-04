@@ -22,12 +22,6 @@ main()
 
     auto hz = hazelcast::new_client().get();
 
-    // populate the map with some data
-    auto map = hz.get_map("integer").get();
-    for (int i = 0; i < 100; ++i) {
-        map->put(i, i).get();
-    }
-
     auto sql = hz.get_sql();
 
     // infinite stream that will generate 1 sequential long value about every
