@@ -32,7 +32,7 @@ main()
     // Create mapping for the integers. This needs to be done only once per map.
     auto result = sql
                     .execute(R"(
-                CREATE MAPPING integers
+                CREATE OR REPLACE MAPPING integers
                   TYPE IMap
                     OPTIONS (
                       'keyFormat' = 'int',
