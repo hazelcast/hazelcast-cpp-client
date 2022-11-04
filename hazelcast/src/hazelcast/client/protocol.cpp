@@ -909,6 +909,8 @@ sql_page_codec::decode_column_values(ClientMessage& msg,
               builtin::list_cn_fixed_size_codec::decode<big_decimal>(
                 msg));
         case sql::sql_column_type::null: {
+            msg.skip_frame_header_bytes();
+
             auto size = msg.get<int32_t>();
             return
               std::vector<boost::any>(static_cast<size_t>(size));
