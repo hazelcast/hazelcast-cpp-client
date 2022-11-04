@@ -527,13 +527,6 @@ void
 client_dom_config_processor::client_dom_config_processor::
   handle_flake_id_generator(const boost::property_tree::ptree& node)
 {
-    handle_flake_id_generator_node(node);
-}
-
-void
-client_dom_config_processor::client_dom_config_processor::
-  handle_flake_id_generator_node(const boost::property_tree::ptree& node) const
-{
     std::string name = get_attribute(node, "name");
     hazelcast::client::config::client_flake_id_generator_config config(name);
     for (auto& pair : node) {

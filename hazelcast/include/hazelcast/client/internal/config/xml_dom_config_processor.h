@@ -110,8 +110,6 @@ protected:
       const boost::property_tree::ptree& node,
       hazelcast::client::config::client_network_config* client_network_config);
     void handle_flake_id_generator(const boost::property_tree::ptree& node);
-    void handle_flake_id_generator_node(
-      const boost::property_tree::ptree& node) const;
     void handle_reliable_topic(const boost::property_tree::ptree& node);
     void handle_reliable_topic_node(const boost::property_tree::ptree& node) const;
     void handle_near_cache(const boost::property_tree::ptree& node);
