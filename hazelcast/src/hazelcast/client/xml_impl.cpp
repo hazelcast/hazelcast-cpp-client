@@ -70,13 +70,7 @@ abstract_dom_config_processor::get_attribute(boost::property_tree::ptree node,
 bool
 abstract_dom_config_processor::get_bool_value(std::string value)
 {
-    boost::algorithm::to_lower(value);
-    if (value == "true") {
-        return true;
-    } else if (value == "false") {
-        return false;
-    }
-    return false;
+    return boost::algorithm::to_lower(value) == "true";
 }
 int
 abstract_dom_config_processor::get_integer_value(
@@ -88,7 +82,7 @@ abstract_dom_config_processor::get_integer_value(
     } catch (const std::exception& e) {
         throw hazelcast::client::exception::invalid_configuration(
           "Invalid integer value for parameter " + parameter_name + ": " +
-          value);
+          value + " details: " + e.what());
     }
 }
 long
@@ -137,6 +131,8 @@ abstract_dom_config_processor::parse_serialization(
             } else if (matches("LITTLE_ENDIAN", value)) {
                 serialization_config.set_byte_order(
                   boost::endian::order::little);
+            } else {
+                serialization_config.set_byte_order(boost::endian::order::big);
             }
         }
     }
@@ -348,8 +344,6 @@ client_dom_config_processor::handle_cluster_members(
                   hazelcast::client::address(pair.second.data(), 5702));
                 client_network_config->add_address(
                   hazelcast::client::address(pair.second.data(), 5703));
-                client_network_config->add_address(
-                  hazelcast::client::address(pair.second.data(), 5704));
             }
             else{
                 int port = 5701;
@@ -617,12 +611,14 @@ client_dom_config_processor::handle_near_cache_node(
             near_cache_config.set_invalidate_on_change(
               get_bool_value(pair.second.data()));
         } else if (matches("local-update-policy", node_name)) {
-            if (pair.second.data() == "CACHE") {
+            if (pair.second.data() == "CACHE_ON_UPDATE") {
                 near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::CACHE);
             } else if (pair.second.data() == "INVALIDATE") {
                 near_cache_config.set_local_update_policy(
                   hazelcast::client::config::near_cache_config::INVALIDATE);
+            } else {
+                throw hazelcast::client::exception::hazelcast_("Local update policy cannot be null!");
             }
         } else if (matches("eviction", node_name)) {
             near_cache_config.set_eviction_config(
@@ -682,17 +678,17 @@ client_dom_config_processor::handle_connection_strategy(
         strategy_config.set_async_start(false);
     }
     try {
-        std::string attr_val1 = get_attribute(node, "reconnect-mode");
-        boost::algorithm::trim(attr_val1);
-        if (attr_val1 == "ON") {
+        std::string attr_val = get_attribute(node, "reconnect-mode");
+        boost::algorithm::trim(attr_val);
+        if (attr_val == "ON") {
             strategy_config.set_reconnect_mode(
               hazelcast::client::config::client_connection_strategy_config::
                 reconnect_mode::ON);
-        } else if (attr_val1 == "OFF") {
+        } else if (attr_val == "OFF") {
             strategy_config.set_reconnect_mode(
               hazelcast::client::config::client_connection_strategy_config::
                 reconnect_mode::OFF);
-        } else if (attr_val1 == "ASYNC") {
+        } else if (attr_val == "ASYNC") {
             strategy_config.set_reconnect_mode(
               hazelcast::client::config::client_connection_strategy_config::
                 reconnect_mode::ASYNC);
@@ -997,6 +993,18 @@ abstract_xml_config_builder::replace_variables(
                 }
             }
         } catch (const boost::exception& ) {//attribute not found
+            if (fail_fast_attr == "true") {
+                fail_fast = true;
+            }
+            for (auto& n : node) {
+                if(n.first == "<xmlattr>"){
+                    continue ;
+                }
+                std::string value = n.first;
+                if ("replacer" == value) {
+                    replacers.push_back(create_replacer(n.second));
+                }
+            }
 
         }
     } catch (const boost::exception& e) {//config_replacers not found
@@ -1116,12 +1124,10 @@ xml_client_config_builder::parse(std::ifstream input_stream)
     boost::property_tree::ptree tree;
     try {
         boost::property_tree::read_xml(input_stream, tree);
-        input_stream.close();
         return tree;
     } catch (const boost::exception& e) {
         std::string msg = "Failed to parse Config Stream\nException: " + boost::diagnostic_information(e)
                           + "\nHazelcastClient startup interrupted.";
-        input_stream.close();
         throw hazelcast::client::exception::invalid_configuration(msg);
     }
 }
