@@ -52,8 +52,8 @@ main()
 
     for (; it; (++it).get()) {
         for (auto const& row : (*it)->rows()) {
-            std::cout << "(" << row.get_object<std::string>(0) << ", "
-                      << row.get_object<std::string>(1) << ")" << std::endl;
+            std::cout << "(" << row.get_object<int>(0) << ", "
+                      << row.get_object<int>(1) << ")" << std::endl;
         }
     }
 
