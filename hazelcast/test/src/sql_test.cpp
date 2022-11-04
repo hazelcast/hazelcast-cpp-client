@@ -296,6 +296,28 @@ struct generator<test::student>
     }
 };
 
+template<>
+struct generator<hazelcast_json_value>
+{
+    hazelcast_json_value operator()()
+    {
+        generator<std::string> str_gen;
+        generator<int> int_gen;
+
+        return hazelcast_json_value
+        {
+            (
+                boost::format(
+                    R"({
+                        "name" : "%1%" ,
+                        "value" : %2%
+                    })"
+                ) % str_gen() % int_gen()
+            ).str()
+        };
+    }
+};
+
 class SqlTest : public ClientTest
 {
 public:
@@ -1081,6 +1103,24 @@ TEST_F(SqlTest, test_null_only_column)
 
     auto col_type = result->row_metadata().columns().back().type;
     EXPECT_EQ( col_type , sql::sql_column_type::integer );
+}
+
+TEST_F(SqlTest, test_json)
+{
+    create_mapping( "JSON" );
+    auto expecteds = populate_map<hazelcast_json_value>( 50 );
+
+    auto result = client.get_sql().execute(
+        (
+            boost::format( "SELECT * FROM %1%" ) % map_name
+        ).str()
+    ).get();
+
+    for_each_row(
+        result ,
+        assert_row_count ( expecteds.size() ) ,
+        assert_key_values<hazelcast_json_value> { expecteds }
+    );
 }
 
 TEST_F(SqlTest, test_streaming_sql_query)

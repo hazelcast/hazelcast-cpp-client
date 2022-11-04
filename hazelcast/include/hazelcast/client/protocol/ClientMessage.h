@@ -448,6 +448,16 @@ public:
     }
 
     template<typename T>
+    typename std::enable_if<std::is_same<T, hazelcast_json_value>::value,
+                            T>::type inline get()
+    {
+        skip_frame();
+        auto str = get<std::string>();
+        fast_forward_to_end_frame();
+        return hazelcast_json_value {str};
+    }
+
+    template<typename T>
     typename std::enable_if<std::is_same<T, local_date>::value,
                             T>::type inline get()
     {

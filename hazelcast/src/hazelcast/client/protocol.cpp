@@ -807,7 +807,7 @@ custom_type_factory::create_sql_column_metadata(std::string name,
 {
     using namespace hazelcast::client::sql;
     if (type < static_cast<int32_t>(sql_column_type::varchar) ||
-        type > static_cast<int32_t>(sql_column_type::null)) {
+        type > static_cast<int32_t>(sql_column_type::json)) {
         throw hazelcast::client::exception::hazelcast_(
           "custom_type_factory::create_sql_column_metadata",
           (boost::format("Unexpected SQL column type = [%1%]") % type).str());
@@ -919,6 +919,9 @@ sql_page_codec::decode_column_values(ClientMessage& msg,
             return to_vector_of_any(
               msg.get<std::vector<
                 boost::optional<serialization::pimpl::data>>>());
+        case sql::sql_column_type::json:
+              return to_vector_of_any(
+                msg.get<std::vector<boost::optional<hazelcast_json_value>>>());
         default:
             throw exception::illegal_state(
               "ClientMessage::get<sql::sql_page>",
