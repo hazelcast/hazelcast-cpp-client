@@ -25,12 +25,13 @@ main()
 
     auto employees = hz.get_map("employees").get();
 
+    // Populate some data
     employees->put(0 , hazelcast_json_value { R"({"name": "Alice", "age": 32})" });
     employees->put(1 , hazelcast_json_value { R"({"name": "John", "age": 42})" });
     employees->put(2 , hazelcast_json_value { R"({"name": "Jake", "age": 18})" });
 
     auto sql = hz.get_sql();
-    // Create mapping for the integers. This needs to be done only once per map.
+    // Create mapping for the employees map. This needs to be done only once per map.
     auto result = sql
                     .execute(R"(
                         CREATE OR REPLACE MAPPING employees
@@ -42,7 +43,7 @@ main()
                     )")
                     .get();
 
-    // Fetch values in between (40, 50)
+    // Select the names of employees older than 25
     result =
       sql.execute(R"(
             SELECT JSON_VALUE(this, '$.name') AS name
@@ -57,7 +58,7 @@ main()
 
     for (; it; (++it).get()) {
         for (auto const& row : (*it)->rows()) {
-            std::cout << "Name :" << row.get_object<std::string>(0) << std::endl;
+            std::cout << "Name:" << row.get_object<std::string>("name") << std::endl;
         }
     }
 
