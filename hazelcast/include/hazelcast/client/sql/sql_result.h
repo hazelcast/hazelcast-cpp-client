@@ -90,6 +90,87 @@ public:
         std::shared_ptr<sql_page> page_;
     };
 
+    class HAZELCAST_API page_iterator
+    {
+    public:
+
+        page_iterator(std::shared_ptr<sql_result> result, std::shared_ptr<sql_page> first_page)
+            :   result_{move(result)}
+            ,   first_page_{move(first_page)}
+            ,   in_progress_{std::make_shared<std::atomic<bool>>()}
+            ,   last_{std::make_shared<std::atomic<bool>>()}
+        {}
+
+        /**
+         * Loads the new page for the result.
+         */
+        boost::future<std::shared_ptr<sql_page>> next()
+        {
+            if (first_page_)
+            {
+                auto page = move(first_page_);
+                *last_ = page->last();
+                return boost::make_ready_future<std::shared_ptr<sql_page>>(page);
+            }
+
+            if (*in_progress_){
+                throw exception::illegal_access {
+                    "Loading in progress."
+                };
+            }
+
+            if (*last_)
+                throw exception::illegal_state {
+                    "Page is last page so next cannot be loaded."
+                };
+
+            *in_progress_ = true;
+
+            auto page_future = result_->fetch_page();
+            auto serialization_service = &result_->client_context_->get_serialization_service();
+            auto row_metadata = result_->row_metadata_;
+
+            std::weak_ptr<std::atomic<bool>> last_w { last_ };
+            std::weak_ptr<std::atomic<bool>> in_progress_w { in_progress_ };
+
+            return page_future.then(
+                boost::launch::sync,
+                [serialization_service , row_metadata, last_w, in_progress_w]
+                (boost::future<std::shared_ptr<sql_page>> page_f) mutable 
+                {
+                    auto page = page_f.get();
+
+                    page->serialization_service(serialization_service);
+                    page->row_metadata(move(row_metadata));
+
+                    auto last = last_w.lock();
+
+                    if (last)
+                        *last = page->last();
+
+                    auto in_progress = in_progress_w.lock();
+
+                    if (in_progress)
+                        *in_progress = false;
+
+                    return page;
+                }
+            );
+        }
+
+        bool has_next() const
+        {
+            return !*last_;
+        }
+
+    private:
+
+        std::shared_ptr<std::atomic<bool>> in_progress_;
+        std::shared_ptr<std::atomic<bool>> last_;
+        std::shared_ptr<sql_result> result_;
+        std::shared_ptr<sql_page> first_page_;
+    };
+
     /**
      * The destructor closes the result if it were open.
      */
@@ -141,7 +222,25 @@ public:
      * once or if this result does not have any pages.
      *
      */
-    page_iterator_type page_iterator();
+    page_iterator iterator()
+    {
+        check_closed();
+
+        if (!first_page_) {
+            throw exception::illegal_state(
+            "sql_result::page_iterator",      
+            "This result contains only update count");
+        }
+
+        if (iterator_requested_) {
+            throw exception::illegal_state("sql_result::page_iterator",
+                                        "Iterator can be requested only once");
+        }
+
+        iterator_requested_ = true;
+
+        return page_iterator{ shared_from_this(), first_page_ };
+    }
 
 private:
     friend class sql_service;

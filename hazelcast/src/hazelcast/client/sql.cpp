@@ -632,26 +632,26 @@ sql_result::row_set() const
     return update_count() == -1;
 }
 
-sql_result::page_iterator_type
-sql_result::page_iterator()
-{
-    check_closed();
+// sql_result::page_iterator_type
+// sql_result::page_iterator()
+// {
+//     check_closed();
 
-    if (!first_page_) {
-        throw exception::illegal_state(
-          "sql_result::page_iterator",
-          "This result contains only update count");
-    }
+//     if (!first_page_) {
+//         throw exception::illegal_state(
+//           "sql_result::page_iterator",
+//           "This result contains only update count");
+//     }
 
-    if (iterator_requested_) {
-        throw exception::illegal_state("sql_result::page_iterator",
-                                       "Iterator can be requested only once");
-    }
+//     if (iterator_requested_) {
+//         throw exception::illegal_state("sql_result::page_iterator",
+//                                        "Iterator can be requested only once");
+//     }
 
-    iterator_requested_ = true;
+//     iterator_requested_ = true;
 
-    return { shared_from_this(), first_page_ };
-}
+//     return { shared_from_this(), first_page_ };
+// }
 void
 sql_result::check_closed() const
 {

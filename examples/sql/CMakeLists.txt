@@ -16,3 +16,6 @@
 add_executable(sql_basic_query sql_basic_query.cpp)
 add_executable(sql_query_with_portable sql_query_with_portable.cpp)
 add_executable(sql_cancellation_example sql_cancellation_example.cpp)
+add_executable(sql_training sql_training.cpp)
+
+target_compile_features(sql_training PRIVATE cxx_std_17)
