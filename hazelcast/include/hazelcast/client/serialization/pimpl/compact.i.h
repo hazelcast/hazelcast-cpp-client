@@ -92,7 +92,7 @@ bool inline compact_reader::read_primitive<bool>(
 }
 
 template<typename T>
-boost::optional<T>
+util::optional<T>
 compact_reader::read_variable_size(
   const pimpl::field_descriptor& field_descriptor)
 {
@@ -109,7 +109,7 @@ compact_reader::read_variable_size(
 }
 
 template<typename T>
-boost::optional<T>
+util::optional<T>
 compact_reader::read_variable_size(const std::string& field_name,
                                    enum pimpl::field_kind field_kind)
 {
@@ -152,9 +152,9 @@ typename std::enable_if<
     std::is_same<std::vector<float>, typename std::remove_cv<T>::type>::value ||
     std::is_same<std::vector<double>,
                  typename std::remove_cv<T>::type>::value ||
-    std::is_same<std::vector<boost::optional<std::string>>,
+    std::is_same<std::vector<util::optional<std::string>>,
                  typename std::remove_cv<T>::type>::value,
-  typename boost::optional<T>>::type
+  typename util::optional<T>>::type
 compact_reader::read()
 {
     return object_data_input.template read<T>();
@@ -163,7 +163,7 @@ compact_reader::read()
 template<typename T>
 typename std::enable_if<
   std::is_base_of<compact_serializer, hz_serializer<T>>::value,
-  typename boost::optional<T>>::type
+  typename util::optional<T>>::type
 compact_reader::read()
 {
     return compact_stream_serializer.template read<T>(object_data_input);
@@ -172,7 +172,7 @@ compact_reader::read()
 template<typename T>
 typename std::enable_if<
   std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value,
-  typename boost::optional<T>>::type
+  typename util::optional<T>>::type
 compact_reader::read()
 {
     int32_t len = object_data_input.read<int32_t>();
@@ -195,18 +195,18 @@ compact_reader::read()
 }
 
 template<typename T>
-typename std::enable_if<std::is_same<std::vector<boost::optional<bool>>,
+typename std::enable_if<std::is_same<std::vector<util::optional<bool>>,
                                      typename std::remove_cv<T>::type>::value,
-                        typename boost::optional<T>>::type
+                        typename util::optional<T>>::type
 compact_reader::read()
 {
     int32_t len = object_data_input.read<int32_t>();
     if (len == 0) {
-        return boost::make_optional<std::vector<boost::optional<bool>>>(
-          std::vector<boost::optional<bool>>(0));
+        return boost::make_optional<std::vector<util::optional<bool>>>(
+          std::vector<util::optional<bool>>(0));
     }
-    auto values = boost::make_optional<std::vector<boost::optional<bool>>>(
-      std::vector<boost::optional<bool>>(len));
+    auto values = boost::make_optional<std::vector<util::optional<bool>>>(
+      std::vector<util::optional<bool>>(len));
     int index = 0;
     byte current_byte = object_data_input.read<byte>();
     for (int i = 0; i < len; ++i) {
@@ -228,7 +228,7 @@ typename std::enable_if<
     std::is_same<local_date, typename std::remove_cv<T>::type>::value ||
     std::is_same<local_date_time, typename std::remove_cv<T>::type>::value ||
     std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
-  typename boost::optional<T>>::type
+  typename util::optional<T>>::type
 compact_reader::read()
 {
     return boost::make_optional<T>(
@@ -236,7 +236,7 @@ compact_reader::read()
 }
 
 template<typename T>
-boost::optional<T>
+util::optional<T>
 compact_reader::read_array_of_primitive(
   const std::string& field_name,
   enum pimpl::field_kind field_kind,
@@ -254,7 +254,7 @@ compact_reader::read_array_of_primitive(
 }
 
 template<typename T>
-boost::optional<std::vector<boost::optional<T>>>
+util::optional<std::vector<util::optional<T>>>
 compact_reader::read_array_of_variable_size(
   const pimpl::field_descriptor& field_descriptor)
 {
@@ -270,7 +270,7 @@ compact_reader::read_array_of_variable_size(
     int32_t data_length = object_data_input.read<int32_t>();
     int32_t item_count = object_data_input.read<int32_t>();
     int data_start_pos = object_data_input.position();
-    std::vector<boost::optional<T>> values(item_count);
+    std::vector<util::optional<T>> values(item_count);
     auto offset_reader = get_offset_reader(data_length);
     int offsets_position = data_start_pos + data_length;
     for (int i = 0; i < item_count; ++i) {
@@ -284,7 +284,7 @@ compact_reader::read_array_of_variable_size(
 }
 
 template<typename T>
-boost::optional<T>
+util::optional<T>
 compact_reader::read_nullable_array_as_primitive_array(
   const pimpl::field_descriptor& field_descriptor,
   const std::string& field_name,
@@ -316,7 +316,7 @@ compact_reader::read_nullable_array_as_primitive_array(
 }
 
 template<typename T>
-boost::optional<T>
+util::optional<T>
 compact_reader::read_nullable_primitive(
   const std::string& field_name,
   enum pimpl::field_kind field_kind,
@@ -332,7 +332,7 @@ compact_reader::read_nullable_primitive(
 }
 
 template<typename T>
-boost::optional<std::vector<boost::optional<T>>>
+util::optional<std::vector<util::optional<T>>>
 compact_reader::read_array_of_nullable(
   const std::string& field_name,
   enum pimpl::field_kind field_kind,
@@ -348,7 +348,7 @@ compact_reader::read_array_of_nullable(
 }
 
 template<typename T>
-boost::optional<std::vector<boost::optional<T>>>
+util::optional<std::vector<util::optional<T>>>
 compact_reader::read_primitive_array_as_nullable_array(
   const pimpl::field_descriptor& field_descriptor)
 {
@@ -362,7 +362,7 @@ compact_reader::read_primitive_array_as_nullable_array(
     }
     object_data_input.position(pos);
     int32_t item_count = object_data_input.read<int32_t>();
-    std::vector<boost::optional<T>> values(item_count);
+    std::vector<util::optional<T>> values(item_count);
 
     for (int i = 0; i < item_count; ++i) {
         values[i] = boost::make_optional(object_data_input.read<T>());
@@ -371,23 +371,23 @@ compact_reader::read_primitive_array_as_nullable_array(
 }
 
 template<>
-boost::optional<std::vector<boost::optional<bool>>> inline compact_reader::
+util::optional<std::vector<util::optional<bool>>> inline compact_reader::
   read_primitive_array_as_nullable_array(
     const pimpl::field_descriptor& field_descriptor)
 {
-    return read_variable_size<std::vector<boost::optional<bool>>>(
+    return read_variable_size<std::vector<util::optional<bool>>>(
       field_descriptor);
 }
 
 template<typename T>
-boost::optional<T>
+util::optional<T>
 compact_reader::read_compact(const std::string& field_name)
 {
     return read_variable_size<T>(field_name, pimpl::field_kind::COMPACT);
 }
 
 template<typename T>
-boost::optional<std::vector<boost::optional<T>>>
+util::optional<std::vector<util::optional<T>>>
 compact_reader::read_array_of_compact(const std::string& field_name)
 {
     const auto& descriptor =
@@ -398,7 +398,7 @@ compact_reader::read_array_of_compact(const std::string& field_name)
 template<typename T>
 void
 compact_writer::write_compact(const std::string& field_name,
-                              const boost::optional<T>& value)
+                              const util::optional<T>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_compact(field_name, value);
@@ -411,7 +411,7 @@ template<typename T>
 void
 compact_writer::write_array_of_compact(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<T>>>& value)
+  const util::optional<std::vector<util::optional<T>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_compact<T>(field_name, value);
@@ -427,7 +427,7 @@ void
 default_compact_writer::write_variable_size_field(
   const std::string& field_name,
   enum field_kind field_kind,
-  const boost::optional<T>& value)
+  const util::optional<T>& value)
 {
     if (!value.has_value()) {
         set_position_as_null(field_name, field_kind);
@@ -440,7 +440,7 @@ default_compact_writer::write_variable_size_field(
 template<typename T>
 void
 default_compact_writer::write_compact(const std::string& field_name,
-                                      const boost::optional<T>& value)
+                                      const util::optional<T>& value)
 {
     write_variable_size_field<T>(field_name, field_kind::COMPACT, value);
 }
@@ -449,7 +449,7 @@ template<typename T>
 void
 default_compact_writer::write_array_of_compact(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<T>>>& value)
+  const util::optional<std::vector<util::optional<T>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_COMPACT, value);
@@ -460,7 +460,7 @@ void
 default_compact_writer::write_array_of_variable_size(
   const std::string& field_name,
   enum field_kind field_kind,
-  const boost::optional<std::vector<boost::optional<T>>>& value)
+  const util::optional<std::vector<util::optional<T>>>& value)
 {
     if (!value.has_value()) {
         set_position_as_null(field_name, field_kind);

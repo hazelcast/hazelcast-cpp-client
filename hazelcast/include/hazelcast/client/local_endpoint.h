@@ -33,7 +33,7 @@ class HAZELCAST_API local_endpoint : public endpoint
 {
 public:
     local_endpoint(boost::uuids::uuid uuid,
-                   boost::optional<address> socket_address,
+                   util::optional<address> socket_address,
                    std::string name,
                    std::unordered_set<std::string> labels);
 

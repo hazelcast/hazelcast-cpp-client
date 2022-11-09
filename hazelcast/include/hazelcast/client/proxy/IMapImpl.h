@@ -110,10 +110,10 @@ protected:
 
     boost::future<bool> contains_value(const serialization::pimpl::data& value);
 
-    boost::future<boost::optional<serialization::pimpl::data>> get_data(
+    boost::future<util::optional<serialization::pimpl::data>> get_data(
       const serialization::pimpl::data& key);
 
-    boost::future<boost::optional<serialization::pimpl::data>> remove_data(
+    boost::future<util::optional<serialization::pimpl::data>> remove_data(
       const serialization::pimpl::data& key);
 
     boost::future<bool> remove(const serialization::pimpl::data& key,
@@ -132,7 +132,7 @@ protected:
                                 const serialization::pimpl::data& value,
                                 std::chrono::milliseconds timeout);
 
-    boost::future<boost::optional<serialization::pimpl::data>> put_data(
+    boost::future<util::optional<serialization::pimpl::data>> put_data(
       const serialization::pimpl::data& key,
       const serialization::pimpl::data& value,
       std::chrono::milliseconds ttl);
@@ -142,7 +142,7 @@ protected:
       const serialization::pimpl::data& value,
       std::chrono::milliseconds ttl);
 
-    boost::future<boost::optional<serialization::pimpl::data>>
+    boost::future<util::optional<serialization::pimpl::data>>
     put_if_absent_data(const serialization::pimpl::data& key,
                        const serialization::pimpl::data& value,
                        std::chrono::milliseconds ttl);
@@ -151,7 +151,7 @@ protected:
                                 const serialization::pimpl::data& old_value,
                                 const serialization::pimpl::data& new_value);
 
-    boost::future<boost::optional<serialization::pimpl::data>> replace_data(
+    boost::future<util::optional<serialization::pimpl::data>> replace_data(
       const serialization::pimpl::data& key,
       const serialization::pimpl::data& value);
 
@@ -202,7 +202,7 @@ protected:
       serialization::pimpl::data&& key,
       int32_t listener_flags);
 
-    boost::future<boost::optional<map::data_entry_view>> get_entry_view_data(
+    boost::future<util::optional<map::data_entry_view>> get_entry_view_data(
       const serialization::pimpl::data& key);
 
     boost::future<bool> evict(const serialization::pimpl::data& key);
@@ -247,11 +247,11 @@ protected:
       int partition_id,
       const EntryVector& entries);
 
-    boost::future<boost::optional<serialization::pimpl::data>>
+    boost::future<util::optional<serialization::pimpl::data>>
     execute_on_key_data(const serialization::pimpl::data& key,
                         const serialization::pimpl::data& processor);
 
-    boost::future<boost::optional<serialization::pimpl::data>>
+    boost::future<util::optional<serialization::pimpl::data>>
     submit_to_key_data(const serialization::pimpl::data& key,
                        const serialization::pimpl::data& processor);
 
@@ -268,7 +268,7 @@ protected:
 
     template<typename K, typename V>
     std::pair<size_t, size_t> update_anchor(
-      std::vector<std::pair<K, boost::optional<V>>>& entries,
+      std::vector<std::pair<K, util::optional<V>>>& entries,
       query::paging_predicate<K, V>& predicate,
       query::iteration_type iteration_type)
     {
@@ -299,7 +299,7 @@ protected:
 
     template<typename K, typename V>
     static void set_anchor(
-      std::vector<std::pair<K, boost::optional<V>>>& entries,
+      std::vector<std::pair<K, util::optional<V>>>& entries,
       query::paging_predicate<K, V>& predicate,
       int nearest_page)
     {

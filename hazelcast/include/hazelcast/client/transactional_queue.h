@@ -58,7 +58,7 @@ public:
      * @see iqueue::poll()
      */
     template<typename E>
-    boost::future<boost::optional<E>> poll()
+    boost::future<util::optional<E>> poll()
     {
         return poll<E>(std::chrono::milliseconds::zero());
     }
@@ -70,7 +70,7 @@ public:
      * @see iqueue::poll(std::chrono::milliseconds timeout)
      */
     template<typename E>
-    boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout)
+    boost::future<util::optional<E>> poll(std::chrono::milliseconds timeout)
     {
         return to_object<E>(proxy::TransactionalQueueImpl::poll_data(timeout));
     }

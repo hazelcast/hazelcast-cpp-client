@@ -174,7 +174,7 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
       message.get_nullable<std::shared_ptr<sql::sql_page>>([](protocol::ClientMessage& msg) {
           return protocol::codec::builtin::sql_page_codec::decode(msg);
       });
-    auto error = message.get<boost::optional<impl::sql_error>>();
+    auto error = message.get<util::optional<impl::sql_error>>();
     return { *std::move(page), std::move(error) };
 }
 
@@ -312,7 +312,7 @@ sql_service::fetch_page(
 }
 
 void
-sql_service::handle_fetch_response_error(boost::optional<impl::sql_error> error)
+sql_service::handle_fetch_response_error(util::optional<impl::sql_error> error)
 {
     if (error) {
         throw hazelcast_sql_exception(
@@ -418,14 +418,14 @@ sql_statement::timeout(std::chrono::milliseconds timeout)
     return *this;
 }
 
-const boost::optional<std::string>&
+const util::optional<std::string>&
 sql_statement::schema() const
 {
     return schema_;
 }
 
 sql_statement&
-sql_statement::schema(boost::optional<std::string> schema)
+sql_statement::schema(util::optional<std::string> schema)
 {
     schema_ = std::move(schema);
     return *this;
@@ -448,8 +448,8 @@ hazelcast_sql_exception::hazelcast_sql_exception(
   std::string source,
   boost::uuids::uuid originating_member_id,
   int32_t code,
-  boost::optional<std::string> message,
-  boost::optional<std::string> suggestion,
+  util::optional<std::string> message,
+  util::optional<std::string> suggestion,
   std::exception_ptr cause)
   : hazelcast_(std::move(source),
                message ? std::move(message).value() : "",
@@ -473,7 +473,7 @@ hazelcast_sql_exception::code() const
     return code_;
 }
 
-const boost::optional<std::string>&
+const util::optional<std::string>&
 hazelcast_sql_exception::suggestion() const
 {
     return suggestion_;
@@ -519,7 +519,7 @@ query_utils::throw_public_exception(std::exception_ptr exc,
     }
 }
 
-boost::optional<member>
+util::optional<member>
 query_utils::member_of_same_larger_version_group(
   const std::vector<member>& members)
 {
@@ -527,8 +527,8 @@ query_utils::member_of_same_larger_version_group(
     // version). Find a random member from the larger same-version group.
 
     // we don't use 2-element array to save on litter
-    boost::optional<member::version> version0;
-    boost::optional<member::version> version1;
+    util::optional<member::version> version0;
+    util::optional<member::version> version1;
     size_t count0 = 0;
     size_t count1 = 0;
 

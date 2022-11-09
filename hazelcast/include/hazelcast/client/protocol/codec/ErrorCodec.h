@@ -17,7 +17,7 @@
 
 #include <string>
 #include <vector>
-#include <boost/optional.hpp>
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/util/export.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -35,7 +35,7 @@ struct HAZELCAST_API StackTraceElement
 {
     std::string declaring_class;
     std::string method_name;
-    boost::optional<std::string> file_name;
+    util::optional<std::string> file_name;
     int line_number;
 };
 
@@ -43,7 +43,7 @@ struct HAZELCAST_API ErrorHolder
 {
     int32_t error_code;
     std::string class_name;
-    boost::optional<std::string> message;
+    util::optional<std::string> message;
     std::vector<codec::StackTraceElement> stack_trace;
 
     std::string to_string() const;

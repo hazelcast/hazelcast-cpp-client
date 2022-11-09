@@ -344,7 +344,7 @@ private:
         topic::message to_message(
           topic::impl::reliable::ReliableTopicMessage& message)
         {
-            boost::optional<member> m;
+            util::optional<member> m;
             auto& addr = message.get_publisher_address();
             if (addr.has_value()) {
                 m = boost::make_optional<member>(addr.value());

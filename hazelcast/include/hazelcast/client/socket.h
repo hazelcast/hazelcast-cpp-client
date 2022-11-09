@@ -59,7 +59,7 @@ public:
      *
      * @returns An address that represents the local endpoint of the socket.
      */
-    virtual boost::optional<address> local_socket_address() const = 0;
+    virtual util::optional<address> local_socket_address() const = 0;
 
     virtual const address& get_remote_endpoint() const = 0;
 

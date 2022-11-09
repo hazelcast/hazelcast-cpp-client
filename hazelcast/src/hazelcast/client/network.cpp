@@ -922,8 +922,8 @@ ClientConnectionManagerImpl::translate(const member& m)
 
 std::shared_ptr<connection::Connection>
 ClientConnectionManagerImpl::connection_for_sql(
-  std::function<boost::optional<member>()> member_of_large_same_version_group,
-  std::function<boost::optional<member>(boost::uuids::uuid)> get_cluster_member)
+  std::function<util::optional<member>()> member_of_large_same_version_group,
+  std::function<util::optional<member>(boost::uuids::uuid)> get_cluster_member)
 {
     if (smart_routing_enabled_) {
         // There might be a race - the chosen member might be just connected or
@@ -1131,14 +1131,14 @@ Connection::write(
     socket_->async_write(shared_from_this(), client_invocation);
 }
 
-const boost::optional<address>&
+const util::optional<address>&
 Connection::get_remote_address() const
 {
     return remote_address_;
 }
 
 void
-Connection::set_remote_address(boost::optional<address> endpoint)
+Connection::set_remote_address(util::optional<address> endpoint)
 {
     this->remote_address_ = std::move(endpoint);
 }
@@ -1260,7 +1260,7 @@ Connection::set_connected_server_version(const std::string& connected_server)
     Connection::connected_server_version_string_ = connected_server;
 }
 
-boost::optional<address>
+util::optional<address>
 Connection::get_local_socket_address() const
 {
     return socket_->local_socket_address();

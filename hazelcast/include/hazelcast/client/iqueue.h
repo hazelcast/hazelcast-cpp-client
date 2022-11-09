@@ -110,7 +110,7 @@ public:
      * added.
      */
     template<typename E>
-    boost::future<boost::optional<E>> take()
+    boost::future<util::optional<E>> take()
     {
         return to_object<E>(proxy::IQueueImpl::take_data());
     }
@@ -122,7 +122,7 @@ public:
      * time.
      */
     template<typename E>
-    boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout)
+    boost::future<util::optional<E>> poll(std::chrono::milliseconds timeout)
     {
         return to_object<E>(proxy::IQueueImpl::poll_data(timeout));
     }
@@ -183,7 +183,7 @@ public:
      * available returns empty constructed shared_ptr.
      */
     template<typename E>
-    boost::future<boost::optional<E>> poll()
+    boost::future<util::optional<E>> poll()
     {
         return poll<E>(std::chrono::milliseconds(0));
     }
@@ -195,7 +195,7 @@ public:
      * constructed shared_ptr.
      */
     template<typename E>
-    boost::future<boost::optional<E>> peek()
+    boost::future<util::optional<E>> peek()
     {
         return to_object<E>(proxy::IQueueImpl::peek_data());
     }

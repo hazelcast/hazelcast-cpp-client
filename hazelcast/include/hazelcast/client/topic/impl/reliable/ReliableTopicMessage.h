@@ -46,13 +46,13 @@ public:
 
     std::chrono::system_clock::time_point get_publish_time() const;
 
-    const boost::optional<address>& get_publisher_address() const;
+    const util::optional<address>& get_publisher_address() const;
 
     serialization::pimpl::data& get_payload();
 
 private:
     std::chrono::system_clock::time_point publish_time_;
-    boost::optional<address> publisher_address_;
+    util::optional<address> publisher_address_;
     serialization::pimpl::data payload_;
 };
 } // namespace reliable

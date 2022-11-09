@@ -909,19 +909,19 @@ IListImpl::clear()
     return to_void_future(invoke_on_partition(request, partition_id_));
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IListImpl::get_data(int index)
 {
     auto request = protocol::codec::list_get_encode(get_name(), index);
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, partition_id_);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IListImpl::set_data(int index, const serialization::pimpl::data& element)
 {
     auto request = protocol::codec::list_set_encode(get_name(), index, element);
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, partition_id_);
 }
 
@@ -933,12 +933,12 @@ IListImpl::add(int index, const serialization::pimpl::data& element)
     return to_void_future(invoke_on_partition(request, partition_id_));
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IListImpl::remove_data(int index)
 {
     auto request =
       protocol::codec::list_removewithindex_encode(get_name(), index);
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, partition_id_);
 }
 
@@ -1203,13 +1203,13 @@ IQueueImpl::put(const serialization::pimpl::data& element)
     return to_void_future(invoke_on_partition(request, partition_id_));
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IQueueImpl::poll_data(std::chrono::milliseconds timeout)
 {
     auto request = protocol::codec::queue_poll_encode(
       get_name(),
       std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, partition_id_);
 }
 
@@ -1252,19 +1252,19 @@ IQueueImpl::drain_to_data()
       request, partition_id_);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IQueueImpl::take_data()
 {
     auto request = protocol::codec::queue_take_encode(get_name());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, partition_id_);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IQueueImpl::peek_data()
 {
     auto request = protocol::codec::queue_peek_encode(get_name());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, partition_id_);
 }
 
@@ -1465,7 +1465,7 @@ SerializingProxy::invoke_on_member(protocol::ClientMessage& request,
 }
 
 template<>
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request)
 {
     return decode_optional_var_sized<serialization::pimpl::data>(
@@ -1473,7 +1473,7 @@ SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request)
 }
 
 template<>
-boost::future<boost::optional<map::data_entry_view>>
+boost::future<util::optional<map::data_entry_view>>
 SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request,
                                         const serialization::pimpl::data& key)
 {
@@ -1482,7 +1482,7 @@ SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request,
 }
 
 template<>
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request,
                                         int partition_id)
 {
@@ -1491,7 +1491,7 @@ SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request,
 }
 
 template<>
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request,
                                         const serialization::pimpl::data& key)
 {
@@ -1536,21 +1536,21 @@ IMapImpl::contains_value(const serialization::pimpl::data& value)
     return invoke_and_get_future<bool>(request);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IMapImpl::get_data(const serialization::pimpl::data& key)
 {
     auto request = protocol::codec::map_get_encode(
       get_name(), key, util::get_current_thread_id());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, key);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IMapImpl::remove_data(const serialization::pimpl::data& key)
 {
     auto request = protocol::codec::map_remove_encode(
       get_name(), key, util::get_current_thread_id());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, key);
 }
 
@@ -1614,7 +1614,7 @@ IMapImpl::try_put(const serialization::pimpl::data& key,
     return invoke_and_get_future<bool>(request, key);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IMapImpl::put_data(const serialization::pimpl::data& key,
                    const serialization::pimpl::data& value,
                    std::chrono::milliseconds ttl)
@@ -1625,7 +1625,7 @@ IMapImpl::put_data(const serialization::pimpl::data& key,
       value,
       util::get_current_thread_id(),
       std::chrono::duration_cast<std::chrono::milliseconds>(ttl).count());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, key);
 }
 
@@ -1643,7 +1643,7 @@ IMapImpl::put_transient(const serialization::pimpl::data& key,
     return invoke_on_partition(request, get_partition_id(key));
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IMapImpl::put_if_absent_data(const serialization::pimpl::data& key,
                              const serialization::pimpl::data& value,
                              std::chrono::milliseconds ttl)
@@ -1654,7 +1654,7 @@ IMapImpl::put_if_absent_data(const serialization::pimpl::data& key,
       value,
       util::get_current_thread_id(),
       std::chrono::duration_cast<std::chrono::milliseconds>(ttl).count());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, key);
 }
 
@@ -1669,14 +1669,14 @@ IMapImpl::replace(const serialization::pimpl::data& key,
     return invoke_and_get_future<bool>(request, key);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IMapImpl::replace_data(const serialization::pimpl::data& key,
                        const serialization::pimpl::data& value)
 {
     auto request = protocol::codec::map_replace_encode(
       get_name(), key, value, util::get_current_thread_id());
 
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, key);
 }
 
@@ -1815,12 +1815,12 @@ IMapImpl::add_entry_listener(
                              std::move(entry_event_handler));
 }
 
-boost::future<boost::optional<map::data_entry_view>>
+boost::future<util::optional<map::data_entry_view>>
 IMapImpl::get_entry_view_data(const serialization::pimpl::data& key)
 {
     auto request = protocol::codec::map_getentryview_encode(
       get_name(), key, util::get_current_thread_id());
-    return invoke_and_get_future<boost::optional<map::data_entry_view>>(request,
+    return invoke_and_get_future<util::optional<map::data_entry_view>>(request,
                                                                         key);
 }
 
@@ -1972,17 +1972,17 @@ IMapImpl::clear_data()
     return invoke(request);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IMapImpl::execute_on_key_data(const serialization::pimpl::data& key,
                               const serialization::pimpl::data& processor)
 {
     auto request = protocol::codec::map_executeonkey_encode(
       get_name(), processor, key, util::get_current_thread_id());
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request, get_partition_id(key));
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 IMapImpl::submit_to_key_data(const serialization::pimpl::data& key,
                              const serialization::pimpl::data& processor)
 {
@@ -2178,7 +2178,7 @@ TransactionalQueueImpl::offer(const serialization::pimpl::data& e,
     return invoke_and_get_future<bool>(request);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 TransactionalQueueImpl::poll_data(std::chrono::milliseconds timeout)
 {
     auto request = protocol::codec::transactionalqueue_poll_encode(
@@ -2187,7 +2187,7 @@ TransactionalQueueImpl::poll_data(std::chrono::milliseconds timeout)
       util::get_current_thread_id(),
       std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
 
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request);
 }
 
@@ -2514,7 +2514,7 @@ ReliableTopicMessage::get_publish_time() const
     return publish_time_;
 }
 
-const boost::optional<address>&
+const util::optional<address>&
 ReliableTopicMessage::get_publisher_address() const
 {
     return publisher_address_;

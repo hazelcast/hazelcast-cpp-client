@@ -16,9 +16,9 @@
 #pragma once
 
 #include <boost/uuid/uuid.hpp>
-#include <boost/optional.hpp>
 
 #include "hazelcast/util/export.h"
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 
 namespace hazelcast {
@@ -31,8 +31,8 @@ public:
     hazelcast_sql_exception(std::string source,
                             boost::uuids::uuid originating_member_id,
                             int32_t code,
-                            boost::optional<std::string> message,
-                            boost::optional<std::string> suggestion,
+                            util::optional<std::string> message,
+                            util::optional<std::string> suggestion,
                             std::exception_ptr cause = nullptr);
 
     /**
@@ -48,12 +48,12 @@ public:
     /**
      * Gets the suggested SQL statement to remediate experienced error
      */
-    const boost::optional<std::string>& suggestion() const;
+    const util::optional<std::string>& suggestion() const;
 
 private:
     boost::uuids::uuid originating_member_id_;
     int32_t code_;
-    boost::optional<std::string> suggestion_;
+    util::optional<std::string> suggestion_;
 };
 
 } // namespace sql

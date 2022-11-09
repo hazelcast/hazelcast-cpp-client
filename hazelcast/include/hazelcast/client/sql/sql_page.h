@@ -17,10 +17,10 @@
 
 #include <vector>
 #include <boost/any.hpp>
-#include <boost/optional.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
 #include "hazelcast/util/export.h"
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/client/sql/sql_column_type.h"
 #include "hazelcast/client/sql/sql_row_metadata.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -67,7 +67,7 @@ public:
          * @see sql_column_metadata::type
          */
         template<typename T>
-        boost::optional<T> get_object(std::size_t column_index) const
+        util::optional<T> get_object(std::size_t column_index) const
         {
             check_index(column_index);
 
@@ -96,7 +96,7 @@ public:
          * @see sql_column_metadata::type
          */
         template<typename T>
-        boost::optional<T> get_object(const std::string& column_name) const
+        util::optional<T> get_object(const std::string& column_name) const
         {
             auto column_index = resolve_index(column_name);
             return page_->get_column_value<T>(column_index, row_index_);
@@ -176,7 +176,7 @@ private:
     serialization::pimpl::SerializationService* serialization_service_;
 
     template<typename T>
-    boost::optional<T> get_column_value(std::size_t column_index,
+    util::optional<T> get_column_value(std::size_t column_index,
                                         std::size_t row_index) const
     {
         assert(column_index < column_count());

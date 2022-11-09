@@ -30,7 +30,6 @@
 
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
-#include <boost/optional.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
@@ -47,6 +46,7 @@
 #include "hazelcast/client/sql/impl/sql_error.h"
 #include "hazelcast/client/sql/sql_column_type.h"
 #include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
+#include "hazelcast/util/Optional.h"
 
 namespace hazelcast {
 namespace util {

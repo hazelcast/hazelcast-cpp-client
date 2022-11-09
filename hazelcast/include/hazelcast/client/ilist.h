@@ -183,7 +183,7 @@ public:
      *
      */
     template<typename E>
-    boost::future<boost::optional<E>> get(int32_t index)
+    boost::future<util::optional<E>> get(int32_t index)
     {
         return to_object<E>(proxy::IListImpl::get_data(index));
     }
@@ -200,7 +200,7 @@ public:
      * @throws index_out_of_bounds if the index is out of range.
      */
     template<typename E, typename R = E>
-    boost::future<boost::optional<R>> set(int32_t index, const E& element)
+    boost::future<util::optional<R>> set(int32_t index, const E& element)
     {
         return to_object<R>(
           proxy::IListImpl::set_data(index, to_data(element)));
@@ -230,7 +230,7 @@ public:
      * @throws index_out_of_bounds if the index is out of range.
      */
     template<typename E>
-    boost::future<boost::optional<E>> remove(int32_t index)
+    boost::future<util::optional<E>> remove(int32_t index)
     {
         return to_object<E>(proxy::IListImpl::remove_data(index));
     }

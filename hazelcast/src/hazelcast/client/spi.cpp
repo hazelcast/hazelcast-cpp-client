@@ -832,7 +832,7 @@ DefaultAddressProvider::load_addresses()
     return addresses;
 }
 
-boost::optional<address>
+util::optional<address>
 DefaultAddressProvider::translate(const address& addr)
 {
     return addr;
@@ -871,7 +871,7 @@ ClientClusterServiceImpl::add_membership_listener_without_init(
     return id;
 }
 
-boost::optional<member>
+util::optional<member>
 ClientClusterServiceImpl::get_member(boost::uuids::uuid uuid) const
 {
     assert(!uuid.is_nil());
@@ -2309,7 +2309,7 @@ ClientPartitionServiceImpl::PartitionImpl::get_partition_id() const
     return partition_id_;
 }
 
-boost::optional<member>
+util::optional<member>
 ClientPartitionServiceImpl::PartitionImpl::get_owner() const
 {
     auto owner = partition_service_.get_partition_owner(partition_id_);
@@ -3022,7 +3022,7 @@ remote_address_provider::load_addresses()
     return addresses;
 }
 
-boost::optional<address>
+util::optional<address>
 remote_address_provider::translate(const address& addr)
 {
     // if it is inside cloud, return private address otherwise we need to

@@ -42,21 +42,21 @@ protected:
     boost::future<bool> contains_key_data(
       const serialization::pimpl::data& key);
 
-    boost::future<boost::optional<serialization::pimpl::data>> get_data(
+    boost::future<util::optional<serialization::pimpl::data>> get_data(
       const serialization::pimpl::data& key);
 
-    boost::future<boost::optional<serialization::pimpl::data>> put_data(
+    boost::future<util::optional<serialization::pimpl::data>> put_data(
       const serialization::pimpl::data& key,
       const serialization::pimpl::data& value);
 
     boost::future<void> set_data(const serialization::pimpl::data& key,
                                  const serialization::pimpl::data& value);
 
-    boost::future<boost::optional<serialization::pimpl::data>>
+    boost::future<util::optional<serialization::pimpl::data>>
     put_if_absent_data(const serialization::pimpl::data& key,
                        const serialization::pimpl::data& value);
 
-    boost::future<boost::optional<serialization::pimpl::data>> replace_data(
+    boost::future<util::optional<serialization::pimpl::data>> replace_data(
       const serialization::pimpl::data& key,
       const serialization::pimpl::data& value);
 
@@ -65,7 +65,7 @@ protected:
       const serialization::pimpl::data& old_value,
       const serialization::pimpl::data& new_value);
 
-    boost::future<boost::optional<serialization::pimpl::data>> remove_data(
+    boost::future<util::optional<serialization::pimpl::data>> remove_data(
       const serialization::pimpl::data& key);
 
     boost::future<void> delete_entry_data(

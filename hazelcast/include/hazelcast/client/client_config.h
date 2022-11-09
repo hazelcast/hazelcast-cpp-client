@@ -19,13 +19,13 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <memory>
-#include <boost/optional.hpp>
 
 #include "hazelcast/client/address.h"
 #include "hazelcast/client/serialization_config.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/client/load_balancer.h"
 #include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/client/config/reliable_topic_config.h"
 #include "hazelcast/client/config/near_cache_config.h"
 #include "hazelcast/client/config/client_network_config.h"
@@ -337,7 +337,7 @@ public:
     client_config& set_network_config(
       const config::client_network_config& network_config);
 
-    const boost::optional<std::string>& get_instance_name() const;
+    const util::optional<std::string>& get_instance_name() const;
 
     client_config& set_instance_name(const std::string& instance_name);
 
@@ -459,7 +459,7 @@ private:
 
     serialization_config serialization_config_;
 
-    boost::optional<load_balancer> load_balancer_;
+    util::optional<load_balancer> load_balancer_;
 
     std::vector<membership_listener> membership_listeners_;
 
@@ -479,7 +479,7 @@ private:
     std::unordered_map<std::string, config::near_cache_config>
       near_cache_config_map_;
 
-    boost::optional<std::string> instance_name_;
+    util::optional<std::string> instance_name_;
 
     /**
      * pool-size for internal ExecutorService which handles responses etc.

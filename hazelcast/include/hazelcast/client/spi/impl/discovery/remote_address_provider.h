@@ -42,7 +42,7 @@ public:
 
     std::vector<address> load_addresses() override;
 
-    boost::optional<address> translate(const address& addr) override;
+    util::optional<address> translate(const address& addr) override;
 
 private:
     std::function<std::unordered_map<address, address>()> refresh_address_map_;

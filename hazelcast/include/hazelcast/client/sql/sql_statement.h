@@ -19,9 +19,8 @@
 #include <cstddef>
 #include <string>
 
-#include <boost/optional/optional.hpp>
-
 #include "hazelcast/util/export.h"
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/sql/sql_expected_result_type.h"
@@ -200,7 +199,7 @@ public:
      * @return the schema name or \code{.cpp}boost::none\endcode if there is
      * none
      */
-    const boost::optional<std::string>& schema() const;
+    const util::optional<std::string>& schema() const;
 
     /**
      * Sets the schema name. The engine will try to resolve the non-qualified
@@ -216,7 +215,7 @@ public:
      * @param schema the current schema name
      * @return this instance for chaining
      */
-    sql_statement& schema(boost::optional<std::string> schema);
+    sql_statement& schema(util::optional<std::string> schema);
 
 private:
     using data = serialization::pimpl::data;
@@ -229,7 +228,7 @@ private:
     int32_t cursor_buffer_size_;
     std::chrono::milliseconds timeout_;
     sql::sql_expected_result_type expected_result_type_;
-    boost::optional<std::string> schema_;
+    util::optional<std::string> schema_;
 
     serialization_service& serialization_service_;
 

@@ -99,7 +99,7 @@ public:
      * boost::none.
      */
     template<typename K, typename V>
-    boost::future<boost::optional<V>> get(const K& key)
+    boost::future<util::optional<V>> get(const K& key)
     {
         return to_object<V>(get_internal(to_data(key)));
     }
@@ -112,7 +112,7 @@ public:
      * boost::none.
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> put(const K& key, const V& value)
+    boost::future<util::optional<R>> put(const K& key, const V& value)
     {
         return put<K, V, R>(key, value, UNSET);
     }
@@ -130,7 +130,7 @@ public:
      * boost::none.
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> put(const K& key,
+    boost::future<util::optional<R>> put(const K& key,
                                           const V& value,
                                           std::chrono::milliseconds ttl)
     {
@@ -144,7 +144,7 @@ public:
      * boost::none.
      */
     template<typename K, typename V>
-    boost::future<boost::optional<V>> remove(const K& key)
+    boost::future<util::optional<V>> remove(const K& key)
     {
         return to_object<V>(remove_internal(to_data(key)));
     }
@@ -255,7 +255,7 @@ public:
      * then returns boost::none.
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<V>> put_if_absent(const K& key,
+    boost::future<util::optional<V>> put_if_absent(const K& key,
                                                     const V& value)
     {
         return put_if_absent(key, value, UNSET);
@@ -273,7 +273,7 @@ public:
      * then returns boost::none.
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<V>>
+    boost::future<util::optional<V>>
     put_if_absent(const K& key, const V& value, std::chrono::milliseconds ttl)
     {
         return to_object<R>(
@@ -304,7 +304,7 @@ public:
      * then returns boost::none.
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> replace(const K& key, const V& value)
+    boost::future<util::optional<R>> replace(const K& key, const V& value)
     {
         return to_object<R>(replace_internal(to_data(key), to_data(value)));
     }
@@ -630,7 +630,7 @@ public:
      * @see EntryView
      */
     template<typename K, typename V>
-    boost::future<boost::optional<entry_view<K, V>>> get_entry_view(
+    boost::future<util::optional<entry_view<K, V>>> get_entry_view(
       const K& key)
     {
         auto f = proxy::IMapImpl::get_entry_view_data(to_data(key));
@@ -939,7 +939,7 @@ public:
      * @return result of entry process.
      */
     template<typename K, typename ResultType, typename EntryProcessor>
-    boost::future<boost::optional<ResultType>> execute_on_key(
+    boost::future<util::optional<ResultType>> execute_on_key(
       const K& key,
       const EntryProcessor& entry_processor)
     {
@@ -957,7 +957,7 @@ public:
      * @return Future from which the result of the operation can be retrieved.
      */
     template<typename K, typename ResultType, typename EntryProcessor>
-    boost::future<boost::optional<ResultType>> submit_to_key(
+    boost::future<util::optional<ResultType>> submit_to_key(
       const K& key,
       const EntryProcessor& entry_processor)
     {
@@ -979,7 +979,7 @@ public:
      * @param entryProcessor that will be applied
      */
     template<typename K, typename ResultType, typename EntryProcessor>
-    boost::future<std::unordered_map<K, boost::optional<ResultType>>>
+    boost::future<std::unordered_map<K, util::optional<ResultType>>>
     execute_on_keys(const std::unordered_set<K>& keys,
                     const EntryProcessor& entry_processor)
     {
@@ -1001,7 +1001,7 @@ public:
      * @param entryProcessor that will be applied
      */
     template<typename K, typename ResultType, typename EntryProcessor>
-    boost::future<std::unordered_map<K, boost::optional<ResultType>>>
+    boost::future<std::unordered_map<K, util::optional<ResultType>>>
     execute_on_entries(const EntryProcessor& entry_processor)
     {
         return to_object_map<K, ResultType>(
@@ -1027,7 +1027,7 @@ public:
              typename ResultType,
              typename EntryProcessor,
              typename P>
-    boost::future<std::unordered_map<K, boost::optional<ResultType>>>
+    boost::future<std::unordered_map<K, util::optional<ResultType>>>
     execute_on_entries(const EntryProcessor& entry_processor,
                        const P& predicate)
     {
@@ -1137,7 +1137,7 @@ protected:
 
     monitor::impl::LocalMapStatsImpl local_map_stats_;
 
-    virtual boost::future<boost::optional<serialization::pimpl::data>>
+    virtual boost::future<util::optional<serialization::pimpl::data>>
     get_internal(const serialization::pimpl::data& key_data)
     {
         return proxy::IMapImpl::get_data(key_data);
@@ -1149,7 +1149,7 @@ protected:
         return proxy::IMapImpl::contains_key(key_data);
     }
 
-    virtual boost::future<boost::optional<serialization::pimpl::data>>
+    virtual boost::future<util::optional<serialization::pimpl::data>>
     remove_internal(const serialization::pimpl::data& key_data)
     {
         return proxy::IMapImpl::remove_data(key_data);
@@ -1189,7 +1189,7 @@ protected:
         return proxy::IMapImpl::try_put(key_data, value_data, timeout);
     }
 
-    virtual boost::future<boost::optional<serialization::pimpl::data>>
+    virtual boost::future<util::optional<serialization::pimpl::data>>
     put_internal(const serialization::pimpl::data& key_data,
                  const serialization::pimpl::data& value_data,
                  std::chrono::milliseconds ttl)
@@ -1205,7 +1205,7 @@ protected:
         return proxy::IMapImpl::put_transient(key_data, value_data, ttl);
     }
 
-    virtual boost::future<boost::optional<serialization::pimpl::data>>
+    virtual boost::future<util::optional<serialization::pimpl::data>>
     put_if_absent_internal(const serialization::pimpl::data& key_data,
                            const serialization::pimpl::data& value_data,
                            std::chrono::milliseconds ttl)
@@ -1221,7 +1221,7 @@ protected:
         return proxy::IMapImpl::replace(key_data, value_data, new_value_data);
     }
 
-    virtual boost::future<boost::optional<serialization::pimpl::data>>
+    virtual boost::future<util::optional<serialization::pimpl::data>>
     replace_internal(const serialization::pimpl::data& key_data,
                      const serialization::pimpl::data& value_data)
     {
@@ -1249,14 +1249,14 @@ protected:
         return proxy::IMapImpl::get_all_data(partition_id, partition_keys);
     }
 
-    virtual boost::future<boost::optional<serialization::pimpl::data>>
+    virtual boost::future<util::optional<serialization::pimpl::data>>
     execute_on_key_internal(const serialization::pimpl::data& key_data,
                             const serialization::pimpl::data& processor)
     {
         return proxy::IMapImpl::execute_on_key_data(key_data, processor);
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>>
+    boost::future<util::optional<serialization::pimpl::data>>
     submit_to_key_internal(const serialization::pimpl::data& key_data,
                            const serialization::pimpl::data& processor)
     {
@@ -1288,12 +1288,12 @@ protected:
 
 private:
     template<typename K, typename V>
-    std::vector<std::pair<K, boost::optional<V>>> sort_and_get(
+    std::vector<std::pair<K, util::optional<V>>> sort_and_get(
       query::paging_predicate<K, V>& predicate,
       query::iteration_type iteration_type,
       std::vector<std::pair<K, V>> entries)
     {
-        std::vector<std::pair<K, boost::optional<V>>> optionalEntries;
+        std::vector<std::pair<K, util::optional<V>>> optionalEntries;
         optionalEntries.reserve(entries.size());
         for (auto&& pair : entries) {
             optionalEntries.emplace_back(pair.first,
@@ -1303,15 +1303,15 @@ private:
     }
 
     template<typename K, typename V>
-    std::vector<std::pair<K, boost::optional<V>>> sort_and_get(
+    std::vector<std::pair<K, util::optional<V>>> sort_and_get(
       query::paging_predicate<K, V>& predicate,
       query::iteration_type iteration_type,
-      std::vector<std::pair<K, boost::optional<V>>> entries)
+      std::vector<std::pair<K, util::optional<V>>> entries)
     {
         std::sort(entries.begin(),
                   entries.end(),
-                  [&](const std::pair<K, boost::optional<V>>& lhs,
-                      const std::pair<K, boost::optional<V>>& rhs) {
+                  [&](const std::pair<K, util::optional<V>>& lhs,
+                      const std::pair<K, util::optional<V>>& rhs) {
                       auto comparator = predicate.getComparator();
                       if (!comparator) {
                           switch (predicate.getIterationType()) {
@@ -1340,7 +1340,7 @@ private:
         std::pair<size_t, size_t> range =
           update_anchor<K, V>(entries, predicate, iteration_type);
 
-        std::vector<std::pair<K, boost::optional<V>>> result;
+        std::vector<std::pair<K, util::optional<V>>> result;
         for (size_t i = range.first; i < range.second; ++i) {
             auto entry = entries[i];
             result.push_back(std::make_pair(entry.first, entry.second));

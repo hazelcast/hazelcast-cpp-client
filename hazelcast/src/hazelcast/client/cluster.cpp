@@ -167,7 +167,7 @@ operator==(const member& lhs, const member& rhs)
 }
 
 endpoint::endpoint(boost::uuids::uuid uuid,
-                   boost::optional<address> socket_address)
+                   util::optional<address> socket_address)
   : uuid_(uuid)
   , socket_address_(std::move(socket_address))
 {}
@@ -178,7 +178,7 @@ endpoint::get_uuid() const
     return uuid_;
 }
 
-const boost::optional<address>&
+const util::optional<address>&
 endpoint::get_socket_address() const
 {
     return socket_address_;
@@ -224,7 +224,7 @@ membership_event::get_member() const
 }
 
 local_endpoint::local_endpoint(boost::uuids::uuid uuid,
-                               boost::optional<address> socket_address,
+                               util::optional<address> socket_address,
                                std::string name,
                                std::unordered_set<std::string> labels)
   : endpoint(uuid, std::move(socket_address))

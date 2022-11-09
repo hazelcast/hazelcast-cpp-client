@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "hazelcast/client/address.h"
+#include "hazelcast/util/Optional.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -34,7 +35,7 @@ namespace client {
 class HAZELCAST_API endpoint
 {
 public:
-    endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address);
+    endpoint(boost::uuids::uuid uuid, util::optional<address> socket_address);
 
     /**
      * Returns the UUID of this endpoint
@@ -48,11 +49,11 @@ public:
      *
      * @return the socket address for this endpoint
      */
-    const boost::optional<address>& get_socket_address() const;
+    const util::optional<address>& get_socket_address() const;
 
 private:
     boost::uuids::uuid uuid_;
-    boost::optional<address> socket_address_;
+    util::optional<address> socket_address_;
 };
 } // namespace client
 } // namespace hazelcast

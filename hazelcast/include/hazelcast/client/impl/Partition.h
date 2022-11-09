@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
-
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/util/export.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -51,7 +50,7 @@ public:
      *
      * @return the owner member of the partition
      */
-    virtual boost::optional<member> get_owner() const = 0;
+    virtual util::optional<member> get_owner() const = 0;
 
     virtual ~Partition() = default;
 };

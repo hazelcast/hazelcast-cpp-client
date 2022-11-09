@@ -130,9 +130,9 @@ public:
      * </ol>
      */
     std::shared_ptr<connection::Connection> connection_for_sql(
-      std::function<boost::optional<member>()>
+      std::function<util::optional<member>()>
         member_of_large_same_version_group,
-      std::function<boost::optional<member>(boost::uuids::uuid)>
+      std::function<util::optional<member>(boost::uuids::uuid)>
         get_cluster_member);
 
     boost::uuids::uuid get_client_uuid() const;
@@ -156,7 +156,7 @@ private:
         byte serialization_version;
         int32_t partition_count;
         boost::uuids::uuid cluster_id;
-        boost::optional<address> server_address;
+        util::optional<address> server_address;
         std::string server_version;
     };
 
@@ -243,7 +243,7 @@ private:
     const config::client_connection_strategy_config::reconnect_mode
       reconnect_mode_;
     const bool smart_routing_enabled_;
-    boost::optional<boost::asio::steady_timer> connect_to_members_timer_;
+    util::optional<boost::asio::steady_timer> connect_to_members_timer_;
     boost::uuids::uuid client_uuid_;
     boost::chrono::milliseconds authentication_timeout_;
     std::vector<std::string> labels_;

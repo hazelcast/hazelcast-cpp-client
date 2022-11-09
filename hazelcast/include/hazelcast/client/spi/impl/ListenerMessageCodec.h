@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/export.h"

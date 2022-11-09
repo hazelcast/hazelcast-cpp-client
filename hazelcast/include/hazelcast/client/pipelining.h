@@ -113,9 +113,9 @@ public:
      * @return the List of results.
      * @throws IException if something fails getting the results.
      */
-    std::vector<boost::optional<E>> results()
+    std::vector<util::optional<E>> results()
     {
-        std::vector<boost::optional<E>> result;
+        std::vector<util::optional<E>> result;
         result.reserve(futures_.size());
         auto result_futures = when_all(futures_.begin(), futures_.end());
         for (auto& f : result_futures.get()) {
@@ -133,7 +133,7 @@ public:
      * @param future the future to add.
      * @throws null_pointer if future is null.
      */
-    void add(boost::future<boost::optional<E>> future)
+    void add(boost::future<util::optional<E>> future)
     {
         down();
 
@@ -171,7 +171,7 @@ private:
     }
 
     int permits_;
-    std::vector<boost::shared_future<boost::optional<E>>> futures_;
+    std::vector<boost::shared_future<util::optional<E>>> futures_;
 };
 } // namespace client
 } // namespace hazelcast

@@ -866,7 +866,7 @@ sql_page_codec::decode_column_values(ClientMessage& msg,
     switch (column_type) {
         case sql::sql_column_type::varchar:
             return to_vector_of_any(
-              msg.get<std::vector<boost::optional<std::string>>>());
+              msg.get<std::vector<util::optional<std::string>>>());
         case sql::sql_column_type::boolean:
             return to_vector_of_any(
               builtin::list_cn_fixed_size_codec::decode<bool>(msg));
@@ -916,7 +916,7 @@ sql_page_codec::decode_column_values(ClientMessage& msg,
         case sql::sql_column_type::object:
             return to_vector_of_any(
               msg.get<std::vector<
-                boost::optional<serialization::pimpl::data>>>());
+                util::optional<serialization::pimpl::data>>>());
         default:
             throw exception::illegal_state(
               "ClientMessage::get<sql::sql_page>",

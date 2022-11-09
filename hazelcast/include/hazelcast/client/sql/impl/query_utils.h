@@ -39,7 +39,7 @@ public:
      * @param members list of all members
      * @return the chosen member or none, if no data member is found
      */
-    static boost::optional<member> member_of_same_larger_version_group(
+    static util::optional<member> member_of_same_larger_version_group(
       const std::vector<member>& members);
 };
 } // namespace impl

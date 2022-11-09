@@ -63,7 +63,7 @@ public:
         {}
 
         executor_promise(
-          boost::future<boost::optional<T>>& future,
+          boost::future<util::optional<T>>& future,
           boost::uuids::uuid uuid,
           int partition_id,
           boost::uuids::uuid member,
@@ -91,13 +91,13 @@ public:
             return false;
         }
 
-        boost::shared_future<boost::optional<T>> get_future()
+        boost::shared_future<util::optional<T>> get_future()
         {
             return shared_future_;
         }
 
     private:
-        boost::shared_future<boost::optional<T>> shared_future_;
+        boost::shared_future<util::optional<T>> shared_future_;
         boost::uuids::uuid uuid_;
         int partition_id_;
         boost::uuids::uuid member_uuid_;

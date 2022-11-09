@@ -46,7 +46,7 @@ public:
      * @see imap#get(keu)
      */
     template<typename K, typename V>
-    boost::future<boost::optional<V>> get(const K& key)
+    boost::future<util::optional<V>> get(const K& key)
     {
         return to_object<V>(get_data(to_data(key)));
     }
@@ -60,7 +60,7 @@ public:
      * @see imap#put(key, value)
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> put(const K& key, const V& value)
+    boost::future<util::optional<R>> put(const K& key, const V& value)
     {
         return to_object<R>(put_data(to_data(key), to_data(value)));
     }
@@ -88,7 +88,7 @@ public:
      * @see imap#putIfAbsent(key, value)
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> put_if_absent(const K& key,
+    boost::future<util::optional<R>> put_if_absent(const K& key,
                                                     const V& value)
     {
         return to_object<R>(put_if_absent_data(to_data(key), to_data(value)));
@@ -103,7 +103,7 @@ public:
      * @see imap#replace(key, value)
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> replace(const K& key, const V& value)
+    boost::future<util::optional<R>> replace(const K& key, const V& value)
     {
         return to_object<R>(replace_data(to_data(key), to_data(value)));
     }
@@ -134,7 +134,7 @@ public:
      * @see imap#remove(key)
      */
     template<typename K, typename V>
-    boost::future<boost::optional<V>> remove(const K& key)
+    boost::future<util::optional<V>> remove(const K& key)
     {
         return to_object<V>(remove_data(to_data(key)));
     }

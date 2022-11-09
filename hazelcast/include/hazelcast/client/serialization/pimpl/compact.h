@@ -212,7 +212,7 @@ public:
      * schema or the type of the field does not match with the one defined
      *in  the schema.
      */
-    boost::optional<std::string> read_string(const std::string& field_name);
+    util::optional<std::string> read_string(const std::string& field_name);
 
     /**
      * Reads an arbitrary precision and scale floating point number.
@@ -223,7 +223,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<big_decimal> read_decimal(const std::string& field_name);
+    util::optional<big_decimal> read_decimal(const std::string& field_name);
 
     /**
      * Reads a time consisting of hour, minute, second, and nano seconds.
@@ -234,7 +234,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<local_time> read_time(const std::string& field_name);
+    util::optional<local_time> read_time(const std::string& field_name);
 
     /**
      * Reads a date consisting of year, month, and day.
@@ -245,7 +245,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<local_date> read_date(const std::string& field_name);
+    util::optional<local_date> read_date(const std::string& field_name);
 
     /**
      * Reads a timestamp consisting of date and time.
@@ -256,7 +256,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<local_date_time> read_timestamp(
+    util::optional<local_date_time> read_timestamp(
       const std::string& field_name);
 
     /**
@@ -269,7 +269,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<offset_date_time> read_timestamp_with_timezone(
+    util::optional<offset_date_time> read_timestamp_with_timezone(
       const std::string& field_name);
 
     /**
@@ -282,7 +282,7 @@ public:
      * in the schema.
      */
     template<typename T>
-    boost::optional<T> read_compact(const std::string& field_name);
+    util::optional<T> read_compact(const std::string& field_name);
 
     /**
      * Reads an array of booleans.
@@ -293,7 +293,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<bool>> read_array_of_boolean(
+    util::optional<std::vector<bool>> read_array_of_boolean(
       const std::string& field_name);
 
     /**
@@ -305,7 +305,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<int8_t>> read_array_of_int8(
+    util::optional<std::vector<int8_t>> read_array_of_int8(
       const std::string& field_name);
 
     /**
@@ -317,7 +317,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<int16_t>> read_array_of_int16(
+    util::optional<std::vector<int16_t>> read_array_of_int16(
       const std::string& field_name);
 
     /**
@@ -329,7 +329,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<int32_t>> read_array_of_int32(
+    util::optional<std::vector<int32_t>> read_array_of_int32(
       const std::string& field_name);
 
     /**
@@ -341,7 +341,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<int64_t>> read_array_of_int64(
+    util::optional<std::vector<int64_t>> read_array_of_int64(
       const std::string& field_name);
 
     /**
@@ -353,7 +353,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<float>> read_array_of_float32(
+    util::optional<std::vector<float>> read_array_of_float32(
       const std::string& field_name);
 
     /**
@@ -365,7 +365,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<double>> read_array_of_float64(
+    util::optional<std::vector<double>> read_array_of_float64(
       const std::string& field_name);
 
     /**
@@ -377,7 +377,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<std::string>>>
+    util::optional<std::vector<util::optional<std::string>>>
     read_array_of_string(const std::string& field_name);
 
     /**
@@ -389,7 +389,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<big_decimal>>>
+    util::optional<std::vector<util::optional<big_decimal>>>
     read_array_of_decimal(const std::string& field_name);
 
     /**
@@ -402,7 +402,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<local_time>>>
+    util::optional<std::vector<util::optional<local_time>>>
     read_array_of_time(const std::string& field_name);
 
     /**
@@ -414,7 +414,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<local_date>>>
+    util::optional<std::vector<util::optional<local_date>>>
     read_array_of_date(const std::string& field_name);
 
     /**
@@ -426,7 +426,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<local_date_time>>>
+    util::optional<std::vector<util::optional<local_date_time>>>
     read_array_of_timestamp(const std::string& field_name);
 
     /**
@@ -439,7 +439,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<offset_date_time>>>
+    util::optional<std::vector<util::optional<offset_date_time>>>
     read_array_of_timestamp_with_timezone(const std::string& field_name);
 
     /**
@@ -452,7 +452,7 @@ public:
      * in the schema.
      */
     template<typename T>
-    boost::optional<std::vector<boost::optional<T>>> read_array_of_compact(
+    util::optional<std::vector<util::optional<T>>> read_array_of_compact(
       const std::string& field_name);
 
     /**
@@ -464,7 +464,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<bool> read_nullable_boolean(const std::string& field_name);
+    util::optional<bool> read_nullable_boolean(const std::string& field_name);
 
     /**
      * Reads a nullable 8-bit two's complement signed integer.
@@ -475,7 +475,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<int8_t> read_nullable_int8(const std::string& field_name);
+    util::optional<int8_t> read_nullable_int8(const std::string& field_name);
 
     /**
      * Reads a nullable 16-bit two's complement signed integer.
@@ -486,7 +486,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<int16_t> read_nullable_int16(const std::string& field_name);
+    util::optional<int16_t> read_nullable_int16(const std::string& field_name);
 
     /**
      * Reads a nullable 32-bit two's complement signed integer.
@@ -497,7 +497,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<int32_t> read_nullable_int32(const std::string& field_name);
+    util::optional<int32_t> read_nullable_int32(const std::string& field_name);
 
     /**
      * Reads a nullable 64-bit two's complement signed integer.
@@ -508,7 +508,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<int64_t> read_nullable_int64(const std::string& field_name);
+    util::optional<int64_t> read_nullable_int64(const std::string& field_name);
 
     /**
      * Reads a nullable 32-bit IEEE 754 floating point number.
@@ -519,7 +519,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<float> read_nullable_float32(const std::string& field_name);
+    util::optional<float> read_nullable_float32(const std::string& field_name);
 
     /**
      * Reads a nullable 64-bit IEEE 754 floating point number.
@@ -530,7 +530,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<double> read_nullable_float64(
+    util::optional<double> read_nullable_float64(
       const std::string& field_name);
 
     /**
@@ -542,7 +542,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<bool>>>
+    util::optional<std::vector<util::optional<bool>>>
     read_array_of_nullable_boolean(const std::string& field_name);
 
     /**
@@ -555,7 +555,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<int8_t>>>
+    util::optional<std::vector<util::optional<int8_t>>>
     read_array_of_nullable_int8(const std::string& field_name);
 
     /**
@@ -568,7 +568,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<int16_t>>>
+    util::optional<std::vector<util::optional<int16_t>>>
     read_array_of_nullable_int16(const std::string& field_name);
 
     /**
@@ -581,7 +581,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<int32_t>>>
+    util::optional<std::vector<util::optional<int32_t>>>
     read_array_of_nullable_int32(const std::string& field_name);
 
     /**
@@ -594,7 +594,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<int64_t>>>
+    util::optional<std::vector<util::optional<int64_t>>>
     read_array_of_nullable_int64(const std::string& field_name);
 
     /**
@@ -607,7 +607,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<float>>>
+    util::optional<std::vector<util::optional<float>>>
     read_array_of_nullable_float32(const std::string& field_name);
 
     /**
@@ -620,7 +620,7 @@ public:
      * schema or the type of the field does not match with the one defined
      * in the schema.
      */
-    boost::optional<std::vector<boost::optional<double>>>
+    util::optional<std::vector<util::optional<double>>>
     read_array_of_nullable_float64(const std::string& field_name);
 
 private:
@@ -646,10 +646,10 @@ private:
       const std::string& field_name,
       enum pimpl::field_kind field_kind) const;
     template<typename T>
-    boost::optional<T> read_variable_size(
+    util::optional<T> read_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
-    boost::optional<T> read_variable_size(const std::string& field_name,
+    util::optional<T> read_variable_size(const std::string& field_name,
                                           enum pimpl::field_kind field_kind);
     template<typename T>
     T read_variable_size_as_non_null(
@@ -678,25 +678,25 @@ private:
                      typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<double>,
                      typename std::remove_cv<T>::type>::value ||
-        std::is_same<std::vector<boost::optional<std::string>>,
+        std::is_same<std::vector<util::optional<std::string>>,
                      typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type
+      typename util::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
       std::is_base_of<compact_serializer, hz_serializer<T>>::value,
-      typename boost::optional<T>>::type
+      typename util::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
       std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type
+      typename util::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_same<std::vector<boost::optional<bool>>,
+      std::is_same<std::vector<util::optional<bool>>,
                    typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type
+      typename util::optional<T>>::type
     read();
     template<typename T>
     typename std::enable_if<
@@ -706,20 +706,20 @@ private:
         std::is_same<local_date_time,
                      typename std::remove_cv<T>::type>::value ||
         std::is_same<offset_date_time, typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type
+      typename util::optional<T>>::type
     read();
     template<typename T>
-    boost::optional<T> read_array_of_primitive(
+    util::optional<T> read_array_of_primitive(
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
       enum pimpl::field_kind nullable_field_kind,
       const std::string& method_suffix);
     template<typename T>
-    boost::optional<std::vector<boost::optional<T>>>
+    util::optional<std::vector<util::optional<T>>>
     read_array_of_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
-    boost::optional<T> read_nullable_array_as_primitive_array(
+    util::optional<T> read_nullable_array_as_primitive_array(
       const pimpl::field_descriptor& field_descriptor,
       const std::string& field_name,
       const std::string& method_suffix);
@@ -729,17 +729,17 @@ private:
     static const offset_func SHORT_OFFSET_READER;
     static const offset_func INT_OFFSET_READER;
     template<typename T>
-    boost::optional<T> read_nullable_primitive(
+    util::optional<T> read_nullable_primitive(
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
       enum pimpl::field_kind nullable_field_kind);
     template<typename T>
-    boost::optional<std::vector<boost::optional<T>>> read_array_of_nullable(
+    util::optional<std::vector<util::optional<T>>> read_array_of_nullable(
       const std::string& field_name,
       enum pimpl::field_kind field_kind,
       enum pimpl::field_kind nullable_field_kind);
     template<typename T>
-    boost::optional<std::vector<boost::optional<T>>>
+    util::optional<std::vector<util::optional<T>>>
     read_primitive_array_as_nullable_array(
       const pimpl::field_descriptor& field_descriptor);
     static std::function<
@@ -850,7 +850,7 @@ public:
      * @param value to be written.
      */
     void write_string(const std::string& field_name,
-                      const boost::optional<std::string>& value);
+                      const util::optional<std::string>& value);
 
     /**
      * Writes an arbitrary precision and scale floating point number.
@@ -859,7 +859,7 @@ public:
      * @param value to be written.
      */
     void write_decimal(const std::string& field_name,
-                       const boost::optional<big_decimal>& value);
+                       const util::optional<big_decimal>& value);
 
     /**
      *  Writes a time consisting of hour, minute, second, and nanoseconds.
@@ -868,7 +868,7 @@ public:
      *  @param value to be written.
      */
     void write_time(const std::string& field_name,
-                    const boost::optional<local_time>& value);
+                    const util::optional<local_time>& value);
 
     /**
      * Writes a date consisting of year, month, and day.
@@ -877,7 +877,7 @@ public:
      * @param value to be written.
      */
     void write_date(const std::string& field_name,
-                    const boost::optional<local_date>& value);
+                    const util::optional<local_date>& value);
 
     /**
      * Writes a timestamp consisting of date and time.
@@ -886,7 +886,7 @@ public:
      * @param value to be written.
      */
     void write_timestamp(const std::string& field_name,
-                         const boost::optional<local_date_time>& value);
+                         const util::optional<local_date_time>& value);
 
     /**
      * Writes a timestamp with timezone consisting of date, time and timezone
@@ -897,7 +897,7 @@ public:
      */
     void write_timestamp_with_timezone(
       const std::string& field_name,
-      const boost::optional<offset_date_time>& value);
+      const util::optional<offset_date_time>& value);
 
     /**
      * Writes a nested compact object.
@@ -907,7 +907,7 @@ public:
      */
     template<typename T>
     void write_compact(const std::string& field_name,
-                       const boost::optional<T>& value);
+                       const util::optional<T>& value);
 
     /**
      * Writes an array of booleans.
@@ -917,7 +917,7 @@ public:
      */
     void write_array_of_boolean(
       const std::string& field_name,
-      const boost::optional<std::vector<bool>>& value);
+      const util::optional<std::vector<bool>>& value);
 
     /**
      * Writes an array of 8-bit two's complement signed integers.
@@ -926,7 +926,7 @@ public:
      * @param value to be written.
      */
     void write_array_of_int8(const std::string& field_name,
-                             const boost::optional<std::vector<int8_t>>& value);
+                             const util::optional<std::vector<int8_t>>& value);
 
     /**
      * Writes an array of 16-bit two's complement signed integers.
@@ -936,7 +936,7 @@ public:
      */
     void write_array_of_int16(
       const std::string& field_name,
-      const boost::optional<std::vector<int16_t>>& value);
+      const util::optional<std::vector<int16_t>>& value);
 
     /**
      * Writes an array of 32-bit two's complement signed integers.
@@ -946,7 +946,7 @@ public:
      */
     void write_array_of_int32(
       const std::string& field_name,
-      const boost::optional<std::vector<int32_t>>& value);
+      const util::optional<std::vector<int32_t>>& value);
 
     /**
      * Writes an array of 64-bit two's complement signed integers.
@@ -956,7 +956,7 @@ public:
      */
     void write_array_of_int64(
       const std::string& field_name,
-      const boost::optional<std::vector<int64_t>>& value);
+      const util::optional<std::vector<int64_t>>& value);
 
     /**
      * Writes an array of 32-bit IEEE 754 floating point numbers.
@@ -966,7 +966,7 @@ public:
      */
     void write_array_of_float32(
       const std::string& field_name,
-      const boost::optional<std::vector<float>>& value);
+      const util::optional<std::vector<float>>& value);
 
     /**
      * Writes an array of 64-bit IEEE 754 floating point numbers.
@@ -976,7 +976,7 @@ public:
      */
     void write_array_of_float64(
       const std::string& field_name,
-      const boost::optional<std::vector<double>>& value);
+      const util::optional<std::vector<double>>& value);
 
     /**
      * Writes an array of UTF-8 encoded strings.
@@ -986,7 +986,7 @@ public:
      */
     void write_array_of_string(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<std::string>>>& value);
+      const util::optional<std::vector<util::optional<std::string>>>& value);
 
     /**
      * Writes an array of arbitrary precision and scale floating point numbers.
@@ -996,7 +996,7 @@ public:
      */
     void write_array_of_decimal(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<big_decimal>>>& value);
+      const util::optional<std::vector<util::optional<big_decimal>>>& value);
 
     /**
      * Writes an array of times consisting of hour, minute, second, and nano
@@ -1007,7 +1007,7 @@ public:
      */
     void write_array_of_time(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<local_time>>>& value);
+      const util::optional<std::vector<util::optional<local_time>>>& value);
 
     /**
      * Writes an array of dates consisting of year, month, and day.
@@ -1017,7 +1017,7 @@ public:
      */
     void write_array_of_date(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<local_date>>>& value);
+      const util::optional<std::vector<util::optional<local_date>>>& value);
 
     /**
      * Writes an array of timestamps consisting of date and time.
@@ -1027,7 +1027,7 @@ public:
      */
     void write_array_of_timestamp(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<local_date_time>>>&
+      const util::optional<std::vector<util::optional<local_date_time>>>&
         value);
 
     /**
@@ -1039,7 +1039,7 @@ public:
      */
     void write_array_of_timestamp_with_timezone(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<offset_date_time>>>&
+      const util::optional<std::vector<util::optional<offset_date_time>>>&
         value);
 
     /**
@@ -1051,7 +1051,7 @@ public:
     template<typename T>
     void write_array_of_compact(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<T>>>& value);
+      const util::optional<std::vector<util::optional<T>>>& value);
 
     /**
      * Writes a nullable boolean.
@@ -1060,7 +1060,7 @@ public:
      * @param value to be written.
      */
     void write_nullable_boolean(const std::string& field_name,
-                                const boost::optional<bool>& value);
+                                const util::optional<bool>& value);
 
     /**
      * Writes a nullable 8-bit two's complement signed integer.
@@ -1069,7 +1069,7 @@ public:
      * @param value to be written.
      */
     void write_nullable_int8(const std::string& field_name,
-                             const boost::optional<int8_t>& value);
+                             const util::optional<int8_t>& value);
 
     /**
      * Writes a nullable 16-bit two's complement signed integer.
@@ -1078,7 +1078,7 @@ public:
      * @param value to be written.
      */
     void write_nullable_int16(const std::string& field_name,
-                              const boost::optional<int16_t>& value);
+                              const util::optional<int16_t>& value);
 
     /**
      * Writes a nullable 32-bit two's complement signed integer.
@@ -1087,7 +1087,7 @@ public:
      * @param value to be written.
      */
     void write_nullable_int32(const std::string& field_name,
-                              const boost::optional<int32_t>& value);
+                              const util::optional<int32_t>& value);
 
     /**
      * Writes a nullable 64-bit two's complement signed integer.
@@ -1096,7 +1096,7 @@ public:
      * @param value to be written.
      */
     void write_nullable_int64(const std::string& field_name,
-                              const boost::optional<int64_t>& value);
+                              const util::optional<int64_t>& value);
 
     /**
      * Writes a nullable 32-bit IEEE 754 floating point number.
@@ -1105,7 +1105,7 @@ public:
      * @param value to be written.
      */
     void write_nullable_float32(const std::string& field_name,
-                                const boost::optional<float>& value);
+                                const util::optional<float>& value);
 
     /**
      * Writes a nullable 64-bit IEEE 754 floating point number.
@@ -1114,7 +1114,7 @@ public:
      * @param value to be written.
      */
     void write_nullable_float64(const std::string& field_name,
-                                const boost::optional<double>& value);
+                                const util::optional<double>& value);
 
     /**
      * Writes a nullable array of nullable booleans.
@@ -1124,7 +1124,7 @@ public:
      */
     void write_array_of_nullable_boolean(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<bool>>>& value);
+      const util::optional<std::vector<util::optional<bool>>>& value);
 
     /**
      * Writes a nullable array of nullable 8-bit two's complement signed
@@ -1135,7 +1135,7 @@ public:
      */
     void write_array_of_nullable_int8(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int8_t>>>& value);
+      const util::optional<std::vector<util::optional<int8_t>>>& value);
 
     /**
      * Writes a nullable array of nullable 16-bit two's complement signed
@@ -1146,7 +1146,7 @@ public:
      */
     void write_array_of_nullable_int16(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int16_t>>>& value);
+      const util::optional<std::vector<util::optional<int16_t>>>& value);
 
     /**
      * Writes a nullable array of nullable 32-bit two's complement signed
@@ -1157,7 +1157,7 @@ public:
      */
     void write_array_of_nullable_int32(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int32_t>>>& value);
+      const util::optional<std::vector<util::optional<int32_t>>>& value);
 
     /**
      * Writes a nullable array of nullable 64-bit two's complement signed
@@ -1168,7 +1168,7 @@ public:
      */
     void write_array_of_nullable_int64(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int64_t>>>& value);
+      const util::optional<std::vector<util::optional<int64_t>>>& value);
 
     /**
      * Writes a nullable array of nullable 32-bit IEEE 754 floating point
@@ -1179,7 +1179,7 @@ public:
      */
     void write_array_of_nullable_float32(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<float>>>& value);
+      const util::optional<std::vector<util::optional<float>>>& value);
 
     /**
      * Writes a nullable array of nullable 64-bit IEEE 754 floating point
@@ -1190,7 +1190,7 @@ public:
      */
     void write_array_of_nullable_float64(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<double>>>& value);
+      const util::optional<std::vector<util::optional<double>>>& value);
 
 private:
     friend compact_writer pimpl::create_compact_writer(
@@ -1239,100 +1239,100 @@ public:
     void write_float32(const std::string& field_name, float value);
     void write_float64(const std::string& field_name, double value);
     void write_string(const std::string& field_name,
-                      const boost::optional<std::string>& value);
+                      const util::optional<std::string>& value);
     void write_decimal(const std::string& field_name,
-                       const boost::optional<big_decimal>& value);
+                       const util::optional<big_decimal>& value);
     void write_time(const std::string& field_name,
-                    const boost::optional<local_time>& value);
+                    const util::optional<local_time>& value);
     void write_date(const std::string& field_name,
-                    const boost::optional<local_date>& value);
+                    const util::optional<local_date>& value);
     void write_timestamp(const std::string& field_name,
-                         const boost::optional<local_date_time>& value);
+                         const util::optional<local_date_time>& value);
     void write_timestamp_with_timezone(
       const std::string& field_name,
-      const boost::optional<offset_date_time>& value);
+      const util::optional<offset_date_time>& value);
     template<typename T>
     void write_compact(const std::string& field_name,
-                       const boost::optional<T>& value);
+                       const util::optional<T>& value);
     void write_array_of_boolean(
       const std::string& field_name,
-      const boost::optional<std::vector<bool>>& value);
+      const util::optional<std::vector<bool>>& value);
     void write_array_of_int8(const std::string& field_name,
-                             const boost::optional<std::vector<int8_t>>& value);
+                             const util::optional<std::vector<int8_t>>& value);
     void write_array_of_int16(
       const std::string& field_name,
-      const boost::optional<std::vector<int16_t>>& value);
+      const util::optional<std::vector<int16_t>>& value);
     void write_array_of_int32(
       const std::string& field_name,
-      const boost::optional<std::vector<int32_t>>& value);
+      const util::optional<std::vector<int32_t>>& value);
     void write_array_of_int64(
       const std::string& field_name,
-      const boost::optional<std::vector<int64_t>>& value);
+      const util::optional<std::vector<int64_t>>& value);
     void write_array_of_float32(
       const std::string& field_name,
-      const boost::optional<std::vector<float>>& value);
+      const util::optional<std::vector<float>>& value);
     void write_array_of_float64(
       const std::string& field_name,
-      const boost::optional<std::vector<double>>& value);
+      const util::optional<std::vector<double>>& value);
     void write_array_of_string(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<std::string>>>& value);
+      const util::optional<std::vector<util::optional<std::string>>>& value);
     void write_array_of_decimal(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<big_decimal>>>& value);
+      const util::optional<std::vector<util::optional<big_decimal>>>& value);
     void write_array_of_time(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<local_time>>>& value);
+      const util::optional<std::vector<util::optional<local_time>>>& value);
     void write_array_of_date(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<local_date>>>& value);
+      const util::optional<std::vector<util::optional<local_date>>>& value);
     void write_array_of_timestamp(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<local_date_time>>>&
+      const util::optional<std::vector<util::optional<local_date_time>>>&
         value);
     void write_array_of_timestamp_with_timezone(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<offset_date_time>>>&
+      const util::optional<std::vector<util::optional<offset_date_time>>>&
         value);
     template<typename T>
     void write_array_of_compact(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<T>>>& value);
+      const util::optional<std::vector<util::optional<T>>>& value);
     void write_nullable_boolean(const std::string& field_name,
-                                const boost::optional<bool>& value);
+                                const util::optional<bool>& value);
     void write_nullable_int8(const std::string& field_name,
-                             const boost::optional<int8_t>& value);
+                             const util::optional<int8_t>& value);
     void write_nullable_int16(const std::string& field_name,
-                              const boost::optional<int16_t>& value);
+                              const util::optional<int16_t>& value);
     void write_nullable_int32(const std::string& field_name,
-                              const boost::optional<int32_t>& value);
+                              const util::optional<int32_t>& value);
     void write_nullable_int64(const std::string& field_name,
-                              const boost::optional<int64_t>& value);
+                              const util::optional<int64_t>& value);
     void write_nullable_float32(const std::string& field_name,
-                                const boost::optional<float>& value);
+                                const util::optional<float>& value);
     void write_nullable_float64(const std::string& field_name,
-                                const boost::optional<double>& value);
+                                const util::optional<double>& value);
     void write_array_of_nullable_boolean(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<bool>>>& value);
+      const util::optional<std::vector<util::optional<bool>>>& value);
     void write_array_of_nullable_int8(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int8_t>>>& value);
+      const util::optional<std::vector<util::optional<int8_t>>>& value);
     void write_array_of_nullable_int16(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int16_t>>>& value);
+      const util::optional<std::vector<util::optional<int16_t>>>& value);
     void write_array_of_nullable_int32(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int32_t>>>& value);
+      const util::optional<std::vector<util::optional<int32_t>>>& value);
     void write_array_of_nullable_int64(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<int64_t>>>& value);
+      const util::optional<std::vector<util::optional<int64_t>>>& value);
     void write_array_of_nullable_float32(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<float>>>& value);
+      const util::optional<std::vector<util::optional<float>>>& value);
     void write_array_of_nullable_float64(
       const std::string& field_name,
-      const boost::optional<std::vector<boost::optional<double>>>& value);
+      const util::optional<std::vector<util::optional<double>>>& value);
     void end();
 
 private:
@@ -1346,7 +1346,7 @@ private:
     template<typename T>
     void write_variable_size_field(const std::string& field_name,
                                    enum field_kind field_kind,
-                                   const boost::optional<T>& value);
+                                   const util::optional<T>& value);
 
     template<typename T>
     typename std::enable_if<
@@ -1392,7 +1392,7 @@ private:
     void write_array_of_variable_size(
       const std::string& field_name,
       enum field_kind field_kind,
-      const boost::optional<std::vector<boost::optional<T>>>& value);
+      const util::optional<std::vector<util::optional<T>>>& value);
 
     void set_position(const std::string& field_name,
                       enum field_kind field_kind);

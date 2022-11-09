@@ -186,14 +186,14 @@ protected:
         return invoke_and_get_future<int64_t>(request, partition_id_);
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>> read_one_data(
+    boost::future<util::optional<serialization::pimpl::data>> read_one_data(
       int64_t sequence)
     {
         check_sequence(sequence);
         auto request =
           protocol::codec::ringbuffer_readone_encode(get_name(), sequence);
         return invoke_and_get_future<
-          boost::optional<serialization::pimpl::data>>(request, partition_id_);
+          util::optional<serialization::pimpl::data>>(request, partition_id_);
     }
 
     boost::future<int64_t> add_all_data(

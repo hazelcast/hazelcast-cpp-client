@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
+#include <hazelcast/util/Optional.h>
 
 #include "hazelcast/util/export.h"
 
@@ -47,7 +47,7 @@ public:
      *
      * @param response the result of the successful execution
      */
-    virtual void on_response(const boost::optional<V>& response) = 0;
+    virtual void on_response(const util::optional<V>& response) = 0;
 
     /**
      * Called when an execution is completed with an error.

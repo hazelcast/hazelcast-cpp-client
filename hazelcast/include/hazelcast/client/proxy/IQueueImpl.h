@@ -83,7 +83,7 @@ protected:
 
     boost::future<void> put(const serialization::pimpl::data& element);
 
-    boost::future<boost::optional<serialization::pimpl::data>> poll_data(
+    boost::future<util::optional<serialization::pimpl::data>> poll_data(
       std::chrono::milliseconds timeout);
 
     boost::future<bool> remove(const serialization::pimpl::data& element);
@@ -95,9 +95,9 @@ protected:
 
     boost::future<std::vector<serialization::pimpl::data>> drain_to_data();
 
-    boost::future<boost::optional<serialization::pimpl::data>> take_data();
+    boost::future<util::optional<serialization::pimpl::data>> take_data();
 
-    boost::future<boost::optional<serialization::pimpl::data>> peek_data();
+    boost::future<util::optional<serialization::pimpl::data>> peek_data();
 
     boost::future<std::vector<serialization::pimpl::data>> to_array_data();
 

@@ -339,13 +339,13 @@ TransactionalMapImpl::contains_key_data(const serialization::pimpl::data& key)
     return invoke_and_get_future<bool>(request);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 TransactionalMapImpl::get_data(const serialization::pimpl::data& key)
 {
     auto request = protocol::codec::transactionalmap_get_encode(
       get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request);
 }
 
@@ -367,7 +367,7 @@ TransactionalMapImpl::is_empty()
     return invoke_and_get_future<bool>(request);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 TransactionalMapImpl::put_data(const serialization::pimpl::data& key,
                                const serialization::pimpl::data& value)
 {
@@ -381,7 +381,7 @@ TransactionalMapImpl::put_data(const serialization::pimpl::data& key,
       std::chrono::duration_cast<std::chrono::milliseconds>(get_timeout())
         .count());
 
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request);
 }
 
@@ -399,7 +399,7 @@ TransactionalMapImpl::set_data(const serialization::pimpl::data& key,
     return to_void_future(invoke(request));
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 TransactionalMapImpl::put_if_absent_data(
   const serialization::pimpl::data& key,
   const serialization::pimpl::data& value)
@@ -411,11 +411,11 @@ TransactionalMapImpl::put_if_absent_data(
       key,
       value);
 
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 TransactionalMapImpl::replace_data(const serialization::pimpl::data& key,
                                    const serialization::pimpl::data& value)
 {
@@ -426,7 +426,7 @@ TransactionalMapImpl::replace_data(const serialization::pimpl::data& key,
       key,
       value);
 
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request);
 }
 
@@ -446,13 +446,13 @@ TransactionalMapImpl::replace_data(const serialization::pimpl::data& key,
     return invoke_and_get_future<bool>(request);
 }
 
-boost::future<boost::optional<serialization::pimpl::data>>
+boost::future<util::optional<serialization::pimpl::data>>
 TransactionalMapImpl::remove_data(const serialization::pimpl::data& key)
 {
     auto request = protocol::codec::transactionalmap_remove_encode(
       get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-    return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
+    return invoke_and_get_future<util::optional<serialization::pimpl::data>>(
       request);
 }
 

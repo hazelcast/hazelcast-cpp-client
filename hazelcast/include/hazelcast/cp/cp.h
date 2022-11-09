@@ -230,7 +230,7 @@ public:
      * @return the result of the function application
      */
     template<typename F, typename R>
-    boost::future<boost::optional<R>> apply(const F& function)
+    boost::future<util::optional<R>> apply(const F& function)
     {
         auto f = to_data(function);
         return to_object<R>(apply_data(f));
@@ -257,7 +257,7 @@ private:
       client::serialization::pimpl::data& function_data,
       alter_result_type result_type);
 
-    boost::future<boost::optional<client::serialization::pimpl::data>>
+    boost::future<util::optional<client::serialization::pimpl::data>>
     apply_data(client::serialization::pimpl::data& function_data);
 };
 
@@ -273,13 +273,13 @@ public:
                      const std::string& object_name);
 
     template<typename T>
-    boost::future<boost::optional<typename std::remove_pointer<T>::type>> get()
+    boost::future<util::optional<typename std::remove_pointer<T>::type>> get()
     {
         return to_object<typename std::remove_pointer<T>::type>(get_data());
     }
 
     template<typename T>
-    boost::future<boost::optional<typename std::remove_pointer<T>::type>> set(
+    boost::future<util::optional<typename std::remove_pointer<T>::type>> set(
       T new_value)
     {
         return to_object<typename std::remove_pointer<T>::type>(
@@ -287,7 +287,7 @@ public:
     }
 
     template<typename T>
-    boost::future<boost::optional<typename std::remove_pointer<T>::type>>
+    boost::future<util::optional<typename std::remove_pointer<T>::type>>
     get_and_set(T new_value)
     {
         return to_object<typename std::remove_pointer<T>::type>(
@@ -321,7 +321,7 @@ public:
     }
 
     template<typename T, typename F>
-    boost::future<boost::optional<typename std::remove_pointer<T>::type>>
+    boost::future<util::optional<typename std::remove_pointer<T>::type>>
     alter_and_get(const F& function)
     {
         return to_object<typename std::remove_pointer<T>::type>(
@@ -329,7 +329,7 @@ public:
     }
 
     template<typename T, typename F>
-    boost::future<boost::optional<typename std::remove_pointer<T>::type>>
+    boost::future<util::optional<typename std::remove_pointer<T>::type>>
     get_and_alter(const F& function)
     {
         return to_object<typename std::remove_pointer<T>::type>(
@@ -337,7 +337,7 @@ public:
     }
 
     template<typename R, typename F>
-    boost::future<boost::optional<R>> apply(const F& function)
+    boost::future<util::optional<R>> apply(const F& function)
     {
         return to_object<R>(apply_data(to_data(function)));
     }
@@ -352,13 +352,13 @@ private:
         NEW
     };
 
-    boost::future<boost::optional<client::serialization::pimpl::data>>
+    boost::future<util::optional<client::serialization::pimpl::data>>
     get_data();
 
-    boost::future<boost::optional<client::serialization::pimpl::data>> set_data(
+    boost::future<util::optional<client::serialization::pimpl::data>> set_data(
       const client::serialization::pimpl::data& new_value_data);
 
-    boost::future<boost::optional<client::serialization::pimpl::data>>
+    boost::future<util::optional<client::serialization::pimpl::data>>
     get_and_set_data(const client::serialization::pimpl::data& new_value_data);
 
     boost::future<bool> compare_and_set_data(
@@ -371,16 +371,16 @@ private:
     boost::future<void> alter_data(
       const client::serialization::pimpl::data& function_data);
 
-    boost::future<boost::optional<client::serialization::pimpl::data>>
+    boost::future<util::optional<client::serialization::pimpl::data>>
     alter_and_get_data(const client::serialization::pimpl::data& function_data);
 
-    boost::future<boost::optional<client::serialization::pimpl::data>>
+    boost::future<util::optional<client::serialization::pimpl::data>>
     get_and_alter_data(const client::serialization::pimpl::data& function_data);
 
-    boost::future<boost::optional<client::serialization::pimpl::data>>
+    boost::future<util::optional<client::serialization::pimpl::data>>
     apply_data(const client::serialization::pimpl::data& function_data);
 
-    boost::future<boost::optional<client::serialization::pimpl::data>>
+    boost::future<util::optional<client::serialization::pimpl::data>>
     invoke_apply(const client::serialization::pimpl::data function_data,
                  return_value_type return_type,
                  bool alter);

@@ -38,7 +38,7 @@ public:
 
     std::vector<address> load_addresses() override;
 
-    boost::optional<address> translate(const address& addr) override;
+    util::optional<address> translate(const address& addr) override;
 
     bool is_default_provider() override;
 

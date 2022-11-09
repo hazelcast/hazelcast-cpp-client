@@ -138,7 +138,7 @@ protected:
         return imap::contains_key_internal(*key);
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>> get_internal(
+    boost::future<util::optional<serialization::pimpl::data>> get_internal(
       const serialization::pimpl::data& key_data) override
     {
         auto key = std::make_shared<serialization::pimpl::data>(key_data);
@@ -146,7 +146,7 @@ protected:
         if (cached) {
             if (internal::nearcache::NearCache<K, V>::NULL_OBJECT == cached) {
                 return boost::make_ready_future(
-                  boost::optional<serialization::pimpl::data>());
+                  util::optional<serialization::pimpl::data>());
             }
             return boost::make_ready_future(boost::make_optional(*cached));
         }
@@ -158,7 +158,7 @@ protected:
             if (marked) {
                 return future.then(
                   boost::launch::sync,
-                  [=](boost::future<boost::optional<serialization::pimpl::data>>
+                  [=](boost::future<util::optional<serialization::pimpl::data>>
                         f) {
                       auto data = f.get();
                       auto cachedValue =
@@ -190,7 +190,7 @@ protected:
         }
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>> remove_internal(
+    boost::future<util::optional<serialization::pimpl::data>> remove_internal(
       const serialization::pimpl::data& key_data) override
     {
         try {
@@ -259,7 +259,7 @@ protected:
         }
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>> put_internal(
+    boost::future<util::optional<serialization::pimpl::data>> put_internal(
       const serialization::pimpl::data& key_data,
       const serialization::pimpl::data& value_data,
       std::chrono::milliseconds ttl) override
@@ -290,7 +290,7 @@ protected:
         }
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>>
+    boost::future<util::optional<serialization::pimpl::data>>
     put_if_absent_internal(const serialization::pimpl::data& key_data,
                            const serialization::pimpl::data& value_data,
                            std::chrono::milliseconds ttl) override
@@ -322,7 +322,7 @@ protected:
         }
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>> replace_internal(
+    boost::future<util::optional<serialization::pimpl::data>> replace_internal(
       const serialization::pimpl::data& key_data,
       const serialization::pimpl::data& value_data) override
     {
@@ -427,7 +427,7 @@ protected:
         }
     }
 
-    boost::future<boost::optional<serialization::pimpl::data>>
+    boost::future<util::optional<serialization::pimpl::data>>
     execute_on_key_internal(
       const serialization::pimpl::data& key_data,
       const serialization::pimpl::data& processor) override
@@ -517,7 +517,7 @@ private:
         void on_listener_register() override { near_cache_->clear(); }
 
         void handle_imapinvalidation(
-          const boost::optional<serialization::pimpl::data>& key,
+          const util::optional<serialization::pimpl::data>& key,
           boost::uuids::uuid source_uuid,
           boost::uuids::uuid partition_uuid,
           int64_t sequence) override

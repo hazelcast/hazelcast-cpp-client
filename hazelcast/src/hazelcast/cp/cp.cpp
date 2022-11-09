@@ -293,13 +293,13 @@ atomic_long::alter_data(client::serialization::pimpl::data& function_data,
     return invoke_and_get_future<int64_t>(request);
 }
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_long::apply_data(client::serialization::pimpl::data& function_data)
 {
     auto request =
       atomiclong_apply_encode(group_id_, object_name_, function_data);
     return invoke_and_get_future<
-      boost::optional<client::serialization::pimpl::data>>(request);
+      util::optional<client::serialization::pimpl::data>>(request);
 }
 
 atomic_reference::atomic_reference(const std::string& name,
@@ -309,32 +309,32 @@ atomic_reference::atomic_reference(const std::string& name,
   : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name)
 {}
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_reference::get_data()
 {
     auto request = atomicref_get_encode(group_id_, object_name_);
     return invoke_and_get_future<
-      boost::optional<client::serialization::pimpl::data>>(request);
+      util::optional<client::serialization::pimpl::data>>(request);
 }
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_reference::set_data(
   const client::serialization::pimpl::data& new_value_data)
 {
     auto request =
       atomicref_set_encode(group_id_, object_name_, &new_value_data, false);
     return invoke_and_get_future<
-      boost::optional<client::serialization::pimpl::data>>(request);
+      util::optional<client::serialization::pimpl::data>>(request);
 }
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_reference::get_and_set_data(
   const client::serialization::pimpl::data& new_value_data)
 {
     auto request =
       atomicref_set_encode(group_id_, object_name_, &new_value_data, true);
     return invoke_and_get_future<
-      boost::optional<client::serialization::pimpl::data>>(request);
+      util::optional<client::serialization::pimpl::data>>(request);
 }
 
 boost::future<bool>
@@ -364,21 +364,21 @@ atomic_reference::alter_data(
       invoke_apply(function_data, return_value_type::NO_VALUE, true));
 }
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_reference::alter_and_get_data(
   const client::serialization::pimpl::data& function_data)
 {
     return invoke_apply(function_data, return_value_type::NEW, true);
 }
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_reference::get_and_alter_data(
   const client::serialization::pimpl::data& function_data)
 {
     return invoke_apply(function_data, return_value_type::OLD, true);
 }
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_reference::apply_data(
   const client::serialization::pimpl::data& function_data)
 {
@@ -397,7 +397,7 @@ atomic_reference::clear()
     return to_void_future(set(static_cast<byte*>(nullptr)));
 }
 
-boost::future<boost::optional<client::serialization::pimpl::data>>
+boost::future<util::optional<client::serialization::pimpl::data>>
 atomic_reference::invoke_apply(
   const client::serialization::pimpl::data function_data,
   return_value_type return_type,
@@ -409,7 +409,7 @@ atomic_reference::invoke_apply(
                                           static_cast<int32_t>(return_type),
                                           alter);
     return invoke_and_get_future<
-      boost::optional<client::serialization::pimpl::data>>(request);
+      util::optional<client::serialization::pimpl::data>>(request);
 }
 
 latch::latch(const std::string& name,

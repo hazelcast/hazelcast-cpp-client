@@ -35,7 +35,7 @@ public:
     message(const std::string& topic_name,
             typed_data&& msg,
             int64_t publish_time,
-            boost::optional<member>&& member)
+            util::optional<member>&& member)
       : message(topic_name,
                 std::move(msg),
                 std::chrono::system_clock::from_time_t(
@@ -48,7 +48,7 @@ public:
     message(std::string topic_name,
             typed_data&& msg,
             std::chrono::system_clock::time_point publish_time,
-            boost::optional<member>&& member)
+            util::optional<member>&& member)
       : message_object_(msg)
       , publish_time_(publish_time)
       , publishing_member_(member)
@@ -74,7 +74,7 @@ public:
 private:
     typed_data message_object_;
     std::chrono::system_clock::time_point publish_time_;
-    boost::optional<member> publishing_member_;
+    util::optional<member> publishing_member_;
     std::string name_;
 };
 } // namespace topic

@@ -86,9 +86,9 @@ public:
     void write(
       const std::shared_ptr<spi::impl::ClientInvocation>& client_invocation);
 
-    const boost::optional<address>& get_remote_address() const;
+    const util::optional<address>& get_remote_address() const;
 
-    void set_remote_address(boost::optional<address> endpoint);
+    void set_remote_address(util::optional<address> endpoint);
 
     boost::uuids::uuid get_remote_uuid() const;
 
@@ -115,7 +115,7 @@ public:
 
     void set_connected_server_version(const std::string& connected_server);
 
-    boost::optional<address> get_local_socket_address() const;
+    util::optional<address> get_local_socket_address() const;
 
     std::chrono::system_clock::time_point get_start_time() const;
 
@@ -149,7 +149,7 @@ private:
     std::exception_ptr close_cause_;
     std::string connected_server_version_string_;
     // TODO: check if they need to be atomic
-    boost::optional<address> remote_address_;
+    util::optional<address> remote_address_;
     boost::uuids::uuid remote_uuid_;
     logger& logger_;
     std::atomic_bool alive_;

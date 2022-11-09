@@ -90,17 +90,17 @@ protected:
     boost::future<bool> retain_all_data(
       const std::vector<serialization::pimpl::data>& elements);
 
-    boost::future<boost::optional<serialization::pimpl::data>> get_data(
+    boost::future<util::optional<serialization::pimpl::data>> get_data(
       int32_t index);
 
-    boost::future<boost::optional<serialization::pimpl::data>> set_data(
+    boost::future<util::optional<serialization::pimpl::data>> set_data(
       int32_t index,
       const serialization::pimpl::data& element);
 
     boost::future<void> add(int32_t index,
                             const serialization::pimpl::data& element);
 
-    boost::future<boost::optional<serialization::pimpl::data>> remove_data(
+    boost::future<util::optional<serialization::pimpl::data>> remove_data(
       int32_t index);
 
     boost::future<int32_t> index_of(const serialization::pimpl::data& element);

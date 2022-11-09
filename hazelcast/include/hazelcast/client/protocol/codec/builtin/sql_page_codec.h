@@ -17,9 +17,9 @@
 #pragma once
 
 #include <vector>
-#include <boost/optional.hpp>
 
 #include "hazelcast/util/export.h"
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/sql/sql_page.h"
 #include "hazelcast/client/protocol/codec/builtin/list_cn_fixed_size_codec.h"
@@ -40,7 +40,7 @@ public:
 private:
     template<typename T>
     static std::vector<boost::any> to_vector_of_any(
-      std::vector<boost::optional<T>> values)
+      std::vector<util::optional<T>> values)
     {
         auto size = values.size();
         std::vector<boost::any> vector_of_any(size);

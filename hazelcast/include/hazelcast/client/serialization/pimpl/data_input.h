@@ -17,6 +17,7 @@
 
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
+#include "hazelcast/util/Optional.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 
 #include <vector>
@@ -162,7 +163,7 @@ public:
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<boost::optional<std::string>,
+      std::is_same<util::optional<std::string>,
                    typename std::remove_cv<T>::type>::value,
       T>::type inline read()
     {
@@ -216,9 +217,9 @@ public:
                      typename std::remove_cv<T>::type>::value ||
         std::is_same<std::vector<std::string>,
                      typename std::remove_cv<T>::type>::value ||
-        std::is_same<std::vector<boost::optional<std::string>>,
+        std::is_same<std::vector<util::optional<std::string>>,
                      typename std::remove_cv<T>::type>::value,
-      typename boost::optional<T>>::type inline read()
+      typename util::optional<T>>::type inline read()
     {
         int32_t len = read<int32_t>();
         if (util::Bits::NULL_ARRAY == len) {

@@ -70,7 +70,7 @@ struct anchor_data_list
 {
     std::vector<int32_t> page_list;
     std::vector<std::pair<serialization::pimpl::data,
-                          boost::optional<serialization::pimpl::data>>>
+                          util::optional<serialization::pimpl::data>>>
       data_list;
 };
 
@@ -177,8 +177,8 @@ private:
     size_t page_size_;
     size_t page_;
     iteration_type iteration_type_;
-    boost::optional<serialization::pimpl::data> comparator_data_;
-    boost::optional<serialization::pimpl::data> predicate_data_;
+    util::optional<serialization::pimpl::data> comparator_data_;
+    util::optional<serialization::pimpl::data> predicate_data_;
 
     /**
      * Construct with a pageSize

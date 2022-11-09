@@ -39,7 +39,7 @@ public:
       int32_t read_count,
       std::vector<serialization::pimpl::data>&& data_items,
       serialization::pimpl::SerializationService& serialization_service,
-      boost::optional<std::vector<int64_t>>& item_seqs,
+      util::optional<std::vector<int64_t>>& item_seqs,
       int64_t next_seq)
       : items_read_count_(read_count)
       , item_seqs_(std::move(item_seqs))
@@ -116,7 +116,7 @@ public:
 private:
     int32_t items_read_count_;
     std::vector<typed_data> items_;
-    boost::optional<std::vector<int64_t>> item_seqs_;
+    util::optional<std::vector<int64_t>> item_seqs_;
     int64_t next_seq_;
 };
 } // namespace rb

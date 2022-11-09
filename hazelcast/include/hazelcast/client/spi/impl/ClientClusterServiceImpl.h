@@ -59,7 +59,7 @@ public:
 
     void shutdown();
 
-    boost::optional<member> get_member(boost::uuids::uuid uuid) const;
+    util::optional<member> get_member(boost::uuids::uuid uuid) const;
 
     std::vector<member> get_member_list() const;
 

@@ -100,7 +100,7 @@ struct HAZELCAST_API index_config
     };
 
     /** Name of the index. */
-    boost::optional<std::string> name;
+    util::optional<std::string> name;
 
     /** Type of the index. */
     index_type type;
@@ -108,7 +108,7 @@ struct HAZELCAST_API index_config
     /** Indexed attributes. */
     std::vector<std::string> attributes;
 
-    boost::optional<bitmap_index_options> options;
+    util::optional<bitmap_index_options> options;
 
     static const index_type DEFAULT_TYPE;
 

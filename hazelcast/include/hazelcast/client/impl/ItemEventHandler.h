@@ -41,7 +41,7 @@ public:
       , listener_(std::move(listener))
       , include_value_(include_value){};
 
-    void handle_item(const boost::optional<serialization::pimpl::data>& item,
+    void handle_item(const util::optional<serialization::pimpl::data>& item,
                      boost::uuids::uuid uuid,
                      int32_t event_type) override
     {

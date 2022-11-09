@@ -64,7 +64,7 @@ public:
      *         <tt>empty</tt> if there was no mapping for <tt>key</tt>.
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> put(const K& key,
+    boost::future<util::optional<R>> put(const K& key,
                                           const V& value,
                                           std::chrono::milliseconds ttl)
     {
@@ -274,7 +274,7 @@ public:
      * @return The value of the key if the key exist, null pointer otherwise.
      */
     template<typename K, typename V>
-    boost::future<boost::optional<V>> get(const K& key)
+    boost::future<util::optional<V>> get(const K& key)
     {
         return to_object<V>(get_data(to_data(key)));
     }
@@ -287,7 +287,7 @@ public:
      * otherwise.
      */
     template<typename K, typename V, typename R = V>
-    boost::future<boost::optional<R>> put(const K& key, const V& value)
+    boost::future<util::optional<R>> put(const K& key, const V& value)
     {
         return put<K, V, R>(key, value, std::chrono::milliseconds(0));
     }
@@ -298,7 +298,7 @@ public:
      * @return The value associated with the removed key.
      */
     template<typename K, typename V>
-    boost::future<boost::optional<V>> remove(const K& key)
+    boost::future<util::optional<V>> remove(const K& key)
     {
         return to_object<V>(remove_data(to_data(key)));
     }
@@ -326,10 +326,10 @@ private:
         {}
 
         void handle_entry(
-          const boost::optional<serialization::pimpl::data>& key,
-          const boost::optional<serialization::pimpl::data>& value,
-          const boost::optional<serialization::pimpl::data>& old_value,
-          const boost::optional<serialization::pimpl::data>& merging_value,
+          const util::optional<serialization::pimpl::data>& key,
+          const util::optional<serialization::pimpl::data>& value,
+          const util::optional<serialization::pimpl::data>& old_value,
+          const util::optional<serialization::pimpl::data>& merging_value,
           int32_t event_type,
           boost::uuids::uuid uuid,
           int32_t number_of_affected_entries) override
@@ -357,10 +357,10 @@ private:
 
     private:
         void fire_map_wide_event(
-          const boost::optional<serialization::pimpl::data>& key,
-          const boost::optional<serialization::pimpl::data>& value,
-          const boost::optional<serialization::pimpl::data>& old_value,
-          const boost::optional<serialization::pimpl::data>& merging_value,
+          const util::optional<serialization::pimpl::data>& key,
+          const util::optional<serialization::pimpl::data>& value,
+          const util::optional<serialization::pimpl::data>& old_value,
+          const util::optional<serialization::pimpl::data>& merging_value,
           int32_t event_type,
           boost::uuids::uuid uuid,
           int32_t number_of_affected_entries)
@@ -375,10 +375,10 @@ private:
         }
 
         void fire_entry_event(
-          const boost::optional<serialization::pimpl::data>& key,
-          const boost::optional<serialization::pimpl::data>& value,
-          const boost::optional<serialization::pimpl::data>& old_value,
-          const boost::optional<serialization::pimpl::data>& merging_value,
+          const util::optional<serialization::pimpl::data>& key,
+          const util::optional<serialization::pimpl::data>& value,
+          const util::optional<serialization::pimpl::data>& old_value,
+          const util::optional<serialization::pimpl::data>& merging_value,
           int32_t event_type,
           boost::uuids::uuid uuid,
           int32_t number_of_affected_entries)

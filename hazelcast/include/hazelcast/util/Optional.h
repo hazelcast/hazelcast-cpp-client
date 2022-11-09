@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,19 @@
  */
 #pragma once
 
-#include <cstdint>
-#include <string>
-
-#include <boost/uuid/uuid.hpp>
-
-#include "hazelcast/util/export.h"
-#include "hazelcast/util/Optional.h"
+#if defined(HZ_HAS_CXX17_SUPPORT)
+#include <optional>
+#else
+#include <boost/optional.hpp>
+#endif
 
 namespace hazelcast {
-namespace client {
-namespace sql {
-namespace impl {
-
-struct HAZELCAST_API sql_error
-{
-    int32_t code;
-    util::optional<std::string> message;
-    boost::uuids::uuid originating_member_id;
-    util::optional<std::string> suggestion;
-};
-
-} // namespace impl
-} // namespace sql
+namespace util {
+    
+#if defined(HZ_HAS_CXX17_SUPPORT)
+    template <typename T> using optional = std::optional<T>;
+#else
+    template <typename T> using optional = boost::optional<T>;
+#endif
 } // namespace client
 } // namespace hazelcast

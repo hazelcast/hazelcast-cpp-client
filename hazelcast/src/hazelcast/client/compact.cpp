@@ -102,7 +102,7 @@ compact_writer::write_float64(const std::string& field_name, double value)
 
 void
 compact_writer::write_string(const std::string& field_name,
-                             const boost::optional<std::string>& value)
+                             const util::optional<std::string>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_string(field_name, value);
@@ -113,7 +113,7 @@ compact_writer::write_string(const std::string& field_name,
 
 void
 compact_writer::write_decimal(const std::string& field_name,
-                              const boost::optional<big_decimal>& value)
+                              const util::optional<big_decimal>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_decimal(field_name, value);
@@ -125,7 +125,7 @@ compact_writer::write_decimal(const std::string& field_name,
 void
 compact_writer::write_time(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::local_time>& value)
+  const util::optional<hazelcast::client::local_time>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_time(field_name, value);
@@ -137,7 +137,7 @@ compact_writer::write_time(
 void
 compact_writer::write_date(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::local_date>& value)
+  const util::optional<hazelcast::client::local_date>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_date(field_name, value);
@@ -149,7 +149,7 @@ compact_writer::write_date(
 void
 compact_writer::write_timestamp(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::local_date_time>& value)
+  const util::optional<hazelcast::client::local_date_time>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_timestamp(field_name, value);
@@ -161,7 +161,7 @@ compact_writer::write_timestamp(
 void
 compact_writer::write_timestamp_with_timezone(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::offset_date_time>& value)
+  const util::optional<hazelcast::client::offset_date_time>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_timestamp_with_timezone(field_name,
@@ -175,7 +175,7 @@ compact_writer::write_timestamp_with_timezone(
 void
 compact_writer::write_array_of_boolean(
   const std::string& field_name,
-  const boost::optional<std::vector<bool>>& value)
+  const util::optional<std::vector<bool>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_boolean(field_name, value);
@@ -188,7 +188,7 @@ compact_writer::write_array_of_boolean(
 void
 compact_writer::write_array_of_int8(
   const std::string& field_name,
-  const boost::optional<std::vector<int8_t>>& value)
+  const util::optional<std::vector<int8_t>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int8(field_name, value);
@@ -200,7 +200,7 @@ compact_writer::write_array_of_int8(
 void
 compact_writer::write_array_of_int16(
   const std::string& field_name,
-  const boost::optional<std::vector<int16_t>>& value)
+  const util::optional<std::vector<int16_t>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int16(field_name, value);
@@ -212,7 +212,7 @@ compact_writer::write_array_of_int16(
 void
 compact_writer::write_array_of_int32(
   const std::string& field_name,
-  const boost::optional<std::vector<int32_t>>& value)
+  const util::optional<std::vector<int32_t>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int32(field_name, value);
@@ -224,7 +224,7 @@ compact_writer::write_array_of_int32(
 void
 compact_writer::write_array_of_int64(
   const std::string& field_name,
-  const boost::optional<std::vector<int64_t>>& value)
+  const util::optional<std::vector<int64_t>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int64(field_name, value);
@@ -236,7 +236,7 @@ compact_writer::write_array_of_int64(
 void
 compact_writer::write_array_of_float32(
   const std::string& field_name,
-  const boost::optional<std::vector<float>>& value)
+  const util::optional<std::vector<float>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_float32(field_name, value);
@@ -249,7 +249,7 @@ compact_writer::write_array_of_float32(
 void
 compact_writer::write_array_of_float64(
   const std::string& field_name,
-  const boost::optional<std::vector<double>>& value)
+  const util::optional<std::vector<double>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_float64(field_name, value);
@@ -262,7 +262,7 @@ compact_writer::write_array_of_float64(
 void
 compact_writer::write_array_of_string(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<std::string>>>& value)
+  const util::optional<std::vector<util::optional<std::string>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_string(field_name, value);
@@ -275,7 +275,7 @@ compact_writer::write_array_of_string(
 void
 compact_writer::write_array_of_decimal(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<big_decimal>>>& value)
+  const util::optional<std::vector<util::optional<big_decimal>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_decimal(field_name, value);
@@ -288,7 +288,7 @@ compact_writer::write_array_of_decimal(
 void
 compact_writer::write_array_of_time(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<local_time>>>& value)
+  const util::optional<std::vector<util::optional<local_time>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_time(field_name, value);
@@ -300,7 +300,7 @@ compact_writer::write_array_of_time(
 void
 compact_writer::write_array_of_date(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<local_date>>>& value)
+  const util::optional<std::vector<util::optional<local_date>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_date(field_name, value);
@@ -312,7 +312,7 @@ compact_writer::write_array_of_date(
 void
 compact_writer::write_array_of_timestamp(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<local_date_time>>>& value)
+  const util::optional<std::vector<util::optional<local_date_time>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_timestamp(field_name, value);
@@ -325,7 +325,7 @@ compact_writer::write_array_of_timestamp(
 void
 compact_writer::write_array_of_timestamp_with_timezone(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<offset_date_time>>>& value)
+  const util::optional<std::vector<util::optional<offset_date_time>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_timestamp_with_timezone(
@@ -338,7 +338,7 @@ compact_writer::write_array_of_timestamp_with_timezone(
 
 void
 compact_writer::write_nullable_boolean(const std::string& field_name,
-                                       const boost::optional<bool>& value)
+                                       const util::optional<bool>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_boolean(field_name, value);
@@ -350,7 +350,7 @@ compact_writer::write_nullable_boolean(const std::string& field_name,
 
 void
 compact_writer::write_nullable_int8(const std::string& field_name,
-                                    const boost::optional<int8_t>& value)
+                                    const util::optional<int8_t>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int8(field_name, value);
@@ -361,7 +361,7 @@ compact_writer::write_nullable_int8(const std::string& field_name,
 
 void
 compact_writer::write_nullable_int16(const std::string& field_name,
-                                     const boost::optional<int16_t>& value)
+                                     const util::optional<int16_t>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int16(field_name, value);
@@ -372,7 +372,7 @@ compact_writer::write_nullable_int16(const std::string& field_name,
 
 void
 compact_writer::write_nullable_int32(const std::string& field_name,
-                                     const boost::optional<int32_t>& value)
+                                     const util::optional<int32_t>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int32(field_name, value);
@@ -383,7 +383,7 @@ compact_writer::write_nullable_int32(const std::string& field_name,
 
 void
 compact_writer::write_nullable_int64(const std::string& field_name,
-                                     const boost::optional<int64_t>& value)
+                                     const util::optional<int64_t>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int64(field_name, value);
@@ -394,7 +394,7 @@ compact_writer::write_nullable_int64(const std::string& field_name,
 
 void
 compact_writer::write_nullable_float32(const std::string& field_name,
-                                       const boost::optional<float>& value)
+                                       const util::optional<float>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_float32(field_name, value);
@@ -406,7 +406,7 @@ compact_writer::write_nullable_float32(const std::string& field_name,
 
 void
 compact_writer::write_nullable_float64(const std::string& field_name,
-                                       const boost::optional<double>& value)
+                                       const util::optional<double>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_float64(field_name, value);
@@ -419,7 +419,7 @@ compact_writer::write_nullable_float64(const std::string& field_name,
 void
 compact_writer::write_array_of_nullable_boolean(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<bool>>>& value)
+  const util::optional<std::vector<util::optional<bool>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_nullable_boolean(field_name,
@@ -433,7 +433,7 @@ compact_writer::write_array_of_nullable_boolean(
 void
 compact_writer::write_array_of_nullable_int8(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int8_t>>>& value)
+  const util::optional<std::vector<util::optional<int8_t>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_nullable_int8(field_name, value);
@@ -446,7 +446,7 @@ compact_writer::write_array_of_nullable_int8(
 void
 compact_writer::write_array_of_nullable_int16(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int16_t>>>& value)
+  const util::optional<std::vector<util::optional<int16_t>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_nullable_int16(field_name,
@@ -460,7 +460,7 @@ compact_writer::write_array_of_nullable_int16(
 void
 compact_writer::write_array_of_nullable_int32(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int32_t>>>& value)
+  const util::optional<std::vector<util::optional<int32_t>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_nullable_int32(field_name,
@@ -474,7 +474,7 @@ compact_writer::write_array_of_nullable_int32(
 void
 compact_writer::write_array_of_nullable_int64(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int64_t>>>& value)
+  const util::optional<std::vector<util::optional<int64_t>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_nullable_int64(field_name,
@@ -488,7 +488,7 @@ compact_writer::write_array_of_nullable_int64(
 void
 compact_writer::write_array_of_nullable_float32(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<float>>>& value)
+  const util::optional<std::vector<util::optional<float>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_nullable_float32(field_name,
@@ -502,7 +502,7 @@ compact_writer::write_array_of_nullable_float32(
 void
 compact_writer::write_array_of_nullable_float64(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<double>>>& value)
+  const util::optional<std::vector<util::optional<double>>>& value)
 {
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_nullable_float64(field_name,
@@ -750,49 +750,49 @@ compact_reader::read_float64(const std::string& field_name)
                                   "float64");
 }
 
-boost::optional<std::string>
+util::optional<std::string>
 compact_reader::read_string(const std::string& field_name)
 {
     return read_variable_size<std::string>(field_name,
                                            pimpl::field_kind::STRING);
 }
 
-boost::optional<big_decimal>
+util::optional<big_decimal>
 compact_reader::read_decimal(const std::string& field_name)
 {
     return read_variable_size<big_decimal>(field_name,
                                            pimpl::field_kind::DECIMAL);
 }
 
-boost::optional<hazelcast::client::local_time>
+util::optional<hazelcast::client::local_time>
 compact_reader::read_time(const std::string& field_name)
 {
     return read_variable_size<hazelcast::client::local_time>(
       field_name, pimpl::field_kind::TIME);
 }
 
-boost::optional<hazelcast::client::local_date>
+util::optional<hazelcast::client::local_date>
 compact_reader::read_date(const std::string& field_name)
 {
     return read_variable_size<hazelcast::client::local_date>(
       field_name, pimpl::field_kind::DATE);
 }
 
-boost::optional<hazelcast::client::local_date_time>
+util::optional<hazelcast::client::local_date_time>
 compact_reader::read_timestamp(const std::string& field_name)
 {
     return read_variable_size<hazelcast::client::local_date_time>(
       field_name, pimpl::field_kind::TIMESTAMP);
 }
 
-boost::optional<hazelcast::client::offset_date_time>
+util::optional<hazelcast::client::offset_date_time>
 compact_reader::read_timestamp_with_timezone(const std::string& field_name)
 {
     return read_variable_size<hazelcast::client::offset_date_time>(
       field_name, pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
 }
 
-boost::optional<std::vector<bool>>
+util::optional<std::vector<bool>>
 compact_reader::read_array_of_boolean(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<bool>>(
@@ -802,7 +802,7 @@ compact_reader::read_array_of_boolean(const std::string& field_name)
       "boolean");
 }
 
-boost::optional<std::vector<int8_t>>
+util::optional<std::vector<int8_t>>
 compact_reader::read_array_of_int8(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int8_t>>(
@@ -812,7 +812,7 @@ compact_reader::read_array_of_int8(const std::string& field_name)
       "int8");
 }
 
-boost::optional<std::vector<int16_t>>
+util::optional<std::vector<int16_t>>
 compact_reader::read_array_of_int16(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int16_t>>(
@@ -822,7 +822,7 @@ compact_reader::read_array_of_int16(const std::string& field_name)
       "int16");
 }
 
-boost::optional<std::vector<int32_t>>
+util::optional<std::vector<int32_t>>
 compact_reader::read_array_of_int32(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int32_t>>(
@@ -831,7 +831,7 @@ compact_reader::read_array_of_int32(const std::string& field_name)
       pimpl::ARRAY_OF_NULLABLE_INT32,
       "int32");
 }
-boost::optional<std::vector<int64_t>>
+util::optional<std::vector<int64_t>>
 compact_reader::read_array_of_int64(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int64_t>>(
@@ -841,7 +841,7 @@ compact_reader::read_array_of_int64(const std::string& field_name)
       "int64");
 }
 
-boost::optional<std::vector<float>>
+util::optional<std::vector<float>>
 compact_reader::read_array_of_float32(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<float>>(
@@ -851,7 +851,7 @@ compact_reader::read_array_of_float32(const std::string& field_name)
       "float32");
 }
 
-boost::optional<std::vector<double>>
+util::optional<std::vector<double>>
 compact_reader::read_array_of_float64(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<double>>(
@@ -861,7 +861,7 @@ compact_reader::read_array_of_float64(const std::string& field_name)
       "float64");
 }
 
-boost::optional<std::vector<boost::optional<std::string>>>
+util::optional<std::vector<util::optional<std::string>>>
 compact_reader::read_array_of_string(const std::string& field_name)
 {
     const auto& descriptor =
@@ -869,7 +869,7 @@ compact_reader::read_array_of_string(const std::string& field_name)
     return read_array_of_variable_size<std::string>(descriptor);
 }
 
-boost::optional<std::vector<boost::optional<big_decimal>>>
+util::optional<std::vector<util::optional<big_decimal>>>
 compact_reader::read_array_of_decimal(const std::string& field_name)
 {
     const auto& descriptor =
@@ -877,7 +877,7 @@ compact_reader::read_array_of_decimal(const std::string& field_name)
     return read_array_of_variable_size<big_decimal>(descriptor);
 }
 
-boost::optional<std::vector<boost::optional<local_time>>>
+util::optional<std::vector<util::optional<local_time>>>
 compact_reader::read_array_of_time(const std::string& field_name)
 {
     const auto& descriptor =
@@ -885,7 +885,7 @@ compact_reader::read_array_of_time(const std::string& field_name)
     return read_array_of_variable_size<local_time>(descriptor);
 }
 
-boost::optional<std::vector<boost::optional<local_date>>>
+util::optional<std::vector<util::optional<local_date>>>
 compact_reader::read_array_of_date(const std::string& field_name)
 {
     const auto& descriptor =
@@ -893,7 +893,7 @@ compact_reader::read_array_of_date(const std::string& field_name)
     return read_array_of_variable_size<local_date>(descriptor);
 }
 
-boost::optional<std::vector<boost::optional<local_date_time>>>
+util::optional<std::vector<util::optional<local_date_time>>>
 compact_reader::read_array_of_timestamp(const std::string& field_name)
 {
     const auto& descriptor =
@@ -901,7 +901,7 @@ compact_reader::read_array_of_timestamp(const std::string& field_name)
     return read_array_of_variable_size<local_date_time>(descriptor);
 }
 
-boost::optional<std::vector<boost::optional<offset_date_time>>>
+util::optional<std::vector<util::optional<offset_date_time>>>
 compact_reader::read_array_of_timestamp_with_timezone(
   const std::string& field_name)
 {
@@ -910,7 +910,7 @@ compact_reader::read_array_of_timestamp_with_timezone(
     return read_array_of_variable_size<offset_date_time>(descriptor);
 }
 
-boost::optional<bool>
+util::optional<bool>
 compact_reader::read_nullable_boolean(const std::string& field_name)
 {
     return read_nullable_primitive<bool>(field_name,
@@ -918,35 +918,35 @@ compact_reader::read_nullable_boolean(const std::string& field_name)
                                          pimpl::field_kind::NULLABLE_BOOLEAN);
 }
 
-boost::optional<int8_t>
+util::optional<int8_t>
 compact_reader::read_nullable_int8(const std::string& field_name)
 {
     return read_nullable_primitive<int8_t>(
       field_name, pimpl::field_kind::INT8, pimpl::field_kind::NULLABLE_INT8);
 }
 
-boost::optional<int16_t>
+util::optional<int16_t>
 compact_reader::read_nullable_int16(const std::string& field_name)
 {
     return read_nullable_primitive<int16_t>(
       field_name, pimpl::field_kind::INT16, pimpl::field_kind::NULLABLE_INT16);
 }
 
-boost::optional<int32_t>
+util::optional<int32_t>
 compact_reader::read_nullable_int32(const std::string& field_name)
 {
     return read_nullable_primitive<int32_t>(
       field_name, pimpl::field_kind::INT32, pimpl::field_kind::NULLABLE_INT32);
 }
 
-boost::optional<int64_t>
+util::optional<int64_t>
 compact_reader::read_nullable_int64(const std::string& field_name)
 {
     return read_nullable_primitive<int64_t>(
       field_name, pimpl::field_kind::INT64, pimpl::field_kind::NULLABLE_INT64);
 }
 
-boost::optional<float>
+util::optional<float>
 compact_reader::read_nullable_float32(const std::string& field_name)
 {
     return read_nullable_primitive<float>(field_name,
@@ -954,7 +954,7 @@ compact_reader::read_nullable_float32(const std::string& field_name)
                                           pimpl::field_kind::NULLABLE_FLOAT32);
 }
 
-boost::optional<double>
+util::optional<double>
 compact_reader::read_nullable_float64(const std::string& field_name)
 {
     return read_nullable_primitive<double>(field_name,
@@ -962,7 +962,7 @@ compact_reader::read_nullable_float64(const std::string& field_name)
                                            pimpl::field_kind::NULLABLE_FLOAT64);
 }
 
-boost::optional<std::vector<boost::optional<bool>>>
+util::optional<std::vector<util::optional<bool>>>
 compact_reader::read_array_of_nullable_boolean(const std::string& field_name)
 {
     return read_array_of_nullable<bool>(field_name,
@@ -970,7 +970,7 @@ compact_reader::read_array_of_nullable_boolean(const std::string& field_name)
                                         pimpl::ARRAY_OF_NULLABLE_BOOLEAN);
 }
 
-boost::optional<std::vector<boost::optional<int8_t>>>
+util::optional<std::vector<util::optional<int8_t>>>
 compact_reader::read_array_of_nullable_int8(const std::string& field_name)
 {
     return read_array_of_nullable<int8_t>(field_name,
@@ -978,7 +978,7 @@ compact_reader::read_array_of_nullable_int8(const std::string& field_name)
                                           pimpl::ARRAY_OF_NULLABLE_INT8);
 }
 
-boost::optional<std::vector<boost::optional<int16_t>>>
+util::optional<std::vector<util::optional<int16_t>>>
 compact_reader::read_array_of_nullable_int16(const std::string& field_name)
 {
     return read_array_of_nullable<int16_t>(field_name,
@@ -986,7 +986,7 @@ compact_reader::read_array_of_nullable_int16(const std::string& field_name)
                                            pimpl::ARRAY_OF_NULLABLE_INT16);
 }
 
-boost::optional<std::vector<boost::optional<int32_t>>>
+util::optional<std::vector<util::optional<int32_t>>>
 compact_reader::read_array_of_nullable_int32(const std::string& field_name)
 {
     return read_array_of_nullable<int32_t>(field_name,
@@ -994,7 +994,7 @@ compact_reader::read_array_of_nullable_int32(const std::string& field_name)
                                            pimpl::ARRAY_OF_NULLABLE_INT32);
 }
 
-boost::optional<std::vector<boost::optional<int64_t>>>
+util::optional<std::vector<util::optional<int64_t>>>
 compact_reader::read_array_of_nullable_int64(const std::string& field_name)
 {
     return read_array_of_nullable<int64_t>(field_name,
@@ -1002,7 +1002,7 @@ compact_reader::read_array_of_nullable_int64(const std::string& field_name)
                                            pimpl::ARRAY_OF_NULLABLE_INT64);
 }
 
-boost::optional<std::vector<boost::optional<float>>>
+util::optional<std::vector<util::optional<float>>>
 compact_reader::read_array_of_nullable_float32(const std::string& field_name)
 {
     return read_array_of_nullable<float>(field_name,
@@ -1010,7 +1010,7 @@ compact_reader::read_array_of_nullable_float32(const std::string& field_name)
                                          pimpl::ARRAY_OF_NULLABLE_FLOAT32);
 }
 
-boost::optional<std::vector<boost::optional<double>>>
+util::optional<std::vector<util::optional<double>>>
 compact_reader::read_array_of_nullable_float64(const std::string& field_name)
 {
     return read_array_of_nullable<double>(field_name,
@@ -1121,14 +1121,14 @@ default_compact_writer::write_float64(const std::string& field_name,
 
 void
 default_compact_writer::write_string(const std::string& field_name,
-                                     const boost::optional<std::string>& value)
+                                     const util::optional<std::string>& value)
 {
     write_variable_size_field(field_name, field_kind::STRING, value);
 }
 
 void
 default_compact_writer::write_decimal(const std::string& field_name,
-                                      const boost::optional<big_decimal>& value)
+                                      const util::optional<big_decimal>& value)
 {
     write_variable_size_field(field_name, field_kind::DECIMAL, value);
 }
@@ -1136,14 +1136,14 @@ default_compact_writer::write_decimal(const std::string& field_name,
 void
 default_compact_writer::write_time(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::local_time>& value)
+  const util::optional<hazelcast::client::local_time>& value)
 {
     write_variable_size_field(field_name, field_kind::TIME, value);
 }
 void
 default_compact_writer::write_date(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::local_date>& value)
+  const util::optional<hazelcast::client::local_date>& value)
 {
     write_variable_size_field(field_name, field_kind::DATE, value);
 }
@@ -1151,7 +1151,7 @@ default_compact_writer::write_date(
 void
 default_compact_writer::write_timestamp(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::local_date_time>& value)
+  const util::optional<hazelcast::client::local_date_time>& value)
 {
     write_variable_size_field(field_name, field_kind::TIMESTAMP, value);
 }
@@ -1159,7 +1159,7 @@ default_compact_writer::write_timestamp(
 void
 default_compact_writer::write_timestamp_with_timezone(
   const std::string& field_name,
-  const boost::optional<hazelcast::client::offset_date_time>& value)
+  const util::optional<hazelcast::client::offset_date_time>& value)
 {
     write_variable_size_field(
       field_name, field_kind::TIMESTAMP_WITH_TIMEZONE, value);
@@ -1168,7 +1168,7 @@ default_compact_writer::write_timestamp_with_timezone(
 void
 default_compact_writer::write_array_of_boolean(
   const std::string& field_name,
-  const boost::optional<std::vector<bool>>& value)
+  const util::optional<std::vector<bool>>& value)
 {
     write_variable_size_field(field_name, field_kind::ARRAY_OF_BOOLEAN, value);
 }
@@ -1176,7 +1176,7 @@ default_compact_writer::write_array_of_boolean(
 void
 default_compact_writer::write_array_of_int8(
   const std::string& field_name,
-  const boost::optional<std::vector<int8_t>>& value)
+  const util::optional<std::vector<int8_t>>& value)
 {
     write_variable_size_field(field_name, field_kind::ARRAY_OF_INT8, value);
 }
@@ -1184,7 +1184,7 @@ default_compact_writer::write_array_of_int8(
 void
 default_compact_writer::write_array_of_int16(
   const std::string& field_name,
-  const boost::optional<std::vector<int16_t>>& value)
+  const util::optional<std::vector<int16_t>>& value)
 {
     write_variable_size_field(field_name, field_kind::ARRAY_OF_INT16, value);
 }
@@ -1192,7 +1192,7 @@ default_compact_writer::write_array_of_int16(
 void
 default_compact_writer::write_array_of_int32(
   const std::string& field_name,
-  const boost::optional<std::vector<int32_t>>& value)
+  const util::optional<std::vector<int32_t>>& value)
 {
     write_variable_size_field(field_name, field_kind::ARRAY_OF_INT32, value);
 }
@@ -1200,7 +1200,7 @@ default_compact_writer::write_array_of_int32(
 void
 default_compact_writer::write_array_of_int64(
   const std::string& field_name,
-  const boost::optional<std::vector<int64_t>>& value)
+  const util::optional<std::vector<int64_t>>& value)
 {
     write_variable_size_field(field_name, field_kind::ARRAY_OF_INT64, value);
 }
@@ -1208,7 +1208,7 @@ default_compact_writer::write_array_of_int64(
 void
 default_compact_writer::write_array_of_float32(
   const std::string& field_name,
-  const boost::optional<std::vector<float>>& value)
+  const util::optional<std::vector<float>>& value)
 {
     write_variable_size_field(field_name, field_kind::ARRAY_OF_FLOAT32, value);
 }
@@ -1216,7 +1216,7 @@ default_compact_writer::write_array_of_float32(
 void
 default_compact_writer::write_array_of_float64(
   const std::string& field_name,
-  const boost::optional<std::vector<double>>& value)
+  const util::optional<std::vector<double>>& value)
 {
     write_variable_size_field(field_name, field_kind::ARRAY_OF_FLOAT64, value);
 }
@@ -1224,7 +1224,7 @@ default_compact_writer::write_array_of_float64(
 void
 default_compact_writer::write_array_of_string(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<std::string>>>& value)
+  const util::optional<std::vector<util::optional<std::string>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_STRING, value);
@@ -1233,7 +1233,7 @@ default_compact_writer::write_array_of_string(
 void
 default_compact_writer::write_array_of_decimal(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<big_decimal>>>& value)
+  const util::optional<std::vector<util::optional<big_decimal>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_DECIMAL, value);
@@ -1242,7 +1242,7 @@ default_compact_writer::write_array_of_decimal(
 void
 default_compact_writer::write_array_of_time(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<local_time>>>& value)
+  const util::optional<std::vector<util::optional<local_time>>>& value)
 {
     write_array_of_variable_size(field_name, field_kind::ARRAY_OF_TIME, value);
 }
@@ -1250,7 +1250,7 @@ default_compact_writer::write_array_of_time(
 void
 default_compact_writer::write_array_of_date(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<local_date>>>& value)
+  const util::optional<std::vector<util::optional<local_date>>>& value)
 {
     write_array_of_variable_size(field_name, field_kind::ARRAY_OF_DATE, value);
 }
@@ -1258,7 +1258,7 @@ default_compact_writer::write_array_of_date(
 void
 default_compact_writer::write_array_of_timestamp(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<local_date_time>>>& value)
+  const util::optional<std::vector<util::optional<local_date_time>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_TIMESTAMP, value);
@@ -1267,7 +1267,7 @@ default_compact_writer::write_array_of_timestamp(
 void
 default_compact_writer::write_array_of_timestamp_with_timezone(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<offset_date_time>>>& value)
+  const util::optional<std::vector<util::optional<offset_date_time>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE, value);
@@ -1276,49 +1276,49 @@ default_compact_writer::write_array_of_timestamp_with_timezone(
 void
 default_compact_writer::write_nullable_boolean(
   const std::string& field_name,
-  const boost::optional<bool>& value)
+  const util::optional<bool>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_BOOLEAN, value);
 }
 void
 default_compact_writer::write_nullable_int8(
   const std::string& field_name,
-  const boost::optional<int8_t>& value)
+  const util::optional<int8_t>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_INT8, value);
 }
 void
 default_compact_writer::write_nullable_int16(
   const std::string& field_name,
-  const boost::optional<int16_t>& value)
+  const util::optional<int16_t>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_INT16, value);
 }
 void
 default_compact_writer::write_nullable_int32(
   const std::string& field_name,
-  const boost::optional<int32_t>& value)
+  const util::optional<int32_t>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_INT32, value);
 }
 void
 default_compact_writer::write_nullable_int64(
   const std::string& field_name,
-  const boost::optional<int64_t>& value)
+  const util::optional<int64_t>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_INT64, value);
 }
 void
 default_compact_writer::write_nullable_float32(
   const std::string& field_name,
-  const boost::optional<float>& value)
+  const util::optional<float>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_FLOAT32, value);
 }
 void
 default_compact_writer::write_nullable_float64(
   const std::string& field_name,
-  const boost::optional<double>& value)
+  const util::optional<double>& value)
 {
     write_variable_size_field(field_name, field_kind::NULLABLE_FLOAT64, value);
 }
@@ -1326,7 +1326,7 @@ default_compact_writer::write_nullable_float64(
 void
 default_compact_writer::write_array_of_nullable_boolean(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<bool>>>& value)
+  const util::optional<std::vector<util::optional<bool>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_NULLABLE_BOOLEAN, value);
@@ -1335,7 +1335,7 @@ default_compact_writer::write_array_of_nullable_boolean(
 void
 default_compact_writer::write_array_of_nullable_int8(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int8_t>>>& value)
+  const util::optional<std::vector<util::optional<int8_t>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_NULLABLE_INT8, value);
@@ -1344,7 +1344,7 @@ default_compact_writer::write_array_of_nullable_int8(
 void
 default_compact_writer::write_array_of_nullable_int16(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int16_t>>>& value)
+  const util::optional<std::vector<util::optional<int16_t>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_NULLABLE_INT16, value);
@@ -1353,7 +1353,7 @@ default_compact_writer::write_array_of_nullable_int16(
 void
 default_compact_writer::write_array_of_nullable_int32(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int32_t>>>& value)
+  const util::optional<std::vector<util::optional<int32_t>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_NULLABLE_INT32, value);
@@ -1362,7 +1362,7 @@ default_compact_writer::write_array_of_nullable_int32(
 void
 default_compact_writer::write_array_of_nullable_int64(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<int64_t>>>& value)
+  const util::optional<std::vector<util::optional<int64_t>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_NULLABLE_INT64, value);
@@ -1371,7 +1371,7 @@ default_compact_writer::write_array_of_nullable_int64(
 void
 default_compact_writer::write_array_of_nullable_float32(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<float>>>& value)
+  const util::optional<std::vector<util::optional<float>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_NULLABLE_FLOAT32, value);
@@ -1380,7 +1380,7 @@ default_compact_writer::write_array_of_nullable_float32(
 void
 default_compact_writer::write_array_of_nullable_float64(
   const std::string& field_name,
-  const boost::optional<std::vector<boost::optional<double>>>& value)
+  const util::optional<std::vector<util::optional<double>>>& value)
 {
     write_array_of_variable_size(
       field_name, field_kind::ARRAY_OF_NULLABLE_FLOAT64, value);
