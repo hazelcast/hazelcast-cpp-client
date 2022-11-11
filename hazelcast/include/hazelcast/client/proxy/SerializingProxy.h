@@ -283,7 +283,7 @@ protected:
               if (!dataView) {
                   return util::optional<entry_view<K, V>>();
               }
-              return boost::make_optional(
+              return util::make_optional(
                 entry_view<K, V>(to_object<K>(dataView->get_key()).value(),
                                  to_object<V>(dataView->get_value()).value(),
                                  dataView->get_cost(),

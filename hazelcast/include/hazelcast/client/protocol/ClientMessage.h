@@ -974,7 +974,7 @@ public:
             rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
             return boost::none;
         }
-        return boost::make_optional(decoder(*this));
+        return util::make_optional(decoder(*this));
     }
 
     template<typename T>

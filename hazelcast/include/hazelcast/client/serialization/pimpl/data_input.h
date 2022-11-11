@@ -172,7 +172,7 @@ public:
             return boost::none;
         }
 
-        return boost::make_optional(read_string(charCount));
+        return util::make_optional(read_string(charCount));
     }
 
     template<typename T>
@@ -244,7 +244,7 @@ public:
         for (int32_t i = 0; i < len; i++) {
             values.push_back(read<typename T::value_type>());
         }
-        return boost::make_optional(values);
+        return util::make_optional(values);
     }
 
     int position() { return pos_; }

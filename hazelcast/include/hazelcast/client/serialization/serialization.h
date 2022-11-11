@@ -1739,7 +1739,7 @@ public:
                 .str()));
         }
 
-        return boost::make_optional(hz_serializer<T>::read_data(in));
+        return util::make_optional(hz_serializer<T>::read_data(in));
     }
 
     template<typename T>
@@ -1899,7 +1899,7 @@ public:
       std::is_same<T, typed_data>::value,
       util::optional<T>>::type inline to_object(const data& d)
     {
-        return boost::make_optional(typed_data(data(d), *this));
+        return util::make_optional(typed_data(data(d), *this));
     }
 
     template<typename T>
@@ -2597,7 +2597,7 @@ MorphingPortableReader::read_portable_array(const std::string& field_name)
         }
     }
 
-    return boost::make_optional(std::move(portables));
+    return util::make_optional(std::move(portables));
 }
 
 template<typename T>

@@ -236,7 +236,7 @@ protected:
         auto sharedKey = std::make_shared<serialization::pimpl::data>(key);
         auto cachedValue = get_cached_data(sharedKey);
         if (cachedValue) {
-            return boost::make_ready_future(boost::make_optional(*cachedValue));
+            return boost::make_ready_future(util::make_optional(*cachedValue));
         }
         auto request =
           protocol::codec::replicatedmap_get_encode(get_name(), *sharedKey);
@@ -257,7 +257,7 @@ protected:
                     if (near_cache_) {
                         near_cache_->put(sharedKey, sharedValue);
                     }
-                    return boost::make_optional(*sharedValue);
+                    return util::make_optional(*sharedValue);
                 } catch (...) {
                     invalidate(sharedKey);
                     throw;

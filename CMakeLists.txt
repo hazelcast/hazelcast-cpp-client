@@ -23,9 +23,9 @@ project(hazelcast-cpp-client
 
 # Set the C++ standard
 set(HZ_HAS_CXX17_SUPPORT OFF)
-if( "${HZ_HAS_CXX17_SUPPORT}" STREQUAL "ON" )
+if("${HZ_HAS_CXX17_SUPPORT}" STREQUAL "ON")
     set(CMAKE_CXX_STANDARD 17)
-elif( "${HZ_HAS_CXX17_SUPPORT}" STREQUAL "OFF" )
+elseif("${HZ_HAS_CXX17_SUPPORT}" STREQUAL "OFF")
     set(CMAKE_CXX_STANDARD 11)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

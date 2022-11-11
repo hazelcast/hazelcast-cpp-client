@@ -26,8 +26,18 @@ namespace util {
     
 #if defined(HZ_HAS_CXX17_SUPPORT)
     template <typename T> using optional = std::optional<T>;
+    template <typename... T>
+    auto make_optional(T&&... t) -> decltype(std::make_optional(std::forward<T>(t)...))
+    {
+        return std::make_optional(std::forward<T>(t)...);
+    }
 #else
     template <typename T> using optional = boost::optional<T>;
+    template <typename... T>
+    auto make_optional(T&&... t) -> decltype(boost::make_optional(std::forward<T>(t)...))
+    {
+        return boost::make_optional(std::forward<T>(t)...);
+    }
 #endif
 } // namespace client
 } // namespace hazelcast

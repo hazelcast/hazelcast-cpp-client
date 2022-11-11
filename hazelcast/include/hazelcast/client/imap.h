@@ -1297,7 +1297,7 @@ private:
         optionalEntries.reserve(entries.size());
         for (auto&& pair : entries) {
             optionalEntries.emplace_back(pair.first,
-                                         boost::make_optional(pair.second));
+                                         util::make_optional(pair.second));
         }
         return sortAndGet(predicate, iteration_type, optionalEntries);
     }

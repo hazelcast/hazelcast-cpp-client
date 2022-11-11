@@ -148,7 +148,7 @@ protected:
                 return boost::make_ready_future(
                   util::optional<serialization::pimpl::data>());
             }
-            return boost::make_ready_future(boost::make_optional(*cached));
+            return boost::make_ready_future(util::make_optional(*cached));
         }
 
         bool marked = key_state_marker_->try_mark(*key);

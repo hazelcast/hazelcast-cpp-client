@@ -398,10 +398,10 @@ portable_reader::portable_reader(pimpl::PortableSerializer& portable_ser,
   : is_default_reader_(is_default_reader)
 {
     if (is_default_reader) {
-        default_portable_reader_ = boost::make_optional(
+        default_portable_reader_ = util::make_optional(
           pimpl::DefaultPortableReader(portable_ser, input, cd));
     } else {
-        morphing_portable_reader_ = boost::make_optional(
+        morphing_portable_reader_ = util::make_optional(
           pimpl::MorphingPortableReader(portable_ser, input, cd));
     }
 }

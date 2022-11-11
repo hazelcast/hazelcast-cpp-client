@@ -177,7 +177,7 @@ compact_reader::read()
 {
     int32_t len = object_data_input.read<int32_t>();
     if (len == 0) {
-        return boost::make_optional(std::vector<bool>(0));
+        return util::make_optional(std::vector<bool>(0));
     }
     std::vector<bool> values(len);
     int index = 0;
@@ -191,7 +191,7 @@ compact_reader::read()
         index++;
         values[i] = result;
     }
-    return boost::make_optional(std::move(values));
+    return util::make_optional(std::move(values));
 }
 
 template<typename T>
@@ -202,10 +202,10 @@ compact_reader::read()
 {
     int32_t len = object_data_input.read<int32_t>();
     if (len == 0) {
-        return boost::make_optional<std::vector<util::optional<bool>>>(
+        return util::make_optional<std::vector<util::optional<bool>>>(
           std::vector<util::optional<bool>>(0));
     }
-    auto values = boost::make_optional<std::vector<util::optional<bool>>>(
+    auto values = util::make_optional<std::vector<util::optional<bool>>>(
       std::vector<util::optional<bool>>(len));
     int index = 0;
     byte current_byte = object_data_input.read<byte>();
@@ -215,7 +215,7 @@ compact_reader::read()
             current_byte = object_data_input.read<byte>();
         }
         bool result = ((current_byte >> index) & 1) != 0;
-        values.value()[i] = boost::make_optional<bool>(std::move(result));
+        values.value()[i] = util::make_optional<bool>(std::move(result));
         index++;
     }
     return values;
@@ -231,7 +231,7 @@ typename std::enable_if<
   typename util::optional<T>>::type
 compact_reader::read()
 {
-    return boost::make_optional<T>(
+    return util::make_optional<T>(
       pimpl::serialization_util::read<T>(object_data_input));
 }
 
@@ -324,7 +324,7 @@ compact_reader::read_nullable_primitive(
 {
     auto& field_descriptor = get_field_descriptor(field_name);
     if (field_descriptor.field_kind == field_kind) {
-        return boost::make_optional<T>(read_primitive<T>(field_descriptor));
+        return util::make_optional<T>(read_primitive<T>(field_descriptor));
     } else if (field_descriptor.field_kind == nullable_field_kind) {
         return read_variable_size<T>(field_descriptor);
     }
@@ -365,9 +365,9 @@ compact_reader::read_primitive_array_as_nullable_array(
     std::vector<util::optional<T>> values(item_count);
 
     for (int i = 0; i < item_count; ++i) {
-        values[i] = boost::make_optional(object_data_input.read<T>());
+        values[i] = util::make_optional(object_data_input.read<T>());
     }
-    return boost::make_optional(std::move(values));
+    return util::make_optional(std::move(values));
 }
 
 template<>

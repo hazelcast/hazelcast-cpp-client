@@ -2504,7 +2504,7 @@ ReliableTopicMessage::ReliableTopicMessage(
   , payload_(std::move(payload_data))
 {
     if (address) {
-        publisher_address_ = boost::make_optional(*address);
+        publisher_address_ = util::make_optional(*address);
     }
 }
 

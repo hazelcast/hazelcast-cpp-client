@@ -1093,7 +1093,7 @@ client_config::get_load_balancer()
                 return util::optional<member>();
             }
             auto i = index->fetch_add(1);
-            return boost::make_optional(std::move(members[i % members.size()]));
+            return util::make_optional(std::move(members[i % members.size()]));
         });
     }
     return *load_balancer_;
