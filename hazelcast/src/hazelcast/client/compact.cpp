@@ -1475,12 +1475,14 @@ default_compact_writer::set_position_as_null(const std::string& field_name,
     field_offsets[index] = -1;
 }
 
+field_descriptor::field_descriptor(enum field_kind f, int32_t i, int32_t o, int8_t b)
+    :   field_kind { f }
+    ,   index { i }
+    ,   offset { o }
+    ,   bit_offset { b }
+{}
+
 namespace rabin_finger_print {
-/**
- * We use uint64_t for computation to match the behaviour of >>> operator
- * on java. We use >> instead.
- */
-constexpr uint64_t INIT = 0xc15d213aa4d7a795L;
 
 static std::array<uint64_t, 256>
 init_fp_table()
@@ -1495,6 +1497,7 @@ init_fp_table()
     }
     return FP_TABLE;
 }
+
 uint64_t
 FP_TABLE_AT(int index)
 {
@@ -1682,7 +1685,7 @@ void
 schema_writer::add_field(std::string field_name, enum field_kind kind)
 {
     field_definition_map[std::move(field_name)] =
-      field_descriptor{ kind, -1, -1, -1 };
+      field_descriptor{ kind };
 }
 
 schema

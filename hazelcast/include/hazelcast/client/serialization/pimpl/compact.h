@@ -1407,6 +1407,13 @@ private:
 
 struct HAZELCAST_API field_descriptor
 {
+    field_descriptor(
+        enum field_kind f = static_cast<enum field_kind>( -1 ),
+        int32_t i = -1,
+        int32_t o = -1,
+        int8_t b = -1
+    );
+
     enum field_kind field_kind;
     /**
      * Index of the offset of the non-primitive field. For others, it is -1
@@ -1521,6 +1528,29 @@ struct HAZELCAST_API field_operations
 {
     static field_kind_based_operations get(enum field_kind field_kind);
 };
+
+namespace rabin_finger_print
+{
+
+/**
+ * We use uint64_t for computation to match the behaviour of >>> operator
+ * on java. We use >> instead.
+ */
+constexpr uint64_t INIT = 0xc15d213aa4d7a795L;
+
+uint64_t HAZELCAST_API
+fingerprint64(uint64_t fp, byte b);
+
+uint64_t HAZELCAST_API
+fingerprint64(uint64_t fp, int v);
+
+uint64_t HAZELCAST_API
+fingerprint64(uint64_t fp, const std::string& value);
+
+int64_t HAZELCAST_API
+fingerprint64(const std::string& type_name,
+              std::map<std::string, field_descriptor>& fields);
+}
 
 } // namespace pimpl
 } // namespace serialization
