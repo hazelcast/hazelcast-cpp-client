@@ -71,7 +71,7 @@ public:
         REMOVE = 2
     };
 
-    struct HAZELCAST_API version
+    struct version
     {
         byte major;
         byte minor;
@@ -89,7 +89,7 @@ public:
 
         bool operator>=(const version& rhs) const;
 
-        friend HAZELCAST_API std::ostream& operator<<(std::ostream& os,
+        friend std::ostream& operator<<(std::ostream& os,
                                         const version& version);
     };
 

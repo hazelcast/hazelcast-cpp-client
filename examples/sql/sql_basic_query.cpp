@@ -46,12 +46,13 @@ main()
       sql.execute("SELECT * FROM integers WHERE this > ? AND this < ?", 40, 50)
         .get();
 
-    auto it = result->page_iterator();
-    std::cout << "There are " << (*it)->row_count()
-              << " rows returned from the cluster database" << std::endl;
+    for (auto itr = result->iterator(); itr.has_next();) {
+        auto page = itr.next().get();
 
-    for (; it; (++it).get()) {
-        for (auto const& row : (*it)->rows()) {
+        std::cout << "There are " << page->row_count()
+                  << " rows returned from the cluster database" << std::endl;
+
+        for (auto const& row : page->rows()) {
             std::cout << "(" << row.get_object<int>(0) << ", "
                       << row.get_object<int>(1) << ")" << std::endl;
         }
@@ -64,8 +65,8 @@ main()
     statement.set_parameters(40, 50);
     result = sql.execute(statement).get();
 
-    it = result->page_iterator();
-    std::cout << "There are " << (*it)->row_count()
+    auto first_page = result->iterator().next().get();
+    std::cout << "There are " << first_page->row_count()
               << " rows returned from the cluster database" << std::endl;
 
     std::cout << "Finished" << std::endl;

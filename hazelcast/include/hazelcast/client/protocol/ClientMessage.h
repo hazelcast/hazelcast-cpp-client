@@ -454,7 +454,7 @@ public:
         skip_frame();
         auto str = get<std::string>();
         fast_forward_to_end_frame();
-        return hazelcast_json_value {str};
+        return hazelcast_json_value{ str };
     }
 
     template<typename T>

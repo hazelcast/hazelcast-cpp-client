@@ -920,8 +920,8 @@ sql_page_codec::decode_column_values(ClientMessage& msg,
               msg.get<std::vector<
                 boost::optional<serialization::pimpl::data>>>());
         case sql::sql_column_type::json:
-              return to_vector_of_any(
-                msg.get<std::vector<boost::optional<hazelcast_json_value>>>());
+            return to_vector_of_any(
+              msg.get<std::vector<boost::optional<hazelcast_json_value>>>());
         default:
             throw exception::illegal_state(
               "ClientMessage::get<sql::sql_page>",

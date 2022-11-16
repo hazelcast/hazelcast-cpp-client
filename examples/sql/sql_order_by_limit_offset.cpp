@@ -24,11 +24,11 @@ main()
 
     // populate the map with some data
     auto map = hz.get_map("myMap").get();
-    map->put("key1" , 1.0);
-    map->put("key2" , 2.0);
-    map->put("key3" , 3.0);
-    map->put("key4" , 4.0);
-    map->put("key5" , 5.0);
+    map->put("key1", 1.0);
+    map->put("key2", 2.0);
+    map->put("key3", 3.0);
+    map->put("key4", 4.0);
+    map->put("key5", 5.0);
 
     auto sql = hz.get_sql();
     // Create mapping for the integers. This needs to be done only once per map.
@@ -48,15 +48,17 @@ main()
 
     // Fetch values in between (40, 50)
     result =
-      sql.execute("SELECT * FROM myMap ORDER BY this ASC LIMIT ? OFFSET ?", 3, 1)
+      sql
+        .execute("SELECT * FROM myMap ORDER BY this ASC LIMIT ? OFFSET ?", 3, 1)
         .get();
 
-    auto it = result->page_iterator();
-    std::cout << "There are " << (*it)->row_count()
-              << " rows returned from the cluster database" << std::endl;
+    for (auto itr = result->iterator(); itr.has_next();) {
+        auto page = itr.next().get();
 
-    for (; it; (++it).get()) {
-        for (auto const& row : (*it)->rows()) {
+        std::cout << "There are " << page->row_count()
+                  << " rows returned from the cluster database" << std::endl;
+
+        for (auto const& row : page->rows()) {
             std::cout << "(" << row.get_object<std::string>(0) << ", "
                       << row.get_object<double>(1) << ")" << std::endl;
         }

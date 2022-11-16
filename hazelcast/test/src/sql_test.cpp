@@ -104,7 +104,7 @@ struct student
     int64_t age;
     float height;
 
-    friend inline bool operator==( const student& x , const student& y )
+    friend inline bool operator==(const student& x, const student& y)
     {
         return x.age == y.age && x.height == y.height;
     }
@@ -219,18 +219,15 @@ struct hz_serializer<test::student> : public portable_serializer
     static int32_t get_class_id() noexcept { return PORTABLE_VALUE_CLASS_ID; }
     static int32_t get_factory_id() noexcept { return PORTABLE_FACTORY_ID; }
 
-    static void write_portable(const test::student& x , portable_writer& out)
+    static void write_portable(const test::student& x, portable_writer& out)
     {
-        out.write("age" , x.age);
-        out.write("height" , x.height);
+        out.write("age", x.age);
+        out.write("height", x.height);
     }
 
     static test::student read_portable(portable_reader& in)
     {
-        return {
-            in.read<int64_t>("age"),
-            in.read<float>("height")
-        };
+        return { in.read<int64_t>("age"), in.read<float>("height") };
     }
 };
 
@@ -262,25 +259,19 @@ namespace hazelcast {
 namespace client {
 namespace test {
 
-template<typename T , typename = void>
+template<typename T, typename = void>
 struct generator;
 
 template<typename T>
-struct generator<T , typename std::enable_if<std::is_integral<T>::value>::type>
+struct generator<T, typename std::enable_if<std::is_integral<T>::value>::type>
 {
-    T operator()()
-    {
-        return T( rand() );
-    }
+    T operator()() { return T(rand()); }
 };
 
 template<>
 struct generator<std::string>
 {
-    std::string operator()()
-    {
-        return ClientTest::random_map_name();
-    }
+    std::string operator()() { return ClientTest::random_map_name(); }
 };
 
 template<>
@@ -288,11 +279,8 @@ struct generator<test::student>
 {
     test::student operator()()
     {
-        return test::student
-        {
-            int64_t( rand() % 1000 ) ,
-            float( rand() % 1000 ) * 2.0f
-        };
+        return test::student{ int64_t(rand() % 1000),
+                              float(rand() % 1000) * 2.0f };
     }
 };
 
@@ -304,17 +292,12 @@ struct generator<hazelcast_json_value>
         generator<std::string> str_gen;
         generator<int> int_gen;
 
-        return hazelcast_json_value
-        {
-            (
-                boost::format(
-                    R"({
+        return hazelcast_json_value{ (boost::format(
+                                        R"({
                         "name" : "%1%" ,
                         "value" : %2%
-                    })"
-                ) % str_gen() % int_gen()
-            ).str()
-        };
+                    })") % str_gen() % int_gen())
+                                       .str() };
     }
 };
 
@@ -322,7 +305,6 @@ class SqlTest : public ClientTest
 {
 public:
     hazelcast_client client;
-    member::version srv_version;
     std::string map_name;
 
     static client_config get_config()
@@ -334,13 +316,16 @@ public:
 
     SqlTest()
       : client{ hazelcast::new_client(get_config()).get() }
-      , srv_version { server_factory_->server_version() }
-      , map_name { random_map_name() }
-    {}
+      , map_name{ random_map_name() }
+    {
+    }
 
     ~SqlTest() override
     {
-        client.get_map(map_name).get()->clear_data();
+        try {
+            client.get_map(map_name).get()->clear_data();
+        } catch (...) {
+        }
     }
 
 protected:
@@ -351,6 +336,7 @@ protected:
         member_.reset(new HazelcastServer(*server_factory_));
         member2_.reset(new HazelcastServer(*server_factory_));
     }
+
     static void TearDownTestSuite()
     {
         member_.reset();
@@ -358,71 +344,60 @@ protected:
         server_factory_.reset();
     }
 
-    void create_mapping( std::string format = "INTEGER" )
+    void create_mapping(std::string format = "INTEGER")
     {
-        if ( srv_version < member::version { 5 , 0 , 0 } )
-            return;
+        std::string query = (boost::format("CREATE MAPPING %1% ( "
+                                           "__key INT, "
+                                           "this %2% "
+                                           ") "
+                                           "TYPE IMap "
+                                           "OPTIONS ("
+                                           "'keyFormat' = 'int', "
+                                           "'valueFormat' = '%3%' "
+                                           ")") %
+                             map_name % format % boost::to_lower_copy(format))
+                              .str();
 
-        std::string query = (
-            boost::format(
-                "CREATE MAPPING %1% ( "
-                    "__key INT, "
-                    "this %2% "
-                ") "
-                "TYPE IMap "
-                "OPTIONS ("
-                    "'keyFormat' = 'int', "
-                    "'valueFormat' = '%3%' "
-                ")"
-            ) % map_name % format % boost::to_lower_copy( format )
-        ).str();
-
-        client.get_sql().execute( query ).get();
+        client.get_sql().execute(query).get();
     }
 
     template<typename T>
     void create_mapping_for_portable();
 
-    void create_mapping_for_portable( std::string mapping_query , int factory_id , int class_id )
+    void create_mapping_for_portable(std::string mapping_query,
+                                     int factory_id,
+                                     int class_id)
     {
-        if ( srv_version < member::version { 5 , 0 , 0 } )
-            return;
+        std::string query = (boost::format("CREATE MAPPING %1% ( "
+                                           "__key INT, "
+                                           "%2%"
+                                           ") "
+                                           "TYPE IMap "
+                                           "OPTIONS ("
+                                           "'keyFormat' = 'int', "
+                                           "'valueFormat' = 'portable', "
+                                           "'valuePortableFactoryId' = '%3%', "
+                                           "'valuePortableClassId' = '%4%'"
+                                           ")") %
+                             map_name % mapping_query % factory_id % class_id)
+                              .str();
 
-        std::string query = (
-            boost::format(
-                "CREATE MAPPING %1% ( "
-                    "__key INT, "
-                    "%2%"
-                ") "
-                "TYPE IMap "
-                "OPTIONS ("
-                    "'keyFormat' = 'int', "
-                    "'valueFormat' = 'portable', "
-                    "'valuePortableFactoryId' = '%3%', "
-                    "'valuePortableClassId' = '%4%'"
-                ")"
-            ) % map_name % mapping_query % factory_id % class_id
-        ).str();
-
-        client.get_sql().execute( query ).get();
+        client.get_sql().execute(query).get();
     }
 
-    template<typename Value = int , typename Generator = generator<Value>>
-    std::vector<Value> populate_map( int n_entries = 10 , Generator&& gen = Generator {} )
+    template<typename Value = int, typename Generator = generator<Value>>
+    std::vector<Value> populate_map(int n_entries = 10,
+                                    Generator&& gen = Generator{})
     {
         std::vector<Value> values;
-        values.reserve( n_entries );
+        values.reserve(n_entries);
 
-        generate_n(
-            back_inserter( values ) ,
-            n_entries ,
-            gen
-        );
+        generate_n(back_inserter(values), n_entries, gen);
 
-        auto map = client.get_map( map_name ).get();
+        auto map = client.get_map(map_name).get();
 
-        for ( auto i = 0; i < n_entries; ++i )
-            map->put( i , values.at( i ) );
+        for (auto i = 0; i < n_entries; ++i)
+            map->put(i, values.at(i)).get();
 
         return values;
     }
@@ -436,20 +411,16 @@ protected:
         using sql_row = sql::sql_page::sql_row;
 
         std::size_t expected;
-        std::size_t actual {};
+        std::size_t actual{};
 
-        assert_row_count( std::size_t expect ) : expected { expect }
-        {  }
-
-        ~assert_row_count()
+        assert_row_count(std::size_t expect)
+          : expected{ expect }
         {
-            EXPECT_EQ( actual , expected );
         }
 
-        void operator()( const sql_row& row )
-        {
-            ++actual;
-        }
+        ~assert_row_count() { EXPECT_EQ(actual, expected); }
+
+        void operator()(const sql_row& row) { ++actual; }
     };
 
     template<typename T>
@@ -459,39 +430,37 @@ protected:
 
         std::vector<T> expecteds;
 
-        void operator()( const sql_row& row ) const
+        void operator()(const sql_row& row) const
         {
-            auto idx = row.get_object<int>( 0 );
+            auto idx = row.get_object<int>(0);
 
-            EXPECT_TRUE( idx.has_value() );
-            EXPECT_TRUE( row.get_object<T>( 1 ).has_value() );
-            EXPECT_EQ( expecteds.at( *idx ) , *row.get_object<T>( 1 ) );
+            EXPECT_TRUE(idx.has_value());
+            EXPECT_TRUE(row.get_object<T>(1).has_value());
+            EXPECT_EQ(expecteds.at(*idx), *row.get_object<T>(1));
         }
     };
 
     template<typename... Fns>
-    void for_each_row( std::shared_ptr<sql::sql_result> result , Fns&&... fn )
+    void for_each_row(std::shared_ptr<sql::sql_result> result, Fns&&... fn)
     {
-        for_each_row_until(
-            std::numeric_limits<int64_t>::max() ,
-            move( result ) ,
-            std::forward<Fns>( fn )...
-        );
+        for_each_row_until(std::numeric_limits<int64_t>::max(),
+                           move(result),
+                           std::forward<Fns>(fn)...);
     }
 
     template<typename... Fns>
-    void for_each_row_until( int64_t n , std::shared_ptr<sql::sql_result> result , Fns&&... fn )
+    void for_each_row_until(int64_t n,
+                            std::shared_ptr<sql::sql_result> result,
+                            Fns&&... fn)
     {
-        auto it = result->page_iterator();
+        for (auto itr = result->iterator(); itr.has_next();) {
+            auto page = itr.next();
 
-        for (; it; (++it).get())
-        {
-            for (auto const& row : (*it)->rows())
-            {
+            for (auto const& row : page.get()->rows()) {
                 int _[] = { 0, ((void)fn(row), 0)... };
                 (void)_;
 
-                if ( !--n )
+                if (!--n)
                     return;
             }
         }
@@ -624,29 +593,167 @@ protected:
     int total_member_client_cursors() {
         return member_client_cursors(0) + member_client_cursors(1);
     }
+    static std::unique_ptr<HazelcastServer> member_;
+    static std::unique_ptr<HazelcastServer> member2_;
 
 private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
-    static std::unique_ptr<HazelcastServer> member_;
-    static std::unique_ptr<HazelcastServer> member2_;
 };
 
 template<>
-void SqlTest::create_mapping_for_portable<test::student>()
+void
+SqlTest::create_mapping_for_portable<test::student>()
 {
     create_mapping_for_portable(
-        R"(
+      R"(
             age BIGINT,
             height REAL
-        )" ,
-        serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID ,
-        serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID
-    );
+        )",
+      serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
+      serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
 }
 
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_{};
 std::unique_ptr<HazelcastServer> SqlTest::member_{};
 std::unique_ptr<HazelcastServer> SqlTest::member2_{};
+
+TEST_F(SqlTest, test_hazelcast_exception)
+{
+    create_mapping();
+    (void)populate_map();
+
+    auto execution = client.get_sql().execute("wrong-query");
+
+    try {
+        execution.get();
+    } catch (const sql::hazelcast_sql_exception& ex) {
+        auto uuid_str = boost::uuids::to_string(ex.originating_member_id());
+
+        ASSERT_TRUE(uuid_str == member_->get_member().uuid ||
+                    uuid_str == member2_->get_member().uuid);
+    }
+}
+
+TEST_F(SqlTest, execute_on_closed_member)
+{
+    auto result = client.get_sql().execute(
+      (boost::format("SELECT * FROM %1%") % map_name).str());
+    member_->shutdown();
+    member2_->shutdown();
+
+    client.shutdown().get();
+    ASSERT_THROW(result.get(), sql::hazelcast_sql_exception);
+
+    member_->start();
+    member2_->start();
+}
+
+TEST_F(SqlTest, try_to_connect_on_closed_client)
+{
+    client.shutdown().get();
+    ASSERT_THROW(client.get_sql().execute(
+                   (boost::format("SELECT * FROM %1%") % map_name).str()),
+                 sql::hazelcast_sql_exception);
+}
+
+TEST_F(SqlTest, sql_page_column_count)
+{
+    create_mapping();
+    (void)populate_map();
+
+    auto result =
+      client.get_sql()
+        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
+        .get();
+
+    ASSERT_EQ(result->iterator().next().get()->column_count(), 2);
+}
+
+TEST_F(SqlTest, sql_page_column_types)
+{
+    create_mapping("VARCHAR");
+    (void)populate_map<std::string>();
+
+    auto result =
+      client.get_sql()
+        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
+        .get();
+
+    auto types = result->iterator().next().get()->column_types();
+
+    ASSERT_EQ(types.at(0), hazelcast::client::sql::sql_column_type::integer);
+    ASSERT_EQ(types.at(1), hazelcast::client::sql::sql_column_type::varchar);
+}
+
+TEST_F(SqlTest, wrong_syntax)
+{
+    auto result_f =
+      client.get_sql().execute("WRONG SYNTAX this should generate error");
+
+    ASSERT_THROW(result_f.get(), sql::hazelcast_sql_exception);
+}
+
+TEST_F(SqlTest, row_metadata_on_non_select_query)
+{
+    create_mapping();
+    (void)populate_map();
+
+    auto result =
+      client.get_sql()
+        .execute(
+          (boost::format("DELETE FROM %1% WHERE this < 18") % map_name).str())
+        .get();
+
+    ASSERT_THROW(result->row_metadata(), exception::illegal_state);
+}
+
+TEST_F(SqlTest, calling_iterator_next_consecutively)
+{
+    create_mapping();
+    (void)populate_map(100);
+
+    sql::sql_statement statement{ client,
+                                  (boost::format(
+                                     R"(
+                    SELECT * FROM %1%
+                )") % map_name)
+                                    .str() };
+
+    statement.cursor_buffer_size(10);
+
+    auto result = client.get_sql().execute(statement).get();
+
+    auto itr = result->iterator();
+
+    itr.next();
+    itr.next();
+
+    ASSERT_THROW(itr.next(), exception::illegal_access);
+}
+
+TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
+{
+    create_mapping();
+    (void)populate_map(100);
+
+    sql::sql_statement statement{ client,
+                                  (boost::format(
+                                     R"(
+                    SELECT * FROM %1%
+                )") % map_name)
+                                    .str() };
+
+    statement.cursor_buffer_size(10);
+
+    auto result = client.get_sql().execute(statement).get();
+
+    auto itr = result->iterator();
+
+    while (itr.has_next())
+        itr.next().get();
+
+    ASSERT_THROW(itr.next(), exception::no_such_element);
+}
 
 TEST_F(SqlTest, simple)
 {
@@ -670,8 +777,8 @@ TEST_F(SqlTest, simple)
     EXPECT_EQ(hazelcast::client::sql::sql_column_type::varchar, column1.type);
     EXPECT_FALSE(column1.nullable);
 
-    auto page_it = result->page_iterator();
-    auto const& page = *page_it;
+    auto page_it = result->iterator();
+    auto const& page = page_it.next().get();
     ASSERT_TRUE(page);
     auto& rows = page->rows();
     EXPECT_EQ(2, rows.size());
@@ -696,7 +803,7 @@ TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
 
         ASSERT_TRUE(result->row_set());
 
-        page = *result->page_iterator();
+        page = result->iterator().next().get();
     }
     // result is destroyed at this point
 
@@ -709,10 +816,10 @@ TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
     EXPECT_EQ("hello", rows[1].get_object<std::string>(1).value());
 }
 
-TEST_F(SqlTest, sql_result_destructor_closes_the_result)
+TEST_F(SqlTest, sql_result_fetch_page_should_throw_after_close)
 {
 
-    std::shared_ptr<sql::sql_result::page_iterator_type> it;
+    std::shared_ptr<sql::sql_result::page_iterator> it;
     {
         auto result = client.get_sql()
                         .execute("SELECT * from TABLE(generate_stream(1))")
@@ -720,13 +827,17 @@ TEST_F(SqlTest, sql_result_destructor_closes_the_result)
 
         ASSERT_TRUE(result->row_set());
 
-        it = std::make_shared<sql::sql_result::page_iterator_type>(
-          result->page_iterator());
+        it = std::make_shared<sql::sql_result::page_iterator>(
+          std::move(result->iterator()));
+
+        result->close();
     }
-    // result is destroyed at this point, trying to increment the iterator
-    // should throw exception since the result should have been closed
+
     try {
-        (++(*it)).get();
+        it->next().get();
+        it->next().get();
+
+        FAIL();
     } catch (const hazelcast::client::exception::query& e) {
         ASSERT_EQ(
           static_cast<int32_t>(sql::impl::sql_error_code::CANCELLED_BY_USER),
@@ -749,7 +860,7 @@ TEST_F(SqlTest, statement_with_params)
     ASSERT_TRUE(result->row_set());
     EXPECT_EQ(-1, result->update_count());
 
-    auto page = *result->page_iterator();
+    auto page = result->iterator().next().get();
     ASSERT_TRUE(page);
 
     auto& rows = page->rows();
@@ -761,51 +872,37 @@ TEST_F(SqlTest, statement_with_params)
 // These tests ported from python-client, sql_test.py
 TEST_F(SqlTest, test_execute)
 {
-    static constexpr int N_ENTRIES = 11;
-
     create_mapping();
-    auto expecteds = populate_map( N_ENTRIES );
+    auto expecteds = populate_map(11);
 
-    auto result = client.get_sql().execute(
-        (
-            boost::format( "SELECT * FROM %1%" ) % map_name
-        ).str()
-    ).get();
+    auto result =
+      client.get_sql()
+        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
+        .get();
 
-    for_each_row(
-        result ,
-        assert_row_count { N_ENTRIES } ,
-        assert_key_values<int> { expecteds }
-    );
+    for_each_row(result,
+                 assert_row_count{ expecteds.size() },
+                 assert_key_values<int>{ expecteds });
 }
 
 TEST_F(SqlTest, test_execute_with_params)
 {
-    static constexpr int N_ENTRIES = 13;
-
     create_mapping();
-    auto expecteds = populate_map( N_ENTRIES );
+    auto expecteds = populate_map(13);
 
-    auto result = client.get_sql().execute(
-        (
-            boost::format( "SELECT * FROM %1% WHERE this > ?" ) % map_name
-        ).str() ,
-        6
-    ).get();
+    auto result =
+      client.get_sql()
+        .execute(
+          (boost::format("SELECT * FROM %1% WHERE this > ?") % map_name).str(),
+          6)
+        .get();
 
     auto expected_row_count = count_if(
-        begin( expecteds ) ,
-        end( expecteds ) ,
-        []( int value ){
-            return value > 6;
-        }
-    );
+      begin(expecteds), end(expecteds), [](int value) { return value > 6; });
 
-    for_each_row(
-        result ,
-        assert_row_count ( expected_row_count ) ,
-        assert_key_values<int> { expecteds }
-    );
+    for_each_row(result,
+                 assert_row_count(expected_row_count),
+                 assert_key_values<int>{ expecteds });
 }
 
 TEST_F(SqlTest, test_execute_with_mismatched_params_when_sql_has_more)
@@ -814,13 +911,13 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_sql_has_more)
     (void)populate_map();
 
     auto execution = client.get_sql().execute(
-        (
-            boost::format( "SELECT * FROM %1% WHERE __key > ? AND this > ?" ) % map_name
-        ).str() ,
-        5
-    );
+      (boost::format("SELECT * FROM %1% WHERE __key > ? AND this > ?") %
+       map_name)
+        .str(),
+      5);
 
-    EXPECT_THROW( execution.get() , hazelcast::client::sql::hazelcast_sql_exception);
+    EXPECT_THROW(execution.get(),
+                 hazelcast::client::sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, test_execute_with_mismatched_params_when_params_has_more)
@@ -829,91 +926,100 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_params_has_more)
     (void)populate_map();
 
     auto execution = client.get_sql().execute(
-        (
-            boost::format( "SELECT * FROM %1% WHERE this > ?" ) % map_name
-        ).str() ,
-        5 ,
-        6
-    );
+      (boost::format("SELECT * FROM %1% WHERE this > ?") % map_name).str(),
+      5,
+      6);
 
-    EXPECT_THROW( execution.get() , hazelcast::client::sql::hazelcast_sql_exception );
+    EXPECT_THROW(execution.get(),
+                 hazelcast::client::sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, test_execute_statement)
 {
     static constexpr int N_ENTRIES = 12;
 
-    create_mapping( "VARCHAR" );
-    auto expecteds = populate_map<std::string>( N_ENTRIES );
+    create_mapping("VARCHAR");
+    auto expecteds = populate_map<std::string>(N_ENTRIES);
 
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format( "SELECT * FROM %1%" ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client, (boost::format("SELECT * FROM %1%") % map_name).str()
     };
 
-    auto result = client.get_sql().execute( statement ).get();
+    auto result = client.get_sql().execute(statement).get();
 
-    for_each_row(
-        result ,
-        assert_row_count ( N_ENTRIES ) ,
-        assert_key_values<std::string> { expecteds }
-    );
+    for_each_row(result,
+                 assert_row_count(N_ENTRIES),
+                 assert_key_values<std::string>{ expecteds });
 }
 
 TEST_F(SqlTest, test_execute_statement_with_params)
 {
     create_mapping_for_portable<test::student>();
 
-    auto expecteds = populate_map<test::student>( 20 );
+    auto expecteds = populate_map<test::student>(20);
 
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format(
-                "SELECT __key, age, height "
-                "FROM %1% "
-                "WHERE height = CAST(? AS REAL) OR age = ?"
-            ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client,
+        (boost::format("SELECT __key, age, height "
+                       "FROM %1% "
+                       "WHERE height = CAST(? AS REAL) OR age = ?") %
+         map_name)
+          .str()
     };
 
     auto height_param = expecteds.front().height;
     auto age_param = expecteds.back().age;
 
-    statement.set_parameters( height_param , age_param );
+    statement.set_parameters(height_param, age_param);
 
-    auto expected_row_counts = count_if(
-        begin( expecteds ) ,
-        end( expecteds ) ,
-        [ & ]( const test::student& t ){
-            return t.height == height_param || t.age == age_param;
-        }
-    );
+    auto expected_row_counts =
+      count_if(begin(expecteds), end(expecteds), [&](const test::student& t) {
+          return t.height == height_param || t.age == age_param;
+      });
 
-    auto result = client.get_sql().execute( statement ).get();
+    auto result = client.get_sql().execute(statement).get();
 
-    for_each_row(
-        result ,
-        assert_row_count ( expected_row_counts ) ,
-        [ &expecteds ]( const sql::sql_page::sql_row& row ){
-            auto idx = row.get_object<int>( 0 );
-            EXPECT_TRUE( idx.has_value() );
+    for_each_row(result,
+                 assert_row_count(expected_row_counts),
+                 [&expecteds](const sql::sql_page::sql_row& row) {
+                     auto idx = row.get_object<int>(0);
+                     EXPECT_TRUE(idx.has_value());
 
-            const auto& expected = expecteds.at( *idx );
+                     const auto& expected = expecteds.at(*idx);
 
-            auto age = row.get_object<int64_t>( 1 );
-            EXPECT_TRUE( age.has_value() );
-            EXPECT_EQ( *age , expected.age );
+                     auto age = row.get_object<int64_t>(1);
+                     EXPECT_TRUE(age.has_value());
+                     EXPECT_EQ(*age, expected.age);
 
-            auto height = row.get_object<float>( 2 );
-            EXPECT_TRUE( height.has_value() );
-            EXPECT_EQ( row.get_object<float>( 2 ) , expected.height );
-        }
-    );
+                     auto height = row.get_object<float>(2);
+                     EXPECT_TRUE(height.has_value());
+                     EXPECT_EQ(row.get_object<float>(2), expected.height);
+                 });
+}
+
+TEST_F(SqlTest, test_execute_statement_with_params_after_clear_parameters)
+{
+    create_mapping_for_portable<test::student>();
+
+    auto expecteds = populate_map<test::student>(20);
+
+    sql::sql_statement statement{
+        client,
+        (boost::format("SELECT __key, age, height "
+                       "FROM %1% "
+                       "WHERE height = CAST(? AS REAL) OR age = ?") %
+         map_name)
+          .str()
+    };
+
+    auto height_param = expecteds.front().height;
+    auto age_param = expecteds.back().age;
+
+    statement.set_parameters(height_param);
+    statement.clear_parameters();
+    statement.set_parameters(height_param, age_param);
+
+    ASSERT_NO_THROW(client.get_sql().execute(statement).get());
 }
 
 TEST_F(SqlTest, test_execute_statement_with_mismatched_params_when_sql_has_more)
@@ -921,78 +1027,83 @@ TEST_F(SqlTest, test_execute_statement_with_mismatched_params_when_sql_has_more)
     create_mapping();
     (void)populate_map();
 
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format( "SELECT * FROM %1% WHERE __key > ? AND this > ?" ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client,
+        (boost::format("SELECT * FROM %1% WHERE __key > ? AND this > ?") %
+         map_name)
+          .str()
     };
 
-    statement.set_parameters( 5 );
-    auto execution = client.get_sql().execute( statement );
+    statement.set_parameters(5);
+    auto execution = client.get_sql().execute(statement);
 
-    EXPECT_THROW( execution.get() , hazelcast::client::sql::hazelcast_sql_exception );
+    EXPECT_THROW(execution.get(),
+                 hazelcast::client::sql::hazelcast_sql_exception);
 }
 
-TEST_F(SqlTest, test_execute_statement_with_mismatched_params_when_params_has_more)
+TEST_F(SqlTest,
+       test_execute_statement_with_mismatched_params_when_params_has_more)
 {
     create_mapping();
     (void)populate_map();
 
-    auto expecteds = populate_map<test::student>();
-
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format( "SELECT * FROM %1% WHERE this > ?" ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client,
+        (boost::format("SELECT * FROM %1% WHERE this > ?") % map_name).str()
     };
 
-    statement.set_parameters( 5 , 6 );
-    auto execution = client.get_sql().execute( statement );
+    statement.set_parameters(5, 6);
+    auto execution = client.get_sql().execute(statement);
 
-    EXPECT_THROW( execution.get() , hazelcast::client::sql::hazelcast_sql_exception );
+    EXPECT_THROW(execution.get(), sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, test_execute_statement_with_timeout)
 {
     create_mapping_for_portable<test::student>();
-    auto expecteds = populate_map<test::student>( 100 );
+    auto expecteds = populate_map<test::student>(100);
 
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format( "SELECT __key, height FROM %1% WHERE height < 100" ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client,
+        (boost::format("SELECT __key, height FROM %1% WHERE height < 100") %
+         map_name)
+          .str()
     };
 
-    statement.timeout( std::chrono::milliseconds { 100 } );
+    statement.timeout(std::chrono::milliseconds{ 100 });
 
     auto expected_row_count = count_if(
-        begin( expecteds ) ,
-        end( expecteds ) ,
-        []( const test::student& student ){
-            return student.height < 100.0f;
-        }
-    );
+      begin(expecteds), end(expecteds), [](const test::student& student) {
+          return student.height < 100.0f;
+      });
 
-    auto result = client.get_sql().execute( statement ).get();
+    auto result = client.get_sql().execute(statement).get();
 
-    for_each_row(
-        result ,
-        assert_row_count ( expected_row_count ) ,
-        [ &expecteds ]( const sql::sql_page::sql_row& row ){
-            auto idx = row.get_object<int>( 0 );
+    for_each_row(result,
+                 assert_row_count(expected_row_count),
+                 [&expecteds](const sql::sql_page::sql_row& row) {
+                     auto idx = row.get_object<int>(0);
 
-            EXPECT_TRUE( idx.has_value() );
-            auto height = row.get_object<float>( 1 );
-            EXPECT_TRUE( height.has_value() );
-            EXPECT_EQ( expecteds.at( *idx ).height , *height );
-        }
-    );
+                     EXPECT_TRUE(idx.has_value());
+                     auto height = row.get_object<float>(1);
+                     EXPECT_TRUE(height.has_value());
+                     EXPECT_EQ(expecteds.at(*idx).height, *height);
+                 });
+}
+
+TEST_F(SqlTest, test_statement_with_wrong_timeout)
+{
+    sql::sql_statement statement{ client, "non_null_query" };
+
+    ASSERT_THROW(statement.timeout(std::chrono::milliseconds{ -500 }),
+                 exception::illegal_argument);
+}
+
+TEST_F(SqlTest, test_statement_with_empty_sql)
+{
+    auto fn = [this]() { sql::sql_statement statement{ client, "" }; };
+
+    ASSERT_THROW(fn(), exception::illegal_argument);
 }
 
 TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
@@ -1000,76 +1111,91 @@ TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
     static constexpr int CURSOR_BUFFER_SIZE = 3;
 
     create_mapping_for_portable<test::student>();
-    auto expecteds = populate_map<test::student>( 48 );
+    (void)populate_map<test::student>(48);
 
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format( "SELECT * FROM %1%" ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client, (boost::format("SELECT * FROM %1%") % map_name).str()
     };
 
-    statement.cursor_buffer_size( CURSOR_BUFFER_SIZE );
+    statement.cursor_buffer_size(CURSOR_BUFFER_SIZE);
 
-    auto result = client.get_sql().execute( statement ).get();
+    auto result = client.get_sql().execute(statement).get();
 
-    auto itr = result->page_iterator();
+    for (auto itr = result->iterator(); itr.has_next();)
+        EXPECT_EQ(itr.next().get()->row_count(), CURSOR_BUFFER_SIZE);
+}
 
-    for ( ; itr; (++itr).get() )
-        EXPECT_EQ( (*itr)->row_count() , CURSOR_BUFFER_SIZE );
+TEST_F(SqlTest, test_execute_with_schema)
+{
+    create_mapping_for_portable<test::student>();
+    (void)populate_map<test::student>(48);
+
+    sql::sql_statement statement{
+        client, (boost::format("SELECT * FROM %1%") % map_name).str()
+    };
+
+    statement.schema(std::string{ "nothing" });
+
+    client.get_sql().execute(statement).get();
+}
+
+TEST_F(SqlTest, test_execute_with_expected_result_type)
+{
+    create_mapping_for_portable<test::student>();
+    (void)populate_map<test::student>();
+
+    sql::sql_statement statement{
+        client, (boost::format("SELECT * FROM %1%") % map_name).str()
+    };
+
+    statement.expected_result_type(sql::sql_expected_result_type::rows);
+
+    client.get_sql().execute(statement).get();
 }
 
 TEST_F(SqlTest, test_is_row_set_when_row_is_set)
 {
     create_mapping_for_portable<test::student>();
-    auto expecteds = populate_map<test::student>( 100 );
+    auto expecteds = populate_map<test::student>(100);
 
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format( "SELECT * FROM %1%" ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client, (boost::format("SELECT * FROM %1%") % map_name).str()
     };
 
-    auto result = client.get_sql().execute( statement ).get();
+    auto result = client.get_sql().execute(statement).get();
 
-    ASSERT_TRUE( result->row_set() );
+    ASSERT_TRUE(result->row_set());
 }
 
 TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
 {
     create_mapping_for_portable<test::student>();
-    auto expecteds = populate_map<test::student>( 100 );
+    auto expecteds = populate_map<test::student>(100);
 
-    sql::sql_statement statement
-    {
-        client ,
-        (
-            boost::format( "SELECT * FROM %1%" ) % map_name
-        ).str()
+    sql::sql_statement statement{
+        client, (boost::format("SELECT * FROM %1%") % map_name).str()
     };
 
-    auto result = client.get_sql().execute( statement ).get();
+    auto result = client.get_sql().execute(statement).get();
 
-    ASSERT_EQ( result->update_count() , -1 );
+    ASSERT_EQ(result->update_count(), -1);
 }
 
 TEST_F(SqlTest, test_null)
 {
     create_mapping();
-    (void)populate_map( 50 );
+    (void)populate_map(50);
 
-    auto result = client.get_sql().execute(
-        (
-            boost::format( "SELECT __key, NULL AS this FROM %1%" ) % map_name
-        ).str()
-    ).get();
+    auto result =
+      client.get_sql()
+        .execute(
+          (boost::format("SELECT __key, NULL AS this FROM %1%") % map_name)
+            .str())
+        .get();
 
     auto type = result->row_metadata().columns().back().type;
 
-    EXPECT_EQ( type , sql::sql_column_type::null );
+    EXPECT_EQ(type, sql::sql_column_type::null);
 }
 
 TEST_F(SqlTest, test_object)
@@ -1077,17 +1203,15 @@ TEST_F(SqlTest, test_object)
     create_mapping_for_portable<test::student>();
     auto expecteds = populate_map<test::student>();
 
-    auto result = client.get_sql().execute(
-        (
-            boost::format( "SELECT __key, this FROM %1%" ) % map_name
-        ).str()
-    ).get();
+    auto result =
+      client.get_sql()
+        .execute(
+          (boost::format("SELECT __key, this FROM %1%") % map_name).str())
+        .get();
 
-    for_each_row(
-        result ,
-        assert_row_count { expecteds.size() } ,
-        assert_key_values<test::student> { expecteds }
-    );
+    for_each_row(result,
+                 assert_row_count{ expecteds.size() },
+                 assert_key_values<test::student>{ expecteds });
 }
 
 TEST_F(SqlTest, test_null_only_column)
@@ -1095,44 +1219,40 @@ TEST_F(SqlTest, test_null_only_column)
     create_mapping();
     (void)populate_map();
 
-    auto result = client.get_sql().execute(
-        (
-            boost::format( "SELECT __key, CAST(NULL AS INTEGER) as this FROM %1%" ) % map_name
-        ).str()
-    ).get();
+    auto result =
+      client.get_sql()
+        .execute((boost::format(
+                    "SELECT __key, CAST(NULL AS INTEGER) as this FROM %1%") %
+                  map_name)
+                   .str())
+        .get();
 
     auto col_type = result->row_metadata().columns().back().type;
-    EXPECT_EQ( col_type , sql::sql_column_type::integer );
+    EXPECT_EQ(col_type, sql::sql_column_type::integer);
 }
 
 TEST_F(SqlTest, test_json)
 {
-    create_mapping( "JSON" );
-    auto expecteds = populate_map<hazelcast_json_value>( 50 );
+    create_mapping("JSON");
+    auto expecteds = populate_map<hazelcast_json_value>(50);
 
-    auto result = client.get_sql().execute(
-        (
-            boost::format( "SELECT * FROM %1%" ) % map_name
-        ).str()
-    ).get();
+    auto result =
+      client.get_sql()
+        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
+        .get();
 
-    for_each_row(
-        result ,
-        assert_row_count ( expecteds.size() ) ,
-        assert_key_values<hazelcast_json_value> { expecteds }
-    );
+    for_each_row(result,
+                 assert_row_count(expecteds.size()),
+                 assert_key_values<hazelcast_json_value>{ expecteds });
 }
 
 TEST_F(SqlTest, test_streaming_sql_query)
 {
-    auto result = client.get_sql().execute(
-        "SELECT * FROM TABLE(generate_stream(100))"
-    ).get();
+    auto result = client.get_sql()
+                    .execute("SELECT * FROM TABLE(generate_stream(100))")
+                    .get();
 
-    for_each_row_until(
-        200 ,
-        result
-    );
+    for_each_row_until(200, result);
 }
 
 TEST_F(SqlTest, exception)
@@ -1201,9 +1321,9 @@ TEST_F(SqlTest, select)
     check_row_metada(row_metadata);
 
     std::unordered_set<int64_t> unique_keys;
-    auto it = res->page_iterator();
-    for (;it; (++it).get()) {
-        auto const& page = *it;
+
+    for (auto itr = res->iterator(); itr.has_next();) {
+        auto page = itr.next().get();
         for (const auto& row : page->rows()) {
             ASSERT_EQ(row_metadata, res->row_metadata());
 
@@ -1244,7 +1364,7 @@ TEST_F(SqlTest, select)
         }
     }
 
-    ASSERT_THROW(res->page_iterator(), exception::illegal_state);
+    ASSERT_THROW(res->iterator(), exception::illegal_state);
 
     ASSERT_EQ(DATA_SET_SIZE, unique_keys.size());
 

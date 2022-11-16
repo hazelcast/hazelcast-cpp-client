@@ -22,7 +22,6 @@
 #include <vector>
 
 #include <boost/asio.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include <gtest/gtest.h>
 
@@ -326,7 +325,6 @@ HazelcastServerFactory::HazelcastServerFactory(
                                      "HazelcastServerFactory",
                                      logger::level::info,
                                      logger::default_handler))
-  , srv_version_ {}
 {
     std::string xmlConfig = read_from_xml_file(server_xml_config_file_path);
 
@@ -335,32 +333,6 @@ HazelcastServerFactory::HazelcastServerFactory(
       cluster, HAZELCAST_VERSION, xmlConfig);
 
     this->cluster_id_ = cluster.id;
-
-    remote::Response resp;
-    remote_controller_client().executeOnController(
-      resp ,
-      cluster_id_ ,
-      "result=com.hazelcast.instance.GeneratedBuildProperties.VERSION;" ,
-      remote::Lang::JAVASCRIPT
-    );
-
-    try
-    {
-      std::vector<std::string> numbers;
-
-      boost::split( numbers , resp.result , boost::is_any_of( "." ) );
-
-      if ( numbers.size() != 3 )
-          throw std::invalid_argument { "Text should be in format 'x.y.z'" };
-
-      srv_version_.major = std::stoi( numbers[ 0 ] );
-      srv_version_.minor = std::stoi( numbers[ 1 ] );
-      srv_version_.patch = std::stoi( numbers[ 2 ] );
-    }
-    catch ( const std::exception& e )
-    {
-      logger_->log( hazelcast::logger::level::warning , "Could not retrieved server version." );
-    }
 }
 
 HazelcastServerFactory::~HazelcastServerFactory()
@@ -373,14 +345,7 @@ HazelcastServerFactory::start_server()
 {
     remote::Member member;
     remote_controller_client().startMember(member, cluster_id_);
-
     return member;
-}
-
-member::version
-HazelcastServerFactory::server_version() const
-{
-  return srv_version_;
 }
 
 bool

@@ -330,8 +330,7 @@ constexpr std::chrono::milliseconds sql_statement::DEFAULT_TIMEOUT;
 constexpr int32_t sql_statement::DEFAULT_CURSOR_BUFFER_SIZE;
 
 sql_statement::sql_statement(hazelcast_client& client, std::string query)
-  : sql_{ std::move(query) }
-  , serialized_parameters_{}
+  : serialized_parameters_{}
   , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
@@ -340,18 +339,19 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
       spi::ClientContext(client).get_serialization_service()
   }
 {
+    sql(std::move(query));
 }
 
 sql_statement::sql_statement(spi::ClientContext& client_context,
                              std::string query)
-  : sql_{ std::move(query) }
-  , serialized_parameters_{}
+  : serialized_parameters_{}
   , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
   , serialization_service_{ client_context.get_serialization_service() }
 {
+    sql(std::move(query));
 }
 
 const std::string&
@@ -632,26 +632,26 @@ sql_result::row_set() const
     return update_count() == -1;
 }
 
-sql_result::page_iterator_type
-sql_result::page_iterator()
+sql_result::page_iterator
+sql_result::iterator()
 {
     check_closed();
 
     if (!first_page_) {
-        throw exception::illegal_state(
-          "sql_result::page_iterator",
-          "This result contains only update count");
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
+          "sql_result::iterator", "This result contains only update count"));
     }
 
     if (iterator_requested_) {
-        throw exception::illegal_state("sql_result::page_iterator",
-                                       "Iterator can be requested only once");
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
+          "sql_result::page_iterator", "Iterator can be requested only once"));
     }
 
     iterator_requested_ = true;
 
     return { shared_from_this(), first_page_ };
 }
+
 void
 sql_result::check_closed() const
 {
@@ -707,45 +707,88 @@ sql_result::~sql_result()
     }
 }
 
-sql_result::page_iterator_type::page_iterator_type(
-  std::shared_ptr<sql_result> result,
-  std::shared_ptr<sql_page> page)
-  : result_(std::move(result))
-  , page_(std::move(page))
+sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
+                                         std::shared_ptr<sql_page> first_page)
+  : in_progress_{ std::make_shared<std::atomic<bool>>(false) }
+  , last_{ std::make_shared<std::atomic<bool>>(false) }
+  , result_{ move(result) }
+  , first_page_{ move(first_page) }
 {
-    page_->serialization_service(
-      &result_->client_context_->get_serialization_service());
-    page_->row_metadata(result_->row_metadata_);
 }
 
-boost::future<void>
-sql_result::page_iterator_type::operator++()
+boost::future<std::shared_ptr<sql_page>>
+sql_result::page_iterator::next()
 {
-    if (page_->last()) {
-        page_.reset();
-        return boost::make_ready_future();
+    auto serialization_service =
+      &result_->client_context_->get_serialization_service();
+    auto row_metadata = result_->row_metadata_;
+
+    if (first_page_) {
+        auto page = move(first_page_);
+
+        page->serialization_service(serialization_service);
+        page->row_metadata(move(row_metadata));
+        *last_ = page->last();
+
+        return boost::make_ready_future<std::shared_ptr<sql_page>>(page);
     }
+
+    if (*in_progress_) {
+        BOOST_THROW_EXCEPTION(
+          exception::illegal_access("sql_result::page_iterator::next",
+                                    "Fetch page operation is already in "
+                                    "progress so next must not be called."));
+    }
+
+    if (*last_) {
+        BOOST_THROW_EXCEPTION(exception::no_such_element(
+          "sql_result::page_iterator::next",
+          "Last page is already retrieved so there are no more pages."));
+    }
+
+    *in_progress_ = true;
 
     auto page_future = result_->fetch_page();
 
+    std::weak_ptr<std::atomic<bool>> last_w{ last_ };
+    std::weak_ptr<std::atomic<bool>> in_progress_w{ in_progress_ };
+
     return page_future.then(
-      boost::launch::sync, [this](boost::future<std::shared_ptr<sql_page>> page) {
-          page_ = page.get();
-          page_->serialization_service(
-            &result_->client_context_->get_serialization_service());
-          page_->row_metadata(result_->row_metadata_);
+      boost::launch::sync,
+      [serialization_service, row_metadata, last_w, in_progress_w](
+        boost::future<std::shared_ptr<sql_page>> page_f) mutable {
+          try {
+              auto page = page_f.get();
+
+              page->serialization_service(serialization_service);
+              page->row_metadata(move(row_metadata));
+
+              auto last = last_w.lock();
+
+              if (last)
+                  *last = page->last();
+
+              auto in_progress = in_progress_w.lock();
+
+              if (in_progress)
+                  *in_progress = false;
+
+              return page;
+          } catch (...) {
+              auto in_progress = in_progress_w.lock();
+
+              if (in_progress)
+                  *in_progress = false;
+
+              throw;
+          }
       });
 }
 
-std::shared_ptr<sql_page>
-sql_result::page_iterator_type::operator*() const
+bool
+sql_result::page_iterator::has_next() const
 {
-    return page_;
-}
-
-sql_result::page_iterator_type::operator bool() const
-{
-    return static_cast<bool>(page_);
+    return !*last_;
 }
 
 sql_page::sql_row::sql_row(size_t row_index, std::shared_ptr<sql_page> page)

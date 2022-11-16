@@ -75,8 +75,8 @@ enum class HAZELCAST_API sql_column_type
     null = 14,
 
     /**
-     * Represented by :class: \code{.java}hazelcast.core.HazelcastJsonValue\endcode.
-    */
+     * JSON type, Represented by hazelcast::client::hazelcast_json_value
+     */
     json = 15
 };
 

@@ -18,6 +18,7 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/sql/sql_result.h"
 #include "hazelcast/client/sql/sql_statement.h"
+#include "hazelcast/client/sql/hazelcast_sql_exception.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

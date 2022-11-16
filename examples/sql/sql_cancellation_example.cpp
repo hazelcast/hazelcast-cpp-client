@@ -28,17 +28,18 @@ main()
     // second
     auto result = sql.execute("SELECT * from TABLE(generate_stream(1))").get();
 
-    auto it = result->page_iterator();
-    std::cout << "There are " << (*it)->row_count()
+    auto itr = result->iterator();
+    auto page_1 = itr.next().get();
+    std::cout << "There are " << page_1->row_count()
               << " rows returned from the cluster database in the first page"
               << std::endl;
 
     // wait 3 seconds to have some data generated
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
-    (++it).get(); // this will block until the next page is ready
+    auto page_2 = itr.next().get();
 
-    std::cout << "There are " << (*it)->row_count()
+    std::cout << "There are " << page_2->row_count()
               << " rows returned from the cluster database in the 2nd page. "
               << "Cancelling the sql query execution at the server side now."
               << std::endl;
