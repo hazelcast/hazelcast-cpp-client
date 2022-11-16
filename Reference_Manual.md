@@ -3489,13 +3489,13 @@ std::cout << "There are " << metadata.column_count() << " columns" << std::endl;
 for (const sql_column_metadata& col : metadata.columns())
 {
     std::cout << "name : "      << col.name
-              << " type : "     << col.type
+              << " type : "     << int(col.type)
               << " nullable : " << col.nullable
               << std::endl;
 }
 
 // Get column by index
-auto age_col_metadata = *(metadata.column(2));
+auto age_col_metadata = metadata.column(2);
 
 std::cout << "name : "      << age_col_metadata.name
           << " type : "     << int(age_col_metadata.type)
