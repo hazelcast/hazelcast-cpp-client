@@ -3423,7 +3423,7 @@ auto result = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").ge
 
 try
 {
-    for (auto itr = result.iterator(); itr.has_next();)
+    for (auto itr = result->iterator(); itr.has_next();)
     {
         auto page_f = itr.next();
         auto page = page_f.get();
