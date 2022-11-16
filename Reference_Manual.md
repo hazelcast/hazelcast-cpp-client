@@ -3494,19 +3494,11 @@ for (const sql_column_metadata& col : metadata.columns())
               << std::endl;
 }
 
-// Find columny by name
-auto surname_col_metadata = *(metadata.find_column("surname"));
-
-std::cout << "name : "      << surname_col_metadata.name
-          << " type : "     << surname_col_metadata.type
-          << " nullable : " << surname_col_metadata.nullable
-          << std::endl;
-
 // Get column by index
 auto age_col_metadata = *(metadata.column(2));
 
 std::cout << "name : "      << age_col_metadata.name
-          << " type : "     << age_col_metadata.type
+          << " type : "     << int(age_col_metadata.type)
           << " nullable : " << age_col_metadata.nullable
           << std::endl;
 ```
