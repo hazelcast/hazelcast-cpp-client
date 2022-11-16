@@ -3336,6 +3336,8 @@ auto result = sql.execute(R"(
 
 `sql_service::execute` executes the query and returns a `boost::future<std::shared_ptr<sql_result>>`. Via `sql_result::iterator()` method, `sql_result::page_iterator` is acquired and pages can be iterated.
 ``` C++
+using namespace hazelcast::client::sql;
+
 auto hz = hazelcast::new_client().get();
 
 auto result = hz.get_sql().execute("SELECT * FROM integers").get();
@@ -3394,7 +3396,12 @@ auto page = itr.next().get();
 std::cout << page.row_count() << std::endl; // This probably print zero
 ```
 **Note-5**: `future<std::shared_ptr<sql_result>>` is returned from `sql_service::execute` and `boost::future<std::shared_ptr<sql_page>>` is returned from `sql_result::page_iterator::next()` can throw `sql::hazelcast_sql_exception` in case of an error so it should be taken into consideration for production ready code.
+
 ``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
 auto result_f = sql.execute("SELECT * FROM TABLE(generate_stream(1))");
 
 try
@@ -3408,6 +3415,10 @@ catch (const hazelcast_sql_exception&)
 ```
 
 ``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
 auto result = sql.execute("SELECT * FROM TABLE(generate_stream(1))").get();
 
 try
@@ -3463,6 +3474,10 @@ hz.get_sql().execute(statement); // OK, execute this statement
 Row metadatas can be acquired with `sql_result::row_metadata()` method.
 
 ``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
 auto result = sql.execute("SELECT name, surname, age FROM employees").get();
 
 auto metadata = result->row_metadata();
