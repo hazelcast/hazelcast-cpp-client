@@ -3457,14 +3457,14 @@ sql_statement statement
 };
 
 // Methods which specifies options are able to be called in chain, returns self references
-statement.add_parameter(15); // '?' part of the query will be filled with this parameter.
-         .cursor_buffer_size(96); // Set '96' to 'cursor_buffer_size' option
-         .timeout(std::chrono::millisecond {500}); // Set '500' milliseconds timeout, if the time is exceeded query will be cancelled.
+statement.add_parameter(15) // '?' part of the query will be filled with this parameter.
+         .cursor_buffer_size(96) // Set '96' to 'cursor_buffer_size' option
+         .timeout(std::chrono::millisecond {500}) // Set '500' milliseconds timeout, if the time is exceeded query will be cancelled.
          .expected_result_type(sql_expected_result_type::rows); // Expect a table which contains rows
 
 // To fetch use non-parameterized overloads
-std::cout << "cursor_buffer_size : " << statement.cursor_buffer_size() << std::endl
-          << "timeout : " << statement.timeout() << std::endl
+std::cout << "cursor_buffer_size : "   << statement.cursor_buffer_size()        << std::endl
+          << "timeout : "              << statement.timeout().count()           << std::endl
           << "expected_result_type : " << int(statement.expected_result_type()) << std::endl;
 
 hz.get_sql().execute(statement); // OK, execute this statement
