@@ -3388,7 +3388,7 @@ using namespace hazelcast::client::sql;
 
 auto hz = hazelcast::new_client().get();
 
-auto result = sql.execute("SELECT * FROM TABLE(generate_stream(1))").get();
+auto result = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
 
 auto itr = result->iterator();
 auto page = itr.next().get();
@@ -3402,7 +3402,7 @@ using namespace hazelcast::client::sql;
 
 auto hz = hazelcast::new_client().get();
 
-auto result_f = sql.execute("SELECT * FROM TABLE(generate_stream(1))");
+auto result_f = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))");
 
 try
 {
@@ -3419,7 +3419,7 @@ using namespace hazelcast::client::sql;
 
 auto hz = hazelcast::new_client().get();
 
-auto result = sql.execute("SELECT * FROM TABLE(generate_stream(1))").get();
+auto result = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
 
 try
 {
@@ -3478,7 +3478,7 @@ using namespace hazelcast::client::sql;
 
 auto hz = hazelcast::new_client().get();
 
-auto result = sql.execute("SELECT name, surname, age FROM employees").get();
+auto result = hz.get_sql().execute("SELECT name, surname, age FROM employees").get();
 
 auto metadata = result->row_metadata();
 
