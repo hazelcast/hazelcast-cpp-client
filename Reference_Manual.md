@@ -141,6 +141,7 @@
          * [7.11.3 Read SELECT Results](#7113-read-select-results)
          * [7.11.4 Sql Statement With Options](#7114-sql-statement-with-options)
          * [7.11.5 Read Row Metadata](#7115-read-row-metadata)
+         * [7.11.6 Read Cell Value](#7116-read-cell-value)
    * [8. Development and Testing](#8-development-and-testing)
       * [8.1. Testing](#81-testing)
    * [9. Getting Help](#9-getting-help)
@@ -3361,7 +3362,9 @@ for (auto itr = result->iterator(); itr.has_next();)
 **Note-1**: First call to `sql_result::page_iterator::next()` function will return `ready` future because first page is already loaded.
 ``` C++
 auto itr = result->iterator();
-itr.next().get(); // This will not block even `get()` is called because it will return a future which is in ready state.
+itr.next().get(); // This will not block even `get()` 
+	          // is called because it will return
+	          // a future which is in ready state.
 ```
 **Note-2**: After first page every `sql_result::page_iterator::next()` call fetches a new page and it must not be called consecutively.
 ``` C++
@@ -3370,8 +3373,8 @@ itr.next().get(); // It will return first page
 auto page_2 = itr.next(); // Made request to second page
 // page_2.get(); // I should have waited but didn't
 auto page_3 = itr.next(); // This probably throws an `hazelcast::illegal_access` exception
-                          // because previous page might not be fetched yet. So `page_2.get()`
-                          // should have called to ensure that page_2 is fetched.
+                          // because previous page might not be fetched yet. To prevent this
+	                  // `page_2.get()` should have called to ensure that page_2 is fetched.
 ```
 **Note-3**: If fetched page is marked as `last` there should not be any further fetch requests.
 ``` C++
@@ -3471,7 +3474,7 @@ hz.get_sql().execute(statement); // OK, execute this statement
 ```
 
 ### 7.11.5 Read Row Metadata
-Row metadatas can be acquired with `sql_result::row_metadata()` method.
+Row metadatas can be acquired with `sql_result::row_metadata()` and `sql_page::sql_row::row_metadata()` method.
 
 ``` C++
 using namespace hazelcast::client::sql;
@@ -3509,6 +3512,26 @@ auto result = sql.execute("DELETE FROM employees WHERE age < 18").get();
 
 result->row_metadata(); // Throws an `exception::illegal_state`
                         // This is not a SELECT query
+```
+
+### 7.11.6 Read Cell Value
+`boost::optional<T> sql_page::sql_row::get_object<T>` is used for reading cell. `T` specifies the return type and it should correspond with the column type. Otherwise it will throw `boost::bad_any_cast`. There are two overloads one can be used to read value by column idx and other by column name.
+
+``` C++
+for (auto itr = result->iterator(); itr.has_next();)
+{
+    auto page = itr.next().get();
+
+    for(const sql_page::sql_row& row : page->rows())
+    {
+        std::cout << row.get_object<int>(0) // Read first column value as int
+                  << ", "
+                  << row.get_object<int>("age") // Read 'age' column value
+                  << ", "
+                  << row.get_object<std::string>("surname") // Read 'surname' column value
+                  << std::endl;
+    }
+}
 ```
 
 # 8. Development and Testing
