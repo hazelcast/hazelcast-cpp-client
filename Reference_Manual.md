@@ -3459,7 +3459,7 @@ sql_statement statement
 // Methods which specifies options are able to be called in chain, returns self references
 statement.add_parameter(15) // '?' part of the query will be filled with this parameter.
          .cursor_buffer_size(96) // Set '96' to 'cursor_buffer_size' option
-         .timeout(std::chrono::millisecond {500}) // Set '500' milliseconds timeout, if the time is exceeded query will be cancelled.
+         .timeout(std::chrono::milliseconds {500}) // Set '500' milliseconds timeout, if the time is exceeded query will be cancelled.
          .expected_result_type(sql_expected_result_type::rows); // Expect a table which contains rows
 
 // To fetch use non-parameterized overloads
