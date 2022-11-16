@@ -251,3 +251,24 @@ message(STATUS "  DISABLE_LOGGING =       ${DISABLE_LOGGING}")
 message(STATUS "  CMAKE_INSTALL_PREFIX =  ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  BUILD_TESTS =           ${BUILD_TESTS}")
 message(STATUS "  BUILD_EXAMPLES =        ${BUILD_EXAMPLES}")
+
+if ( UNIX )
+    add_custom_target(
+        generate-docs
+
+        COMMENT
+            "Generates doxygen documentations"
+    )
+
+    add_custom_command(
+        TARGET
+            generate-docs
+        WORKING_DIRECTORY
+            ${CMAKE_SOURCE_DIR}
+        COMMAND
+            ${CMAKE_SOURCE_DIR}/scripts/generate-docs.sh
+            "README.md"
+            ${PROJECT_VERSION}
+            "https://github.com/hazelcast/hazelcast-cpp-client"
+    )
+endif()
