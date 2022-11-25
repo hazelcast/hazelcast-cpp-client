@@ -1,8 +1,33 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-MAINPAGE=${1}
-PROJECT_VERSION="v${2}"
-REPO_URL=${3}
+usage() { echo "Usage: $(basename $0) -m main_page_path -v project_version -u repo_url"; exit; }
+
+# Parse args
+while getopts 'm:v:u:h' opt; do
+    case "$opt" in
+        m) MAINPAGE=${OPTARG}           ;;
+        v) PROJECT_VERSION="v${OPTARG}" ;;
+        u) REPO_URL=${OPTARG}           ;;
+        h) usage                        ;;
+    esac
+done
+
+# Check mandatory options
+if [ -z "${MAINPAGE}" ]; then
+    echo "Missing -m main_page_path" >&2
+    exit 1
+fi
+
+if [ -z "${PROJECT_VERSION}" ]; then
+    echo "Missing -v project_version" >&2
+    exit 1
+fi
+
+if [ -z "${REPO_URL}" ]; then
+    echo "Missing -u repo_url" >&2
+    exit 1
+fi
+
 BASE_URL=${REPO_URL}/blob/${PROJECT_VERSION}
 
 CROSS_LINKS=()

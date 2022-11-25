@@ -289,16 +289,36 @@ if (${GENERATE_DOCS_TARGET_ENABLE})
             "Generates doxygen documentations"
     )
 
-    add_custom_command(
-        TARGET
-            generate-docs
-        WORKING_DIRECTORY
-            ${CMAKE_SOURCE_DIR}
-        COMMAND
-            $<$<PLATFORM_ID:Windows>:${BASH_BIN}>
-            ${CMAKE_SOURCE_DIR}/scripts/generate-docs.sh
-            "README.md"
-            ${PROJECT_VERSION}
-            "https://github.com/hazelcast/hazelcast-cpp-client"
-    )
+    if (WIN32)
+        add_custom_command(
+            TARGET
+                generate-docs
+            WORKING_DIRECTORY
+                ${CMAKE_SOURCE_DIR}
+            COMMAND
+                ${BASH_BIN}
+                ${CMAKE_SOURCE_DIR}/scripts/generate-docs.sh
+                "-m"
+                    "README.md"
+                "-v"
+                    ${PROJECT_VERSION}
+                "-u"
+                    "https://github.com/hazelcast/hazelcast-cpp-client"
+        )
+    else()
+        add_custom_command(
+            TARGET
+                generate-docs
+            WORKING_DIRECTORY
+                ${CMAKE_SOURCE_DIR}
+            COMMAND
+                ${CMAKE_SOURCE_DIR}/scripts/generate-docs.sh
+                "-m"
+                    "README.md"
+                "-v"
+                    ${PROJECT_VERSION}
+                "-u"
+                    "https://github.com/hazelcast/hazelcast-cpp-client"
+        )
+    endif()
 endif()
