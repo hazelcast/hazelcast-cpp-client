@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -e
 usage() { echo "Usage: $(basename $0) -m main_page_path -v project_version -u repo_url"; exit $1; }
 
 # Parse args
@@ -29,39 +30,68 @@ if [ -z "${REPO_URL}" ]; then
 fi
 
 BASE_URL=${REPO_URL}/blob/${PROJECT_VERSION}
+GREP_BIN="grep"
 
-CROSS_LINKS=()
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    GREP_BIN="ggrep"
 
-# Find and fill cross-links
-i=0
-while read -r line; do
-    CROSS_LINKS[${i}]=${line}
+    if [ ! -x "${GREP_BIN} -v" ]; then
+        echo "===================================="
+        echo "${GREP_BIN} tool is not installed."
+        echo "Install it with 'brew install grep'"
+        echo "===================================="
+        exit 1
+    fi
+fi
 
-    i=$((${i}+1))
-done < <(LC_ALL=en_US.utf8 grep -Po '\[((\w|\d|\s)+)\]\((?!http)((\w|\d|)+)(\.((\w)+))?(\#((\w|\d|\-)+))?\)' ${MAINPAGE})
+###################################################
+# Currently Doxygen cannot parse relative links   #
+# which are located in the markdown files.        #
+# Example :                                       #
+# [Conan](Reference_Manual.md#111-conan-users)    #
+# The line above is a relative link to the section#
+# which is located another file. So this part of  #
+# script converts these links into absolute ones  #
+#                                                 #
+# For example :                                   #
+# [Conan](Reference_Manual.md#111-conan-users)    #
+# becomes                                         #
+# [Conan](${REPO_URL}/blob/${PROJECT_VERSION})    #
+# so it substitutes                               #
+# [Conan](https://github.com/hazelcast/hazelcast-cpp-client/blob/v5.0.0/Reference_Manual.md#111-conan-users) #
+###################################################
+
+FIND_RELATIVE_LINKS_REGEXP='\[((\w|\d|\s)+)\]\((?!http)((\w|\d|)+)(\.((\w)+))?(\#((\w|\d|\-)+))?\)'
+
+IFS=$'\n'
+RELATIVE_LINKS=( $(LC_ALL=en_US.utf8 ${GREP_BIN} -Po ${FIND_RELATIVE_LINKS_REGEXP} ${MAINPAGE}) )
+
+ARR=( $(printf "%s\n%s\n" "1" "ozan cansel 2") )
+
+declare -p ARR
 
 FORMATTED=formatted.${MAINPAGE}
 cp ${MAINPAGE} ${FORMATTED}
 
 # Replace relative cross-links with the absolute ones
-for (( i=0; i<${#CROSS_LINKS[@]}; i++ ));
+for (( i=0; i<${#RELATIVE_LINKS[@]}; i++ ));
 do
-    CROSS_LINK=${CROSS_LINKS[$i]}
+    RELATIVE_LINK=${RELATIVE_LINKS[$i]}
 
-    if [[ "${CROSS_LINK}" =~  (.+\()(.+)\) ]]
+    if [[ "${RELATIVE_LINK}" =~  (.+\()(.+)\) ]]
     then
         URL=${BASE_URL}/${BASH_REMATCH[2]}
         REPLACED_LINK="${BASH_REMATCH[1]}${URL})"
     fi
 
-    CROSS_LINK=$(echo ${CROSS_LINK} | sed "s/\[/\\\[/g")
-    CROSS_LINK=$(echo ${CROSS_LINK} | sed "s/\]/\\\]/g")
+    RELATIVE_LINK=$(echo ${RELATIVE_LINK} | sed "s/\[/\\\[/g")
+    RELATIVE_LINK=$(echo ${RELATIVE_LINK} | sed "s/\]/\\\]/g")
 
     REPLACED_LINK=$(echo ${REPLACED_LINK} | sed "s/\[/\\\[/g")
     REPLACED_LINK=$(echo ${REPLACED_LINK} | sed "s/\]/\\\]/g")
     REPLACED_LINK=$(echo ${REPLACED_LINK} | sed 's/\//\\\//g')
 
-    SED_EXPRESSION="s/${CROSS_LINK}/${REPLACED_LINK}/g"
+    SED_EXPRESSION="s/${RELATIVE_LINK}/${REPLACED_LINK}/g"
 
     sed -i "${SED_EXPRESSION}" ${FORMATTED}
 done
