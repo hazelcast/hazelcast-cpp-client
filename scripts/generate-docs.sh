@@ -13,7 +13,7 @@ while read -r line; do
     CROSS_LINKS[${i}]=${line}
 
     i=$((${i}+1))
-done < <(grep -Po '\[((\w|\d|\s)+)\]\((?!http)((\w|\d|)+)(\.((\w)+))?(\#((\w|\d|\-)+))?\)' ${MAINPAGE})
+done < <(LC_ALL=en_US.utf8 grep -Po '\[((\w|\d|\s)+)\]\((?!http)((\w|\d|)+)(\.((\w)+))?(\#((\w|\d|\-)+))?\)' ${MAINPAGE})
 
 FORMATTED=formatted.${MAINPAGE}
 cp ${MAINPAGE} ${FORMATTED}
