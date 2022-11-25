@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-usage() { echo "Usage: $(basename $0) -m main_page_path -v project_version -u repo_url"; exit; }
+usage() { echo "Usage: $(basename $0) -m main_page_path -v project_version -u repo_url"; exit $1; }
 
 # Parse args
 while getopts 'm:v:u:h' opt; do
@@ -8,24 +8,24 @@ while getopts 'm:v:u:h' opt; do
         m) MAINPAGE=${OPTARG}           ;;
         v) PROJECT_VERSION="v${OPTARG}" ;;
         u) REPO_URL=${OPTARG}           ;;
-        h) usage                        ;;
+        h) usage "0"                    ;;
     esac
 done
 
 # Check mandatory options
 if [ -z "${MAINPAGE}" ]; then
     echo "Missing -m main_page_path" >&2
-    exit 1
+    usage "1"
 fi
 
 if [ -z "${PROJECT_VERSION}" ]; then
     echo "Missing -v project_version" >&2
-    exit 1
+    usage "1"
 fi
 
 if [ -z "${REPO_URL}" ]; then
     echo "Missing -u repo_url" >&2
-    exit 1
+    usage "1"
 fi
 
 BASE_URL=${REPO_URL}/blob/${PROJECT_VERSION}
