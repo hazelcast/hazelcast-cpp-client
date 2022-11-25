@@ -5,11 +5,20 @@ PROJECT_VERSION="v${2}"
 REPO_URL=${3}
 BASE_URL=${REPO_URL}/blob/${PROJECT_VERSION}
 
-readarray -t CROSS_LINKS < <(grep -Po '\[((\w|\d|\s)+)\]\((?!http)((\w|\d|)+)(\.((\w)+))?(\#((\w|\d|\-)+))?\)' ${MAINPAGE})
+CROSS_LINKS=()
+
+# Find and fill cross-links
+i=0
+while read -r line; do
+    CROSS_LINKS[${i}]=${line}
+
+    i=$((${i}+1))
+done < <(grep -Po '\[((\w|\d|\s)+)\]\((?!http)((\w|\d|)+)(\.((\w)+))?(\#((\w|\d|\-)+))?\)' ${MAINPAGE})
 
 FORMATTED=formatted.${MAINPAGE}
 cp ${MAINPAGE} ${FORMATTED}
 
+# Replace relative cross-links with the absolute ones
 for (( i=0; i<${#CROSS_LINKS[@]}; i++ ));
 do
     CROSS_LINK=${CROSS_LINKS[$i]}
