@@ -34,14 +34,6 @@ GREP_BIN="grep"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     GREP_BIN="ggrep"
-
-    if [ ! -x "${GREP_BIN} -v" ]; then
-        echo "===================================="
-        echo "${GREP_BIN} tool is not installed."
-        echo "Install it with 'brew install grep'"
-        echo "===================================="
-        exit 1
-    fi
 fi
 
 ###################################################
