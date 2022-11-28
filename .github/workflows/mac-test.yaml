@@ -27,5 +27,5 @@ jobs:
 
       - name: Build & Install
         run: |
-          cd build && cmake ..
+          mkdir build && cd build && cmake ..
           cmake --build . --target generate-docs
