@@ -1,0 +1,37 @@
+name: mac-test
+
+on:
+  push:
+    branches: [API-1076]
+  workflow_dispatch:
+
+jobs:
+  mac-test:
+    strategy:
+      fail-fast: false
+
+    runs-on: macos-latest
+
+    name: >-
+      mac-test
+    env:
+      OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          brew install openssl@1.1 thrift grep boost@1.76
+
+      - name: Build & Install
+        env:
+          BUILD_DIR: build
+          INSTALL: ON
+          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
+        run: |
+          ./scripts/build-unix.sh                                         \
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
+              -DBUILD_TESTS=OFF                                           \
+              -DBUILD_EXAMPLES=OFF
+          cd build && cmake --build . --target generate-docs
