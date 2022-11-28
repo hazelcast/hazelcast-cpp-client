@@ -80,18 +80,15 @@ proxy_session_manager::create_new_session(const raft_group_id& group_id)
 {
     // the lock_ is already acquired as write lock
     auto response = request_new_session(group_id);
-    auto result = sessions_.emplace(
-      group_id, session_state{ response.id, response.ttl_millis });
-    if(!result.second){
-        sessions_.erase(result.first);
-        result = sessions_.emplace(group_id, session_state{response.id, response.ttl_millis});
-    }
-    auto session =
-      sessions_
-        .emplace(group_id, session_state{ response.id, response.ttl_millis })
-        .first;
+    session_state state { response.id , response.ttl_millis };
+
+    auto result = sessions_.emplace( group_id, state );
+
+    if(!result.second)
+        result.first->second = state;
+
     schedule_heartbeat_task(response.heartbeat_millis);
-    return session;
+    return result.first;
 }
 
 proxy_session_manager::session_response
@@ -329,6 +326,17 @@ proxy_session_manager::session_state::session_state(const session_state& rhs)
   , creation_time(rhs.creation_time)
   , acquire_count(rhs.acquire_count.load())
 {}
+
+proxy_session_manager::session_state&
+proxy_session_manager::session_state::operator=(const session_state& rhs)
+{
+  id  = rhs.id;
+  ttl = rhs.ttl;
+  creation_time = rhs.creation_time;
+  acquire_count = rhs.acquire_count.load();
+
+  return *this;
+}
 
 int64_t
 proxy_session_manager::session_state::acquire(int32_t count)
