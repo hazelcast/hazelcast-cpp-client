@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          brew install openssl@1.1 thrift grep boost@1.76
+          brew install openssl@1.1 thrift grep boost@1.74
 
       - name: Build & Install
         env:
