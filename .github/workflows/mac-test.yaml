@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         run: |
           brew install openssl@1.1 thrift grep
-          ./scripts/install-boost.sh 1.76
+          ./scripts/install-boost.sh 1.76.0
 
       - name: Build & Install
         env:
