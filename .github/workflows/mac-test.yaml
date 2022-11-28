@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          brew install openssl@1.1 thrift grep
+          brew install openssl@1.1 thrift grep doxygen
           ./scripts/install-boost.sh 1.76.0
 
       - name: Build & Install
