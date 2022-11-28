@@ -66,10 +66,6 @@ FIND_RELATIVE_LINKS_REGEXP='\[((\w|\d|\s)+)\]\((?!http)((\w|\d|)+)(\.((\w)+))?(\
 IFS=$'\n'
 RELATIVE_LINKS=( $(LC_ALL=en_US.utf8 ${GREP_BIN} -Po ${FIND_RELATIVE_LINKS_REGEXP} ${MAINPAGE}) )
 
-ARR=( $(printf "%s\n%s\n" "1" "ozan cansel 2") )
-
-declare -p ARR
-
 FORMATTED=formatted.${MAINPAGE}
 cp ${MAINPAGE} ${FORMATTED}
 
