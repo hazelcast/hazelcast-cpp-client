@@ -40,7 +40,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "${GREP_BIN} tool is not installed."
         echo "Install it with 'brew install grep'"
         echo "===================================="
-        # exit 1
+        exit 1
     fi
 fi
 
