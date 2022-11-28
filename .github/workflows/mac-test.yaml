@@ -26,13 +26,6 @@ jobs:
           ./scripts/install-boost.sh 1.76.0
 
       - name: Build & Install
-        env:
-          BUILD_DIR: build
-          INSTALL: ON
-          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
         run: |
-          ./scripts/build-unix.sh                                         \
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
-              -DBUILD_TESTS=OFF                                           \
-              -DBUILD_EXAMPLES=OFF
-          cd build && cmake --build . --target generate-docs
+          cd build && cmake ..
+          cmake --build . --target generate-docs
