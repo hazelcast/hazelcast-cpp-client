@@ -89,7 +89,9 @@ do
 
     SED_EXPRESSION="s/${RELATIVE_LINK}/${REPLACED_LINK}/g"
 
-    sed -i "${SED_EXPRESSION}" ${FORMATTED}
+    sed -i'.original' -e "${SED_EXPRESSION}" ${FORMATTED}
+
+    rm "${FORMATTED}.original"
 done
 
 doxygen
