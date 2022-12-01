@@ -304,8 +304,11 @@ struct generator<hazelcast_json_value>
 class SqlTest : public ClientTest
 {
 public:
+    using imap_t = std::shared_ptr<hazelcast::client::imap>;
+
     hazelcast_client client;
     std::string map_name;
+    imap_t map;
 
     static client_config get_config()
     {
@@ -318,14 +321,7 @@ public:
       : client{ hazelcast::new_client(get_config()).get() }
       , map_name{ random_map_name() }
     {
-    }
-
-    ~SqlTest() override
-    {
-        try {
-            client.get_map(map_name).get()->clear_data();
-        } catch (...) {
-        }
+        map = client.get_map(map_name).get();
     }
 
 protected:
@@ -342,6 +338,14 @@ protected:
         member_.reset();
         member2_.reset();
         server_factory_.reset();
+    }
+
+    void TearDown() override
+    {
+        try {
+            map->clear().get();
+        } catch (...) {
+        }
     }
 
     void create_mapping(std::string format = "INTEGER")
@@ -393,8 +397,6 @@ protected:
         values.reserve(n_entries);
 
         generate_n(back_inserter(values), n_entries, gen);
-
-        auto map = client.get_map(map_name).get();
 
         for (auto i = 0; i < n_entries; ++i)
             map->put(i, values.at(i)).get();
@@ -1266,10 +1268,6 @@ TEST_F(SqlTest, exception)
 TEST_F(SqlTest, select)
 {
     sql::sql_service service = client.get_sql();
-
-    auto map_name = get_test_name();
-
-    auto map = client.get_map(map_name).get();
 
     constexpr std::size_t DATA_SET_SIZE = 4096;
     std::unordered_map<portable_pojo_key, portable_pojo> entries(DATA_SET_SIZE);
