@@ -145,7 +145,7 @@ private:
 
     struct sql_fetch_response_parameters
     {
-        std::shared_ptr<sql_page> page;
+        boost::optional<std::shared_ptr<sql_page>> page;
         boost::optional<impl::sql_error> error;
     };
 

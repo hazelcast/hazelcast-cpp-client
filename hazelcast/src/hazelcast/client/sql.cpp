@@ -175,7 +175,7 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
           return protocol::codec::builtin::sql_page_codec::decode(msg);
       });
     auto error = message.get<boost::optional<impl::sql_error>>();
-    return { *std::move(page), std::move(error) };
+    return { std::move(page), std::move(error) };
 }
 
 std::shared_ptr<sql_result>
@@ -301,7 +301,7 @@ sql_service::fetch_page(
               hazelcast::client::sql::sql_service::handle_fetch_response_error(
                 std::move(response_params.error));
 
-              page = std::move(response_params.page);
+              page = std::move(*response_params.page);
           } catch (exception::iexception&) {
               impl::query_utils::throw_public_exception(
                 std::current_exception(), this->client_id());
