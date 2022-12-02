@@ -1185,6 +1185,9 @@ TEST_F(SqlTest, test_null_only_column)
 
     auto col_type = result->row_metadata().columns().back().type;
     EXPECT_EQ(col_type, sql::sql_column_type::integer);
+
+    auto value = result->iterator().next().get()->rows().at(0).get_object<int>(1);
+    EXPECT_FALSE(value.has_value());
 }
 
 TEST_F(SqlTest, test_json)
