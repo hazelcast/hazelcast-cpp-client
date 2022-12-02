@@ -31,7 +31,7 @@ main()
     map->put("key5", 5.0);
 
     auto sql = hz.get_sql();
-    // Create mapping for the integers. This needs to be done only once per map.
+    // Create mapping for the doubles. This needs to be done only once per map.
     auto result = sql
                     .execute(R"(
                       CREATE OR REPLACE MAPPING myMap (
