@@ -355,8 +355,9 @@ protected:
 
     std::shared_ptr<sql::sql_result> select_all()
     {
-        return client.get_sql().execute(
-            (boost::format("SELECT * FROM %1%") % map_name).str()).get();
+        return client.get_sql()
+          .execute((boost::format("SELECT * FROM %1%") % map_name).str())
+          .get();
     }
 
     portable_pojo_key key(int64_t i) { return { i }; }
@@ -607,8 +608,7 @@ TEST_F(SqlTest, execute_on_closed_member)
 TEST_F(SqlTest, try_to_execute_on_closed_client)
 {
     client.shutdown().get();
-    ASSERT_THROW(select_all(),
-                 sql::hazelcast_sql_exception);
+    ASSERT_THROW(select_all(), sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, sql_page_column_count)
@@ -1218,7 +1218,8 @@ TEST_F(SqlTest, test_null_only_column)
     auto col_type = result->row_metadata().columns().back().type;
     EXPECT_EQ(col_type, sql::sql_column_type::integer);
 
-    auto value = result->iterator().next().get()->rows().at(0).get_object<int>(1);
+    auto value =
+      result->iterator().next().get()->rows().at(0).get_object<int>(1);
     EXPECT_FALSE(value.has_value());
 }
 
