@@ -46,7 +46,7 @@ main()
                     )")
                     .get();
 
-    // Fetch values in between (40, 50)
+    // Retrieve 3 elements starting from the offset 1 so it will skip first element
     result =
       sql
         .execute("SELECT * FROM myMap ORDER BY this ASC LIMIT ? OFFSET ?", 3, 1)
