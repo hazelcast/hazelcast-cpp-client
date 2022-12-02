@@ -1024,7 +1024,7 @@ TEST_F(SqlTest, test_execute_statement_with_timeout)
           .str()
     };
 
-    statement.timeout(std::chrono::milliseconds{ 100 });
+    statement.timeout(std::chrono::milliseconds{ 5000 });
 
     auto expected_row_count =
       count_if(begin(expecteds),
