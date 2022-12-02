@@ -571,10 +571,11 @@ TEST_F(SqlTest, test_hazelcast_exception)
     create_mapping();
     (void)populate_map(map);
 
-    auto execution = client.get_sql().execute("wrong-query");
+    auto result_future = client.get_sql().execute("wrong-query");
 
     try {
-        execution.get();
+        result_future.get();
+        FAIL();
     } catch (const sql::hazelcast_sql_exception& ex) {
         auto uuid_str = boost::uuids::to_string(ex.originating_member_id());
 
