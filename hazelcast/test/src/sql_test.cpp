@@ -353,6 +353,12 @@ protected:
           serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
     }
 
+    std::shared_ptr<sql::sql_result> select_all()
+    {
+        return client.get_sql().execute(
+            (boost::format("SELECT * FROM %1%") % map_name).str()).get();
+    }
+
     portable_pojo_key key(int64_t i) { return { i }; }
 
     portable_pojo value(int64_t i) { return portable_pojo{ i }; }
@@ -601,8 +607,7 @@ TEST_F(SqlTest, execute_on_closed_member)
 TEST_F(SqlTest, try_to_execute_on_closed_client)
 {
     client.shutdown().get();
-    ASSERT_THROW(client.get_sql().execute(
-                   (boost::format("SELECT * FROM %1%") % map_name).str()),
+    ASSERT_THROW(select_all(),
                  sql::hazelcast_sql_exception);
 }
 
@@ -611,12 +616,7 @@ TEST_F(SqlTest, sql_page_column_count)
     create_mapping();
     (void)populate_map(map);
 
-    auto result =
-      client.get_sql()
-        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
-        .get();
-
-    ASSERT_EQ(result->iterator().next().get()->column_count(), 2);
+    ASSERT_EQ(select_all()->iterator().next().get()->column_count(), 2);
 }
 
 TEST_F(SqlTest, sql_page_column_types)
@@ -624,10 +624,7 @@ TEST_F(SqlTest, sql_page_column_types)
     create_mapping("VARCHAR");
     (void)populate_map<std::string>(map);
 
-    auto result =
-      client.get_sql()
-        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
-        .get();
+    auto result = select_all();
 
     auto types = result->iterator().next().get()->column_types();
 
@@ -825,10 +822,7 @@ TEST_F(SqlTest, test_execute)
     create_mapping();
     auto expecteds = populate_map(map, 11);
 
-    auto result =
-      client.get_sql()
-        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
-        .get();
+    auto result = select_all();
 
     for_each_row(result,
                  assert_row_count{ expecteds.size() },
@@ -1230,10 +1224,7 @@ TEST_F(SqlTest, test_json)
     create_mapping("JSON");
     auto expecteds = populate_map<hazelcast_json_value>(map, 50);
 
-    auto result =
-      client.get_sql()
-        .execute((boost::format("SELECT * FROM %1%") % map_name).str())
-        .get();
+    auto result = select_all();
 
     for_each_row(result,
                  assert_row_count(expecteds.size()),
