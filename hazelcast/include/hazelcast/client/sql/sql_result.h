@@ -77,6 +77,9 @@ public:
 
         /**
          * Fetches the new page
+         * @throws illegal_access if it is called before previous page is already fetched.
+         * @throws no_such_element if there are no more pages to be retrieved.
+         * only an update count
          */
         boost::future<std::shared_ptr<sql_page>> next();
 
