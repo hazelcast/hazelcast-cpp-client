@@ -386,8 +386,9 @@ protected:
             auto idx = row.get_object<int>(0);
 
             EXPECT_TRUE(idx.has_value());
-            EXPECT_TRUE(row.get_object<T>(1).has_value());
-            EXPECT_EQ(expecteds.at(*idx), *row.get_object<T>(1));
+            auto value = row.get_object<T>(1);
+            EXPECT_TRUE(value.has_value());
+            EXPECT_EQ(expecteds.at(*idx), *value);
         }
     };
 
@@ -400,7 +401,7 @@ protected:
     }
 
     template<typename... Fns>
-    void for_each_row_until(int64_t n,
+    void for_each_row_until(int64_t n_rows,
                             std::shared_ptr<sql::sql_result> result,
                             Fns&&... fn)
     {
@@ -411,7 +412,7 @@ protected:
                 int _[] = { 0, ((void)fn(row), 0)... };
                 (void)_;
 
-                if (!--n)
+                if (!--n_rows)
                     return;
             }
         }
