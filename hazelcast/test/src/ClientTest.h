@@ -82,8 +82,9 @@ public:
               return std::make_pair(key_gen(), value_gen());
           });
 
-        for (const std::pair<Key, Value>& p : entries)
+        for (const std::pair<Key, Value>& p : entries) {
             map->put(p.first, p.second);
+        }
 
         return entries;
     }
