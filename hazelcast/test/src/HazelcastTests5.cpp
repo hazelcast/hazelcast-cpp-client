@@ -837,15 +837,18 @@ protected:
         client_.get_map("tradeMap").get()->destroy().get();
     }
 
-    void fill_map()
+    std::unordered_map<std::string, std::string> fill_map()
     {
-        for (int i = 0; i < 10; i++) {
-            std::string key = "key";
-            key += std::to_string(i);
-            std::string value = "value";
-            value += std::to_string(i);
-            imap_->put(key, value).get();
-        }
+        struct string_generator
+        {
+            std::string prefix;
+            key_int_generator gen;
+
+            std::string operator()() { return prefix + std::to_string(gen()); }
+        };
+
+        return populate_map<std::string, std::string>(
+          imap_, 10, string_generator{ "value" }, string_generator{ "key" });
     }
 
     entry_listener make_countdown_listener(boost::latch& add_latch,
@@ -965,7 +968,7 @@ TEST_P(ClientMapTest, testIssue537)
 
 TEST_P(ClientMapTest, testContains)
 {
-    fill_map();
+    (void)fill_map();
 
     ASSERT_FALSE(imap_->contains_key("key10").get());
     ASSERT_TRUE(imap_->contains_key("key1").get());
@@ -976,15 +979,15 @@ TEST_P(ClientMapTest, testContains)
 
 TEST_P(ClientMapTest, testGet)
 {
-    fill_map();
-    for (int i = 0; i < 10; i++) {
-        std::string key = "key";
-        key += std::to_string(i);
+    auto entries = fill_map();
+    for (const std::pair<std::string, std::string>& e : entries) {
+        std::string key = e.first;
+        std::string value = e.second;
+
         boost::optional<std::string> temp =
           imap_->get<std::string, std::string>(key).get();
+
         ASSERT_TRUE(temp.has_value());
-        std::string value = "value";
-        value += std::to_string(i);
         ASSERT_EQ(temp.value(), value);
     }
 }
@@ -1004,7 +1007,7 @@ TEST_P(ClientMapTest, testPartitionAwareKey)
 
 TEST_P(ClientMapTest, testRemoveAndDelete)
 {
-    fill_map();
+    auto entries = fill_map();
     boost::optional<std::string> temp =
       imap_->remove<std::string, std::string>("key10").get();
     ASSERT_FALSE(temp.has_value());
@@ -1024,7 +1027,7 @@ TEST_P(ClientMapTest, testRemoveAndDelete)
 
 TEST_P(ClientMapTest, testRemoveIfSame)
 {
-    fill_map();
+    (void)fill_map();
 
     ASSERT_FALSE(imap_->remove("key2", "value").get());
     ASSERT_EQ(10, imap_->size().get());
@@ -1035,7 +1038,7 @@ TEST_P(ClientMapTest, testRemoveIfSame)
 
 TEST_P(ClientMapTest, testRemoveAll)
 {
-    fill_map();
+    (void)fill_map();
 
     imap_
       ->remove_all(query::equal_predicate(
@@ -1417,7 +1420,7 @@ TEST_P(ClientMapTest, DISABLED_testJsonValuesWithpaging_predicate)
 
 TEST_P(ClientMapTest, testValues)
 {
-    fill_map();
+    (void)fill_map();
     query::sql_predicate predicate(client_, "this == value1");
     std::vector<std::string> tempVector =
       imap_->values<std::string>(predicate).get();

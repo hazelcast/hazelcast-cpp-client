@@ -15,11 +15,14 @@
  */
 #pragma once
 
+#include <utility>
+#include <iterator>
 #include <boost/uuid/uuid.hpp>
 
 #include <gtest/gtest.h>
 
 #include <hazelcast/client/client_config.h>
+#include <hazelcast/client/imap.h>
 #include <hazelcast/logger.h>
 
 namespace hazelcast {
@@ -33,11 +36,17 @@ class ClientContext;
 
 namespace test {
 
+template<typename T, typename = void>
+struct generator;
+struct key_int_generator;
+
 class HazelcastServerFactory;
 
 class ClientTest : public ::testing::Test
 {
 public:
+    using imap_t = std::shared_ptr<hazelcast::client::imap>;
+
     ClientTest();
 
     logger& get_logger();
@@ -55,8 +64,68 @@ public:
     static std::string get_ssl_file_path();
     static HazelcastServerFactory& default_server_factory();
 
+    template<typename Value = int,
+             typename Key = int,
+             typename Generator = generator<Value>,
+             typename KeyGenerator = key_int_generator>
+    std::unordered_map<Key, Value> populate_map(
+      imap_t map,
+      int n_entries = 10,
+      Generator&& value_gen = Generator{},
+      KeyGenerator&& key_gen = KeyGenerator{})
+    {
+        std::unordered_map<Key, Value> entries;
+        entries.reserve(n_entries);
+
+        generate_n(
+          inserter(entries, end(entries)), n_entries, [&value_gen, &key_gen]() {
+              return std::make_pair(key_gen(), value_gen());
+          });
+
+        for (const std::pair<Key, Value>& p : entries)
+            map->put(p.first, p.second);
+
+        return entries;
+    }
+
 private:
     std::shared_ptr<logger> logger_;
+};
+
+template<typename T>
+struct generator<T, typename std::enable_if<std::is_integral<T>::value>::type>
+{
+    T operator()() { return T(rand()); }
+};
+
+struct key_int_generator
+{
+    int x{};
+
+    int operator()() { return x++; }
+};
+
+template<>
+struct generator<std::string>
+{
+    std::string operator()() { return ClientTest::random_map_name(); }
+};
+
+template<>
+struct generator<hazelcast_json_value>
+{
+    hazelcast_json_value operator()()
+    {
+        generator<std::string> str_gen;
+        generator<int> int_gen;
+
+        return hazelcast_json_value{ (boost::format(
+                                        R"({
+                        "name" : "%1%" ,
+                        "value" : %2%
+                    })") % str_gen() % int_gen())
+                                       .str() };
+    }
 };
 
 } // namespace test

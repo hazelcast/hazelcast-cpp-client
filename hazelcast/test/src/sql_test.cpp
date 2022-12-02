@@ -259,53 +259,9 @@ namespace hazelcast {
 namespace client {
 namespace test {
 
-template<typename T, typename = void>
-struct generator;
-
-template<typename T>
-struct generator<T, typename std::enable_if<std::is_integral<T>::value>::type>
-{
-    T operator()() { return T(rand()); }
-};
-
-template<>
-struct generator<std::string>
-{
-    std::string operator()() { return ClientTest::random_map_name(); }
-};
-
-template<>
-struct generator<test::student>
-{
-    test::student operator()()
-    {
-        return test::student{ int64_t(rand() % 1000),
-                              float(rand() % 1000) * 2.0f };
-    }
-};
-
-template<>
-struct generator<hazelcast_json_value>
-{
-    hazelcast_json_value operator()()
-    {
-        generator<std::string> str_gen;
-        generator<int> int_gen;
-
-        return hazelcast_json_value{ (boost::format(
-                                        R"({
-                        "name" : "%1%" ,
-                        "value" : %2%
-                    })") % str_gen() % int_gen())
-                                       .str() };
-    }
-};
-
 class SqlTest : public ClientTest
 {
 public:
-    using imap_t = std::shared_ptr<hazelcast::client::imap>;
-
     hazelcast_client client;
     std::string map_name;
     imap_t map;
@@ -343,7 +299,7 @@ protected:
     void TearDown() override
     {
         try {
-            map->clear().get();
+            map->destroy().get();
         } catch (...) {
         }
     }
@@ -389,27 +345,12 @@ protected:
     void create_mapping_for_student()
     {
         create_mapping_for_portable(
-        R"(
+          R"(
                 age BIGINT,
                 height REAL
             )",
-        serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
-        serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
-    }
-
-    template<typename Value = int, typename Generator = generator<Value>>
-    std::vector<Value> populate_map(int n_entries = 10,
-                                    Generator&& gen = Generator{})
-    {
-        std::vector<Value> values;
-        values.reserve(n_entries);
-
-        generate_n(back_inserter(values), n_entries, gen);
-
-        for (auto i = 0; i < n_entries; ++i)
-            map->put(i, values.at(i)).get();
-
-        return values;
+          serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
+          serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
     }
 
     portable_pojo_key key(int64_t i) { return { i }; }
@@ -438,7 +379,7 @@ protected:
     {
         using sql_row = sql::sql_page::sql_row;
 
-        std::vector<T> expecteds;
+        std::unordered_map<int, T> expecteds;
 
         void operator()(const sql_row& row) const
         {
@@ -610,6 +551,16 @@ private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
 };
 
+template<>
+struct generator<test::student>
+{
+    test::student operator()()
+    {
+        return test::student{ int64_t(rand() % 1000),
+                              float(rand() % 1000) * 2.0f };
+    }
+};
+
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_{};
 std::unique_ptr<HazelcastServer> SqlTest::member_{};
 std::unique_ptr<HazelcastServer> SqlTest::member2_{};
@@ -617,7 +568,7 @@ std::unique_ptr<HazelcastServer> SqlTest::member2_{};
 TEST_F(SqlTest, test_hazelcast_exception)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     auto execution = client.get_sql().execute("wrong-query");
 
@@ -656,7 +607,7 @@ TEST_F(SqlTest, try_to_connect_on_closed_client)
 TEST_F(SqlTest, sql_page_column_count)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     auto result =
       client.get_sql()
@@ -669,7 +620,7 @@ TEST_F(SqlTest, sql_page_column_count)
 TEST_F(SqlTest, sql_page_column_types)
 {
     create_mapping("VARCHAR");
-    (void)populate_map<std::string>();
+    (void)populate_map<std::string>(map);
 
     auto result =
       client.get_sql()
@@ -693,7 +644,7 @@ TEST_F(SqlTest, wrong_syntax)
 TEST_F(SqlTest, row_metadata_on_non_select_query)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     auto result =
       client.get_sql()
@@ -707,7 +658,7 @@ TEST_F(SqlTest, row_metadata_on_non_select_query)
 TEST_F(SqlTest, calling_iterator_next_consecutively)
 {
     create_mapping();
-    (void)populate_map(100);
+    (void)populate_map(map, 100);
 
     sql::sql_statement statement{ client,
                                   (boost::format(
@@ -731,7 +682,7 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
 TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
 {
     create_mapping();
-    (void)populate_map(100);
+    (void)populate_map(map, 100);
 
     sql::sql_statement statement{ client,
                                   (boost::format(
@@ -870,7 +821,7 @@ TEST_F(SqlTest, statement_with_params)
 TEST_F(SqlTest, test_execute)
 {
     create_mapping();
-    auto expecteds = populate_map(11);
+    auto expecteds = populate_map(map, 11);
 
     auto result =
       client.get_sql()
@@ -885,7 +836,7 @@ TEST_F(SqlTest, test_execute)
 TEST_F(SqlTest, test_execute_with_params)
 {
     create_mapping();
-    auto expecteds = populate_map(13);
+    auto expecteds = populate_map(map, 13);
 
     auto result =
       client.get_sql()
@@ -894,8 +845,10 @@ TEST_F(SqlTest, test_execute_with_params)
           6)
         .get();
 
-    auto expected_row_count = count_if(
-      begin(expecteds), end(expecteds), [](int value) { return value > 6; });
+    auto expected_row_count =
+      count_if(begin(expecteds),
+               end(expecteds),
+               [](const std::pair<int, int>& p) { return p.second > 6; });
 
     for_each_row(result,
                  assert_row_count(expected_row_count),
@@ -905,7 +858,7 @@ TEST_F(SqlTest, test_execute_with_params)
 TEST_F(SqlTest, test_execute_with_mismatched_params_when_sql_has_more)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     auto execution = client.get_sql().execute(
       (boost::format("SELECT * FROM %1% WHERE __key > ? AND this > ?") %
@@ -920,7 +873,7 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_sql_has_more)
 TEST_F(SqlTest, test_execute_with_mismatched_params_when_params_has_more)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     auto execution = client.get_sql().execute(
       (boost::format("SELECT * FROM %1% WHERE this > ?") % map_name).str(),
@@ -936,7 +889,7 @@ TEST_F(SqlTest, test_execute_statement)
     static constexpr int N_ENTRIES = 12;
 
     create_mapping("VARCHAR");
-    auto expecteds = populate_map<std::string>(N_ENTRIES);
+    auto expecteds = populate_map<std::string>(map, N_ENTRIES);
 
     sql::sql_statement statement{
         client, (boost::format("SELECT * FROM %1%") % map_name).str()
@@ -953,7 +906,7 @@ TEST_F(SqlTest, test_execute_statement_with_params)
 {
     create_mapping_for_student();
 
-    auto expecteds = populate_map<test::student>(20);
+    auto expecteds = populate_map<test::student>(map, 20);
 
     sql::sql_statement statement{
         client,
@@ -964,14 +917,16 @@ TEST_F(SqlTest, test_execute_statement_with_params)
           .str()
     };
 
-    auto height_param = expecteds.front().height;
-    auto age_param = expecteds.back().age;
+    auto height_param = expecteds.begin()->second.height;
+    auto age_param = (++expecteds.begin())->second.age;
 
     statement.set_parameters(height_param, age_param);
 
-    auto expected_row_counts =
-      count_if(begin(expecteds), end(expecteds), [&](const test::student& t) {
-          return t.height == height_param || t.age == age_param;
+    auto expected_row_counts = count_if(
+      begin(expecteds),
+      end(expecteds),
+      [&](const std::pair<int, test::student>& p) {
+          return p.second.height == height_param || p.second.age == age_param;
       });
 
     auto result = client.get_sql().execute(statement).get();
@@ -998,7 +953,7 @@ TEST_F(SqlTest, test_execute_statement_with_params_after_clear_parameters)
 {
     create_mapping_for_student();
 
-    auto expecteds = populate_map<test::student>(20);
+    auto expecteds = populate_map<test::student>(map, 20);
 
     sql::sql_statement statement{
         client,
@@ -1009,8 +964,8 @@ TEST_F(SqlTest, test_execute_statement_with_params_after_clear_parameters)
           .str()
     };
 
-    auto height_param = expecteds.front().height;
-    auto age_param = expecteds.back().age;
+    auto height_param = expecteds.begin()->second.height;
+    auto age_param = (++expecteds.begin())->second.age;
 
     statement.set_parameters(height_param);
     statement.clear_parameters();
@@ -1022,7 +977,7 @@ TEST_F(SqlTest, test_execute_statement_with_params_after_clear_parameters)
 TEST_F(SqlTest, test_execute_statement_with_mismatched_params_when_sql_has_more)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     sql::sql_statement statement{
         client,
@@ -1042,7 +997,7 @@ TEST_F(SqlTest,
        test_execute_statement_with_mismatched_params_when_params_has_more)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     sql::sql_statement statement{
         client,
@@ -1058,7 +1013,7 @@ TEST_F(SqlTest,
 TEST_F(SqlTest, test_execute_statement_with_timeout)
 {
     create_mapping_for_student();
-    auto expecteds = populate_map<test::student>(100);
+    auto expecteds = populate_map<test::student>(map, 100);
 
     sql::sql_statement statement{
         client,
@@ -1069,10 +1024,12 @@ TEST_F(SqlTest, test_execute_statement_with_timeout)
 
     statement.timeout(std::chrono::milliseconds{ 100 });
 
-    auto expected_row_count = count_if(
-      begin(expecteds), end(expecteds), [](const test::student& student) {
-          return student.height < 100.0f;
-      });
+    auto expected_row_count =
+      count_if(begin(expecteds),
+               end(expecteds),
+               [](const std::pair<int, test::student>& p) {
+                   return p.second.height < 100.0f;
+               });
 
     auto result = client.get_sql().execute(statement).get();
 
@@ -1108,7 +1065,7 @@ TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
     static constexpr int CURSOR_BUFFER_SIZE = 3;
 
     create_mapping_for_student();
-    (void)populate_map<test::student>(48);
+    (void)populate_map<test::student>(map, 48);
 
     sql::sql_statement statement{
         client, (boost::format("SELECT * FROM %1%") % map_name).str()
@@ -1125,7 +1082,7 @@ TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
 TEST_F(SqlTest, test_execute_with_schema)
 {
     create_mapping_for_student();
-    (void)populate_map<test::student>(48);
+    (void)populate_map<test::student>(map, 48);
 
     sql::sql_statement statement{
         client, (boost::format("SELECT * FROM %1%") % map_name).str()
@@ -1139,7 +1096,7 @@ TEST_F(SqlTest, test_execute_with_schema)
 TEST_F(SqlTest, test_execute_with_expected_result_type)
 {
     create_mapping_for_student();
-    (void)populate_map<test::student>();
+    (void)populate_map<test::student>(map);
 
     sql::sql_statement statement{
         client, (boost::format("SELECT * FROM %1%") % map_name).str()
@@ -1153,7 +1110,7 @@ TEST_F(SqlTest, test_execute_with_expected_result_type)
 TEST_F(SqlTest, test_is_row_set_when_row_is_set)
 {
     create_mapping_for_student();
-    auto expecteds = populate_map<test::student>(100);
+    auto expecteds = populate_map<test::student>(map, 100);
 
     sql::sql_statement statement{
         client, (boost::format("SELECT * FROM %1%") % map_name).str()
@@ -1167,7 +1124,7 @@ TEST_F(SqlTest, test_is_row_set_when_row_is_set)
 TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
 {
     create_mapping_for_student();
-    auto expecteds = populate_map<test::student>(100);
+    auto expecteds = populate_map<test::student>(map, 100);
 
     sql::sql_statement statement{
         client, (boost::format("SELECT * FROM %1%") % map_name).str()
@@ -1181,7 +1138,7 @@ TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
 TEST_F(SqlTest, test_null)
 {
     create_mapping();
-    (void)populate_map(50);
+    (void)populate_map(map, 50);
 
     auto result =
       client.get_sql()
@@ -1198,7 +1155,7 @@ TEST_F(SqlTest, test_null)
 TEST_F(SqlTest, test_object)
 {
     create_mapping_for_student();
-    auto expecteds = populate_map<test::student>();
+    auto expecteds = populate_map<test::student>(map);
 
     auto result =
       client.get_sql()
@@ -1214,7 +1171,7 @@ TEST_F(SqlTest, test_object)
 TEST_F(SqlTest, test_null_only_column)
 {
     create_mapping();
-    (void)populate_map();
+    (void)populate_map(map);
 
     auto result =
       client.get_sql()
@@ -1231,7 +1188,7 @@ TEST_F(SqlTest, test_null_only_column)
 TEST_F(SqlTest, test_json)
 {
     create_mapping("JSON");
-    auto expecteds = populate_map<hazelcast_json_value>(50);
+    auto expecteds = populate_map<hazelcast_json_value>(map, 50);
 
     auto result =
       client.get_sql()
