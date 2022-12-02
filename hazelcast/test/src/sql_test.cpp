@@ -598,7 +598,7 @@ TEST_F(SqlTest, execute_on_closed_member)
     member2_->start();
 }
 
-TEST_F(SqlTest, try_to_connect_on_closed_client)
+TEST_F(SqlTest, try_to_execute_on_closed_client)
 {
     client.shutdown().get();
     ASSERT_THROW(client.get_sql().execute(
