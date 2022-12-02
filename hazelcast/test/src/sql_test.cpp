@@ -672,10 +672,13 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
 
     auto itr = result->iterator();
 
-    itr.next();
-    itr.next();
+    auto p_1 = itr.next();
+    auto p_2 = itr.next();
 
     ASSERT_THROW(itr.next(), exception::illegal_access);
+
+    p_1.get();
+    p_2.get();
 }
 
 TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
