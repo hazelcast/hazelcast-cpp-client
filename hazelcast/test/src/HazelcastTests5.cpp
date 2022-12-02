@@ -980,7 +980,7 @@ TEST_P(ClientMapTest, testContains)
 TEST_P(ClientMapTest, testGet)
 {
     auto entries = fill_map();
-    for (const std::pair<std::string, std::string>& e : entries) {
+    for (const std::pair<const std::string, std::string>& e : entries) {
         std::string key = e.first;
         std::string value = e.second;
 
