@@ -365,9 +365,6 @@ protected:
         client.get_sql().execute(query).get();
     }
 
-    template<typename T>
-    void create_mapping_for_portable();
-
     void create_mapping_for_portable(std::string mapping_query,
                                      int factory_id,
                                      int class_id)
@@ -387,6 +384,17 @@ protected:
                               .str();
 
         client.get_sql().execute(query).get();
+    }
+
+    void create_mapping_for_student()
+    {
+        create_mapping_for_portable(
+        R"(
+                age BIGINT,
+                height REAL
+            )",
+        serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
+        serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
     }
 
     template<typename Value = int, typename Generator = generator<Value>>
@@ -601,19 +609,6 @@ protected:
 private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
 };
-
-template<>
-void
-SqlTest::create_mapping_for_portable<test::student>()
-{
-    create_mapping_for_portable(
-      R"(
-            age BIGINT,
-            height REAL
-        )",
-      serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
-      serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
-}
 
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_{};
 std::unique_ptr<HazelcastServer> SqlTest::member_{};
@@ -956,7 +951,7 @@ TEST_F(SqlTest, test_execute_statement)
 
 TEST_F(SqlTest, test_execute_statement_with_params)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
 
     auto expecteds = populate_map<test::student>(20);
 
@@ -1001,7 +996,7 @@ TEST_F(SqlTest, test_execute_statement_with_params)
 
 TEST_F(SqlTest, test_execute_statement_with_params_after_clear_parameters)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
 
     auto expecteds = populate_map<test::student>(20);
 
@@ -1062,7 +1057,7 @@ TEST_F(SqlTest,
 
 TEST_F(SqlTest, test_execute_statement_with_timeout)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
     auto expecteds = populate_map<test::student>(100);
 
     sql::sql_statement statement{
@@ -1112,7 +1107,7 @@ TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
 {
     static constexpr int CURSOR_BUFFER_SIZE = 3;
 
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
     (void)populate_map<test::student>(48);
 
     sql::sql_statement statement{
@@ -1129,7 +1124,7 @@ TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
 
 TEST_F(SqlTest, test_execute_with_schema)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
     (void)populate_map<test::student>(48);
 
     sql::sql_statement statement{
@@ -1143,7 +1138,7 @@ TEST_F(SqlTest, test_execute_with_schema)
 
 TEST_F(SqlTest, test_execute_with_expected_result_type)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
     (void)populate_map<test::student>();
 
     sql::sql_statement statement{
@@ -1157,7 +1152,7 @@ TEST_F(SqlTest, test_execute_with_expected_result_type)
 
 TEST_F(SqlTest, test_is_row_set_when_row_is_set)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
     auto expecteds = populate_map<test::student>(100);
 
     sql::sql_statement statement{
@@ -1171,7 +1166,7 @@ TEST_F(SqlTest, test_is_row_set_when_row_is_set)
 
 TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
     auto expecteds = populate_map<test::student>(100);
 
     sql::sql_statement statement{
@@ -1202,7 +1197,7 @@ TEST_F(SqlTest, test_null)
 
 TEST_F(SqlTest, test_object)
 {
-    create_mapping_for_portable<test::student>();
+    create_mapping_for_student();
     auto expecteds = populate_map<test::student>();
 
     auto result =
