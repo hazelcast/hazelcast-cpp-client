@@ -756,7 +756,7 @@ sql_result::page_iterator::next()
     return page_future.then(
       boost::launch::sync,
       [serialization_service, row_metadata, last_w, in_progress_w](
-        boost::future<std::shared_ptr<sql_page>> page_f) mutable {
+        boost::future<std::shared_ptr<sql_page>> page_f) {
           try {
               auto page = page_f.get();
 
