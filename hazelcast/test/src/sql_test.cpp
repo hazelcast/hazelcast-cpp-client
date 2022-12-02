@@ -1095,7 +1095,7 @@ TEST_F(SqlTest, test_execute_with_schema)
     client.get_sql().execute(statement).get();
 }
 
-TEST_F(SqlTest, test_execute_with_expected_result_type)
+TEST_F(SqlTest, test_execute_with_expected_result_type_as_rows)
 {
     create_mapping_for_student();
     (void)populate_map<test::student>(map);
@@ -1106,7 +1106,42 @@ TEST_F(SqlTest, test_execute_with_expected_result_type)
 
     statement.expected_result_type(sql::sql_expected_result_type::rows);
 
-    client.get_sql().execute(statement).get();
+    ASSERT_NO_THROW(client.get_sql().execute(statement).get());
+}
+
+TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count)
+{
+    create_mapping_for_student();
+    (void)populate_map<test::student>(map);
+
+    sql::sql_statement statement{
+        client, (boost::format("DELETE FROM %1%") % map_name).str()
+    };
+
+    statement.expected_result_type(sql::sql_expected_result_type::update_count);
+
+    ASSERT_NO_THROW(client.get_sql().execute(statement).get());
+}
+
+TEST_F(SqlTest, test_execute_with_expected_result_type_as_any)
+{
+    create_mapping_for_student();
+    (void)populate_map<test::student>(map);
+
+    sql::sql_statement statement_1{
+        client, (boost::format("SELECT * FROM %1%") % map_name).str()
+    };
+
+    statement_1.expected_result_type(sql::sql_expected_result_type::any);
+    ASSERT_NO_THROW(client.get_sql().execute(statement_1).get());
+
+    sql::sql_statement statement_2{
+        client, (boost::format("DELETE FROM %1%") % map_name).str()
+    };
+
+    statement_2.expected_result_type(sql::sql_expected_result_type::any);
+
+    ASSERT_NO_THROW(client.get_sql().execute(statement_2).get());
 }
 
 TEST_F(SqlTest, test_is_row_set_when_row_is_set)
