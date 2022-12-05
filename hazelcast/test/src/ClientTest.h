@@ -83,7 +83,7 @@ public:
           });
 
         for (const auto& p : entries) {
-            map->put(p.first, p.second);
+            map->put(p.first, p.second).get();
         }
 
         return entries;
