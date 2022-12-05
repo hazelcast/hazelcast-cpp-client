@@ -15,6 +15,11 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
+/**
+ * SQL queries are cancellable, so it is possible to fetch
+ * first page and ignore the rest by calling `close()`.
+ * So it releases all the resources which are occupied by query result.
+*/
 int
 main()
 {
@@ -28,6 +33,7 @@ main()
     // second
     auto result = sql.execute("SELECT * from TABLE(generate_stream(1))").get();
 
+    // Take page iterator
     auto itr = result->iterator();
     auto page_1 = itr.next().get();
     std::cout << "There are " << page_1->row_count()
@@ -40,7 +46,7 @@ main()
     auto page_2 = itr.next().get();
 
     std::cout << "There are " << page_2->row_count()
-              << " rows returned from the cluster database in the 2nd page. "
+              << " rows returned from the cluster database in the second page. "
               << "Cancelling the sql query execution at the server side now."
               << std::endl;
 

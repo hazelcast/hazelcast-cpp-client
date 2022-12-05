@@ -15,6 +15,11 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
+/*
+* At this example, json columns are read by sql query.
+* Also demonstrates how to filter json object by its field with SQL query.
+*/
+
 int
 main()
 {
@@ -25,15 +30,16 @@ main()
 
     auto employees = hz.get_map("employees").get();
 
-    // Populate some data
+    // Populate json values
     employees->put(0,
                    hazelcast_json_value{ R"({"name": "Alice", "age": 32})" });
     employees->put(1, hazelcast_json_value{ R"({"name": "John", "age": 42})" });
     employees->put(2, hazelcast_json_value{ R"({"name": "Jake", "age": 18})" });
 
     auto sql = hz.get_sql();
-    // Create mapping for the employees map. This needs to be done only once per
-    // map.
+
+    // Create mapping for the employees map.
+    // This needs to be done only once per map.
     auto result = sql
                     .execute(R"(
                         CREATE OR REPLACE MAPPING employees
@@ -46,6 +52,7 @@ main()
                     .get();
 
     // Select the names of employees older than 25
+    // It is worth to note that `age` field of json is filtered.
     result = sql
                .execute(R"(
             SELECT this
@@ -54,17 +61,34 @@ main()
         )")
                .get();
 
+    std::cout << std::string(80, '=') << std::endl;
+
+    // Iterate over pages
     for (auto itr = result->iterator(); itr.has_next();) {
         auto page = itr.next().get();
 
-        std::cout << "There are " << page->row_count()
-                  << " rows returned from the cluster database" << std::endl;
+        // Print number of rows at the page
+        std::cout << "There are "
+                  << page->row_count()
+                  << " rows at the page"
+                  << std::endl;
 
+        std::cout << std::string(80, '=') << std::endl;
+
+        // Iterate over rows
         for (auto const& row : page->rows()) {
-            std::cout << "Name:" << row.get_object<hazelcast_json_value>("this")
+
+            // A cell can contain any SQL type.
+            // So it is stored as binary data
+            // which needs to be converted to
+            // the desired type
+            std::cout << "Name:"
+                      << row.get_object<hazelcast_json_value>("this")
                       << std::endl;
         }
     }
+
+    std::cout << std::string(80, '=') << std::endl;
 
     return 0;
 }
