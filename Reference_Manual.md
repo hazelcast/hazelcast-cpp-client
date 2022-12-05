@@ -1,153 +1,154 @@
 # Hazelcast C++ Client Library
 <!--ts-->
-   * [Hazelcast C++ Client Library](#hazelcast-c-client-library)
-   * [Introduction](#introduction)
-   * [Resources](#resources)
-   * [Release Notes](#release-notes)
-   * [1. Getting Started](#1-getting-started)
-      * [1.1. Installing](#11-installing)
-         * [1.1.1. Conan Users](#111-conan-users)
-         * [1.1.2. Vcpkg Users](#112-vcpkg-users)
-         * [1.1.3. Install From Source Code Using CMake](#113-install-from-source-code-using-cmake)
-            * [1.1.3.1. Requirements](#1131-requirements)
-            * [1.1.3.2. Downloading Source Code](#1132-downloading-source-code)
-            * [1.1.3.3. Linux and MacOS Users](#1133-linux-and-macos-users)
-            * [1.1.3.4. Windows Users](#1134-windows-users)
-            * [1.1.3.5. Advanced Installation](#1135-advanced-installation)
-               * [1.1.3.5.1. Custom Install Location](#11351-custom-install-location)
-               * [1.1.3.5.2. CMake Configuration](#11352-cmake-configuration)
-      * [1.2. Starting Hazelcast IMDG Cluster](#12-starting-hazelcast-imdg-cluster)
-         * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
-            * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
-            * [1.2.1.2. Starting Server Using Hazelcast Command Line Tools](#1212-starting-server-using-hazelcast-command-line-tools)
-            * [1.2.1.3. Starting Server Using Hazelcast Distribution](#1213-starting-server-using-hazelcast-distribution)
-            * [1.2.1.4. Adding User Java Library to Java CLASSPATH](#1214-adding-user-java-library-to-java-classpath)
-         * [1.3. Compiling Your Project](#13-compiling-your-project)
-            * [1.3.1. CMake Users](#131-cmake-users)
-            * [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
-            * [1.3.3. Windows Users](#133-windows-users)
-      * [1.4. Basic Configuration](#14-basic-configuration)
-         * [1.4.1. Configuring Hazelcast Server](#141-configuring-hazelcast-server)
-         * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-c-client)
-         * [1.4.2.1 Cluster Name](#1421-cluster-name)
-         * [1.4.2.2. Network Settings](#1422-network-settings)
-         * [1.4.3. Client System Properties](#143-client-system-properties)
-      * [1.5. Basic Usage](#15-basic-usage)
-      * [1.6. Code Samples](#16-code-samples)
-   * [2. Features](#2-features)
-   * [3. Configuration Overview](#3-configuration-overview)
-      * [3.1. Configuration Options](#31-configuration-options)
-         * [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
-   * [4. Serialization](#4-serialization)
-      * [4.1. identified_data_serializer Serialization](#41-identified_data_serializer-serialization)
-      * [4.2. portable_serializer Serialization](#42-portable_serializer-serialization)
-      * [4.3. Custom Serialization](#43-custom-serialization)
-      * [4.4. JSON Serialization](#44-json-serialization)
-      * [4.5. Global Serialization](#45-global-serialization)
-   * [5. Setting Up Client Network](#5-setting-up-client-network)
-      * [5.1. Providing Member Addresses](#51-providing-member-addresses)
-      * [5.2. Setting Smart Routing](#52-setting-smart-routing)
-      * [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
-      * [5.4. Setting Cluster Connection Timeout](#54-setting-cluster-connection-timeout)
-      * [5.5. Advanced Cluster Connection Retry Configuration](#55-advanced-cluster-connection-retry-configuration)
-      * [5.6. Enabling Client TLS/SSL](#56-enabling-client-tlsssl)
-      * [5.7. Enabling Hazelcast AWS Discovery](#57-enabling-hazelcast-aws-discovery)
-      * [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
-      * [5.8.1. Cloud Discovery With SSL Enabled](#581-cloud-discovery-with-ssl-enabled)
-      * [5.9. External Smart Client Discovery](#59-external-smart-client-discovery)
-      * [5.10. Authentication](#510-authentication)
-      * [5.10.1. Username Password Authentication](#5101-username-password-authentication)
-      * [5.10.2. Token Authentication](#5102-token-authentication)
-      * [5.11. Configuring Backup Acknowledgment](#511-configuring-backup-acknowledgment)
-   * [6. Securing Client Connection](#6-securing-client-connection)
-      * [6.1. TLS/SSL](#61-tlsssl)
-         * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
-         * [6.1.2. TLS/SSL for Hazelcast C++ Client](#612-tlsssl-for-hazelcast-c-client)
-            * [6.1.2.1. Enabling Validation Of Server Certificate](#6121-enabling-validation-of-server-certificate)
-            * [6.1.2.2. Mutual Authentication (Two Way Authentication)](#6122-mutual-authentication-two-way-authentication)
-            * [6.1.2.3. Constraining The Used Cipher List](#6123-constraining-the-used-cipher-list)
-   * [7. Using C++ Client with Hazelcast IMDG](#7-using-c-client-with-hazelcast-imdg)
-      * [7.1. C++ Client API Overview](#71-c-client-api-overview)
-      * [7.2. C++ Client Operation Modes](#72-c-client-operation-modes)
-         * [7.2.1. Smart Client](#721-smart-client)
-         * [7.2.2. Unisocket Client](#722-unisocket-client)
-      * [7.3. Handling Failures](#73-handling-failures)
-         * [7.3.1. Handling Client Connection Failure](#731-handling-client-connection-failure)
-         * [7.3.2. Handling Retry-able Operation Failure](#732-handling-retry-able-operation-failure)
-         * [7.3.3. Client Backpressure](#733-client-backpressure)
-      * [7.3.4 Client Connection Strategy](#734-client-connection-strategy)
-         * [7.3.4.1 Configuring Client Reconnect Strategy](#7341-configuring-client-reconnect-strategy)
-      * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
-         * [7.4.1. Using imap](#741-using-imap)
-         * [7.4.2. Using multi_map](#742-using-multi_map)
-         * [7.4.3. Using replicated_map](#743-using-replicated_map)
-         * [7.4.4. Using iqueue](#744-using-iqueue)
-         * [7.4.5. Using iset](#745-using-iset)
-         * [7.4.6. Using ilist](#746-using-ilist)
-         * [7.4.7. Using ringbuffer](#747-using-ringbuffer)
-         * [7.4.8. Using reliable_topic](#748-using-reliable_topic)
-         * [7.4.9 Using pn_counter](#749-using-pn_counter)
-         * [7.4.10 Using flake_id_generator](#7410-using-flake_id_generator)
-         * [7.4.11. CP Subsystem](#7411-cp-subsystem)
-            * [7.4.11.1. Using atomic_long](#74111-using-atomic_long)
-            * [7.4.11.2. Using fenced_lock](#74112-using-fenced_lock)
-            * [7.4.11.3. Using counting_semaphore](#74113-using-counting_semaphore)
-            * [7.4.11.4. Using latch](#74114-using-latch)
-            * [7.4.11.5. Using atomic_reference](#74115-using-atomic_reference)
-         * [7.4.12. Using Transactions](#7412-using-transactions)
-      * [7.5. Distributed Events](#75-distributed-events)
-         * [7.5.1. Cluster Events](#751-cluster-events)
-            * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
-            * [7.5.1.3. Listening for Lifecycle Events](#7513-listening-for-lifecycle-events)
-         * [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
-            * [7.5.2.1. Listening for Map Events](#7521-listening-for-map-events)
-      * [7.6. Distributed Computing](#76-distributed-computing)
-         * [7.6.1. Distributed Executor Service](#761-distributed-executor-service)
-            * [7.6.1.1 Implementing a Callable Task](#7611-implementing-a-callable-task)
-            * [7.6.1.2 Executing a Callable Task](#7612-executing-a-callable-task)
-            * [7.6.1.3 Scaling The Executor Service](#7613-scaling-the-executor-service)
-            * [7.6.1.4 Executing Code in the Cluster](#7614-executing-code-in-the-cluster)
-            * [7.6.1.5 Canceling an Executing Task](#7615-canceling-an-executing-task)
-            * [7.6.1.5.1 Example Task to Cancel](#76151-example-task-to-cancel)
-            * [7.6.1.6 Selecting Members for Task Execution](#7616-selecting-members-for-task-execution)
-         * [7.6.2. Using entry_processor](#762-using-entry_processor)
-            * [7.6.2.1. Processing Entries](#7621-processing-entries)
-      * [7.7. Distributed Query](#77-distributed-query)
-         * [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
-            * [7.7.1.1. person Map Query Example](#7711-person-map-query-example)
-            * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
-            * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
-               * [7.7.1.3.1. Supported SQL Syntax](#77131-supported-sql-syntax)
-            * [7.7.1.4. Querying Examples with Predicates](#7714-querying-examples-with-predicates)
-            * [7.7.1.5. Querying with JSON Strings](#7715-querying-with-json-strings)
-            * [7.7.1.6. Filtering with Paging Predicates](#7716-filtering-with-paging-predicates)
-      * [7.8. Performance](#78-performance)
-         * [7.8.1. Partition Aware](#781-partition-aware)
-         * [7.8.2. Near Cache](#782-near-cache)
-            * [7.8.2.1 Configuring Near Cache](#7821-configuring-near-cache)
-            * [7.8.2.2. Near Cache Example for Map](#7822-near-cache-example-for-map)
-            * [7.8.2.3. Near Cache Eviction](#7823-near-cache-eviction)
-            * [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
-            * [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
-         * [7.8.3. Pipelining](#783-pipelining)
-      * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
-         * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
-         * [7.9.2. Logging Configuration](#792-logging-configuration)
-      * [7.10. Mixed Object Types Supporting Hazelcast Client](#710-mixed-object-types-supporting-hazelcast-client)
-         * [7.10.1. typed_data API](#7101-typed_data-api)
-      * [7.11. Sql Module](#711-sql-module)
-         * [7.11.1 Overview](#7111-overview)
-         * [7.11.2 Create Mapping](#7112-create-mapping)
-         * [7.11.3 Read SELECT Results](#7113-read-select-results)
-         * [7.11.4 Sql Statement With Options](#7114-sql-statement-with-options)
-         * [7.11.5 Read Row Metadata](#7115-read-row-metadata)
-         * [7.11.6 Read Cell Value](#7116-read-cell-value)
-   * [8. Development and Testing](#8-development-and-testing)
-      * [8.1. Testing](#81-testing)
-   * [9. Getting Help](#9-getting-help)
-   * [10. Contributing](#10-contributing)
-   * [11. License](#11-license)
-   * [12. Copyright](#12-copyright)
+- [Hazelcast C++ Client Library](#hazelcast-c-client-library)
+- [Introduction](#introduction)
+- [Resources](#resources)
+- [Release Notes](#release-notes)
+- [1. Getting Started](#1-getting-started)
+  - [1.1. Installing](#11-installing)
+    - [1.1.1. Conan Users](#111-conan-users)
+    - [1.1.2. Vcpkg Users](#112-vcpkg-users)
+    - [1.1.3. Install From Source Code Using CMake](#113-install-from-source-code-using-cmake)
+      - [1.1.3.1. Requirements](#1131-requirements)
+      - [1.1.3.2. Downloading Source Code](#1132-downloading-source-code)
+      - [1.1.3.3. Linux and MacOS Users](#1133-linux-and-macos-users)
+      - [1.1.3.4. Windows Users](#1134-windows-users)
+      - [1.1.3.5. Advanced Installation](#1135-advanced-installation)
+        - [1.1.3.5.1. Custom Install Location](#11351-custom-install-location)
+        - [1.1.3.5.2. CMake Configuration](#11352-cmake-configuration)
+  - [1.2. Starting Hazelcast IMDG Cluster](#12-starting-hazelcast-imdg-cluster)
+    - [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
+      - [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
+      - [1.2.1.2. Starting Server Using Hazelcast Command Line Tools](#1212-starting-server-using-hazelcast-command-line-tools)
+      - [1.2.1.3. Starting Server Using Hazelcast Distribution](#1213-starting-server-using-hazelcast-distribution)
+      - [1.2.1.4. Adding User Java Library to Java CLASSPATH](#1214-adding-user-java-library-to-java-classpath)
+    - [1.3. Compiling Your Project](#13-compiling-your-project)
+      - [1.3.1. CMake Users](#131-cmake-users)
+      - [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
+      - [1.3.3. Windows Users](#133-windows-users)
+  - [1.4. Basic Configuration](#14-basic-configuration)
+    - [1.4.1. Configuring Hazelcast Server](#141-configuring-hazelcast-server)
+    - [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-c-client)
+    - [1.4.2.1 Cluster Name](#1421-cluster-name)
+    - [1.4.2.2. Network Settings](#1422-network-settings)
+    - [1.4.3. Client System Properties](#143-client-system-properties)
+  - [1.5. Basic Usage](#15-basic-usage)
+  - [1.6. Code Samples](#16-code-samples)
+- [2. Features](#2-features)
+- [3. Configuration Overview](#3-configuration-overview)
+  - [3.1. Configuration Options](#31-configuration-options)
+    - [3.1.1. Programmatic Configuration](#311-programmatic-configuration)
+- [4. Serialization](#4-serialization)
+  - [4.1. identified\_data\_serializer Serialization](#41-identified_data_serializer-serialization)
+  - [4.2. portable\_serializer Serialization](#42-portable_serializer-serialization)
+  - [4.3. Custom Serialization](#43-custom-serialization)
+  - [4.4. JSON Serialization](#44-json-serialization)
+  - [4.5. Global Serialization](#45-global-serialization)
+- [5. Setting Up Client Network](#5-setting-up-client-network)
+  - [5.1. Providing Member Addresses](#51-providing-member-addresses)
+  - [5.2. Setting Smart Routing](#52-setting-smart-routing)
+  - [5.3. Enabling Redo Operation](#53-enabling-redo-operation)
+  - [5.4. Setting Cluster Connection Timeout](#54-setting-cluster-connection-timeout)
+  - [5.5. Advanced Cluster Connection Retry Configuration](#55-advanced-cluster-connection-retry-configuration)
+  - [5.6. Enabling Client TLS/SSL](#56-enabling-client-tlsssl)
+  - [5.7. Enabling Hazelcast AWS Discovery](#57-enabling-hazelcast-aws-discovery)
+  - [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
+  - [5.8.1. Cloud Discovery With SSL Enabled](#581-cloud-discovery-with-ssl-enabled)
+  - [5.9. External Smart Client Discovery](#59-external-smart-client-discovery)
+  - [5.10. Authentication](#510-authentication)
+  - [5.10.1. Username Password Authentication](#5101-username-password-authentication)
+  - [5.10.2. Token Authentication](#5102-token-authentication)
+  - [5.11. Configuring Backup Acknowledgment](#511-configuring-backup-acknowledgment)
+- [6. Securing Client Connection](#6-securing-client-connection)
+  - [6.1. TLS/SSL](#61-tlsssl)
+    - [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
+    - [6.1.2. TLS/SSL for Hazelcast C++ Client](#612-tlsssl-for-hazelcast-c-client)
+      - [6.1.2.1. Enabling Validation Of Server Certificate](#6121-enabling-validation-of-server-certificate)
+      - [6.1.2.2. Mutual Authentication (Two Way Authentication)](#6122-mutual-authentication-two-way-authentication)
+      - [6.1.2.3. Constraining The Used Cipher List](#6123-constraining-the-used-cipher-list)
+- [7. Using C++ Client with Hazelcast IMDG](#7-using-c-client-with-hazelcast-imdg)
+  - [7.1. C++ Client API Overview](#71-c-client-api-overview)
+  - [7.2. C++ Client Operation Modes](#72-c-client-operation-modes)
+    - [7.2.1. Smart Client](#721-smart-client)
+    - [7.2.2. Unisocket Client](#722-unisocket-client)
+  - [7.3. Handling Failures](#73-handling-failures)
+    - [7.3.1. Handling Client Connection Failure](#731-handling-client-connection-failure)
+    - [7.3.2. Handling Retry-able Operation Failure](#732-handling-retry-able-operation-failure)
+    - [7.3.3. Client Backpressure](#733-client-backpressure)
+  - [7.3.4 Client Connection Strategy](#734-client-connection-strategy)
+    - [7.3.4.1 Configuring Client Reconnect Strategy](#7341-configuring-client-reconnect-strategy)
+  - [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
+    - [7.4.1. Using imap](#741-using-imap)
+    - [7.4.2. Using multi\_map](#742-using-multi_map)
+    - [7.4.3. Using replicated\_map](#743-using-replicated_map)
+    - [7.4.4. Using iqueue](#744-using-iqueue)
+    - [7.4.5. Using iset](#745-using-iset)
+    - [7.4.6. Using ilist](#746-using-ilist)
+    - [7.4.7. Using ringbuffer](#747-using-ringbuffer)
+    - [7.4.8. Using reliable\_topic](#748-using-reliable_topic)
+    - [7.4.9 Using pn\_counter](#749-using-pn_counter)
+    - [7.4.10 Using flake\_id\_generator](#7410-using-flake_id_generator)
+    - [7.4.11. CP Subsystem](#7411-cp-subsystem)
+      - [7.4.11.1. Using atomic\_long](#74111-using-atomic_long)
+      - [7.4.11.2. Using fenced\_lock](#74112-using-fenced_lock)
+      - [7.4.11.3. Using counting\_semaphore](#74113-using-counting_semaphore)
+      - [7.4.11.4. Using latch](#74114-using-latch)
+      - [7.4.11.5. Using atomic\_reference](#74115-using-atomic_reference)
+    - [7.4.12. Using Transactions](#7412-using-transactions)
+  - [7.5. Distributed Events](#75-distributed-events)
+    - [7.5.1. Cluster Events](#751-cluster-events)
+      - [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
+      - [7.5.1.3. Listening for Lifecycle Events](#7513-listening-for-lifecycle-events)
+    - [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
+      - [7.5.2.1. Listening for Map Events](#7521-listening-for-map-events)
+  - [7.6. Distributed Computing](#76-distributed-computing)
+    - [7.6.1. Distributed Executor Service](#761-distributed-executor-service)
+      - [7.6.1.1 Implementing a Callable Task](#7611-implementing-a-callable-task)
+      - [7.6.1.2 Executing a Callable Task](#7612-executing-a-callable-task)
+      - [7.6.1.3 Scaling The Executor Service](#7613-scaling-the-executor-service)
+      - [7.6.1.4 Executing Code in the Cluster](#7614-executing-code-in-the-cluster)
+      - [7.6.1.5 Canceling an Executing Task](#7615-canceling-an-executing-task)
+      - [7.6.1.5.1 Example Task to Cancel](#76151-example-task-to-cancel)
+      - [7.6.1.6 Selecting Members for Task Execution](#7616-selecting-members-for-task-execution)
+    - [7.6.2. Using entry\_processor](#762-using-entry_processor)
+      - [7.6.2.1. Processing Entries](#7621-processing-entries)
+  - [7.7. Distributed Query](#77-distributed-query)
+    - [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
+      - [7.7.1.1. person Map Query Example](#7711-person-map-query-example)
+      - [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
+      - [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
+        - [7.7.1.3.1. Supported SQL Syntax](#77131-supported-sql-syntax)
+      - [7.7.1.4. Querying Examples with Predicates](#7714-querying-examples-with-predicates)
+      - [7.7.1.5. Querying with JSON Strings](#7715-querying-with-json-strings)
+      - [7.7.1.6. Filtering with Paging Predicates](#7716-filtering-with-paging-predicates)
+  - [7.8. Performance](#78-performance)
+    - [7.8.1. Partition Aware](#781-partition-aware)
+    - [7.8.2. Near Cache](#782-near-cache)
+      - [7.8.2.1 Configuring Near Cache](#7821-configuring-near-cache)
+      - [7.8.2.2. Near Cache Example for Map](#7822-near-cache-example-for-map)
+      - [7.8.2.3. Near Cache Eviction](#7823-near-cache-eviction)
+      - [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
+      - [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
+    - [7.8.3. Pipelining](#783-pipelining)
+  - [7.9. Monitoring and Logging](#79-monitoring-and-logging)
+    - [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
+    - [7.9.2. Logging Configuration](#792-logging-configuration)
+  - [7.10. Mixed Object Types Supporting Hazelcast Client](#710-mixed-object-types-supporting-hazelcast-client)
+    - [7.10.1. typed\_data API](#7101-typed_data-api)
+  - [7.11. SQL API](#711-sql-api)
+    - [7.11.1 Overview](#7111-overview)
+    - [7.11.2 Create Mapping](#7112-create-mapping)
+    - [7.11.3 Read SELECT Results](#7113-read-select-results)
+    - [7.11.4 Sql Statement With Options](#7114-sql-statement-with-options)
+    - [7.11.5 Read Row Metadata](#7115-read-row-metadata)
+    - [7.11.6 Read Table Cell Value](#7116-read-table-cell-value)
+    - [7.11.7 Error Handling](#7117-error-handling)
+- [8. Development and Testing](#8-development-and-testing)
+  - [8.1. Testing](#81-testing)
+- [9. Getting Help](#9-getting-help)
+- [10. Contributing](#10-contributing)
+- [11. License](#11-license)
+- [12. Copyright](#12-copyright)
 
 <!-- Added by: ihsan, at: Mon Aug 23 15:55:05 +03 2021 -->
 
@@ -3294,21 +3295,21 @@ This typed_data allows you to retrieve the data type of the underlying binary to
 3. <b>identified_data_serializer serialized objects</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
 4. <b>Portable serialized objects</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
 5. <b>Custom serialized objects</b>: `factory_id=-1`, `class_id=-1`, `type_id` is the non-negative type ID. 
-## 7.11. SQL Module
-To use this service, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the classpath of the members.
+## 7.11. SQL API
+To use SQL API, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the classpath of the members.
 If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't need to do anything, as the above preconditions are already satisfied for such members.
 
 However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath.
 ### 7.11.1 Overview
-All the sql related types and functionalilities accomodates in `hazelcast::client::sql` namespace. It is possible to execute queries on `IMap`, `Kafka` and `Files` by using this module. 
+All the sql related types and functionalilities accomodates in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module. 
 
 `sql_service` is the main controller of this module. Queries can be executed via `sql_service` class. It also supports to specify query parameters. After executing any query `boost::future<std::shared_ptr<sql_result>>` is returned.
 
 If it is a `SELECT` query then it provides a way to iterate over rows. Rows are stored in pages and essentially, hazelcast serves result of `SELECT` queries page by page so the interface reflects this approach.
 
-`sql_result` provides an `page_iterator` which allows caller to fetch and iterate over pages. `sql_result::page_iterator::next()` returns `boost::future<std::shared_ptr<sql_page>>`. Every `sql_page` contains either `0` or more rows. It also tells that whether this page is the `last` or not via `last()` method.
+`sql_result` provides a `page_iterator` which allows caller to fetch and iterate over pages. `sql_result::page_iterator::next()` returns `boost::future<std::shared_ptr<sql_page>>`. Every `sql_page` contains either `0` or more rows. It also tells that whether this page is the `last` or not via `last()` method.
 ### 7.11.2 Create Mapping
-Before you can access any object using SQL, a mapping has to be created. See the documentation for the [CREATE MAPPING](https://docs.hazelcast.com/hazelcast/5.1/sql/create-mapping) command.
+Before you can access any object using SQL, a mapping has to be created. See the documentation for the [CREATE MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping) command.
 
 ``` C++
 using namespace hazelcast::client::sql;
@@ -3359,14 +3360,15 @@ for (auto itr = result->iterator(); itr.has_next();)
 }
 ```
 
-**Note-1**: First call to `sql_result::page_iterator::next()` function will return `ready` future because first page is already loaded.
+**Note-1**: First call to `sql_result::page_iterator::next()` function will return `ready` future because first page is already loaded as a result of the sql_service::execute call.
 ``` C++
 auto itr = result->iterator();
 itr.next().get(); // This will not block even `get()` 
 	          // is called because it will return
 	          // a future which is in ready state.
 ```
-**Note-2**: After first page every `sql_result::page_iterator::next()` call fetches a new page and it must not be called consecutively.
+**Note-2**: After first page every `sql_result::page_iterator::next()` call fetches a new page future.
+Before waiting this future it is not allowed to do another `sql_result::page_iterator::next()` call.
 ``` C++
 auto itr = result->iterator();
 itr.next().get(); // It will return first page
@@ -3385,7 +3387,9 @@ auto page_1 = itr.next().get();
 if (page_1->last())
     itr.next(); // This will throw an `hazelcast::no_such_element` exception.
 ```
-**Note-4**: Zero rows do not mean that it is the last page. `SELECT * FROM TABLE(generate_stream(1))` query mostly returns first page as empty because it is a stream.
+**Note-4**: Zero rows do not mean that it is the last page.
+`SELECT * FROM TABLE(generate_stream(1))` query mostly returns first page as empty because it is a stream.
+Stream is an endless flow of data from server to the client.
 ``` C++
 using namespace hazelcast::client::sql;
 
@@ -3396,9 +3400,9 @@ auto result = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").ge
 auto itr = result->iterator();
 auto page = itr.next().get();
 
-std::cout << page.row_count() << std::endl; // This probably print zero
+std::cout << page.row_count() << std::endl; // This may print zero if no data is yet generated at the server side.
 ```
-**Note-5**: `future<std::shared_ptr<sql_result>>` is returned from `sql_service::execute` and `boost::future<std::shared_ptr<sql_page>>` is returned from `sql_result::page_iterator::next()` can throw `sql::hazelcast_sql_exception` in case of an error so it should be taken into consideration for production ready code.
+**Note-5**: `boost::future<std::shared_ptr<sql_result>>` is returned from `sql_service::execute` and `boost::future<std::shared_ptr<sql_page>>` is returned from `sql_result::page_iterator::next()`.
 
 ``` C++
 using namespace hazelcast::client::sql;
@@ -3514,7 +3518,7 @@ result->row_metadata(); // Throws an `exception::illegal_state`
                         // This is not a SELECT query
 ```
 
-### 7.11.6 Read Cell Value
+### 7.11.6 Read Table Cell Value
 `boost::optional<T> sql_page::sql_row::get_object<T>` is used for reading cell. `T` specifies the return type and it should correspond with the column type. Otherwise it will throw `boost::bad_any_cast`. There are two overloads one can be used to read value by column idx and other by column name.
 
 ``` C++
@@ -3533,6 +3537,20 @@ for (auto itr = result->iterator(); itr.has_next();)
     }
 }
 ```
+
+### 7.11.7 Error Handling
+There are some exceptions which expresses an error occurred while performing an operation.
+So those exceptions should be taken into consideration for production ready code.
+
+`page_iterator::next()` can throw three types of exceptions.
+- `sql::hazelcast_sql_exception` in case of an error related with execution.
+- `no_such_element` is thrown if it is called after last page is fetched.
+- `illegal_access` is thrown if page fetch operation is already process.To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
+
+`sql_result::iterator()` can throw two types of exceptions.
+- `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
+
+In addition, any method which returns `boost::future<T>` can throw an error.
 
 # 8. Development and Testing
 
