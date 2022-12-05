@@ -1845,6 +1845,30 @@ TEST_F(cloud_discovery_test, invalid_token)
                  exception::illegal_state);
 }
 
+TEST_F(cloud_discovery_test, token_should_not_be_leaked)
+{
+    auto config = get_config();
+    config.get_connection_strategy_config()
+      .get_retry_config()
+      .set_cluster_connect_timeout(std::chrono::milliseconds(100));
+    auto& cloudConfig = config.get_network_config().get_cloud_config();
+    cloudConfig.enabled = true;
+    cloudConfig.discovery_token = "bwMqx9xp4RBkBWfdpE3WPsuCLd0CXNS";
+
+    auto discovery_token = cloudConfig.discovery_token;
+
+    try
+    {
+        hazelcast::new_client(std::move(config)).get();
+        FAIL();
+    }
+    catch (const exception::illegal_state& e)
+    {
+        std::string message = e.what();
+        ASSERT_EQ(message.find(discovery_token), std::string::npos);
+    }
+}
+
 TEST_F(cloud_discovery_test, non_existent_base_url)
 {
     auto config = get_config();

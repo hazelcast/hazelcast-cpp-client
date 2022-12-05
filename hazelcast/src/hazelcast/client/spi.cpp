@@ -20,6 +20,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include "hazelcast/client/hazelcast_client.h"
 #include <hazelcast/client/protocol/codec/ErrorCodec.h>
@@ -3071,17 +3072,21 @@ std::unordered_map<address, address>
 cloud_discovery::get_addresses()
 {
 #ifdef HZ_BUILD_WITH_SSL
+    std::string discovery_token {cloud_config_.discovery_token};
     try {
+
         util::SyncHttpsClient httpsConnection(cloud_base_url_,
                                               std::string(CLOUD_URL_PATH) +
-                                                cloud_config_.discovery_token,
+                                                discovery_token,
                                               timeout_);
         auto& conn_stream = httpsConnection.connect_and_get_response();
         return parse_json_response(conn_stream);
     } catch (std::exception& e) {
+        std::string message {e.what()};
+        boost::replace_all(message, discovery_token,"<DISCOVERY_TOKEN>");
         std::throw_with_nested(
           boost::enable_current_exception(exception::illegal_state(
-            "cloud_discovery::get_addresses", e.what())));
+            "cloud_discovery::get_addresses", move(message))));
     }
 #else
     util::Preconditions::check_ssl("cloud_discovery::get_addresses");
