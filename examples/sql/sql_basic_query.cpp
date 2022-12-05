@@ -66,10 +66,8 @@ main()
     result = sql.execute(statement).get();
 
     auto first_page = result->iterator().next().get();
-    std::cout << "There are "
-              << first_page->row_count()
-              << " rows at the first page"
-              << std::endl;
+    std::cout << "There are " << first_page->row_count()
+              << " rows at the first page" << std::endl;
 
     std::cout << "Finished" << std::endl;
 

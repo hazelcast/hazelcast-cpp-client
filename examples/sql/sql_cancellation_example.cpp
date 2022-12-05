@@ -19,7 +19,7 @@
  * SQL queries are cancellable, so it is possible to fetch
  * first page and ignore the rest by calling `close()`.
  * So it releases all the resources which are occupied by query result.
-*/
+ */
 int
 main()
 {

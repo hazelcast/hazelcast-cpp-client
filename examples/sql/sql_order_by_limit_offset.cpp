@@ -18,7 +18,7 @@
 /**
  * An example demonstrates 'Skip/Take' pattern.
  * It skips an element and takes 3 elements with SQL query.
-*/
+ */
 int
 main()
 {
@@ -50,7 +50,8 @@ main()
                     )")
                     .get();
 
-    // Retrieves 3 elements starting from the offset 1 so it will skip first element.
+    // Retrieves 3 elements starting from the offset 1 so it will skip first
+    // element.
     // '?' means that it is a placeholder for parameter
     // First '?' parameter will be filled with '3'
     // Second '?' parameter will be fillder with '1'
@@ -64,9 +65,7 @@ main()
     for (auto itr = result->iterator(); itr.has_next();) {
         auto page = itr.next().get();
 
-        std::cout << "There are "
-                  << page->row_count()
-                  << " rows at the page"
+        std::cout << "There are " << page->row_count() << " rows at the page"
                   << std::endl;
 
         std::cout << std::string(80, '=') << std::endl;

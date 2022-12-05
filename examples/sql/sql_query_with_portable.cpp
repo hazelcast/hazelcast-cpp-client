@@ -68,7 +68,7 @@ print_result(hazelcast::client::sql::sql_result& result);
  * Demonstrates how to create mapping from portable type.
  * After creating mapping, fields of portable type
  * injected into columns of table.
-*/
+ */
 int
 main()
 {

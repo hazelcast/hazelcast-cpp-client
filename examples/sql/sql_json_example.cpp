@@ -16,9 +16,9 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 /*
-* At this example, json columns are read by sql query.
-* Also demonstrates how to filter json object by its field with SQL query.
-*/
+ * At this example, json columns are read by sql query.
+ * Also demonstrates how to filter json object by its field with SQL query.
+ */
 
 int
 main()
@@ -68,9 +68,7 @@ main()
         auto page = itr.next().get();
 
         // Print number of rows at the page
-        std::cout << "There are "
-                  << page->row_count()
-                  << " rows at the page"
+        std::cout << "There are " << page->row_count() << " rows at the page"
                   << std::endl;
 
         std::cout << std::string(80, '=') << std::endl;
@@ -82,8 +80,7 @@ main()
             // So it is stored as binary data
             // which needs to be converted to
             // the desired type
-            std::cout << "Name:"
-                      << row.get_object<hazelcast_json_value>("this")
+            std::cout << "Name:" << row.get_object<hazelcast_json_value>("this")
                       << std::endl;
         }
     }
