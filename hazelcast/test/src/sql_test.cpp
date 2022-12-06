@@ -12,6 +12,7 @@
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
+#include "TestHelperFunctions.h"
 #include "remote_controller_client.h"
 
 using hazelcast::client::protocol::ClientMessage;
@@ -509,7 +510,7 @@ protected:
             ASSERT_TRUE(column_meta_data.nullable);
         }
 
-        ASSERT_THROW(row_metadata.column(columns.size()),
+        EXPECT_THROW(row_metadata.column(columns.size()),
                      hazelcast::client::exception::index_out_of_bounds);
     }
 
@@ -598,7 +599,7 @@ TEST_F(SqlTest, execute_on_closed_member)
     member_->shutdown();
     member2_->shutdown();
 
-    ASSERT_THROW(result.get(), sql::hazelcast_sql_exception);
+    EXPECT_THROW(result.get(), sql::hazelcast_sql_exception);
 
     member_->start();
     member2_->start();
@@ -607,7 +608,7 @@ TEST_F(SqlTest, execute_on_closed_member)
 TEST_F(SqlTest, try_to_execute_on_closed_client)
 {
     client.shutdown().get();
-    ASSERT_THROW(select_all(), sql::hazelcast_sql_exception);
+    EXPECT_THROW(select_all(), sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, sql_page_column_count)
@@ -636,7 +637,7 @@ TEST_F(SqlTest, wrong_syntax)
     auto result_f =
       client.get_sql().execute("WRONG SYNTAX this should generate error");
 
-    ASSERT_THROW(result_f.get(), sql::hazelcast_sql_exception);
+    EXPECT_THROW(result_f.get(), sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, row_metadata_on_non_select_query)
@@ -650,7 +651,7 @@ TEST_F(SqlTest, row_metadata_on_non_select_query)
           (boost::format("DELETE FROM %1% WHERE this < 18") % map_name).str())
         .get();
 
-    ASSERT_THROW(result->row_metadata(), exception::illegal_state);
+    EXPECT_THROW(result->row_metadata(), exception::illegal_state);
 }
 
 TEST_F(SqlTest, calling_iterator_next_consecutively)
@@ -674,7 +675,7 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
     auto p_1 = itr.next();
     auto p_2 = itr.next();
 
-    ASSERT_THROW(itr.next(), exception::illegal_access);
+    EXPECT_THROW(itr.next(), exception::illegal_access);
 
     p_1.get();
     p_2.get();
@@ -701,7 +702,7 @@ TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
     while (itr.has_next())
         itr.next().get();
 
-    ASSERT_THROW(itr.next(), exception::no_such_element);
+    EXPECT_THROW(itr.next(), exception::no_such_element);
 }
 
 TEST_F(SqlTest, simple)
@@ -864,8 +865,13 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_sql_has_more)
         .str(),
       5);
 
-    EXPECT_THROW(execution.get(),
-                 hazelcast::client::sql::hazelcast_sql_exception);
+    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
+        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+    };
+
+    EXPECT_THROW_FN(execution.get(),
+                    hazelcast::client::sql::hazelcast_sql_exception,
+                    handler);
 }
 
 TEST_F(SqlTest, test_execute_with_mismatched_params_when_params_has_more)
@@ -878,8 +884,13 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_params_has_more)
       5,
       6);
 
-    EXPECT_THROW(execution.get(),
-                 hazelcast::client::sql::hazelcast_sql_exception);
+    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
+        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+    };
+
+    EXPECT_THROW_FN(execution.get(),
+                    hazelcast::client::sql::hazelcast_sql_exception,
+                    handler);
 }
 
 TEST_F(SqlTest, test_execute_statement)
@@ -969,7 +980,7 @@ TEST_F(SqlTest, test_execute_statement_with_params_after_clear_parameters)
     statement.clear_parameters();
     statement.set_parameters(height_param, age_param);
 
-    ASSERT_NO_THROW(client.get_sql().execute(statement).get());
+    EXPECT_NO_THROW(client.get_sql().execute(statement).get());
 }
 
 TEST_F(SqlTest, test_execute_statement_with_mismatched_params_when_sql_has_more)
@@ -987,8 +998,13 @@ TEST_F(SqlTest, test_execute_statement_with_mismatched_params_when_sql_has_more)
     statement.set_parameters(5);
     auto execution = client.get_sql().execute(statement);
 
-    EXPECT_THROW(execution.get(),
-                 hazelcast::client::sql::hazelcast_sql_exception);
+    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
+        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+    };
+
+    EXPECT_THROW_FN(execution.get(),
+                    hazelcast::client::sql::hazelcast_sql_exception,
+                    handler);
 }
 
 TEST_F(SqlTest,
@@ -1005,7 +1021,13 @@ TEST_F(SqlTest,
     statement.set_parameters(5, 6);
     auto execution = client.get_sql().execute(statement);
 
-    EXPECT_THROW(execution.get(), sql::hazelcast_sql_exception);
+    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
+        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+    };
+
+    EXPECT_THROW_FN(execution.get(),
+                    hazelcast::client::sql::hazelcast_sql_exception,
+                    handler);
 }
 
 TEST_F(SqlTest, test_execute_statement_with_timeout)
@@ -1047,7 +1069,7 @@ TEST_F(SqlTest, test_statement_with_wrong_timeout)
 {
     sql::sql_statement statement{ client, "non_null_query" };
 
-    ASSERT_THROW(statement.timeout(std::chrono::milliseconds{ -500 }),
+    EXPECT_THROW(statement.timeout(std::chrono::milliseconds{ -500 }),
                  exception::illegal_argument);
 }
 
@@ -1055,7 +1077,7 @@ TEST_F(SqlTest, test_statement_with_empty_sql)
 {
     auto fn = [this]() { sql::sql_statement statement{ client, "" }; };
 
-    ASSERT_THROW(fn(), exception::illegal_argument);
+    EXPECT_THROW(fn(), exception::illegal_argument);
 }
 
 TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
@@ -1102,7 +1124,7 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_rows)
 
     statement.expected_result_type(sql::sql_expected_result_type::rows);
 
-    ASSERT_NO_THROW(client.get_sql().execute(statement).get());
+    EXPECT_NO_THROW(client.get_sql().execute(statement).get());
 }
 
 TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count)
@@ -1116,7 +1138,7 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count)
 
     statement.expected_result_type(sql::sql_expected_result_type::update_count);
 
-    ASSERT_NO_THROW(client.get_sql().execute(statement).get());
+    EXPECT_NO_THROW(client.get_sql().execute(statement).get());
 }
 
 TEST_F(SqlTest, test_execute_with_expected_result_type_as_any)
@@ -1129,7 +1151,7 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_any)
     };
 
     statement_1.expected_result_type(sql::sql_expected_result_type::any);
-    ASSERT_NO_THROW(client.get_sql().execute(statement_1).get());
+    EXPECT_NO_THROW(client.get_sql().execute(statement_1).get());
 
     sql::sql_statement statement_2{
         client, (boost::format("DELETE FROM %1%") % map_name).str()
@@ -1137,7 +1159,7 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_any)
 
     statement_2.expected_result_type(sql::sql_expected_result_type::any);
 
-    ASSERT_NO_THROW(client.get_sql().execute(statement_2).get());
+    EXPECT_NO_THROW(client.get_sql().execute(statement_2).get());
 }
 
 TEST_F(SqlTest, test_is_row_set_when_row_is_set)
@@ -1340,19 +1362,19 @@ TEST_F(SqlTest, select)
 
             unique_keys.emplace(*key0);
 
-            ASSERT_THROW(row.get_object<int>(-1),
+            EXPECT_THROW(row.get_object<int>(-1),
                          exception::index_out_of_bounds);
-            ASSERT_THROW(row.get_object<int>(row.row_metadata().column_count()),
+            EXPECT_THROW(row.get_object<int>(row.row_metadata().column_count()),
                          exception::index_out_of_bounds);
-            ASSERT_THROW(row.get_object<int>("unknown_field"), exception::illegal_argument);
+            EXPECT_THROW(row.get_object<int>("unknown_field"), exception::illegal_argument);
         }
     }
 
-    ASSERT_THROW(res->iterator(), exception::illegal_state);
+    EXPECT_THROW(res->iterator(), exception::illegal_state);
 
     ASSERT_EQ(DATA_SET_SIZE, unique_keys.size());
 
-    ASSERT_NO_THROW(res->close().get());
+    EXPECT_NO_THROW(res->close().get());
 
     // If this request spawns multiple pages, then:
     // 1) Ensure that results are cleared when the whole result set is fetched

@@ -33,6 +33,33 @@ enum class HAZELCAST_API sql_error_code
 
     /** Query was cancelled due to user request. */
     CANCELLED_BY_USER = 1003,
+
+    /** Query was cancelled due to timeout. */
+    TIMEOUT = 1004,
+
+    /** A problem with partition distribution. */
+    PARTITION_DISTRIBUTION = 1005,
+
+    /** Map loading is not finished yet. */
+    MAP_LOADING_IN_PROGRESS = 1007,
+
+    /** Generic parsing error. */
+    PARSING = 1008,
+
+    /** An error caused by an attempt to query an index that is not valid. */
+    INDEX_INVALID = 1009,
+
+    /** Object (mapping/table) not found. */
+    OBJECT_NOT_FOUND = 1010,
+
+    /** Topology of a cluster has changed during query execution. */
+    TOPOLOGY_CHANGE = 1011,
+
+    /** An instance of {@link RestartableException} was thrown. */
+    RESTARTABLE_ERROR = 1012,
+
+    /** An error with data conversion or transformation. */
+    DATA_EXCEPTION = 2000
 };
 
 } // namespace impl
