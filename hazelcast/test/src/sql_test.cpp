@@ -1202,6 +1202,7 @@ TEST_F(SqlTest, test_is_row_set_when_row_is_set)
     auto result = client.get_sql().execute(statement).get();
 
     ASSERT_TRUE(result->row_set());
+    ASSERT_EQ(result->update_count(), -1);
 }
 
 TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
@@ -1210,12 +1211,12 @@ TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
     auto expecteds = populate_map<test::student>(map, 100);
 
     sql::sql_statement statement{
-        client, (boost::format("SELECT * FROM %1%") % map_name).str()
+        client, (boost::format("UPDATE %1% SET age = 4 WHERE FALSE") % map_name).str()
     };
 
     auto result = client.get_sql().execute(statement).get();
 
-    ASSERT_EQ(result->update_count(), -1);
+    ASSERT_EQ(result->update_count(), 0);
 }
 
 TEST_F(SqlTest, test_null)
