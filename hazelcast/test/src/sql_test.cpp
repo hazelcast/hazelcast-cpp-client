@@ -383,7 +383,7 @@ protected:
     };
 
     template<typename T>
-    struct assert_key_values
+    struct assert_entries_equal
     {
         using sql_row = sql::sql_page::sql_row;
 
@@ -829,7 +829,7 @@ TEST_F(SqlTest, test_execute)
 
     for_each_row(result,
                  assert_row_count{ expecteds.size() },
-                 assert_key_values<int>{ expecteds });
+                 assert_entries_equal<int>{ expecteds });
 }
 
 TEST_F(SqlTest, test_execute_with_params)
@@ -851,7 +851,7 @@ TEST_F(SqlTest, test_execute_with_params)
 
     for_each_row(result,
                  assert_row_count(expected_row_count),
-                 assert_key_values<int>{ expecteds });
+                 assert_entries_equal<int>{ expecteds });
 }
 
 TEST_F(SqlTest, test_execute_with_mismatched_params_when_sql_has_more)
@@ -908,7 +908,7 @@ TEST_F(SqlTest, test_execute_statement)
 
     for_each_row(result,
                  assert_row_count(N_ENTRIES),
-                 assert_key_values<std::string>{ expecteds });
+                 assert_entries_equal<std::string>{ expecteds });
 }
 
 TEST_F(SqlTest, test_execute_statement_with_params)
@@ -1220,7 +1220,7 @@ TEST_F(SqlTest, test_object)
 
     for_each_row(result,
                  assert_row_count{ expecteds.size() },
-                 assert_key_values<test::student>{ expecteds });
+                 assert_entries_equal<test::student>{ expecteds });
 }
 
 TEST_F(SqlTest, test_null_only_column)
@@ -1253,7 +1253,7 @@ TEST_F(SqlTest, test_json)
 
     for_each_row(result,
                  assert_row_count(expecteds.size()),
-                 assert_key_values<hazelcast_json_value>{ expecteds });
+                 assert_entries_equal<hazelcast_json_value>{ expecteds });
 }
 
 TEST_F(SqlTest, test_streaming_sql_query)
