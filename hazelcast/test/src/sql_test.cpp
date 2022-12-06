@@ -598,7 +598,6 @@ TEST_F(SqlTest, execute_on_closed_member)
     member_->shutdown();
     member2_->shutdown();
 
-    client.shutdown().get();
     ASSERT_THROW(result.get(), sql::hazelcast_sql_exception);
 
     member_->start();
