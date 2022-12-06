@@ -16,7 +16,7 @@
 #include <hazelcast/client/hazelcast_client.h>
 
 /**
- * An example demonstrates 'Skip/Take' pattern.
+ * An example demonstrates how to skip elements and limit the number of rows
  * It skips an element and takes 3 elements with SQL query.
  */
 int
