@@ -1110,7 +1110,7 @@ TEST_F(SqlTest, test_execute_with_schema)
 
     statement.schema(std::string{ "nothing" });
 
-    client.get_sql().execute(statement).get();
+    ASSERT_NO_THROW(client.get_sql().execute(statement).get());
 }
 
 TEST_F(SqlTest, test_execute_with_expected_result_type_as_rows)
