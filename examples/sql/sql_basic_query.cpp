@@ -15,6 +15,10 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
+/**
+ * At this example, there are some integer key/values at a map and
+ * they are fetched by SQL queries. Also demonstrates sql_statement usage.
+*/
 int
 main()
 {
@@ -50,7 +54,7 @@ main()
         auto page = itr.next().get();
 
         std::cout << "There are " << page->row_count()
-                  << " rows returned from the cluster database" << std::endl;
+                  << " rows the page." << std::endl;
 
         for (auto const& row : page->rows()) {
             std::cout << "(" << row.get_object<int>(0) << ", "
