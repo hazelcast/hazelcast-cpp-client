@@ -3542,15 +3542,22 @@ for (auto itr = result->iterator(); itr.has_next();)
 There are some exceptions which expresses an error occurred while performing an operation.
 So those exceptions should be taken into consideration for production ready code.
 
-`page_iterator::next()` can throw three types of exceptions.
-- `sql::hazelcast_sql_exception` in case of an error related with execution.
-- `no_such_element` is thrown if it is called after last page is fetched.
-- `illegal_access` is thrown if page fetch operation is already process.To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
+Most of the exceptions related with SQL API wrapped with `sql::hazelcast_sql_exception`
+so it can be seen as general exception which expresses the errors in SQL API.
 
-`sql_result::iterator()` can throw two types of exceptions.
-- `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
+- `sql_service::execute` can throw `sql::hazelcast_sql_exception` in case of an error.
+- `page_iterator::next()` can throw three types of exceptions.
+  - `sql::hazelcast_sql_exception` in case of an error related with execution.
+  - `no_such_element` is thrown if it is called after last page is fetched.
+  - `illegal_access` is thrown if page fetch operation is already process.To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
+- `sql_result::iterator()` can throw two types of exceptions.
+  - `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
+- `sql_result::row_metadata()` can throw `illegal_state` exception if the result contains only update count.
+- `sql_page::sql_row::get_object(int)` can throw `index_out_of_bounds` exception if the index is out of range.
+- `sql_page::sql_row::get_object(std::string)` can throw `illegal_argument` exception if the column doesn't exist.
 
 In addition, any method which returns `boost::future<T>` can throw an error.
+Unless otherwise is stated, `sql::hazelcast_sql_exception` is thrown.
 
 # 8. Development and Testing
 
