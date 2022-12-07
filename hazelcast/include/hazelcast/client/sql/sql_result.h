@@ -92,6 +92,8 @@ public:
     private:
         std::shared_ptr<std::atomic<bool>> in_progress_;
         std::shared_ptr<std::atomic<bool>> last_;
+        std::shared_ptr<sql_row_metadata> row_metadata_;
+        serialization::pimpl::SerializationService& serialization_;
         std::shared_ptr<sql_result> result_;
         std::shared_ptr<sql_page> first_page_;
     };
@@ -164,7 +166,7 @@ private:
 
     /** Whether the result is closed. When true, there is no need to send the
      * "cancel" request to the server. */
-    bool closed_;
+    std::atomic<bool> closed_;
 
     int32_t cursor_buffer_size_;
 
