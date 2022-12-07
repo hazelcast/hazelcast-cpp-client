@@ -141,7 +141,7 @@
     - [7.11.3 Read SELECT Results](#7113-read-select-results)
     - [7.11.4 Sql Statement With Options](#7114-sql-statement-with-options)
     - [7.11.5 Read Row Metadata](#7115-read-row-metadata)
-    - [7.11.6 Read Table Cell Value](#7116-read-table-cell-value)
+    - [7.11.6 Read Table Column Value](#7116-read-table-column-value)
     - [7.11.7 Error Handling](#7117-error-handling)
 - [8. Development and Testing](#8-development-and-testing)
   - [8.1. Testing](#81-testing)
@@ -3518,8 +3518,8 @@ result->row_metadata(); // Throws an `exception::illegal_state`
                         // This is not a SELECT query
 ```
 
-### 7.11.6 Read Table Cell Value
-`boost::optional<T> sql_page::sql_row::get_object<T>` is used for reading cell. `T` specifies the return type and it should correspond with the column type. Otherwise it will throw `boost::bad_any_cast`. There are two overloads one can be used to read value by column idx and other by column name.
+### 7.11.6 Read Table Column Value
+`boost::optional<T> sql_page::sql_row::get_object<T>` is used for reading column value. `T` specifies the return type and it should correspond with the column type. Otherwise it will throw `boost::bad_any_cast`. There are two overloads one can be used to read value by column idx and other by column name.
 
 ``` C++
 for (auto itr = result->iterator(); itr.has_next();)
