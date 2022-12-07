@@ -3299,7 +3299,7 @@ This typed_data allows you to retrieve the data type of the underlying binary to
 To use SQL API, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the classpath of the members.
 If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't need to do anything, as the above preconditions are already satisfied for such members.
 
-However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath.
+However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath as it is stated [here](https://hazelcast.readthedocs.io/en/latest/api/sql.html#hazelcast.sql.SqlService).
 ### 7.11.1 Overview
 All the sql related types and functionalilities accomodates in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module. 
 
