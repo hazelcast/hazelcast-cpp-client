@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <limits>
+#include <future>
 #include <boost/algorithm/string.hpp>
 
 #include <hazelcast/client/protocol/ClientMessage.h>
@@ -9,6 +10,7 @@
 #include <hazelcast/client/sql/sql_statement.h>
 #include <hazelcast/client/sql/hazelcast_sql_exception.h>
 #include <hazelcast/client/sql/impl/sql_error_code.h>
+#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
@@ -670,17 +672,34 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
 
     statement.cursor_buffer_size(10);
 
-    auto result = client.get_sql().execute(statement).get();
+    int retry_count {};
 
-    auto itr = result->iterator();
+retry:
+    {
+        if (retry_count > 5) {
+            FAIL();
+        }
 
-    auto p_1 = itr.next();
-    auto p_2 = itr.next();
+        auto result = client.get_sql().execute(statement).get();
 
-    EXPECT_THROW(itr.next(), exception::illegal_access);
+        auto itr = result->iterator();
 
-    p_1.get();
-    p_2.get();
+        auto p_1 = itr.next();
+        auto p_2 = itr.next();
+
+        if (!p_2.has_value()) {
+            EXPECT_THROW(itr.next(), exception::illegal_access);
+        }
+        else {
+            p_1.get();
+            p_2.get();
+            ++retry_count;
+            goto retry;
+        }
+
+        p_1.get();
+        p_2.get();
+    }
 }
 
 TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
