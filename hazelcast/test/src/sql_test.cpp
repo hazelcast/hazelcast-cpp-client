@@ -789,7 +789,6 @@ TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
 
 TEST_F(SqlTest, sql_result_fetch_page_should_throw_after_close)
 {
-
     std::shared_ptr<sql::sql_result::page_iterator> it;
     {
         auto result = client.get_sql()
@@ -801,12 +800,14 @@ TEST_F(SqlTest, sql_result_fetch_page_should_throw_after_close)
         it = std::make_shared<sql::sql_result::page_iterator>(
           std::move(result->iterator()));
 
-        result->close();
+        result->close().get();
     }
 
-    auto execution = [&it](){
+    auto execution_1 = [&it](){
         it->next().get();
-        it->next().get();
+    };
+    auto execution_2 = [&it](){
+        it->has_next();
     };
     auto handler = [](const sql::hazelcast_sql_exception& e){
         ASSERT_EQ(
@@ -814,7 +815,8 @@ TEST_F(SqlTest, sql_result_fetch_page_should_throw_after_close)
           e.code());
     };
 
-    EXPECT_THROW_FN(execution(), sql::hazelcast_sql_exception, handler);
+    EXPECT_THROW_FN(execution_1(), sql::hazelcast_sql_exception, handler);
+    EXPECT_THROW_FN(execution_2(), sql::hazelcast_sql_exception, handler);
 }
 
 TEST_F(SqlTest, statement_with_params)

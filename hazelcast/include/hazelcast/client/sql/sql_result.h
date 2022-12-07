@@ -81,6 +81,7 @@ public:
          * already fetched.
          * @throws no_such_element if there are no more pages to be retrieved.
          * only an update count
+         * @throws hazelcast_sql_exception if any other errors occurred.
          */
         boost::future<std::shared_ptr<sql_page>> next();
 
@@ -167,6 +168,7 @@ private:
     /** Whether the result is closed. When true, there is no need to send the
      * "cancel" request to the server. */
     std::atomic<bool> closed_;
+    std::mutex mtx_;
 
     int32_t cursor_buffer_size_;
 

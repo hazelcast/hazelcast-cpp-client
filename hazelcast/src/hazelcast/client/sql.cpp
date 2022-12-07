@@ -673,14 +673,27 @@ sql_result::close()
         return boost::make_ready_future();
     }
 
+
     auto f = service_->close(connection_, query_id_);
-    closed_ = true;
+
+    {
+        std::lock_guard<std::mutex> guard {mtx_};
+        closed_ = true;
+
+        connection_.reset();
+    }
+
+    row_metadata_.reset();
+    first_page_.reset();
+
     return f;
 }
 
 boost::future<std::shared_ptr<sql_page>>
 sql_result::fetch_page()
 {
+    std::lock_guard<std::mutex> guard {mtx_};
+
     check_closed();
     return service_->fetch_page(query_id_, cursor_buffer_size_, connection_);
 }
@@ -725,6 +738,8 @@ sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
 boost::future<std::shared_ptr<sql_page>>
 sql_result::page_iterator::next()
 {
+    result_->check_closed();
+
     if (first_page_) {
         auto page = move(first_page_);
 
@@ -755,15 +770,17 @@ sql_result::page_iterator::next()
     std::weak_ptr<std::atomic<bool>> last_w{ last_ };
     std::weak_ptr<std::atomic<bool>> in_progress_w{ in_progress_ };
     std::shared_ptr<sql_row_metadata> row_metadata { row_metadata_ };
+    auto result = result_;
     auto serialization_service = &serialization_;
 
     return page_future.then(
       boost::launch::sync,
-      [serialization_service, row_metadata, last_w, in_progress_w](
+      [serialization_service, row_metadata, last_w, in_progress_w, result](
         boost::future<std::shared_ptr<sql_page>> page_f) {
           try {
               auto page = page_f.get();
 
+              result->check_closed();
               page->serialization_service(serialization_service);
               page->row_metadata(move(row_metadata));
 
@@ -792,6 +809,7 @@ sql_result::page_iterator::next()
 bool
 sql_result::page_iterator::has_next() const
 {
+    result_->check_closed();
     return !*last_;
 }
 
