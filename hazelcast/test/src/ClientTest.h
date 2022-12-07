@@ -66,12 +66,12 @@ public:
 
     template<typename Value = int,
              typename Key = int,
-             typename Generator = generator<Value>,
+             typename ValueGenerator = generator<Value>,
              typename KeyGenerator = key_int_generator>
     std::unordered_map<Key, Value> populate_map(
       imap_t map,
       int n_entries = 10,
-      Generator&& value_gen = Generator{},
+      ValueGenerator&& value_gen = ValueGenerator{},
       KeyGenerator&& key_gen = KeyGenerator{})
     {
         std::unordered_map<Key, Value> entries;
