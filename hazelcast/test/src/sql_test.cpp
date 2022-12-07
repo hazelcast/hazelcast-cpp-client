@@ -307,7 +307,7 @@ protected:
         }
     }
 
-    void create_mapping(std::string format = "INTEGER")
+    void create_mapping(std::string value_format = "INTEGER")
     {
         std::string query = (boost::format("CREATE MAPPING %1% ( "
                                            "__key INT, "
@@ -318,7 +318,7 @@ protected:
                                            "'keyFormat' = 'int', "
                                            "'valueFormat' = '%3%' "
                                            ")") %
-                             map_name % format % boost::to_lower_copy(format))
+                             map_name % value_format % boost::to_lower_copy(value_format))
                               .str();
 
         client.get_sql().execute(query).get();
