@@ -804,19 +804,17 @@ TEST_F(SqlTest, sql_result_fetch_page_should_throw_after_close)
         result->close();
     }
 
-    try {
+    auto execution = [&it](){
         it->next().get();
         it->next().get();
-
-        FAIL();
-    } catch (const hazelcast::client::exception::query& e) {
+    };
+    auto handler = [](const sql::hazelcast_sql_exception& e){
         ASSERT_EQ(
           static_cast<int32_t>(sql::impl::sql_error_code::CANCELLED_BY_USER),
           e.code());
-    } catch (...) {
-        FAIL()
-          << "Expected exception of type hazelcast::client::exception::query";
-    }
+    };
+
+    EXPECT_THROW_FN(execution(), sql::hazelcast_sql_exception, handler);
 }
 
 TEST_F(SqlTest, statement_with_params)

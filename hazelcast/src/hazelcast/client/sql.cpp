@@ -656,9 +656,13 @@ void
 sql_result::check_closed() const
 {
     if (closed_) {
-        throw exception::query(
-          static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
-          "Query was cancelled by the user");
+        impl::query_utils::throw_public_exception(
+            std::make_exception_ptr(
+            exception::query(
+                    static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
+                    "Query was cancelled by the user")
+            ),
+            service_->client_id());
     }
 }
 
