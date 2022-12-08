@@ -309,17 +309,18 @@ protected:
 
     void create_mapping(std::string value_format = "INTEGER")
     {
-        std::string query = (boost::format("CREATE MAPPING %1% ( "
-                                           "__key INT, "
-                                           "this %2% "
-                                           ") "
-                                           "TYPE IMap "
-                                           "OPTIONS ("
-                                           "'keyFormat' = 'int', "
-                                           "'valueFormat' = '%3%' "
-                                           ")") %
-                             map_name % value_format % boost::to_lower_copy(value_format))
-                              .str();
+        std::string query =
+          (boost::format("CREATE MAPPING %1% ( "
+                         "__key INT, "
+                         "this %2% "
+                         ") "
+                         "TYPE IMap "
+                         "OPTIONS ("
+                         "'keyFormat' = 'int', "
+                         "'valueFormat' = '%3%' "
+                         ")") %
+           map_name % value_format % boost::to_lower_copy(value_format))
+            .str();
 
         client.get_sql().execute(query).get();
     }
@@ -672,34 +673,32 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
 
     statement.cursor_buffer_size(10);
 
-    int retry_count {};
+    int retry_count{};
 
-retry:
-    {
-        if (retry_count > 5) {
-            FAIL();
-        }
+retry : {
+    if (retry_count > 5) {
+        FAIL();
+    }
 
-        auto result = client.get_sql().execute(statement).get();
+    auto result = client.get_sql().execute(statement).get();
 
-        auto itr = result->iterator();
+    auto itr = result->iterator();
 
-        auto p_1 = itr.next();
-        auto p_2 = itr.next();
+    auto p_1 = itr.next();
+    auto p_2 = itr.next();
 
-        if (!p_2.has_value()) {
-            EXPECT_THROW(itr.next(), exception::illegal_access);
-        }
-        else {
-            p_1.get();
-            p_2.get();
-            ++retry_count;
-            goto retry;
-        }
-
+    if (!p_2.has_value()) {
+        EXPECT_THROW(itr.next(), exception::illegal_access);
+    } else {
         p_1.get();
         p_2.get();
+        ++retry_count;
+        goto retry;
     }
+
+    p_1.get();
+    p_2.get();
+}
 }
 
 TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
@@ -803,13 +802,9 @@ TEST_F(SqlTest, sql_result_fetch_page_should_throw_after_close)
         result->close().get();
     }
 
-    auto execution_1 = [&it](){
-        it->next().get();
-    };
-    auto execution_2 = [&it](){
-        it->has_next();
-    };
-    auto handler = [](const sql::hazelcast_sql_exception& e){
+    auto execution_1 = [&it]() { it->next().get(); };
+    auto execution_2 = [&it]() { it->has_next(); };
+    auto handler = [](const sql::hazelcast_sql_exception& e) {
         ASSERT_EQ(
           static_cast<int32_t>(sql::impl::sql_error_code::CANCELLED_BY_USER),
           e.code());
@@ -886,9 +881,10 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_sql_has_more)
         .str(),
       5);
 
-    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
-        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
-    };
+    auto handler =
+      [](const hazelcast::client::sql::hazelcast_sql_exception& e) {
+          EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+      };
 
     EXPECT_THROW_FN(execution.get(),
                     hazelcast::client::sql::hazelcast_sql_exception,
@@ -905,9 +901,10 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_params_has_more)
       5,
       6);
 
-    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
-        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
-    };
+    auto handler =
+      [](const hazelcast::client::sql::hazelcast_sql_exception& e) {
+          EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+      };
 
     EXPECT_THROW_FN(execution.get(),
                     hazelcast::client::sql::hazelcast_sql_exception,
@@ -1019,9 +1016,10 @@ TEST_F(SqlTest, test_execute_statement_with_mismatched_params_when_sql_has_more)
     statement.set_parameters(5);
     auto execution = client.get_sql().execute(statement);
 
-    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
-        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
-    };
+    auto handler =
+      [](const hazelcast::client::sql::hazelcast_sql_exception& e) {
+          EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+      };
 
     EXPECT_THROW_FN(execution.get(),
                     hazelcast::client::sql::hazelcast_sql_exception,
@@ -1042,9 +1040,10 @@ TEST_F(SqlTest,
     statement.set_parameters(5, 6);
     auto execution = client.get_sql().execute(statement);
 
-    auto handler = [](const hazelcast::client::sql::hazelcast_sql_exception& e){
-        EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
-    };
+    auto handler =
+      [](const hazelcast::client::sql::hazelcast_sql_exception& e) {
+          EXPECT_EQ(e.code(), int(sql::impl::sql_error_code::DATA_EXCEPTION));
+      };
 
     EXPECT_THROW_FN(execution.get(),
                     hazelcast::client::sql::hazelcast_sql_exception,
@@ -1159,7 +1158,8 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_rows_type_mismatch)
 
     statement.expected_result_type(sql::sql_expected_result_type::rows);
 
-    EXPECT_THROW(client.get_sql().execute(statement).get(),sql::hazelcast_sql_exception);
+    EXPECT_THROW(client.get_sql().execute(statement).get(),
+                 sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count)
@@ -1176,7 +1176,8 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count)
     EXPECT_NO_THROW(client.get_sql().execute(statement).get());
 }
 
-TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count_type_mismatch)
+TEST_F(SqlTest,
+       test_execute_with_expected_result_type_as_update_count_type_mismatch)
 {
     create_mapping_for_student();
     (void)populate_map<test::student>(map);
@@ -1187,7 +1188,8 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count_type_mism
 
     statement.expected_result_type(sql::sql_expected_result_type::update_count);
 
-    EXPECT_THROW(client.get_sql().execute(statement).get(),sql::hazelcast_sql_exception);
+    EXPECT_THROW(client.get_sql().execute(statement).get(),
+                 sql::hazelcast_sql_exception);
 }
 
 TEST_F(SqlTest, test_execute_with_expected_result_type_as_any)
@@ -1232,7 +1234,8 @@ TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
     auto expecteds = populate_map<test::student>(map, 100);
 
     sql::sql_statement statement{
-        client, (boost::format("UPDATE %1% SET age = 4 WHERE FALSE") % map_name).str()
+        client,
+        (boost::format("UPDATE %1% SET age = 4 WHERE FALSE") % map_name).str()
     };
 
     auto result = client.get_sql().execute(statement).get();
@@ -1416,7 +1419,8 @@ TEST_F(SqlTest, select)
                          exception::index_out_of_bounds);
             EXPECT_THROW(row.get_object<int>(row.row_metadata().column_count()),
                          exception::index_out_of_bounds);
-            EXPECT_THROW(row.get_object<int>("unknown_field"), exception::illegal_argument);
+            EXPECT_THROW(row.get_object<int>("unknown_field"),
+                         exception::illegal_argument);
         }
     }
 

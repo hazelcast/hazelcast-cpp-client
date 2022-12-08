@@ -657,12 +657,10 @@ sql_result::check_closed() const
 {
     if (closed_) {
         impl::query_utils::throw_public_exception(
-            std::make_exception_ptr(
-            exception::query(
-                    static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
-                    "Query was cancelled by the user")
-            ),
-            service_->client_id());
+          std::make_exception_ptr(exception::query(
+            static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
+            "Query was cancelled by the user")),
+          service_->client_id());
     }
 }
 
@@ -673,11 +671,10 @@ sql_result::close()
         return boost::make_ready_future();
     }
 
-
     auto f = service_->close(connection_, query_id_);
 
     {
-        std::lock_guard<std::mutex> guard {mtx_};
+        std::lock_guard<std::mutex> guard{ mtx_ };
         closed_ = true;
 
         connection_.reset();
@@ -692,7 +689,7 @@ sql_result::close()
 boost::future<std::shared_ptr<sql_page>>
 sql_result::fetch_page()
 {
-    std::lock_guard<std::mutex> guard {mtx_};
+    std::lock_guard<std::mutex> guard{ mtx_ };
 
     check_closed();
     return service_->fetch_page(query_id_, cursor_buffer_size_, connection_);
@@ -728,8 +725,8 @@ sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
                                          std::shared_ptr<sql_page> first_page)
   : in_progress_{ std::make_shared<std::atomic<bool>>(false) }
   , last_{ std::make_shared<std::atomic<bool>>(false) }
-  , row_metadata_ { result->row_metadata_ }
-  , serialization_ { result->client_context_->get_serialization_service() }
+  , row_metadata_{ result->row_metadata_ }
+  , serialization_{ result->client_context_->get_serialization_service() }
   , result_{ move(result) }
   , first_page_{ move(first_page) }
 {
@@ -769,7 +766,7 @@ sql_result::page_iterator::next()
 
     std::weak_ptr<std::atomic<bool>> last_w{ last_ };
     std::weak_ptr<std::atomic<bool>> in_progress_w{ in_progress_ };
-    std::shared_ptr<sql_row_metadata> row_metadata { row_metadata_ };
+    std::shared_ptr<sql_row_metadata> row_metadata{ row_metadata_ };
     auto result = result_;
     auto serialization_service = &serialization_;
 
