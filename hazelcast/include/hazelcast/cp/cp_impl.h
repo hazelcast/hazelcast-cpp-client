@@ -93,6 +93,7 @@ private:
     {
         session_state(int64_t id, int64_t ttl_millis);
         session_state(const session_state& rhs);
+        session_state& operator=(const session_state& rhs);
 
         int64_t id;
         std::chrono::milliseconds ttl;
