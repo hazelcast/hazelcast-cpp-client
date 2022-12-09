@@ -695,8 +695,11 @@ sql_result::close()
     {
         release_resources();
 
-        throw;
+        service_->rethrow(std::current_exception());
     }
+
+    // This should not be reached.
+    return boost::make_ready_future();
 }
 
 boost::future<std::shared_ptr<sql_page>>
