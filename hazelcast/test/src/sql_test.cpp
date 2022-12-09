@@ -786,7 +786,7 @@ TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
     EXPECT_EQ("hello", rows[1].get_object<std::string>(1).value());
 }
 
-TEST_F(SqlTest, sql_result_fetch_page_should_throw_after_close)
+TEST_F(SqlTest, sql_result_public_apis_should_throw_after_close)
 {
     std::shared_ptr<sql::sql_result::page_iterator> it;
     {
