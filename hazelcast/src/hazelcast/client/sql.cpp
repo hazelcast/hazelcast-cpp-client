@@ -671,19 +671,32 @@ sql_result::close()
         return boost::make_ready_future();
     }
 
-    auto f = service_->close(connection_, query_id_);
+    auto release_resources = [this](){
+        {
+            std::lock_guard<std::mutex> guard{ mtx_ };
+            closed_ = true;
 
+            connection_.reset();
+        }
+
+        row_metadata_.reset();
+        first_page_.reset();
+    };
+
+    try
     {
-        std::lock_guard<std::mutex> guard{ mtx_ };
-        closed_ = true;
+        auto f = service_->close(connection_, query_id_);
 
-        connection_.reset();
+        release_resources();
+
+        return f;
     }
+    catch (...)
+    {
+        release_resources();
 
-    row_metadata_.reset();
-    first_page_.reset();
-
-    return f;
+        throw;
+    }
 }
 
 boost::future<std::shared_ptr<sql_page>>
