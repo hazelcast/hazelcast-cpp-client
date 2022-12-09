@@ -10,7 +10,6 @@
 #include <hazelcast/client/sql/sql_statement.h>
 #include <hazelcast/client/sql/hazelcast_sql_exception.h>
 #include <hazelcast/client/sql/impl/sql_error_code.h>
-#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
