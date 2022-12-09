@@ -664,41 +664,34 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
     create_mapping();
     (void)populate_map(map, 100);
 
-    sql::sql_statement statement{ client,
-                                  (boost::format(
-                                     R"(
-                    SELECT * FROM %1%
-                )") % map_name)
-                                    .str() };
+    auto handler = [this](){
+        sql::sql_statement statement{ client,
+                        (boost::format(
+                                R"(
+                SELECT * FROM %1%
+            )") % map_name).str() };
 
-    statement.cursor_buffer_size(10);
+        statement.cursor_buffer_size(10);
+        auto result = client.get_sql().execute(statement).get();
 
-    int retry_count{};
+        auto itr = result->iterator();
 
-retry : {
-    if (retry_count > 5) {
-        FAIL();
-    }
+        auto p_1 = itr.next();
+        auto p_2 = itr.next();
 
-    auto result = client.get_sql().execute(statement).get();
+        if (!p_2.has_value()) {
+            EXPECT_THROW(itr.next(), exception::illegal_access);
+            p_2.get();
 
-    auto itr = result->iterator();
+            return true;
+        } else {
+            p_2.get();
 
-    auto p_1 = itr.next();
-    auto p_2 = itr.next();
+            return false;
+        }
+    };
 
-    if (!p_2.has_value()) {
-        EXPECT_THROW(itr.next(), exception::illegal_access);
-    } else {
-        p_1.get();
-        p_2.get();
-        ++retry_count;
-        goto retry;
-    }
-
-    p_1.get();
-    p_2.get();
-}
+    ASSERT_TRUE_EVENTUALLY(handler());
 }
 
 TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
