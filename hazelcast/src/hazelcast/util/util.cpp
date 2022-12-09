@@ -286,15 +286,12 @@ SyncHttpsClient::connect_and_get_response()
 
     } catch (std::exception& e) {
         close();
-        auto message = (boost::format(
-             "Could not retrieve response from https://%1%%2%. Error:%3%") %
-           server_ % uri_path_ % e.what())
-            .str();
-
         throw client::exception::io(
           "SyncHttpsClient::openConnection",
-          move(message)
-          );
+          (boost::format(
+             "Could not retrieve response from https://%1%%2%. Error:%3%") %
+           server_ % uri_path_ % e.what())
+            .str());
     }
     return response_stream_;
 }

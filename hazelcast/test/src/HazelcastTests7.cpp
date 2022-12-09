@@ -1857,13 +1857,10 @@ TEST_F(cloud_discovery_test, token_should_not_be_leaked)
 
     auto discovery_token = cloudConfig.discovery_token;
 
-    try
-    {
+    try {
         hazelcast::new_client(std::move(config)).get();
         FAIL();
-    }
-    catch (const exception::illegal_state& e)
-    {
+    } catch (const exception::illegal_state& e) {
         std::string message = e.what();
         ASSERT_EQ(message.find(discovery_token), std::string::npos);
     }
