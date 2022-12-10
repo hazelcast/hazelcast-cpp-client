@@ -262,7 +262,7 @@ public:
      */
     static constexpr const char* CLOUD_URL_BASE = "hazelcast.client.cloud.url";
     static constexpr const char* CLOUD_URL_BASE_DEFAULT =
-      "coordinator.hazelcast.cloud";
+      "api.viridian.hazelcast.com";
 
     /**
      * Returns the configured boolean value of a {@link ClientProperty}.
