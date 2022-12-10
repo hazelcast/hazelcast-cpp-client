@@ -3301,7 +3301,7 @@ If you are using the CLI, Docker image, or distributions to start Hazelcast memb
 
 However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath as it is stated [here](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/sql/SqlService.html).
 ### 7.11.1 Overview
-All the sql related types and functionalities accomodates in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module.
+All the sql related types and functionalities accomodate in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module.
 
 `sql_service` is the main controller of this module. Queries can be executed via `sql_service` class. It also supports to specify query parameters. After executing any query `boost::future<std::shared_ptr<sql_result>>` is returned.
 
