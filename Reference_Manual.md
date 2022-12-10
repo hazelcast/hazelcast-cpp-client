@@ -3299,7 +3299,7 @@ This typed_data allows you to retrieve the data type of the underlying binary to
 To use SQL API, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the classpath of the members.
 If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't need to do anything, as the above preconditions are already satisfied for such members.
 
-However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath as it is stated [here](https://docs.hazelcast.org/docs/latest/javadoc/com/hazelcast/sql/SqlService.html).
+However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath as it is stated [here](https://docs.hazelcast.com/hazelcast/latest/sql/sql-overview#before-you-begin).
 ### 7.11.1 Overview
 All the sql related types and functionalities accomodate in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module.
 
@@ -3544,19 +3544,27 @@ So those exceptions should be taken into consideration for production ready code
 
 Most of the exceptions related with SQL API wrapped with `sql::hazelcast_sql_exception`
 so it can be seen as general exception which expresses the errors in SQL API.
+It contains several useful methods which represents the error better.
+
+Those methods are stated at below :
+- `sql::hazelcast_sql_exception::code()` returns an internal error code. It might be useful to express an error more detailed.
+- `sql::hazelcast_sql_exception::suggestion()` returns an suggestion message to fix the problem. It can be null.
+- `sql::hazelcast_sql_exception::originating_member_id()` returns an `boost:uuids::uuid` which is ID of the member that caused or initiated an error condition.
+
+Exceptions which can be thrown by SQL API are stated at below:
 
 - `sql_service::execute` can throw `sql::hazelcast_sql_exception` in case of an error.
 - `page_iterator::next()` can throw three types of exceptions.
   - `sql::hazelcast_sql_exception` in case of an error related with execution.
   - `no_such_element` is thrown if it is called after last page is fetched.
-  - `illegal_access` is thrown if page fetch operation is already process.To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
+  - `illegal_access` is thrown if page fetch operation is already progress. To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
 - `sql_result::iterator()` can throw two types of exceptions.
   - `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
 - `sql_result::row_metadata()` can throw `illegal_state` exception if the result contains only update count.
 - `sql_page::sql_row::get_object(int)` can throw `index_out_of_bounds` exception if the index is out of range.
 - `sql_page::sql_row::get_object(std::string)` can throw `illegal_argument` exception if the column doesn't exist.
 
-In addition, any method which returns `boost::future<T>` can throw an error.
+In addition, any method which returns `boost::future<T>` can throw an exception.
 Unless otherwise is stated, `sql::hazelcast_sql_exception` is thrown.
 
 # 8. Development and Testing
