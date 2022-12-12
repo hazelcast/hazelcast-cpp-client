@@ -188,7 +188,11 @@ private:
         if (member_addresses.empty()) {
             return;
         }
-        std::random_shuffle(member_addresses.begin(), member_addresses.end());
+
+        static thread_local std::random_device rd;
+        static thread_local std::mt19937 gen(rd());
+
+        std::shuffle(member_addresses.begin(), member_addresses.end(), gen);
     }
 
     void check_client_active();
