@@ -67,7 +67,7 @@ public:
 
     const std::string& name() const;
 
-    virtual const credential_type type() const = 0;
+    virtual credential_type type() const = 0;
 
 private:
     std::string name_;
@@ -81,7 +81,7 @@ public:
 
     const std::string& password() const;
 
-    const credential_type type() const override;
+    credential_type type() const override;
 
 private:
     std::string password_;
@@ -94,7 +94,7 @@ public:
 
     const std::vector<byte>& token() const;
 
-    const credential_type type() const override;
+    credential_type type() const override;
 
 private:
     std::vector<byte> token_;

@@ -1088,7 +1088,7 @@ SerializationService::to_data(const char* object)
     return to_data<std::string>(str);
 }
 
-const byte
+byte
 SerializationService::get_version() const
 {
     return 1;
