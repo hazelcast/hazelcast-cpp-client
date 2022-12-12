@@ -23,6 +23,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <exception>
 
 #include <boost/thread/barrier.hpp>
 
@@ -1860,9 +1861,17 @@ TEST_F(cloud_discovery_test, token_should_not_be_leaked)
     try {
         hazelcast::new_client(std::move(config)).get();
         FAIL();
-    } catch (const exception::illegal_state& e) {
+    } catch (const std::exception& e) {
         std::string message = e.what();
-        ASSERT_EQ(message.find(discovery_token), std::string::npos);
+        EXPECT_EQ(message.find(discovery_token), std::string::npos);
+
+        try {
+            std::rethrow_if_nested(e);
+        } catch (const std::exception& e) {
+            // TODO : Here is not called, it should be investiged.
+            std::string message = e.what();
+            EXPECT_EQ(message.find(discovery_token), std::string::npos);
+        }
     }
 }
 

@@ -32,6 +32,7 @@
 
 #include <boost/concept_check.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -148,10 +149,12 @@ namespace hazelcast {
 namespace util {
 SyncHttpsClient::SyncHttpsClient(const std::string& server_ip,
                                  const std::string& uri_path,
-                                 std::chrono::steady_clock::duration timeout)
+                                 std::chrono::steady_clock::duration timeout,
+                                 const std::string& secret_removal)
   : server_(server_ip)
   , uri_path_(uri_path)
   , timeout_(timeout)
+  , secret_removal_(secret_removal)
   , resolver_(io_service_)
   , ssl_context_(boost::asio::ssl::context::tlsv12)
   , response_stream_(&response_)
@@ -286,12 +289,17 @@ SyncHttpsClient::connect_and_get_response()
 
     } catch (std::exception& e) {
         close();
-        throw client::exception::io(
-          "SyncHttpsClient::openConnection",
+        auto message =
           (boost::format(
              "Could not retrieve response from https://%1%%2%. Error:%3%") %
            server_ % uri_path_ % e.what())
-            .str());
+            .str();
+
+        if (!secret_removal_.empty())
+            boost::replace_all(message, secret_removal_, "<SECRET_REMOVAL>");
+
+        throw client::exception::io("SyncHttpsClient::openConnection",
+                                    move(message));
     }
     return response_stream_;
 }
