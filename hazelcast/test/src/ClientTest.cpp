@@ -21,6 +21,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/hazelcast_client.h>
@@ -103,7 +104,7 @@ ClientTest::get_ssl_file_path()
 std::string
 ClientTest::random_map_name()
 {
-    return random_string();
+    return "test_" + boost::replace_all_copy(random_string(), "-", "_");
 }
 
 std::string

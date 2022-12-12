@@ -36,7 +36,7 @@ class sql_service;
  * <h4>Usage for page of rows</h4>
  *
  * <ol>
- *     <li>Use page_iterator() to iterate the pages. see page_iterator_type</li>
+ *     <li>Use iterator() to iterate the pages. see page_iterator</li>
  *     <li>Use close() to release the resources associated with the result.</li>
  * </ol>
 
@@ -44,8 +44,10 @@ class sql_service;
   * Code example:
   * <pre>
   * auto result = hz.get_sql().execute("SELECT * FROM person");
-  * for (auto it = result.page_iterator(); it; (++it).get()) {
-  *    for (auto const &row : (*it).rows()) {
+  * for (auto itr = result.iterator(); itr.has_next();) {
+  *    auto page = itr.next().get();
+  *
+  *    for (auto const &row : page->rows()) {
   *       // Process the row.
   *    }
   * }
@@ -62,32 +64,39 @@ class sql_service;
 class HAZELCAST_API sql_result : public std::enable_shared_from_this<sql_result>
 {
 public:
-    class HAZELCAST_API page_iterator_type
+    class HAZELCAST_API page_iterator
     {
     public:
-        page_iterator_type(std::shared_ptr<sql_result> result,
-                           std::shared_ptr<sql_page> page);
+        page_iterator(std::shared_ptr<sql_result> result,
+                      std::shared_ptr<sql_page> first_page);
+
+        page_iterator(const page_iterator&) = delete;
+        page_iterator(page_iterator&&) = default;
+        page_iterator& operator=(const page_iterator&) = delete;
+        page_iterator& operator=(page_iterator&&) = default;
 
         /**
-         * Fetches the new page for the result.
+         * Fetches the new page
+         * @throws illegal_access if it is called before previous page is
+         * already fetched.
+         * @throws no_such_element if there are no more pages to be retrieved.
+         * only an update count
+         * @throws hazelcast_sql_exception if any other errors occurred.
          */
-        boost::future<void> operator++();
+        boost::future<std::shared_ptr<sql_page>> next();
 
         /**
-         * Returns the current page the iterator points to.
-         * @return the current page the iterator points to or boost::none if no
-         * page exist.
+         * Tells whether there are pages to be retrieved
          */
-        std::shared_ptr<sql_page> operator*() const;
-
-        /**
-         * @return true if the iterator points to a page, false otherwise.
-         */
-        operator bool() const;
+        bool has_next() const;
 
     private:
+        std::shared_ptr<std::atomic<bool>> in_progress_;
+        std::shared_ptr<std::atomic<bool>> last_;
+        std::shared_ptr<sql_row_metadata> row_metadata_;
+        serialization::pimpl::SerializationService& serialization_;
         std::shared_ptr<sql_result> result_;
-        std::shared_ptr<sql_page> page_;
+        std::shared_ptr<sql_page> first_page_;
     };
 
     /**
@@ -96,7 +105,7 @@ public:
     virtual ~sql_result();
 
     /**
-     * Return whether this result has rows to iterate using the page_iterator()
+     * Return whether this result has rows to iterate using the iterator()
      * method.
      */
     bool row_set() const;
@@ -141,7 +150,7 @@ public:
      * once or if this result does not have any pages.
      *
      */
-    page_iterator_type page_iterator();
+    page_iterator iterator();
 
 private:
     friend class sql_service;
@@ -158,7 +167,8 @@ private:
 
     /** Whether the result is closed. When true, there is no need to send the
      * "cancel" request to the server. */
-    bool closed_;
+    std::atomic<bool> closed_;
+    std::mutex mtx_;
 
     int32_t cursor_buffer_size_;
 
