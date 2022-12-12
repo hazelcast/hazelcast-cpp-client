@@ -72,7 +72,12 @@ enum class HAZELCAST_API sql_column_type
      * <p>
      * The only valid value of \c NULL type is \code{.cpp}nullptr_t\endcode.
      */
-    null = 14
+    null = 14,
+
+    /**
+     * JSON type, Represented by hazelcast::client::hazelcast_json_value
+     */
+    json = 15
 };
 
 } // namespace sql

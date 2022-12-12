@@ -15,6 +15,10 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 
+/**
+ * At this example, there are some integer key/values at a map and
+ * they are fetched by SQL queries. Also demonstrates sql_statement usage.
+ */
 int
 main()
 {
@@ -23,7 +27,7 @@ main()
     auto hz = hazelcast::new_client().get();
 
     // populate the map with some data
-    auto map = hz.get_map("integer").get();
+    auto map = hz.get_map("integers").get();
     for (int i = 0; i < 100; ++i) {
         map->put(i, i).get();
     }
@@ -32,7 +36,7 @@ main()
     // Create mapping for the integers. This needs to be done only once per map.
     auto result = sql
                     .execute(R"(
-                CREATE MAPPING integers
+                CREATE OR REPLACE MAPPING integers
                   TYPE IMap
                     OPTIONS (
                       'keyFormat' = 'int',
@@ -46,14 +50,15 @@ main()
       sql.execute("SELECT * FROM integers WHERE this > ? AND this < ?", 40, 50)
         .get();
 
-    auto it = result->page_iterator();
-    std::cout << "There are " << (*it)->row_count()
-              << " rows returned from the cluster database" << std::endl;
+    for (auto itr = result->iterator(); itr.has_next();) {
+        auto page = itr.next().get();
 
-    for (; it; (++it).get()) {
-        for (auto const& row : (*it)->rows()) {
-            std::cout << "(" << row.get_object<std::string>(0) << ", "
-                      << row.get_object<std::string>(1) << ")" << std::endl;
+        std::cout << "There are " << page->row_count() << " rows the page."
+                  << std::endl;
+
+        for (auto const& row : page->rows()) {
+            std::cout << "(" << row.get_object<int>(0) << ", "
+                      << row.get_object<int>(1) << ")" << std::endl;
         }
     }
 
@@ -64,9 +69,9 @@ main()
     statement.set_parameters(40, 50);
     result = sql.execute(statement).get();
 
-    it = result->page_iterator();
-    std::cout << "There are " << (*it)->row_count()
-              << " rows returned from the cluster database" << std::endl;
+    auto first_page = result->iterator().next().get();
+    std::cout << "There are " << first_page->row_count()
+              << " rows at the first page" << std::endl;
 
     std::cout << "Finished" << std::endl;
 

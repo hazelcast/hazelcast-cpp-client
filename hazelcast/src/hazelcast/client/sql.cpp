@@ -175,7 +175,7 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
           return protocol::codec::builtin::sql_page_codec::decode(msg);
       });
     auto error = message.get<boost::optional<impl::sql_error>>();
-    return { *std::move(page), std::move(error) };
+    return { std::move(page), std::move(error) };
 }
 
 std::shared_ptr<sql_result>
@@ -301,7 +301,7 @@ sql_service::fetch_page(
               hazelcast::client::sql::sql_service::handle_fetch_response_error(
                 std::move(response_params.error));
 
-              page = std::move(response_params.page);
+              page = std::move(*response_params.page);
           } catch (exception::iexception&) {
               impl::query_utils::throw_public_exception(
                 std::current_exception(), this->client_id());
@@ -330,8 +330,7 @@ constexpr std::chrono::milliseconds sql_statement::DEFAULT_TIMEOUT;
 constexpr int32_t sql_statement::DEFAULT_CURSOR_BUFFER_SIZE;
 
 sql_statement::sql_statement(hazelcast_client& client, std::string query)
-  : sql_{ std::move(query) }
-  , serialized_parameters_{}
+  : serialized_parameters_{}
   , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
@@ -340,18 +339,19 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
       spi::ClientContext(client).get_serialization_service()
   }
 {
+    sql(std::move(query));
 }
 
 sql_statement::sql_statement(spi::ClientContext& client_context,
                              std::string query)
-  : sql_{ std::move(query) }
-  , serialized_parameters_{}
+  : serialized_parameters_{}
   , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
   , serialization_service_{ client_context.get_serialization_service() }
 {
+    sql(std::move(query));
 }
 
 const std::string&
@@ -632,33 +632,35 @@ sql_result::row_set() const
     return update_count() == -1;
 }
 
-sql_result::page_iterator_type
-sql_result::page_iterator()
+sql_result::page_iterator
+sql_result::iterator()
 {
     check_closed();
 
     if (!first_page_) {
-        throw exception::illegal_state(
-          "sql_result::page_iterator",
-          "This result contains only update count");
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
+          "sql_result::iterator", "This result contains only update count"));
     }
 
     if (iterator_requested_) {
-        throw exception::illegal_state("sql_result::page_iterator",
-                                       "Iterator can be requested only once");
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
+          "sql_result::page_iterator", "Iterator can be requested only once"));
     }
 
     iterator_requested_ = true;
 
     return { shared_from_this(), first_page_ };
 }
+
 void
 sql_result::check_closed() const
 {
     if (closed_) {
-        throw exception::query(
-          static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
-          "Query was cancelled by the user");
+        impl::query_utils::throw_public_exception(
+          std::make_exception_ptr(exception::query(
+            static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
+            "Query was cancelled by the user")),
+          service_->client_id());
     }
 }
 
@@ -669,14 +671,42 @@ sql_result::close()
         return boost::make_ready_future();
     }
 
-    auto f = service_->close(connection_, query_id_);
-    closed_ = true;
-    return f;
+    auto release_resources = [this](){
+        {
+            std::lock_guard<std::mutex> guard{ mtx_ };
+            closed_ = true;
+
+            connection_.reset();
+        }
+
+        row_metadata_.reset();
+        first_page_.reset();
+    };
+
+    try
+    {
+        auto f = service_->close(connection_, query_id_);
+
+        release_resources();
+
+        return f;
+    }
+    catch (...)
+    {
+        release_resources();
+
+        service_->rethrow(std::current_exception());
+    }
+
+    // This should not be reached.
+    return boost::make_ready_future();
 }
 
 boost::future<std::shared_ptr<sql_page>>
 sql_result::fetch_page()
 {
+    std::lock_guard<std::mutex> guard{ mtx_ };
+
     check_closed();
     return service_->fetch_page(query_id_, cursor_buffer_size_, connection_);
 }
@@ -707,45 +737,93 @@ sql_result::~sql_result()
     }
 }
 
-sql_result::page_iterator_type::page_iterator_type(
-  std::shared_ptr<sql_result> result,
-  std::shared_ptr<sql_page> page)
-  : result_(std::move(result))
-  , page_(std::move(page))
+sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
+                                         std::shared_ptr<sql_page> first_page)
+  : in_progress_{ std::make_shared<std::atomic<bool>>(false) }
+  , last_{ std::make_shared<std::atomic<bool>>(false) }
+  , row_metadata_{ result->row_metadata_ }
+  , serialization_{ result->client_context_->get_serialization_service() }
+  , result_{ move(result) }
+  , first_page_{ move(first_page) }
 {
-    page_->serialization_service(
-      &result_->client_context_->get_serialization_service());
-    page_->row_metadata(result_->row_metadata_);
 }
 
-boost::future<void>
-sql_result::page_iterator_type::operator++()
+boost::future<std::shared_ptr<sql_page>>
+sql_result::page_iterator::next()
 {
-    if (page_->last()) {
-        page_.reset();
-        return boost::make_ready_future();
+    result_->check_closed();
+
+    if (first_page_) {
+        auto page = move(first_page_);
+
+        page->serialization_service(&serialization_);
+        page->row_metadata(row_metadata_);
+        *last_ = page->last();
+
+        return boost::make_ready_future<std::shared_ptr<sql_page>>(page);
     }
+
+    if (*in_progress_) {
+        BOOST_THROW_EXCEPTION(
+          exception::illegal_access("sql_result::page_iterator::next",
+                                    "Fetch page operation is already in "
+                                    "progress so next must not be called."));
+    }
+
+    if (*last_) {
+        BOOST_THROW_EXCEPTION(exception::no_such_element(
+          "sql_result::page_iterator::next",
+          "Last page is already retrieved so there are no more pages."));
+    }
+
+    *in_progress_ = true;
 
     auto page_future = result_->fetch_page();
 
+    std::weak_ptr<std::atomic<bool>> last_w{ last_ };
+    std::weak_ptr<std::atomic<bool>> in_progress_w{ in_progress_ };
+    std::shared_ptr<sql_row_metadata> row_metadata{ row_metadata_ };
+    auto result = result_;
+    auto serialization_service = &serialization_;
+
     return page_future.then(
-      boost::launch::sync, [this](boost::future<std::shared_ptr<sql_page>> page) {
-          page_ = page.get();
-          page_->serialization_service(
-            &result_->client_context_->get_serialization_service());
-          page_->row_metadata(result_->row_metadata_);
+      boost::launch::sync,
+      [serialization_service, row_metadata, last_w, in_progress_w, result](
+        boost::future<std::shared_ptr<sql_page>> page_f) {
+          try {
+              auto page = page_f.get();
+
+              result->check_closed();
+              page->serialization_service(serialization_service);
+              page->row_metadata(move(row_metadata));
+
+              auto last = last_w.lock();
+
+              if (last)
+                  *last = page->last();
+
+              auto in_progress = in_progress_w.lock();
+
+              if (in_progress)
+                  *in_progress = false;
+
+              return page;
+          } catch (...) {
+              auto in_progress = in_progress_w.lock();
+
+              if (in_progress)
+                  *in_progress = false;
+
+              throw;
+          }
       });
 }
 
-std::shared_ptr<sql_page>
-sql_result::page_iterator_type::operator*() const
+bool
+sql_result::page_iterator::has_next() const
 {
-    return page_;
-}
-
-sql_result::page_iterator_type::operator bool() const
-{
-    return static_cast<bool>(page_);
+    result_->check_closed();
+    return !*last_;
 }
 
 sql_page::sql_row::sql_row(size_t row_index, std::shared_ptr<sql_page> page)
