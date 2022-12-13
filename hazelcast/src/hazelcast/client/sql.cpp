@@ -826,17 +826,30 @@ sql_result::page_iterator::has_next() const
     return !*last_;
 }
 
-sql_page::sql_row::sql_row(size_t row_index, std::shared_ptr<sql_page> page)
+std::size_t
+sql_page::page_data::column_count() const
+{
+    return column_types_.size();
+}
+
+std::size_t
+sql_page::page_data::row_count() const
+{
+    return columns_[0].size();
+}
+
+sql_page::sql_row::sql_row(size_t row_index,
+                           std::shared_ptr<page_data> shared)
   : row_index_(row_index)
-  , page_(std::move(page))
+  , page_data_(std::move(shared))
 {
 }
 
 std::size_t
 sql_page::sql_row::resolve_index(const std::string& column_name) const
 {
-    auto it = page_->row_metadata_->find_column(column_name);
-    if (it == page_->row_metadata_->end()) {
+    auto it = page_data_->row_metadata_->find_column(column_name);
+    if (it == page_data_->row_metadata_->end()) {
         throw exception::illegal_argument(
           "sql_page::get_object(const std::string &)",
           (boost::format("Column %1% doesn't exist") % column_name).str());
@@ -848,7 +861,7 @@ sql_page::sql_row::resolve_index(const std::string& column_name) const
 const sql_row_metadata&
 sql_page::sql_row::row_metadata() const
 {
-    return *page_->row_metadata_;
+    return *page_data_->row_metadata_;
 }
 
 void
@@ -865,10 +878,11 @@ sql_page::sql_page(std::vector<sql_column_type> column_types,
                    std::vector<column> columns,
                    bool last,
                    std::shared_ptr<sql_row_metadata> row_metadata)
-  : column_types_(std::move(column_types))
-  , columns_(std::move(columns))
+  : page_data_{ new page_data{ std::move(column_types),
+                               std::move(columns),
+                               std::move(row_metadata),
+                               nullptr } }
   , last_(last)
-  , row_metadata_(std::move(row_metadata))
 {
 }
 
@@ -878,14 +892,14 @@ sql_page::construct_rows()
     auto count = row_count();
     rows_.clear();
     for (size_t i = 0; i < count; ++i) {
-        rows_.emplace_back(i, shared_from_this());
+        rows_.emplace_back(i, page_data_);
     }
 }
 
 const std::vector<sql_column_type>&
 sql_page::column_types() const
 {
-    return column_types_;
+    return page_data_->column_types_;
 }
 
 bool
@@ -897,13 +911,13 @@ sql_page::last() const
 std::size_t
 sql_page::column_count() const
 {
-    return column_types_.size();
+    return page_data_->column_count();
 }
 
 std::size_t
 sql_page::row_count() const
 {
-    return columns_[0].size();
+    return page_data_->row_count();
 }
 
 const std::vector<sql_page::sql_row>&
@@ -915,13 +929,13 @@ sql_page::rows() const
 void
 sql_page::row_metadata(std::shared_ptr<sql_row_metadata> row_meta)
 {
-    row_metadata_ = std::move(row_meta);
+    page_data_->row_metadata_ = std::move(row_meta);
 }
 
 void
 sql_page::serialization_service(serialization::pimpl::SerializationService* ss)
 {
-    serialization_service_ = ss;
+    page_data_->serialization_service_ = ss;
 }
 
 sql_row_metadata::sql_row_metadata(std::vector<sql_column_metadata> columns)
