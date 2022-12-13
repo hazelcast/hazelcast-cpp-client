@@ -97,3 +97,13 @@
           ((container)->size().get()),                                         \
           timeoutSeconds);                                                     \
     } while (0)
+
+#define EXPECT_THROW_FN(statement, expected_exception, fn)                     \
+    try {                                                                      \
+        statement;                                                             \
+        FAIL();                                                                \
+    } catch (const expected_exception& e) {                                    \
+        fn(e);                                                                 \
+    } catch (...) {                                                            \
+        FAIL();                                                                \
+    }

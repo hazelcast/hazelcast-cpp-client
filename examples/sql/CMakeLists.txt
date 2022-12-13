@@ -16,3 +16,5 @@
 add_executable(sql_basic_query sql_basic_query.cpp)
 add_executable(sql_query_with_portable sql_query_with_portable.cpp)
 add_executable(sql_cancellation_example sql_cancellation_example.cpp)
+add_executable(sql_json_example sql_json_example.cpp)
+add_executable(sql_order_by_limit_offset sql_order_by_limit_offset.cpp)

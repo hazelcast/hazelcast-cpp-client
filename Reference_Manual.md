@@ -135,6 +135,14 @@
          * [7.9.2. Logging Configuration](#792-logging-configuration)
       * [7.10. Mixed Object Types Supporting Hazelcast Client](#710-mixed-object-types-supporting-hazelcast-client)
          * [7.10.1. typed_data API](#7101-typed_data-api)
+      * [7.11. SQL API](#711-sql-api)
+         * [7.11.1 Overview](#7111-overview)
+         * [7.11.2 Create Mapping](#7112-create-mapping)
+         * [7.11.3 Read SELECT Results](#7113-read-select-results)
+         * [7.11.4 Sql Statement With Options](#7114-sql-statement-with-options)
+         * [7.11.5 Read Row Metadata](#7115-read-row-metadata)
+         * [7.11.6 Read Table Column Value](#7116-read-table-column-value)
+         * [7.11.7 Error Handling](#7117-error-handling)
    * [8. Development and Testing](#8-development-and-testing)
       * [8.1. Testing](#81-testing)
    * [9. Getting Help](#9-getting-help)
@@ -3287,6 +3295,277 @@ This typed_data allows you to retrieve the data type of the underlying binary to
 3. <b>identified_data_serializer serialized objects</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
 4. <b>Portable serialized objects</b>: `factory_id`, `class_id` and `type_id` are non-negative values.
 5. <b>Custom serialized objects</b>: `factory_id=-1`, `class_id=-1`, `type_id` is the non-negative type ID. 
+## 7.11. SQL API
+To use SQL API, the Jet engine must be enabled on the members and the `hazelcast-sql` module must be in the classpath of the members.
+If you are using the CLI, Docker image, or distributions to start Hazelcast members, then you don't need to do anything, as the above preconditions are already satisfied for such members.
+
+However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath as it is stated [here](https://docs.hazelcast.com/hazelcast/latest/sql/sql-overview#before-you-begin).
+### 7.11.1 Overview
+All the sql related types and functionalities accomodate in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module.
+
+`sql_service` is the main controller of this module. Queries can be executed via `sql_service` class. It also supports to specify query parameters. After executing any query `boost::future<std::shared_ptr<sql_result>>` is returned.
+
+If it is a `SELECT` query then it provides a way to iterate over rows. Rows are stored in pages and essentially, hazelcast serves result of `SELECT` queries page by page so the interface reflects this approach.
+
+`sql_result` provides a `page_iterator` which allows caller to fetch and iterate over pages. `sql_result::page_iterator::next()` returns `boost::future<std::shared_ptr<sql_page>>`. Every `sql_page` contains either `0` or more rows. It also tells that whether this page is the `last` or not via `last()` method.
+### 7.11.2 Create Mapping
+Before you can access any object using SQL, a mapping has to be created. See the documentation for the [CREATE MAPPING](https://docs.hazelcast.com/hazelcast/latest/sql/create-mapping) command.
+
+``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
+// populate the map with some data
+auto map = hz.get_map("integers").get();
+for (int i = 0; i < 1000; ++i) {
+    map->put(i, i).get();
+}
+
+auto sql = hz.get_sql();
+// Create mapping for the integers. This needs to be done only once per map.
+auto result = sql.execute(R"(
+                CREATE OR REPLACE MAPPING integers
+                    TYPE IMap
+                    OPTIONS (
+                        'keyFormat' = 'int',
+                        'valueFormat' = 'int'
+                        )
+                    )").get();
+```
+### 7.11.3 Read SELECT Results
+`SELECT` results are fetched page by page. A page can accomodate zero or more rows.
+
+`sql_service::execute` executes the query and returns a `boost::future<std::shared_ptr<sql_result>>`. Via `sql_result::iterator()` method, `sql_result::page_iterator` is acquired and pages can be iterated.
+``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
+auto result = hz.get_sql().execute("SELECT * FROM integers").get();
+
+result->row_metadata(); // Tells about metadata
+
+for (auto itr = result->iterator(); itr.has_next();)
+{
+    auto page = itr.next().get();
+
+    for(const sql_page::sql_row& row : page->rows())
+    {
+        std::cout << row.get_object<int>(0)
+                  << ", "
+                  << row.get_object<int>(1)
+                  << '\n';
+    }
+}
+```
+
+**Note-1**: First call to `sql_result::page_iterator::next()` function will return `ready` future because first page is already loaded as a result of the sql_service::execute call.
+``` C++
+auto itr = result->iterator();
+itr.next().get(); // This will not block even `get()`
+	          // is called because it will return
+	          // a future which is in ready state.
+```
+**Note-2**: After first page every `sql_result::page_iterator::next()` call fetches a new page future.
+Before waiting this future it is not allowed to do another `sql_result::page_iterator::next()` call.
+``` C++
+auto itr = result->iterator();
+itr.next().get(); // It will return first page
+auto page_2 = itr.next(); // Made request to second page
+// page_2.get(); // I should have waited but didn't
+auto page_3 = itr.next(); // This probably throws an `hazelcast::illegal_access` exception
+                          // because previous page might not be fetched yet. To prevent this
+	                  // `page_2.get()` should have called to ensure that page_2 is fetched.
+```
+**Note-3**: If fetched page is marked as `last` there should not be any further fetch requests.
+``` C++
+auto itr = result->iterator();
+
+auto page_1 = itr.next().get();
+
+if (page_1->last())
+    itr.next(); // This will throw an `hazelcast::no_such_element` exception.
+```
+**Note-4**: Zero rows do not mean that it is the last page.
+`SELECT * FROM TABLE(generate_stream(1))` query mostly returns first page as empty because it is a stream.
+Stream is an endless flow of data from server to the client.
+``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
+auto result = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
+
+auto itr = result->iterator();
+auto page = itr.next().get();
+
+std::cout << page.row_count() << std::endl; // This may print zero if no data is yet generated at the server side.
+```
+**Note-5**: `boost::future<std::shared_ptr<sql_result>>` is returned from `sql_service::execute` and `boost::future<std::shared_ptr<sql_page>>` is returned from `sql_result::page_iterator::next()`.
+
+``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
+auto result_f = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))");
+
+try
+{
+    result_f.get();
+}
+catch (const hazelcast_sql_exception&)
+{
+    // Do error handling
+}
+```
+
+``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
+auto result = hz.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
+
+try
+{
+    for (auto itr = result->iterator(); itr.has_next();)
+    {
+        auto page_f = itr.next();
+        auto page = page_f.get();
+    }
+}
+catch (const hazelcast_sql_exception&)
+{
+    // Do error handling
+}
+```
+
+### 7.11.4 Sql Statement With Options
+`sql_statement` is a class which holds query string, its parameters and options.
+It can be passed to `sql_service::execute` method and its parameters and options will be taken into consideration.
+
+``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
+// Constructs sql_statement with default options which are :
+// cursor_buffer_size: 4096
+// timeout: std::chrono::millisecond{ -1 } which means no timeout
+// expected_result_type: any
+sql_statement statement
+{
+    hz ,
+    R"(
+        SELECT * FROM some_table WHERE this > ?
+    )"
+};
+
+// Methods which specifies options are able to be called in chain, returns self references
+statement.add_parameter(15) // '?' part of the query will be filled with this parameter.
+         .cursor_buffer_size(96) // Set '96' to 'cursor_buffer_size' option
+         .timeout(std::chrono::milliseconds {500}) // Set '500' milliseconds timeout, if the time is exceeded query will be cancelled.
+         .expected_result_type(sql_expected_result_type::rows); // Expect a table which contains rows
+
+// To fetch use non-parameterized overloads
+std::cout << "cursor_buffer_size : "   << statement.cursor_buffer_size()        << std::endl
+          << "timeout : "              << statement.timeout().count()           << std::endl
+          << "expected_result_type : " << int(statement.expected_result_type()) << std::endl;
+
+hz.get_sql().execute(statement); // OK, execute this statement
+```
+
+### 7.11.5 Read Row Metadata
+Row metadatas can be acquired with `sql_result::row_metadata()` and `sql_page::sql_row::row_metadata()` method.
+
+``` C++
+using namespace hazelcast::client::sql;
+
+auto hz = hazelcast::new_client().get();
+
+auto result = hz.get_sql().execute("SELECT name, surname, age FROM employees").get();
+
+auto metadata = result->row_metadata();
+
+// Print column count
+std::cout << "There are " << metadata.column_count() << " columns" << std::endl;
+
+// Print columns
+for (const sql_column_metadata& col : metadata.columns())
+{
+    std::cout << "name : "      << col.name
+              << " type : "     << int(col.type)
+              << " nullable : " << col.nullable
+              << std::endl;
+}
+
+// Get column by index
+auto age_col_metadata = metadata.column(2);
+
+std::cout << "name : "      << age_col_metadata.name
+          << " type : "     << int(age_col_metadata.type)
+          << " nullable : " << age_col_metadata.nullable
+          << std::endl;
+```
+**Note :** There is no metadata for non-`SELECT` queries.
+
+``` C++
+auto result = sql.execute("DELETE FROM employees WHERE age < 18").get();
+
+result->row_metadata(); // Throws an `exception::illegal_state`
+                        // This is not a SELECT query
+```
+
+### 7.11.6 Read Table Column Value
+`boost::optional<T> sql_page::sql_row::get_object<T>` is used for reading column value. `T` specifies the return type and it should correspond with the column type. Otherwise it will throw `boost::bad_any_cast`. There are two overloads one can be used to read value by column idx and other by column name.
+
+``` C++
+for (auto itr = result->iterator(); itr.has_next();)
+{
+    auto page = itr.next().get();
+
+    for(const sql_page::sql_row& row : page->rows())
+    {
+        std::cout << row.get_object<int>(0) // Read first column value as int
+                  << ", "
+                  << row.get_object<int>("age") // Read 'age' column value
+                  << ", "
+                  << row.get_object<std::string>("surname") // Read 'surname' column value
+                  << std::endl;
+    }
+}
+```
+
+### 7.11.7 Error Handling
+There are some exceptions which expresses an error occurred while performing an operation.
+So those exceptions should be taken into consideration for production ready code.
+
+Most of the exceptions related with SQL API wrapped with `sql::hazelcast_sql_exception`
+so it can be seen as general exception which expresses the errors in SQL API.
+It contains several useful methods which represents the error better.
+
+Those methods are stated at below :
+- `sql::hazelcast_sql_exception::code()` returns an internal error code. It might be useful to express an error more detailed.
+- `sql::hazelcast_sql_exception::suggestion()` returns an suggestion message to fix the problem. It can be null.
+- `sql::hazelcast_sql_exception::originating_member_id()` returns an `boost:uuids::uuid` which is ID of the member that caused or initiated an error condition.
+
+Exceptions which can be thrown by SQL API are stated at below:
+
+- `sql_service::execute` can throw `sql::hazelcast_sql_exception` in case of an error.
+- `page_iterator::next()` can throw three types of exceptions.
+  - `sql::hazelcast_sql_exception` in case of an error related with execution.
+  - `no_such_element` is thrown if it is called after last page is fetched.
+  - `illegal_access` is thrown if page fetch operation is already progress. To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
+- `sql_result::iterator()` can throw two types of exceptions.
+  - `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
+- `sql_result::row_metadata()` can throw `illegal_state` exception if the result contains only update count.
+- `sql_page::sql_row::get_object(int)` can throw `index_out_of_bounds` exception if the index is out of range.
+- `sql_page::sql_row::get_object(std::string)` can throw `illegal_argument` exception if the column doesn't exist.
+
+In addition, any method which returns `boost::future<T>` can throw an exception.
+Unless otherwise is stated, `sql::hazelcast_sql_exception` is thrown.
 
 # 8. Development and Testing
 
