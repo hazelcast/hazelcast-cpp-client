@@ -39,15 +39,16 @@ namespace sql {
 /**
  * A finite set of rows returned to the client.
  */
-class HAZELCAST_API sql_page : public std::enable_shared_from_this<sql_page>
+class HAZELCAST_API sql_page
 {
     using column = std::vector<boost::any>;
+    struct HAZELCAST_API page_data;
 
 public:
     class HAZELCAST_API sql_row
     {
     public:
-        sql_row(size_t row_index, std::shared_ptr<sql_page> page);
+        sql_row(size_t row_index, std::shared_ptr<page_data> page);
 
         /**
          * Gets the value of the column by index.
@@ -71,7 +72,7 @@ public:
         {
             check_index(column_index);
 
-            return page_->get_column_value<T>(column_index, row_index_);
+            return page_data_->get_column_value<T>(column_index, row_index_);
         }
 
         /**
@@ -99,7 +100,7 @@ public:
         boost::optional<T> get_object(const std::string& column_name) const
         {
             auto column_index = resolve_index(column_name);
-            return page_->get_column_value<T>(column_index, row_index_);
+            return page_data_->get_column_value<T>(column_index, row_index_);
         }
 
         /**
@@ -112,9 +113,8 @@ public:
         const sql_row_metadata& row_metadata() const;
 
     private:
-        friend class sql_page;
         std::size_t row_index_;
-        std::shared_ptr<sql_page> page_;
+        std::shared_ptr<page_data> page_data_;
 
         std::size_t resolve_index(const std::string& column_name) const;
 
@@ -168,34 +168,9 @@ private:
     friend class sql_result;
     friend class protocol::codec::builtin::sql_page_codec;
 
-    std::vector<sql_column_type> column_types_;
-    std::vector<column> columns_;
+    std::shared_ptr<page_data> page_data_;
     std::vector<sql_row> rows_;
     bool last_;
-    std::shared_ptr<sql_row_metadata> row_metadata_ = nullptr;
-    serialization::pimpl::SerializationService* serialization_service_;
-
-    template<typename T>
-    boost::optional<T> get_column_value(std::size_t column_index,
-                                        std::size_t row_index) const
-    {
-        assert(column_index < column_count());
-        assert(row_index < row_count());
-
-        auto& any_value = columns_[column_index][row_index];
-        if (any_value.empty()) {
-            return boost::none;
-        }
-
-        if (column_types_[column_index] != sql_column_type::object) {
-            return boost::any_cast<T>(any_value);
-        }
-
-        // this is the object type, hence the value is `data`
-        // and we need to de-serialize it
-        return serialization_service_->to_object<T>(
-          boost::any_cast<serialization::pimpl::data>(any_value));
-    }
 
     /**
      * set the row metadata on the page
@@ -210,6 +185,39 @@ private:
     void serialization_service(serialization::pimpl::SerializationService* ss);
 
     void construct_rows();
+
+    struct HAZELCAST_API page_data
+    {
+        std::vector<sql_column_type> column_types_;
+        std::vector<column> columns_;
+        std::shared_ptr<sql_row_metadata> row_metadata_;
+        serialization::pimpl::SerializationService* serialization_service_;
+
+        template<typename T>
+        boost::optional<T> get_column_value(std::size_t column_index,
+                                            std::size_t row_index) const
+        {
+            assert(column_index < column_count());
+            assert(row_index < row_count());
+
+            auto& any_value = columns_[column_index][row_index];
+            if (any_value.empty()) {
+                return boost::none;
+            }
+
+            if (column_types_[column_index] != sql_column_type::object) {
+                return boost::any_cast<T>(any_value);
+            }
+
+            // this is the object type, hence the value is `data`
+            // and we need to de-serialize it
+            return serialization_service_->to_object<T>(
+              boost::any_cast<serialization::pimpl::data>(any_value));
+        }
+
+        std::size_t column_count() const;
+        std::size_t row_count() const;
+    };
 };
 
 } // namespace sql
