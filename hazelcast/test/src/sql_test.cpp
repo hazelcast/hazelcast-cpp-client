@@ -416,9 +416,9 @@ protected:
                             Fns&&... fn)
     {
         for (auto itr = result->iterator(); itr.has_next();) {
-            auto page = itr.next();
+            auto page = itr.next().get();
 
-            for (auto const& row : page.get()->rows()) {
+            for (auto const& row : page->rows()) {
                 int _[] = { 0, ((void)fn(row), 0)... };
                 (void)_;
 
