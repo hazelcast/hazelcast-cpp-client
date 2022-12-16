@@ -55,14 +55,16 @@ else
     fi
 fi
 
-if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
-    echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
-else
-    echo "Downloading: hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
-    mvn -q dependency:get -Dtransitive=false -DrepoUrl=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar -Ddest=hazelcast-sql-${HZ_VERSION}.jar
-    if [ $? -ne 0 ]; then
-        echo "Failed download hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
-        exit 1
+if [[ ${HZ_VERSION} != 4.@(0|1)* ]]; then
+    if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
+        echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
+    else
+        echo "Downloading: hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
+        mvn -q dependency:get -Dtransitive=false -DrepoUrl=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar -Ddest=hazelcast-sql-${HZ_VERSION}.jar
+        if [ $? -ne 0 ]; then
+            echo "Failed download hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
+            exit 1
+        fi
     fi
 fi
 
