@@ -3075,7 +3075,8 @@ cloud_discovery::get_addresses()
         util::SyncHttpsClient httpsConnection(cloud_base_url_,
                                               std::string(CLOUD_URL_PATH) +
                                                 cloud_config_.discovery_token,
-                                              timeout_);
+                                              timeout_,
+                                              cloud_config_.discovery_token);
         auto& conn_stream = httpsConnection.connect_and_get_response();
         return parse_json_response(conn_stream);
     } catch (std::exception& e) {

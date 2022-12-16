@@ -37,7 +37,8 @@ class HAZELCAST_API SyncHttpsClient
 public:
     SyncHttpsClient(const std::string& server_ip,
                     const std::string& uri_path,
-                    std::chrono::steady_clock::duration timeout);
+                    std::chrono::steady_clock::duration timeout,
+                    const std::string& secret_removal = std::string{});
 
     std::istream& connect_and_get_response();
 
@@ -45,6 +46,7 @@ private:
     std::string server_;
     std::string uri_path_;
     std::chrono::steady_clock::duration timeout_;
+    std::string secret_removal_;
 
     boost::asio::io_service io_service_;
     boost::asio::ip::tcp::resolver resolver_;
