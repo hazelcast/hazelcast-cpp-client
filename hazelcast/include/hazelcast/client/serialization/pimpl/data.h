@@ -21,6 +21,7 @@
 #include <functional>
 #include <stdint.h>
 
+#include "hazelcast/util/byte.h"
 #include "hazelcast/util/export.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

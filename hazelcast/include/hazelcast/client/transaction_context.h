@@ -15,6 +15,11 @@
  */
 #pragma once
 
+#include "hazelcast/client/iqueue.h"
+#include "hazelcast/client/imap.h"
+#include "hazelcast/client/ilist.h"
+#include "hazelcast/client/iset.h"
+#include "hazelcast/client/multi_map.h"
 #include "hazelcast/client/transaction_options.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/transactional_map.h"
@@ -44,7 +49,7 @@ namespace client {
 namespace spi {
 namespace impl {
 class ClientTransactionManagerServiceImpl;
-}
+} // namespace impl
 } // namespace spi
 
 namespace connection {

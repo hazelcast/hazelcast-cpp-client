@@ -16,7 +16,6 @@
 #pragma once
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/util/exception_util.h"
 
 namespace hazelcast {
 namespace client {

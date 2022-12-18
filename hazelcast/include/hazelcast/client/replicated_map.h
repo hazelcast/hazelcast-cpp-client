@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "hazelcast/client/proxy/ReplicatedMapImpl.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/entry_listener.h"
 #include "hazelcast/client/entry_event.h"
 #include "hazelcast/client/map_event.h"

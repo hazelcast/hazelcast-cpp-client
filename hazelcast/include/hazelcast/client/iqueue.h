@@ -19,6 +19,7 @@
 #include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
 namespace client {

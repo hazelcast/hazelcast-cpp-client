@@ -41,6 +41,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
+#include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"

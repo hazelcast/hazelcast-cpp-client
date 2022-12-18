@@ -40,6 +40,7 @@
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/config/ssl_config.h"

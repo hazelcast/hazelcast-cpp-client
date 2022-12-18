@@ -18,6 +18,8 @@
 
 #include <atomic>
 
+#include <boost/smart_ptr/atomic_shared_ptr.hpp>
+
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/execution_callback.h"

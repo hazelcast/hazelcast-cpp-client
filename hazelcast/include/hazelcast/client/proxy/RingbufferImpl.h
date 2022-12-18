@@ -15,9 +15,9 @@
  */
 #pragma once
 
-#include "hazelcast/client/ringbuffer/read_result_set.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/proxy/PartitionSpecificClientProxy.h"
+#include "hazelcast/util/Preconditions.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

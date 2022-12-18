@@ -15,13 +15,12 @@
  */
 #pragma once
 
-#include <ostream>
+#include <iosfwd>
 #include <unordered_set>
 #include <memory>
 #include <atomic>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
-#include <hazelcast/client/impl/vector_clock.h>
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/impl/vector_clock.h"
