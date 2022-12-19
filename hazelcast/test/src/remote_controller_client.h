@@ -17,6 +17,7 @@
 #pragma once
 
 #include <string>
+#include <hazelcast/client/member.h>
 
 #include "cpp-controller/RemoteController.h"
 
@@ -29,6 +30,8 @@ remote_controller_address();
 
 remote::RemoteControllerClient&
 remote_controller_client();
+
+member::version cluster_version();
 
 } // namespace test
 } // namespace client
