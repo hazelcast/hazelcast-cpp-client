@@ -55,7 +55,8 @@ else
 fi
 
 echo "Starting the client test now."
-${TEST_EXECUTABLE} --gtest_output="xml:CPP_Client_Test_Report.xml" &
+
+${TEST_EXECUTABLE} --gtest_filter="SqlTest.select" --gtest_output="xml:CPP_Client_Test_Report.xml" &
 testPid=$!
 wait ${testPid}
 result=$?
