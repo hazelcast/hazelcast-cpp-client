@@ -58,6 +58,7 @@ add_subdirectory(cp)
 add_subdirectory(soak-test)
 add_subdirectory(external-smart-client-discovery)
 add_subdirectory(sql)
+add_subdirectory(transactional-queue-benchmark)
 
 if (${WITH_OPENSSL})
     add_subdirectory(tls)
