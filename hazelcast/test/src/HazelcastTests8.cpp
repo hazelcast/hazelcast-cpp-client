@@ -1826,7 +1826,9 @@ TEST_F(
 }
 TEST_F(IssueTest,TestIssue1005){
     HazelcastServerFactory fac("hazelcast/test/resources/lock-expiration.xml");
-    HazelcastServer serv(fac);
+    HazelcastServer serv1(fac);
+    HazelcastServer serv2(fac);
+    HazelcastServer serv3(fac);
     client_config con;
     con.set_cluster_name("TestIssue1005");
     auto c = hazelcast::new_client(std::move(con)).get();

@@ -184,6 +184,9 @@ TEST_F(basic_atomic_long_test, test_compare_and_set_when_not_success)
 
 TEST_F(basic_atomic_long_test, test_alter)
 {
+    if (cluster_version() < member::version {4,1,0})
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     ASSERT_NO_THROW(cp_structure_->alter(multiplication{ 5 }).get());
     ASSERT_EQ(10, cp_structure_->get().get());
@@ -191,6 +194,9 @@ TEST_F(basic_atomic_long_test, test_alter)
 
 TEST_F(basic_atomic_long_test, test_alter_and_get)
 {
+    if (cluster_version() < member::version {4,1,0})
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     auto result = cp_structure_->alter_and_get(multiplication{ 5 }).get();
     ASSERT_EQ(10, result);
@@ -199,6 +205,9 @@ TEST_F(basic_atomic_long_test, test_alter_and_get)
 
 TEST_F(basic_atomic_long_test, test_get_and_alter)
 {
+    if (cluster_version() < member::version {4,1,0})
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     auto result = cp_structure_->get_and_alter(multiplication{ 5 }).get();
     ASSERT_EQ(2, result);
@@ -207,6 +216,9 @@ TEST_F(basic_atomic_long_test, test_get_and_alter)
 
 TEST_F(basic_atomic_long_test, test_apply)
 {
+    if (cluster_version() < member::version {4,1,0})
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     auto result = cp_structure_->apply<multiplication, int64_t>({ 5 }).get();
     ASSERT_TRUE(result);
@@ -315,6 +327,9 @@ TEST_F(basic_atomic_ref_test, test_contains)
 
 TEST_F(basic_atomic_ref_test, test_alter)
 {
+    if (cluster_version() < member::version {4,1,0})
+        GTEST_SKIP();
+
     cp_structure_->set(std::string("str1")).get();
 
     cp_structure_->alter(test::append_string{ "str2" }).get();
@@ -338,6 +353,9 @@ TEST_F(basic_atomic_ref_test, test_alter)
 
 TEST_F(basic_atomic_ref_test, test_apply)
 {
+    if (cluster_version() < member::version {4,1,0})
+        GTEST_SKIP();
+
     cp_structure_->set(std::string("str1")).get();
 
     auto val =
