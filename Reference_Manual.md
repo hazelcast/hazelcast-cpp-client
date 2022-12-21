@@ -321,7 +321,7 @@ For example, if you want to build the static library with SSL support, you can u
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
 ```
 
-## 1.2. Starting Hazelcast Cluster
+## 1.2. Starting a Hazelcast Cluster
 
 Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles storage and manipulation of the user data. Clients are a way to connect to the Hazelcast cluster and access such data.
 
