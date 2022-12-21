@@ -53,7 +53,7 @@ protected:
     virtual void TearDown()
     {
         if (cp_structure_) {
-            cp_structure_->destroy();
+            cp_structure_->destroy().get();
         }
     }
 
