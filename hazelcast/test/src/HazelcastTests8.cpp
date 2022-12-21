@@ -1660,13 +1660,10 @@ TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart)
     HazelcastServer server2(default_server_factory());
 
     // Put a 2nd entry to the map
-    auto result = map->put(2, 20);
+    auto result = map->put(2, 20).get();
 
     // Verify that the 2nd entry is received by the listener
     ASSERT_OPEN_EVENTUALLY(latch2_);
-
-    // Wait for the put operation
-    ASSERT_NO_THROW(result.get());
 
     // Shut down the server
     ASSERT_TRUE(server2.shutdown());
