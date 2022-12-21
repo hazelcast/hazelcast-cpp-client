@@ -33,16 +33,17 @@ else
 	ENTERPRISE_REPO=${ENTERPRISE_RELEASE_REPO}
 fi
 
-if [ -f "hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar" ]; then
-    echo "remote controller already exist, not downloading from maven."
-else
+rm hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar
+# if [ -f "hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar" ]; then
+#     echo "remote controller already exist, not downloading from maven."
+# else
     echo "Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}"
     mvn -q dependency:get -Dtransitive=false -DrepoUrl=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION} -Ddest=hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar
     if [ $? -ne 0 ]; then
         echo "Failed download remote-controller jar com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}"
         exit 1
     fi
-fi
+# fi
 
 if [ -f "hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar" ]; then
     echo "hazelcast-test.jar already exists, not downloading from maven."
