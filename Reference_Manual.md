@@ -19,9 +19,8 @@
       * [1.2. Starting Hazelcast Cluster](#12-starting-hazelcast-cluster)
          * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
             * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
-            * [1.2.1.2. Starting Server Using Hazelcast Command Line Tools](#1212-starting-server-using-hazelcast-command-line-tools)
-            * [1.2.1.3. Starting Server Using Hazelcast Distribution](#1213-starting-server-using-hazelcast-distribution)
-            * [1.2.1.4. Adding User Java Library to Java CLASSPATH](#1214-adding-user-java-library-to-java-classpath)
+            * [1.2.1.2. Starting Server Using Hazelcast Distribution](#1212-starting-server-using-hazelcast-distribution)
+            * [1.2.1.3. Adding User Java Library to Java CLASSPATH](#1213-adding-user-java-library-to-java-classpath)
          * [1.3. Compiling Your Project](#13-compiling-your-project)
             * [1.3.1. CMake Users](#131-cmake-users)
             * [1.3.2. Linux and MacOS Users](#132-linux-and-macos-users)
@@ -339,11 +338,7 @@ The quickest way to start a single member cluster for development purposes is to
 docker run -p 5701:5701 hazelcast/hazelcast:latest
 ```
 
-#### 1.2.1.2. Starting Server Using Hazelcast Command Line Tools
-
-Hazelcast Command Line is a tool which allows users to install & run Hazelcast and Management Center on local environment. Please follow the [Command Line Tool Instructions](https://github.com/hazelcast/hazelcast-command-line) to start the Hazelcast cluster.  
-
-#### 1.2.1.3. Starting Server Using Hazelcast Distribution
+#### 1.2.1.2. Starting Server Using Hazelcast Distribution
 
 Follow the instructions below to create a Hazelcast cluster:
 
@@ -366,7 +361,7 @@ Nov 19, 2020 2:52:59 PM com.hazelcast.core.LifecycleService
 INFO: [192.168.1.112]:5701 [dev] [5.1.0] [192.168.1.112]:5701 is STARTED
 ```
 
-#### 1.2.1.4. Adding User Java Library to Java CLASSPATH
+#### 1.2.1.3. Adding User Java Library to Java CLASSPATH
 
 When you want to use features such as querying and language interoperability, you might need to add your own Java classes to the Hazelcast member in order to use them from your C++ client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). Then, you can start your Hazelcast member by using the start scripts in the `bin` directory. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
 
