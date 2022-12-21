@@ -395,7 +395,7 @@ If you are not, then read the instructions specific to your platform:
 * [Windows](#133-windows-users)
 
 #### 1.3.1. CMake Users
-A Hazelcast C++ client installation comes with package configuration files for CMake. If your project is using CMake, you can easily find and link against the client library:
+The Hazelcast C++ client installation comes with package configuration files for CMake. If your project is using CMake, you can easily find and link against the client library:
 ```cmake
 find_package(hazelcast-cpp-client CONFIG REQUIRED)
 
