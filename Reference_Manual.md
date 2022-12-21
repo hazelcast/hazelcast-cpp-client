@@ -345,7 +345,7 @@ Follow the instructions below to create a Hazelcast cluster:
 1. Go to Hazelcast's download [page](https://hazelcast.com/open-source-projects/downloads/) and download either the `.zip` or `.tar` distribution of Hazelcast.
 2. Decompress the contents into any directory that you want to run members from.
 3. Change into the directory that you decompressed the Hazelcast content and then into the `bin` directory.
-4. Use either `start.sh` or `start.bat` depending on your operating system. Once you run the start script, you should see the Hazelcast logs in the terminal.
+4. Use either `hz start` or `hz-start.bat` depending on your operating system. Once you run the start script, you should see the Hazelcast logs in the terminal.
 
 You should see a log similar to the following, which means that your single member cluster is ready to be used:
 
