@@ -441,7 +441,7 @@ cl.exe path\to\example.cpp ^
 
 ## 1.4. Basic Configuration
 
-If you are using Hazelcast and C++ Client on the same computer, generally the default configuration should be fine. This is great for trying out the client. However, if you run the client on a different computer than any of the cluster members, you may need to do some simple configurations such as specifying the member addresses.
+If you are using Hazelcast and the Hazelcast C++ Client on the same computer, generally the default configuration should be fine. This is great for trying out the client. However, if you run the client on a different computer than any of the cluster members, you may need to do some simple configurations such as specifying the member addresses.
 
 Hazelcast members and clients have their own configuration options. You may need to reflect some of the member side configurations on the client side to properly connect to the cluster.
 
