@@ -384,7 +384,7 @@ The following is an example configuration when you are adding an `IdentifiedData
 ```
 If you want to add a `Portable` class, you should use `<portable-factories>` instead of `<data-serializable-factories>` in the above configuration.
 
-See the [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest/getting-started.html) for more information on setting up the clusters.
+See the [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest) for more information on setting up the clusters.
 
 ### 1.3. Compiling Your Project
 
