@@ -1473,7 +1473,7 @@ In some cases, you may want to limit the cipher suites allowed for a client whil
 
 Cipher list string format and the details can be found at the official [OpenSSL Documentation](https://www.openssl.org/docs/man1.1.1/man1/ciphers.html).
 
-# 7. Using C++ Client with Hazelcast
+# 7. Using the Hazelcast C++ Client
 
 This chapter provides information on how you can use Hazelcast data structures in the C++ client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
 
