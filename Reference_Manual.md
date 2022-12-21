@@ -323,7 +323,7 @@ cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
 
 ## 1.2. Starting a Hazelcast Cluster
 
-Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles storage and manipulation of the user data. Clients are a way to connect to the Hazelcast cluster and access such data.
+The Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles storage and manipulation of the user data. Clients are a way to connect to the Hazelcast cluster and access such data.
 
 Hazelcast cluster consists of one or more cluster members. These members generally run on multiple virtual or physical machines and are connected to each other via network. Any data put on the cluster is partitioned to multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast cluster also offers resilience. Should any hardware or software problem causes a crash to any member, the data on that member is recovered from backups and the cluster continues to operate without any downtime. Hazelcast clients are an easy way to connect to a Hazelcast cluster and perform tasks on distributed data structures that live on the cluster.
 
