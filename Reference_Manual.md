@@ -327,7 +327,7 @@ Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster h
 
 Hazelcast cluster consists of one or more cluster members. These members generally run on multiple virtual or physical machines and are connected to each other via network. Any data put on the cluster is partitioned to multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as the data grows. Hazelcast cluster also offers resilience. Should any hardware or software problem causes a crash to any member, the data on that member is recovered from backups and the cluster continues to operate without any downtime. Hazelcast clients are an easy way to connect to a Hazelcast cluster and perform tasks on distributed data structures that live on the cluster.
 
-In order to use Hazelcast C++ client, we first need to setup a Hazelcast servers.
+In order to use the Hazelcast C++ client, we first need to setup a Hazelcast server.
 
 ### 1.2.1. Starting Hazelcast Server
 
