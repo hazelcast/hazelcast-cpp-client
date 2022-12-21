@@ -22,6 +22,7 @@ if not "x%HZ_VERSION:SNAPSHOT=%"=="x%HZ_VERSION%" (
 
 echo Downlading jars for remote controller server
 
+del "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar"
 if exist "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar" (
     echo "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar already exist, not downloading from maven."
 ) else (
