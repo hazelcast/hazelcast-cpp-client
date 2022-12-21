@@ -184,7 +184,7 @@ TEST_F(basic_atomic_long_test, test_compare_and_set_when_not_success)
 
 TEST_F(basic_atomic_long_test, test_alter)
 {
-    if (cluster_version() < member::version {4,1,0})
+    if (cluster_version() < member::version{ 4, 1, 0 })
         GTEST_SKIP();
 
     cp_structure_->set(2).get();
@@ -194,7 +194,7 @@ TEST_F(basic_atomic_long_test, test_alter)
 
 TEST_F(basic_atomic_long_test, test_alter_and_get)
 {
-    if (cluster_version() < member::version {4,1,0})
+    if (cluster_version() < member::version{ 4, 1, 0 })
         GTEST_SKIP();
 
     cp_structure_->set(2).get();
@@ -205,7 +205,7 @@ TEST_F(basic_atomic_long_test, test_alter_and_get)
 
 TEST_F(basic_atomic_long_test, test_get_and_alter)
 {
-    if (cluster_version() < member::version {4,1,0})
+    if (cluster_version() < member::version{ 4, 1, 0 })
         GTEST_SKIP();
 
     cp_structure_->set(2).get();
@@ -216,7 +216,7 @@ TEST_F(basic_atomic_long_test, test_get_and_alter)
 
 TEST_F(basic_atomic_long_test, test_apply)
 {
-    if (cluster_version() < member::version {4,1,0})
+    if (cluster_version() < member::version{ 4, 1, 0 })
         GTEST_SKIP();
 
     cp_structure_->set(2).get();
@@ -327,7 +327,7 @@ TEST_F(basic_atomic_ref_test, test_contains)
 
 TEST_F(basic_atomic_ref_test, test_alter)
 {
-    if (cluster_version() < member::version {4,1,0})
+    if (cluster_version() < member::version{ 4, 1, 0 })
         GTEST_SKIP();
 
     cp_structure_->set(std::string("str1")).get();
@@ -353,7 +353,7 @@ TEST_F(basic_atomic_ref_test, test_alter)
 
 TEST_F(basic_atomic_ref_test, test_apply)
 {
-    if (cluster_version() < member::version {4,1,0})
+    if (cluster_version() < member::version{ 4, 1, 0 })
         GTEST_SKIP();
 
     cp_structure_->set(std::string("str1")).get();
@@ -459,12 +459,8 @@ TEST_F(basic_latch_test, test_get_count)
 TEST_F(basic_latch_test, test_wait_for)
 {
     cp_structure_->try_set_count(1).get();
-    auto countdown = boost::async(
-        boost::launch::async,
-        [=](){
-            cp_structure_->count_down().get();
-        }
-    );
+    auto countdown = boost::async(boost::launch::async,
+                                  [=]() { cp_structure_->count_down().get(); });
 
     EXPECT_OPEN_EVENTUALLY_ASYNC(cp_structure_);
     countdown.get();
@@ -473,12 +469,8 @@ TEST_F(basic_latch_test, test_wait_for)
 TEST_F(basic_latch_test, test_wait_until)
 {
     cp_structure_->try_set_count(1).get();
-    auto countdown = boost::async(
-        boost::launch::async,
-        [=](){
-            cp_structure_->count_down().get();
-        }
-    );
+    auto countdown = boost::async(boost::launch::async,
+                                  [=]() { cp_structure_->count_down().get(); });
 
     EXPECT_EQ(std::cv_status::no_timeout,
               cp_structure_
@@ -493,12 +485,8 @@ TEST_F(basic_latch_test, test_wait)
 {
     cp_structure_->try_set_count(1).get();
 
-    auto countdown = boost::async(
-        boost::launch::async,
-        [=](){
-            cp_structure_->count_down().get();
-        }
-    );
+    auto countdown = boost::async(boost::launch::async,
+                                  [=]() { cp_structure_->count_down().get(); });
 
     cp_structure_->wait().get();
     countdown.get();

@@ -31,7 +31,8 @@ remote_controller_address();
 remote::RemoteControllerClient&
 remote_controller_client();
 
-member::version cluster_version();
+member::version
+cluster_version();
 
 } // namespace test
 } // namespace client
