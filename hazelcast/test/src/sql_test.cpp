@@ -700,7 +700,7 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
 
         auto itr = result->iterator();
 
-        auto p_1 = itr.next();
+        auto p_1 = itr.next().get(); // Doesn't block since first page is already loaded.
         auto p_2 = itr.next();
 
         if (!p_2.has_value()) {
