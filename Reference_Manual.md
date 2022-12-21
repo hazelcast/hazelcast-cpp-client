@@ -1479,8 +1479,6 @@ This chapter provides information on how you can use Hazelcast data structures i
 
 ## 7.1. C++ Client API Overview
 
-This chapter provides information on how you can use Hazelcast's data structures in the C++ client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
-
 Most of the methods in C++ API are synchronous. The failures are communicated via exceptions. All exceptions are derived from the `hazelcast::client::exception::iexception` base method. There are also asynchronous versions of some methods in the API. The asynchronous ones use the `hazelcast::client::Future<T>` future object. It works similar to the `std::future`.
 
 If you are ready to go, let's start to use Hazelcast C++ client!
