@@ -1368,7 +1368,7 @@ You can also fine-tune this feature using `client_config::set_protperty` API as 
 
 # 6. Securing Client Connection
 
-This chapter describes the security features of Hazelcast C++ client. These include using TLS/SSL for connections between members and between clients and members. These security features require **Hazelcast Enterprise** server cluster.
+This chapter describes the security features of the Hazelcast C++ client. These include using TLS/SSL for connections between members and between clients and members. These security features require **Hazelcast Enterprise** server cluster.
 
 ## 6.1. TLS/SSL
 
