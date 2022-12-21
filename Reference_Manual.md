@@ -528,7 +528,7 @@ An easy way to configure your Hazelcast C++ Client is to create a `client_config
     auto hz = hazelcast::new_client(std::move(config)).get(); // Connects to the cluster member at ip address `192.168.1.10` and port 5701
 ```
 
-If you run the Hazelcast members in a different server than the client, you most probably have configured the members' ports and cluster names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
+If you run Hazelcast members in a different server than the client, you most probably have configured the ports and the cluster names of the members as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
 
 ### 1.4.2.1 Cluster Name
 
