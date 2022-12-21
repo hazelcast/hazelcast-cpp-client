@@ -1833,12 +1833,11 @@ TEST_F(IssueTest,TestIssue1005){
     con.set_cluster_name("TestIssue1005");
     auto c = hazelcast::new_client(std::move(con)).get();
     auto exp_lock = c.get_cp_subsystem().get_lock("exp_lock").get();
-    exp_lock->lock();
-    exp_lock->unlock();
+    exp_lock->lock().get();
+    exp_lock->unlock().get();
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    exp_lock->lock();
-    exp_lock->unlock();
-
+    exp_lock->lock().get();
+    exp_lock->unlock().get();
 }
 } // namespace test
 } // namespace client
