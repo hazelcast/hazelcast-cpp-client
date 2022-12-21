@@ -459,36 +459,49 @@ TEST_F(basic_latch_test, test_get_count)
 TEST_F(basic_latch_test, test_wait_for)
 {
     cp_structure_->try_set_count(1).get();
-    std::thread([=]() { cp_structure_->count_down().get(); }).detach();
+    auto countdown = boost::async(
+        boost::launch::async,
+        [=](){
+            cp_structure_->count_down().get();
+        }
+    );
 
-    ASSERT_OPEN_EVENTUALLY_ASYNC(cp_structure_);
+    EXPECT_OPEN_EVENTUALLY_ASYNC(cp_structure_);
+    countdown.get();
 }
 
 TEST_F(basic_latch_test, test_wait_until)
 {
     cp_structure_->try_set_count(1).get();
-    std::thread([=]() { cp_structure_->count_down().get(); }).detach();
+    auto countdown = boost::async(
+        boost::launch::async,
+        [=](){
+            cp_structure_->count_down().get();
+        }
+    );
 
-    ASSERT_EQ(std::cv_status::no_timeout,
+    EXPECT_EQ(std::cv_status::no_timeout,
               cp_structure_
                 ->wait_until(std::chrono::steady_clock::now() +
                              std::chrono::seconds(120))
                 .get());
+
+    countdown.get();
 }
 
 TEST_F(basic_latch_test, test_wait)
 {
     cp_structure_->try_set_count(1).get();
-    std::thread([=]() {
-        try {
+
+    auto countdown = boost::async(
+        boost::launch::async,
+        [=](){
             cp_structure_->count_down().get();
-        } catch (exception::hazelcast_client_not_active&) {
-            // can get this exception if below wait finishes earlier and client
-            // is shutting down
         }
-    }).detach();
+    );
 
     cp_structure_->wait().get();
+    countdown.get();
 }
 
 TEST_F(basic_latch_test, test_wait_for_when_timeout)
