@@ -1660,7 +1660,7 @@ TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart)
     HazelcastServer server2(default_server_factory());
 
     // Put a 2nd entry to the map
-    auto result = map->put(2, 20).get();
+    (void)map->put(2, 20).get();
 
     // Verify that the 2nd entry is received by the listener
     ASSERT_OPEN_EVENTUALLY(latch2_);
