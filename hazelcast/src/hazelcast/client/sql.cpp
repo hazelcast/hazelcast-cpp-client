@@ -221,10 +221,14 @@ sql_service::query_connection()
             [&](boost::uuids::uuid id) { return cs.get_member(id); });
 
         if (!connection) {
-            exception::query e(
-              static_cast<int32_t>(impl::sql_error_code::CONNECTION_PROBLEM),
-              "Client is not connected");
-            rethrow(e);
+            try {
+                throw exception::query(
+                  static_cast<int32_t>(
+                    impl::sql_error_code::CONNECTION_PROBLEM),
+                  "Client is not connected");
+            } catch (const exception::query& e) {
+                rethrow(e);
+            }
         }
 
     } catch (const std::exception& e) {
@@ -247,7 +251,7 @@ sql_service::rethrow(const std::exception& e)
                                                   client_id());
     }
 
-    impl::query_utils::throw_public_exception(std::make_exception_ptr(e),
+    impl::query_utils::throw_public_exception(std::current_exception(),
                                               client_id());
 }
 
