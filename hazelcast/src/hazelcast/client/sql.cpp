@@ -744,7 +744,7 @@ sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
   : in_progress_{ std::make_shared<std::atomic<bool>>(false) }
   , last_{ std::make_shared<std::atomic<bool>>(false) }
   , row_metadata_{ result->row_metadata_ }
-  , serialization_(result->client_context_->get_serialization_service())
+  , serialization_(&result->client_context_->get_serialization_service())
   , result_{ move(result) }
   , first_page_(move(first_page))
 {
@@ -758,7 +758,7 @@ sql_result::page_iterator::next()
     if (first_page_) {
         auto page = move(first_page_);
 
-        page->serialization_service(&serialization_);
+        page->serialization_service(serialization_);
         page->row_metadata(row_metadata_);
         *last_ = page->last();
 
@@ -786,7 +786,7 @@ sql_result::page_iterator::next()
     std::weak_ptr<std::atomic<bool>> in_progress_w{ in_progress_ };
     std::shared_ptr<sql_row_metadata> row_metadata{ row_metadata_ };
     auto result = result_;
-    auto serialization_service = &serialization_;
+    auto serialization_service = serialization_;
 
     return page_future.then(
       boost::launch::sync,
