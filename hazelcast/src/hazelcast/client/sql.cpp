@@ -84,8 +84,8 @@ sql_service::execute(const sql_statement& statement)
               auto response = response_fut.get();
               return handle_execute_response(
                 response, query_conn, qid, cursor_buffer_size);
-          } catch (...) {
-              rethrow(std::current_exception(), query_conn);
+          } catch (const std::exception& e) {
+              rethrow(e, query_conn);
           }
           assert(0);
           return std::shared_ptr<sql_result>();
@@ -104,8 +104,8 @@ sql_service::close(const std::shared_ptr<connection::Connection>& connection,
       [this, connection](boost::future<protocol::ClientMessage> f) {
           try {
               f.get();
-          } catch (exception::iexception&) {
-              rethrow(std::current_exception(), connection);
+          } catch (const exception::iexception& e) {
+              rethrow(e, connection);
           }
 
           return;
@@ -221,25 +221,29 @@ sql_service::query_connection()
             [&](boost::uuids::uuid id) { return cs.get_member(id); });
 
         if (!connection) {
-            exception::query e(
-              static_cast<int32_t>(impl::sql_error_code::CONNECTION_PROBLEM),
-              "Client is not connected");
-            rethrow(std::make_exception_ptr(e));
+            try {
+                throw exception::query(
+                  static_cast<int32_t>(
+                    impl::sql_error_code::CONNECTION_PROBLEM),
+                  "Client is not connected");
+            } catch (const exception::query& e) {
+                rethrow(e);
+            }
         }
 
-    } catch (...) {
-        rethrow(std::current_exception());
+    } catch (const std::exception& e) {
+        rethrow(e);
     }
 
     return connection;
 }
 
 void
-sql_service::rethrow(const std::exception_ptr& exc_ptr)
+sql_service::rethrow(const std::exception& e)
 {
     // Make sure that access_control is thrown as a top-level exception
     try {
-        std::rethrow_if_nested(exc_ptr);
+        std::rethrow_if_nested(e);
     } catch (exception::access_control&) {
         throw;
     } catch (...) {
@@ -247,11 +251,12 @@ sql_service::rethrow(const std::exception_ptr& exc_ptr)
                                                   client_id());
     }
 
-    impl::query_utils::throw_public_exception(exc_ptr, client_id());
+    impl::query_utils::throw_public_exception(std::current_exception(),
+                                              client_id());
 }
 
 void
-sql_service::rethrow(std::exception_ptr cause_ptr,
+sql_service::rethrow(const std::exception& cause,
                      const std::shared_ptr<connection::Connection>& connection)
 {
     if (!connection->is_alive()) {
@@ -263,11 +268,11 @@ sql_service::rethrow(std::exception_ptr cause_ptr,
           std::make_exception_ptr(exception::query(
             static_cast<int32_t>(impl::sql_error_code::CONNECTION_PROBLEM),
             msg,
-            std::move(cause_ptr))),
+            std::make_exception_ptr(cause))),
           client_id());
     }
 
-    return rethrow(cause_ptr);
+    return rethrow(cause);
 }
 
 boost::uuids::uuid
@@ -335,9 +340,8 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
-  , serialization_service_{
-      spi::ClientContext(client).get_serialization_service()
-  }
+  , serialization_service_(
+      spi::ClientContext(client).get_serialization_service())
 {
     sql(std::move(query));
 }
@@ -349,7 +353,7 @@ sql_statement::sql_statement(spi::ClientContext& client_context,
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
-  , serialization_service_{ client_context.get_serialization_service() }
+  , serialization_service_(client_context.get_serialization_service())
 {
     sql(std::move(query));
 }
@@ -690,12 +694,10 @@ sql_result::close()
         release_resources();
 
         return f;
-    }
-    catch (...)
-    {
+    } catch (const std::exception& e) {
         release_resources();
 
-        service_->rethrow(std::current_exception());
+        service_->rethrow(e);
     }
 
     // This should not be reached.
@@ -742,9 +744,9 @@ sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
   : in_progress_{ std::make_shared<std::atomic<bool>>(false) }
   , last_{ std::make_shared<std::atomic<bool>>(false) }
   , row_metadata_{ result->row_metadata_ }
-  , serialization_{ result->client_context_->get_serialization_service() }
+  , serialization_(result->client_context_->get_serialization_service())
   , result_{ move(result) }
-  , first_page_{ move(first_page) }
+  , first_page_(move(first_page))
 {
 }
 

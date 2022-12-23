@@ -1899,7 +1899,7 @@ TEST_F(cloud_discovery_test, parse_json)
       config,
       client_properties::CLOUD_URL_BASE_DEFAULT,
       std::chrono::seconds(1));
-    auto test_stream = std::istringstream(
+    std::istringstream test_stream(
       R"([{"private-address":"100.103.97.89","public-address":"3.92.127.167:30964"},{"private-address":"100.97.31.19","public-address":"54.227.206.253:30964"},{"private-address":"100.127.33.250","public-address":"54.80.210.250:30964"}])");
     auto addresses = d.parse_json_response(test_stream);
     ASSERT_EQ(3, addresses.size());
