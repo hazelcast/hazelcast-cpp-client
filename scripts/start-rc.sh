@@ -1,5 +1,10 @@
 #!/bin/bash
 
+function version_greater_equal()
+{
+    printf '%s\n%s\n' "$2" "$1" | sort --check=quiet --version-sort
+}
+
 function cleanup {
     echo "cleanup is being performed."
     if [ "x${rcPid}" != "x" ]
@@ -55,9 +60,15 @@ else
     fi
 fi
 
-INCLUDE_SQL=""
-if [[ ${HZ_VERSION} != 4.@(0|1)* ]]; then
+version_greater_equal ${HZ_VERSION} 4.2.0
+
+if [[ $? -eq "0" ]]; then
     INCLUDE_SQL="1"
+else
+    INCLUDE_SQL="0"
+fi
+
+if [[ ${INCLUDE_SQL} -eq "1" ]]; then
     if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
         echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
     else
@@ -68,8 +79,6 @@ if [[ ${HZ_VERSION} != 4.@(0|1)* ]]; then
             exit 1
         fi
     fi
-else
-    INCLUDE_SQL="0"
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
