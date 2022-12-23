@@ -1022,19 +1022,19 @@ flake_id_generator_impl::Block::next()
 flake_id_generator_impl::IdBatch::IdIterator
   flake_id_generator_impl::IdBatch::endOfBatch;
 
-const int64_t
+int64_t
 flake_id_generator_impl::IdBatch::get_base() const
 {
     return base_;
 }
 
-const int64_t
+int64_t
 flake_id_generator_impl::IdBatch::get_increment() const
 {
     return increment_;
 }
 
-const int32_t
+int32_t
 flake_id_generator_impl::IdBatch::get_batch_size() const
 {
     return batch_size_;

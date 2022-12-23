@@ -78,17 +78,17 @@ private:
         /**
          * Returns the first ID in the set.
          */
-        const int64_t get_base() const;
+        int64_t get_base() const;
 
         /**
          * Returns increment from {@link #base()} for the next ID in the set.
          */
-        const int64_t get_increment() const;
+        int64_t get_increment() const;
 
         /**
          * Returns number of IDs in the set.
          */
-        const int32_t get_batch_size() const;
+        int32_t get_batch_size() const;
 
         class IdIterator
           : public std::iterator<std::input_iterator_tag, int64_t>

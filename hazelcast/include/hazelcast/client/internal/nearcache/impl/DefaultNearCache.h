@@ -130,7 +130,7 @@ public:
         near_cache_record_store_->destroy();
     }
 
-    const client::config::in_memory_format get_in_memory_format() const override
+    client::config::in_memory_format get_in_memory_format() const override
     {
         return near_cache_config_.get_in_memory_format();
     }

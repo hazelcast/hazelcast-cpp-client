@@ -226,7 +226,7 @@ public:
       size_t index) const
     {
         std::lock_guard<std::mutex> lg(map_lock_);
-        if (index < 0 || index >= internal_map_.size()) {
+        if (index >= internal_map_.size()) {
             return std::unique_ptr<std::pair<K, std::shared_ptr<V>>>();
         }
         auto it = internal_map_.begin();
