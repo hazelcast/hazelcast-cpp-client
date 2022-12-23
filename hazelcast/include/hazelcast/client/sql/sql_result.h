@@ -91,10 +91,11 @@ public:
         bool has_next() const;
 
     private:
+
         std::shared_ptr<std::atomic<bool>> in_progress_;
         std::shared_ptr<std::atomic<bool>> last_;
         std::shared_ptr<sql_row_metadata> row_metadata_;
-        serialization::pimpl::SerializationService& serialization_;
+        serialization::pimpl::SerializationService* serialization_;
         std::shared_ptr<sql_result> result_;
         std::shared_ptr<sql_page> first_page_;
     };
