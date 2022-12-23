@@ -828,7 +828,7 @@ TEST_F(SqlTest, sql_result_public_apis_should_throw_after_close)
         ASSERT_TRUE(result->row_set());
 
         it = std::make_shared<sql::sql_result::page_iterator>(
-          std::move(result->iterator()));
+          result->iterator());
 
         result->close().get();
     }
