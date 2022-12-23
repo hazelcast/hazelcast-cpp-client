@@ -53,7 +53,7 @@ protected:
     virtual void TearDown()
     {
         if (cp_structure_) {
-            cp_structure_->destroy();
+            cp_structure_->destroy().get();
         }
     }
 
@@ -184,6 +184,9 @@ TEST_F(basic_atomic_long_test, test_compare_and_set_when_not_success)
 
 TEST_F(basic_atomic_long_test, test_alter)
 {
+    if (cluster_version() < member::version{ 4, 1, 0 })
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     ASSERT_NO_THROW(cp_structure_->alter(multiplication{ 5 }).get());
     ASSERT_EQ(10, cp_structure_->get().get());
@@ -191,6 +194,9 @@ TEST_F(basic_atomic_long_test, test_alter)
 
 TEST_F(basic_atomic_long_test, test_alter_and_get)
 {
+    if (cluster_version() < member::version{ 4, 1, 0 })
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     auto result = cp_structure_->alter_and_get(multiplication{ 5 }).get();
     ASSERT_EQ(10, result);
@@ -199,6 +205,9 @@ TEST_F(basic_atomic_long_test, test_alter_and_get)
 
 TEST_F(basic_atomic_long_test, test_get_and_alter)
 {
+    if (cluster_version() < member::version{ 4, 1, 0 })
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     auto result = cp_structure_->get_and_alter(multiplication{ 5 }).get();
     ASSERT_EQ(2, result);
@@ -207,6 +216,9 @@ TEST_F(basic_atomic_long_test, test_get_and_alter)
 
 TEST_F(basic_atomic_long_test, test_apply)
 {
+    if (cluster_version() < member::version{ 4, 1, 0 })
+        GTEST_SKIP();
+
     cp_structure_->set(2).get();
     auto result = cp_structure_->apply<multiplication, int64_t>({ 5 }).get();
     ASSERT_TRUE(result);
@@ -315,6 +327,9 @@ TEST_F(basic_atomic_ref_test, test_contains)
 
 TEST_F(basic_atomic_ref_test, test_alter)
 {
+    if (cluster_version() < member::version{ 4, 1, 0 })
+        GTEST_SKIP();
+
     cp_structure_->set(std::string("str1")).get();
 
     cp_structure_->alter(test::append_string{ "str2" }).get();
@@ -338,6 +353,9 @@ TEST_F(basic_atomic_ref_test, test_alter)
 
 TEST_F(basic_atomic_ref_test, test_apply)
 {
+    if (cluster_version() < member::version{ 4, 1, 0 })
+        GTEST_SKIP();
+
     cp_structure_->set(std::string("str1")).get();
 
     auto val =
@@ -441,36 +459,37 @@ TEST_F(basic_latch_test, test_get_count)
 TEST_F(basic_latch_test, test_wait_for)
 {
     cp_structure_->try_set_count(1).get();
-    std::thread([=]() { cp_structure_->count_down().get(); }).detach();
+    auto countdown = boost::async(boost::launch::async,
+                                  [=]() { cp_structure_->count_down().get(); });
 
-    ASSERT_OPEN_EVENTUALLY_ASYNC(cp_structure_);
+    EXPECT_OPEN_EVENTUALLY_ASYNC(cp_structure_);
+    countdown.get();
 }
 
 TEST_F(basic_latch_test, test_wait_until)
 {
     cp_structure_->try_set_count(1).get();
-    std::thread([=]() { cp_structure_->count_down().get(); }).detach();
+    auto countdown = boost::async(boost::launch::async,
+                                  [=]() { cp_structure_->count_down().get(); });
 
-    ASSERT_EQ(std::cv_status::no_timeout,
+    EXPECT_EQ(std::cv_status::no_timeout,
               cp_structure_
                 ->wait_until(std::chrono::steady_clock::now() +
                              std::chrono::seconds(120))
                 .get());
+
+    countdown.get();
 }
 
 TEST_F(basic_latch_test, test_wait)
 {
     cp_structure_->try_set_count(1).get();
-    std::thread([=]() {
-        try {
-            cp_structure_->count_down().get();
-        } catch (exception::hazelcast_client_not_active&) {
-            // can get this exception if below wait finishes earlier and client
-            // is shutting down
-        }
-    }).detach();
+
+    auto countdown = boost::async(boost::launch::async,
+                                  [=]() { cp_structure_->count_down().get(); });
 
     cp_structure_->wait().get();
+    countdown.get();
 }
 
 TEST_F(basic_latch_test, test_wait_for_when_timeout)

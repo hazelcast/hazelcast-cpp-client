@@ -1660,13 +1660,10 @@ TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart)
     HazelcastServer server2(default_server_factory());
 
     // Put a 2nd entry to the map
-    auto result = map->put(2, 20);
+    (void)map->put(2, 20).get();
 
     // Verify that the 2nd entry is received by the listener
     ASSERT_OPEN_EVENTUALLY(latch2_);
-
-    // Wait for the put operation
-    ASSERT_NO_THROW(result.get());
 
     // Shut down the server
     ASSERT_TRUE(server2.shutdown());
@@ -1826,17 +1823,18 @@ TEST_F(
 }
 TEST_F(IssueTest,TestIssue1005){
     HazelcastServerFactory fac("hazelcast/test/resources/lock-expiration.xml");
-    HazelcastServer serv(fac);
+    HazelcastServer serv1(fac);
+    HazelcastServer serv2(fac);
+    HazelcastServer serv3(fac);
     client_config con;
     con.set_cluster_name("TestIssue1005");
     auto c = hazelcast::new_client(std::move(con)).get();
     auto exp_lock = c.get_cp_subsystem().get_lock("exp_lock").get();
-    exp_lock->lock();
-    exp_lock->unlock();
+    exp_lock->lock().get();
+    exp_lock->unlock().get();
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    exp_lock->lock();
-    exp_lock->unlock();
-
+    exp_lock->lock().get();
+    exp_lock->unlock().get();
 }
 } // namespace test
 } // namespace client

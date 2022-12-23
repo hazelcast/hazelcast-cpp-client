@@ -5,6 +5,7 @@
     <cluster-name>TestIssue1005</cluster-name>
 
     <cp-subsystem>
+        <cp-member-count>3</cp-member-count>
         <session-heartbeat-interval-seconds>0</session-heartbeat-interval-seconds>
         <session-time-to-live-seconds>1</session-time-to-live-seconds>
     </cp-subsystem>

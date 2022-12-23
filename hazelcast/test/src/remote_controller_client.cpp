@@ -18,6 +18,8 @@
 
 #include <string>
 
+#include <boost/algorithm/string.hpp>
+
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/transport/TBufferTransports.h>
 #include <thrift/transport/TSocket.h>
@@ -54,6 +56,32 @@ remote_controller_client()
     }
 
     return client;
+}
+
+member::version
+cluster_version()
+{
+    using namespace remote;
+
+    Response response;
+
+    remote_controller_client().executeOnController(
+      response,
+      std::string{},
+      "result=com.hazelcast.instance.GeneratedBuildProperties.VERSION;",
+      Lang::type::JAVASCRIPT);
+
+    std::vector<std::string> major_minor_patch;
+
+    boost::split(major_minor_patch, response.result, boost::is_any_of("."));
+
+    member::version version;
+
+    version.major = std::stoi(major_minor_patch.at(0));
+    version.minor = std::stoi(major_minor_patch.at(1));
+    version.patch = std::stoi(major_minor_patch.at(2));
+
+    return version;
 }
 
 } // namespace test
