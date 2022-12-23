@@ -55,15 +55,21 @@ else
     fi
 fi
 
-if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
-    echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
-else
-    echo "Downloading: hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
-    mvn -q dependency:get -Dtransitive=false -DrepoUrl=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar -Ddest=hazelcast-sql-${HZ_VERSION}.jar
-    if [ $? -ne 0 ]; then
-        echo "Failed download hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
-        exit 1
+INCLUDE_SQL=""
+if [[ ${HZ_VERSION} != 4.@(0|1)* ]]; then
+    INCLUDE_SQL="1"
+    if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
+        echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
+    else
+        echo "Downloading: hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
+        mvn -q dependency:get -Dtransitive=false -DrepoUrl=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar -Ddest=hazelcast-sql-${HZ_VERSION}.jar
+        if [ $? -ne 0 ]; then
+            echo "Failed download hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
+            exit 1
+        fi
     fi
+else
+    INCLUDE_SQL="0"
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
@@ -86,12 +92,16 @@ else
         exit 1
     fi
 fi
+
 CLASSPATH="\
 hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:\
-hazelcast-sql-${HZ_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:\
 hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar:\
 hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
+
+if [[ ${INCLUDE_SQL} -eq "1" ]]; then
+    CLASSPATH=$CLASSPATH:\:hazelcast-sql-${HZ_VERSION}.jar
+fi
 
 # necessary arguments for Java 9+
 JAVA_MAJOR_VERSION=$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | awk -F '.' '{print $1}')

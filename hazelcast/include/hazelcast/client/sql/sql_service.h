@@ -153,8 +153,8 @@ private:
 
     std::shared_ptr<connection::Connection> query_connection();
 
-    void rethrow(const std::exception_ptr& exc_ptr);
-    void rethrow(std::exception_ptr cause_ptr,
+    void rethrow(const std::exception& exc_ptr);
+    void rethrow(const std::exception& cause_ptr,
                  const std::shared_ptr<connection::Connection>& connection);
 
     boost::uuids::uuid client_id();

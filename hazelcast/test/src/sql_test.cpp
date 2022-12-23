@@ -285,8 +285,15 @@ public:
 protected:
     static void SetUpTestSuite()
     {
-        server_factory_.reset(new HazelcastServerFactory(
-          "hazelcast/test/resources/hazelcast-sql.xml"));
+        std::string config_file_path =
+          "hazelcast/test/resources/hazelcast-sql.xml";
+
+        // Jet doesn't exist before v5.0.0
+        if (cluster_version() < member::version{ 5, 0, 0 })
+            config_file_path =
+              "hazelcast/test/resources/hazelcast-sql-without-jet.xml";
+
+        server_factory_.reset(new HazelcastServerFactory(config_file_path));
         member_.reset(new HazelcastServer(*server_factory_));
         member2_.reset(new HazelcastServer(*server_factory_));
     }
@@ -296,6 +303,14 @@ protected:
         member_.reset();
         member2_.reset();
         server_factory_.reset();
+    }
+
+    void SetUp() override
+    {
+        // SQL API messages are not supported before 4.2.0
+        if (cluster_version() < member::version{ 4, 2, 0 }) {
+            GTEST_SKIP();
+        }
     }
 
     void TearDown() override
@@ -308,6 +323,10 @@ protected:
 
     void create_mapping(std::string value_format = "INTEGER")
     {
+        // Mapping is not supported before 5.0.0
+        if (cluster_version() < member::version{ 5, 0, 0 })
+            return;
+
         std::string query =
           (boost::format("CREATE MAPPING %1% ( "
                          "__key INT, "
@@ -328,6 +347,9 @@ protected:
                                      int factory_id,
                                      int class_id)
     {
+        if (cluster_version() < member::version{ 5, 0, 0 })
+            return;
+
         std::string query = (boost::format("CREATE MAPPING %1% ( "
                                            "__key INT, "
                                            "%2%"
@@ -646,6 +668,10 @@ TEST_F(SqlTest, wrong_syntax)
 
 TEST_F(SqlTest, row_metadata_on_non_select_query)
 {
+    // `DELETE` query is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping();
     (void)populate_map(map);
 
@@ -675,7 +701,8 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
 
         auto itr = result->iterator();
 
-        auto p_1 = itr.next();
+        auto p_1 =
+          itr.next().get(); // Doesn't block since first page is already loaded.
         auto p_2 = itr.next();
 
         if (!p_2.has_value()) {
@@ -719,6 +746,10 @@ TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
 
 TEST_F(SqlTest, simple)
 {
+    // `VALUES` clause is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     sql::sql_statement statement(client, R"sql(
         SELECT * FROM (VALUES ('foo', 'bar'), (NULL, 'hello')) AS X(col1, col2)
     )sql");
@@ -752,6 +783,10 @@ TEST_F(SqlTest, simple)
 
 TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
 {
+    // `VALUES` clause is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     sql::sql_statement statement(client, R"sql(
         SELECT * FROM (VALUES ('foo', 'bar'), (NULL, 'hello')) AS X(col1, col2)
     )sql");
@@ -780,6 +815,10 @@ TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
 
 TEST_F(SqlTest, sql_result_public_apis_should_throw_after_close)
 {
+    // `TABLE` clause is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     std::shared_ptr<sql::sql_result::page_iterator> it;
     {
         auto result = client.get_sql()
@@ -808,6 +847,10 @@ TEST_F(SqlTest, sql_result_public_apis_should_throw_after_close)
 
 TEST_F(SqlTest, statement_with_params)
 {
+    // `SELECT` query without FROM clause is not supported before 5,0,0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     auto &service = client.get_sql();
     auto result = service
                     .execute("SELECT CAST(? AS VARCHAR), CAST(? AS VARCHAR)",
@@ -1156,6 +1199,10 @@ TEST_F(SqlTest, test_execute_with_expected_result_type_as_rows_type_mismatch)
 
 TEST_F(SqlTest, test_execute_with_expected_result_type_as_update_count)
 {
+    // `DELETE` query is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping_for_student();
     (void)populate_map<test::student>(map);
 
@@ -1186,6 +1233,10 @@ TEST_F(SqlTest,
 
 TEST_F(SqlTest, test_execute_with_expected_result_type_as_any)
 {
+    // `DELETE` query is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping_for_student();
     (void)populate_map<test::student>(map);
 
@@ -1222,6 +1273,10 @@ TEST_F(SqlTest, test_is_row_set_when_row_is_set)
 
 TEST_F(SqlTest, test_is_row_set_when_there_is_no_update)
 {
+    // `UPDATE` query is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping_for_student();
     auto expecteds = populate_map<test::student>(map, 100);
 
@@ -1291,6 +1346,10 @@ TEST_F(SqlTest, test_null_only_column)
 
 TEST_F(SqlTest, test_json)
 {
+    // `JSON` is not supported before 5.1.0
+    if (cluster_version() < member::version{ 5, 1, 0 })
+        GTEST_SKIP();
+
     create_mapping("JSON");
     auto expecteds = populate_map<hazelcast_json_value>(map, 50);
 
@@ -1303,6 +1362,10 @@ TEST_F(SqlTest, test_json)
 
 TEST_F(SqlTest, test_streaming_sql_query)
 {
+    // `TABLE` clause is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     auto result = client.get_sql()
                     .execute("SELECT * FROM TABLE(generate_stream(100))")
                     .get();
@@ -1332,39 +1395,43 @@ TEST_F(SqlTest, select)
 
     ASSERT_EQ(DATA_SET_SIZE, map->size().get());
 
-    auto sql =
-      (boost::format("CREATE OR REPLACE MAPPING %1% ("
-                     "key BIGINT EXTERNAL NAME \"__key.key\", "
-                     "booleanVal BOOLEAN, "
-                     "tinyIntVal TINYINT, "
-                     "smallIntVal SMALLINT, "
-                     "intVal INTEGER, "
-                     "bigIntVal BIGINT, "
-                     "realVal REAL, "
-                     "doubleVal DOUBLE, "
-                     //"charVal VARCHAR, "
-                     "varcharVal VARCHAR "
-                     ") TYPE IMap OPTIONS( "
-                     "'keyFormat'='portable'"
-                     ", 'keyPortableFactoryId'='%2%'"
-                     ", 'keyPortableClassId'='%3%'"
-                     ", 'keyPortableClassVersion'='0'"
-                     ", 'valueFormat'='portable'"
-                     ", 'valuePortableFactoryId'='%4%'"
-                     ", 'valuePortableClassId'='%5%'"
-                     ", 'valuePortableClassVersion'='0'"
-                     ")") %
-       map_name %
-       serialization::hz_serializer<portable_pojo_key>::PORTABLE_FACTORY_ID %
-       serialization::hz_serializer<portable_pojo_key>::PORTABLE_KEY_CLASS_ID %
-       serialization::hz_serializer<portable_pojo>::PORTABLE_FACTORY_ID %
-       serialization::hz_serializer<portable_pojo>::PORTABLE_VALUE_CLASS_ID)
-        .str();
+    // Mapping is not supported before 5.0.0
+    if (cluster_version() >= member::version{ 5, 0, 0 }) {
+        auto sql =
+          (boost::format("CREATE OR REPLACE MAPPING %1% ("
+                         "key BIGINT EXTERNAL NAME \"__key.key\", "
+                         "booleanVal BOOLEAN, "
+                         "tinyIntVal TINYINT, "
+                         "smallIntVal SMALLINT, "
+                         "intVal INTEGER, "
+                         "bigIntVal BIGINT, "
+                         "realVal REAL, "
+                         "doubleVal DOUBLE, "
+                         //"charVal VARCHAR, "
+                         "varcharVal VARCHAR "
+                         ") TYPE IMap OPTIONS( "
+                         "'keyFormat'='portable'"
+                         ", 'keyPortableFactoryId'='%2%'"
+                         ", 'keyPortableClassId'='%3%'"
+                         ", 'keyPortableClassVersion'='0'"
+                         ", 'valueFormat'='portable'"
+                         ", 'valuePortableFactoryId'='%4%'"
+                         ", 'valuePortableClassId'='%5%'"
+                         ", 'valuePortableClassVersion'='0'"
+                         ")") %
+           map_name %
+           serialization::hz_serializer<
+             portable_pojo_key>::PORTABLE_FACTORY_ID %
+           serialization::hz_serializer<
+             portable_pojo_key>::PORTABLE_KEY_CLASS_ID %
+           serialization::hz_serializer<portable_pojo>::PORTABLE_FACTORY_ID %
+           serialization::hz_serializer<portable_pojo>::PORTABLE_VALUE_CLASS_ID)
+            .str();
+
+        auto result = service.execute(sql).get();
+    }
 
     using namespace sql;
-
-    std::shared_ptr<sql_result> result;
-    ASSERT_NO_THROW(result = service.execute(sql).get());
 
     auto res = query(map_name);
 
