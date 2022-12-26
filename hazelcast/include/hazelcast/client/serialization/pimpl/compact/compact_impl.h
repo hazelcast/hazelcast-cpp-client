@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/client/serialization/pimpl/compact.h"
+#include "hazelcast/client/serialization/pimpl/compact/compact.h"
 #include "hazelcast/util/finally.h"
 #include "hazelcast/util/IOUtil.h"
 #include <type_traits>
@@ -57,15 +57,15 @@ get_offset(serialization::object_data_input& in,
 template<typename T>
 T
 compact_reader::read_primitive(const std::string& field_name,
-                               enum pimpl::field_kind primitive_field_kind,
-                               enum pimpl::field_kind nullable_field_kind,
+                               field_kind primitive,
+                               field_kind nullable,
                                const std::string& method_suffix)
 {
     const auto& fd = get_field_descriptor(field_name);
-    const auto& field_kind = fd.field_kind;
-    if (field_kind == primitive_field_kind) {
+    const auto& field_kind = fd.kind;
+    if (field_kind == primitive) {
         return read_primitive<T>(fd);
-    } else if (field_kind == nullable_field_kind) {
+    } else if (field_kind == nullable) {
         return read_variable_size_as_non_null<T>(fd, field_name, method_suffix);
     } else {
         BOOST_THROW_EXCEPTION(unexpected_field_kind(field_kind, field_name));
@@ -111,9 +111,9 @@ compact_reader::read_variable_size(
 template<typename T>
 boost::optional<T>
 compact_reader::read_variable_size(const std::string& field_name,
-                                   enum pimpl::field_kind field_kind)
+                                   field_kind kind)
 {
-    auto field_descriptor = get_field_descriptor(field_name, field_kind);
+    auto field_descriptor = get_field_descriptor(field_name, kind);
     return read_variable_size<T>(field_descriptor);
 }
 
@@ -237,20 +237,19 @@ compact_reader::read()
 
 template<typename T>
 boost::optional<T>
-compact_reader::read_array_of_primitive(
-  const std::string& field_name,
-  enum pimpl::field_kind field_kind,
-  enum pimpl::field_kind nullable_field_kind,
-  const std::string& method_suffix)
+compact_reader::read_array_of_primitive(const std::string& field_name,
+                                        field_kind kind,
+                                        field_kind nullable_kind,
+                                        const std::string& method_suffix)
 {
     auto& field_descriptor = get_field_descriptor(field_name);
-    if (field_descriptor.field_kind == field_kind) {
+    if (field_descriptor.kind == kind) {
         return read_variable_size<T>(field_descriptor);
-    } else if (field_descriptor.field_kind == nullable_field_kind) {
+    } else if (field_descriptor.kind == nullable_kind) {
         return read_nullable_array_as_primitive_array<T>(
           field_descriptor, field_name, method_suffix);
     }
-    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+    throw unexpected_field_kind(field_descriptor.kind, field_name);
 }
 
 template<typename T>
@@ -317,34 +316,32 @@ compact_reader::read_nullable_array_as_primitive_array(
 
 template<typename T>
 boost::optional<T>
-compact_reader::read_nullable_primitive(
-  const std::string& field_name,
-  enum pimpl::field_kind field_kind,
-  enum pimpl::field_kind nullable_field_kind)
+compact_reader::read_nullable_primitive(const std::string& field_name,
+                                        field_kind kind,
+                                        field_kind nullable_kind)
 {
     auto& field_descriptor = get_field_descriptor(field_name);
-    if (field_descriptor.field_kind == field_kind) {
+    if (field_descriptor.kind == kind) {
         return boost::make_optional<T>(read_primitive<T>(field_descriptor));
-    } else if (field_descriptor.field_kind == nullable_field_kind) {
+    } else if (field_descriptor.kind == nullable_kind) {
         return read_variable_size<T>(field_descriptor);
     }
-    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+    throw unexpected_field_kind(field_descriptor.kind, field_name);
 }
 
 template<typename T>
 boost::optional<std::vector<boost::optional<T>>>
-compact_reader::read_array_of_nullable(
-  const std::string& field_name,
-  enum pimpl::field_kind field_kind,
-  enum pimpl::field_kind nullable_field_kind)
+compact_reader::read_array_of_nullable(const std::string& field_name,
+                                       field_kind kind,
+                                       field_kind nullable_kind)
 {
     auto& field_descriptor = get_field_descriptor(field_name);
-    if (field_descriptor.field_kind == field_kind) {
+    if (field_descriptor.kind == kind) {
         return read_primitive_array_as_nullable_array<T>(field_descriptor);
-    } else if (field_descriptor.field_kind == nullable_field_kind) {
+    } else if (field_descriptor.kind == nullable_kind) {
         return read_array_of_variable_size<T>(field_descriptor);
     }
-    throw unexpected_field_kind(field_descriptor.field_kind, field_name);
+    throw unexpected_field_kind(field_descriptor.kind, field_name);
 }
 
 template<typename T>
@@ -383,7 +380,7 @@ template<typename T>
 boost::optional<T>
 compact_reader::read_compact(const std::string& field_name)
 {
-    return read_variable_size<T>(field_name, pimpl::field_kind::COMPACT);
+    return read_variable_size<T>(field_name, field_kind::COMPACT);
 }
 
 template<typename T>
@@ -391,7 +388,7 @@ boost::optional<std::vector<boost::optional<T>>>
 compact_reader::read_array_of_compact(const std::string& field_name)
 {
     const auto& descriptor =
-      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_COMPACT);
+      get_field_descriptor(field_name, field_kind::ARRAY_OF_COMPACT);
     return read_array_of_variable_size<T>(descriptor);
 }
 
@@ -403,7 +400,7 @@ compact_writer::write_compact(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_compact(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::COMPACT);
+        schema_writer->add_field(field_name, field_kind::COMPACT);
     }
 }
 
@@ -416,8 +413,7 @@ compact_writer::write_array_of_compact(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_compact<T>(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_COMPACT);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_COMPACT);
     }
 }
 namespace pimpl {
@@ -575,6 +571,47 @@ template<typename T>
 const schema schema_of<T>::schema_v = schema_of<T>::build_schema();
 
 template<typename T>
+schema build_schema(const T& object)
+{
+    schema_writer schema_writer(hz_serializer<T>::type_name());
+    serialization::compact_writer writer =
+        create_compact_writer(&schema_writer);
+    serialization::hz_serializer<T>::write(object, writer);
+    return std::move(schema_writer).build();
+}
+
+template<typename T>
+class class_to_schema
+{
+public:
+
+    static const boost::optional<schema>& get()
+    {
+        std::lock_guard<std::mutex> guard{ mtx_ };
+
+        return value_;
+    }
+
+    static void set(const boost::optional<schema>& schema)
+    {
+        std::lock_guard<std::mutex> guard { mtx_ };
+
+        value_ = schema;
+    }
+
+private:
+
+    static std::mutex mtx_;
+    static boost::optional<schema> value_;
+};
+
+template<typename T>
+boost::optional<schema> class_to_schema<T>::value_ = boost::none;
+
+template<typename T>
+std::mutex class_to_schema<T>::mtx_;
+
+template<typename T>
 T inline compact_stream_serializer::read(object_data_input& in)
 {
     int64_t schema_id = in.read<int64_t>();
@@ -604,10 +641,18 @@ template<typename T>
 void inline compact_stream_serializer::write(const T& object,
                                              object_data_output& out)
 {
-    const auto& schema_v = schema_of<T>::schema_v;
-    put_to_schema_service(schema_v);
-    out.write<int64_t>(schema_v.schema_id());
-    default_compact_writer default_writer(*this, out, schema_v);
+    const boost::optional<schema>& schema_v = class_to_schema<T>::get();
+
+    if (!schema_v.has_value()) {
+        class_to_schema<T>::set(build_schema(object));
+    }
+
+    if (!schema_service.is_schema_replicated(*schema_v)) {
+        out.schemas_will_be_replicated_.push_back(*schema_v);
+    }
+
+    out.write<int64_t>(schema_v->schema_id());
+    default_compact_writer default_writer(*this, out, *schema_v);
     compact_writer writer = create_compact_writer(&default_writer);
     hz_serializer<T>::write(object, writer);
     default_writer.end();

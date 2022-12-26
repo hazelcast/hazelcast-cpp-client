@@ -16,6 +16,30 @@
 
 #pragma once
 
+#include <random>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+
+#include "hazelcast/client/spi/ClientContext.h"
+
+inline hazelcast::client::serialization::pimpl::default_schema_service&
+null_schema_service()
+{
+    return *static_cast<
+      hazelcast::client::serialization::pimpl::default_schema_service*>(
+      nullptr);
+}
+
+inline std::string
+random_string()
+{
+    std::random_device rand{};
+
+    return boost::uuids::to_string(
+      boost::uuids::basic_random_generator<std::random_device>{ rand }());
+}
+
 #define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG(                                 \
   message, expected, actual, timeoutSeconds)                                   \
     do {                                                                       \

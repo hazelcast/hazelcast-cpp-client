@@ -924,6 +924,12 @@ public:
     }
 
 private:
+    using schemas_t = std::vector<pimpl::schema>;
+
+    friend class pimpl::compact_stream_serializer;
+    friend class pimpl::SerializationService;
+
+    schemas_t schemas_will_be_replicated_;
     pimpl::PortableSerializer* portable_serializer_;
     pimpl::compact_stream_serializer* compact_serializer_;
     std::shared_ptr<serialization::global_serializer> global_serializer_;
@@ -1799,7 +1805,7 @@ private:
 } // namespace client
 } // namespace hazelcast
 
-#include "hazelcast/client/serialization/pimpl/compact.h"
+#include "hazelcast/client/serialization/pimpl/compact/compact.h"
 
 namespace hazelcast {
 namespace client {
@@ -1808,7 +1814,8 @@ namespace pimpl {
 class HAZELCAST_API SerializationService : public util::Disposable
 {
 public:
-    SerializationService(const serialization_config& config);
+    SerializationService(const serialization_config& config,
+                         default_schema_service&);
 
     PortableSerializer& get_portable_serializer();
 
@@ -1830,7 +1837,8 @@ public:
 
         output.write_object<T>(object);
 
-        return { std::move(output).to_byte_array() };
+        return { std::move(output).to_byte_array(),
+                 move(output.schemas_will_be_replicated_) };
     }
 
     template<typename T>
@@ -1847,7 +1855,8 @@ public:
 
         output.write_object<T>(object);
 
-        return { std::move(output).to_byte_array() };
+        return { std::move(output).to_byte_array(),
+                 move(output.schemas_will_be_replicated_) };
     }
 
     template<typename T>
@@ -2856,7 +2865,7 @@ typed_data::get() const
 } // namespace client
 } // namespace hazelcast
 
-#include "hazelcast/client/serialization/pimpl/compact.i.h"
+#include "hazelcast/client/serialization/pimpl/compact/compact_impl.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
