@@ -807,6 +807,41 @@ ClientInvocationServiceImpl::check_invocation_allowed()
     client_.get_connection_manager().check_invocation_allowed();
 }
 
+void
+ClientInvocationServiceImpl::check_urgent_invocation_allowed(
+  const ClientInvocation& invocation)
+{
+    if (client_.get_connection_manager().client_initialized_on_cluster()) {
+        // If the client is initialized on the cluster, that means we
+        // have sent all the schemas to the cluster, even if we are
+        // reconnected to it
+        return;
+    }
+
+    if (!client_.get_hazelcast_client_implementation()
+           ->should_check_urgent_invocations()) {
+        // If there were no Compact schemas to begin with, we don't need
+        // to perform the check below. If the client didn't send a Compact
+        // schema up until this point, the retries or listener registrations
+        // could not send a schema, because if they were, we wouldn't hit
+        // this line.
+        return;
+    }
+
+    // We are not yet initialized on cluster, so the Compact schemas might
+    // not be sent yet. This message contains some serialized classes,
+    // and it is possible that it can also contain Compact serialized data.
+    // In that case, allowing this invocation to go through now could
+    // violate the invariant that the schema must come to cluster before
+    // the data. We will retry this invocation and wait until the client
+    // is initialized on the cluster, which means schemas are replicated
+    // in the cluster.
+    if (invocation.get_client_message()
+          ->contains_serialized_data_in_request()) {
+        throw exception::invocation_might_contain_compact_data{ invocation };
+    }
+}
+
 bool
 ClientInvocationServiceImpl::invoke(
   std::shared_ptr<ClientInvocation> invocation)
@@ -1480,7 +1515,9 @@ ClientInvocation::invoke_on_selection()
 {
     try {
         invoke_count_++;
-        if (!urgent_) {
+        if (urgent_) {
+            invocation_service_.check_urgent_invocation_allowed(*this);
+        } else {
             invocation_service_.check_invocation_allowed();
         }
 

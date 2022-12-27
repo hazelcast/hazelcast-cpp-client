@@ -28,6 +28,11 @@
 
 namespace hazelcast {
 namespace client {
+namespace spi {
+namespace impl {
+class ClientInvocation;
+}
+} // namespace spi
 namespace exception {
 #define DEFINE_EXCEPTION_CLASS(ClassName, errorNo, isRuntime)                  \
     class HAZELCAST_API ClassName : public iexception                          \
@@ -349,6 +354,13 @@ private:
     int32_t code_;
     std::string suggestion_;
     boost::uuids::uuid originating_member_uuid_;
+};
+
+class HAZELCAST_API invocation_might_contain_compact_data : public hazelcast_
+{
+public:
+    explicit invocation_might_contain_compact_data(
+      const spi::impl::ClientInvocation& invocation);
 };
 
 class HAZELCAST_API member_left : public execution

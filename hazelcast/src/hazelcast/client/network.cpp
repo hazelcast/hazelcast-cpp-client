@@ -86,7 +86,9 @@ ClientConnectionManagerImpl::ClientConnectionManagerImpl(
                      .get_retry_config(),
                    logger_)
   , cluster_id_(boost::uuids::nil_uuid())
+  , client_state_(client_state::INITIAL)
   , connect_to_cluster_task_submitted_(false)
+  , established_initial_cluster_connection(false)
   , use_public_address_(
       address_provider_->is_default_provider() &&
       client.get_client_config().get_network_config().use_public_address())
@@ -299,6 +301,27 @@ ClientConnectionManagerImpl::authenticate_on_cluster(
             std::rethrow_exception(e);
         }
     }
+}
+
+std::ostream&
+operator<<(std::ostream& os, ClientConnectionManagerImpl::client_state state)
+{
+    using client_state = ClientConnectionManagerImpl::client_state;
+
+    switch (state) {
+        case client_state::INITIAL:
+            return os << "INITIAL";
+        case client_state::CONNECTED_TO_CLUSTER:
+            return os << "CONNECTED_TO_CLUSTER";
+        case client_state::INITIALIZED_ON_CLUSTER:
+            return os << "INITIALIZED_ON_CLUSTER";
+        case client_state::DISCONNECTED_FROM_CLUSTER:
+            return os << "DISCONNECTED_FROM_CLUSTER";
+        case client_state::SWITCHING_CLUSTER:
+            return os << "SWITCHING_CLUSTER";
+    }
+
+    return os;
 }
 
 protocol::ClientMessage
@@ -561,7 +584,17 @@ ClientConnectionManagerImpl::connect_to_cluster()
     if (async_start_) {
         submit_connect_to_cluster_task();
     } else {
-        do_connect_to_cluster();
+        if (do_connect_to_cluster()) {
+            return;
+        }
+
+        {
+            std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
+
+            if (active_connections_.empty()) {
+                client_state_ = client_state::SWITCHING_CLUSTER;
+            }
+        }
     }
 }
 
@@ -590,32 +623,39 @@ ClientConnectionManagerImpl::on_connection_close(
         return;
     }
 
-    std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
-    if (active_connections_.remove(member_uuid, connection)) {
-        active_connection_ids_.remove(connection->get_connection_id());
+    {
+        std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
 
-        HZ_LOG(
-          logger_,
-          info,
-          boost::str(boost::format(
+        if (active_connections_.remove(member_uuid, connection)) {
+            active_connection_ids_.remove(connection->get_connection_id());
+
+            HZ_LOG(logger_,
+                   info,
+                   boost::str(
+                     boost::format(
                        "Removed connection to endpoint: %1%, connection: %2%") %
                      *endpoint % *connection));
 
-        if (active_connections_.empty()) {
-            fire_life_cycle_event(
-              lifecycle_event::lifecycle_state::CLIENT_DISCONNECTED);
+            if (active_connections_.empty()) {
+                if (client_state_ == client_state::INITIALIZED_ON_CLUSTER) {
+                    fire_life_cycle_event(
+                      lifecycle_event::lifecycle_state::CLIENT_DISCONNECTED);
+                }
 
-            trigger_cluster_reconnection();
+                client_state_ = client_state::DISCONNECTED_FROM_CLUSTER;
+                trigger_cluster_reconnection();
+            }
+
+            fire_connection_removed_event(connection);
+        } else {
+            HZ_LOG(
+              logger_,
+              finest,
+              boost::str(boost::format(
+                           "Destroying a connection, but there is no mapping "
+                           "%1% -> %2% in the connection map.") %
+                         endpoint % *connection));
         }
-
-        fire_connection_removed_event(connection);
-    } else {
-        HZ_LOG(logger_,
-               finest,
-               boost::str(boost::format(
-                            "Destroying a connection, but there is no mapping "
-                            "%1% -> %2% in the connection map.") %
-                          endpoint % *connection));
     }
 }
 
@@ -644,6 +684,86 @@ ClientConnectionManagerImpl::check_client_active()
         BOOST_THROW_EXCEPTION(exception::hazelcast_client_not_active(
           "ClientConnectionManagerImpl::check_client_active",
           "Client is shutdown"));
+    }
+}
+
+void
+ClientConnectionManagerImpl::initialize_client_on_cluster(
+  boost::uuids::uuid target_cluster_id)
+{
+    try {
+        {
+            std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
+
+            if (target_cluster_id != cluster_id_) {
+                logger_.log(
+                  hazelcast::logger::level::warning,
+                  (boost::format("Won't send client state to cluster: %1%"
+                                 " Because switched to a new cluster: %2%") %
+                   target_cluster_id % cluster_id_)
+                    .str());
+
+                return;
+            }
+        }
+
+        client_.get_hazelcast_client_implementation()->send_state_to_cluster();
+
+        {
+            std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
+
+            if (target_cluster_id == cluster_id_) {
+                if (logger_.enabled(hazelcast::logger::level::fine)) {
+                    logger_.log(
+                      hazelcast::logger::level::fine,
+                      (boost::format("Client state is sent to cluster: %1%") %
+                       target_cluster_id)
+                        .str());
+                }
+
+                client_state_ = client_state::INITIALIZED_ON_CLUSTER;
+                fire_life_cycle_event(lifecycle_event::CLIENT_CONNECTED);
+            } else if (logger_.enabled(hazelcast::logger::level::fine)) {
+                logger_.log(hazelcast::logger::level::warning,
+                            (boost::format("Cannot set client state to %1%"
+                                           " because current cluster id: %2%"
+                                           " is different than expected cluster"
+                                           " id: %3%"))
+                              .str());
+            }
+        }
+    } catch (const std::exception& e) {
+        // TODO: Check whether this cluster_name
+        // matches with `clusterDiscoveryService.current().getClusterName()`
+        auto cluster_name = client_.get_client_config().get_cluster_name();
+
+        logger_.log(
+          hazelcast::logger::level::warning,
+          (boost::format("Failure during sending state to the cluster. %1%") %
+           e.what())
+            .str());
+
+        {
+            std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
+
+            if (cluster_id_ == target_cluster_id) {
+                if (logger_.enabled(hazelcast::logger::level::fine)) {
+                    logger_.log(
+                      hazelcast::logger::level::warning,
+                      (boost::format(
+                         "Retrying sending to the cluster: %1%, name: %2%") %
+                       target_cluster_id % cluster_name)
+                        .str());
+                }
+
+                auto self = shared_from_this();
+
+                boost::asio::post(
+                  executor_->get_executor(), [self, target_cluster_id]() {
+                      self->initialize_client_on_cluster(target_cluster_id);
+                  });
+            }
+        }
     }
 }
 
@@ -696,9 +816,37 @@ ClientConnectionManagerImpl::on_authenticated(
         active_connection_ids_.put(connection->get_connection_id(), connection);
         active_connections_.put(response.member_uuid, connection);
         if (connections_empty) {
+            // The first connection that opens a connection to the new cluster
+            // should set `clusterId`. This one will initiate
+            // `initializeClientOnCluster` if necessary.
             cluster_id_ = new_cluster_id;
-            fire_life_cycle_event(
-              lifecycle_event::lifecycle_state::CLIENT_CONNECTED);
+
+            if (established_initial_cluster_connection) {
+                // In split brain, the client might connect to the one half
+                // of the cluster, and then later might reconnect to the
+                // other half, after the half it was connected to is
+                // completely dead. Since the cluster id is preserved in
+                // split brain scenarios, it is impossible to distinguish
+                // reconnection to the same cluster vs reconnection to the
+                // other half of the split brain. However, in the latter,
+                // we might need to send some state to the other half of
+                // the split brain (like Compact schemas or user code
+                // deployment classes). That forces us to send the client
+                // state to the cluster after the first cluster connection,
+                // regardless the cluster id is changed or not.
+                client_state_ = client_state::CONNECTED_TO_CLUSTER;
+                auto self = shared_from_this();
+                boost::asio::post(
+                  executor_->get_executor(), [self, new_cluster_id, this]() {
+                      self->initialize_client_on_cluster(new_cluster_id);
+                  });
+            } else {
+                established_initial_cluster_connection = true;
+                client_state_ = client_state::INITIALIZED_ON_CLUSTER;
+
+                fire_life_cycle_event(
+                  lifecycle_event::lifecycle_state::CLIENT_CONNECTED);
+            }
         }
 
         auto local_address = connection->get_local_socket_address();
@@ -819,14 +967,21 @@ ClientConnectionManagerImpl::get_client_uuid() const
 void
 ClientConnectionManagerImpl::check_invocation_allowed()
 {
-    if (active_connections_.size() > 0) {
+    client_state state = client_state_;
+    if (state == client_state::INITIALIZED_ON_CLUSTER &&
+        active_connections_.size() > 0) {
         return;
     }
 
-    if (async_start_) {
-        BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
-          "ClientConnectionManagerImpl::check_invocation_allowed",
-          "No connection found to cluster and async start is configured."));
+    if (state == client_state::INITIAL) {
+        if (async_start_) {
+            BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
+              "ClientConnectionManagerImpl::check_invocation_allowed",
+              "No connection found to cluster and async start is configured."));
+        } else {
+            BOOST_THROW_EXCEPTION(exception::io(
+              "No connection found to cluster since the client is starting."));
+        }
     } else if (reconnect_mode_ == config::client_connection_strategy_config::
                                     reconnect_mode::ASYNC) {
         BOOST_THROW_EXCEPTION(exception::hazelcast_client_offline(
@@ -839,6 +994,14 @@ ClientConnectionManagerImpl::check_invocation_allowed()
     }
 }
 
+bool
+ClientConnectionManagerImpl::client_initialized_on_cluster()
+{
+    std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
+
+    return client_state_ == client_state::INITIALIZED_ON_CLUSTER;
+}
+
 void
 ClientConnectionManagerImpl::connect_to_all_cluster_members()
 {
@@ -848,6 +1011,21 @@ ClientConnectionManagerImpl::connect_to_all_cluster_members()
 
     for (const auto& member :
          client_.get_client_cluster_service().get_member_list()) {
+
+        {
+            std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
+
+            if (client_state_ == client_state::SWITCHING_CLUSTER ||
+                client_state_ == client_state::DISCONNECTED_FROM_CLUSTER) {
+                // Best effort check to prevent this task from attempting to
+                // open a new connection when the client is either switching
+                // clusters or is not connected to any of the cluster members.
+                // In such occasions, only `doConnectToCandidateCluster`
+                // method should open new connections.
+                return;
+            }
+        }
+
         try {
             get_or_connect(member);
         } catch (std::exception&) {

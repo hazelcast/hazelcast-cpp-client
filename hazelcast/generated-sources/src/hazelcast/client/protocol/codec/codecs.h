@@ -3085,6 +3085,13 @@ sql_fetch_encode(const sql::impl::query_id& query_id,
 ClientMessage HAZELCAST_API
 client_sendschema_encode(const serialization::pimpl::schema& schema);
 
+/**
+ * Sends all the schemas to the cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendallschemas_encode(
+  const std::vector<serialization::pimpl::schema>& schemas);
+
 } // namespace codec
 } // namespace protocol
 } // namespace client

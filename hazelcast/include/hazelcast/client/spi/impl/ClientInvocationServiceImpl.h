@@ -59,6 +59,8 @@ public:
 
     void check_invocation_allowed();
 
+    void check_urgent_invocation_allowed(const ClientInvocation&);
+
     bool is_smart_routing() const;
 
     std::chrono::milliseconds get_invocation_timeout() const;

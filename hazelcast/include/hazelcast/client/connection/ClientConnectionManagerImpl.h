@@ -21,6 +21,7 @@
 #include <thread>
 #include <future>
 #include <vector>
+#include <mutex>
 #include <boost/asio.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
@@ -139,6 +140,8 @@ public:
 
     void check_invocation_allowed();
 
+    bool client_initialized_on_cluster();
+
     void connect_to_all_cluster_members();
 
     void notify_backup(int64_t call_id);
@@ -159,6 +162,54 @@ private:
         boost::optional<address> server_address;
         std::string server_version;
     };
+
+    enum class client_state
+    {
+        /**
+         * Clients start with this state. Once a client connects to a cluster,
+         * it directly switches to {@link #INITIALIZED_ON_CLUSTER} instead of
+         * {@link #CONNECTED_TO_CLUSTER} because on startup a client has no
+         * local state to send to the cluster.
+         */
+        INITIAL,
+
+        /**
+         * When a client switches to a new cluster, it moves to this state.
+         * It means that the client has connected to a new cluster but not sent
+         * its local state to the new cluster yet.
+         */
+        CONNECTED_TO_CLUSTER,
+
+        /**
+         * When a client sends its local state to the cluster it has connected,
+         * it switches to this state.
+         * <p>
+         * Invocations are allowed in this state.
+         */
+        INITIALIZED_ON_CLUSTER,
+
+        /**
+         * When the client closes the last connection to the cluster it
+         * currently connected to, it switches to this state.
+         * <p>
+         * In this state, ConnectToAllClusterMembersTask is not allowed to
+         * attempt connecting to last known member list.
+         */
+        DISCONNECTED_FROM_CLUSTER,
+
+        /**
+         * We get into this state before we try to connect to next cluster. As
+         * soon as the state is `SWITCHING_CLUSTER` any connection happened
+         * without cluster switch intent are no longer allowed and will be
+         * closed. Also, we will not allow ConnectToAllClusterMembersTask to
+         * make any further connection attempts as long as the state is
+         * `SWITCHING_CLUSTER`
+         */
+        SWITCHING_CLUSTER
+    };
+
+    friend std::ostream HAZELCAST_API& operator<<(std::ostream& os,
+                                                  client_state);
 
     auth_response authenticate_on_cluster(
       std::shared_ptr<Connection>& connection);
@@ -196,6 +247,8 @@ private:
     }
 
     void check_client_active();
+
+    void initialize_client_on_cluster(boost::uuids::uuid);
 
     template<typename T>
     std::shared_ptr<Connection> try_connect(const T& target)
@@ -267,7 +320,9 @@ private:
 #else
     std::atomic<boost::uuids::uuid> cluster_id_;
 #endif
+    client_state client_state_;
     std::atomic_bool connect_to_cluster_task_submitted_;
+    bool established_initial_cluster_connection;
 
     bool use_public_address_{ false };
 
@@ -283,6 +338,7 @@ private:
 
     address translate(const member& m);
 };
+
 } // namespace connection
 } // namespace client
 } // namespace hazelcast
