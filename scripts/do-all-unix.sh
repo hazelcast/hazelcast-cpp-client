@@ -30,6 +30,8 @@ if [ "$LIBRARY_TYPE" == "STATIC" ]; then
   BUILD_SHARED_LIBS=OFF;
 fi
 
+echo "NUM_OF_PARALLEL_JOBS=${NUM_OF_PARALLEL_JOBS}"
+
 ./scripts/build-unix.sh                      \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE           \
     -DCMAKE_INSTALL_PREFIX=$DESTINATION      \

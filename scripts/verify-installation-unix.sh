@@ -37,5 +37,5 @@ echo "Configuring..."
 cmake $SOURCE_DIR "$@"
 
 echo "Building..."
-VERBOSE=1 cmake --build .
+VERBOSE=1 cmake --build . --parallel ${NUM_OF_PARALLEL_JOBS}
 
