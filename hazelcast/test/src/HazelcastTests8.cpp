@@ -37,6 +37,7 @@
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/client/connection/AddressProvider.h>
+#include <hazelcast/client/spi/impl/discovery/remote_address_provider.h>
 #include <hazelcast/client/entry_event.h>
 #include <hazelcast/client/exception/protocol_exceptions.h>
 #include <hazelcast/client/hazelcast_client.h>
@@ -2315,6 +2316,29 @@ TEST_F(connection_manager_translate,
 TEST_F(connection_manager_translate, default_config_uses_private_addresses)
 {
     ASSERT_FALSE(client_config().get_network_config().use_public_address());
+}
+
+TEST_F(
+  connection_manager_translate,
+  if_remote_adress_provider_cannot_translate_adress_translate_should_throw_an_exception)
+{
+    auto client = new_client().get();
+    spi::ClientContext ctx(client);
+    connection::ClientConnectionManagerImpl connection_manager(
+      ctx,
+      std::unique_ptr<connection::AddressProvider>(
+        new spi::impl::discovery::remote_address_provider{
+          []() { return std::unordered_map<address, address>{}; }, true }));
+
+    std::random_device rand{};
+    member dummy_member(
+      address{ "255.255.255.255", 40000 },
+      boost::uuids::basic_random_generator<std::random_device>{ rand }(),
+      false,
+      std::unordered_map<std::string, std::string>{},
+      std::unordered_map<endpoint_qualifier, address>{});
+    EXPECT_THROW(connection_manager.get_or_connect(dummy_member),
+                 exception::hazelcast_);
 }
 } // namespace test
 } // namespace client
