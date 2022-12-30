@@ -917,7 +917,24 @@ ClientConnectionManagerImpl::translate(const member& m)
         return m.get_address();
     }
 
-    return *address_provider_->translate(m.get_address());
+    try {
+        boost::optional<address> addr =
+          address_provider_->translate(m.get_address());
+
+        if (!addr) {
+            throw exception::hazelcast_(boost::str(
+              boost::format("Address Provider could not translate %1%") % m));
+        }
+
+        return *addr;
+    } catch (const exception::hazelcast_&) {
+        logger_.log(
+          logger::level::warning,
+          boost::str(boost::format("Address Provider could not translate %1%") %
+                     m));
+
+        throw;
+    }
 }
 
 std::shared_ptr<connection::Connection>
