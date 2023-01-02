@@ -24,7 +24,7 @@ jobs:
           token: ${{ secrets.PAT }}
 
   run-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [check_for_membership]
     if: github.event_name == 'push' || needs.check_for_membership.outputs.check-result == 'true' || github.event_name == 'workflow_dispatch'
     name: Create and upload coverage
