@@ -653,7 +653,7 @@ namespace test {
 struct CompactRabinFingerprintTest : public ::testing::Test
 {
     template<typename T>
-    using entry_t = std::tuple<int64_t, T, uint64_t>;
+    using entry_t = std::tuple<int64_t, T, int64_t>;
 
     static constexpr int     int32_min = std::numeric_limits<int>::min();
     static constexpr int64_t int64_min = std::numeric_limits<int64_t>::min();
@@ -1300,7 +1300,7 @@ struct hz_serializer<compact::test::type_mistmatch_obj> : compact_serializer
     {
         compact::test::type_mistmatch_obj obj;
 
-        obj.value = reader.read_boolean("field_1");
+        obj.value = static_cast<int>(reader.read_float32("field_1"));
 
         return obj;
     }
