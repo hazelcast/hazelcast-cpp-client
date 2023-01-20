@@ -30,8 +30,8 @@ struct a_type
     nested_type nested;
 };
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -61,5 +61,5 @@ struct hz_serializer<test::compact::a_type> : compact_serializer
 };
 
 } // namespace serialization
-}
-}
+} // namespace client
+} // namespace hazelcast

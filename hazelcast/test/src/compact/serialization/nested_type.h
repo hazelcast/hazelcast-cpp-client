@@ -30,8 +30,8 @@ struct nested_type
     int y;
 };
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -56,6 +56,6 @@ struct hz_serializer<test::compact::nested_type> : compact_serializer
     static std::string type_name() { return "nested_type"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

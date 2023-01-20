@@ -153,8 +153,8 @@ create_inner_dto()
     };
 }
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -236,6 +236,6 @@ struct hz_serializer<test::compact::inner_dto> : public compact_serializer
     static std::string type_name() { return "inner"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

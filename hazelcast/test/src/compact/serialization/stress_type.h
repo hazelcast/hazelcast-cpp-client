@@ -23,12 +23,13 @@ namespace compact {
 
 template<int Idx>
 struct stress_type
-{};
+{
+};
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast
 
 namespace hazelcast {
 namespace client {
@@ -37,10 +38,13 @@ namespace serialization {
 template<int Idx>
 struct hz_serializer<test::compact::stress_type<Idx>> : compact_serializer
 {
-    static std::string type_name() { return "stress_type_" + std::to_string(Idx); }
+    static std::string type_name()
+    {
+        return "stress_type_" + std::to_string(Idx);
+    }
 
     static void write(const test::compact::stress_type<Idx>&,
-               compact_writer& writer)
+                      compact_writer& writer)
     {
         writer.write_int32("field_" + std::to_string(Idx), Idx);
     }
@@ -51,6 +55,6 @@ struct hz_serializer<test::compact::stress_type<Idx>> : compact_serializer
     }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

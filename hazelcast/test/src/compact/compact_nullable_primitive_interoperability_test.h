@@ -51,10 +51,11 @@ ASSERT_SAME_CONTENT(
 
 class CompactNullablePrimitiveInteroperabilityTest : public compact_test_base
 {
-    protected:
-        SerializationService& serialization_service(){
-            return spi::ClientContext{ client }.get_serialization_service();
-        }
+protected:
+    SerializationService& serialization_service()
+    {
+        return spi::ClientContext{ client }.get_serialization_service();
+    }
 };
 
 TEST_F(CompactNullablePrimitiveInteroperabilityTest,
@@ -178,7 +179,7 @@ TEST_F(CompactNullablePrimitiveInteroperabilityTest,
                  exception::hazelcast_serialization);
 }
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

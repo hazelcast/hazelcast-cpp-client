@@ -37,8 +37,8 @@ operator==(const node_dto& lhs, const node_dto& rhs)
             (lhs.child && rhs.child && *lhs.child == *rhs.child));
 }
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -70,6 +70,6 @@ struct hz_serializer<test::compact::node_dto> : public compact_serializer
     static std::string type_name() { return "node"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

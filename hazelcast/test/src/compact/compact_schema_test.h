@@ -265,7 +265,7 @@ TEST_F(CompactSchemaTest, test_with_no_fields)
     ASSERT_EQ(no_fields_schema.number_of_var_size_fields(), 0);
 }
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

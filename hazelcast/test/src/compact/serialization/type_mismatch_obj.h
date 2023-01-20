@@ -28,8 +28,8 @@ struct type_mistmatch_obj
     int value;
 };
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -54,6 +54,6 @@ struct hz_serializer<test::compact::type_mistmatch_obj> : compact_serializer
     static std::string type_name() { return "type_mistmatch_obj"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

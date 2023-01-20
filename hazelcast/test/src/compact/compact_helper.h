@@ -56,7 +56,7 @@ current_timestamp_with_timezone()
     return hazelcast::client::offset_date_time{ current_timestamp(), 3600 };
 }
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

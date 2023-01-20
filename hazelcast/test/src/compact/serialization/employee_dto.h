@@ -37,8 +37,8 @@ operator==(const employee_dto& lhs, const employee_dto& rhs)
            lhs.isHired == rhs.isHired && lhs.isFired == rhs.isFired;
 }
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -67,6 +67,6 @@ struct hz_serializer<test::compact::employee_dto> : public compact_serializer
     }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

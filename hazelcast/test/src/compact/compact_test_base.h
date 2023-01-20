@@ -42,14 +42,11 @@ public:
     }
 
 protected:
+    void SetUp() override
+    {
+        auto version = client.get_cluster().get_members().front().get_version();
 
-    void SetUp() override {
-        auto version = client.get_cluster()
-                             .get_members()
-                             .front()
-                             .get_version();
-
-        if (version < member::version {5,2,0})
+        if (version < member::version{ 5, 2, 0 })
             GTEST_SKIP();
     }
 
@@ -58,9 +55,10 @@ protected:
     {
         auto schema = get_schema<T>();
 
-        spi::ClientContext context {client};
+        spi::ClientContext context{ client };
 
-        ASSERT_NO_THROW(context.get_schema_service().replicate_schema(schema).get());
+        ASSERT_NO_THROW(
+          context.get_schema_service().replicate_schema(schema).get());
     }
 
     bool check_schema_on_backend(const schema_t& schema)
@@ -104,7 +102,6 @@ protected:
     hazelcast_client client;
 
 private:
-
     static client_config config()
     {
         client_config cfg;
@@ -115,7 +112,7 @@ private:
     }
 };
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

@@ -41,8 +41,8 @@ struct nullable_primitive_object
     boost::optional<std::vector<boost::optional<double>>> nullableDoubles;
 };
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -100,7 +100,7 @@ struct hz_serializer<test::compact::nullable_primitive_object>
     // class with different serializers.
     static std::string type_name() { return "primitive_object"; }
 };
-}
+} // namespace serialization
 
-}
-}
+} // namespace client
+} // namespace hazelcast

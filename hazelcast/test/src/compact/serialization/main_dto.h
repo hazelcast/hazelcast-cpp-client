@@ -19,7 +19,7 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "inner_dto.h"
 
-namespace hazelcast{
+namespace hazelcast {
 namespace client {
 namespace test {
 namespace compact {
@@ -100,8 +100,8 @@ create_main_dto()
                      -897543.3678909 };
 }
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -186,6 +186,6 @@ struct hz_serializer<test::compact::main_dto> : public compact_serializer
     static std::string type_name() { return "main"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

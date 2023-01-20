@@ -32,8 +32,8 @@ namespace compact {
 struct empty_main_dto
 {};
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -42,7 +42,8 @@ struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
 {
     static void write(const compact::test::empty_main_dto& object,
                       compact_writer& writer)
-    {}
+    {
+    }
 
     static compact::test::empty_main_dto read(compact_reader& reader)
     {
@@ -52,6 +53,6 @@ struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
     static std::string type_name() { return "main"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

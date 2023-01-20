@@ -37,15 +37,14 @@ struct schema_replicator;
 template<int Current>
 struct schema_replicator<Current, Current>
 {
-    schema_replicator(std::shared_ptr<imap> m, std::vector<schema>&)
-    {}
+    schema_replicator(std::shared_ptr<imap> m, std::vector<schema>&) {}
 };
 
 template<int Current, int Until>
 struct schema_replicator : schema_replicator<Current + 1, Until>
 {
     schema_replicator(std::shared_ptr<imap> m, std::vector<schema>& schemas)
-        :   schema_replicator<Current + 1, Until>(m, schemas)
+      : schema_replicator<Current + 1, Until>(m, schemas)
     {
         stress_type<Current> instance{};
         auto schema = serialization::pimpl::build_schema(instance);
@@ -55,77 +54,40 @@ struct schema_replicator : schema_replicator<Current + 1, Until>
 };
 
 template<int Current, int Until>
-std::vector<serialization::pimpl::schema> replicate_schemas(std::shared_ptr<imap> map)
+std::vector<serialization::pimpl::schema>
+replicate_schemas(std::shared_ptr<imap> map)
 {
     std::vector<serialization::pimpl::schema> schemas;
-    schema_replicator<Current, Until>{map, schemas};
+    schema_replicator<Current, Until>{ map, schemas };
     return schemas;
 }
 
 TEST_F(CompactSchemaReplicationStress, test)
 {
-    using replication_work_t = boost::future<std::vector<serialization::pimpl::schema>>;
+    using replication_work_t =
+      boost::future<std::vector<serialization::pimpl::schema>>;
     auto map = client.get_map(random_string()).get();
 
-    replication_work_t replication_works[] =
-    {
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<0,10>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<10,20>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<20,30>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<30,40>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<40,50>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<50,60>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<60,70>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<70,80>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<80,90>,
-            map
-        ),
-        boost::async(
-            boost::launch::async,
-            replicate_schemas<90,100>,
-            map
-        )
+    replication_work_t replication_works[] = {
+        boost::async(boost::launch::async, replicate_schemas<0, 10>, map),
+        boost::async(boost::launch::async, replicate_schemas<10, 20>, map),
+        boost::async(boost::launch::async, replicate_schemas<20, 30>, map),
+        boost::async(boost::launch::async, replicate_schemas<30, 40>, map),
+        boost::async(boost::launch::async, replicate_schemas<40, 50>, map),
+        boost::async(boost::launch::async, replicate_schemas<50, 60>, map),
+        boost::async(boost::launch::async, replicate_schemas<60, 70>, map),
+        boost::async(boost::launch::async, replicate_schemas<70, 80>, map),
+        boost::async(boost::launch::async, replicate_schemas<80, 90>, map),
+        boost::async(boost::launch::async, replicate_schemas<90, 100>, map)
     };
 
     std::vector<serialization::pimpl::schema> replicated_schemas;
 
-    auto append = [&replicated_schemas](std::vector<serialization::pimpl::schema> schemas){
-        replicated_schemas.insert(end(replicated_schemas),begin(schemas),end(schemas));
-    };
+    auto append =
+      [&replicated_schemas](std::vector<serialization::pimpl::schema> schemas) {
+          replicated_schemas.insert(
+            end(replicated_schemas), begin(schemas), end(schemas));
+      };
 
     for (replication_work_t& work : replication_works)
         EXPECT_NO_THROW(append(work.get()));
@@ -134,7 +96,7 @@ TEST_F(CompactSchemaReplicationStress, test)
         EXPECT_TRUE(check_schema_on_backend(s));
 }
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

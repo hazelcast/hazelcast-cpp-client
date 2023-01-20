@@ -38,8 +38,8 @@ using namespace serialization::pimpl;
 class CompactSerializationTest : public compact_test_base
 {
 public:
-
-    SerializationService& serialization_service(){
+    SerializationService& serialization_service()
+    {
         return spi::ClientContext{ client }.get_serialization_service();
     }
 
@@ -150,7 +150,7 @@ TEST_F(CompactSerializationTest, test_read_with_type_mismatch)
                  exception::hazelcast_serialization);
 }
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

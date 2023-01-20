@@ -53,7 +53,7 @@ struct hz_serializer<PersonDTO> : compact_serializer
         person.age = in.read_int32("age");
         boost::optional<std::string> name = in.read_string("name");
 
-        if (name){
+        if (name) {
             person.name = *name;
         }
 
@@ -75,7 +75,7 @@ struct hz_serializer<PersonDTO> : compact_serializer
 
 /**
  * This example demonstrates how to use a type with compact serialization.
-*/
+ */
 int
 main()
 {

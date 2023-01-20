@@ -33,9 +33,9 @@ namespace compact {
 class CompactSchemaValidation : public compact_test_base
 {
 protected:
-
     using schema_t = hazelcast::client::serialization::pimpl::schema;
-    using field_descriptor_t = hazelcast::client::serialization::pimpl::field_descriptor;
+    using field_descriptor_t =
+      hazelcast::client::serialization::pimpl::field_descriptor;
 
     struct schema_proxy
     {
@@ -48,11 +48,10 @@ protected:
         Response response;
 
         remote_controller_client().executeOnController(
-            response,
-            factory_.get_cluster_id(),
-            (
-                boost::format(
-                    R"(
+          response,
+          factory_.get_cluster_id(),
+          (boost::format(
+             R"(
                         var schemas = instance_0.getOriginal().node.getSchemaService().getAllSchemas();
                         var iterator = schemas.iterator();
 
@@ -86,16 +85,15 @@ protected:
                         }
 
                         result = "" + JSON.stringify(schema_obj);
-                    )") % schema.schema_id()
-            ).str(),
-            Lang::JAVASCRIPT
-        );
+                    )") %
+           schema.schema_id())
+            .str(),
+          Lang::JAVASCRIPT);
 
         return json_to_proxy(response.result);
     }
 
 private:
-
     schema_proxy json_to_proxy(const std::string& text)
     {
         using namespace boost::property_tree;
@@ -105,20 +103,17 @@ private:
         input << text;
 
         ptree root;
-        read_json(input,root);
+        read_json(input, root);
 
         schema_proxy proxy;
         proxy.type_name = root.get<std::string>("type_name");
 
-        for (ptree::value_type& field : root.get_child("fields")){
+        for (ptree::value_type& field : root.get_child("fields")) {
             proxy.descriptors.push_back(
-                {
-                    serialization::field_kind(field.second.get<int>("kind")),
-                    field.second.get<int>("index") ,
-                    field.second.get<int>("offset"),
-                    field.second.get<int8_t>("bitOffset")
-                }
-            );
+              { serialization::field_kind(field.second.get<int>("kind")),
+                field.second.get<int>("index"),
+                field.second.get<int>("offset"),
+                field.second.get<int8_t>("bitOffset") });
         }
 
         return proxy;
@@ -135,20 +130,18 @@ TEST_F(CompactSchemaValidation, validate)
 
     EXPECT_EQ(schema.type_name(), actual.type_name);
 
-    for(const auto& pair : schema.fields()){
+    for (const auto& pair : schema.fields()) {
         field_descriptor_t descriptor = pair.second;
 
-        bool found = find(
-            begin(actual.descriptors),
-            end(actual.descriptors),
-            descriptor
-        ) != end(actual.descriptors);
+        bool found = find(begin(actual.descriptors),
+                          end(actual.descriptors),
+                          descriptor) != end(actual.descriptors);
 
         EXPECT_TRUE(found);
     }
 }
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

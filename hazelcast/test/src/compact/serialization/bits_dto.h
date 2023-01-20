@@ -47,8 +47,8 @@ operator==(const bits_dto& lhs, const bits_dto& rhs)
            lhs.id == rhs.id && lhs.booleans == rhs.booleans;
 }
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -91,7 +91,7 @@ struct hz_serializer<test::compact::bits_dto> : public compact_serializer
     static std::string type_name() { return "bits_dto"; }
 };
 
-}
+} // namespace serialization
 
-}
-}
+} // namespace client
+} // namespace hazelcast

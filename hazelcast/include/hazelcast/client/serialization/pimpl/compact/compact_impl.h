@@ -19,6 +19,8 @@
 #include "hazelcast/util/finally.h"
 #include "hazelcast/util/IOUtil.h"
 #include <type_traits>
+#include <atomic>
+#include <mutex>
 
 namespace hazelcast {
 namespace client {
@@ -571,11 +573,12 @@ template<typename T>
 const schema schema_of<T>::schema_v = schema_of<T>::build_schema();
 
 template<typename T>
-schema build_schema(const T& object)
+schema
+build_schema(const T& object)
 {
     schema_writer schema_writer(hz_serializer<T>::type_name());
     serialization::compact_writer writer =
-        create_compact_writer(&schema_writer);
+      create_compact_writer(&schema_writer);
     serialization::hz_serializer<T>::write(object, writer);
     return std::move(schema_writer).build();
 }
@@ -584,24 +587,19 @@ template<typename T>
 class class_to_schema
 {
 public:
+    static std::atomic<bool> is_initialized;
+    static std::mutex mtx;
 
-    static const boost::optional<schema>& get()
+    static const schema& get() { return *value_; }
+
+    static void set(const schema& schema)
     {
-        std::lock_guard<std::mutex> guard{ mtx_ };
-
-        return value_;
-    }
-
-    static void set(const boost::optional<schema>& schema)
-    {
-        std::lock_guard<std::mutex> guard { mtx_ };
-
         value_ = schema;
+
+        is_initialized = true;
     }
 
 private:
-
-    static std::mutex mtx_;
     static boost::optional<schema> value_;
 };
 
@@ -609,7 +607,10 @@ template<typename T>
 boost::optional<schema> class_to_schema<T>::value_ = boost::none;
 
 template<typename T>
-std::mutex class_to_schema<T>::mtx_;
+std::atomic<bool> class_to_schema<T>::is_initialized{ false };
+
+template<typename T>
+std::mutex class_to_schema<T>::mtx;
 
 template<typename T>
 T inline compact_stream_serializer::read(object_data_input& in)
@@ -641,18 +642,22 @@ template<typename T>
 void inline compact_stream_serializer::write(const T& object,
                                              object_data_output& out)
 {
-    const boost::optional<schema>& schema_v = class_to_schema<T>::get();
+    if (!class_to_schema<T>::is_initialized) {
+        std::lock_guard<std::mutex> lck{ class_to_schema<T>::mtx };
 
-    if (!schema_v.has_value()) {
-        class_to_schema<T>::set(build_schema(object));
+        if (!class_to_schema<T>::is_initialized) {
+            class_to_schema<T>::set(build_schema(object));
+        }
     }
 
-    if (!schema_service.is_schema_replicated(*schema_v)) {
-        out.schemas_will_be_replicated_.push_back(*schema_v);
+    const schema& schema_v = class_to_schema<T>::get();
+
+    if (!schema_service.is_schema_replicated(schema_v)) {
+        out.schemas_will_be_replicated_.push_back(schema_v);
     }
 
-    out.write<int64_t>(schema_v->schema_id());
-    default_compact_writer default_writer(*this, out, *schema_v);
+    out.write<int64_t>(schema_v.schema_id());
+    default_compact_writer default_writer(*this, out, schema_v);
     compact_writer writer = create_compact_writer(&default_writer);
     hz_serializer<T>::write(object, writer);
     default_writer.end();

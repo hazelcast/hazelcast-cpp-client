@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/serialization/serialization.h"
 
-namespace hazelcast{
+namespace hazelcast {
 namespace client {
 namespace test {
 namespace compact {
@@ -41,8 +41,8 @@ struct primitive_object
     boost::optional<std::vector<double>> doubles;
 };
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 template<>
@@ -93,6 +93,6 @@ struct hz_serializer<test::compact::primitive_object>
     static std::string type_name() { return "primitive_object"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

@@ -28,8 +28,8 @@ struct wrong_field_name_read_obj
     int value;
 };
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -55,6 +55,6 @@ struct hz_serializer<test::compact::wrong_field_name_read_obj>
     static std::string type_name() { return "wrong_field_name_read_obj"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast

@@ -113,7 +113,7 @@ TEST_F(CompactRabinFingerprintTest, test_schema)
     ASSERT_EQ(3662264393229655598, schema_id);
 }
 
-}
-}
-}
-}
+} // namespace compact
+} // namespace test
+} // namespace client
+} // namespace hazelcast

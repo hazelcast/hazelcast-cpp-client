@@ -31,7 +31,7 @@ namespace pimpl {
 
 struct HAZELCAST_API field_descriptor
 {
-    field_descriptor(field_kind k = field_kind(-1),
+    field_descriptor(field_kind k = field_kind(0),
                      int32_t i = -1,
                      int32_t o = -1,
                      int8_t b = -1);

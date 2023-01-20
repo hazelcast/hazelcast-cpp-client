@@ -52,10 +52,8 @@ std::ostream&
 operator<<(std::ostream& os, const field_descriptor& fd)
 {
     return os << "FieldDescriptor{"
-              << "kind=" << fd.kind
-              << ", index=" << fd.index
-              << ", offset=" << fd.offset
-              << ", bitOffset=" << fd.bit_offset
+              << "kind=" << fd.kind << ", index=" << fd.index
+              << ", offset=" << fd.offset << ", bitOffset=" << fd.bit_offset
               << '}';
 }
 
@@ -1893,7 +1891,6 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
     using hazelcast::client::protocol::ClientMessage;
     using namespace protocol::codec;
 
-    auto max_retry_count{ max_put_retry_count_ };
     auto message = send_schema_request_encode(s);
 
     auto invocation =
@@ -1901,8 +1898,7 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
 
     return invocation->invoke().then(
       boost::launch::sync,
-      [this, max_retry_count, attempts, s](
-        boost::future<ClientMessage> future) {
+      [this, attempts, s](boost::future<ClientMessage> future) {
           auto msg = future.get();
 
           auto replicated_member_uuids = send_schema_response_decode(msg);
@@ -1917,7 +1913,7 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
                        });
 
               if (!contains) {
-                  if (attempts >= max_retry_count) {
+                  if (attempts >= max_put_retry_count_) {
                       throw exception::illegal_state{
                           "default_schema_service::replicate_schema_attempt",
                           (boost::format("The schema %1% cannot be "
@@ -1930,7 +1926,7 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
                                          "It might be possible to replicate "
                                          "the schema after some time, when "
                                          "the cluster is healed.") %
-                             s % max_retry_count)
+                           s % max_put_retry_count_)
                             .str()
                       };
                   } else {

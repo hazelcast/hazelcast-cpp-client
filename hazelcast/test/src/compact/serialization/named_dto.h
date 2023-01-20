@@ -35,8 +35,8 @@ operator==(const named_dto& lhs, const named_dto& rhs)
     return lhs.name == rhs.name && lhs.my_int == rhs.my_int;
 }
 
-}
-}
+} // namespace compact
+} // namespace test
 
 namespace serialization {
 
@@ -61,6 +61,6 @@ struct hz_serializer<test::compact::named_dto> : public compact_serializer
     static std::string type_name() { return "named_dto"; }
 };
 
-}
-}
-}
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
