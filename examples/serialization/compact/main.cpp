@@ -15,7 +15,6 @@
  */
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <optional>
 
 struct PersonDTO
 {
@@ -52,8 +51,17 @@ struct hz_serializer<PersonDTO> : compact_serializer
         PersonDTO person;
 
         person.age = in.read_int32("age");
-        person.name = *in.read_string("name");
-        person.surname = *in.read_string("surname");
+        boost::optional<std::string> name = in.read_string("name");
+
+        if (name){
+            person.name = *name;
+        }
+
+        boost::optional<std::string> surname = in.read_string("surname");
+
+        if (surname) {
+            person.surname = *surname;
+        }
 
         return person;
     }
