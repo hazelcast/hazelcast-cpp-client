@@ -1212,8 +1212,10 @@ public:
         std::memcpy(
           fp + SIZE_OF_FRAME_LENGTH_AND_FLAGS, &bytes[0], bytes.size());
 
-        copy(begin(value.schemas_will_be_replicated()),
-             end(value.schemas_will_be_replicated()),
+        const auto& replicated_schemas = value.schemas_will_be_replicated();
+
+        copy(begin(replicated_schemas),
+             end(replicated_schemas),
              back_inserter(schemas_will_be_replicated_));
     }
 
