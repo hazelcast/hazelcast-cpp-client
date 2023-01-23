@@ -84,8 +84,8 @@ sql_service::execute(const sql_statement& statement)
               auto response = response_fut.get();
               return handle_execute_response(
                 response, query_conn, qid, cursor_buffer_size);
-          } catch (...) {
-              rethrow(std::current_exception(), query_conn);
+          } catch (const std::exception& e) {
+              rethrow(e, query_conn);
           }
           assert(0);
           return std::shared_ptr<sql_result>();
@@ -104,8 +104,8 @@ sql_service::close(const std::shared_ptr<connection::Connection>& connection,
       [this, connection](boost::future<protocol::ClientMessage> f) {
           try {
               f.get();
-          } catch (exception::iexception&) {
-              rethrow(std::current_exception(), connection);
+          } catch (const exception::iexception& e) {
+              rethrow(e, connection);
           }
 
           return;
@@ -175,7 +175,7 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
           return protocol::codec::builtin::sql_page_codec::decode(msg);
       });
     auto error = message.get<boost::optional<impl::sql_error>>();
-    return { *std::move(page), std::move(error) };
+    return { std::move(page), std::move(error) };
 }
 
 std::shared_ptr<sql_result>
@@ -221,25 +221,29 @@ sql_service::query_connection()
             [&](boost::uuids::uuid id) { return cs.get_member(id); });
 
         if (!connection) {
-            exception::query e(
-              static_cast<int32_t>(impl::sql_error_code::CONNECTION_PROBLEM),
-              "Client is not connected");
-            rethrow(std::make_exception_ptr(e));
+            try {
+                throw exception::query(
+                  static_cast<int32_t>(
+                    impl::sql_error_code::CONNECTION_PROBLEM),
+                  "Client is not connected");
+            } catch (const exception::query& e) {
+                rethrow(e);
+            }
         }
 
-    } catch (...) {
-        rethrow(std::current_exception());
+    } catch (const std::exception& e) {
+        rethrow(e);
     }
 
     return connection;
 }
 
 void
-sql_service::rethrow(const std::exception_ptr& exc_ptr)
+sql_service::rethrow(const std::exception& e)
 {
     // Make sure that access_control is thrown as a top-level exception
     try {
-        std::rethrow_if_nested(exc_ptr);
+        std::rethrow_if_nested(e);
     } catch (exception::access_control&) {
         throw;
     } catch (...) {
@@ -247,11 +251,12 @@ sql_service::rethrow(const std::exception_ptr& exc_ptr)
                                                   client_id());
     }
 
-    impl::query_utils::throw_public_exception(exc_ptr, client_id());
+    impl::query_utils::throw_public_exception(std::current_exception(),
+                                              client_id());
 }
 
 void
-sql_service::rethrow(std::exception_ptr cause_ptr,
+sql_service::rethrow(const std::exception& cause,
                      const std::shared_ptr<connection::Connection>& connection)
 {
     if (!connection->is_alive()) {
@@ -263,11 +268,11 @@ sql_service::rethrow(std::exception_ptr cause_ptr,
           std::make_exception_ptr(exception::query(
             static_cast<int32_t>(impl::sql_error_code::CONNECTION_PROBLEM),
             msg,
-            std::move(cause_ptr))),
+            std::make_exception_ptr(cause))),
           client_id());
     }
 
-    return rethrow(cause_ptr);
+    return rethrow(cause);
 }
 
 boost::uuids::uuid
@@ -301,7 +306,7 @@ sql_service::fetch_page(
               hazelcast::client::sql::sql_service::handle_fetch_response_error(
                 std::move(response_params.error));
 
-              page = std::move(response_params.page);
+              page = std::move(*response_params.page);
           } catch (exception::iexception&) {
               impl::query_utils::throw_public_exception(
                 std::current_exception(), this->client_id());
@@ -330,28 +335,27 @@ constexpr std::chrono::milliseconds sql_statement::DEFAULT_TIMEOUT;
 constexpr int32_t sql_statement::DEFAULT_CURSOR_BUFFER_SIZE;
 
 sql_statement::sql_statement(hazelcast_client& client, std::string query)
-  : sql_{ std::move(query) }
-  , serialized_parameters_{}
+  : serialized_parameters_{}
   , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
-  , serialization_service_{
-      spi::ClientContext(client).get_serialization_service()
-  }
+  , serialization_service_(
+      spi::ClientContext(client).get_serialization_service())
 {
+    sql(std::move(query));
 }
 
 sql_statement::sql_statement(spi::ClientContext& client_context,
                              std::string query)
-  : sql_{ std::move(query) }
-  , serialized_parameters_{}
+  : serialized_parameters_{}
   , cursor_buffer_size_{ DEFAULT_CURSOR_BUFFER_SIZE }
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
-  , serialization_service_{ client_context.get_serialization_service() }
+  , serialization_service_(client_context.get_serialization_service())
 {
+    sql(std::move(query));
 }
 
 const std::string&
@@ -632,33 +636,35 @@ sql_result::row_set() const
     return update_count() == -1;
 }
 
-sql_result::page_iterator_type
-sql_result::page_iterator()
+sql_result::page_iterator
+sql_result::iterator()
 {
     check_closed();
 
     if (!first_page_) {
-        throw exception::illegal_state(
-          "sql_result::page_iterator",
-          "This result contains only update count");
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
+          "sql_result::iterator", "This result contains only update count"));
     }
 
     if (iterator_requested_) {
-        throw exception::illegal_state("sql_result::page_iterator",
-                                       "Iterator can be requested only once");
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
+          "sql_result::page_iterator", "Iterator can be requested only once"));
     }
 
     iterator_requested_ = true;
 
     return { shared_from_this(), first_page_ };
 }
+
 void
 sql_result::check_closed() const
 {
     if (closed_) {
-        throw exception::query(
-          static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
-          "Query was cancelled by the user");
+        impl::query_utils::throw_public_exception(
+          std::make_exception_ptr(exception::query(
+            static_cast<int32_t>(impl::sql_error_code::CANCELLED_BY_USER),
+            "Query was cancelled by the user")),
+          service_->client_id());
     }
 }
 
@@ -669,14 +675,40 @@ sql_result::close()
         return boost::make_ready_future();
     }
 
-    auto f = service_->close(connection_, query_id_);
-    closed_ = true;
-    return f;
+    auto release_resources = [this](){
+        {
+            std::lock_guard<std::mutex> guard{ mtx_ };
+            closed_ = true;
+
+            connection_.reset();
+        }
+
+        row_metadata_.reset();
+        first_page_.reset();
+    };
+
+    try
+    {
+        auto f = service_->close(connection_, query_id_);
+
+        release_resources();
+
+        return f;
+    } catch (const std::exception& e) {
+        release_resources();
+
+        service_->rethrow(e);
+    }
+
+    // This should not be reached.
+    return boost::make_ready_future();
 }
 
 boost::future<std::shared_ptr<sql_page>>
 sql_result::fetch_page()
 {
+    std::lock_guard<std::mutex> guard{ mtx_ };
+
     check_closed();
     return service_->fetch_page(query_id_, cursor_buffer_size_, connection_);
 }
@@ -707,58 +739,119 @@ sql_result::~sql_result()
     }
 }
 
-sql_result::page_iterator_type::page_iterator_type(
-  std::shared_ptr<sql_result> result,
-  std::shared_ptr<sql_page> page)
-  : result_(std::move(result))
-  , page_(std::move(page))
+sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
+                                         std::shared_ptr<sql_page> first_page)
+  : in_progress_{ std::make_shared<std::atomic<bool>>(false) }
+  , last_{ std::make_shared<std::atomic<bool>>(false) }
+  , row_metadata_{ result->row_metadata_ }
+  , serialization_(&result->client_context_->get_serialization_service())
+  , result_{ move(result) }
+  , first_page_(move(first_page))
 {
-    page_->serialization_service(
-      &result_->client_context_->get_serialization_service());
-    page_->row_metadata(result_->row_metadata_);
 }
 
-boost::future<void>
-sql_result::page_iterator_type::operator++()
+boost::future<std::shared_ptr<sql_page>>
+sql_result::page_iterator::next()
 {
-    if (page_->last()) {
-        page_.reset();
-        return boost::make_ready_future();
+    result_->check_closed();
+
+    if (first_page_) {
+        auto page = move(first_page_);
+
+        page->serialization_service(serialization_);
+        page->row_metadata(row_metadata_);
+        *last_ = page->last();
+
+        return boost::make_ready_future<std::shared_ptr<sql_page>>(page);
     }
+
+    if (*in_progress_) {
+        BOOST_THROW_EXCEPTION(
+          exception::illegal_access("sql_result::page_iterator::next",
+                                    "Fetch page operation is already in "
+                                    "progress so next must not be called."));
+    }
+
+    if (*last_) {
+        BOOST_THROW_EXCEPTION(exception::no_such_element(
+          "sql_result::page_iterator::next",
+          "Last page is already retrieved so there are no more pages."));
+    }
+
+    *in_progress_ = true;
 
     auto page_future = result_->fetch_page();
 
+    std::weak_ptr<std::atomic<bool>> last_w{ last_ };
+    std::weak_ptr<std::atomic<bool>> in_progress_w{ in_progress_ };
+    std::shared_ptr<sql_row_metadata> row_metadata{ row_metadata_ };
+    auto result = result_;
+    auto serialization_service = serialization_;
+
     return page_future.then(
-      boost::launch::sync, [this](boost::future<std::shared_ptr<sql_page>> page) {
-          page_ = page.get();
-          page_->serialization_service(
-            &result_->client_context_->get_serialization_service());
-          page_->row_metadata(result_->row_metadata_);
+      boost::launch::sync,
+      [serialization_service, row_metadata, last_w, in_progress_w, result](
+        boost::future<std::shared_ptr<sql_page>> page_f) {
+          try {
+              auto page = page_f.get();
+
+              result->check_closed();
+              page->serialization_service(serialization_service);
+              page->row_metadata(move(row_metadata));
+
+              auto last = last_w.lock();
+
+              if (last)
+                  *last = page->last();
+
+              auto in_progress = in_progress_w.lock();
+
+              if (in_progress)
+                  *in_progress = false;
+
+              return page;
+          } catch (...) {
+              auto in_progress = in_progress_w.lock();
+
+              if (in_progress)
+                  *in_progress = false;
+
+              throw;
+          }
       });
 }
 
-std::shared_ptr<sql_page>
-sql_result::page_iterator_type::operator*() const
+bool
+sql_result::page_iterator::has_next() const
 {
-    return page_;
+    result_->check_closed();
+    return !*last_;
 }
 
-sql_result::page_iterator_type::operator bool() const
+std::size_t
+sql_page::page_data::column_count() const
 {
-    return static_cast<bool>(page_);
+    return column_types_.size();
 }
 
-sql_page::sql_row::sql_row(size_t row_index, std::shared_ptr<sql_page> page)
+std::size_t
+sql_page::page_data::row_count() const
+{
+    return columns_[0].size();
+}
+
+sql_page::sql_row::sql_row(size_t row_index,
+                           std::shared_ptr<page_data> shared)
   : row_index_(row_index)
-  , page_(std::move(page))
+  , page_data_(std::move(shared))
 {
 }
 
 std::size_t
 sql_page::sql_row::resolve_index(const std::string& column_name) const
 {
-    auto it = page_->row_metadata_->find_column(column_name);
-    if (it == page_->row_metadata_->end()) {
+    auto it = page_data_->row_metadata_->find_column(column_name);
+    if (it == page_data_->row_metadata_->end()) {
         throw exception::illegal_argument(
           "sql_page::get_object(const std::string &)",
           (boost::format("Column %1% doesn't exist") % column_name).str());
@@ -770,7 +863,7 @@ sql_page::sql_row::resolve_index(const std::string& column_name) const
 const sql_row_metadata&
 sql_page::sql_row::row_metadata() const
 {
-    return *page_->row_metadata_;
+    return *page_data_->row_metadata_;
 }
 
 void
@@ -787,10 +880,11 @@ sql_page::sql_page(std::vector<sql_column_type> column_types,
                    std::vector<column> columns,
                    bool last,
                    std::shared_ptr<sql_row_metadata> row_metadata)
-  : column_types_(std::move(column_types))
-  , columns_(std::move(columns))
+  : page_data_{ new page_data{ std::move(column_types),
+                               std::move(columns),
+                               std::move(row_metadata),
+                               nullptr } }
   , last_(last)
-  , row_metadata_(std::move(row_metadata))
 {
 }
 
@@ -800,14 +894,14 @@ sql_page::construct_rows()
     auto count = row_count();
     rows_.clear();
     for (size_t i = 0; i < count; ++i) {
-        rows_.emplace_back(i, shared_from_this());
+        rows_.emplace_back(i, page_data_);
     }
 }
 
 const std::vector<sql_column_type>&
 sql_page::column_types() const
 {
-    return column_types_;
+    return page_data_->column_types_;
 }
 
 bool
@@ -819,13 +913,13 @@ sql_page::last() const
 std::size_t
 sql_page::column_count() const
 {
-    return column_types_.size();
+    return page_data_->column_count();
 }
 
 std::size_t
 sql_page::row_count() const
 {
-    return columns_[0].size();
+    return page_data_->row_count();
 }
 
 const std::vector<sql_page::sql_row>&
@@ -837,13 +931,13 @@ sql_page::rows() const
 void
 sql_page::row_metadata(std::shared_ptr<sql_row_metadata> row_meta)
 {
-    row_metadata_ = std::move(row_meta);
+    page_data_->row_metadata_ = std::move(row_meta);
 }
 
 void
 sql_page::serialization_service(serialization::pimpl::SerializationService* ss)
 {
-    serialization_service_ = ss;
+    page_data_->serialization_service_ = ss;
 }
 
 sql_row_metadata::sql_row_metadata(std::vector<sql_column_metadata> columns)

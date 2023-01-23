@@ -1413,7 +1413,7 @@ username_password_credentials::password() const
     return password_;
 }
 
-const credentials::credential_type
+credentials::credential_type
 username_password_credentials::type() const
 {
     return credentials::credential_type::username_password;
@@ -1425,7 +1425,7 @@ token_credentials::token() const
     return token_;
 }
 
-const credentials::credential_type
+credentials::credential_type
 token_credentials::type() const
 {
     return credentials::credential_type::token;

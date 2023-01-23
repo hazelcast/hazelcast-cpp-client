@@ -37,6 +37,7 @@
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/client/connection/AddressProvider.h>
+#include <hazelcast/client/spi/impl/discovery/remote_address_provider.h>
 #include <hazelcast/client/entry_event.h>
 #include <hazelcast/client/exception/protocol_exceptions.h>
 #include <hazelcast/client/hazelcast_client.h>
@@ -1660,13 +1661,10 @@ TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart)
     HazelcastServer server2(default_server_factory());
 
     // Put a 2nd entry to the map
-    auto result = map->put(2, 20);
+    (void)map->put(2, 20).get();
 
     // Verify that the 2nd entry is received by the listener
     ASSERT_OPEN_EVENTUALLY(latch2_);
-
-    // Wait for the put operation
-    ASSERT_NO_THROW(result.get());
 
     // Shut down the server
     ASSERT_TRUE(server2.shutdown());
@@ -1826,17 +1824,18 @@ TEST_F(
 }
 TEST_F(IssueTest,TestIssue1005){
     HazelcastServerFactory fac("hazelcast/test/resources/lock-expiration.xml");
-    HazelcastServer serv(fac);
+    HazelcastServer serv1(fac);
+    HazelcastServer serv2(fac);
+    HazelcastServer serv3(fac);
     client_config con;
     con.set_cluster_name("TestIssue1005");
     auto c = hazelcast::new_client(std::move(con)).get();
     auto exp_lock = c.get_cp_subsystem().get_lock("exp_lock").get();
-    exp_lock->lock();
-    exp_lock->unlock();
+    exp_lock->lock().get();
+    exp_lock->unlock().get();
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    exp_lock->lock();
-    exp_lock->unlock();
-
+    exp_lock->lock().get();
+    exp_lock->unlock().get();
 }
 } // namespace test
 } // namespace client
@@ -2317,6 +2316,29 @@ TEST_F(connection_manager_translate,
 TEST_F(connection_manager_translate, default_config_uses_private_addresses)
 {
     ASSERT_FALSE(client_config().get_network_config().use_public_address());
+}
+
+TEST_F(
+  connection_manager_translate,
+  if_remote_adress_provider_cannot_translate_adress_translate_should_throw_an_exception)
+{
+    auto client = new_client().get();
+    spi::ClientContext ctx(client);
+    connection::ClientConnectionManagerImpl connection_manager(
+      ctx,
+      std::unique_ptr<connection::AddressProvider>(
+        new spi::impl::discovery::remote_address_provider{
+          []() { return std::unordered_map<address, address>{}; }, true }));
+
+    std::random_device rand{};
+    member dummy_member(
+      address{ "255.255.255.255", 40000 },
+      boost::uuids::basic_random_generator<std::random_device>{ rand }(),
+      false,
+      std::unordered_map<std::string, std::string>{},
+      std::unordered_map<endpoint_qualifier, address>{});
+    EXPECT_THROW(connection_manager.get_or_connect(dummy_member),
+                 exception::hazelcast_);
 }
 } // namespace test
 } // namespace client

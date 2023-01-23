@@ -23,6 +23,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <exception>
 
 #include <boost/thread/barrier.hpp>
 
@@ -1845,6 +1846,35 @@ TEST_F(cloud_discovery_test, invalid_token)
                  exception::illegal_state);
 }
 
+TEST_F(cloud_discovery_test, token_should_not_be_leaked)
+{
+    auto config = get_config();
+    config.get_connection_strategy_config()
+      .get_retry_config()
+      .set_cluster_connect_timeout(std::chrono::milliseconds(100));
+    auto& cloudConfig = config.get_network_config().get_cloud_config();
+    cloudConfig.enabled = true;
+    cloudConfig.discovery_token = "bwMqx9xp4RBkBWfdpE3WPsuCLd0CXNS";
+
+    auto discovery_token = cloudConfig.discovery_token;
+
+    try {
+        hazelcast::new_client(std::move(config)).get();
+        FAIL();
+    } catch (const std::exception& e) {
+        std::string message = e.what();
+        EXPECT_EQ(message.find(discovery_token), std::string::npos);
+
+        try {
+            std::rethrow_if_nested(e);
+        } catch (const std::exception& e) {
+            // TODO : Here is not called, it should be investiged.
+            std::string message = e.what();
+            EXPECT_EQ(message.find(discovery_token), std::string::npos);
+        }
+    }
+}
+
 TEST_F(cloud_discovery_test, non_existent_base_url)
 {
     auto config = get_config();
@@ -1869,7 +1899,7 @@ TEST_F(cloud_discovery_test, parse_json)
       config,
       client_properties::CLOUD_URL_BASE_DEFAULT,
       std::chrono::seconds(1));
-    auto test_stream = std::istringstream(
+    std::istringstream test_stream(
       R"([{"private-address":"100.103.97.89","public-address":"3.92.127.167:30964"},{"private-address":"100.97.31.19","public-address":"54.227.206.253:30964"},{"private-address":"100.127.33.250","public-address":"54.80.210.250:30964"}])");
     auto addresses = d.parse_json_response(test_stream);
     ASSERT_EQ(3, addresses.size());

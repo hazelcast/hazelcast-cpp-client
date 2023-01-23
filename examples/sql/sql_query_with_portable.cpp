@@ -64,6 +64,11 @@ print_row(const hazelcast::client::sql::sql_page::sql_row& row);
 void
 print_result(hazelcast::client::sql::sql_result& result);
 
+/**
+ * Demonstrates how to create mapping from portable type.
+ * After creating mapping, fields of portable type
+ * injected into columns of table.
+ */
 int
 main()
 {
@@ -120,8 +125,10 @@ main()
 void
 print_result(hazelcast::client::sql::sql_result& result)
 {
-    for (auto it = result.page_iterator(); it; (++it).get()) {
-        for (auto const& row : (*it)->rows()) {
+    for (auto itr = result.iterator(); itr.has_next();) {
+        auto page = itr.next().get();
+
+        for (auto const& row : page->rows()) {
             print_row(row);
         }
     }
