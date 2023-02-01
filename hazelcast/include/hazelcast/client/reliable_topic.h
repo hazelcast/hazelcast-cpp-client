@@ -104,6 +104,7 @@ public:
                                       get_serialization_service(),
                                       batch_size_,
                                       logger_,
+                                      execution_service_,
                                       executor_,
                                       runners_map_));
         runners_map_.put(id, runner);
@@ -147,6 +148,8 @@ private:
                       serialization::pimpl::SerializationService& service,
                       int batch_size,
                       logger& lg,
+                      std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
+                        execution_service,                      
                       util::hz_thread_pool& executor,
                       util::SynchronizedMap<int, util::concurrent::Cancellable>&
                         runners_map)
@@ -156,6 +159,7 @@ private:
           , cancelled_(false)
           , logger_(lg)
           , name_(topic_name)
+          , execution_service_(execution_service)
           , executor_(executor)
           , serialization_service_(service)
           , batch_size_(batch_size)
@@ -179,8 +183,9 @@ private:
             }
 
             auto runner = this->shared_from_this();
+            auto execution_service = this->execution_service_;            
             ringbuffer_->read_many(sequence_, 1, batch_size_)
-              .then(executor_, [runner](boost::future<rb::read_result_set> f) {
+              .then(executor_, [runner,execution_service](boost::future<rb::read_result_set> f) {
                   if (runner->cancelled_) {
                       return;
                   }
@@ -404,6 +409,8 @@ private:
         std::atomic<bool> cancelled_;
         logger& logger_;
         const std::string& name_;
+        std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
+          execution_service_;        
         util::hz_thread_pool& executor_;
         serialization::pimpl::SerializationService& serialization_service_;
         int batch_size_;
@@ -412,6 +419,7 @@ private:
 
     util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;
     std::atomic<int> runner_counter_{ 0 };
+    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
     util::hz_thread_pool& executor_;
     logger& logger_;
     int batch_size_;
