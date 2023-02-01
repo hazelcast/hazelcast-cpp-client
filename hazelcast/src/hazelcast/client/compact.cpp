@@ -1475,41 +1475,42 @@ default_compact_writer::set_position_as_null(const std::string& field_name,
     field_offsets[index] = -1;
 }
 
-namespace rabin_finger_print {
-/**
- * We use uint64_t for computation to match the behaviour of >>> operator
- * on java. We use >> instead.
- */
-constexpr uint64_t INIT = 0xc15d213aa4d7a795L;
+field_descriptor::field_descriptor(enum field_kind f,
+                                   int32_t i,
+                                   int32_t o,
+                                   int8_t b)
+  : field_kind{ f }
+  , index{ i }
+  , offset{ o }
+  , bit_offset{ b }
+{
+}
 
-static std::array<uint64_t, 256>
+std::array<uint64_t, 256>
 init_fp_table()
 {
     static std::array<uint64_t, 256> FP_TABLE;
     for (int i = 0; i < 256; ++i) {
         uint64_t fp = i;
         for (int j = 0; j < 8; ++j) {
-            fp = (fp >> 1) ^ (INIT & -(fp & 1L));
+            fp = (fp >> 1) ^ (rabin_finger_print::INIT & -(fp & 1L));
         }
         FP_TABLE[i] = fp;
     }
     return FP_TABLE;
 }
+
+static std::array<uint64_t, 256> FP_TABLE = init_fp_table();
+constexpr uint64_t rabin_finger_print::INIT;
+
 uint64_t
-FP_TABLE_AT(int index)
+rabin_finger_print::fingerprint64(uint64_t fp, byte b)
 {
-    static auto FP_TABLE = init_fp_table();
-    return FP_TABLE[index];
+    return (fp >> 8) ^ FP_TABLE[(int)(fp ^ b) & 0xff];
 }
 
 uint64_t
-fingerprint64(uint64_t fp, byte b)
-{
-    return (fp >> 8) ^ FP_TABLE_AT((int)(fp ^ b) & 0xff);
-}
-
-uint64_t
-fingerprint64(uint64_t fp, int v)
+rabin_finger_print::fingerprint64(uint64_t fp, int32_t v)
 {
     fp = fingerprint64(fp, (byte)((v)&0xFF));
     fp = fingerprint64(fp, (byte)((v >> 8) & 0xFF));
@@ -1519,7 +1520,7 @@ fingerprint64(uint64_t fp, int v)
 }
 
 uint64_t
-fingerprint64(uint64_t fp, const std::string& value)
+rabin_finger_print::fingerprint64(uint64_t fp, const std::string& value)
 {
     fp = fingerprint64(fp, (int)value.size());
     for (const auto& item : value) {
@@ -1532,8 +1533,9 @@ fingerprint64(uint64_t fp, const std::string& value)
  * Calculates the fingerprint of the schema from its type name and fields.
  */
 int64_t
-fingerprint64(const std::string& type_name,
-              std::map<std::string, field_descriptor>& fields)
+rabin_finger_print::fingerprint64(
+  const std::string& type_name,
+  std::map<std::string, field_descriptor>& fields)
 {
     uint64_t fingerPrint = fingerprint64(INIT, type_name);
     fingerPrint = fingerprint64(fingerPrint, (int)fields.size());
@@ -1542,10 +1544,12 @@ fingerprint64(const std::string& type_name,
         fingerPrint = fingerprint64(fingerPrint, entry.first);
         fingerPrint = fingerprint64(fingerPrint, (int)descriptor.field_kind);
     }
-    return static_cast<int64_t>(fingerPrint);
-}
 
-} // namespace rabin_finger_print
+    int64_t signed_fp{};
+
+    std::memcpy(&signed_fp, &fingerPrint, sizeof(uint64_t));
+    return signed_fp;
+}
 
 bool
 kind_size_comparator(const field_descriptor* i, const field_descriptor* j)
@@ -1681,8 +1685,7 @@ schema_writer::schema_writer(std::string type_name)
 void
 schema_writer::add_field(std::string field_name, enum field_kind kind)
 {
-    field_definition_map[std::move(field_name)] =
-      field_descriptor{ kind, -1, -1, -1 };
+    field_definition_map[std::move(field_name)] = field_descriptor{ kind };
 }
 
 schema
