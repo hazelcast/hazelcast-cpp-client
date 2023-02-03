@@ -580,19 +580,19 @@ public:
 
     static void set(const T& object)
     {
-        if (!is_initialized) {
-            std::lock_guard<std::mutex> lck{ mtx };
+        if (!is_initialized_) {
+            std::lock_guard<std::mutex> lck{ mtx_ };
 
-            if (!is_initialized) {
+            if (!is_initialized_) {
                 value_ = compact_stream_serializer::build_schema(object);
-                is_initialized = true;
+                is_initialized_ = true;
             }
         }
     }
 
 private:
-    static std::atomic<bool> is_initialized;
-    static std::mutex mtx;
+    static std::atomic<bool> is_initialized_;
+    static std::mutex mtx_;
     static schema value_;
 };
 
@@ -600,10 +600,10 @@ template<typename T>
 schema class_to_schema<T>::value_;
 
 template<typename T>
-std::atomic<bool> class_to_schema<T>::is_initialized{ false };
+std::atomic<bool> class_to_schema<T>::is_initialized_{ false };
 
 template<typename T>
-std::mutex class_to_schema<T>::mtx;
+std::mutex class_to_schema<T>::mtx_;
 
 template<typename T>
 T inline compact_stream_serializer::read(object_data_input& in)
