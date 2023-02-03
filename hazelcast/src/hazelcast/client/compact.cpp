@@ -1848,7 +1848,12 @@ schema_writer::schema_writer(std::string type_name)
 void
 schema_writer::add_field(std::string field_name, enum field_kind kind)
 {
-    field_definition_map[std::move(field_name)] = field_descriptor{ kind };
+    if (field_definition_map.find(field_name) != end(field_definition_map)) {
+        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization{
+          "Field with the name '" + field_name + "' already exists." });
+    }
+
+    field_definition_map.emplace(move(field_name), field_descriptor{ kind });
 }
 
 schema

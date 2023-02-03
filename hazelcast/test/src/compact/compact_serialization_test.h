@@ -27,6 +27,7 @@
 #include "serialization/employee_dto.h"
 #include "serialization/wrong_field_name_read_obj.h"
 #include "serialization/type_mismatch_obj.h"
+#include "serialization/write_to_field_twice.h"
 
 namespace hazelcast {
 namespace client {
@@ -148,6 +149,14 @@ TEST_F(CompactSerializationTest, test_read_with_type_mismatch)
     auto data = ss.to_data(obj);
     ASSERT_THROW(ss.to_object<type_mistmatch_obj>(data),
                  exception::hazelcast_serialization);
+}
+
+TEST_F(CompactSerializationTest, test_write_to_same_field_twice)
+{
+    auto& ss = serialization_service();
+    write_to_field_twice obj;
+
+    ASSERT_THROW(ss.to_data(obj), exception::hazelcast_serialization);
 }
 
 } // namespace compact
