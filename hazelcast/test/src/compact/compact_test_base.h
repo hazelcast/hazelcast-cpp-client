@@ -93,8 +93,9 @@ protected:
     template<typename T>
     schema_t get_schema()
     {
-        T instance;
-        return serialization::pimpl::build_schema(instance);
+        using namespace serialization::pimpl;
+
+        return compact_stream_serializer::build_schema(T{});
     }
 
     HazelcastServerFactory factory_;

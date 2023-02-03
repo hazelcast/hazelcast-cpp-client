@@ -573,38 +573,31 @@ template<typename T>
 const schema schema_of<T>::schema_v = schema_of<T>::build_schema();
 
 template<typename T>
-schema
-build_schema(const T& object)
-{
-    schema_writer schema_writer(hz_serializer<T>::type_name());
-    serialization::compact_writer writer =
-      create_compact_writer(&schema_writer);
-    serialization::hz_serializer<T>::write(object, writer);
-    return std::move(schema_writer).build();
-}
-
-template<typename T>
 class class_to_schema
 {
 public:
-    static std::atomic<bool> is_initialized;
-    static std::mutex mtx;
+    static const schema& get() { return value_; }
 
-    static const schema& get() { return *value_; }
-
-    static void set(const schema& schema)
+    static void set(const T& object)
     {
-        value_ = schema;
+        if (!is_initialized) {
+            std::lock_guard<std::mutex> lck{ mtx };
 
-        is_initialized = true;
+            if (!is_initialized) {
+                value_ = compact_stream_serializer::build_schema(object);
+                is_initialized = true;
+            }
+        }
     }
 
 private:
-    static boost::optional<schema> value_;
+    static std::atomic<bool> is_initialized;
+    static std::mutex mtx;
+    static schema value_;
 };
 
 template<typename T>
-boost::optional<schema> class_to_schema<T>::value_ = boost::none;
+schema class_to_schema<T>::value_;
 
 template<typename T>
 std::atomic<bool> class_to_schema<T>::is_initialized{ false };
@@ -642,13 +635,7 @@ template<typename T>
 void inline compact_stream_serializer::write(const T& object,
                                              object_data_output& out)
 {
-    if (!class_to_schema<T>::is_initialized) {
-        std::lock_guard<std::mutex> lck{ class_to_schema<T>::mtx };
-
-        if (!class_to_schema<T>::is_initialized) {
-            class_to_schema<T>::set(build_schema(object));
-        }
-    }
+    class_to_schema<T>::set(object);
 
     const schema& schema_v = class_to_schema<T>::get();
 
@@ -661,6 +648,17 @@ void inline compact_stream_serializer::write(const T& object,
     compact_writer writer = create_compact_writer(&default_writer);
     hz_serializer<T>::write(object, writer);
     default_writer.end();
+}
+
+template<typename T>
+schema
+compact_stream_serializer::build_schema(const T& object)
+{
+    schema_writer schema_writer(hz_serializer<T>::type_name());
+    serialization::compact_writer writer =
+      create_compact_writer(&schema_writer);
+    serialization::hz_serializer<T>::write(object, writer);
+    return std::move(schema_writer).build();
 }
 
 } // namespace pimpl

@@ -46,8 +46,10 @@ struct schema_replicator : schema_replicator<Current + 1, Until>
     schema_replicator(std::shared_ptr<imap> m, std::vector<schema>& schemas)
       : schema_replicator<Current + 1, Until>(m, schemas)
     {
+        using namespace serialization::pimpl;
+
         stress_type<Current> instance{};
-        auto schema = serialization::pimpl::build_schema(instance);
+        auto schema = compact_stream_serializer::build_schema(instance);
         schemas.push_back(std::move(schema));
         m->put(Current, instance).get();
     }

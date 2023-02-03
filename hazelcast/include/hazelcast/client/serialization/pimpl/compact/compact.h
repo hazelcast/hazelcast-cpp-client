@@ -1388,6 +1388,9 @@ public:
     template<typename T>
     void write(const T& object, object_data_output& out);
 
+    template<typename T>
+    static schema build_schema(const T& object);
+
 private:
     default_schema_service& schema_service;
 };
