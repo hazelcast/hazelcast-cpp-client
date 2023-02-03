@@ -1079,23 +1079,53 @@ protected:
     struct ListenerState
     {
         explicit ListenerState(int latch_count, int64_t start_sequence = -1)
-          : latch1(latch_count)
+          : latch1(latch_count), latch_for_seq_id(latch_count), latch_for_termination(latch_count)
           , start_sequence(start_sequence)
         {}
 
         boost::latch latch1;
+        boost::latch latch_for_seq_id;
+        boost::latch latch_for_termination;
         int64_t start_sequence;
         std::vector<topic::message> messages;
+        std::vector<int64_t> seq_ids;
     };
 
-    topic::reliable_listener make_listener(std::shared_ptr<ListenerState> state)
+    topic::reliable_listener make_listener(std::shared_ptr<ListenerState> state, bool is_throw_exception=false, bool is_lvalue=false)
     {
-        return topic::reliable_listener(false, state->start_sequence)
-          .on_received([state](topic::message&& message) {
-              state->messages.push_back(std::move(message));
-              state->latch1.count_down();
-          });
-    }
+        auto on_received = [state,is_throw_exception](topic::message&& message) {
+                state->messages.push_back(std::move(message));
+                state->latch1.count_down();
+                if(is_throw_exception)
+                    BOOST_THROW_EXCEPTION(exception::cancellation(
+                        "reliable_listener user_code::throw_exception", ""));
+            };
+
+        auto on_store_sequence_id = [state](int64_t seq_no){
+                state->seq_ids.push_back(seq_no);
+                state->latch_for_seq_id.count_down();
+            };
+
+        auto terminate_on_exception = [state](const exception::iexception& par_exception)->bool{
+                state->latch_for_termination.count_down();
+                return true;
+            };
+
+        if( is_lvalue ){
+            auto tmp_listener = topic::reliable_listener(false, state->start_sequence);
+            return tmp_listener
+                    .on_received(std::move(on_received))
+                    .on_store_sequence_id(std::move(on_store_sequence_id))
+                    .terminate_on_exception(std::move(terminate_on_exception));                    
+        }
+        else
+        {
+            return topic::reliable_listener(false, state->start_sequence)
+                .on_received(std::move(on_received))
+                .on_store_sequence_id(std::move(on_store_sequence_id))
+                .terminate_on_exception(std::move(terminate_on_exception));            
+        }
+    }    
 
 protected:
     void TearDown() override
@@ -1335,6 +1365,94 @@ TEST_F(ReliableTopicTest, testAlwaysStartAfterTail)
 
     ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
 }
+
+TEST_F(ReliableTopicTest, testSequenceId)
+{
+    ASSERT_NO_THROW(topic_ =
+                      client->get_reliable_topic("testSequenceId").get());
+
+    int64_t start_seq = 0;
+    int msg_count = 5;
+    auto state = std::make_shared<ListenerState>(msg_count);    
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state)));
+
+    for (int k = 0; k < 5; k++) {
+        std::string item = std::to_string(k);
+        topic_->publish(item).get();
+    }
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_seq_id);
+    ASSERT_EQ(msg_count, state->seq_ids.size());
+    for (int k = 0; k < msg_count; k++) {
+        auto curr_seq_id = state->seq_ids[k];
+        ASSERT_EQ( curr_seq_id, start_seq+k);
+    }
+
+    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+}
+
+TEST_F(ReliableTopicTest, testSequenceIdForLvalue)
+{
+    ASSERT_NO_THROW(topic_ =
+                      client->get_reliable_topic("testSequenceIdForLvalue").get());
+
+    int64_t start_seq = 0;
+    int msg_count = 5;
+    auto state = std::make_shared<ListenerState>(msg_count);    
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state,false,true)));
+
+    for (int k = 0; k < 5; k++) {
+        std::string item = std::to_string(k);
+        topic_->publish(item).get();
+    }
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_seq_id);
+    ASSERT_EQ(msg_count, state->seq_ids.size());
+    for (int k = 0; k < msg_count; k++) {
+        auto curr_seq_id = state->seq_ids[k];
+        ASSERT_EQ( curr_seq_id, start_seq+k);
+    }
+
+    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+}
+
+TEST_F(ReliableTopicTest, testTerminateCase)
+{
+    ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testTerminateCase").get());
+
+    auto state = std::make_shared<ListenerState>(1);    
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state,true)));
+
+    std::string item = std::to_string(0);
+    ASSERT_NO_THROW(topic_->publish(item).get());
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
+    
+    // remove listener
+    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+}
+
+TEST_F(ReliableTopicTest, testTerminateCaseForLValue)
+{
+    ASSERT_NO_THROW(topic_ = client->get_reliable_topic("testTerminateCaseForLValue").get());
+
+    auto state = std::make_shared<ListenerState>(1);    
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state,true,true)));
+
+    std::string item = std::to_string(0);
+    ASSERT_NO_THROW(topic_->publish(item).get());
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
+    
+    // remove listener
+    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+}
+
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
