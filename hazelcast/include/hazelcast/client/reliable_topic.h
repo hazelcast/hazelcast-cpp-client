@@ -159,7 +159,7 @@ private:
           , cancelled_(false)
           , logger_(lg)
           , name_(topic_name)
-          , execution_service_(execution_service)
+          , execution_service_(std::move(execution_service))
           , executor_(executor)
           , serialization_service_(service)
           , batch_size_(batch_size)

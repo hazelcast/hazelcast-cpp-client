@@ -41,7 +41,7 @@ reliable_topic::reliable_topic(const std::string& instance_name,
   : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context)
   , execution_service_(
       context->get_client_execution_service().shared_from_this())  
-  , executor_(context->get_client_execution_service().get_user_executor())
+  , executor_(execution_service_->get_user_executor())
   , logger_(context->get_logger())
 {
     auto reliable_config =
