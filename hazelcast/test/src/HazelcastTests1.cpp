@@ -2819,7 +2819,7 @@ ClientTxnTest::ClientTxnTest()
     server_.reset(new HazelcastServer(hazelcast_instance_factory_));
     client_config clientConfig = get_config();
     // always start the txn on first member
-    clientConfig.set_load_balancer(load_balancer().next([](cluster& c) {
+    clientConfig.set_load_balancer(load_balancer().init([](cluster &c){util::noop(c);}).next([](cluster& c) {
         std::vector<member> members = c.get_members();
         size_t len = members.size();
         if (len == 0) {
@@ -3004,6 +3004,32 @@ TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash)
       << "queue poll should return null";
     ASSERT_EQ(0, q->size().get());
 }
+
+TEST_F(ClientTxnTest, testTxnClientConfig)
+{
+    client_config clientConfig = get_config();
+
+    load_balancer tmp_load_balancer;
+    tmp_load_balancer.init([](cluster &c){util::noop(c);}).next([](cluster& c) {
+        std::vector<member> members = c.get_members();
+        size_t len = members.size();
+        if (len == 0) {
+            return boost::optional<member>();
+        }
+        for (size_t i = 0; i < len; i++) {
+            if (members[i].get_address().get_port() == 5701) {
+                return boost::make_optional<member>(std::move(members[i]));
+            }
+        }
+        return boost::make_optional<member>(std::move(members[0]));
+    });
+
+    // always start the txn on first member    
+    clientConfig.set_load_balancer(std::move(tmp_load_balancer));
+    client_.reset(
+      new hazelcast_client{ new_client(std::move(clientConfig)).get() });
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
