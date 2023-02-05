@@ -82,6 +82,7 @@ private:
     double d_;
     std::string str_;
     std::string utf_str_;
+    char16_t c16_;
 
     std::vector<byte> byte_vec_;
     std::vector<char> cc_;

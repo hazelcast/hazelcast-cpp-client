@@ -1097,8 +1097,10 @@ protected:
                 state->messages.push_back(std::move(message));
                 state->latch1.count_down();
                 if(is_throw_exception)
+                {
                     BOOST_THROW_EXCEPTION(exception::cancellation(
                         "reliable_listener user_code::throw_exception", ""));
+                }
             };
 
         auto on_store_sequence_id = [state](int64_t seq_no){

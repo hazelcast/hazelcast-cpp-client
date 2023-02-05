@@ -81,12 +81,16 @@ protected:
         auto entries = map->entry_set<typed_data, typed_data>().get();
         ASSERT_EQ(OPERATION_COUNT, entries.size());
         for (auto& entry : entries) {
-            auto key = entry.first.get<std::string>();
+            auto &first = entry.first;
+            ASSERT_EQ( first.get_type().type_id, serialization::pimpl::serialization_constants::CONSTANT_TYPE_STRING);
+            auto key = first.get<std::string>();
             ASSERT_TRUE(key.has_value());
             ASSERT_EQ(0U, key.value().find("foo-"));
-            auto val = entry.second.get<std::string>();
+            auto &second = entry.second;       
+            ASSERT_EQ(second.get_type().type_id, serialization::pimpl::serialization_constants::CONSTANT_TYPE_STRING);
+            auto val = second.get<std::string>();
             ASSERT_TRUE(val.has_value());
-            ASSERT_EQ("bar", val.value());
+            ASSERT_EQ("bar", val.value());            
         }
     }
 
@@ -532,6 +536,36 @@ TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode)
     auto samplePortable = sampleMap->get<int, SamplePortable>(1).get();
     ASSERT_TRUE(samplePortable.has_value());
     ASSERT_EQ(666, samplePortable->a);
+}
+
+TEST_F(ClientReplicatedMapTest, testDeregisterListener)
+{
+    auto map = client->get_replicated_map(get_test_name()).get();
+
+    ASSERT_FALSE(map->remove_entry_listener(spi::ClientContext(*client).random_uuid()).get());
+
+    boost::latch map_clearedLatch(1);
+
+    entry_listener listener;
+
+    listener.on_map_cleared([&map_clearedLatch](map_event&& event) {
+        ASSERT_EQ( get_test_name(), event.get_name());
+        ASSERT_EQ(entry_event::type::CLEAR_ALL, event.get_event_type());
+        const std::string& hostName =
+          event.get_member().get_address().get_host();
+        ASSERT_TRUE(hostName == "127.0.0.1" || hostName == "localhost");
+        ASSERT_EQ(5701, event.get_member().get_address().get_port());
+        ASSERT_EQ(1, event.get_number_of_entries_affected());
+        std::cout << "Map cleared event received:" << event << std::endl;
+        map_clearedLatch.count_down();
+    });
+
+    auto listenerRegistrationId =
+      map->add_entry_listener(std::move(listener), true).get();
+    map->put(1, 1).get();
+    map->clear().get();
+    ASSERT_OPEN_EVENTUALLY(map_clearedLatch);
+    ASSERT_TRUE(map->remove_entry_listener(listenerRegistrationId).get());
 }
 
 class ClientReplicatedMapInvalidation : public ClientReplicatedMapTestBase
