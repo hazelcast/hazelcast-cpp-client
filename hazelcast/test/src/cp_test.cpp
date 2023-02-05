@@ -914,6 +914,16 @@ TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown)
        response.success && response.result == "0"));
 }
 
+TEST_F( basic_lock_test, test_equality_operator )
+{
+    auto fenced_locked_1 = client_->get_cp_subsystem().get_lock( get_test_name() ).get();
+    auto fenced_locked_2 = client_->get_cp_subsystem().get_lock( get_test_name() ).get();
+    auto fenced_locked_3 = client_->get_cp_subsystem().get_lock( get_test_name() + "_3" ).get();
+
+    ASSERT_TRUE( *fenced_locked_1 == *fenced_locked_2 );
+    ASSERT_FALSE( *fenced_locked_1 == *fenced_locked_3 );
+}
+
 class basic_sessionless_semaphore_test
   : public cp_test<hazelcast::cp::counting_semaphore>
 {

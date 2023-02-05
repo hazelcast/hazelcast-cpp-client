@@ -1175,6 +1175,7 @@ TEST_F(ReliableTopicTest, testBasics)
 
     ASSERT_OPEN_EVENTUALLY(state->latch1);
     ASSERT_EQ(1, state->messages.size());
+    ASSERT_EQ( "testBasics", state->messages[0].get_name() );
     auto e = state->messages[0].get_message_object().get<employee>();
     ASSERT_TRUE(e.has_value());
     ASSERT_EQ(empl1, e.value());
