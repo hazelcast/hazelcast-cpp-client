@@ -519,6 +519,25 @@ TEST_F(basic_latch_test, test_multiple_destroy)
     ASSERT_NO_THROW(cp_structure_->destroy().get());
 }
 
+TEST_F(basic_latch_test, test_try_wait)
+{
+    cp_structure_->try_set_count(1).get();
+
+    ASSERT_FALSE(cp_structure_->try_wait().get());
+
+    auto countdown = boost::async(boost::launch::async,    
+                                  [=]() { 
+                                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                                            cp_structure_->count_down().get(); 
+                                        });
+
+    ASSERT_FALSE(cp_structure_->try_wait().get());
+
+    countdown.get();
+
+    ASSERT_TRUE(cp_structure_->try_wait().get());
+}
+
 class basic_lock_test : public cp_test<hazelcast::cp::fenced_lock>
 {
 protected:
