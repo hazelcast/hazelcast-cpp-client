@@ -697,6 +697,32 @@ TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers)
 
     client.shutdown().get();
 }
+
+TEST_F(ConfiguredBehaviourTest, testRemoveLifecycleListener)
+{
+    HazelcastServer hazelcastInstance(default_server_factory());
+
+    client_config_.get_connection_strategy_config().set_reconnect_mode(
+      config::client_connection_strategy_config::OFF);
+    hazelcast_client client(new_client(std::move(client_config_)).get());
+    boost::latch shutdownLatch(1);
+    auto lifecycle_id = client.add_lifecycle_listener(lifecycle_listener().on_shutdown(
+      [&shutdownLatch]() { shutdownLatch.try_count_down(); }));
+
+    // no exception at this point
+    auto map = client.get_map(random_map_name()).get();
+    map->put(1, 5).get();
+
+    client.remove_lifecycle_listener(lifecycle_id);    
+    hazelcastInstance.shutdown();
+
+    ASSERT_EQ(boost::cv_status::timeout,
+              shutdownLatch.wait_for(boost::chrono::seconds(5)));    
+
+    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
+
+    client.shutdown().get();
+}
 } // namespace connectionstrategy
 } // namespace test
 } // namespace client
