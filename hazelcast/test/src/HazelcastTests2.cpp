@@ -381,6 +381,46 @@ TEST_F(ClientConfigTest, test_set_instance_name)
     ASSERT_EQ(test_name, client.get_name());
 }
 
+/*
+  Note: In Java side, the label is compared with the the help of 
+  ClientService at server side. As C++ client cannot access this service,
+  the label cannot be compared at server side. 
+*/
+TEST_F(ClientConfigTest, test_client_label_over_client_config)
+{
+  client_config config;
+  bool is_found = false;
+  std::string label("label_1"), non_existing_label("label_2");
+
+  config.add_label(label);
+  auto &labels = config.get_labels();
+  ASSERT_EQ(1, labels.size());  
+  is_found = labels.find(label) != labels.end();
+  ASSERT_TRUE( is_found );  
+  is_found = labels.find(non_existing_label) != labels.end();
+  ASSERT_FALSE( is_found );
+}
+
+TEST_F(ClientConfigTest, test_client_set_label_over_client_config)
+{
+  client_config config;
+  bool is_found = false;
+  std::string label_1("label_1"), label_2("label_2"), non_existing_label("label_3");
+  std::unordered_set<std::string> labels_to_set;
+
+  labels_to_set.insert(label_1); labels_to_set.insert(label_2);
+  config.set_labels(labels_to_set);
+  
+  auto &labels = config.get_labels();
+  ASSERT_EQ(2, labels.size());  
+  is_found = labels.find(label_1) != labels.end();
+  ASSERT_TRUE( is_found );
+  is_found = labels.find(label_2) != labels.end();
+  ASSERT_TRUE( is_found );  
+  is_found = labels.find(non_existing_label) != labels.end();
+  ASSERT_FALSE( is_found );
+}
+
 TEST(connection_retry_config_test, large_jitter)
 {
     ASSERT_THROW(client_config()
