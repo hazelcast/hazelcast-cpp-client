@@ -740,6 +740,21 @@ TEST_P(BasicClientNearCacheTest, testNearCacheEviction)
                                                 0);
 }
 
+TEST_P(BasicClientNearCacheTest, testSetCacheLocalEntries)
+{
+    /*set_cache_local_entries and is_cache_local_entries methods are deprecated, 
+    for codecoverage, these dummy tests are added*/
+    ASSERT_FALSE( near_cache_config_.is_cache_local_entries() );
+
+    near_cache_config_.set_cache_local_entries(true);
+
+    ASSERT_TRUE( near_cache_config_.is_cache_local_entries() );
+
+    near_cache_config_.set_cache_local_entries(false);
+
+    ASSERT_FALSE( near_cache_config_.is_cache_local_entries() );
+}
+
 INSTANTIATE_TEST_SUITE_P(ClientNearCacheTest,
                          BasicClientNearCacheTest,
                          ::testing::Values(config::BINARY, config::OBJECT));
