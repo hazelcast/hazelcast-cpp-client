@@ -1276,13 +1276,19 @@ TEST_F(ReliableTopicTest, testConfig)
     client_config clientConfig;
     clientConfig.get_network_config().add_address(
       address(remote_controller_address(), 5701));
-    config::reliable_topic_config relConfig("testConfig");
+    std::string topic_name("testConfig");
+    config::reliable_topic_config relConfig(topic_name);
     relConfig.set_read_batch_size(2);
     clientConfig.add_reliable_topic_config(relConfig);
+
+    auto &readedClientConfig = clientConfig.get_reliable_topic_config(topic_name);
+    ASSERT_EQ( 2, readedClientConfig.get_read_batch_size() );
+    ASSERT_EQ( topic_name, readedClientConfig.get_name() );
+
     auto configClient = hazelcast::new_client(std::move(clientConfig)).get();
 
     ASSERT_NO_THROW(topic_ =
-                      configClient.get_reliable_topic("testConfig").get());
+                      configClient.get_reliable_topic(topic_name).get());
 
     auto state = std::make_shared<ListenerState>(5);
     ASSERT_NO_THROW(listener_id_ =
