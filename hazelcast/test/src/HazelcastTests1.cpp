@@ -1825,6 +1825,19 @@ TEST_F(BasicPnCounterAPITest, testGetAndDecrement)
     ASSERT_EQ(0, pnCounter->get().get());
 }
 
+TEST_F(BasicPnCounterAPITest, testDecrementAndGet)
+{
+    auto pnCounter =
+      client
+        ->get_pn_counter(
+          testing::UnitTest::GetInstance()->current_test_info()->name())
+        .get();
+    ASSERT_EQ(1, pnCounter->increment_and_get().get());
+    ASSERT_EQ(0, pnCounter->decrement_and_get().get());
+    ASSERT_EQ(-1, pnCounter->decrement_and_get().get());
+    ASSERT_EQ(-1, pnCounter->get().get());
+}
+
 TEST_F(BasicPnCounterAPITest, testGetAndSubtract)
 {
     auto pnCounter =
