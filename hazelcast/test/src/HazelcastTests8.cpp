@@ -1497,7 +1497,7 @@ TEST_F(ReliableTopicTest, testTerminateCaseForLValue)
 
     auto state = std::make_shared<ListenerState>(1);    
     ASSERT_NO_THROW(listener_id_ =
-                      topic_->add_message_listener(make_listener(state,true,true)));
+                      topic_->add_message_listener(make_listener(state,true,false)));
 
     std::string item = std::to_string(0);
     ASSERT_NO_THROW(topic_->publish(item).get());
