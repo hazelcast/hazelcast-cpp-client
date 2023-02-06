@@ -3460,6 +3460,13 @@ TEST_P(ClientMapTest, testMapWithPortable)
     employees_
       ->add_index(config::index_config::index_type::HASH, std::string("n"))
       .get();
+
+    config::index_config tmp_index_config;
+    tmp_index_config.type = config::index_config::index_type::BITMAP;        
+
+    employees_
+      ->add_index(tmp_index_config)
+      .get();      
 }
 
 TEST_P(ClientMapTest, testMapStoreRelatedRequests)

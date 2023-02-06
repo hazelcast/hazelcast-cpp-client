@@ -811,10 +811,6 @@ index_config::bitmap_index_options::bitmap_index_options()
 const index_config::index_type index_config::DEFAULT_TYPE =
   index_config::index_type::SORTED;
 
-index_config::index_config()
-  : type(DEFAULT_TYPE)
-{}
-
 index_config::index_config(index_config::index_type type)
   : type(type)
 {}
