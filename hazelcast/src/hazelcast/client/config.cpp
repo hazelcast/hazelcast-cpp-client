@@ -1032,14 +1032,6 @@ near_cache_config::set_eviction_config(const eviction_config& eviction_config)
     return *this;
 }
 
-int32_t
-near_cache_config::calculate_max_size(int32_t max_size)
-{
-    return (max_size == 0) ? INT32_MAX
-                           : util::Preconditions::check_not_negative(
-                               max_size, "Max-size cannot be negative!");
-}
-
 std::ostream&
 operator<<(std::ostream& out, const near_cache_config& config)
 {
