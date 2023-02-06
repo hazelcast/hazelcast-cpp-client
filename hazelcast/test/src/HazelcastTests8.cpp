@@ -1085,8 +1085,8 @@ TEST_F(ClientSetTest, testListener)
 
 TEST_F(ClientSetTest, testListenerOnRemoved)
 {
-    constexpr int num_of_entry = 6;
-    boost::latch latch1(num_of_entry);
+    constexpr int num_of_entry = 5;
+    boost::latch latch1(num_of_entry+1);
 
     add_items(num_of_entry);
     set->add("done").get();
@@ -1161,7 +1161,7 @@ protected:
             };
 
         if( is_lvalue ){
-            auto tmp_listener = topic::reliable_listener(false, state->start_sequence);
+            topic::reliable_listener tmp_listener(false, state->start_sequence);
             return tmp_listener
                     .on_received(std::move(on_received))
                     .on_store_sequence_id(std::move(on_store_sequence_id))
@@ -1497,7 +1497,7 @@ TEST_F(ReliableTopicTest, testTerminateCaseForLValue)
 
     auto state = std::make_shared<ListenerState>(1);    
     ASSERT_NO_THROW(listener_id_ =
-                      topic_->add_message_listener(make_listener(state,true,false)));
+                      topic_->add_message_listener(make_listener(state,true,true)));
 
     std::string item = std::to_string(0);
     ASSERT_NO_THROW(topic_->publish(item).get());
