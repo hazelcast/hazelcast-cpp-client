@@ -922,6 +922,14 @@ protected:
         }
     }
 
+    void remove_items(int count)
+    {
+        for (int i = 1; i <= count; ++i) {
+            ASSERT_TRUE(
+              set->remove(std::string("item") + std::to_string(i)).get());
+        }        
+    }
+
     void TearDown() override { set->clear().get(); }
 
     static void SetUpTestCase()
@@ -1055,6 +1063,30 @@ TEST_F(ClientSetTest, testListener)
 
     add_items(5);
     set->add("done").get();
+    ASSERT_OPEN_EVENTUALLY(latch1);
+
+    ASSERT_TRUE(set->remove_item_listener(registrationId).get());
+}
+
+TEST_F(ClientSetTest, testListenerOnRemoved)
+{
+    constexpr int num_of_entry = 6;
+    boost::latch latch1(num_of_entry);
+
+    add_items(num_of_entry);
+    set->add("done").get();
+
+    auto registrationId =
+      set
+        ->add_item_listener(
+          item_listener().on_removed(
+            [&latch1](item_event&& item_event) { latch1.count_down(); }),
+          true)
+        .get();
+
+    
+    remove_items(num_of_entry);
+    set->remove("done").get();
     ASSERT_OPEN_EVENTUALLY(latch1);
 
     ASSERT_TRUE(set->remove_item_listener(registrationId).get());
