@@ -1407,6 +1407,11 @@ private:
 
 struct HAZELCAST_API field_descriptor
 {
+    field_descriptor(enum field_kind f = static_cast<enum field_kind>(-1),
+                     int32_t i = -1,
+                     int32_t o = -1,
+                     int8_t b = -1);
+
     enum field_kind field_kind;
     /**
      * Index of the offset of the non-primitive field. For others, it is -1
@@ -1520,6 +1525,37 @@ struct HAZELCAST_API field_kind_based_operations
 struct HAZELCAST_API field_operations
 {
     static field_kind_based_operations get(enum field_kind field_kind);
+};
+
+/**
+ * A very collision-resistant fingerprint method used to create automatic
+ * schema ids for the Compact format.
+ */
+class HAZELCAST_API rabin_finger_print
+{
+public:
+    /**
+     * We use uint64_t for computation to match the behaviour of >>> operator
+     * on java. We use >> instead.
+     */
+    static constexpr uint64_t INIT = 0xc15d213aa4d7a795L;
+
+    static uint64_t fingerprint64(uint64_t fp, byte b);
+
+    /**
+     * FingerPrint of a little endian representation of an integer.
+     */
+    static uint64_t fingerprint64(uint64_t fp, int32_t v);
+
+    static uint64_t fingerprint64(uint64_t fp, const std::string& value);
+
+    /**
+     * Calculates the fingerprint of the schema from its 'type_name' and
+     * 'fields'. Fields must be sorted so it accepts fields as std::map
+     */
+    static int64_t fingerprint64(
+      const std::string& type_name,
+      std::map<std::string, field_descriptor>& fields);
 };
 
 } // namespace pimpl

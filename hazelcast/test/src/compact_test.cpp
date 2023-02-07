@@ -17,6 +17,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <tuple>
+#include <limits>
 
 #include <gtest/gtest.h>
 
@@ -36,6 +38,13 @@ namespace client {
 namespace compact {
 namespace test {
 
+/**
+ * It contains 9 boolean fields.
+ * So it will occupy to 9 bits when it is serialized.
+ * 9 bits mean 2 bytes
+ * So 'i' was added for this reason to accomodate more than a byte
+ * to enlarge to scope of the test.
+*/
 struct bits_dto
 {
     bool a = false;
@@ -46,6 +55,7 @@ struct bits_dto
     bool f = false;
     bool g = false;
     bool h = false;
+    bool i = false;
     int id = 0;
     boost::optional<std::vector<bool>> booleans;
 };
@@ -55,8 +65,8 @@ operator==(const bits_dto& lhs, const bits_dto& rhs)
 {
     return lhs.a == rhs.a && lhs.b == rhs.b && lhs.c == rhs.c &&
            lhs.d == rhs.d && lhs.e == rhs.e && lhs.f == rhs.f &&
-           lhs.g == rhs.g && lhs.h == rhs.h && lhs.id == rhs.id &&
-           lhs.booleans == rhs.booleans;
+           lhs.g == rhs.g && lhs.h == rhs.h && lhs.i == rhs.i &&
+           lhs.id == rhs.id && lhs.booleans == rhs.booleans;
 }
 
 struct node_dto
@@ -173,6 +183,16 @@ operator==(const main_dto& lhs, const main_dto& rhs)
            lhs.nullableF == rhs.nullableF && lhs.nullableD == rhs.nullableD;
 }
 
+struct wrong_field_name_read_obj
+{
+    int value;
+};
+
+struct type_mistmatch_obj
+{
+    int value;
+};
+
 hazelcast::client::local_time
 current_time()
 {
@@ -199,6 +219,7 @@ current_timestamp()
 {
     return hazelcast::client::local_date_time{ current_date(), current_time() };
 }
+
 hazelcast::client::offset_date_time
 current_timestamp_with_timezone()
 {
@@ -361,6 +382,7 @@ struct hz_serializer<compact::test::bits_dto> : public compact_serializer
         writer.write_boolean("f", dto.f);
         writer.write_boolean("g", dto.g);
         writer.write_boolean("h", dto.h);
+        writer.write_boolean("i", dto.i);
         writer.write_int32("id", dto.id);
         writer.write_array_of_boolean("booleans", dto.booleans);
     }
@@ -376,6 +398,7 @@ struct hz_serializer<compact::test::bits_dto> : public compact_serializer
         dto.f = reader.read_boolean("f");
         dto.g = reader.read_boolean("g");
         dto.h = reader.read_boolean("h");
+        dto.i = reader.read_boolean("i");
         dto.id = reader.read_int32("id");
         dto.booleans = reader.read_array_of_boolean("booleans");
         return dto;
@@ -634,6 +657,336 @@ struct hz_serializer<compact::test::employee_dto> : public compact_serializer
 
 namespace compact {
 namespace test {
+struct CompactRabinFingerprintTest : public ::testing::Test
+{
+    template<typename T>
+    using entry_t = std::tuple<int64_t, T, int64_t>;
+
+    template<typename T>
+    void check_each(std::vector<entry_t<T>> entries)
+    {
+        for (const entry_t<T>& e : entries) {
+            using namespace hazelcast::client::serialization::pimpl;
+
+            auto fp_before = std::get<0>(e);
+            auto value = std::get<1>(e);
+            auto expected = std::get<2>(e);
+            auto fp_after = rabin_finger_print::fingerprint64(fp_before, value);
+
+            EXPECT_EQ(fp_after, expected);
+        }
+    }
+};
+
+TEST_F(CompactRabinFingerprintTest, test_i8_fingerprint)
+{
+    check_each(std::vector<entry_t<byte>>{
+      // Before               Val   After(Expected)
+      { 100, -5, -6165936963810616235 },
+      { INT64_MIN, 0, 36028797018963968 },
+      { 9223372036854775807, 113, -3588673659009074035 },
+      { -13, -13, 72057594037927935 },
+      { 42, 42, 0 },
+      { 42, -42, -1212835703325587522 },
+      { 0, 0, 0 },
+      { -123456789, 0, 7049212178818848951 },
+      { 123456789, 127, -8322440716502314713 },
+      { 127, -128, -7333697815154264656 },
+    });
+}
+
+TEST_F(CompactRabinFingerprintTest, test_i32_fingerprint)
+{
+    check_each(std::vector<entry_t<int>>{
+      // Before               Val            After(Expected)
+      { INT64_MIN, 2147483647, 6066553457199370002 },
+      { 9223372036854775807, INT32_MIN, 6066553459773452525 },
+      { 9223372036854707, 42, -961937498224213201 },
+      { -42, -42, 4294967295 },
+      { 42, 42, 0 },
+      { 42, -442, 7797744281030715531 },
+      { 0, 0, 0 },
+      { -123456789, 0, -565582369564281851 },
+      { 123456786669, 42127, 7157681543413310373 },
+      { 2147483647, INT32_MIN, -7679311364898232185 } });
+}
+
+TEST_F(CompactRabinFingerprintTest, test_str_fingerprint)
+{
+    check_each(std::vector<entry_t<std::string>>{
+      { 0, "hazelcast", 8164249978089638648 },
+      { -31231241235, "üğişçö", 6128923854942458838 },
+      { 41231542121235, "😀 😃 😄", -6875080751809013377 },
+      { rabin_finger_print::INIT, "STUdent", 1896492170246289820 },
+      { rabin_finger_print::INIT, "aü😄", -2084249746924383631 },
+      { rabin_finger_print::INIT, "", -2316162475121075004 },
+      { -123321, "xyz", 2601391163390439688 },
+      { 132132123132132, "    ç", -7699875372487088773 },
+      { 42, "42", 7764866287864698590 },
+      { -42, "-42", -3434092993477103253 } });
+}
+
+// hazelcast.internal.serialization.impl.compact.RabinFingerPrintTest::testRabinFingerprint()
+TEST_F(CompactRabinFingerprintTest, test_schema)
+{
+    using hazelcast::client::serialization::compact_writer;
+    using hazelcast::client::serialization::pimpl::field_kind;
+    using hazelcast::client::serialization::pimpl::schema_writer;
+
+    schema_writer s_writer{ "SomeType" };
+    auto writer =
+      hazelcast::client::serialization::pimpl::create_compact_writer(&s_writer);
+
+    writer.write_int32("id", 0);
+    writer.write_string("name", boost::none);
+    writer.write_int8("age", 0);
+    writer.write_array_of_timestamp("times", boost::none);
+
+    auto schema_id = std::move(s_writer).build().schema_id();
+    ASSERT_EQ(-5445839760245891300, schema_id);
+}
+
+class CompactSchemaTest : public ::testing::Test
+{};
+
+TEST_F(CompactSchemaTest, test_constructor)
+{
+    using hazelcast::client::serialization::pimpl::field_descriptor;
+    using hazelcast::client::serialization::pimpl::field_kind;
+    using hazelcast::client::serialization::pimpl::schema;
+
+    schema all_types_schema{
+        std::string{ "something" },
+        std::unordered_map<std::string, field_descriptor>{
+          { "boolean-0", BOOLEAN },
+          { "boolean-1", BOOLEAN },
+          { "boolean-2", BOOLEAN },
+          { "boolean-3", BOOLEAN },
+          { "boolean-4", BOOLEAN },
+          { "boolean-5", BOOLEAN },
+          { "boolean-6", BOOLEAN },
+          { "boolean-7", BOOLEAN },
+          { "boolean-8", BOOLEAN },
+          { "boolean-9", BOOLEAN },
+          { "boolean[]", ARRAY_OF_BOOLEAN },
+          { "int8", INT8 },
+          { "int8[]", ARRAY_OF_INT8 },
+          { "int16", INT16 },
+          { "int16[]", ARRAY_OF_INT16 },
+          { "int32", INT32 },
+          { "int32[]", ARRAY_OF_INT32 },
+          { "int64", INT64 },
+          { "int64[]", ARRAY_OF_INT64 },
+          { "float32", FLOAT32 },
+          { "float32[]", ARRAY_OF_FLOAT32 },
+          { "float64", FLOAT64 },
+          { "float64[]", ARRAY_OF_FLOAT64 },
+          { "string", STRING },
+          { "string[]", ARRAY_OF_STRING },
+          { "decimal", DECIMAL },
+          { "decimal[]", ARRAY_OF_DECIMAL },
+          { "time", TIME },
+          { "time[]", ARRAY_OF_TIME },
+          { "date", DATE },
+          { "date[]", ARRAY_OF_DATE },
+          { "timestamp", TIMESTAMP },
+          { "timestamp[]", ARRAY_OF_TIMESTAMP },
+          { "timestamp_with_timezone", TIMESTAMP_WITH_TIMEZONE },
+          { "timestamp_with_timezone[]", ARRAY_OF_TIMESTAMP_WITH_TIMEZONE },
+          { "compact", COMPACT },
+          { "compact[]", ARRAY_OF_COMPACT },
+          { "nullable<boolean>", NULLABLE_BOOLEAN },
+          { "nullable<boolean>[]", ARRAY_OF_NULLABLE_BOOLEAN },
+          { "nullable<int8>", NULLABLE_INT8 },
+          { "nullable<int8>[]", ARRAY_OF_NULLABLE_INT8 },
+          { "nullable<int16>", NULLABLE_INT16 },
+          { "nullable<int16>[]", ARRAY_OF_NULLABLE_INT16 },
+          { "nullable<int32>", NULLABLE_INT32 },
+          { "nullable<int32>[]", ARRAY_OF_NULLABLE_INT32 },
+          { "nullable<int64>", NULLABLE_INT64 },
+          { "nullable<int64>[]", ARRAY_OF_NULLABLE_INT64 },
+          { "nullable<float32>", NULLABLE_FLOAT32 },
+          { "nullable<float32>[]", ARRAY_OF_NULLABLE_INT64 },
+          { "nullable<float64>", NULLABLE_FLOAT64 },
+          { "nullable<float64>[]", ARRAY_OF_NULLABLE_FLOAT64 } }
+    };
+
+    auto result = all_types_schema.fields();
+
+    // Assert num of fields
+    ASSERT_EQ(all_types_schema.fixed_size_fields_length(), 29);
+    ASSERT_EQ(all_types_schema.number_of_var_size_fields(), 35);
+
+    // Assert fix-sized fields
+    ASSERT_EQ(result["float64"].offset, 0);
+    ASSERT_EQ(result["float64"].index, -1);
+    ASSERT_EQ(result["float64"].bit_offset, -1);
+    ASSERT_EQ(result["int64"].offset, 8);
+    ASSERT_EQ(result["int64"].index, -1);
+    ASSERT_EQ(result["int64"].bit_offset, -1);
+    ASSERT_EQ(result["float32"].offset, 16);
+    ASSERT_EQ(result["float32"].index, -1);
+    ASSERT_EQ(result["float32"].bit_offset, -1);
+    ASSERT_EQ(result["int32"].offset, 20);
+    ASSERT_EQ(result["int32"].index, -1);
+    ASSERT_EQ(result["int32"].bit_offset, -1);
+    ASSERT_EQ(result["int16"].offset, 24);
+    ASSERT_EQ(result["int16"].index, -1);
+    ASSERT_EQ(result["int16"].bit_offset, -1);
+    ASSERT_EQ(result["int8"].offset, 26);
+    ASSERT_EQ(result["int8"].index, -1);
+    ASSERT_EQ(result["int8"].bit_offset, -1);
+    ASSERT_EQ(result["boolean-0"].offset, 27);
+    ASSERT_EQ(result["boolean-0"].index, -1);
+    ASSERT_EQ(result["boolean-0"].bit_offset, 0);
+    ASSERT_EQ(result["boolean-1"].offset, 27);
+    ASSERT_EQ(result["boolean-1"].index, -1);
+    ASSERT_EQ(result["boolean-1"].bit_offset, 1);
+    ASSERT_EQ(result["boolean-2"].offset, 27);
+    ASSERT_EQ(result["boolean-2"].index, -1);
+    ASSERT_EQ(result["boolean-2"].bit_offset, 2);
+    ASSERT_EQ(result["boolean-3"].offset, 27);
+    ASSERT_EQ(result["boolean-3"].index, -1);
+    ASSERT_EQ(result["boolean-3"].bit_offset, 3);
+    ASSERT_EQ(result["boolean-4"].offset, 27);
+    ASSERT_EQ(result["boolean-4"].index, -1);
+    ASSERT_EQ(result["boolean-4"].bit_offset, 4);
+    ASSERT_EQ(result["boolean-5"].offset, 27);
+    ASSERT_EQ(result["boolean-5"].index, -1);
+    ASSERT_EQ(result["boolean-5"].bit_offset, 5);
+    ASSERT_EQ(result["boolean-6"].offset, 27);
+    ASSERT_EQ(result["boolean-6"].index, -1);
+    ASSERT_EQ(result["boolean-6"].bit_offset, 6);
+    ASSERT_EQ(result["boolean-7"].offset, 27);
+    ASSERT_EQ(result["boolean-7"].index, -1);
+    ASSERT_EQ(result["boolean-7"].bit_offset, 7);
+    ASSERT_EQ(result["boolean-8"].offset, 28);
+    ASSERT_EQ(result["boolean-8"].index, -1);
+    ASSERT_EQ(result["boolean-8"].bit_offset, 0);
+    ASSERT_EQ(result["boolean-9"].offset, 28);
+    ASSERT_EQ(result["boolean-9"].index, -1);
+    ASSERT_EQ(result["boolean-9"].bit_offset, 1);
+
+    // Assert variable sized fields
+    ASSERT_EQ(result["boolean[]"].offset, -1);
+    ASSERT_EQ(result["boolean[]"].index, 0);
+    ASSERT_EQ(result["boolean[]"].bit_offset, -1);
+    ASSERT_EQ(result["compact"].offset, -1);
+    ASSERT_EQ(result["compact"].index, 1);
+    ASSERT_EQ(result["compact"].bit_offset, -1);
+    ASSERT_EQ(result["compact[]"].offset, -1);
+    ASSERT_EQ(result["compact[]"].index, 2);
+    ASSERT_EQ(result["compact[]"].bit_offset, -1);
+    ASSERT_EQ(result["date"].offset, -1);
+    ASSERT_EQ(result["date"].index, 3);
+    ASSERT_EQ(result["date"].bit_offset, -1);
+    ASSERT_EQ(result["date[]"].offset, -1);
+    ASSERT_EQ(result["date[]"].index, 4);
+    ASSERT_EQ(result["date[]"].bit_offset, -1);
+    ASSERT_EQ(result["decimal"].offset, -1);
+    ASSERT_EQ(result["decimal"].index, 5);
+    ASSERT_EQ(result["decimal"].bit_offset, -1);
+    ASSERT_EQ(result["decimal[]"].offset, -1);
+    ASSERT_EQ(result["decimal[]"].index, 6);
+    ASSERT_EQ(result["decimal[]"].bit_offset, -1);
+    ASSERT_EQ(result["float32[]"].offset, -1);
+    ASSERT_EQ(result["float32[]"].index, 7);
+    ASSERT_EQ(result["float32[]"].bit_offset, -1);
+    ASSERT_EQ(result["float64[]"].offset, -1);
+    ASSERT_EQ(result["float64[]"].index, 8);
+    ASSERT_EQ(result["float64[]"].bit_offset, -1);
+    ASSERT_EQ(result["int16[]"].offset, -1);
+    ASSERT_EQ(result["int16[]"].index, 9);
+    ASSERT_EQ(result["int16[]"].bit_offset, -1);
+    ASSERT_EQ(result["int32[]"].offset, -1);
+    ASSERT_EQ(result["int32[]"].index, 10);
+    ASSERT_EQ(result["int32[]"].bit_offset, -1);
+    ASSERT_EQ(result["int64[]"].offset, -1);
+    ASSERT_EQ(result["int64[]"].index, 11);
+    ASSERT_EQ(result["int64[]"].bit_offset, -1);
+    ASSERT_EQ(result["int8[]"].offset, -1);
+    ASSERT_EQ(result["int8[]"].index, 12);
+    ASSERT_EQ(result["int8[]"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<boolean>"].offset, -1);
+    ASSERT_EQ(result["nullable<boolean>"].index, 13);
+    ASSERT_EQ(result["nullable<boolean>"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<boolean>[]"].offset, -1);
+    ASSERT_EQ(result["nullable<boolean>[]"].index, 14);
+    ASSERT_EQ(result["nullable<boolean>[]"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<float32>"].offset, -1);
+    ASSERT_EQ(result["nullable<float32>"].index, 15);
+    ASSERT_EQ(result["nullable<float32>"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<float32>[]"].offset, -1);
+    ASSERT_EQ(result["nullable<float32>[]"].index, 16);
+    ASSERT_EQ(result["nullable<float32>[]"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<float64>"].offset, -1);
+    ASSERT_EQ(result["nullable<float64>"].index, 17);
+    ASSERT_EQ(result["nullable<float64>"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<float64>[]"].offset, -1);
+    ASSERT_EQ(result["nullable<float64>[]"].index, 18);
+    ASSERT_EQ(result["nullable<float64>[]"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int16>"].offset, -1);
+    ASSERT_EQ(result["nullable<int16>"].index, 19);
+    ASSERT_EQ(result["nullable<int16>"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int16>[]"].offset, -1);
+    ASSERT_EQ(result["nullable<int16>[]"].index, 20);
+    ASSERT_EQ(result["nullable<int16>[]"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int32>"].offset, -1);
+    ASSERT_EQ(result["nullable<int32>"].index, 21);
+    ASSERT_EQ(result["nullable<int32>"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int32>[]"].offset, -1);
+    ASSERT_EQ(result["nullable<int32>[]"].index, 22);
+    ASSERT_EQ(result["nullable<int32>[]"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int64>"].offset, -1);
+    ASSERT_EQ(result["nullable<int64>"].index, 23);
+    ASSERT_EQ(result["nullable<int64>"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int64>[]"].offset, -1);
+    ASSERT_EQ(result["nullable<int64>[]"].index, 24);
+    ASSERT_EQ(result["nullable<int64>[]"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int8>"].offset, -1);
+    ASSERT_EQ(result["nullable<int8>"].index, 25);
+    ASSERT_EQ(result["nullable<int8>"].bit_offset, -1);
+    ASSERT_EQ(result["nullable<int8>[]"].offset, -1);
+    ASSERT_EQ(result["nullable<int8>[]"].index, 26);
+    ASSERT_EQ(result["nullable<int8>[]"].bit_offset, -1);
+    ASSERT_EQ(result["string"].offset, -1);
+    ASSERT_EQ(result["string"].index, 27);
+    ASSERT_EQ(result["string"].bit_offset, -1);
+    ASSERT_EQ(result["string[]"].offset, -1);
+    ASSERT_EQ(result["string[]"].index, 28);
+    ASSERT_EQ(result["string[]"].bit_offset, -1);
+    ASSERT_EQ(result["time"].offset, -1);
+    ASSERT_EQ(result["time"].index, 29);
+    ASSERT_EQ(result["time"].bit_offset, -1);
+    ASSERT_EQ(result["time[]"].offset, -1);
+    ASSERT_EQ(result["time[]"].index, 30);
+    ASSERT_EQ(result["time[]"].bit_offset, -1);
+    ASSERT_EQ(result["timestamp"].offset, -1);
+    ASSERT_EQ(result["timestamp"].index, 31);
+    ASSERT_EQ(result["timestamp"].bit_offset, -1);
+    ASSERT_EQ(result["timestamp[]"].offset, -1);
+    ASSERT_EQ(result["timestamp[]"].index, 32);
+    ASSERT_EQ(result["timestamp[]"].bit_offset, -1);
+    ASSERT_EQ(result["timestamp_with_timezone"].offset, -1);
+    ASSERT_EQ(result["timestamp_with_timezone"].index, 33);
+    ASSERT_EQ(result["timestamp_with_timezone"].bit_offset, -1);
+    ASSERT_EQ(result["timestamp_with_timezone[]"].offset, -1);
+    ASSERT_EQ(result["timestamp_with_timezone[]"].index, 34);
+    ASSERT_EQ(result["timestamp_with_timezone[]"].bit_offset, -1);
+}
+
+TEST_F(CompactSchemaTest, test_with_no_fields)
+{
+    schema no_fields_schema{
+        std::string{ "something" },
+        std::unordered_map<std::string, field_descriptor>{}
+    };
+
+    ASSERT_EQ(no_fields_schema.fields().size(), 0);
+    ASSERT_EQ(no_fields_schema.fixed_size_fields_length(), 0);
+    ASSERT_EQ(no_fields_schema.number_of_var_size_fields(), 0);
+}
+
 class CompactSerializationTest : public ::testing::Test
 {
 public:
@@ -675,15 +1028,16 @@ TEST_F(CompactSerializationTest, testBits)
     bits_dto expected;
     expected.a = true;
     expected.b = true;
+    expected.i = true;
     expected.id = 121;
     expected.booleans = boost::make_optional<std::vector<bool>>(
       { true, false, false, false, true, false, false, false });
 
     const data& data = ss.to_data(expected);
-    // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (1 bytes for 8
+    // hash(4) + typeid(4) + schemaId(8) + (4 byte length) + (2 bytes for 9
     // bits) + (4 bytes for int) (4 byte length of byte array) + (1 byte for
     // booleans array of 8 bits) + (1 byte offset bytes)
-    ASSERT_EQ(31, data.total_size());
+    ASSERT_EQ(32, data.total_size());
 
     bits_dto actual = *(ss.to_object<bits_dto>(data));
     ASSERT_EQ(expected, actual);
@@ -734,6 +1088,33 @@ TEST_F(CompactSerializationTest, test_rabin_fingerprint_consistent_with_server)
     ASSERT_EQ(814479248787788739L, schema.schema_id());
 }
 
+TEST_F(CompactSerializationTest, test_read_when_field_does_not_exist)
+{
+    using hazelcast::client::compact::test::wrong_field_name_read_obj;
+
+    serialization_config config;
+    SerializationService ss(config);
+
+    wrong_field_name_read_obj obj;
+
+    auto data = ss.to_data(obj);
+    ASSERT_THROW(ss.to_object<wrong_field_name_read_obj>(data),
+                 exception::hazelcast_serialization);
+}
+
+TEST_F(CompactSerializationTest, test_read_with_type_mismatch)
+{
+    using hazelcast::client::compact::test::type_mistmatch_obj;
+
+    serialization_config config;
+    SerializationService ss(config);
+    type_mistmatch_obj obj;
+
+    auto data = ss.to_data(obj);
+    ASSERT_THROW(ss.to_object<type_mistmatch_obj>(data),
+                 exception::hazelcast_serialization);
+}
+
 struct primitive_object
 {
     bool boolean_;
@@ -769,13 +1150,13 @@ struct nullable_primitive_object
     boost::optional<std::vector<boost::optional<float>>> nullableFloats;
     boost::optional<std::vector<boost::optional<double>>> nullableDoubles;
 };
+
 } // namespace test
 } // namespace compact
 
 namespace serialization {
 template<>
-struct hz_serializer<compact::test::primitive_object>
-  : public compact_serializer
+struct hz_serializer<compact::test::primitive_object> : compact_serializer
 {
     static void write(const compact::test::primitive_object& object,
                       compact_writer& writer)
@@ -821,7 +1202,7 @@ struct hz_serializer<compact::test::primitive_object>
 
 template<>
 struct hz_serializer<compact::test::nullable_primitive_object>
-  : public compact_serializer
+  : compact_serializer
 {
     static void write(const compact::test::nullable_primitive_object& object,
                       compact_writer& writer)
@@ -870,6 +1251,49 @@ struct hz_serializer<compact::test::nullable_primitive_object>
     // This is to simulate two different applications implementing the same
     // class with different serializers.
     static std::string type_name() { return "primitive_object"; }
+};
+
+template<>
+struct hz_serializer<compact::test::wrong_field_name_read_obj>
+  : compact_serializer
+{
+    static void write(const compact::test::wrong_field_name_read_obj& obj,
+                      compact_writer& writer)
+    {
+        writer.write_int32("field_1", obj.value);
+    }
+
+    static compact::test::wrong_field_name_read_obj read(compact_reader& reader)
+    {
+        compact::test::wrong_field_name_read_obj obj;
+
+        obj.value = reader.read_int32("wrong_field");
+
+        return obj;
+    }
+
+    static std::string type_name() { return "wrong_field_name_read_obj"; }
+};
+
+template<>
+struct hz_serializer<compact::test::type_mistmatch_obj> : compact_serializer
+{
+    static void write(const compact::test::type_mistmatch_obj& obj,
+                      compact_writer& writer)
+    {
+        writer.write_int32("field_1", obj.value);
+    }
+
+    static compact::test::type_mistmatch_obj read(compact_reader& reader)
+    {
+        compact::test::type_mistmatch_obj obj;
+
+        obj.value = static_cast<int>(reader.read_float32("field_1"));
+
+        return obj;
+    }
+
+    static std::string type_name() { return "type_mistmatch_obj"; }
 };
 } // namespace serialization
 namespace compact {
