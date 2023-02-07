@@ -3462,7 +3462,8 @@ TEST_P(ClientMapTest, testMapWithPortable)
       .get();
 
     config::index_config tmp_index_config;
-    tmp_index_config.type = config::index_config::index_type::BITMAP;        
+    tmp_index_config.type = config::index_config::index_type::BITMAP;
+    tmp_index_config.options = boost::make_optional<bitmap_index_options>();
 
     employees_
       ->add_index(tmp_index_config)
