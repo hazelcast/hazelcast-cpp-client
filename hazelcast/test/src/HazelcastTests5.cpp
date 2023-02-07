@@ -3459,15 +3459,10 @@ TEST_P(ClientMapTest, testMapWithPortable)
       .get();
     employees_
       ->add_index(config::index_config::index_type::HASH, std::string("n"))
-      .get();
-
-   /* config::index_config tmp_index_config;
-    tmp_index_config.type = config::index_config::index_type::BITMAP;
-    tmp_index_config.options = boost::make_optional(config::index_config::bitmap_index_options());
-
+      .get();  
     employees_
-      ->add_index(tmp_index_config)
-      .get();    */  
+      ->add_index(config::index_config::index_type::BITMAP, std::string("n"))
+      .get();      
 }
 
 TEST_P(ClientMapTest, testMapStoreRelatedRequests)

@@ -1487,8 +1487,7 @@ TEST_F(ReliableTopicTest, testTerminateCase)
 
     ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
     
-    // remove listener
-    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+    // listener is removed when the exception occured
 }
 
 TEST_F(ReliableTopicTest, testTerminateCaseForLValue)
@@ -1504,8 +1503,7 @@ TEST_F(ReliableTopicTest, testTerminateCaseForLValue)
 
     ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
     
-    // remove listener
-    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+    // listener is removed when the exception occured
 }
 
 
