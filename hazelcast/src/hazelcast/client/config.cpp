@@ -1250,7 +1250,7 @@ client_config::get_instance_name() const
 client_config&
 client_config::set_instance_name(const std::string& instance_name)
 {
-    client_config::instance_name_ = instance_name;
+    instance_name_ = instance_name;
     return *this;
 }
 
@@ -1263,7 +1263,7 @@ client_config::get_executor_pool_size() const
 void
 client_config::set_executor_pool_size(int32_t executor_pool_size)
 {
-    client_config::executor_pool_size_ = executor_pool_size;
+    executor_pool_size_ = executor_pool_size;
 }
 
 config::client_connection_strategy_config&
@@ -1276,7 +1276,7 @@ client_config&
 client_config::set_connection_strategy_config(
   const config::client_connection_strategy_config& connection_strategy_config)
 {
-    client_config::connection_strategy_config_ = connection_strategy_config;
+    connection_strategy_config_ = connection_strategy_config;
     return *this;
 }
 
