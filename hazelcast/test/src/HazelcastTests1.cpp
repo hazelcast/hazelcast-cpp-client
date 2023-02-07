@@ -2753,6 +2753,20 @@ TEST_F(ClientTxnMapTest, testIsEmpty)
     auto regularMap = client_.get_map(name).get();
     ASSERT_FALSE(regularMap->is_empty().get());
 }
+
+TEST_F(ClientTxnMapTest, testServiceName)
+{    
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto map = context.get_map(get_test_name());
+
+    ASSERT_EQ(map->get_service_name(), "hz:impl:mapService");
+
+    // added for test coverage
+    ASSERT_NO_THROW(map->destroy().get());    
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -2797,6 +2811,19 @@ TEST_F(ClientTxnSetTest, testAddRemove)
 
     ASSERT_EQ(1, s->size().get());
 }
+
+TEST_F(ClientTxnSetTest, testServiceName)
+{    
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto set = context.get_set(get_test_name());
+
+    ASSERT_EQ(set->get_service_name(), "hz:impl:setService");
+    // added for test coverage
+    ASSERT_NO_THROW(set->destroy().get());
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -3089,6 +3116,19 @@ TEST_F(ClientTxnListTest, testAddRemove)
 
     ASSERT_EQ(1, l->size().get());
 }
+
+TEST_F(ClientTxnListTest, testServiceName)
+{    
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto list = context.get_list(get_test_name());
+
+    ASSERT_EQ(list->get_service_name(), "hz:impl:listService");
+    // added for test coverage
+    ASSERT_NO_THROW(list->destroy().get());
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -3180,6 +3220,19 @@ TEST_F(ClientTxnMultiMapTest, testPutGetRemove)
 
     boost::wait_for_all(futures.begin(), futures.end());
 }
+
+TEST_F(ClientTxnMultiMapTest, testServiceName)
+{    
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto multi_map = context.get_multi_map(get_test_name());
+
+    ASSERT_EQ(multi_map->get_service_name(), "hz:impl:multiMapService");
+    // added for test coverage
+    ASSERT_NO_THROW(multi_map->destroy().get());    
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
