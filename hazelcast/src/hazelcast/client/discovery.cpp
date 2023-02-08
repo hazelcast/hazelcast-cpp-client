@@ -262,6 +262,18 @@ ec2_request_signer::hmac_sh_a256_bytes(const void* key_buffer,
                                        size_t data_len,
                                        unsigned char* hash) const
 {
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    //https://www.openssl.org/docs/man3.0/man7/migration_guide.html
+    unsigned int len = 32;
+    EVP_MD_CTX *mdctx;
+    mdctx = EVP_MD_CTX_new();
+    EVP_MD_CTX_init(mdctx);    
+    EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr);
+    EVP_DigestUpdate(mdctx, data, data_len);
+    EVP_DigestFinal_ex(mdctx, hash, &len);
+    EVP_MD_CTX_free(mdctx);    
+#else
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     HMAC_CTX* hmac = HMAC_CTX_new();
 #else
@@ -279,6 +291,7 @@ ec2_request_signer::hmac_sh_a256_bytes(const void* key_buffer,
 #else
     HMAC_CTX_cleanup(hmac);
     delete hmac;
+#endif
 #endif
 
     return len;
