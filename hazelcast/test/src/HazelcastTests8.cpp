@@ -2344,6 +2344,84 @@ TEST_F(
 } // namespace client
 } // namespace hazelcast
 
+namespace hazelcast {
+namespace client {
+namespace test {
+namespace thread_pool {
+
+class ThreadPoolTest : public ClientTest, public testing::WithParamInterface<int32_t>
+{
+protected:
+    struct ThreadState
+    {
+        explicit ThreadState(int latch_count)
+          : latch1(latch_count)
+        {
+        }
+
+        boost::latch latch1;
+        std::set<boost::thread::id> thread_ids;
+    };
+
+protected:
+    static void SetUpTestCase()
+    {
+        instance = new HazelcastServer(default_server_factory());
+    }
+
+    static void TearDownTestCase()
+    {
+        delete client;
+        delete instance;
+
+        client = nullptr;
+        instance = nullptr;
+    }
+
+    static HazelcastServer* instance;
+    static hazelcast_client* client;
+};
+
+HazelcastServer* ThreadPoolTest::instance = nullptr;
+hazelcast_client* ThreadPoolTest::client = nullptr;
+
+TEST_P(ThreadPoolTest, testEqualThreadAndJobs)
+{
+    int32_t num_of_thread = 5;
+    int32_t num_of_jobs = GetParam();
+    client_config config;
+    config.set_executor_pool_size(num_of_thread);
+
+    client = new hazelcast_client{ new_client(std::move(config)).get() };
+
+    spi::ClientContext ctx(*client);
+    auto state = std::make_shared<ThreadState>(num_of_jobs);
+    std::mutex mutex_for_thread_id;
+
+    ASSERT_EQ(0, state->thread_ids.size());
+    for (int i = 0; i < num_of_jobs; i++) {
+        ctx.get_client_execution_service().get_user_executor().submit([state, &mutex_for_thread_id]() {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            {
+                std::lock_guard<std::mutex> lg(mutex_for_thread_id);
+                state->thread_ids.insert( boost::this_thread::get_id() );
+            }
+            state->latch1.count_down();
+        });
+    }
+    ASSERT_OPEN_EVENTUALLY(state->latch1);
+    ASSERT_EQ( std::min(num_of_jobs, num_of_thread), state->thread_ids.size());
+}
+
+INSTANTIATE_TEST_SUITE_P(ThreadPoolTestSuite,
+                         ThreadPoolTest,
+                         ::testing::Values(5, 10, 2));
+
+} // namespace thread_pool
+} // namespace test
+} // namespace client
+} // namespace hazelcast
+
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif

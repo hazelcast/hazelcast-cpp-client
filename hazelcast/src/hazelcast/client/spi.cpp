@@ -1291,10 +1291,11 @@ ClientInvocationServiceImpl::fail_on_indeterminate_state() const
 ClientExecutionServiceImpl::ClientExecutionServiceImpl(
   const std::string& name,
   const client_properties& properties,
-  int32_t pool_size,
+  int32_t user_pool_size,
   spi::lifecycle_service& service)
   : lifecycle_service_(service)
   , client_properties_(properties)
+  , user_pool_size_(user_pool_size)
 {}
 
 void
@@ -1310,7 +1311,11 @@ ClientExecutionServiceImpl::start()
     internal_executor_.reset(
       new hazelcast::util::hz_thread_pool(internalPoolSize));
 
-    user_executor_.reset(new hazelcast::util::hz_thread_pool());
+    if (user_pool_size_ <= 0){
+        user_executor_.reset(new hazelcast::util::hz_thread_pool());
+    } else{
+        user_executor_.reset(new hazelcast::util::hz_thread_pool(user_pool_size_));
+    }
 }
 
 void

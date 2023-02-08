@@ -42,7 +42,7 @@ class HAZELCAST_API ClientExecutionServiceImpl
 public:
     ClientExecutionServiceImpl(const std::string& name,
                                const client_properties& properties,
-                               int32_t pool_size,
+                               int32_t user_pool_size,
                                spi::lifecycle_service& service);
 
     void start();
@@ -83,6 +83,7 @@ private:
     std::unique_ptr<util::hz_thread_pool> user_executor_;
     spi::lifecycle_service& lifecycle_service_;
     const client_properties& client_properties_;
+    int32_t user_pool_size_;
 
     template<typename CompletionToken>
     std::shared_ptr<boost::asio::steady_timer>
