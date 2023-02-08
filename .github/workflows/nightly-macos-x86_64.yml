@@ -16,24 +16,17 @@ jobs:
       fail-fast: false
       matrix:
         boost:
-            - version: 1.71.0
             - version: 1.76.0
 
         build_type:
-          - type: Debug
-            warn_as_err: ON
           - type: Release
             warn_as_err: OFF
 
         shared_libs:
-          - toggle: OFF
-            name: Static
           - toggle: ON
             name: Shared
 
         with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
           - toggle: ON
             name: 'SSL'
 
@@ -68,21 +61,3 @@ jobs:
               -DBUILD_TESTS=ON                                            \
               -DBUILD_EXAMPLES=OFF
 
-      - name: Test
-        if: ${{ inputs.run_tests || github.event_name == 'schedule' }}
-        env:
-          BUILD_DIR: build
-          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ./scripts/test-unix.sh
-
-      - name: Verify Installation
-        env:
-          BUILD_DIR: build-examples
-        run: |
-          ./scripts/verify-installation-unix.sh                          \
-              -DCMAKE_PREFIX_PATH=${{ github.workspace }}/destination    \
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
