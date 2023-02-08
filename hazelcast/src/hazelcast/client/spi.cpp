@@ -1311,10 +1311,11 @@ ClientExecutionServiceImpl::start()
     internal_executor_.reset(
       new hazelcast::util::hz_thread_pool(internalPoolSize));
 
-    if (user_pool_size_ <= 0){
+    if (user_pool_size_ <= 0) {
         user_executor_.reset(new hazelcast::util::hz_thread_pool());
-    } else{
-        user_executor_.reset(new hazelcast::util::hz_thread_pool(user_pool_size_));
+    } else {
+        user_executor_.reset(
+          new hazelcast::util::hz_thread_pool(user_pool_size_));
     }
 }
 
