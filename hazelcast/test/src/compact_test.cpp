@@ -662,9 +662,6 @@ struct CompactRabinFingerprintTest : public ::testing::Test
     template<typename T>
     using entry_t = std::tuple<int64_t, T, int64_t>;
 
-    static constexpr int int32_min = std::numeric_limits<int>::min();
-    static constexpr int64_t int64_min = std::numeric_limits<int64_t>::min();
-
     template<typename T>
     void check_each(std::vector<entry_t<T>> entries)
     {
@@ -686,7 +683,7 @@ TEST_F(CompactRabinFingerprintTest, test_i8_fingerprint)
     check_each(std::vector<entry_t<byte>>{
       // Before               Val   After(Expected)
       { 100, -5, -6165936963810616235 },
-      { int64_min, 0, 36028797018963968 },
+      { INT64_MIN, 0, 36028797018963968 },
       { 9223372036854775807, 113, -3588673659009074035 },
       { -13, -13, 72057594037927935 },
       { 42, 42, 0 },
@@ -702,8 +699,8 @@ TEST_F(CompactRabinFingerprintTest, test_i32_fingerprint)
 {
     check_each(std::vector<entry_t<int>>{
       // Before               Val            After(Expected)
-      { int64_min, 2147483647, 6066553457199370002 },
-      { 9223372036854775807, int32_min, 6066553459773452525 },
+      { INT64_MIN, 2147483647, 6066553457199370002 },
+      { 9223372036854775807, INT32_MIN, 6066553459773452525 },
       { 9223372036854707, 42, -961937498224213201 },
       { -42, -42, 4294967295 },
       { 42, 42, 0 },
@@ -711,7 +708,7 @@ TEST_F(CompactRabinFingerprintTest, test_i32_fingerprint)
       { 0, 0, 0 },
       { -123456789, 0, -565582369564281851 },
       { 123456786669, 42127, 7157681543413310373 },
-      { 2147483647, int32_min, -7679311364898232185 } });
+      { 2147483647, INT32_MIN, -7679311364898232185 } });
 }
 
 TEST_F(CompactRabinFingerprintTest, test_str_fingerprint)
