@@ -1360,6 +1360,53 @@ TEST_F(ReliableTopicTest, testConfig)
     topic_.reset();
 }
 
+TEST_F(ReliableTopicTest, testConfigWithSetNetworkMethod)
+{
+    client_config clientConfig;
+    auto curr_network_config = clientConfig.get_network_config();
+    curr_network_config.add_address(
+      address(remote_controller_address(), 5701));
+
+    //To increase the code coverage, set_network_config method is used instead of get_network_config     
+    clientConfig.set_network_config(curr_network_config);
+
+    std::string topic_name(get_test_name());
+    config::reliable_topic_config relConfig(topic_name);
+    relConfig.set_read_batch_size(2);
+    clientConfig.add_reliable_topic_config(relConfig);
+
+    auto &readedClientConfig = clientConfig.get_reliable_topic_config(topic_name);
+    ASSERT_EQ( 2, readedClientConfig.get_read_batch_size() );
+    ASSERT_EQ( topic_name, readedClientConfig.get_name() );
+
+    auto configClient = hazelcast::new_client(std::move(clientConfig)).get();
+
+    ASSERT_NO_THROW(topic_ =
+                      configClient.get_reliable_topic(topic_name).get());
+
+    auto state = std::make_shared<ListenerState>(5);
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state)));
+
+    std::vector<std::string> items;
+    for (int k = 0; k < 5; k++) {
+        std::string item = std::to_string(k);
+        topic_->publish(item).get();
+        items.push_back(item);
+    }
+
+    ASSERT_OPEN_EVENTUALLY(state->latch1);
+    ASSERT_EQ(5, state->messages.size());
+    for (int k = 0; k < 5; k++) {
+        const auto& msg = state->messages[k];
+        auto val = msg.get_message_object().get<std::string>();
+        ASSERT_TRUE(val.has_value());
+        ASSERT_EQ(items[k], val.value());
+    }
+    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+    topic_.reset();
+}
+
 TEST_F(ReliableTopicTest, testMessageFieldSetCorrectly)
 {
     ASSERT_NO_THROW(

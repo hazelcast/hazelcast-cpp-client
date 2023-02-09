@@ -4037,6 +4037,24 @@ TEST_P(ClientMapTest, testExtendedAsciiString)
     ASSERT_TRUE(actualValue.has_value());
     ASSERT_EQ(value, actualValue.value());
 }
+
+TEST_P(ClientMapTest, testWithGetDistrubtedObject)
+{
+  auto tmp_imap = client_.get_distributed_object<imap>(get_test_name()).get();
+
+  tmp_imap->put(1,1).get();
+  tmp_imap->put(2,2).get();
+  tmp_imap->put(3,3).get();
+  ASSERT_EQ(3, tmp_imap->size().get());
+  ASSERT_FALSE(tmp_imap->contains_key(10).get());
+  ASSERT_TRUE(tmp_imap->contains_key(1).get());
+
+  tmp_imap->remove<int,int>(1).get();
+  ASSERT_EQ(2, tmp_imap->size().get());  
+  ASSERT_FALSE(tmp_imap->contains_key(1).get());
+  tmp_imap->destroy().get();
+}
+
 } // namespace test
 
 namespace serialization {

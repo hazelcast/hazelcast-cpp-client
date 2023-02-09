@@ -36,7 +36,6 @@ employee::employee(std::string name, int32_t age)
     d_ = 3.14334;
     str_ = "Hello world";
     utf_str_ = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
-    c16_ = u'イ';
 
     byte byteArray[] = { 50, 100, 150, 200 };
     byte_vec_ = std::vector<byte>(byteArray, byteArray + 4);
@@ -274,7 +273,6 @@ hz_serializer<test::employee>::write_portable(const test::employee& object,
     writer.write<double>("d", object.d_);
     writer.write("str", object.str_);
     writer.write("utfstr", &object.utf_str_);
-    writer.write("c16", object.c16_);
 
     writer.write("bb", object.byte_vec_);
     writer.write("cc", object.cc_);
@@ -294,7 +292,6 @@ hz_serializer<test::employee>::write_portable(const test::employee& object,
     out.write_object<double>(&object.d_);
     out.write_object<std::string>(&object.str_);
     out.write_object<std::string>(&object.utf_str_);
-    out.write_object<char16_t>(&object.c16_);
 }
 
 test::employee
@@ -313,7 +310,6 @@ hz_serializer<test::employee>::read_portable(portable_reader& reader)
     employee.d_ = reader.read<double>("d");
     employee.str_ = reader.read<std::string>("str");
     employee.utf_str_ = reader.read<std::string>("utfstr");
-    employee.c16_ = reader.read<char16_t>("c16");
     employee.byte_vec_ = *reader.read<std::vector<byte>>("bb");
     employee.cc_ = *reader.read<std::vector<char>>("cc");
     employee.ba_ = *reader.read<std::vector<bool>>("ba");
@@ -331,7 +327,6 @@ hz_serializer<test::employee>::read_portable(portable_reader& reader)
     employee.d_ = *in.read_object<double>();
     employee.str_ = *in.read_object<std::string>();
     employee.utf_str_ = *in.read_object<std::string>();
-    employee.c16_ = *in.read_object<char16_t>();
     return employee;
 }
 

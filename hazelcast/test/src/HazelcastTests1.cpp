@@ -2343,6 +2343,30 @@ TEST_F(FlakeIdGeneratorApiTest, testSmoke)
     // set than expected
     ASSERT_EQ(4 * NUM_IDS_PER_THREAD, allIds.size());
 }
+
+TEST_F(FlakeIdGeneratorApiTest, testGeneratorConfig)
+{
+  client_config clientConfig = get_config();
+  config::client_flake_id_generator_config flakeIdConfig("flake_config");
+  flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(
+    std::chrono::seconds(20));
+  clientConfig.add_flake_id_generator_config(flakeIdConfig);
+  
+  const config::client_flake_id_generator_config* readed_flake_config = clientConfig.get_flake_id_generator_config("flake_config");
+
+  ASSERT_EQ( readed_flake_config->get_prefetch_count(), flakeIdConfig.get_prefetch_count() );
+  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), flakeIdConfig.get_prefetch_validity_duration() );
+
+  flakeIdConfig.set_prefetch_count(20).set_prefetch_validity_duration(
+    std::chrono::seconds(30));
+  clientConfig.add_flake_id_generator_config(flakeIdConfig);
+
+  readed_flake_config = clientConfig.get_flake_id_generator_config("flake_config");
+
+  ASSERT_EQ( readed_flake_config->get_prefetch_count(), flakeIdConfig.get_prefetch_count() );
+  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), flakeIdConfig.get_prefetch_validity_duration() );  
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
