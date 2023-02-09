@@ -1489,7 +1489,7 @@ field_descriptor::field_descriptor(enum field_kind f,
 std::array<uint64_t, 256>
 init_fp_table()
 {
-    static std::array<uint64_t, 256> FP_TABLE;
+    std::array<uint64_t, 256> FP_TABLE;
     for (int i = 0; i < 256; ++i) {
         uint64_t fp = i;
         for (int j = 0; j < 8; ++j) {
@@ -1500,12 +1500,12 @@ init_fp_table()
     return FP_TABLE;
 }
 
-static std::array<uint64_t, 256> FP_TABLE = init_fp_table();
 constexpr uint64_t rabin_finger_print::INIT;
 
 uint64_t
 rabin_finger_print::fingerprint64(uint64_t fp, byte b)
 {
+    static std::array<uint64_t, 256> FP_TABLE = init_fp_table();
     return (fp >> 8) ^ FP_TABLE[(int)(fp ^ b) & 0xff];
 }
 
