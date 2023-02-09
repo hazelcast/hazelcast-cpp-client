@@ -2347,24 +2347,25 @@ TEST_F(FlakeIdGeneratorApiTest, testSmoke)
 TEST_F(FlakeIdGeneratorApiTest, testGeneratorConfig)
 {
   client_config clientConfig = get_config();
-  config::client_flake_id_generator_config flakeIdConfig("flake_config");
+  config::client_flake_id_generator_config flakeIdConfig("flake_config"), flakeIdConfig2("flake_config_2");;
   flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(
     std::chrono::seconds(20));
   clientConfig.add_flake_id_generator_config(flakeIdConfig);
   
   const config::client_flake_id_generator_config* readed_flake_config = clientConfig.get_flake_id_generator_config("flake_config");
 
-  ASSERT_EQ( readed_flake_config->get_prefetch_count(), flakeIdConfig.get_prefetch_count() );
-  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), flakeIdConfig.get_prefetch_validity_duration() );
+  ASSERT_EQ( readed_flake_config->get_prefetch_count(), 10 );
+  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), std::chrono::seconds(20) );
 
-  flakeIdConfig.set_prefetch_count(20).set_prefetch_validity_duration(
+  flakeIdConfig2.set_prefetch_count(20).set_prefetch_validity_duration(
     std::chrono::seconds(30));
-  clientConfig.add_flake_id_generator_config(flakeIdConfig);
 
-  readed_flake_config = clientConfig.get_flake_id_generator_config("flake_config");
+  clientConfig.add_flake_id_generator_config(flakeIdConfig2);    
+  readed_flake_config = clientConfig.get_flake_id_generator_config("flake_config_2");
 
-  ASSERT_EQ( readed_flake_config->get_prefetch_count(), flakeIdConfig.get_prefetch_count() );
-  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), flakeIdConfig.get_prefetch_validity_duration() );  
+  ASSERT_EQ( readed_flake_config->get_prefetch_count(), 20 );
+  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), std::chrono::seconds(30) );    
+
 }
 
 } // namespace test
