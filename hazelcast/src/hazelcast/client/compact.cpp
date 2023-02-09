@@ -1506,7 +1506,7 @@ constexpr uint64_t rabin_finger_print::INIT;
 
 uint64_t
 rabin_finger_print::fingerprint64(uint64_t fp, byte b)
-{    
+{
     static std::array<uint64_t, 256> FP_TABLE = init_fp_table();
     return (fp >> 8) ^ FP_TABLE[(int)(fp ^ b) & 0xff];
 }
