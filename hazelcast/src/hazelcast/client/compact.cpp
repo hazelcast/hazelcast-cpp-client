@@ -1489,9 +1489,7 @@ field_descriptor::field_descriptor(enum field_kind f,
 std::array<uint64_t, 256>
 init_fp_table()
 {
-    std::mutex tmp_mutex;
-    std::lock_guard<std::mutex> lg(tmp_mutex);
-    static std::array<uint64_t, 256> FP_TABLE;
+    std::array<uint64_t, 256> FP_TABLE;
     for (int i = 0; i < 256; ++i) {
         uint64_t fp = i;
         for (int j = 0; j < 8; ++j) {
