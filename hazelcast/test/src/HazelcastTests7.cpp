@@ -1569,9 +1569,13 @@ TEST_P(AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole)
 
 TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
 {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    GTEST_SKIP();
+#else  
     if (GetParam() && !std::getenv("INSIDE_AWS")) {
         GTEST_SKIP();
     }
+#endif
 
     client_config clientConfig = get_config();
 
