@@ -1878,6 +1878,20 @@ TEST_P(ClientMapTest, testValuesWithpaging_predicate)
     ASSERT_EQ(2, (int)result.size());
     ASSERT_EQ(empl3, result[0]);
     ASSERT_EQ(empl4, result[1]);
+
+    query::greater_less_predicate keyLessThanFivePredicate(
+      client_, query::query_constants::KEY_ATTRIBUTE_NAME, 4, false, true);
+
+    predSize = 2;
+    auto predicate4 = int_map_->new_paging_predicate<int, employee>(
+      keyLessThanFivePredicate,
+      EmployeeEntryComparator(), (size_t)predSize);
+    std::vector<employee> result2 =
+      employees_->values<int, employee>(predicate4).get();
+    ASSERT_EQ(2, (int)result.size());
+    ASSERT_EQ(empl2, result[0]);
+    ASSERT_EQ(empl3, result[1]);
+   
 }
 
 TEST_P(ClientMapTest, testKeySetWithPredicate)
