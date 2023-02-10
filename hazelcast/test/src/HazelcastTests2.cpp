@@ -1842,6 +1842,22 @@ TEST_F(ClientSerializationTest, testGlobalSerializer)
     ASSERT_EQ(obj, deserializedValue.value());
 }
 
+TEST_F(ClientSerializationTest, testTypedData)
+{
+    serialization_config serializationConfig;
+    serializationConfig.set_global_serializer(
+      std::make_shared<DummyGlobalSerializer>());
+    serialization::pimpl::SerializationService serializationService(
+      serializationConfig);  
+
+    std::vector<byte> bytes{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+
+    serialization::pimpl::data tmp_data(bytes);
+    typed_data t(tmp_data, serializationService);
+
+    ASSERT_EQ( t.get_data(), tmp_data);
+}
+
 class serialization_with_server
   : public ClientTest
   , public ::testing::WithParamInterface<boost::endian::order>
