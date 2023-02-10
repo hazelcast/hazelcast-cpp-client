@@ -742,8 +742,11 @@ TEST_F(ConfiguredBehaviourTest, testRemoveLifecycleListener)
 {
     HazelcastServer hazelcastInstance(default_server_factory());
 
-    client_config_.get_connection_strategy_config().set_reconnect_mode(
+    auto tmp_connection_strategy = client_config_.get_connection_strategy_config();
+    tmp_connection_strategy.set_reconnect_mode(
       config::client_connection_strategy_config::OFF);
+
+    client_config_.set_connection_strategy_config( std::move(tmp_connection_strategy) );
     hazelcast_client client(new_client(std::move(client_config_)).get());
     boost::latch shutdownLatch(1);
     auto lifecycle_id = client.add_lifecycle_listener(lifecycle_listener().on_shutdown(
@@ -2526,16 +2529,19 @@ protected:
     {
         int32_t maxSize = DEFAULT_RECORD_COUNT / 2;
 
-        auto nearCacheConfig =
-          create_near_cache_config(DEFAULT_NEAR_CACHE_NAME, in_memory_format);
-
         config::eviction_config evictionConfig;
         evictionConfig.set_maximum_size_policy(
           config::eviction_config::ENTRY_COUNT);
         evictionConfig.set_size(maxSize);
         evictionConfig.set_eviction_policy(eviction_policy);
-        nearCacheConfig.set_eviction_config(evictionConfig);
 
+        config::near_cache_config  nearCacheConfig(config::near_cache_config::DEFAULT_TTL_SECONDS,
+                      config::near_cache_config::DEFAULT_MAX_IDLE_SECONDS,
+                      true,
+                      in_memory_format,
+                      evictionConfig);
+
+        nearCacheConfig.set_name(DEFAULT_NEAR_CACHE_NAME);
         auto nearCacheRecordStore =
           create_near_cache_record_store(nearCacheConfig, in_memory_format);
 
