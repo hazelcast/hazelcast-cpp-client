@@ -1889,8 +1889,8 @@ TEST_P(ClientMapTest, testValuesWithpaging_predicate)
     std::vector<employee> result2 =
       employees_->values<int, employee>(predicate4).get();
     ASSERT_EQ(2, (int)result.size());
-    EXPECT_EQ(empl3, result[0]);
-    EXPECT_EQ(empl2, result[1]);
+    EXPECT_EQ(empl2, result2[0]);
+    EXPECT_EQ(empl3, result2[1]);
    
 }
 
