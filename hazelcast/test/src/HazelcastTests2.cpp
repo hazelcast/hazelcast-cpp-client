@@ -1858,6 +1858,38 @@ TEST_F(ClientSerializationTest, testTypedData)
     ASSERT_EQ( t.get_data(), tmp_data);
 }
 
+TEST_F(ClientSerializationTest, testWriteNullPortable)
+{
+    serialization_config serializationConfig;
+    serialization::pimpl::SerializationService serializationService(
+      serializationConfig);
+
+    serialization::pimpl::data data;
+    TestInnerPortable inner = create_inner_portable();
+    data = serializationService.to_data<TestInnerPortable>(&inner);    
+
+    TestNamedPortableV4 portable_object;
+    portable_object.k = 1;    
+    data =
+      serializationService.to_data<TestNamedPortableV4>(portable_object);
+
+    auto t = serializationService.to_object<TestNamedPortableV4>(data);
+    ASSERT_TRUE(t);
+    ASSERT_EQ(1, t->k);    
+    ASSERT_FALSE(t->inner_portable.has_value());
+    
+    boost::optional<test::TestInnerPortable> tmp_inner = inner;
+    portable_object.k = 2;
+    portable_object.inner_portable = tmp_inner;
+    data =
+      serializationService.to_data<TestNamedPortableV4>(portable_object);
+
+    t = serializationService.to_object<TestNamedPortableV4>(data);
+    ASSERT_TRUE(t);
+    ASSERT_EQ(2, t->k);
+    ASSERT_TRUE(t->inner_portable.has_value());
+}
+
 class serialization_with_server
   : public ClientTest
   , public ::testing::WithParamInterface<boost::endian::order>

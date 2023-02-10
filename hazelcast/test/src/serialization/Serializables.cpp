@@ -662,6 +662,50 @@ hz_serializer<test::TestNamedPortableV3>::read_portable(portable_reader& reader)
 }
 
 int32_t
+hz_serializer<test::TestNamedPortableV4>::get_factory_id()
+{
+    return static_cast<int32_t>(
+      test::test_serialization_constants::TEST_PORTABLE_FACTORY);
+}
+
+int32_t
+hz_serializer<test::TestNamedPortableV4>::get_class_id()
+{
+    return static_cast<int32_t>(
+      test::test_serialization_constants::TEST_NAMED_PORTABLE_4);
+}
+
+void
+hz_serializer<test::TestNamedPortableV4>::write_portable(
+  const test::TestNamedPortableV4& object,
+  portable_writer& writer)
+{    
+    writer.write<int32_t>("myint", object.k);
+
+    if(object.inner_portable.has_value()){
+        writer.write_portable<test::TestInnerPortable>("inner_portable", &object.inner_portable.value());
+    }else{
+        writer.write_null_portable<test::TestInnerPortable>("inner_portable");
+    }
+    
+}
+
+test::TestNamedPortableV4
+hz_serializer<test::TestNamedPortableV4>::read_portable(portable_reader& reader)
+{
+    test::TestNamedPortableV4 object;
+    
+    object.k = reader.read<int32_t>("myint");
+    auto inner_portable = reader.read_portable<test::TestInnerPortable>("inner_portable");
+
+    if(inner_portable.has_value())
+    {
+        object.inner_portable = inner_portable.value();
+    }
+    return object;
+}
+
+int32_t
 hz_serializer<test::TestInvalidWritePortable>::get_factory_id()
 {
     return static_cast<int32_t>(

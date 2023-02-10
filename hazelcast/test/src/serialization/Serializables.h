@@ -42,6 +42,7 @@ enum struct test_serialization_constants
     TEST_NAMED_PORTABLE_2 = 12,
     TEST_NAMED_PORTABLE_3 = 13,
     TEST_RAW_DATA_PORTABLE = 14,
+    TEST_NAMED_PORTABLE_4 = 15,
 
     TEST_PORTABLE_FACTORY = 1,
     TEST_DATA_FACTORY = 1,
@@ -212,6 +213,15 @@ struct TestNamedPortableV3
 
     friend bool operator==(const TestNamedPortableV3& lhs,
                            const TestNamedPortableV3& rhs);
+};
+
+struct TestNamedPortableV4
+{    
+    int k;
+    boost::optional<TestInnerPortable> inner_portable;
+
+    friend bool operator==(const TestNamedPortableV4& lhs,
+                           const TestNamedPortableV4& rhs);
 };
 
 struct TestCustomXSerializable
@@ -411,6 +421,19 @@ struct hz_serializer<test::TestNamedPortableV3>
                                portable_writer& writer);
 
     static test::TestNamedPortableV3 read_portable(portable_reader& reader);
+};
+
+template<>
+struct hz_serializer<test::TestNamedPortableV4> : public portable_serializer
+{
+    static int32_t get_factory_id();
+
+    static int32_t get_class_id();
+
+    static void write_portable(const test::TestNamedPortableV4& object,
+                               portable_writer& writer);
+
+    static test::TestNamedPortableV4 read_portable(portable_reader& reader);
 };
 
 template<>
