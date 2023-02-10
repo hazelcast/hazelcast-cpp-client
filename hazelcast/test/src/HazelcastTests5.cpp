@@ -1879,7 +1879,7 @@ TEST_P(ClientMapTest, testValuesWithpaging_predicate)
     ASSERT_EQ(empl3, result[0]);
     ASSERT_EQ(empl4, result[1]);
 
-    query::greater_less_predicate keyLessThanFivePredicate(
+    query::greater_less_predicate keyLessThanSevenPredicate(
       client_, query::query_constants::KEY_ATTRIBUTE_NAME, 7, false, true);
 
     predSize = 2;
