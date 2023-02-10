@@ -742,8 +742,11 @@ TEST_F(ConfiguredBehaviourTest, testRemoveLifecycleListener)
 {
     HazelcastServer hazelcastInstance(default_server_factory());
 
-    client_config_.get_connection_strategy_config().set_reconnect_mode(
+    auto tmp_connection_strategy = client_config_.get_connection_strategy_config();
+    tmp_connection_strategy.set_reconnect_mode(
       config::client_connection_strategy_config::OFF);
+
+    client_config_.set_connection_strategy_config( std::move(tmp_connection_strategy) );
     hazelcast_client client(new_client(std::move(client_config_)).get());
     boost::latch shutdownLatch(1);
     auto lifecycle_id = client.add_lifecycle_listener(lifecycle_listener().on_shutdown(
