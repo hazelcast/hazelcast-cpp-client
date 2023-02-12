@@ -2346,26 +2346,31 @@ TEST_F(FlakeIdGeneratorApiTest, testSmoke)
 
 TEST_F(FlakeIdGeneratorApiTest, testGeneratorConfig)
 {
-  client_config clientConfig = get_config();
-  config::client_flake_id_generator_config flakeIdConfig("flake_config"), flakeIdConfig2("flake_config_2");;
-  flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(
-    std::chrono::seconds(20));
-  clientConfig.add_flake_id_generator_config(flakeIdConfig);
-  
-  const config::client_flake_id_generator_config* readed_flake_config = clientConfig.get_flake_id_generator_config("flake_config");
+    client_config clientConfig = get_config();
+    config::client_flake_id_generator_config flakeIdConfig("flake_config"),
+      flakeIdConfig2("flake_config_2");
+    ;
+    flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(
+      std::chrono::seconds(20));
+    clientConfig.add_flake_id_generator_config(flakeIdConfig);
 
-  ASSERT_EQ( readed_flake_config->get_prefetch_count(), 10 );
-  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), std::chrono::seconds(20) );
+    const config::client_flake_id_generator_config* readed_flake_config =
+      clientConfig.get_flake_id_generator_config("flake_config");
 
-  flakeIdConfig2.set_prefetch_count(20).set_prefetch_validity_duration(
-    std::chrono::seconds(30));
+    ASSERT_EQ(readed_flake_config->get_prefetch_count(), 10);
+    ASSERT_EQ(readed_flake_config->get_prefetch_validity_duration(),
+              std::chrono::seconds(20));
 
-  clientConfig.add_flake_id_generator_config(flakeIdConfig2);    
-  readed_flake_config = clientConfig.get_flake_id_generator_config("flake_config_2");
+    flakeIdConfig2.set_prefetch_count(20).set_prefetch_validity_duration(
+      std::chrono::seconds(30));
 
-  ASSERT_EQ( readed_flake_config->get_prefetch_count(), 20 );
-  ASSERT_EQ( readed_flake_config->get_prefetch_validity_duration(), std::chrono::seconds(30) );    
+    clientConfig.add_flake_id_generator_config(flakeIdConfig2);
+    readed_flake_config =
+      clientConfig.get_flake_id_generator_config("flake_config_2");
 
+    ASSERT_EQ(readed_flake_config->get_prefetch_count(), 20);
+    ASSERT_EQ(readed_flake_config->get_prefetch_validity_duration(),
+              std::chrono::seconds(30));
 }
 
 } // namespace test
@@ -2780,7 +2785,7 @@ TEST_F(ClientTxnMapTest, testIsEmpty)
 }
 
 TEST_F(ClientTxnMapTest, testServiceName)
-{    
+{
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();
 
@@ -2789,7 +2794,7 @@ TEST_F(ClientTxnMapTest, testServiceName)
     ASSERT_EQ(map->get_service_name(), "hz:impl:mapService");
 
     // added for test coverage
-    ASSERT_NO_THROW(map->destroy().get());    
+    ASSERT_NO_THROW(map->destroy().get());
 }
 
 } // namespace test
@@ -2838,7 +2843,7 @@ TEST_F(ClientTxnSetTest, testAddRemove)
 }
 
 TEST_F(ClientTxnSetTest, testServiceName)
-{    
+{
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();
 
@@ -3076,26 +3081,27 @@ TEST_F(ClientTxnTest, testTxnInitMethod)
     boost::latch init_latch(1);
 
     load_balancer tmp_load_balancer;
-    tmp_load_balancer.init([&init_latch](cluster &c){init_latch.count_down();}).next([](cluster& c) {
-        std::vector<member> members = c.get_members();
-        size_t len = members.size();
-        if (len == 0) {
-            return boost::optional<member>();
-        }
-        for (size_t i = 0; i < len; i++) {
-            if (members[i].get_address().get_port() == 5701) {
-                return boost::make_optional<member>(std::move(members[i]));
-            }
-        }
-        return boost::make_optional<member>(std::move(members[0]));
-    });
+    tmp_load_balancer
+      .init([&init_latch](cluster& c) { init_latch.count_down(); })
+      .next([](cluster& c) {
+          std::vector<member> members = c.get_members();
+          size_t len = members.size();
+          if (len == 0) {
+              return boost::optional<member>();
+          }
+          for (size_t i = 0; i < len; i++) {
+              if (members[i].get_address().get_port() == 5701) {
+                  return boost::make_optional<member>(std::move(members[i]));
+              }
+          }
+          return boost::make_optional<member>(std::move(members[0]));
+      });
 
     clientConfig.set_load_balancer(std::move(tmp_load_balancer));
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
 
     ASSERT_OPEN_EVENTUALLY(init_latch);
-  
 }
 
 TEST_F(ClientTxnTest, testTxnInitMethodRValue)
@@ -3103,25 +3109,26 @@ TEST_F(ClientTxnTest, testTxnInitMethodRValue)
     client_config clientConfig = get_config();
     boost::latch init_latch(1);
 
-    clientConfig.set_load_balancer( load_balancer().init([&init_latch]
-    (cluster &c){init_latch.count_down();}).next([](cluster& c) {
-        std::vector<member> members = c.get_members();
-        size_t len = members.size();
-        if (len == 0) {
-            return boost::optional<member>();
-        }
-        for (size_t i = 0; i < len; i++) {
-            if (members[i].get_address().get_port() == 5701) {
-                return boost::make_optional<member>(std::move(members[i]));
+    clientConfig.set_load_balancer(
+      load_balancer()
+        .init([&init_latch](cluster& c) { init_latch.count_down(); })
+        .next([](cluster& c) {
+            std::vector<member> members = c.get_members();
+            size_t len = members.size();
+            if (len == 0) {
+                return boost::optional<member>();
             }
-        }
-        return boost::make_optional<member>(std::move(members[0]));
-    }));
+            for (size_t i = 0; i < len; i++) {
+                if (members[i].get_address().get_port() == 5701) {
+                    return boost::make_optional<member>(std::move(members[i]));
+                }
+            }
+            return boost::make_optional<member>(std::move(members[0]));
+        }));
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
 
     ASSERT_OPEN_EVENTUALLY(init_latch);
-  
 }
 
 } // namespace test
@@ -3172,7 +3179,7 @@ TEST_F(ClientTxnListTest, testAddRemove)
 }
 
 TEST_F(ClientTxnListTest, testServiceName)
-{    
+{
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();
 
@@ -3276,7 +3283,7 @@ TEST_F(ClientTxnMultiMapTest, testPutGetRemove)
 }
 
 TEST_F(ClientTxnMultiMapTest, testServiceName)
-{    
+{
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();
 
@@ -3284,7 +3291,7 @@ TEST_F(ClientTxnMultiMapTest, testServiceName)
 
     ASSERT_EQ(multi_map->get_service_name(), "hz:impl:multiMapService");
     // added for test coverage
-    ASSERT_NO_THROW(multi_map->destroy().get());    
+    ASSERT_NO_THROW(multi_map->destroy().get());
 }
 
 } // namespace test

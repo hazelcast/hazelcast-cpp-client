@@ -658,7 +658,7 @@ TEST_F(ClientQueueTest, testListenerOnRemoved)
     for (int i = 0; i < num_of_entry; i++) {
         ASSERT_TRUE(
           q->remove(std::string("event_item") + std::to_string(i)).get());
-    }    
+    }
 
     ASSERT_OPEN_EVENTUALLY(latch1);
     ASSERT_TRUE(q->remove_item_listener(id).get());

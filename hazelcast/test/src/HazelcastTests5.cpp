@@ -1884,14 +1884,12 @@ TEST_P(ClientMapTest, testValuesWithpaging_predicate)
 
     predSize = 2;
     auto predicate4 = int_map_->new_paging_predicate<int, employee>(
-      keyLessThanSevenPredicate,
-      EmployeeEntryComparator(), (size_t)predSize);
+      keyLessThanSevenPredicate, EmployeeEntryComparator(), (size_t)predSize);
     std::vector<employee> result2 =
       employees_->values<int, employee>(predicate4).get();
     ASSERT_EQ(2, (int)result2.size());
     EXPECT_EQ(empl2, result2[0]);
     EXPECT_EQ(empl3, result2[1]);
-   
 }
 
 TEST_P(ClientMapTest, testKeySetWithPredicate)
@@ -4054,19 +4052,19 @@ TEST_P(ClientMapTest, testExtendedAsciiString)
 
 TEST_P(ClientMapTest, testWithGetDistrubtedObject)
 {
-  auto tmp_imap = client_.get_distributed_object<imap>(get_test_name()).get();
+    auto tmp_imap = client_.get_distributed_object<imap>(get_test_name()).get();
 
-  tmp_imap->put(1,1).get();
-  tmp_imap->put(2,2).get();
-  tmp_imap->put(3,3).get();
-  ASSERT_EQ(3, tmp_imap->size().get());
-  ASSERT_FALSE(tmp_imap->contains_key(10).get());
-  ASSERT_TRUE(tmp_imap->contains_key(1).get());
+    tmp_imap->put(1, 1).get();
+    tmp_imap->put(2, 2).get();
+    tmp_imap->put(3, 3).get();
+    ASSERT_EQ(3, tmp_imap->size().get());
+    ASSERT_FALSE(tmp_imap->contains_key(10).get());
+    ASSERT_TRUE(tmp_imap->contains_key(1).get());
 
-  tmp_imap->remove<int,int>(1).get();
-  ASSERT_EQ(2, tmp_imap->size().get());  
-  ASSERT_FALSE(tmp_imap->contains_key(1).get());
-  tmp_imap->destroy().get();
+    tmp_imap->remove<int, int>(1).get();
+    ASSERT_EQ(2, tmp_imap->size().get());
+    ASSERT_FALSE(tmp_imap->contains_key(1).get());
+    tmp_imap->destroy().get();
 }
 
 } // namespace test

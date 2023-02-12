@@ -81,16 +81,20 @@ protected:
         auto entries = map->entry_set<typed_data, typed_data>().get();
         ASSERT_EQ(OPERATION_COUNT, entries.size());
         for (auto& entry : entries) {
-            auto &first = entry.first;
-            ASSERT_EQ( first.get_type().type_id, serialization::pimpl::serialization_constants::CONSTANT_TYPE_STRING);
+            auto& first = entry.first;
+            ASSERT_EQ(first.get_type().type_id,
+                      serialization::pimpl::serialization_constants::
+                        CONSTANT_TYPE_STRING);
             auto key = first.get<std::string>();
             ASSERT_TRUE(key.has_value());
             ASSERT_EQ(0U, key.value().find("foo-"));
-            auto &second = entry.second;       
-            ASSERT_EQ(second.get_type().type_id, serialization::pimpl::serialization_constants::CONSTANT_TYPE_STRING);
+            auto& second = entry.second;
+            ASSERT_EQ(second.get_type().type_id,
+                      serialization::pimpl::serialization_constants::
+                        CONSTANT_TYPE_STRING);
             auto val = second.get<std::string>();
             ASSERT_TRUE(val.has_value());
-            ASSERT_EQ("bar", val.value());            
+            ASSERT_EQ("bar", val.value());
         }
     }
 
@@ -542,14 +546,16 @@ TEST_F(ClientReplicatedMapTest, testDeregisterListener)
 {
     auto map = client->get_replicated_map(get_test_name()).get();
 
-    ASSERT_FALSE(map->remove_entry_listener(spi::ClientContext(*client).random_uuid()).get());
+    ASSERT_FALSE(
+      map->remove_entry_listener(spi::ClientContext(*client).random_uuid())
+        .get());
 
     boost::latch map_clearedLatch(1);
 
     entry_listener listener;
 
     listener.on_map_cleared([&map_clearedLatch](map_event&& event) {
-        ASSERT_EQ( get_test_name(), event.get_name());
+        ASSERT_EQ(get_test_name(), event.get_name());
         ASSERT_EQ(entry_event::type::CLEAR_ALL, event.get_event_type());
         const std::string& hostName =
           event.get_member().get_address().get_host();

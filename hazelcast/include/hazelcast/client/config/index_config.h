@@ -117,7 +117,7 @@ struct HAZELCAST_API index_config
      *
      * \param type Index type.
      */
-    index_config(index_type type=DEFAULT_TYPE);
+    index_config(index_type type = DEFAULT_TYPE);
 
     /**
      * Creates an index configuration of the given type with provided

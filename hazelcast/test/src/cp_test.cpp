@@ -525,11 +525,10 @@ TEST_F(basic_latch_test, test_try_wait)
 
     ASSERT_FALSE(cp_structure_->try_wait().get());
 
-    auto countdown = boost::async(boost::launch::async,    
-                                  [=]() { 
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                                            cp_structure_->count_down().get(); 
-                                        });
+    auto countdown = boost::async(boost::launch::async, [=]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        cp_structure_->count_down().get();
+    });
 
     ASSERT_FALSE(cp_structure_->try_wait().get());
 
@@ -914,14 +913,17 @@ TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown)
        response.success && response.result == "0"));
 }
 
-TEST_F( basic_lock_test, test_equality_operator )
+TEST_F(basic_lock_test, test_equality_operator)
 {
-    auto fenced_locked_1 = client_->get_cp_subsystem().get_lock( get_test_name() ).get();
-    auto fenced_locked_2 = client_->get_cp_subsystem().get_lock( get_test_name() ).get();
-    auto fenced_locked_3 = client_->get_cp_subsystem().get_lock( get_test_name() + "_3" ).get();
+    auto fenced_locked_1 =
+      client_->get_cp_subsystem().get_lock(get_test_name()).get();
+    auto fenced_locked_2 =
+      client_->get_cp_subsystem().get_lock(get_test_name()).get();
+    auto fenced_locked_3 =
+      client_->get_cp_subsystem().get_lock(get_test_name() + "_3").get();
 
-    ASSERT_TRUE( *fenced_locked_1 == *fenced_locked_2 );
-    ASSERT_FALSE( *fenced_locked_1 == *fenced_locked_3 );
+    ASSERT_TRUE(*fenced_locked_1 == *fenced_locked_2);
+    ASSERT_FALSE(*fenced_locked_1 == *fenced_locked_3);
 }
 
 class basic_sessionless_semaphore_test
