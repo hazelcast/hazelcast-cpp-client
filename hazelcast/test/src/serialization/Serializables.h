@@ -216,7 +216,7 @@ struct TestNamedPortableV3
 };
 
 struct TestNamedPortableV4
-{    
+{
     int k;
     boost::optional<TestInnerPortable> inner_portable;
 
