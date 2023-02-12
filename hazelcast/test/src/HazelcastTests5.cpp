@@ -1884,7 +1884,7 @@ TEST_P(ClientMapTest, testValuesWithpaging_predicate)
 
     predSize = 2;
     auto predicate4 = int_map_->new_paging_predicate<int, employee>(
-      keyLessThanFivePredicate,
+      keyLessThanSevenPredicate,
       EmployeeEntryComparator(), (size_t)predSize);
     std::vector<employee> result2 =
       employees_->values<int, employee>(predicate4).get();
