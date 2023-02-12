@@ -2884,7 +2884,7 @@ ClientTxnTest::ClientTxnTest()
     server_.reset(new HazelcastServer(hazelcast_instance_factory_));
     client_config clientConfig = get_config();
     // always start the txn on first member
-    clientConfig.set_load_balancer(load_balancer().init([](cluster &c){util::noop(c);}).next([](cluster& c) {
+    clientConfig.set_load_balancer(load_balancer().next([](cluster& c) {
         std::vector<member> members = c.get_members();
         size_t len = members.size();
         if (len == 0) {
@@ -3070,12 +3070,13 @@ TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash)
     ASSERT_EQ(0, q->size().get());
 }
 
-TEST_F(ClientTxnTest, testTxnClientConfig)
+TEST_F(ClientTxnTest, testTxnInitMethod)
 {
     client_config clientConfig = get_config();
+    boost::latch init_latch(1);
 
     load_balancer tmp_load_balancer;
-    tmp_load_balancer.init([](cluster &c){util::noop(c);}).next([](cluster& c) {
+    tmp_load_balancer.init([&init_latch](cluster &c){init_latch.count_down();}).next([](cluster& c) {
         std::vector<member> members = c.get_members();
         size_t len = members.size();
         if (len == 0) {
@@ -3089,10 +3090,38 @@ TEST_F(ClientTxnTest, testTxnClientConfig)
         return boost::make_optional<member>(std::move(members[0]));
     });
 
-    // always start the txn on first member    
     clientConfig.set_load_balancer(std::move(tmp_load_balancer));
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
+
+    ASSERT_OPEN_EVENTUALLY(init_latch);
+  
+}
+
+TEST_F(ClientTxnTest, testTxnInitMethodRValue)
+{
+    client_config clientConfig = get_config();
+    boost::latch init_latch(1);
+
+    clientConfig.set_load_balancer( load_balancer().init([&init_latch]
+    (cluster &c){init_latch.count_down();}).next([](cluster& c) {
+        std::vector<member> members = c.get_members();
+        size_t len = members.size();
+        if (len == 0) {
+            return boost::optional<member>();
+        }
+        for (size_t i = 0; i < len; i++) {
+            if (members[i].get_address().get_port() == 5701) {
+                return boost::make_optional<member>(std::move(members[i]));
+            }
+        }
+        return boost::make_optional<member>(std::move(members[0]));
+    }));
+    client_.reset(
+      new hazelcast_client{ new_client(std::move(clientConfig)).get() });
+
+    ASSERT_OPEN_EVENTUALLY(init_latch);
+  
 }
 
 } // namespace test
