@@ -1896,7 +1896,7 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
     using hazelcast::client::protocol::ClientMessage;
     using namespace protocol::codec;
 
-    auto message = send_schema_request_encode(s);
+    auto message = client_sendschema_encode(s);
 
     auto invocation =
       spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);

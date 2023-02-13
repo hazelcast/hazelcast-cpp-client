@@ -5789,20 +5789,16 @@ sql_fetch_encode(const sql::impl::query_id& query_id,
 }
 
 ClientMessage
-send_schema_request_encode(const serialization::pimpl::schema& sch)
-{
-    static constexpr int32_t MESSAGE_TYPE = 4864; // 0x001300
-    static constexpr size_t INITIAL_FRAME_SIZE =
-      ClientMessage::REQUEST_HEADER_LEN;
-
-    ClientMessage msg{ INITIAL_FRAME_SIZE };
+client_sendschema_encode(const serialization::pimpl::schema &schema) {
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size);
     msg.set_retryable(true);
-    msg.set_operation_name("Client.SendSchema");
+    msg.set_operation_name("client.sendschema");
 
-    msg.set_message_type(MESSAGE_TYPE);
+    msg.set_message_type(static_cast<int32_t>(4864));
     msg.set_partition_id(-1);
 
-    msg.set(sch, true);
+    msg.set(schema, true);
 
     return msg;
 }
