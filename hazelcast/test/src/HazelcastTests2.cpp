@@ -1878,11 +1878,13 @@ TEST_F(ClientSerializationTest, testWriteNullPortable)
 
     TestNamedPortableV4 portable_object;
     portable_object.k = 1;
+    portable_object.c_16 = u'a';
     data = serializationService.to_data<TestNamedPortableV4>(portable_object);
 
     auto t = serializationService.to_object<TestNamedPortableV4>(data);
     ASSERT_TRUE(t);
     ASSERT_EQ(1, t->k);
+    ASSERT_EQ(u'a', t->c_16);
     ASSERT_FALSE(t->inner_portable.has_value());
 
     boost::optional<test::TestInnerPortable> tmp_inner = inner;

@@ -218,6 +218,7 @@ struct TestNamedPortableV3
 struct TestNamedPortableV4
 {
     int k;
+    char16_t c_16;
     boost::optional<TestInnerPortable> inner_portable;
 
     friend bool operator==(const TestNamedPortableV4& lhs,

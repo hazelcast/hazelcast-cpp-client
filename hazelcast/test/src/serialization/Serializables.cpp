@@ -681,6 +681,7 @@ hz_serializer<test::TestNamedPortableV4>::write_portable(
   portable_writer& writer)
 {
     writer.write<int32_t>("myint", object.k);
+    writer.write<char16_t>("c_16", object.c_16);
 
     if (object.inner_portable.has_value()) {
         writer.write_portable<test::TestInnerPortable>(
@@ -696,6 +697,7 @@ hz_serializer<test::TestNamedPortableV4>::read_portable(portable_reader& reader)
     test::TestNamedPortableV4 object;
 
     object.k = reader.read<int32_t>("myint");
+    object.c_16 = reader.read<char16_t>("c_16");
     auto inner_portable =
       reader.read_portable<test::TestInnerPortable>("inner_portable");
 
