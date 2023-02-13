@@ -60,7 +60,7 @@ public:
     /**
      * Replicates schema on the cluster
      */
-    boost::future<void> replicate_schema(schema);
+    boost::future<void> replicate_schema_in_cluster(schema);
 
     bool is_schema_replicated(const schema&);
 

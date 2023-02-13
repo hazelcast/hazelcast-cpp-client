@@ -58,7 +58,7 @@ protected:
         spi::ClientContext context{ client };
 
         ASSERT_NO_THROW(
-          context.get_schema_service().replicate_schema(schema).get());
+          context.get_schema_service().replicate_schema_in_cluster(schema).get());
     }
 
     bool check_schema_on_backend(const schema_t& schema)

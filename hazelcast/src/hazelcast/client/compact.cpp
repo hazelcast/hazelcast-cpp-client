@@ -1885,7 +1885,7 @@ default_schema_service::get(int64_t schemaId)
 }
 
 boost::future<void>
-default_schema_service::replicate_schema(schema s)
+default_schema_service::replicate_schema_in_cluster(schema s)
 {
     return replicate_schema_attempt(std::move(s));
 }

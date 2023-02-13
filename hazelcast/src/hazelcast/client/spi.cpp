@@ -1462,7 +1462,7 @@ ClientInvocation::replicate_schemas(
               end(schemas),
               back_inserter(replications),
               [this](const serialization::pimpl::schema& s) {
-                  return schema_service_.replicate_schema(s);
+                  return schema_service_.replicate_schema_in_cluster(s);
               });
 
     auto self = shared_from_this();
