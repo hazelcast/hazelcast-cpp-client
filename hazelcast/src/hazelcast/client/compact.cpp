@@ -1963,7 +1963,7 @@ void
 default_schema_service::put_if_absent(schema s)
 {
     auto s_p = std::make_shared<schema>(std::move(s));
-    auto existing = replicateds_.put_if_absent(s.schema_id(), s_p);
+    auto existing = replicateds_.put_if_absent(s_p->schema_id(), s_p);
 
     if (!existing) {
         return;
@@ -1973,10 +1973,10 @@ default_schema_service::put_if_absent(schema s)
         throw exception::illegal_state{
             "default_schema_service::replicate_schema_attempt",
             (boost::format("Schema with schemaId %1% "
-                            "already exists. Existing "
-                            "schema %2%, new schema %3%") %
-            s.schema_id() % *existing % s)
-            .str()
+                           "already exists. Existing "
+                           "schema %2%, new schema %3%") %
+             s_p->.schema_id() % *existing % *s_p)
+              .str()
         };
     }
 }

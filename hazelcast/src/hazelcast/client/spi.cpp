@@ -1465,8 +1465,6 @@ ClientInvocation::replicate_schemas(
                   return schema_service_.replicate_schema_in_cluster(s);
               });
 
-    auto self = shared_from_this();
-
     return boost::when_all(begin(replications), end(replications));
 }
 
