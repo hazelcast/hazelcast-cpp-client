@@ -1909,13 +1909,9 @@ default_schema_service::replicate_schema_in_cluster(schema s)
           auto members = context_.get_cluster().get_members();
 
           for (int i = 1; i < max_put_retry_count_; ++i){
-            for (const member& searchee : members) {
-              auto contains =
-                any_of(begin(replicated_member_uuids),
-                       end(replicated_member_uuids),
-                       [&searchee](const boost::uuids::uuid member_id) {
-                           return searchee.get_uuid() == member_id;
-                       });
+            for (const member& member : members) {
+
+              auto contains = replicated_member_uuids.find(member.get_uuid()) != end(replicated_member_uuids);
 
               if (!contains) {
                   if (i == (max_put_retry_count_ - 1)) {
@@ -1953,23 +1949,7 @@ default_schema_service::replicate_schema_in_cluster(schema s)
             members = context_.get_cluster().get_members();
         }
 
-        auto s_p = std::make_shared<schema>(std::move(s));
-        auto existing = replicateds_.put_if_absent(s.schema_id(), s_p);
-
-        if (!existing) {
-            return;
-        }
-
-        if (*s_p != *existing) {
-            throw exception::illegal_state{
-                "default_schema_service::replicate_schema_attempt",
-                (boost::format("Schema with schemaId %1% "
-                                "already exists. Existing "
-                                "schema %2%, new schema %3%") %
-                s.schema_id() % *existing % s)
-                .str()
-            };
-        }
+        put_if_absent(std::move(s));
       });
 }
 
@@ -1977,6 +1957,28 @@ bool
 default_schema_service::is_schema_replicated(const schema& s)
 {
     return bool(replicateds_.get(s.schema_id()));
+}
+
+void
+default_schema_service::put_if_absent(schema s)
+{
+    auto s_p = std::make_shared<schema>(std::move(s));
+    auto existing = replicateds_.put_if_absent(s.schema_id(), s_p);
+
+    if (!existing) {
+        return;
+    }
+
+    if (*s_p != *existing) {
+        throw exception::illegal_state{
+            "default_schema_service::replicate_schema_attempt",
+            (boost::format("Schema with schemaId %1% "
+                            "already exists. Existing "
+                            "schema %2%, new schema %3%") %
+            s.schema_id() % *existing % s)
+            .str()
+        };
+    }
 }
 
 compact_stream_serializer::compact_stream_serializer(

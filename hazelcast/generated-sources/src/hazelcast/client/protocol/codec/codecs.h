@@ -3088,7 +3088,7 @@ client_sendschema_encode(const serialization::pimpl::schema& schema);
 /**
  * Decodes response of send schema request
  */
-std::vector<boost::uuids::uuid> HAZELCAST_API
+std::unordered_set<boost::uuids::uuid,boost::hash<boost::uuids::uuid>> HAZELCAST_API
 send_schema_response_decode(ClientMessage&);
 
 } // namespace codec

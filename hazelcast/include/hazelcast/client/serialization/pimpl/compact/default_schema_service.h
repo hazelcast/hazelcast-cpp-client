@@ -65,7 +65,8 @@ public:
     bool is_schema_replicated(const schema&);
 
 private:
-    boost::future<void> replicate_schema_attempt(schema, int attempts = 0);
+
+    void put_if_absent(schema);
 
     int retry_pause_millis_;
     int max_put_retry_count_;

@@ -5803,11 +5803,11 @@ client_sendschema_encode(const serialization::pimpl::schema &schema) {
     return msg;
 }
 
-std::vector<boost::uuids::uuid>
+std::unordered_set<boost::uuids::uuid,boost::hash<boost::uuids::uuid>>
 send_schema_response_decode(ClientMessage& m)
 {
     m.skip_frame();
-    return m.get<std::vector<boost::uuids::uuid>>();
+    return m.get<std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>>();
 }
 
 } // namespace codec

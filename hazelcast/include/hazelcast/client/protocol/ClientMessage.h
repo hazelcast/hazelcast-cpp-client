@@ -26,6 +26,7 @@
 #include <ostream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <iterator>
 #include <algorithm>
@@ -535,6 +536,27 @@ public:
 
         // skip end frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+        return result;
+    }
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<T, std::unordered_set<typename T::value_type, typename T::hasher>>::value,
+      T>::type
+    get()
+    {
+        T result;
+
+        auto f = reinterpret_cast<frame_header_type*>(
+          rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+        auto content_length =
+          static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
+        size_t item_count =
+          content_length / ClientMessage::get_sizeof<typename T::value_type>();
+        for (size_t i = 0; i < item_count; ++i) {
+            result.emplace(get<typename T::value_type>());
+        }
 
         return result;
     }
