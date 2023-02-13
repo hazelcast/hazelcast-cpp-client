@@ -26,6 +26,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/cluster.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/client_properties.h"
 
@@ -1890,12 +1891,6 @@ default_schema_service::get(int64_t schemaId)
 boost::future<void>
 default_schema_service::replicate_schema_in_cluster(schema s)
 {
-    return replicate_schema_attempt(std::move(s));
-}
-
-boost::future<void>
-default_schema_service::replicate_schema_attempt(schema s, int attempts)
-{
     using hazelcast::client::protocol::ClientMessage;
     using namespace protocol::codec;
 
@@ -1904,15 +1899,17 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
     auto invocation =
       spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
 
-    return invocation->invoke().then(
-      boost::launch::sync,
-      [this, attempts, s](boost::future<ClientMessage> future) {
-          auto msg = future.get();
+    auto execution_service = context_.get_client_execution_service().shared_from_this();
 
-          auto replicated_member_uuids = send_schema_response_decode(msg);
+    return invocation->invoke().then(
+      execution_service->get_user_executor(),
+      [this, s, execution_service](boost::future<ClientMessage> future) mutable {
+          auto response = future.get();
+          auto replicated_member_uuids = send_schema_response_decode(response);
           auto members = context_.get_cluster().get_members();
 
-          for (const member& searchee : members) {
+          for (int i = 1; i < max_put_retry_count_; ++i){
+            for (const member& searchee : members) {
               auto contains =
                 any_of(begin(replicated_member_uuids),
                        end(replicated_member_uuids),
@@ -1921,7 +1918,7 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
                        });
 
               if (!contains) {
-                  if (attempts >= max_put_retry_count_) {
+                  if (i == (max_put_retry_count_ - 1)) {
                       throw exception::illegal_state{
                           "default_schema_service::replicate_schema_attempt",
                           (boost::format("The schema %1% cannot be "
@@ -1941,31 +1938,38 @@ default_schema_service::replicate_schema_attempt(schema s, int attempts)
                       std::this_thread::sleep_for(
                         std::chrono::milliseconds{ retry_pause_millis_ });
 
-                      replicate_schema_attempt(std::move(s), attempts + 1)
-                        .get();
-
-                      return;
+                      break;
                   }
               }
-          }
+            }
 
-          auto s_p = std::make_shared<schema>(std::move(s));
-          auto existing = replicateds_.put_if_absent(s.schema_id(), s_p);
+            auto message = client_sendschema_encode(s);
 
-          if (!existing) {
-              return;
-          }
+            auto invocation =
+            spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
 
-          if (*s_p != *existing) {
-              throw exception::illegal_state{
-                  "default_schema_service::replicate_schema_attempt",
-                  (boost::format("Schema with schemaId %1% "
-                                 "already exists. Existing "
-                                 "schema %2%, new schema %3%") %
-                   s.schema_id() % *existing % s)
-                    .str()
-              };
-          }
+            auto response = invocation->invoke().get();
+            replicated_member_uuids = send_schema_response_decode(response);
+            members = context_.get_cluster().get_members();
+        }
+
+        auto s_p = std::make_shared<schema>(std::move(s));
+        auto existing = replicateds_.put_if_absent(s.schema_id(), s_p);
+
+        if (!existing) {
+            return;
+        }
+
+        if (*s_p != *existing) {
+            throw exception::illegal_state{
+                "default_schema_service::replicate_schema_attempt",
+                (boost::format("Schema with schemaId %1% "
+                                "already exists. Existing "
+                                "schema %2%, new schema %3%") %
+                s.schema_id() % *existing % s)
+                .str()
+            };
+        }
       });
 }
 
