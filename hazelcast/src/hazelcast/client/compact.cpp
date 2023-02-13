@@ -1771,7 +1771,10 @@ schema::schema(
     }
 
     for (auto& item : sorted_fields) {
-        field_definition_map_[item.first] = item.second;
+        auto field = field_definition_map_.find(item.first);
+
+        assert(field != end(field_definition_map_));
+        field->second = item.second;
     }
 
     number_of_var_size_fields_ = index;
