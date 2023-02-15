@@ -572,6 +572,13 @@ TEST_F(ClientReplicatedMapTest, testDeregisterListener)
     map->clear().get();
     ASSERT_OPEN_EVENTUALLY(map_clearedLatch);
     ASSERT_TRUE(map->remove_entry_listener(listenerRegistrationId).get());
+
+    map_clearedLatch.reset(1);
+
+    map->put(1, 1).get();
+    map->clear().get();
+    ASSERT_EQ(boost::cv_status::timeout,
+              map_clearedLatch.wait_for(boost::chrono::seconds(1)));    
 }
 
 class ClientReplicatedMapInvalidation : public ClientReplicatedMapTestBase

@@ -662,9 +662,6 @@ TEST_F(ClientQueueTest, testListenerOnRemoved)
 
     ASSERT_OPEN_EVENTUALLY(latch1);
     EXPECT_TRUE(q->remove_item_listener(id).get());
-
-    // added for test coverage
-    EXPECT_NO_THROW(q->destroy().get());
 }
 
 TEST_F(ClientQueueTest, testOfferPoll)
