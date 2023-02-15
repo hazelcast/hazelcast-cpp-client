@@ -4057,13 +4057,13 @@ TEST_P(ClientMapTest, testWithGetDistrubtedObject)
     tmp_imap->put(1, 1).get();
     tmp_imap->put(2, 2).get();
     tmp_imap->put(3, 3).get();
-    ASSERT_EQ(3, tmp_imap->size().get());
-    ASSERT_FALSE(tmp_imap->contains_key(10).get());
-    ASSERT_TRUE(tmp_imap->contains_key(1).get());
+    EXPECT_EQ(3, tmp_imap->size().get());
+    EXPECT_FALSE(tmp_imap->contains_key(10).get());
+    EXPECT_TRUE(tmp_imap->contains_key(1).get());
 
     tmp_imap->remove<int, int>(1).get();
-    ASSERT_EQ(2, tmp_imap->size().get());
-    ASSERT_FALSE(tmp_imap->contains_key(1).get());
+    EXPECT_EQ(2, tmp_imap->size().get());
+    EXPECT_FALSE(tmp_imap->contains_key(1).get());
     tmp_imap->destroy().get();
 }
 

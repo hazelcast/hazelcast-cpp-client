@@ -386,7 +386,7 @@ TEST_F(ClientConfigTest, test_set_instance_name)
   ClientService at server side. As C++ client cannot access this service,
   the label cannot be compared at server side.
 */
-TEST_F(ClientConfigTest, test_client_label_over_client_config)
+TEST_F(ClientConfigTest, test_add_label)
 {
     client_config config;
     bool is_found = false;
@@ -394,14 +394,14 @@ TEST_F(ClientConfigTest, test_client_label_over_client_config)
 
     config.add_label(label);
     auto& labels = config.get_labels();
-    ASSERT_EQ(1, labels.size());
+    EXPECT_EQ(1, labels.size());
     is_found = labels.find(label) != labels.end();
-    ASSERT_TRUE(is_found);
+    EXPECT_TRUE(is_found);
     is_found = labels.find(non_existing_label) != labels.end();
-    ASSERT_FALSE(is_found);
+    EXPECT_FALSE(is_found);
 }
 
-TEST_F(ClientConfigTest, test_client_set_label_over_client_config)
+TEST_F(ClientConfigTest, test_set_label)
 {
     client_config config;
     bool is_found = false;
@@ -414,13 +414,13 @@ TEST_F(ClientConfigTest, test_client_set_label_over_client_config)
     config.set_labels(labels_to_set);
 
     auto& labels = config.get_labels();
-    ASSERT_EQ(2, labels.size());
+    EXPECT_EQ(2, labels.size());
     is_found = labels.find(label_1) != labels.end();
-    ASSERT_TRUE(is_found);
+    EXPECT_TRUE(is_found);
     is_found = labels.find(label_2) != labels.end();
-    ASSERT_TRUE(is_found);
+    EXPECT_TRUE(is_found);
     is_found = labels.find(non_existing_label) != labels.end();
-    ASSERT_FALSE(is_found);
+    EXPECT_FALSE(is_found);
 }
 
 TEST(connection_retry_config_test, large_jitter)
@@ -1883,9 +1883,9 @@ TEST_F(ClientSerializationTest, testWriteNullPortable)
 
     auto t = serializationService.to_object<TestNamedPortableV4>(data);
     ASSERT_TRUE(t);
-    ASSERT_EQ(1, t->k);
-    ASSERT_EQ(u'a', t->c_16);
-    ASSERT_FALSE(t->inner_portable.has_value());
+    EXPECT_EQ(1, t->k);
+    EXPECT_EQ(u'a', t->c_16);
+    EXPECT_FALSE(t->inner_portable.has_value());
 
     boost::optional<test::TestInnerPortable> tmp_inner = inner;
     portable_object.k = 2;
@@ -1894,8 +1894,8 @@ TEST_F(ClientSerializationTest, testWriteNullPortable)
 
     t = serializationService.to_object<TestNamedPortableV4>(data);
     ASSERT_TRUE(t);
-    ASSERT_EQ(2, t->k);
-    ASSERT_TRUE(t->inner_portable.has_value());
+    EXPECT_EQ(2, t->k);
+    EXPECT_TRUE(t->inner_portable.has_value());
 }
 
 class serialization_with_server

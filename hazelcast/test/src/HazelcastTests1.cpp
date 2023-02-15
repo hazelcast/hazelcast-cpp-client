@@ -2344,12 +2344,12 @@ TEST_F(FlakeIdGeneratorApiTest, testSmoke)
     ASSERT_EQ(4 * NUM_IDS_PER_THREAD, allIds.size());
 }
 
-TEST_F(FlakeIdGeneratorApiTest, testGeneratorConfig)
+TEST_F(FlakeIdGeneratorApiTest, testAddGetFlakeIdGeneratorIntegrity)
 {
     client_config clientConfig = get_config();
     config::client_flake_id_generator_config flakeIdConfig("flake_config"),
       flakeIdConfig2("flake_config_2");
-    ;
+    
     flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(
       std::chrono::seconds(20));
     clientConfig.add_flake_id_generator_config(flakeIdConfig);
@@ -2357,8 +2357,9 @@ TEST_F(FlakeIdGeneratorApiTest, testGeneratorConfig)
     const config::client_flake_id_generator_config* readed_flake_config =
       clientConfig.get_flake_id_generator_config("flake_config");
 
-    ASSERT_EQ(readed_flake_config->get_prefetch_count(), 10);
-    ASSERT_EQ(readed_flake_config->get_prefetch_validity_duration(),
+    EXPECT_EQ(readed_flake_config->get_name(), "flake_config");
+    EXPECT_EQ(readed_flake_config->get_prefetch_count(), 10);
+    EXPECT_EQ(readed_flake_config->get_prefetch_validity_duration(),
               std::chrono::seconds(20));
 
     flakeIdConfig2.set_prefetch_count(20).set_prefetch_validity_duration(
@@ -2368,8 +2369,9 @@ TEST_F(FlakeIdGeneratorApiTest, testGeneratorConfig)
     readed_flake_config =
       clientConfig.get_flake_id_generator_config("flake_config_2");
 
-    ASSERT_EQ(readed_flake_config->get_prefetch_count(), 20);
-    ASSERT_EQ(readed_flake_config->get_prefetch_validity_duration(),
+    EXPECT_EQ(readed_flake_config->get_name(), "flake_config_2");
+    EXPECT_EQ(readed_flake_config->get_prefetch_count(), 20);
+    EXPECT_EQ(readed_flake_config->get_prefetch_validity_duration(),
               std::chrono::seconds(30));
 }
 
@@ -2784,7 +2786,7 @@ TEST_F(ClientTxnMapTest, testIsEmpty)
     ASSERT_FALSE(regularMap->is_empty().get());
 }
 
-TEST_F(ClientTxnMapTest, testServiceName)
+TEST_F(ClientTxnMapTest, testServiceNameAndDestroy)
 {
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();
@@ -2842,7 +2844,7 @@ TEST_F(ClientTxnSetTest, testAddRemove)
     ASSERT_EQ(1, s->size().get());
 }
 
-TEST_F(ClientTxnSetTest, testServiceName)
+TEST_F(ClientTxnSetTest, testServiceNameAndDestroy)
 {
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();
@@ -3075,7 +3077,7 @@ TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash)
     ASSERT_EQ(0, q->size().get());
 }
 
-TEST_F(ClientTxnTest, testTxnInitMethod)
+TEST_F(ClientTxnTest, testTxnInitAndNextMethod)
 {
     client_config clientConfig = get_config();
     boost::latch init_latch(1);
@@ -3104,7 +3106,7 @@ TEST_F(ClientTxnTest, testTxnInitMethod)
     ASSERT_OPEN_EVENTUALLY(init_latch);
 }
 
-TEST_F(ClientTxnTest, testTxnInitMethodRValue)
+TEST_F(ClientTxnTest, testTxnInitAndNextMethodRValue)
 {
     client_config clientConfig = get_config();
     boost::latch init_latch(1);
@@ -3178,7 +3180,7 @@ TEST_F(ClientTxnListTest, testAddRemove)
     ASSERT_EQ(1, l->size().get());
 }
 
-TEST_F(ClientTxnListTest, testServiceName)
+TEST_F(ClientTxnListTest, testServiceNameAndDestroy)
 {
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();
@@ -3282,7 +3284,7 @@ TEST_F(ClientTxnMultiMapTest, testPutGetRemove)
     boost::wait_for_all(futures.begin(), futures.end());
 }
 
-TEST_F(ClientTxnMultiMapTest, testServiceName)
+TEST_F(ClientTxnMultiMapTest, testServiceNameAndDestroy)
 {
     transaction_context context = client_.new_transaction_context();
     context.begin_transaction().get();

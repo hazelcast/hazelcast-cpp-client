@@ -555,13 +555,13 @@ TEST_F(ClientReplicatedMapTest, testDeregisterListener)
     entry_listener listener;
 
     listener.on_map_cleared([&map_clearedLatch](map_event&& event) {
-        ASSERT_EQ(get_test_name(), event.get_name());
-        ASSERT_EQ(entry_event::type::CLEAR_ALL, event.get_event_type());
+        EXPECT_EQ(get_test_name(), event.get_name());
+        EXPECT_EQ(entry_event::type::CLEAR_ALL, event.get_event_type());
         const std::string& hostName =
           event.get_member().get_address().get_host();
-        ASSERT_TRUE(hostName == "127.0.0.1" || hostName == "localhost");
-        ASSERT_EQ(5701, event.get_member().get_address().get_port());
-        ASSERT_EQ(1, event.get_number_of_entries_affected());
+        EXPECT_TRUE(hostName == "127.0.0.1" || hostName == "localhost");
+        EXPECT_EQ(5701, event.get_member().get_address().get_port());
+        EXPECT_EQ(1, event.get_number_of_entries_affected());
         std::cout << "Map cleared event received:" << event << std::endl;
         map_clearedLatch.count_down();
     });

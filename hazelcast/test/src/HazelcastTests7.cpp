@@ -540,12 +540,12 @@ TEST_F(ClientListTest, testListenerOnRemoved)
 
     listener.on_removed([&latch1](item_event&& item_event) {
         auto type = item_event.get_event_type();
-        ASSERT_EQ(item_event_type::REMOVED, type);
-        ASSERT_EQ("MyList", item_event.get_name());
+        EXPECT_EQ(item_event_type::REMOVED, type);
+        EXPECT_EQ("MyList", item_event.get_name());
         std::string host = item_event.get_member().get_address().get_host();
-        ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
-        ASSERT_EQ(5701, item_event.get_member().get_address().get_port());
-        ASSERT_EQ("item-1", item_event.get_item().get<std::string>().value());
+        EXPECT_TRUE(host == "localhost" || host == "127.0.0.1");
+        EXPECT_EQ(5701, item_event.get_member().get_address().get_port());
+        EXPECT_EQ("item-1", item_event.get_item().get<std::string>().value());
         latch1.count_down();
     });
 
@@ -556,7 +556,7 @@ TEST_F(ClientListTest, testListenerOnRemoved)
 
     ASSERT_OPEN_EVENTUALLY(latch1);
 
-    ASSERT_TRUE(list->remove_item_listener(registrationId).get());
+    EXPECT_TRUE(list->remove_item_listener(registrationId).get());
 }
 
 TEST_F(ClientListTest, testIsEmpty)
@@ -641,7 +641,7 @@ TEST_F(ClientQueueTest, testListener)
 
 TEST_F(ClientQueueTest, testListenerOnRemoved)
 {
-    ASSERT_EQ(0, q->size().get());
+    EXPECT_EQ(0, q->size().get());
     constexpr int num_of_entry = 5;
     boost::latch latch1(num_of_entry);
 
@@ -649,7 +649,7 @@ TEST_F(ClientQueueTest, testListenerOnRemoved)
       [&latch1](item_event&& item_event) { latch1.count_down(); });
 
     for (int i = 0; i < num_of_entry; i++) {
-        ASSERT_TRUE(
+        EXPECT_TRUE(
           q->offer(std::string("event_item") + std::to_string(i)).get());
     }
 
@@ -661,10 +661,10 @@ TEST_F(ClientQueueTest, testListenerOnRemoved)
     }
 
     ASSERT_OPEN_EVENTUALLY(latch1);
-    ASSERT_TRUE(q->remove_item_listener(id).get());
+    EXPECT_TRUE(q->remove_item_listener(id).get());
 
     // added for test coverage
-    ASSERT_NO_THROW(q->destroy().get());
+    EXPECT_NO_THROW(q->destroy().get());
 }
 
 TEST_F(ClientQueueTest, testOfferPoll)

@@ -745,15 +745,15 @@ TEST_P(BasicClientNearCacheTest, testSetCacheLocalEntries)
 {
     /*set_cache_local_entries and is_cache_local_entries methods are deprecated,
     for codecoverage, these dummy tests are added*/
-    ASSERT_FALSE(near_cache_config_.is_cache_local_entries());
+    EXPECT_FALSE(near_cache_config_.is_cache_local_entries());
 
     near_cache_config_.set_cache_local_entries(true);
 
-    ASSERT_TRUE(near_cache_config_.is_cache_local_entries());
+    EXPECT_TRUE(near_cache_config_.is_cache_local_entries());
 
     near_cache_config_.set_cache_local_entries(false);
 
-    ASSERT_FALSE(near_cache_config_.is_cache_local_entries());
+    EXPECT_FALSE(near_cache_config_.is_cache_local_entries());
 }
 
 INSTANTIATE_TEST_SUITE_P(ClientNearCacheTest,
@@ -1104,7 +1104,7 @@ TEST_F(ClientSetTest, testListenerOnRemoved)
     set->remove("done").get();
     ASSERT_OPEN_EVENTUALLY(latch1);
 
-    ASSERT_TRUE(set->remove_item_listener(registrationId).get());
+    EXPECT_TRUE(set->remove_item_listener(registrationId).get());
 }
 
 TEST_F(ClientSetTest, testIsEmpty)
@@ -1355,10 +1355,10 @@ TEST_F(ReliableTopicTest, testConfig)
     for (int k = 0; k < 5; k++) {
         const auto& msg = state->messages[k];
         auto val = msg.get_message_object().get<std::string>();
-        ASSERT_TRUE(val.has_value());
-        ASSERT_EQ(items[k], val.value());
+        EXPECT_TRUE(val.has_value());
+        EXPECT_EQ(items[k], val.value());
     }
-    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+    EXPECT_TRUE(topic_->remove_message_listener(listener_id_));
     topic_.reset();
 }
 
