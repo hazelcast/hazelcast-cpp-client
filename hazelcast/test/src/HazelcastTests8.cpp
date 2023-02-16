@@ -1610,30 +1610,6 @@ IssueTest::IssueTest()
       });
 }
 
-TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled)
-{
-    HazelcastServer hz1(default_server_factory());
-    HazelcastServer hz2(default_server_factory());
-
-    client_config clientConfig(get_config());
-    clientConfig.set_redo_operation(true);
-    clientConfig.get_network_config().set_smart_routing(false);
-
-    auto client = hazelcast::new_client(std::move(clientConfig)).get();
-
-    auto map = client.get_map("m").get();
-    int expected = 1000;
-    std::thread t;
-    for (int i = 0; i < expected; i++) {
-        if (i == 5) {
-            t = std::thread([&]() { hz1.shutdown(); });
-        }
-        map->put(i, i).get();
-    }
-    t.join();
-    ASSERT_EQ(expected, map->size().get());
-}
-
 TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart)
 {
     HazelcastServer server(default_server_factory());
@@ -1715,6 +1691,30 @@ TEST_F(IssueTest, issue_888)
                       ->remove_all(query::in_predicate(
                         hz, query::query_constants::KEY_ATTRIBUTE_NAME, myKeys))
                       .get());
+}
+
+TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled)
+{
+    HazelcastServer hz1(default_server_factory());
+    HazelcastServer hz2(default_server_factory());
+
+    client_config clientConfig(get_config());
+    clientConfig.set_redo_operation(true);
+    clientConfig.get_network_config().set_smart_routing(false);
+
+    auto client = hazelcast::new_client(std::move(clientConfig)).get();
+
+    auto map = client.get_map("m").get();
+    int expected = 1000;
+    std::thread t;
+    for (int i = 0; i < expected; i++) {
+        if (i == 5) {
+            t = std::thread([&]() { hz1.shutdown(); });
+        }
+        map->put(i, i).get();
+    }
+    t.join();
+    ASSERT_EQ(expected, map->size().get());
 }
 
 TEST_F(IssueTest,
