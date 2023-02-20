@@ -218,7 +218,7 @@ You can find more details on using a Vcpkg installed package from different IDEs
 
 If you need to use `openssl` feature, then you need to install using the following command:
 ```bat
-> .\vcpkg\vcpkg install hazelcast-cpp-client[openssl]
+> .\vcpkg\vcpkg install hazelcast-cpp-client[openssl] --recurse
 ```
 The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
 
