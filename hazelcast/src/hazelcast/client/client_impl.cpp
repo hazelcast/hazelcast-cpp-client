@@ -489,7 +489,7 @@ hazelcast_client_instance_impl::check_discovery_configuration_consistency(
     if (cloud_enabled)
         count++;
     if (count > 1) {
-        throw exception::illegal_state(
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
           "hazelcast_client_instance_impl::check_discovery_configuration_"
           "consistency",
           (boost::format(
@@ -497,7 +497,7 @@ hazelcast_client_instance_impl::check_discovery_configuration_consistency(
              "members given explicitly : %1%, aws discovery: %2%, "
              "hazelcast.cloud enabled : %3%") %
            address_list_provided % aws_enabled % cloud_enabled)
-            .str());
+            .str()));
     }
 }
 
