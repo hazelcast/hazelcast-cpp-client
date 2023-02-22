@@ -20,7 +20,7 @@ set +x
 
 trap cleanup EXIT
 
-HZ_VERSION=${HZ_VERSION:-5.1.3}
+HZ_VERSION=${HZ_VERSION:-5.2.0}
 HAZELCAST_TEST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION=0.8-SNAPSHOT
@@ -91,13 +91,24 @@ else
         exit 1
     fi
 fi
+
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar" ]; then
-echo "hazelcast-enterprise-tests.jar already exists, not downloading from maven."
+echo "hazelcast-enterprise-tests.jar already exists, not downloading."
 else
-    echo "Downloading: hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar:tests"
-    mvn -q dependency:get -Dtransitive=false -DrepoUrl=${ENTERPRISE_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar:tests -Ddest=hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar
-    if [ $? -ne 0 ]; then
-        echo "Failed download hazelcast enterprise test jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar:tests"
+    echo "Downloading: hazelcast enterprise test jar ${HAZELCAST_ENTERPRISE_VERSION}"
+    git clone git@github.com:hazelcast/private-test-artifacts.git
+
+    if [ $? -eq 0 ]; then
+        cd private-test-artifacts
+        git checkout data
+        cp certs.jar ../hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar
+        cd ..
+        rm -rf private-test-artifacts
+    else
+        echo "Failed download hazelcast enterprise test jar hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar"
+        echo "Make sure you have access permission to 'github.com/hazelcast/private-test-artifacts repo'"
+        echo "Make sure that you added you ssh-key to your github account."
+
         exit 1
     fi
 fi

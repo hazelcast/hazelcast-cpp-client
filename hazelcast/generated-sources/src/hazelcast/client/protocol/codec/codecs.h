@@ -3079,6 +3079,12 @@ ClientMessage HAZELCAST_API
 sql_fetch_encode(const sql::impl::query_id& query_id,
                  int32_t cursor_buffer_size);
 
+/**
+ * Replicates schema on cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendschema_encode(const serialization::pimpl::schema& schema);
+
 } // namespace codec
 } // namespace protocol
 } // namespace client
