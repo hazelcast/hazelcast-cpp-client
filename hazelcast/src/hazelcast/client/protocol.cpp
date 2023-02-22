@@ -399,6 +399,12 @@ ClientMessage::fast_forward_to_end_frame()
     }
 }
 
+const std::vector<serialization::pimpl::schema>&
+ClientMessage::schemas_will_be_replicated() const
+{
+    return schemas_will_be_replicated_;
+}
+
 const ClientMessage::frame_header_type&
 ClientMessage::null_frame()
 {

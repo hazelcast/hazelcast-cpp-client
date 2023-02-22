@@ -161,7 +161,9 @@ hazelcast_client_instance_impl::hazelcast_client_instance_impl(
   : client_config_(std::move(config))
   , client_properties_(client_config_.get_properties())
   , client_context_(*this)
-  , serialization_service_(client_config_.get_serialization_config())
+  , schema_service_{ client_context_ }
+  , serialization_service_(client_config_.get_serialization_config(),
+                           schema_service_)
   , cluster_service_(client_context_)
   , transaction_manager_(client_context_)
   , cluster_(cluster_service_)

@@ -16,6 +16,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include "hazelcast/client/member.h"
+#include "hazelcast/client/serialization/pimpl/compact/schema.h"
 #include "hazelcast/logger.h"
 
 #include "codecs.h"
@@ -5783,6 +5784,22 @@ sql_fetch_encode(const sql::impl::query_id& query_id,
 
     msg.set(cursor_buffer_size);
     msg.set(query_id, true);
+
+    return msg;
+}
+
+ClientMessage
+client_sendschema_encode(const serialization::pimpl::schema& schema)
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.sendschema");
+
+    msg.set_message_type(static_cast<int32_t>(4864));
+    msg.set_partition_id(-1);
+
+    msg.set(schema, true);
 
     return msg;
 }
