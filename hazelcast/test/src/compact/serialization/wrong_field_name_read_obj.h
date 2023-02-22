@@ -35,15 +35,16 @@ namespace serialization {
 
 template<>
 struct hz_serializer<test::compact::wrong_field_name_read_obj>
-  : compact_serializer
+  : compact::compact_serializer
 {
     static void write(const test::compact::wrong_field_name_read_obj& obj,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_int32("field_1", obj.value);
     }
 
-    static test::compact::wrong_field_name_read_obj read(compact_reader& reader)
+    static test::compact::wrong_field_name_read_obj read(
+      compact::compact_reader& reader)
     {
         test::compact::wrong_field_name_read_obj obj;
 

@@ -56,6 +56,8 @@ get_offset(serialization::object_data_input& in,
 } // namespace offset_reader
 } // namespace pimpl
 
+namespace compact {
+
 template<typename T>
 T
 compact_reader::read_primitive(const std::string& field_name,
@@ -164,7 +166,7 @@ compact_reader::read()
 
 template<typename T>
 typename std::enable_if<
-  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
   typename boost::optional<T>>::type
 compact_reader::read()
 {
@@ -418,6 +420,8 @@ compact_writer::write_array_of_compact(
         schema_writer->add_field(field_name, field_kind::ARRAY_OF_COMPACT);
     }
 }
+} // namespace compact
+
 namespace pimpl {
 
 template<typename T>
@@ -511,7 +515,7 @@ default_compact_writer::write(const T& value)
 
 template<typename T>
 typename std::enable_if<
-  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
   void>::type
 default_compact_writer::write(const T& value)
 {
@@ -560,7 +564,7 @@ struct schema_of
     {
         T t;
         schema_writer schema_writer(hz_serializer<T>::type_name());
-        serialization::compact_writer writer =
+        serialization::compact::compact_writer writer =
           create_compact_writer(&schema_writer);
         serialization::hz_serializer<T>::write(t, writer);
         return std::move(schema_writer).build();
@@ -613,7 +617,8 @@ T inline compact_stream_serializer::read(object_data_input& in)
     // optimization to avoid hitting shared map in the schema_service,
     // in the case incoming data's schema is same as the local schema
     if (schema_id == local_schema.schema_id()) {
-        compact_reader reader = create_compact_reader(*this, in, local_schema);
+        compact::compact_reader reader =
+          create_compact_reader(*this, in, local_schema);
         return hz_serializer<T>::read(reader);
     }
     // This path will run only in schema evolution case
@@ -627,7 +632,7 @@ T inline compact_stream_serializer::read(object_data_input& in)
         };
         BOOST_THROW_EXCEPTION(exception);
     }
-    compact_reader reader = create_compact_reader(*this, in, schema);
+    compact::compact_reader reader = create_compact_reader(*this, in, schema);
     return hz_serializer<T>::read(reader);
 }
 
@@ -645,7 +650,7 @@ void inline compact_stream_serializer::write(const T& object,
 
     out.write<int64_t>(schema_v.schema_id());
     default_compact_writer default_writer(*this, out, schema_v);
-    compact_writer writer = create_compact_writer(&default_writer);
+    compact::compact_writer writer = create_compact_writer(&default_writer);
     hz_serializer<T>::write(object, writer);
     default_writer.end();
 }
@@ -655,7 +660,7 @@ schema
 compact_stream_serializer::build_schema(const T& object)
 {
     schema_writer schema_writer(hz_serializer<T>::type_name());
-    serialization::compact_writer writer =
+    serialization::compact::compact_writer writer =
       create_compact_writer(&schema_writer);
     serialization::hz_serializer<T>::write(object, writer);
     return std::move(schema_writer).build();

@@ -38,14 +38,15 @@ struct empty_main_dto
 namespace serialization {
 
 template<>
-struct hz_serializer<compact::test::empty_main_dto> : public compact_serializer
+struct hz_serializer<compact::test::empty_main_dto>
+  : public compact::compact_serializer
 {
     static void write(const compact::test::empty_main_dto& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
     }
 
-    static compact::test::empty_main_dto read(compact_reader& reader)
+    static compact::test::empty_main_dto read(compact::compact_reader& reader)
     {
         return compact::test::empty_main_dto{};
     }

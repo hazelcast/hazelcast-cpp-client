@@ -43,10 +43,11 @@ operator==(const employee_dto& lhs, const employee_dto& rhs)
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::employee_dto> : public compact_serializer
+struct hz_serializer<test::compact::employee_dto>
+  : public compact::compact_serializer
 {
     static void write(const test::compact::employee_dto& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_int32("age", object.age);
         writer.write_int32("rank", object.rank);
@@ -55,7 +56,7 @@ struct hz_serializer<test::compact::employee_dto> : public compact_serializer
         writer.write_boolean("isFired", object.isFired);
     }
 
-    static test::compact::employee_dto read(compact_reader& reader)
+    static test::compact::employee_dto read(compact::compact_reader& reader)
     {
         auto age = reader.read_int32("age");
         auto rank = reader.read_int32("rank");

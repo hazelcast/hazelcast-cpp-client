@@ -159,10 +159,11 @@ create_inner_dto()
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::inner_dto> : public compact_serializer
+struct hz_serializer<test::compact::inner_dto>
+  : public compact::compact_serializer
 {
     static void write(const test::compact::inner_dto& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_array_of_boolean("bools", object.bools);
         writer.write_array_of_int8("bytes", object.bytes);
@@ -196,7 +197,7 @@ struct hz_serializer<test::compact::inner_dto> : public compact_serializer
                                                object.nullableDoubles);
     }
 
-    static test::compact::inner_dto read(compact_reader& reader)
+    static test::compact::inner_dto read(compact::compact_reader& reader)
     {
         test::compact::inner_dto object;
         object.bools = reader.read_array_of_boolean("bools");

@@ -48,10 +48,10 @@ namespace serialization {
 
 template<>
 struct hz_serializer<test::compact::nullable_primitive_object>
-  : public compact_serializer
+  : public compact::compact_serializer
 {
     static void write(const test::compact::nullable_primitive_object& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_nullable_boolean("boolean", object.nullableBoolean);
         writer.write_nullable_int8("byte", object.nullableByte);
@@ -71,7 +71,8 @@ struct hz_serializer<test::compact::nullable_primitive_object>
                                                object.nullableDoubles);
     }
 
-    static test::compact::nullable_primitive_object read(compact_reader& reader)
+    static test::compact::nullable_primitive_object read(
+      compact::compact_reader& reader)
     {
         test::compact::nullable_primitive_object object;
 

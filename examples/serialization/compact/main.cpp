@@ -37,16 +37,16 @@ namespace client {
 namespace serialization {
 
 template<>
-struct hz_serializer<PersonDTO> : compact_serializer
+struct hz_serializer<PersonDTO> : compact::compact_serializer
 {
-    static void write(const PersonDTO& object, compact_writer& out)
+    static void write(const PersonDTO& object, compact::compact_writer& out)
     {
         out.write_int32("age", object.age);
         out.write_string("name", object.name);
         out.write_string("surname", object.surname);
     }
 
-    static PersonDTO read(compact_reader& in)
+    static PersonDTO read(compact::compact_reader& in)
     {
         PersonDTO person;
 

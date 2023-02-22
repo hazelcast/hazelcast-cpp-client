@@ -32,16 +32,18 @@ struct write_to_field_twice
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::write_to_field_twice> : compact_serializer
+struct hz_serializer<test::compact::write_to_field_twice>
+  : compact::compact_serializer
 {
     static void write(const test::compact::write_to_field_twice& obj,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_int32("a_field", 12);
         writer.write_int32("a_field", 12);
     }
 
-    static test::compact::write_to_field_twice read(compact_reader& reader)
+    static test::compact::write_to_field_twice read(
+      compact::compact_reader& reader)
     {
         return test::compact::write_to_field_twice{};
     }

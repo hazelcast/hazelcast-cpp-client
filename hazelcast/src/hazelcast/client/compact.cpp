@@ -209,6 +209,7 @@ operator<<(std::ostream& os, field_kind kind)
 namespace hazelcast {
 namespace client {
 namespace serialization {
+namespace compact {
 
 compact_writer::compact_writer(
   pimpl::default_compact_writer* default_compact_writer)
@@ -694,20 +695,24 @@ compact_writer::write_array_of_nullable_float64(
     }
 }
 
+} // namespace compact
+
 namespace pimpl {
 
-compact_reader
+compact::compact_reader
 create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
   const pimpl::schema& schema)
 {
-    return compact_reader{ compact_stream_serializer,
-                           object_data_input,
-                           schema };
+    return compact::compact_reader{ compact_stream_serializer,
+                                    object_data_input,
+                                    schema };
 }
 
 } // namespace pimpl
+
+namespace compact {
 
 const compact_reader::offset_func compact_reader::BYTE_OFFSET_READER =
   pimpl::offset_reader::get_offset<int8_t>;
@@ -1183,18 +1188,20 @@ compact_reader::read_array_of_nullable_float64(const std::string& field_name)
       field_kind::ARRAY_OF_NULLABLE_FLOAT64);
 }
 
+} // namespace compact
+
 namespace pimpl {
 
-compact_writer
+compact::compact_writer
 create_compact_writer(pimpl::default_compact_writer* default_compact_writer)
 {
-    return compact_writer{ default_compact_writer };
+    return compact::compact_writer{ default_compact_writer };
 }
 
-compact_writer
+compact::compact_writer
 create_compact_writer(pimpl::schema_writer* schema_writer)
 {
-    return compact_writer{ schema_writer };
+    return compact::compact_writer{ schema_writer };
 }
 
 default_compact_writer::default_compact_writer(

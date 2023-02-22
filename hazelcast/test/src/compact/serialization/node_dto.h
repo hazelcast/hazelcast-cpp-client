@@ -43,10 +43,11 @@ operator==(const node_dto& lhs, const node_dto& rhs)
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::node_dto> : public compact_serializer
+struct hz_serializer<test::compact::node_dto>
+  : public compact::compact_serializer
 {
     static void write(const test::compact::node_dto& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_int32("id", object.id);
         writer.write_compact<test::compact::node_dto>(
@@ -55,7 +56,7 @@ struct hz_serializer<test::compact::node_dto> : public compact_serializer
                                   : boost::make_optional(*object.child));
     }
 
-    static test::compact::node_dto read(compact_reader& reader)
+    static test::compact::node_dto read(compact::compact_reader& reader)
     {
         auto id = reader.read_int32("id");
         auto&& child = reader.read_compact<test::compact::node_dto>("child");

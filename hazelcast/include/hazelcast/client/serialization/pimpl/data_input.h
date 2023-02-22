@@ -38,7 +38,9 @@ class ByteBuffer;
 namespace client {
 namespace serialization {
 class portable_reader;
+namespace compact {
 class compact_reader;
+}
 namespace pimpl {
 template<typename Container>
 class data_input

@@ -39,17 +39,19 @@ class ClientContext;
 }
 
 namespace serialization {
+namespace compact {
 class compact_reader;
 class compact_writer;
+} // namespace compact
 namespace pimpl {
 class schema;
 class default_compact_writer;
 class schema_writer;
-compact_writer HAZELCAST_API
+compact::compact_writer HAZELCAST_API
 create_compact_writer(pimpl::default_compact_writer* default_compact_writer);
-compact_writer HAZELCAST_API
+compact::compact_writer HAZELCAST_API
 create_compact_writer(pimpl::schema_writer* schema_writer);
-compact_reader HAZELCAST_API
+compact::compact_reader HAZELCAST_API
 create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
@@ -57,6 +59,7 @@ create_compact_reader(
 struct field_descriptor;
 } // namespace pimpl
 
+namespace compact {
 /**
  * Classes derived from this class should implement the following static
  * methods:
@@ -642,7 +645,7 @@ private:
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
@@ -1160,6 +1163,7 @@ private:
     pimpl::default_compact_writer* default_compact_writer;
     pimpl::schema_writer* schema_writer;
 };
+} // namespace compact
 
 namespace pimpl {
 
@@ -1327,7 +1331,7 @@ private:
 
     template<typename T>
     typename std::enable_if<
-      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
       void>::type
     write(const T& value);
 

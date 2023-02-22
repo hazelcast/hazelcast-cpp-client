@@ -41,16 +41,17 @@ operator==(const named_dto& lhs, const named_dto& rhs)
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::named_dto> : public compact_serializer
+struct hz_serializer<test::compact::named_dto>
+  : public compact::compact_serializer
 {
     static void write(const test::compact::named_dto& dto,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_string("name", dto.name);
         writer.write_int32("my_int", dto.my_int);
     }
 
-    static test::compact::named_dto read(compact_reader& reader)
+    static test::compact::named_dto read(compact::compact_reader& reader)
     {
         test::compact::named_dto dto;
         dto.name = reader.read_string("name");

@@ -36,7 +36,8 @@ namespace client {
 namespace serialization {
 
 template<int Idx>
-struct hz_serializer<test::compact::stress_type<Idx>> : compact_serializer
+struct hz_serializer<test::compact::stress_type<Idx>>
+  : compact::compact_serializer
 {
     static std::string type_name()
     {
@@ -44,12 +45,12 @@ struct hz_serializer<test::compact::stress_type<Idx>> : compact_serializer
     }
 
     static void write(const test::compact::stress_type<Idx>&,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_int32("field_" + std::to_string(Idx), Idx);
     }
 
-    static test::compact::stress_type<Idx> read(compact_reader& reader)
+    static test::compact::stress_type<Idx> read(compact::compact_reader& reader)
     {
         return test::compact::stress_type<Idx>{};
     }

@@ -36,17 +36,17 @@ struct a_type
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::a_type> : compact_serializer
+struct hz_serializer<test::compact::a_type> : compact::compact_serializer
 {
     static void write(const test::compact::a_type& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_boolean("x", object.x);
         writer.write_compact<test::compact::nested_type>("nested",
                                                          object.nested);
     }
 
-    static test::compact::a_type read(compact_reader& reader)
+    static test::compact::a_type read(compact::compact_reader& reader)
     {
         test::compact::a_type object;
 

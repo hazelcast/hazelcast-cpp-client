@@ -34,15 +34,17 @@ struct type_mistmatch_obj
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::type_mistmatch_obj> : compact_serializer
+struct hz_serializer<test::compact::type_mistmatch_obj>
+  : compact::compact_serializer
 {
     static void write(const test::compact::type_mistmatch_obj& obj,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_int32("field_1", obj.value);
     }
 
-    static test::compact::type_mistmatch_obj read(compact_reader& reader)
+    static test::compact::type_mistmatch_obj read(
+      compact::compact_reader& reader)
     {
         test::compact::type_mistmatch_obj obj;
 

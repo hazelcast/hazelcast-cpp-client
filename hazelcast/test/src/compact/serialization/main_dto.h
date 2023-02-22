@@ -106,10 +106,11 @@ create_main_dto()
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::main_dto> : public compact_serializer
+struct hz_serializer<test::compact::main_dto>
+  : public compact::compact_serializer
 {
     static void write(const test::compact::main_dto& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_boolean("bool", object.boolean);
         writer.write_int8("b", object.b);
@@ -135,7 +136,7 @@ struct hz_serializer<test::compact::main_dto> : public compact_serializer
         writer.write_nullable_float64("nullableD", object.nullableD);
     }
 
-    static test::compact::main_dto read(compact_reader& reader)
+    static test::compact::main_dto read(compact::compact_reader& reader)
     {
         auto boolean = reader.read_boolean("bool");
         auto b = reader.read_int8("b");

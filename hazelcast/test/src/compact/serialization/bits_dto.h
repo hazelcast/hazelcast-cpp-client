@@ -53,10 +53,11 @@ operator==(const bits_dto& lhs, const bits_dto& rhs)
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::bits_dto> : public compact_serializer
+struct hz_serializer<test::compact::bits_dto>
+  : public compact::compact_serializer
 {
     static void write(const test::compact::bits_dto& dto,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_boolean("a", dto.a);
         writer.write_boolean("b", dto.b);
@@ -71,7 +72,7 @@ struct hz_serializer<test::compact::bits_dto> : public compact_serializer
         writer.write_array_of_boolean("booleans", dto.booleans);
     }
 
-    static test::compact::bits_dto read(compact_reader& reader)
+    static test::compact::bits_dto read(compact::compact_reader& reader)
     {
         test::compact::bits_dto dto;
         dto.a = reader.read_boolean("a");

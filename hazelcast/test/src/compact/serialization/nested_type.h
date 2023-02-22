@@ -36,15 +36,15 @@ struct nested_type
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::nested_type> : compact_serializer
+struct hz_serializer<test::compact::nested_type> : compact::compact_serializer
 {
     static void write(const test::compact::nested_type& object,
-                      compact_writer& writer)
+                      compact::compact_writer& writer)
     {
         writer.write_int32("x", object.y);
     }
 
-    static test::compact::nested_type read(compact_reader& reader)
+    static test::compact::nested_type read(compact::compact_reader& reader)
     {
         test::compact::nested_type object;
 
