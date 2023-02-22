@@ -125,12 +125,14 @@ public:
             add_invocation_to_map(connection, invocation, message);
 
             auto& datas = message->get_buffer();
-            std::vector<boost::asio::const_buffer> buffers;
-            buffers.reserve(datas.size());
+
+            struct outbox_entry_t outbox_entry;
+            outbox_entry.buffers.reserve(datas.size());
             for (const auto& data : datas) {
-                buffers.emplace_back(boost::asio::buffer(data));
+                outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
             }
-            this->outbox_.push_back(buffers);
+            outbox_entry.invocation = invocation;
+            this->outbox_.push_back( outbox_entry );
 
             if (this->outbox_.size() > 1) {
                 // async write is in progress
@@ -263,12 +265,12 @@ protected:
                   connection->last_write_time(std::chrono::steady_clock::now());
 
                   if (!this->outbox_.empty()) {
-                      do_write(connection, invocation);
+                      do_write(connection, outbox_[0].invocation);
                   }
               }
           };
-
-        const auto& message = outbox_[0];
+        
+        const auto& message = outbox_[0].buffers;
 
         boost::asio::async_write(
           socket_, message, socket_strand_.wrap(handler));
@@ -336,7 +338,12 @@ protected:
     boost::asio::ip::tcp::resolver& resolver_;
     T socket_;
     int32_t call_id_counter_{ 0 };
-    typedef std::deque<std::vector<boost::asio::const_buffer>> Outbox;
+    struct outbox_entry_t{
+      std::vector<boost::asio::const_buffer> buffers;
+      std::shared_ptr<spi::impl::ClientInvocation> invocation;
+    };
+
+    typedef std::deque<struct outbox_entry_t> Outbox;
     Outbox outbox_;
 };
 } // namespace socket
