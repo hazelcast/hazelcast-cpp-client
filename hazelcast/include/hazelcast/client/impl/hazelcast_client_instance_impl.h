@@ -56,6 +56,7 @@
 #include "hazelcast/cp/cp_impl.h"
 #include "hazelcast/logger.h"
 #include "hazelcast/client/sql/sql_service.h"
+#include "hazelcast/client/serialization/pimpl/compact/compact.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -225,6 +226,7 @@ private:
     client_config client_config_;
     client_properties client_properties_;
     spi::ClientContext client_context_;
+    serialization::pimpl::default_schema_service schema_service_;
     serialization::pimpl::SerializationService serialization_service_;
     std::shared_ptr<connection::ClientConnectionManagerImpl>
       connection_manager_;
