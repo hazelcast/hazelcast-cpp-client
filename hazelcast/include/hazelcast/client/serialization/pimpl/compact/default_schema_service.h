@@ -25,6 +25,10 @@
 namespace hazelcast {
 namespace client {
 
+namespace protocol {
+class ClientMessage;
+}
+
 namespace spi {
 class ClientContext;
 }
@@ -60,13 +64,18 @@ public:
     /**
      * Replicates schema on the cluster
      */
-    boost::future<void> replicate_schema_in_cluster(schema);
+    void replicate_schema_in_cluster(schema);
 
     bool is_schema_replicated(const schema&);
 
 private:
-
     void put_if_absent(schema);
+
+    /**
+     * Decodes response of send schema request
+     */
+    std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>
+    send_schema_response_decode(protocol::ClientMessage&);
 
     int retry_pause_millis_;
     int max_put_retry_count_;

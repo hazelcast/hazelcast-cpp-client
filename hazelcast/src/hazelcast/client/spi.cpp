@@ -1323,6 +1323,8 @@ ClientExecutionServiceImpl::start()
         user_executor_.reset(
           new hazelcast::util::hz_thread_pool(user_pool_size_));
     }
+
+    schema_replication_executor_.reset(new hazelcast::util::hz_thread_pool());
 }
 
 void
@@ -1330,12 +1332,19 @@ ClientExecutionServiceImpl::shutdown()
 {
     shutdown_thread_pool(internal_executor_.get());
     shutdown_thread_pool(user_executor_.get());
+    shutdown_thread_pool(schema_replication_executor_.get());
 }
 
 util::hz_thread_pool&
 ClientExecutionServiceImpl::get_user_executor()
 {
     return *user_executor_;
+}
+
+util::hz_thread_pool&
+ClientExecutionServiceImpl::get_schema_replication_executor()
+{
+    return *schema_replication_executor_;
 }
 
 void
@@ -1414,11 +1423,8 @@ ClientInvocation::invoke()
 
         return replicate_schemas(schemas)
           .then(boost::launch::sync,
-                [this, actual_work, self](
-                  boost::future<boost::csbl::vector<boost::future<void>>>
-                    replications) {
-                    for (auto& replication : replications.get())
-                        replication.get();
+                [this, actual_work, self](boost::future<void> replication) {
+                    replication.get();
 
                     return actual_work();
                 })
@@ -1450,22 +1456,23 @@ ClientInvocation::invoke_urgent()
       });
 }
 
-boost::future<boost::csbl::vector<boost::future<void>>>
+boost::future<void>
 ClientInvocation::replicate_schemas(
-  const std::vector<serialization::pimpl::schema>& schemas)
+  std::vector<serialization::pimpl::schema> schemas)
 {
-    std::vector<boost::future<void>> replications;
+    std::weak_ptr<ClientInvocation> self = shared_from_this();
 
-    replications.reserve(schemas.size());
+    return boost::async(
+      execution_service_->get_schema_replication_executor(), [self, schemas]() {
+          auto invocation = self.lock();
 
-    transform(begin(schemas),
-              end(schemas),
-              back_inserter(replications),
-              [this](const serialization::pimpl::schema& s) {
-                  return schema_service_.replicate_schema_in_cluster(s);
-              });
+          if (!invocation)
+              return;
 
-    return boost::when_all(begin(replications), end(replications));
+          for (const serialization::pimpl::schema& s : schemas) {
+              invocation->schema_service_.replicate_schema_in_cluster(s);
+          }
+      });
 }
 
 void

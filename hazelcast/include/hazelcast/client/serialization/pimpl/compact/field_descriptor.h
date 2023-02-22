@@ -60,7 +60,7 @@ struct HAZELCAST_API field_descriptor
 bool HAZELCAST_API
 operator==(const field_descriptor& x, const field_descriptor& y);
 
-std::ostream HAZELCAST_API &
+std::ostream HAZELCAST_API&
 operator<<(std::ostream& os, const field_descriptor&);
 
 } // namespace pimpl

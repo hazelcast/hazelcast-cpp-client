@@ -542,7 +542,9 @@ public:
 
     template<typename T>
     typename std::enable_if<
-      std::is_same<T, std::unordered_set<typename T::value_type, typename T::hasher>>::value,
+      std::is_same<
+        T,
+        std::unordered_set<typename T::value_type, typename T::hasher>>::value,
       T>::type
     get()
     {

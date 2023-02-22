@@ -56,7 +56,7 @@ operator==(const schema& x, const schema& y);
 bool HAZELCAST_API
 operator!=(const schema& x, const schema& y);
 
-std::ostream HAZELCAST_API &
+std::ostream HAZELCAST_API&
 operator<<(std::ostream& os, const schema& schema);
 
 } // namespace pimpl

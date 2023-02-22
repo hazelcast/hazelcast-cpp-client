@@ -5789,7 +5789,8 @@ sql_fetch_encode(const sql::impl::query_id& query_id,
 }
 
 ClientMessage
-client_sendschema_encode(const serialization::pimpl::schema &schema) {
+client_sendschema_encode(const serialization::pimpl::schema& schema)
+{
     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
     ClientMessage msg(initial_frame_size);
     msg.set_retryable(true);
@@ -5801,13 +5802,6 @@ client_sendschema_encode(const serialization::pimpl::schema &schema) {
     msg.set(schema, true);
 
     return msg;
-}
-
-std::unordered_set<boost::uuids::uuid,boost::hash<boost::uuids::uuid>>
-send_schema_response_decode(ClientMessage& m)
-{
-    m.skip_frame();
-    return m.get<std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>>();
 }
 
 } // namespace codec

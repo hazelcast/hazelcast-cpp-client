@@ -3085,12 +3085,6 @@ sql_fetch_encode(const sql::impl::query_id& query_id,
 ClientMessage HAZELCAST_API
 client_sendschema_encode(const serialization::pimpl::schema& schema);
 
-/**
- * Decodes response of send schema request
- */
-std::unordered_set<boost::uuids::uuid,boost::hash<boost::uuids::uuid>> HAZELCAST_API
-send_schema_response_decode(ClientMessage&);
-
 } // namespace codec
 } // namespace protocol
 } // namespace client

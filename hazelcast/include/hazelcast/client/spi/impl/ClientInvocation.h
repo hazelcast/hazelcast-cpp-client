@@ -154,8 +154,8 @@ private:
     static constexpr int MAX_FAST_INVOCATION_COUNT = 5;
     static constexpr int UNASSIGNED_PARTITION = -1;
 
-    boost::future<boost::csbl::vector<boost::future<void>>> replicate_schemas(
-      const std::vector<serialization::pimpl::schema>& schemas);
+    boost::future<void> replicate_schemas(
+      std::vector<serialization::pimpl::schema> schemas);
 
     logger& logger_;
     lifecycle_service& lifecycle_service_;

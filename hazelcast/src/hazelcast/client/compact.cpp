@@ -1888,69 +1888,64 @@ default_schema_service::get(int64_t schemaId)
     return *ptr;
 }
 
-boost::future<void>
+void
 default_schema_service::replicate_schema_in_cluster(schema s)
 {
     using hazelcast::client::protocol::ClientMessage;
     using namespace protocol::codec;
 
-    auto message = client_sendschema_encode(s);
+    for (int i = 0; i < max_put_retry_count_; ++i) {
+        auto message = client_sendschema_encode(s);
 
-    auto invocation =
-      spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
+        auto invocation =
+          spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
 
-    auto execution_service = context_.get_client_execution_service().shared_from_this();
+        auto response = invocation->invoke().get();
+        auto replicated_member_uuids = send_schema_response_decode(response);
+        auto members = context_.get_cluster().get_members();
 
-    return invocation->invoke().then(
-      execution_service->get_user_executor(),
-      [this, s, execution_service](boost::future<ClientMessage> future) mutable {
-          auto response = future.get();
-          auto replicated_member_uuids = send_schema_response_decode(response);
-          auto members = context_.get_cluster().get_members();
+        bool contains;
+        for (const member& member : members) {
 
-          for (int i = 1; i < max_put_retry_count_; ++i){
-            for (const member& member : members) {
+            contains = replicated_member_uuids.find(member.get_uuid()) !=
+                       end(replicated_member_uuids);
 
-              auto contains = replicated_member_uuids.find(member.get_uuid()) != end(replicated_member_uuids);
+            if (!contains) {
+                if (i == (max_put_retry_count_ - 1)) {
+                    throw exception::illegal_state{
+                        "default_schema_service::replicate_schema_attempt",
+                        (boost::format("The schema %1% cannot be "
+                                       "replicated in the cluster, after "
+                                       "%2% retries. It might be the case "
+                                       "that the client is experiencing a "
+                                       "split-brain, and continue putting "
+                                       "the data associated with that "
+                                       "schema might result in data loss. "
+                                       "It might be possible to replicate "
+                                       "the schema after some time, when "
+                                       "the cluster is healed.") %
+                         s % max_put_retry_count_)
+                          .str()
+                    };
+                } else {
+                    std::this_thread::sleep_for(
+                      std::chrono::milliseconds{ retry_pause_millis_ });
 
-              if (!contains) {
-                  if (i == (max_put_retry_count_ - 1)) {
-                      throw exception::illegal_state{
-                          "default_schema_service::replicate_schema_attempt",
-                          (boost::format("The schema %1% cannot be "
-                                         "replicated in the cluster, after "
-                                         "%2% retries. It might be the case "
-                                         "that the client is experiencing a "
-                                         "split-brain, and continue putting "
-                                         "the data associated with that "
-                                         "schema might result in data loss. "
-                                         "It might be possible to replicate "
-                                         "the schema after some time, when "
-                                         "the cluster is healed.") %
-                           s % max_put_retry_count_)
-                            .str()
-                      };
-                  } else {
-                      std::this_thread::sleep_for(
-                        std::chrono::milliseconds{ retry_pause_millis_ });
+                    if (!context_.get_lifecycle_service().is_running()) {
+                        return;
+                    }
 
-                      break;
-                  }
-              }
+                    break;
+                }
             }
-
-            auto message = client_sendschema_encode(s);
-
-            auto invocation =
-            spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
-
-            auto response = invocation->invoke().get();
-            replicated_member_uuids = send_schema_response_decode(response);
-            members = context_.get_cluster().get_members();
         }
 
-        put_if_absent(std::move(s));
-      });
+        if (contains) {
+            put_if_absent(std::move(s));
+
+            break;
+        }
+    }
 }
 
 bool
@@ -1975,10 +1970,22 @@ default_schema_service::put_if_absent(schema s)
             (boost::format("Schema with schemaId %1% "
                            "already exists. Existing "
                            "schema %2%, new schema %3%") %
-             s_p->.schema_id() % *existing % *s_p)
+             s_p->schema_id() % *existing % *s_p)
               .str()
         };
     }
+}
+
+/**
+ * Decodes response of send schema request
+ */
+std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>
+default_schema_service::send_schema_response_decode(
+  protocol::ClientMessage& message)
+{
+    message.skip_frame();
+    return message.get<std::unordered_set<boost::uuids::uuid,
+                                          boost::hash<boost::uuids::uuid>>>();
 }
 
 compact_stream_serializer::compact_stream_serializer(

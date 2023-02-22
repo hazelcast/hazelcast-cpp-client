@@ -68,7 +68,7 @@ enum class HAZELCAST_API field_kind
     ARRAY_OF_NULLABLE_FLOAT64 = 46
 };
 
-std::ostream HAZELCAST_API &
+std::ostream HAZELCAST_API&
 operator<<(std::ostream&, field_kind);
 
 } // namespace serialization
