@@ -132,7 +132,7 @@ public:
                 outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
             }
             outbox_entry.invocation = std::move(invocation);
-            this->outbox_.push_back( std::move(outbox_entry) );
+            this->outbox_.push_back(std::move(outbox_entry));
 
             if (this->outbox_.size() > 1) {
                 // async write is in progress
@@ -249,7 +249,7 @@ protected:
     {
         auto handler =
           [connection, this](const boost::system::error_code& ec,
-                                         std::size_t bytes_written) {
+                             std::size_t bytes_written) {
               auto invocation = std::move(outbox_[0].invocation);
               this->outbox_.pop_front();
 
@@ -269,7 +269,7 @@ protected:
                   }
               }
           };
-        
+
         const auto& message = outbox_[0].buffers;
         boost::asio::async_write(
           socket_, message, socket_strand_.wrap(handler));
@@ -337,9 +337,10 @@ protected:
     boost::asio::ip::tcp::resolver& resolver_;
     T socket_;
     int32_t call_id_counter_{ 0 };
-    struct entry{
-      std::vector<boost::asio::const_buffer> buffers;
-      std::shared_ptr<spi::impl::ClientInvocation> invocation;
+    struct entry
+    {
+        std::vector<boost::asio::const_buffer> buffers;
+        std::shared_ptr<spi::impl::ClientInvocation> invocation;
     };
 
     typedef std::deque<entry> Outbox;
