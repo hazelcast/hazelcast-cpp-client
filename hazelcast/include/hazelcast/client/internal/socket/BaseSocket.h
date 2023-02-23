@@ -131,6 +131,7 @@ public:
             for (const auto& data : datas) {
                 outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
             }
+            outbox_entry.message = std::move(message);
             outbox_entry.invocation = std::move(invocation);
             this->outbox_.push_back(std::move(outbox_entry));
 
@@ -341,6 +342,7 @@ protected:
     {
         std::vector<boost::asio::const_buffer> buffers;
         std::shared_ptr<spi::impl::ClientInvocation> invocation;
+        std::shared_ptr<protocol::ClientMessage> message;
     };
 
     typedef std::deque<entry> Outbox;
