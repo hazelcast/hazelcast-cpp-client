@@ -1423,7 +1423,7 @@ ClientInvocation::invoke()
 
         return replicate_schemas(schemas)
           .then(boost::launch::sync,
-                [this, actual_work, self](boost::future<void> replication) {
+                [actual_work, self](boost::future<void> replication) {
                     replication.get();
 
                     return actual_work();

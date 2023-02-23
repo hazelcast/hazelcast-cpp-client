@@ -2044,10 +2044,13 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
     ASSERT_TRUE(datas_opt);
     auto& datas = datas_opt.value();
     ASSERT_EQ(10, datas.size());
+    HazelcastServerFactory factory("hazelcast/test/resources/hazelcast.xml");
+    HazelcastServer member(factory);    
+    auto client = new_client().get();
 
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService ss{ serializationConfig,
-                                                   null_schema_service() };
+                                                   spi::ClientContext{ client }.get_schema_service() };
     for (int32_t i = 0; i < 10; ++i) {
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].first));
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].second));
