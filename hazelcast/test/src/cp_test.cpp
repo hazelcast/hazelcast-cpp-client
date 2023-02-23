@@ -499,9 +499,14 @@ TEST_F(basic_latch_test, test_wait_for_when_timeout)
     ASSERT_EQ(std::cv_status::timeout,
               cp_structure_->wait_for(std::chrono::milliseconds(100)).get());
     auto elapsed = std::chrono::steady_clock::now() - start;
+
+    // Real awaited time can be lower than expected.
+    // 70 milliseconds is an approximation for 100 ms.
+    // Ref:
+    // https://stackoverflow.com/questions/8415628/java-scheduled-executor-accuracy
     ASSERT_GE(
       std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count(),
-      100);
+      70);
     ASSERT_EQ(1, cp_structure_->get_count().get());
 }
 
