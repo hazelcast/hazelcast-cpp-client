@@ -746,6 +746,12 @@ public:
     }
 };
 
+namespace compact {
+class compact_writer;
+class compact_reader;
+class compact_serializer;
+} // namespace compact
+
 class HAZELCAST_API object_data_input
   : public pimpl::data_input<std::vector<byte>>
 {
@@ -755,7 +761,7 @@ class HAZELCAST_API object_data_input
       uint32_t variable_offsets_pos,
       uint32_t index);
 
-    friend class compact_reader;
+    friend class compact::compact_reader;
     friend class portable_reader;
 
 public:
@@ -799,7 +805,7 @@ public:
 
     template<typename T>
     typename std::enable_if<
-      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
       boost::optional<T>>::type inline read_object(int32_t type_id);
 
     template<typename T>
@@ -822,7 +828,7 @@ public:
     typename std::enable_if<
       !(std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
         std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
-        std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
+        std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value ||
         std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
         std::is_base_of<custom_serializer, hz_serializer<T>>::value),
       boost::optional<T>>::type inline read_object(int32_t type_id);
@@ -886,7 +892,7 @@ public:
 
     template<typename T>
     typename std::enable_if<
-      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
       void>::type inline write_object(const T& object);
 
     template<typename T>
@@ -899,7 +905,7 @@ public:
       !(std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
         std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
         std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
-        std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
+        std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value ||
         std::is_base_of<custom_serializer, hz_serializer<T>>::value ||
         (std::is_array<T>::value &&
          std::is_same<typename std::remove_all_extents<T>::type, char>::value)),
@@ -924,6 +930,12 @@ public:
     }
 
 private:
+    using schemas_t = std::vector<pimpl::schema>;
+
+    friend class pimpl::compact_stream_serializer;
+    friend class pimpl::SerializationService;
+
+    schemas_t schemas_will_be_replicated_;
     pimpl::PortableSerializer* portable_serializer_;
     pimpl::compact_stream_serializer* compact_serializer_;
     std::shared_ptr<serialization::global_serializer> global_serializer_;
@@ -1799,7 +1811,7 @@ private:
 } // namespace client
 } // namespace hazelcast
 
-#include "hazelcast/client/serialization/pimpl/compact.h"
+#include "hazelcast/client/serialization/pimpl/compact/compact.h"
 
 namespace hazelcast {
 namespace client {
@@ -1808,7 +1820,8 @@ namespace pimpl {
 class HAZELCAST_API SerializationService : public util::Disposable
 {
 public:
-    SerializationService(const serialization_config& config);
+    SerializationService(const serialization_config& config,
+                         default_schema_service&);
 
     PortableSerializer& get_portable_serializer();
 
@@ -1830,7 +1843,8 @@ public:
 
         output.write_object<T>(object);
 
-        return { std::move(output).to_byte_array() };
+        return { std::move(output).to_byte_array(),
+                 move(output.schemas_will_be_replicated_) };
     }
 
     template<typename T>
@@ -1847,7 +1861,8 @@ public:
 
         output.write_object<T>(object);
 
-        return { std::move(output).to_byte_array() };
+        return { std::move(output).to_byte_array(),
+                 move(output.schemas_will_be_replicated_) };
     }
 
     template<typename T>
@@ -2296,7 +2311,7 @@ typename std::enable_if<
 
 template<typename T>
 typename std::enable_if<
-  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
   void>::type inline object_data_output::write_object(const T& object)
 {
     if (is_no_write_) {
@@ -2355,7 +2370,7 @@ typename std::enable_if<
   !(std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
     std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
     std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
-    std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
+    std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value ||
     std::is_base_of<custom_serializer, hz_serializer<T>>::value ||
     (std::is_array<T>::value &&
      std::is_same<typename std::remove_all_extents<T>::type, char>::value)),
@@ -2441,7 +2456,7 @@ typename std::enable_if<
 
 template<typename T>
 typename std::enable_if<
-  std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+  std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
   boost::optional<T>>::type inline object_data_input::read_object(int32_t
                                                                     type_id)
 {
@@ -2482,7 +2497,7 @@ template<typename T>
 typename std::enable_if<
   !(std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
     std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
-    std::is_base_of<compact_serializer, hz_serializer<T>>::value ||
+    std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value ||
     std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
     std::is_base_of<custom_serializer, hz_serializer<T>>::value),
   boost::optional<T>>::type inline object_data_input::read_object(int32_t
@@ -2856,7 +2871,7 @@ typed_data::get() const
 } // namespace client
 } // namespace hazelcast
 
-#include "hazelcast/client/serialization/pimpl/compact.i.h"
+#include "hazelcast/client/serialization/pimpl/compact/compact_impl.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)

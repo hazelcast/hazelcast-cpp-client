@@ -54,7 +54,6 @@ public:
     static std::string get_test_name();
     static std::string get_ca_file_path();
     static std::string random_map_name();
-    static std::string random_string();
     static boost::uuids::uuid generate_key_owned_by(spi::ClientContext& context,
                                                     const member& member);
     static client_config get_config(bool ssl_enabled = false,

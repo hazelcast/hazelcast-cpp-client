@@ -49,7 +49,7 @@ jobs:
       - name: Install Necessary Packages
         run: |
           apt-get update
-          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-11-jre-headless gdb
+          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-11-jre-headless gdb curl
 
       - name: Make sure the target architecture is 32 bit
         run: |
@@ -59,6 +59,10 @@ jobs:
           rm a test.c
 
       - uses: actions/checkout@v1
+
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
 
       - name: Install Boost
         run: |
