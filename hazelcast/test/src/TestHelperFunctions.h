@@ -23,7 +23,6 @@
 
 #include "hazelcast/client/spi/ClientContext.h"
 
-
 inline std::string
 random_string()
 {

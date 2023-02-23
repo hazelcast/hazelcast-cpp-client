@@ -789,9 +789,11 @@ namespace test {
 class PortableVersionTest : public ClientTest
 {
 public:
-
-    PortableVersionTest(): member_{ default_server_factory() }
-      , client_{ new_client().get() }{}
+    PortableVersionTest()
+      : member_{ default_server_factory() }
+      , client_{ new_client().get() }
+    {
+    }
     class Child
     {
     public:
@@ -836,8 +838,9 @@ public:
     {
         return spi::ClientContext{ client_ }.get_schema_service();
     }
-    protected:
-    HazelcastServer member_;    
+
+protected:
+    HazelcastServer member_;
     hazelcast_client client_;
 };
 
@@ -925,8 +928,11 @@ namespace test {
 class PartitionAwareTest : public ClientTest
 {
 public:
-    PartitionAwareTest():  member_{ default_server_factory() }
-      , client_{ new_client().get() }{}
+    PartitionAwareTest()
+      : member_{ default_server_factory() }
+      , client_{ new_client().get() }
+    {
+    }
     class SimplePartitionAwareObject : public partition_aware<int>
     {
     public:
@@ -946,10 +952,11 @@ public:
     {
         return spi::ClientContext{ client_ }.get_schema_service();
     }
-    protected:
-    HazelcastServer member_;    
-    hazelcast_client client_;    
-}; 
+
+protected:
+    HazelcastServer member_;
+    hazelcast_client client_;
+};
 
 TEST_F(PartitionAwareTest, testSimplePartitionAwareObjectSerialisation)
 {
@@ -1020,8 +1027,8 @@ public:
     serialization::pimpl::default_schema_service& get_schema_service()
     {
         return spi::ClientContext{ client_ }.get_schema_service();
-    }    
-    
+    }
+
 protected:
     HazelcastServer member_;
     hazelcast_client client_;
@@ -1043,8 +1050,12 @@ TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue)
 class ClientSerializationTest : public ClientTest
 {
 public:
-    ClientSerializationTest(): member_{ default_server_factory() }
-      , client_{ new_client().get() }{}
+    ClientSerializationTest()
+      : member_{ default_server_factory() }
+      , client_{ new_client().get() }
+    {
+    }
+
 protected:
     TestInnerPortable create_inner_portable()
     {
@@ -1110,9 +1121,10 @@ protected:
     {
         return spi::ClientContext{ client_ }.get_schema_service();
     }
-    protected:
-    HazelcastServer member_;    
-    hazelcast_client client_;    
+
+protected:
+    HazelcastServer member_;
+    hazelcast_client client_;
 };
 
 const unsigned int ClientSerializationTest::LARGE_ARRAY_SIZE =
@@ -2196,12 +2208,13 @@ class NearCacheRecordStoreTest
   , public ::testing::WithParamInterface<config::in_memory_format>
 {
 public:
-    NearCacheRecordStoreTest(): member_{ default_server_factory() }
+    NearCacheRecordStoreTest()
+      : member_{ default_server_factory() }
       , client_{ new_client().get() }
     {
         ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
-          new serialization::pimpl::SerializationService(
-            serialization_config_, get_schema_service()));
+          new serialization::pimpl::SerializationService(serialization_config_,
+                                                         get_schema_service()));
     }
 
 protected:
@@ -2550,9 +2563,9 @@ protected:
     serialization::pimpl::default_schema_service& get_schema_service()
     {
         return spi::ClientContext{ client_ }.get_schema_service();
-    }    
+    }
 
-    HazelcastServer member_;    
+    HazelcastServer member_;
     hazelcast_client client_;
     std::unique_ptr<serialization::pimpl::SerializationService> ss_;
     serialization_config serialization_config_;
