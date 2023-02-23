@@ -45,6 +45,7 @@ class client_properties;
 namespace serialization {
 namespace pimpl {
 class SerializationService;
+class default_schema_service;
 }
 } // namespace serialization
 
@@ -153,6 +154,8 @@ public:
     boost::uuids::uuid random_uuid();
 
     cp::internal::session::proxy_session_manager& get_proxy_session_manager();
+
+    serialization::pimpl::default_schema_service& get_schema_service();
 
 private:
     client::impl::hazelcast_client_instance_impl& hazelcast_client_;
