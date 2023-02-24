@@ -790,7 +790,6 @@ namespace test {
 class serialization_test_base : public testing::Test
 {
 public:
-
     serialization_test_base()
       : factory_{ "hazelcast/test/resources/serialization.xml" }
       , member_{ factory_ }
@@ -802,10 +801,9 @@ public:
     serialization::pimpl::default_schema_service& get_schema_service()
     {
         return spi::ClientContext{ client_ }.get_schema_service();
-    }    
+    }
 
 protected:
-
     HazelcastServerFactory factory_;
     HazelcastServer member_;
     hazelcast_client client_;
@@ -863,7 +861,6 @@ public:
     private:
         Child child_;
     };
-
 };
 
 // Test for issue https://github.com/hazelcast/hazelcast/issues/12733

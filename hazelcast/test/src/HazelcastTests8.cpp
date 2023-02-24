@@ -2044,7 +2044,8 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
     ASSERT_TRUE(datas_opt);
     auto& datas = datas_opt.value();
     ASSERT_EQ(10, datas.size());
-    HazelcastServerFactory factory("hazelcast/test/resources/serialization.xml");
+    HazelcastServerFactory factory(
+      "hazelcast/test/resources/serialization.xml");
     HazelcastServer member(factory);
     client_config conf;
     conf.set_cluster_name("serialization-dev");
