@@ -578,7 +578,7 @@ TEST_F(ClientReplicatedMapTest, testDeregisterListener)
     map->put(1, 1).get();
     map->clear().get();
     ASSERT_EQ(boost::cv_status::timeout,
-              map_clearedLatch.wait_for(boost::chrono::seconds(1)));    
+              map_clearedLatch.wait_for(boost::chrono::seconds(1)));
 }
 
 class ClientReplicatedMapInvalidation : public ClientReplicatedMapTestBase

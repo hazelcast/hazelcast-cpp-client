@@ -296,7 +296,7 @@ ec2_request_signer::hmac_sh_a256_bytes(const void* key_buffer,
     delete hmac;
 #endif
     return len;
-#endif    
+#endif
 }
 
 std::string

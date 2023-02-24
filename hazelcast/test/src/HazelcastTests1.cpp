@@ -2349,7 +2349,7 @@ TEST_F(FlakeIdGeneratorApiTest, testAddGetFlakeIdGeneratorIntegrity)
     client_config clientConfig = get_config();
     config::client_flake_id_generator_config flakeIdConfig("flake_config"),
       flakeIdConfig2("flake_config_2");
-    
+
     flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(
       std::chrono::seconds(20));
     clientConfig.add_flake_id_generator_config(flakeIdConfig);

@@ -531,7 +531,7 @@ TEST_F(basic_latch_test, test_try_wait)
     ASSERT_FALSE(cp_structure_->try_wait().get());
 
     cp_structure_->count_down().get();
-    
+
     ASSERT_TRUE_EVENTUALLY(cp_structure_->try_wait().get());
 }
 

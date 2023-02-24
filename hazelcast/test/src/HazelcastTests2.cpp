@@ -1911,7 +1911,7 @@ TEST_F(ClientSerializationTest, testWriteNullPortable)
 {
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig,get_schema_service());
+      serializationConfig, get_schema_service());
 
     serialization::pimpl::data data;
     TestInnerPortable inner = create_inner_portable();
