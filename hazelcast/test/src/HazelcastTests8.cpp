@@ -2044,9 +2044,12 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
     ASSERT_TRUE(datas_opt);
     auto& datas = datas_opt.value();
     ASSERT_EQ(10, datas.size());
-    HazelcastServerFactory factory("hazelcast/test/resources/hazelcast.xml");
+    HazelcastServerFactory factory("hazelcast/test/resources/serialization.xml");
     HazelcastServer member(factory);
-    auto client = new_client().get();
+    client_config conf;
+    conf.set_cluster_name("serialization-dev");
+    auto client = new_client(std::move(conf)).get();
+    remote_controller_client().ping();
 
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService ss{

@@ -786,14 +786,44 @@ TEST_F(PipeliningTest, testPipeliningFunctionalityDepth100)
 namespace hazelcast {
 namespace client {
 namespace test {
-class PortableVersionTest : public ClientTest
+
+class serializatation_test_base : public testing::Test
 {
 public:
-    PortableVersionTest()
-      : member_{ default_server_factory() }
-      , client_{ new_client().get() }
+
+    serializatation_test_base()
+      : factory_{ "hazelcast/test/resources/serialization.xml" }
+      , member_{ factory_ }
+      , client_{ new_client(config()).get() }
     {
+        remote_controller_client().ping();
     }
+
+    serialization::pimpl::default_schema_service& get_schema_service()
+    {
+        return spi::ClientContext{ client_ }.get_schema_service();
+    }    
+
+protected:
+
+    HazelcastServerFactory factory_;
+    HazelcastServer member_;
+    hazelcast_client client_;
+
+private:
+    static client_config config()
+    {
+        client_config cfg;
+
+        cfg.set_cluster_name("serialization-dev");
+
+        return cfg;
+    }
+};
+
+class PortableVersionTest : public serializatation_test_base
+{
+public:
     class Child
     {
     public:
@@ -834,14 +864,6 @@ public:
         Child child_;
     };
 
-    serialization::pimpl::default_schema_service& get_schema_service()
-    {
-        return spi::ClientContext{ client_ }.get_schema_service();
-    }
-
-protected:
-    HazelcastServer member_;
-    hazelcast_client client_;
 };
 
 // Test for issue https://github.com/hazelcast/hazelcast/issues/12733
@@ -925,14 +947,9 @@ struct hz_serializer<test::PortableVersionTest::Parent>
 namespace hazelcast {
 namespace client {
 namespace test {
-class PartitionAwareTest : public ClientTest
+class PartitionAwareTest : public serializatation_test_base
 {
 public:
-    PartitionAwareTest()
-      : member_{ default_server_factory() }
-      , client_{ new_client().get() }
-    {
-    }
     class SimplePartitionAwareObject : public partition_aware<int>
     {
     public:
@@ -947,15 +964,6 @@ public:
     private:
         int test_key_;
     };
-
-    serialization::pimpl::default_schema_service& get_schema_service()
-    {
-        return spi::ClientContext{ client_ }.get_schema_service();
-    }
-
-protected:
-    HazelcastServer member_;
-    hazelcast_client client_;
 };
 
 TEST_F(PartitionAwareTest, testSimplePartitionAwareObjectSerialisation)
@@ -1015,23 +1023,14 @@ struct hz_serializer<test::PartitionAwareTest::SimplePartitionAwareObject>
 namespace hazelcast {
 namespace client {
 namespace test {
-class JsonValueSerializationTest : public ClientTest
+class JsonValueSerializationTest : public serializatation_test_base
 {
 public:
     JsonValueSerializationTest()
-      : member_{ default_server_factory() }
-      , client_{ new_client().get() }
-      , serialization_service_(config_, get_schema_service())
+      : serialization_service_(config_, get_schema_service())
     {}
 
-    serialization::pimpl::default_schema_service& get_schema_service()
-    {
-        return spi::ClientContext{ client_ }.get_schema_service();
-    }
-
 protected:
-    HazelcastServer member_;
-    hazelcast_client client_;
     serialization::pimpl::SerializationService serialization_service_;
     serialization_config config_;
 };
@@ -2204,13 +2203,11 @@ namespace test {
 namespace internal {
 namespace nearcache {
 class NearCacheRecordStoreTest
-  : public ClientTest
+  : public serializatation_test_base
   , public ::testing::WithParamInterface<config::in_memory_format>
 {
 public:
     NearCacheRecordStoreTest()
-      : member_{ default_server_factory() }
-      , client_{ new_client().get() }
     {
         ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
           new serialization::pimpl::SerializationService(serialization_config_,
@@ -2560,13 +2557,6 @@ protected:
         return ss_->to_shared_data<int>(&value);
     }
 
-    serialization::pimpl::default_schema_service& get_schema_service()
-    {
-        return spi::ClientContext{ client_ }.get_schema_service();
-    }
-
-    HazelcastServer member_;
-    hazelcast_client client_;
     std::unique_ptr<serialization::pimpl::SerializationService> ss_;
     serialization_config serialization_config_;
 };
