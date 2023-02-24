@@ -524,6 +524,17 @@ TEST_F(basic_latch_test, test_multiple_destroy)
     ASSERT_NO_THROW(cp_structure_->destroy().get());
 }
 
+TEST_F(basic_latch_test, test_try_wait)
+{
+    cp_structure_->try_set_count(1).get();
+
+    ASSERT_FALSE(cp_structure_->try_wait().get());
+
+    cp_structure_->count_down().get();
+
+    ASSERT_TRUE_EVENTUALLY(cp_structure_->try_wait().get());
+}
+
 class basic_lock_test : public cp_test<hazelcast::cp::fenced_lock>
 {
 protected:
@@ -898,6 +909,19 @@ TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown)
                                                       script.str().c_str(),
                                                       Lang::JAVASCRIPT),
        response.success && response.result == "0"));
+}
+
+TEST_F(basic_lock_test, test_equality_operator)
+{
+    auto fenced_locked_1 =
+      client_->get_cp_subsystem().get_lock(get_test_name()).get();
+    auto fenced_locked_2 =
+      client_->get_cp_subsystem().get_lock(get_test_name()).get();
+    auto fenced_locked_3 =
+      client_->get_cp_subsystem().get_lock(get_test_name() + "_3").get();
+
+    EXPECT_TRUE(*fenced_locked_1 == *fenced_locked_2);
+    EXPECT_FALSE(*fenced_locked_1 == *fenced_locked_3);
 }
 
 class basic_sessionless_semaphore_test

@@ -530,6 +530,35 @@ TEST_F(ClientListTest, testListener)
     ASSERT_TRUE(list->remove_item_listener(registrationId).get());
 }
 
+TEST_F(ClientListTest, testListenerOnRemoved)
+{
+    boost::latch latch1(1);
+
+    item_listener listener;
+
+    list->add("item-1").get();
+
+    listener.on_removed([&latch1](item_event&& item_event) {
+        auto type = item_event.get_event_type();
+        EXPECT_EQ(item_event_type::REMOVED, type);
+        EXPECT_EQ("MyList", item_event.get_name());
+        std::string host = item_event.get_member().get_address().get_host();
+        EXPECT_TRUE(host == "localhost" || host == "127.0.0.1");
+        EXPECT_EQ(5701, item_event.get_member().get_address().get_port());
+        EXPECT_EQ("item-1", item_event.get_item().get<std::string>().value());
+        latch1.count_down();
+    });
+
+    auto registrationId =
+      list->add_item_listener(std::move(listener), true).get();
+
+    list->remove("item-1").get();
+
+    ASSERT_OPEN_EVENTUALLY(latch1);
+
+    EXPECT_TRUE(list->remove_item_listener(registrationId).get());
+}
+
 TEST_F(ClientListTest, testIsEmpty)
 {
     ASSERT_TRUE(list->is_empty().get());
@@ -608,6 +637,31 @@ TEST_F(ClientQueueTest, testListener)
 
     // added for test coverage
     ASSERT_NO_THROW(q->destroy().get());
+}
+
+TEST_F(ClientQueueTest, testListenerOnRemoved)
+{
+    EXPECT_EQ(0, q->size().get());
+    constexpr int num_of_entry = 5;
+    boost::latch latch1(num_of_entry);
+
+    auto listener = item_listener().on_removed(
+      [&latch1](item_event&& item_event) { latch1.count_down(); });
+
+    for (int i = 0; i < num_of_entry; i++) {
+        EXPECT_TRUE(
+          q->offer(std::string("event_item") + std::to_string(i)).get());
+    }
+
+    auto id = q->add_item_listener(std::move(listener), true).get();
+
+    for (int i = 0; i < num_of_entry; i++) {
+        ASSERT_TRUE(
+          q->remove(std::string("event_item") + std::to_string(i)).get());
+    }
+
+    ASSERT_OPEN_EVENTUALLY(latch1);
+    EXPECT_TRUE(q->remove_item_listener(id).get());
 }
 
 TEST_F(ClientQueueTest, testOfferPoll)
