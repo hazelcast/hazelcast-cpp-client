@@ -1897,7 +1897,7 @@ TEST_F(ClientSerializationTest, testTypedData)
     serializationConfig.set_global_serializer(
       std::make_shared<DummyGlobalSerializer>());
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     std::vector<byte> bytes{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
 
@@ -1911,7 +1911,7 @@ TEST_F(ClientSerializationTest, testWriteNullPortable)
 {
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig,get_schema_service());
 
     serialization::pimpl::data data;
     TestInnerPortable inner = create_inner_portable();
