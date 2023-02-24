@@ -325,6 +325,12 @@ ClientContext::get_proxy_session_manager()
     return hazelcast_client_.proxy_session_manager_;
 }
 
+serialization::pimpl::default_schema_service&
+ClientContext::get_schema_service()
+{
+    return hazelcast_client_.schema_service_;
+}
+
 lifecycle_service::lifecycle_service(
   ClientContext& client_context,
   const std::vector<lifecycle_listener>& listeners)
@@ -1317,6 +1323,8 @@ ClientExecutionServiceImpl::start()
         user_executor_.reset(
           new hazelcast::util::hz_thread_pool(user_pool_size_));
     }
+
+    schema_replication_executor_.reset(new hazelcast::util::hz_thread_pool());
 }
 
 void
@@ -1324,12 +1332,19 @@ ClientExecutionServiceImpl::shutdown()
 {
     shutdown_thread_pool(internal_executor_.get());
     shutdown_thread_pool(user_executor_.get());
+    shutdown_thread_pool(schema_replication_executor_.get());
 }
 
 util::hz_thread_pool&
 ClientExecutionServiceImpl::get_user_executor()
 {
     return *user_executor_;
+}
+
+util::hz_thread_pool&
+ClientExecutionServiceImpl::get_schema_replication_executor()
+{
+    return *schema_replication_executor_;
 }
 
 void
@@ -1357,6 +1372,7 @@ ClientInvocation::ClientInvocation(
   , invocation_service_(client_context.get_invocation_service())
   , execution_service_(
       client_context.get_client_execution_service().shared_from_this())
+  , schema_service_(client_context.get_schema_service())
   , call_id_sequence_(client_context.get_call_id_sequence())
   , uuid_(uuid)
   , partition_id_(partition)
@@ -1381,8 +1397,51 @@ boost::future<protocol::ClientMessage>
 ClientInvocation::invoke()
 {
     assert(client_message_.load());
+
+    auto actual_work = [this]() {
+        // for back pressure
+        call_id_sequence_->next();
+        invoke_on_selection();
+        if (!lifecycle_service_.is_running()) {
+            return invocation_promise_.get_future().then(
+              [](boost::future<protocol::ClientMessage> f) { return f.get(); });
+        }
+        auto id_seq = call_id_sequence_;
+        return invocation_promise_.get_future().then(
+          execution_service_->get_user_executor(),
+          [=](boost::future<protocol::ClientMessage> f) {
+              id_seq->complete();
+              return f.get();
+          });
+    };
+
+    const auto& schemas =
+      (*(client_message_.load()))->schemas_will_be_replicated();
+
+    if (!schemas.empty()) {
+        auto self = shared_from_this();
+
+        return replicate_schemas(schemas)
+          .then(boost::launch::sync,
+                [this, actual_work, self](boost::future<void> replication) {
+                    replication.get();
+
+                    return actual_work();
+                })
+          .unwrap();
+    }
+
+    return actual_work();
+}
+
+boost::future<protocol::ClientMessage>
+ClientInvocation::invoke_urgent()
+{
+    assert(client_message_.load());
+    urgent_ = true;
+
     // for back pressure
-    call_id_sequence_->next();
+    call_id_sequence_->force_next();
     invoke_on_selection();
     if (!lifecycle_service_.is_running()) {
         return invocation_promise_.get_future().then(
@@ -1397,24 +1456,22 @@ ClientInvocation::invoke()
       });
 }
 
-boost::future<protocol::ClientMessage>
-ClientInvocation::invoke_urgent()
+boost::future<void>
+ClientInvocation::replicate_schemas(
+  std::vector<serialization::pimpl::schema> schemas)
 {
-    assert(client_message_.load());
-    urgent_ = true;
-    // for back pressure
-    call_id_sequence_->force_next();
-    invoke_on_selection();
-    if (!lifecycle_service_.is_running()) {
-        return invocation_promise_.get_future().then(
-          [](boost::future<protocol::ClientMessage> f) { return f.get(); });
-    }
-    auto id_seq = call_id_sequence_;
-    return invocation_promise_.get_future().then(
-      execution_service_->get_user_executor(),
-      [=](boost::future<protocol::ClientMessage> f) {
-          id_seq->complete();
-          return f.get();
+    std::weak_ptr<ClientInvocation> self = shared_from_this();
+
+    return boost::async(
+      execution_service_->get_schema_replication_executor(), [self, schemas]() {
+          auto invocation = self.lock();
+
+          if (!invocation)
+              return;
+
+          for (const serialization::pimpl::schema& s : schemas) {
+              invocation->schema_service_.replicate_schema_in_cluster(s);
+          }
       });
 }
 

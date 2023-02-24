@@ -51,8 +51,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          brew install openssl@1.1 thrift
+          brew install openssl@1.1 thrift curl
           ./scripts/install-boost.sh ${{matrix.boost.version}}
+
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
 
       - name: Build & Install
         env:

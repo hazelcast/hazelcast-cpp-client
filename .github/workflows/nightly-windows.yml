@@ -75,6 +75,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Download hazelcast-enterprise-tests.jar
+        shell: pwsh
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.2.0-tests.jar
+
       - uses: nick-fields/retry@v2
         name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
