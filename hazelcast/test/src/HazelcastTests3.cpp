@@ -785,6 +785,21 @@ TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate)
     replicatedMap->put(2, 2).get();
     ASSERT_TRUE_ALL_THE_TIME((state_.add_count.load() == 0), 1);
 }
+
+TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicateAndKey)
+{
+    auto replicatedMap = client->get_replicated_map(get_test_name()).get();
+    replicatedMap
+      ->add_entry_listener(make_event_counting_listener(state_),
+                           query::between_predicate(
+               *client, query::query_constants::KEY_ATTRIBUTE_NAME, 2, 5))
+      .get();
+    
+    replicatedMap->put(1, 1).get();
+    replicatedMap->put(2, 2).get();
+    ASSERT_TRUE_EVENTUALLY(state_.has_only_added_value(2));
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
