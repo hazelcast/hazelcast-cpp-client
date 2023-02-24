@@ -787,11 +787,11 @@ namespace hazelcast {
 namespace client {
 namespace test {
 
-class serializatation_test_base : public testing::Test
+class serialization_test_base : public testing::Test
 {
 public:
 
-    serializatation_test_base()
+    serialization_test_base()
       : factory_{ "hazelcast/test/resources/serialization.xml" }
       , member_{ factory_ }
       , client_{ new_client(config()).get() }
@@ -821,7 +821,7 @@ private:
     }
 };
 
-class PortableVersionTest : public serializatation_test_base
+class PortableVersionTest : public serialization_test_base
 {
 public:
     class Child
@@ -947,7 +947,7 @@ struct hz_serializer<test::PortableVersionTest::Parent>
 namespace hazelcast {
 namespace client {
 namespace test {
-class PartitionAwareTest : public serializatation_test_base
+class PartitionAwareTest : public serialization_test_base
 {
 public:
     class SimplePartitionAwareObject : public partition_aware<int>
@@ -1023,7 +1023,7 @@ struct hz_serializer<test::PartitionAwareTest::SimplePartitionAwareObject>
 namespace hazelcast {
 namespace client {
 namespace test {
-class JsonValueSerializationTest : public serializatation_test_base
+class JsonValueSerializationTest : public serialization_test_base
 {
 public:
     JsonValueSerializationTest()
@@ -1046,15 +1046,8 @@ TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue)
     ASSERT_EQ(jsonValue, jsonDeserialized.value());
 }
 
-class ClientSerializationTest : public ClientTest
+class ClientSerializationTest : public serialization_test_base
 {
-public:
-    ClientSerializationTest()
-      : member_{ default_server_factory() }
-      , client_{ new_client().get() }
-    {
-    }
-
 protected:
     TestInnerPortable create_inner_portable()
     {
@@ -1115,15 +1108,6 @@ protected:
     }
 
     static const unsigned int LARGE_ARRAY_SIZE;
-
-    serialization::pimpl::default_schema_service& get_schema_service()
-    {
-        return spi::ClientContext{ client_ }.get_schema_service();
-    }
-
-protected:
-    HazelcastServer member_;
-    hazelcast_client client_;
 };
 
 const unsigned int ClientSerializationTest::LARGE_ARRAY_SIZE =
@@ -2203,7 +2187,7 @@ namespace test {
 namespace internal {
 namespace nearcache {
 class NearCacheRecordStoreTest
-  : public serializatation_test_base
+  : public serialization_test_base
   , public ::testing::WithParamInterface<config::in_memory_format>
 {
 public:
