@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "hazelcast/util/export.h"
+#include "hazelcast/client/serialization/pimpl/compact/schema.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -35,6 +36,8 @@ namespace pimpl {
 class HAZELCAST_API data
 {
 public:
+    using schemas_t = std::vector<serialization::pimpl::schema>;
+
     // type and partition_hash are always written with BIG_ENDIAN byte-order
     static unsigned int PARTITION_HASH_OFFSET;
 
@@ -46,7 +49,8 @@ public:
 
     data();
 
-    data(std::vector<byte> buffer);
+    data(std::vector<byte> buffer,
+         schemas_t will_be_replicated_schemas = schemas_t{});
 
     size_t data_size() const;
 
@@ -66,6 +70,8 @@ public:
 
     int32_t get_type() const;
 
+    const schemas_t& schemas_will_be_replicated() const;
+
     bool operator<(const data& rhs) const;
 
     friend bool HAZELCAST_API operator==(const data& lhs, const data& rhs);
@@ -73,6 +79,7 @@ public:
 private:
     std::vector<byte> data_;
     int cached_hash_value_;
+    schemas_t schemas_will_be_replicated_;
 
     inline int calculate_hash() const;
 };

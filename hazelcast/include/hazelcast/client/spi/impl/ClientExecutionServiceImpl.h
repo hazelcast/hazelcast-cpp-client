@@ -77,10 +77,12 @@ public:
     static void shutdown_thread_pool(hazelcast::util::hz_thread_pool* pool);
 
     util::hz_thread_pool& get_user_executor();
+    util::hz_thread_pool& get_schema_replication_executor();
 
 private:
     std::unique_ptr<util::hz_thread_pool> internal_executor_;
     std::unique_ptr<util::hz_thread_pool> user_executor_;
+    std::unique_ptr<util::hz_thread_pool> schema_replication_executor_;
     spi::lifecycle_service& lifecycle_service_;
     const client_properties& client_properties_;
     int32_t user_pool_size_;

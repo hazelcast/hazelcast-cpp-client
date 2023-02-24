@@ -17,7 +17,11 @@ jobs:
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb gcovr
+          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl
+
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
 
       - name: Install Boost
         run: |

@@ -680,7 +680,7 @@ TEST_F(ClientQueueTest, testOfferPoll)
 
     std::thread offer_in_background([]() {
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        q->offer("item1");
+        q->offer("item1").get();
     });
 
     boost::optional<std::string> item =
@@ -722,7 +722,7 @@ TEST_F(ClientQueueTest, testTake)
     // start a thread to offer an item
     std::thread offer_in_background([]() {
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        q->offer("item1");
+        q->offer("item1").get();
     });
 
     item = q->take<std::string>().get(); //  should block till it gets an item
@@ -736,7 +736,7 @@ TEST_F(ClientQueueTest, testRemainingCapacity)
 {
     int capacity = q->remaining_capacity().get();
     ASSERT_TRUE(capacity > 10000);
-    q->offer("item");
+    q->offer("item").get();
     ASSERT_EQ(capacity - 1, q->remaining_capacity().get());
 }
 
@@ -1623,9 +1623,13 @@ TEST_P(AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole)
 
 TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
 {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    GTEST_SKIP();
+#else  
     if (GetParam() && !std::getenv("INSIDE_AWS")) {
         GTEST_SKIP();
     }
+#endif
 
     client_config clientConfig = get_config();
 
@@ -1641,8 +1645,13 @@ TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
     clientConfig.get_network_config().get_aws_config().set_inside_aws(
       GetParam());
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+  // FIPS mode can be enabled over SSL conf
+  //https://wiki.openssl.org/index.php/OpenSSL_3.0
+#else
     // Turn Fips mode on
     FIPS_mode_set(1);
+#endif
 
     auto hazelcastClient = new_client(std::move(clientConfig)).get();
     auto map = hazelcastClient.get_map("myMap").get();

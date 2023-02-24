@@ -2267,7 +2267,8 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
     ASSERT_EQ(10, datas.size());
 
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss{ serializationConfig };
+    serialization::pimpl::SerializationService ss{ serializationConfig,
+                                                   null_schema_service() };
     for (int32_t i = 0; i < 10; ++i) {
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].first));
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].second));
