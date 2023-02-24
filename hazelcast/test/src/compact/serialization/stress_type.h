@@ -23,8 +23,7 @@ namespace compact {
 
 template<int Idx>
 struct stress_type
-{
-};
+{};
 
 } // namespace compact
 } // namespace test

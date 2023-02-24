@@ -381,6 +381,48 @@ TEST_F(ClientConfigTest, test_set_instance_name)
     ASSERT_EQ(test_name, client.get_name());
 }
 
+/*
+  Note: In Java side, the label is compared with the the help of
+  ClientService at server side. As C++ client cannot access this service,
+  the label cannot be compared at server side.
+*/
+TEST_F(ClientConfigTest, test_add_label)
+{
+    client_config config;
+    bool is_found = false;
+    std::string label("label_1"), non_existing_label("label_2");
+
+    config.add_label(label);
+    auto& labels = config.get_labels();
+    EXPECT_EQ(1, labels.size());
+    is_found = labels.find(label) != labels.end();
+    EXPECT_TRUE(is_found);
+    is_found = labels.find(non_existing_label) != labels.end();
+    EXPECT_FALSE(is_found);
+}
+
+TEST_F(ClientConfigTest, test_set_label)
+{
+    client_config config;
+    bool is_found = false;
+    std::string label_1("label_1"), label_2("label_2"),
+      non_existing_label("label_3");
+    std::unordered_set<std::string> labels_to_set;
+
+    labels_to_set.insert(label_1);
+    labels_to_set.insert(label_2);
+    config.set_labels(labels_to_set);
+
+    auto& labels = config.get_labels();
+    EXPECT_EQ(2, labels.size());
+    is_found = labels.find(label_1) != labels.end();
+    EXPECT_TRUE(is_found);
+    is_found = labels.find(label_2) != labels.end();
+    EXPECT_TRUE(is_found);
+    is_found = labels.find(non_existing_label) != labels.end();
+    EXPECT_FALSE(is_found);
+}
+
 TEST(connection_retry_config_test, large_jitter)
 {
     ASSERT_THROW(client_config()
@@ -694,6 +736,38 @@ TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers)
     ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
 
     map->get<int, int>(1).get();
+
+    client.shutdown().get();
+}
+
+TEST_F(ConfiguredBehaviourTest, testRemoveLifecycleListener)
+{
+    HazelcastServer hazelcastInstance(default_server_factory());
+
+    auto tmp_connection_strategy =
+      client_config_.get_connection_strategy_config();
+    tmp_connection_strategy.set_reconnect_mode(
+      config::client_connection_strategy_config::OFF);
+
+    client_config_.set_connection_strategy_config(
+      std::move(tmp_connection_strategy));
+    hazelcast_client client(new_client(std::move(client_config_)).get());
+    boost::latch shutdownLatch(1);
+    auto lifecycle_id =
+      client.add_lifecycle_listener(lifecycle_listener().on_shutdown(
+        [&shutdownLatch]() { shutdownLatch.try_count_down(); }));
+
+    // no exception at this point
+    auto map = client.get_map(random_map_name()).get();
+    map->put(1, 5).get();
+
+    client.remove_lifecycle_listener(lifecycle_id);
+    hazelcastInstance.shutdown();
+
+    ASSERT_EQ(boost::cv_status::timeout,
+              shutdownLatch.wait_for(boost::chrono::seconds(5)));
+
+    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
 
     client.shutdown().get();
 }
@@ -1817,6 +1891,54 @@ TEST_F(ClientSerializationTest, testGlobalSerializer)
     ASSERT_EQ(obj, deserializedValue.value());
 }
 
+TEST_F(ClientSerializationTest, testTypedData)
+{
+    serialization_config serializationConfig;
+    serializationConfig.set_global_serializer(
+      std::make_shared<DummyGlobalSerializer>());
+    serialization::pimpl::SerializationService serializationService(
+      serializationConfig, get_schema_service());
+
+    std::vector<byte> bytes{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+
+    serialization::pimpl::data tmp_data(bytes);
+    typed_data t(tmp_data, serializationService);
+
+    ASSERT_EQ(t.get_data(), tmp_data);
+}
+
+TEST_F(ClientSerializationTest, testWriteNullPortable)
+{
+    serialization_config serializationConfig;
+    serialization::pimpl::SerializationService serializationService(
+      serializationConfig, get_schema_service());
+
+    serialization::pimpl::data data;
+    TestInnerPortable inner = create_inner_portable();
+    data = serializationService.to_data<TestInnerPortable>(&inner);
+
+    TestNamedPortableV4 portable_object;
+    portable_object.k = 1;
+    portable_object.c_16 = u'a';
+    data = serializationService.to_data<TestNamedPortableV4>(portable_object);
+
+    auto t = serializationService.to_object<TestNamedPortableV4>(data);
+    ASSERT_TRUE(t);
+    EXPECT_EQ(1, t->k);
+    EXPECT_EQ(u'a', t->c_16);
+    EXPECT_FALSE(t->inner_portable.has_value());
+
+    boost::optional<test::TestInnerPortable> tmp_inner = inner;
+    portable_object.k = 2;
+    portable_object.inner_portable = tmp_inner;
+    data = serializationService.to_data<TestNamedPortableV4>(portable_object);
+
+    t = serializationService.to_object<TestNamedPortableV4>(data);
+    ASSERT_TRUE(t);
+    EXPECT_EQ(2, t->k);
+    EXPECT_TRUE(t->inner_portable.has_value());
+}
+
 class serialization_with_server
   : public ClientTest
   , public ::testing::WithParamInterface<boost::endian::order>
@@ -2453,16 +2575,20 @@ protected:
     {
         int32_t maxSize = DEFAULT_RECORD_COUNT / 2;
 
-        auto nearCacheConfig =
-          create_near_cache_config(DEFAULT_NEAR_CACHE_NAME, in_memory_format);
-
         config::eviction_config evictionConfig;
         evictionConfig.set_maximum_size_policy(
           config::eviction_config::ENTRY_COUNT);
         evictionConfig.set_size(maxSize);
         evictionConfig.set_eviction_policy(eviction_policy);
-        nearCacheConfig.set_eviction_config(evictionConfig);
 
+        config::near_cache_config nearCacheConfig(
+          config::near_cache_config::DEFAULT_TTL_SECONDS,
+          config::near_cache_config::DEFAULT_MAX_IDLE_SECONDS,
+          true,
+          in_memory_format,
+          evictionConfig);
+
+        nearCacheConfig.set_name(DEFAULT_NEAR_CACHE_NAME);
         auto nearCacheRecordStore =
           create_near_cache_record_store(nearCacheConfig, in_memory_format);
 
