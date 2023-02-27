@@ -18,7 +18,7 @@ jobs:
         vc_boost:
           - name: msvc-2019_boost_1730
             image: 'windows-2019'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_73_0.tar.gz'
+            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.73.0/source/boost_1_73_0.tar.gz'
             boost_archive_name: 'boost_1_73_0.tar.gz'
             boost_folder_name: 'boost_1_73_0'
             boost_include_folder: 'C:\Boost\include\boost-1_73'
@@ -68,6 +68,8 @@ jobs:
             name: 'SSL'
 
     runs-on: ${{ matrix.vc_boost.image }}
+    env:
+      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.arch.address_model }},${{ matrix.build_type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     name: >-
       Windows
       (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
@@ -80,6 +82,15 @@ jobs:
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
           Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.2.0-tests.jar
+
+      - name: Install SysInternals
+        run: |
+            Invoke-WebRequest `
+                "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
+                -OutFile "sys-internals.zip" `
+                -UserAgent "''"
+            Expand-Archive sys-internals.zip -DestinationPath sys-internals
+            ls sys-internals
 
       - uses: nick-fields/retry@v2
         name: Install OpenSSL
@@ -153,7 +164,17 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
           SSL_CERT_FILE: 'C:\cacert.pem'
         run: |
+          $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
           .\scripts\test-windows.bat
+          $dump | wait-process
+
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: dump-${{ env.JOB_NAME }}
+          path: |
+            **/*.pdb
+            *.dmp
 
       - name: Verify Installation
         run: |
