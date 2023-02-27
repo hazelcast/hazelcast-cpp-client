@@ -49,7 +49,9 @@ namespace client {
  * process m1, m2, m3...mn in order.
  *
  */
-class HAZELCAST_API reliable_topic : public proxy::ProxyImpl, public std::enable_shared_from_this<reliable_topic>
+class HAZELCAST_API reliable_topic
+  : public proxy::ProxyImpl
+  , public std::enable_shared_from_this<reliable_topic>
 {
     friend class spi::ProxyManager;
     friend class hazelcast_client;
@@ -150,11 +152,11 @@ private:
                       int batch_size,
                       logger& lg,
                       std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
-                        execution_service,                      
+                        execution_service,
                       util::hz_thread_pool& executor,
                       util::SynchronizedMap<int, util::concurrent::Cancellable>&
                         runners_map,
-                        std::shared_ptr<reliable_topic> topic)
+                      std::shared_ptr<reliable_topic> topic)
           : listener_(listener)
           , id_(id)
           , ringbuffer_(rb)
