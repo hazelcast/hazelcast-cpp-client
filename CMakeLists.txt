@@ -79,7 +79,11 @@ option(BUILD_EXAMPLES
 find_package(Threads REQUIRED)
 
 # find Boost
-find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
+if (WIN32)
+	find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
+else()
+	find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
+endif()
 
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)
