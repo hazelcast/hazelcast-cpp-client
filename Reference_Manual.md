@@ -320,6 +320,14 @@ For example, if you want to build the static library with SSL support, you can u
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
 ```
 
+Note that, if you want to use the `hazelcast-cpp-client` library which is compiled with `-DWITH_OPENSSL=ON` option without `find_package()` then you need to define `HZ_BUILD_WITH_SSL` symbolic constant before including any `hazelcast-cpp-client` header.
+It can be either passed via compiler flags.
+
+For example
+```sh
+g++ -DHZ_BUILD_WITH_SSL -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_VERSION=5 -I/var/git/hazelcast-cpp-client/build/include -std=gnu++11 -c main.cpp
+```
+
 ## 1.2. Starting a Hazelcast Cluster
 
 The Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles storage and manipulation of the user data. Clients are a way to connect to the Hazelcast cluster and access such data.
