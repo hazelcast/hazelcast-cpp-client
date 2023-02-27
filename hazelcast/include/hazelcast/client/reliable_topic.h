@@ -49,7 +49,7 @@ namespace client {
  * process m1, m2, m3...mn in order.
  *
  */
-class HAZELCAST_API reliable_topic : public proxy::ProxyImpl
+class HAZELCAST_API reliable_topic : public proxy::ProxyImpl, public std::enable_shared_from_this<reliable_topic>
 {
     friend class spi::ProxyManager;
     friend class hazelcast_client;
@@ -106,7 +106,8 @@ public:
                                       logger_,
                                       execution_service_,
                                       executor_,
-                                      runners_map_));
+                                      runners_map_,
+                                      shared_from_this()));
         runners_map_.put(id, runner);
         runner->next();
         return std::to_string(id);
@@ -152,7 +153,8 @@ private:
                         execution_service,                      
                       util::hz_thread_pool& executor,
                       util::SynchronizedMap<int, util::concurrent::Cancellable>&
-                        runners_map)
+                        runners_map,
+                        std::shared_ptr<reliable_topic> topic)
           : listener_(listener)
           , id_(id)
           , ringbuffer_(rb)
@@ -164,6 +166,7 @@ private:
           , serialization_service_(service)
           , batch_size_(batch_size)
           , runners_map_(runners_map)
+          , topic_(std::move(topic))
         {
             // we are going to listen to next publication. We don't care about
             // what already has been published.
@@ -415,6 +418,7 @@ private:
         serialization::pimpl::SerializationService& serialization_service_;
         int batch_size_;
         util::SynchronizedMap<int, util::concurrent::Cancellable>& runners_map_;
+        std::shared_ptr<reliable_topic> topic_;
     };
 
     util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;
