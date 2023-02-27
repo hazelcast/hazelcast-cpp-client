@@ -926,7 +926,8 @@ public:
      */
     const raft_group_id& get_group_id();
 
-    friend bool operator==(const fenced_lock& lhs, const fenced_lock& rhs);
+    friend HAZELCAST_API bool operator==(const fenced_lock& lhs,
+                                         const fenced_lock& rhs);
 
 protected:
     void post_destroy();

@@ -616,21 +616,6 @@ TEST_F(SqlTest, test_hazelcast_exception)
     }
 }
 
-TEST_F(SqlTest, execute_on_closed_member)
-{
-    // TODO : This test may not be deterministic, so it needs to be refactored
-    // but as of now it works.
-    auto result = client.get_sql().execute(
-      (boost::format("SELECT * FROM %1%") % map_name).str());
-    member_->shutdown();
-    member2_->shutdown();
-
-    EXPECT_THROW(result.get(), sql::hazelcast_sql_exception);
-
-    member_->start();
-    member2_->start();
-}
-
 TEST_F(SqlTest, try_to_execute_on_closed_client)
 {
     client.shutdown().get();

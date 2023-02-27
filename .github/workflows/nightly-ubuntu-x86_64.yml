@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         boost:
-          - version: 1.71.0
+          - version: 1.73.0
           - version: 1.76.0
 
         build_type:
@@ -47,9 +47,13 @@ jobs:
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb
+          sudo apt-get install -y net-tools libssl-dev gdb curl
 
       - uses: actions/checkout@v2
+
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
 
       - name: Install Boost
         run: |

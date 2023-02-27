@@ -1825,6 +1825,19 @@ TEST_F(BasicPnCounterAPITest, testGetAndDecrement)
     ASSERT_EQ(0, pnCounter->get().get());
 }
 
+TEST_F(BasicPnCounterAPITest, testDecrementAndGet)
+{
+    auto pnCounter =
+      client
+        ->get_pn_counter(
+          testing::UnitTest::GetInstance()->current_test_info()->name())
+        .get();
+    ASSERT_EQ(1, pnCounter->increment_and_get().get());
+    ASSERT_EQ(0, pnCounter->decrement_and_get().get());
+    ASSERT_EQ(-1, pnCounter->decrement_and_get().get());
+    ASSERT_EQ(-1, pnCounter->get().get());
+}
+
 TEST_F(BasicPnCounterAPITest, testGetAndSubtract)
 {
     auto pnCounter =
@@ -2330,6 +2343,38 @@ TEST_F(FlakeIdGeneratorApiTest, testSmoke)
     // set than expected
     ASSERT_EQ(4 * NUM_IDS_PER_THREAD, allIds.size());
 }
+
+TEST_F(FlakeIdGeneratorApiTest, testAddGetFlakeIdGeneratorIntegrity)
+{
+    client_config clientConfig = get_config();
+    config::client_flake_id_generator_config flakeIdConfig("flake_config"),
+      flakeIdConfig2("flake_config_2");
+
+    flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(
+      std::chrono::seconds(20));
+    clientConfig.add_flake_id_generator_config(flakeIdConfig);
+
+    const config::client_flake_id_generator_config* readed_flake_config =
+      clientConfig.get_flake_id_generator_config("flake_config");
+
+    EXPECT_EQ(readed_flake_config->get_name(), "flake_config");
+    EXPECT_EQ(readed_flake_config->get_prefetch_count(), 10);
+    EXPECT_EQ(readed_flake_config->get_prefetch_validity_duration(),
+              std::chrono::seconds(20));
+
+    flakeIdConfig2.set_prefetch_count(20).set_prefetch_validity_duration(
+      std::chrono::seconds(30));
+
+    clientConfig.add_flake_id_generator_config(flakeIdConfig2);
+    readed_flake_config =
+      clientConfig.get_flake_id_generator_config("flake_config_2");
+
+    EXPECT_EQ(readed_flake_config->get_name(), "flake_config_2");
+    EXPECT_EQ(readed_flake_config->get_prefetch_count(), 20);
+    EXPECT_EQ(readed_flake_config->get_prefetch_validity_duration(),
+              std::chrono::seconds(30));
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -2740,6 +2785,20 @@ TEST_F(ClientTxnMapTest, testIsEmpty)
     auto regularMap = client_.get_map(name).get();
     ASSERT_FALSE(regularMap->is_empty().get());
 }
+
+TEST_F(ClientTxnMapTest, testServiceNameAndDestroy)
+{
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto map = context.get_map(get_test_name());
+
+    ASSERT_EQ(map->get_service_name(), "hz:impl:mapService");
+
+    // added for test coverage
+    ASSERT_NO_THROW(map->destroy().get());
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -2784,6 +2843,19 @@ TEST_F(ClientTxnSetTest, testAddRemove)
 
     ASSERT_EQ(1, s->size().get());
 }
+
+TEST_F(ClientTxnSetTest, testServiceNameAndDestroy)
+{
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto set = context.get_set(get_test_name());
+
+    ASSERT_EQ(set->get_service_name(), "hz:impl:setService");
+    // added for test coverage
+    ASSERT_NO_THROW(set->destroy().get());
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -3004,6 +3076,63 @@ TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash)
       << "queue poll should return null";
     ASSERT_EQ(0, q->size().get());
 }
+
+TEST_F(ClientTxnTest, testTxnInitAndNextMethod)
+{
+    client_config clientConfig = get_config();
+    boost::latch init_latch(1);
+
+    load_balancer tmp_load_balancer;
+    tmp_load_balancer
+      .init([&init_latch](cluster& c) { init_latch.count_down(); })
+      .next([](cluster& c) {
+          std::vector<member> members = c.get_members();
+          size_t len = members.size();
+          if (len == 0) {
+              return boost::optional<member>();
+          }
+          for (size_t i = 0; i < len; i++) {
+              if (members[i].get_address().get_port() == 5701) {
+                  return boost::make_optional<member>(std::move(members[i]));
+              }
+          }
+          return boost::make_optional<member>(std::move(members[0]));
+      });
+
+    clientConfig.set_load_balancer(std::move(tmp_load_balancer));
+    client_.reset(
+      new hazelcast_client{ new_client(std::move(clientConfig)).get() });
+
+    ASSERT_OPEN_EVENTUALLY(init_latch);
+}
+
+TEST_F(ClientTxnTest, testTxnInitAndNextMethodRValue)
+{
+    client_config clientConfig = get_config();
+    boost::latch init_latch(1);
+
+    clientConfig.set_load_balancer(
+      load_balancer()
+        .init([&init_latch](cluster& c) { init_latch.count_down(); })
+        .next([](cluster& c) {
+            std::vector<member> members = c.get_members();
+            size_t len = members.size();
+            if (len == 0) {
+                return boost::optional<member>();
+            }
+            for (size_t i = 0; i < len; i++) {
+                if (members[i].get_address().get_port() == 5701) {
+                    return boost::make_optional<member>(std::move(members[i]));
+                }
+            }
+            return boost::make_optional<member>(std::move(members[0]));
+        }));
+    client_.reset(
+      new hazelcast_client{ new_client(std::move(clientConfig)).get() });
+
+    ASSERT_OPEN_EVENTUALLY(init_latch);
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -3050,6 +3179,19 @@ TEST_F(ClientTxnListTest, testAddRemove)
 
     ASSERT_EQ(1, l->size().get());
 }
+
+TEST_F(ClientTxnListTest, testServiceNameAndDestroy)
+{
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto list = context.get_list(get_test_name());
+
+    ASSERT_EQ(list->get_service_name(), "hz:impl:listService");
+    // added for test coverage
+    ASSERT_NO_THROW(list->destroy().get());
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -3141,6 +3283,19 @@ TEST_F(ClientTxnMultiMapTest, testPutGetRemove)
 
     boost::wait_for_all(futures.begin(), futures.end());
 }
+
+TEST_F(ClientTxnMultiMapTest, testServiceNameAndDestroy)
+{
+    transaction_context context = client_.new_transaction_context();
+    context.begin_transaction().get();
+
+    auto multi_map = context.get_multi_map(get_test_name());
+
+    ASSERT_EQ(multi_map->get_service_name(), "hz:impl:multiMapService");
+    // added for test coverage
+    ASSERT_NO_THROW(multi_map->destroy().get());
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast

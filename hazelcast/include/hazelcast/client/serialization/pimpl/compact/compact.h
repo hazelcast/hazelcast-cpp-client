@@ -70,7 +70,7 @@ namespace compact {
  * @Beta
  * @since 5.1
  */
-struct compact_serializer
+class compact_serializer
 {};
 
 /**
