@@ -16,12 +16,12 @@ jobs:
       fail-fast: false
       matrix:
         vc_boost:
-          - name: msvc-2019_boost_1710
+          - name: msvc-2019_boost_1730
             image: 'windows-2019'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.gz'
-            boost_archive_name: 'boost_1_71_0.tar.gz'
-            boost_folder_name: 'boost_1_71_0'
-            boost_include_folder: 'C:\Boost\include\boost-1_71'
+            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_73_0.tar.gz'
+            boost_archive_name: 'boost_1_73_0.tar.gz'
+            boost_folder_name: 'boost_1_73_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_73'
           - name: msvc-2019_boost_1800
             image: 'windows-2019'
             boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
