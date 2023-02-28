@@ -107,7 +107,7 @@ public:
                                       batch_size_,
                                       logger_,
                                       execution_service_,
-                                      executor_,                                      
+                                      executor_,
                                       shared_from_this()));
         runners_map_.put(id, runner);
         runner->next();
@@ -163,7 +163,7 @@ private:
           , execution_service_(std::move(execution_service))
           , executor_(executor)
           , serialization_service_(service)
-          , batch_size_(batch_size)          
+          , batch_size_(batch_size)
           , topic_(std::move(topic))
         {
             // we are going to listen to next publication. We don't care about
@@ -336,9 +336,8 @@ private:
         {
             cancelled_.store(true);
             auto topic_ptr = topic_.lock();
-            if( topic_ptr )
-            {
-              topic_ptr->runners_map_.remove(id_);
+            if (topic_ptr) {
+                topic_ptr->runners_map_.remove(id_);
             }
             return true;
         }
@@ -418,7 +417,7 @@ private:
           execution_service_;        
         util::hz_thread_pool& executor_;
         serialization::pimpl::SerializationService& serialization_service_;
-        int batch_size_;        
+        int batch_size_;
         std::weak_ptr<reliable_topic> topic_;
     };
 
