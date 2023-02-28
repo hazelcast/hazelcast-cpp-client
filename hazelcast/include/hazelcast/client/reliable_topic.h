@@ -107,8 +107,7 @@ public:
                                       batch_size_,
                                       logger_,
                                       execution_service_,
-                                      executor_,
-                                      runners_map_,
+                                      executor_,                                      
                                       shared_from_this()));
         runners_map_.put(id, runner);
         runner->next();
@@ -154,9 +153,7 @@ private:
                       std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
                         execution_service,
                       util::hz_thread_pool& executor,
-                      util::SynchronizedMap<int, util::concurrent::Cancellable>&
-                        runners_map,
-                      std::shared_ptr<reliable_topic> topic)
+                      std::weak_ptr<reliable_topic> topic)
           : listener_(listener)
           , id_(id)
           , ringbuffer_(rb)
@@ -166,8 +163,7 @@ private:
           , execution_service_(std::move(execution_service))
           , executor_(executor)
           , serialization_service_(service)
-          , batch_size_(batch_size)
-          , runners_map_(runners_map)
+          , batch_size_(batch_size)          
           , topic_(std::move(topic))
         {
             // we are going to listen to next publication. We don't care about
@@ -339,7 +335,11 @@ private:
         bool cancel() override
         {
             cancelled_.store(true);
-            runners_map_.remove(id_);
+            auto topic_ptr = topic_.lock();
+            if( topic_ptr )
+            {
+              topic_ptr->runners_map_.remove(id_);
+            }
             return true;
         }
 
@@ -418,9 +418,8 @@ private:
           execution_service_;        
         util::hz_thread_pool& executor_;
         serialization::pimpl::SerializationService& serialization_service_;
-        int batch_size_;
-        util::SynchronizedMap<int, util::concurrent::Cancellable>& runners_map_;
-        std::shared_ptr<reliable_topic> topic_;
+        int batch_size_;        
+        std::weak_ptr<reliable_topic> topic_;
     };
 
     util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;
