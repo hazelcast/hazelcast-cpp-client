@@ -2476,7 +2476,7 @@ protected:
 HazelcastServer* connection_manager_translate::instance_ = nullptr;
 const address connection_manager_translate::private_address{ "localhost",
                                                              5701 };
-const address connection_manager_translate::public_address{ "192.168.0.1",
+const address connection_manager_translate::public_address{ "245.245.245.245",
                                                             5701 };
 
 TEST_F(connection_manager_translate, test_translate_is_used)
