@@ -693,6 +693,10 @@ void
 ClientConnectionManagerImpl::initialize_client_on_cluster(
   boost::uuids::uuid target_cluster_id)
 {
+    if (!client_.get_lifecycle_service().is_running()){
+        return;
+    }
+
     try {
         {
             std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
