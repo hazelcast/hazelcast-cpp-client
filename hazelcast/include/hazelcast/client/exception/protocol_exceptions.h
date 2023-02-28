@@ -360,6 +360,7 @@ class HAZELCAST_API invocation_might_contain_compact_data : public hazelcast_
 {
 public:
     explicit invocation_might_contain_compact_data(
+      std::string source,
       const spi::impl::ClientInvocation& invocation);
 };
 
