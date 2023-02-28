@@ -205,8 +205,6 @@ private:
          * When the client closes the last connection to the cluster it
          * currently connected to, it switches to this state.
          * <p>
-         * In this state, ConnectToAllClusterMembersTask is not allowed to
-         * attempt connecting to last known member list.
          */
         DISCONNECTED_FROM_CLUSTER,
 
@@ -214,9 +212,7 @@ private:
          * We get into this state before we try to connect to next cluster. As
          * soon as the state is `SWITCHING_CLUSTER` any connection happened
          * without cluster switch intent are no longer allowed and will be
-         * closed. Also, we will not allow ConnectToAllClusterMembersTask to
-         * make any further connection attempts as long as the state is
-         * `SWITCHING_CLUSTER`
+         * closed.
          */
         SWITCHING_CLUSTER
     };
