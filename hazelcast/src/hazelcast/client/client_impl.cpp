@@ -1381,11 +1381,12 @@ invocation_might_contain_compact_data::invocation_might_contain_compact_data(
   : hazelcast_{
       move(source),
       boost::str(
-      boost::format(
-        "The invocation %1% might contain Compact serialized "
-        "data and it is not safe to invoke it when the client is not "
-        "yet initialized on the cluster") %
-      invocation) }
+        boost::format(
+          "The invocation %1% might contain Compact serialized "
+          "data and it is not safe to invoke it when the client is not "
+          "yet initialized on the cluster") %
+        invocation)
+  }
 {
 }
 

@@ -838,7 +838,7 @@ ClientInvocationServiceImpl::check_urgent_invocation_allowed(
     // in the cluster.
     if (invocation.get_client_message()
           ->contains_serialized_data_in_request()) {
-        throw exception::invocation_might_contain_compact_data{ invocation };
+        throw exception::invocation_might_contain_compact_data{ "ClientInvocationServiceImpl::check_urgent_invocation_allowed", invocation };
     }
 }
 
