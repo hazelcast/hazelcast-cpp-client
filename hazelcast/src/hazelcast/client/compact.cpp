@@ -2004,7 +2004,7 @@ default_schema_service::has_any_schemas() const
 std::ostream&
 operator<<(std::ostream& os, const std::vector<schema>& schemas)
 {
-    os << "Map {";
+    os << "Schemas {";
 
     for (const auto& s : schemas)
         os << s << " , ";
