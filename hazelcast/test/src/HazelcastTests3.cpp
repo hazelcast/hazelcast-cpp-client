@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,10 +81,18 @@ protected:
         auto entries = map->entry_set<typed_data, typed_data>().get();
         ASSERT_EQ(OPERATION_COUNT, entries.size());
         for (auto& entry : entries) {
-            auto key = entry.first.get<std::string>();
+            auto& first = entry.first;
+            ASSERT_EQ(first.get_type().type_id,
+                      serialization::pimpl::serialization_constants::
+                        CONSTANT_TYPE_STRING);
+            auto key = first.get<std::string>();
             ASSERT_TRUE(key.has_value());
             ASSERT_EQ(0U, key.value().find("foo-"));
-            auto val = entry.second.get<std::string>();
+            auto& second = entry.second;
+            ASSERT_EQ(second.get_type().type_id,
+                      serialization::pimpl::serialization_constants::
+                        CONSTANT_TYPE_STRING);
+            auto val = second.get<std::string>();
             ASSERT_TRUE(val.has_value());
             ASSERT_EQ("bar", val.value());
         }
@@ -534,6 +542,45 @@ TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode)
     ASSERT_EQ(666, samplePortable->a);
 }
 
+TEST_F(ClientReplicatedMapTest, testDeregisterListener)
+{
+    auto map = client->get_replicated_map(get_test_name()).get();
+
+    ASSERT_FALSE(
+      map->remove_entry_listener(spi::ClientContext(*client).random_uuid())
+        .get());
+
+    boost::latch map_clearedLatch(1);
+
+    entry_listener listener;
+
+    listener.on_map_cleared([&map_clearedLatch](map_event&& event) {
+        EXPECT_EQ(get_test_name(), event.get_name());
+        EXPECT_EQ(entry_event::type::CLEAR_ALL, event.get_event_type());
+        const std::string& hostName =
+          event.get_member().get_address().get_host();
+        EXPECT_TRUE(hostName == "127.0.0.1" || hostName == "localhost");
+        EXPECT_EQ(5701, event.get_member().get_address().get_port());
+        EXPECT_EQ(1, event.get_number_of_entries_affected());
+        std::cout << "Map cleared event received:" << event << std::endl;
+        map_clearedLatch.count_down();
+    });
+
+    auto listenerRegistrationId =
+      map->add_entry_listener(std::move(listener), true).get();
+    map->put(1, 1).get();
+    map->clear().get();
+    ASSERT_OPEN_EVENTUALLY(map_clearedLatch);
+    ASSERT_TRUE(map->remove_entry_listener(listenerRegistrationId).get());
+
+    map_clearedLatch.reset(1);
+
+    map->put(1, 1).get();
+    map->clear().get();
+    ASSERT_EQ(boost::cv_status::timeout,
+              map_clearedLatch.wait_for(boost::chrono::seconds(1)));
+}
+
 class ClientReplicatedMapInvalidation : public ClientReplicatedMapTestBase
 {};
 
@@ -738,6 +785,22 @@ TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate)
     replicatedMap->put(2, 2).get();
     ASSERT_TRUE_ALL_THE_TIME((state_.add_count.load() == 0), 1);
 }
+
+TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicateAndKey)
+{
+    auto replicatedMap = client->get_replicated_map(get_test_name()).get();
+    replicatedMap
+      ->add_entry_listener(
+        make_event_counting_listener(state_),
+        query::between_predicate(
+          *client, query::query_constants::KEY_ATTRIBUTE_NAME, 2, 5))
+      .get();
+
+    replicatedMap->put(1, 1).get();
+    replicatedMap->put(2, 2).get();
+    ASSERT_TRUE_EVENTUALLY(state_.has_only_added_value(2));
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast

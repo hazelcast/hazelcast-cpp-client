@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -811,10 +811,6 @@ index_config::bitmap_index_options::bitmap_index_options()
 const index_config::index_type index_config::DEFAULT_TYPE =
   index_config::index_type::SORTED;
 
-index_config::index_config()
-  : type(DEFAULT_TYPE)
-{}
-
 index_config::index_config(index_config::index_type type)
   : type(type)
 {}
@@ -1030,14 +1026,6 @@ near_cache_config::set_eviction_config(const eviction_config& eviction_config)
 {
     this->eviction_config_ = eviction_config;
     return *this;
-}
-
-int32_t
-near_cache_config::calculate_max_size(int32_t max_size)
-{
-    return (max_size == 0) ? INT32_MAX
-                           : util::Preconditions::check_not_negative(
-                               max_size, "Max-size cannot be negative!");
 }
 
 std::ostream&
@@ -1262,7 +1250,7 @@ client_config::get_instance_name() const
 client_config&
 client_config::set_instance_name(const std::string& instance_name)
 {
-    client_config::instance_name_ = instance_name;
+    instance_name_ = instance_name;
     return *this;
 }
 
@@ -1275,7 +1263,7 @@ client_config::get_executor_pool_size() const
 void
 client_config::set_executor_pool_size(int32_t executor_pool_size)
 {
-    client_config::executor_pool_size_ = executor_pool_size;
+    executor_pool_size_ = executor_pool_size;
 }
 
 config::client_connection_strategy_config&
@@ -1288,7 +1276,7 @@ client_config&
 client_config::set_connection_strategy_config(
   const config::client_connection_strategy_config& connection_strategy_config)
 {
-    client_config::connection_strategy_config_ = connection_strategy_config;
+    connection_strategy_config_ = connection_strategy_config;
     return *this;
 }
 

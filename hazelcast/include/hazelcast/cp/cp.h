@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -926,7 +926,8 @@ public:
      */
     const raft_group_id& get_group_id();
 
-    friend bool operator==(const fenced_lock& lhs, const fenced_lock& rhs);
+    friend HAZELCAST_API bool operator==(const fenced_lock& lhs,
+                                         const fenced_lock& rhs);
 
 protected:
     void post_destroy();

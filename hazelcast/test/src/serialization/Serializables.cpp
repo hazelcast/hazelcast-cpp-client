@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -659,6 +659,52 @@ hz_serializer<test::TestNamedPortableV3>::read_portable(portable_reader& reader)
 {
     return test::TestNamedPortableV3{ reader.read<std::string>("name"),
                                       reader.read<int16_t>("myint") };
+}
+
+int32_t
+hz_serializer<test::TestNamedPortableV4>::get_factory_id()
+{
+    return static_cast<int32_t>(
+      test::test_serialization_constants::TEST_PORTABLE_FACTORY);
+}
+
+int32_t
+hz_serializer<test::TestNamedPortableV4>::get_class_id()
+{
+    return static_cast<int32_t>(
+      test::test_serialization_constants::TEST_NAMED_PORTABLE_4);
+}
+
+void
+hz_serializer<test::TestNamedPortableV4>::write_portable(
+  const test::TestNamedPortableV4& object,
+  portable_writer& writer)
+{
+    writer.write<int32_t>("myint", object.k);
+    writer.write<char16_t>("c_16", object.c_16);
+
+    if (object.inner_portable.has_value()) {
+        writer.write_portable<test::TestInnerPortable>(
+          "inner_portable", &object.inner_portable.value());
+    } else {
+        writer.write_null_portable<test::TestInnerPortable>("inner_portable");
+    }
+}
+
+test::TestNamedPortableV4
+hz_serializer<test::TestNamedPortableV4>::read_portable(portable_reader& reader)
+{
+    test::TestNamedPortableV4 object;
+
+    object.k = reader.read<int32_t>("myint");
+    object.c_16 = reader.read<char16_t>("c_16");
+    auto inner_portable =
+      reader.read_portable<test::TestInnerPortable>("inner_portable");
+
+    if (inner_portable.has_value()) {
+        object.inner_portable = inner_portable.value();
+    }
+    return object;
 }
 
 int32_t

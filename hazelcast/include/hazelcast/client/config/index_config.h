@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,14 +112,12 @@ struct HAZELCAST_API index_config
 
     static const index_type DEFAULT_TYPE;
 
-    index_config();
-
     /**
      * Creates an index configuration of the given type.
      *
      * \param type Index type.
      */
-    index_config(index_type type);
+    index_config(index_type type = DEFAULT_TYPE);
 
     /**
      * Creates an index configuration of the given type with provided
@@ -130,7 +128,7 @@ struct HAZELCAST_API index_config
      */
     template<typename... T>
     index_config(index_type t, T... attrs)
-      : type(t)
+      : index_config(t)
     {
         add_attributes(std::forward<T>(attrs)...);
     }

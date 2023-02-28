@@ -3600,6 +3600,6 @@ Besides your development contributions as explained in the [Development and Test
 
 # 12. Copyright
 
-Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com) for more information.

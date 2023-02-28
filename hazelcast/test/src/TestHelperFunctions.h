@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include "hazelcast/client/spi/ClientContext.h"
-
-inline hazelcast::client::serialization::pimpl::default_schema_service&
-null_schema_service()
-{
-    return *static_cast<
-      hazelcast::client::serialization::pimpl::default_schema_service*>(
-      nullptr);
-}
 
 inline std::string
 random_string()
