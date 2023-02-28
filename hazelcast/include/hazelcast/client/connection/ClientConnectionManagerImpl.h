@@ -207,14 +207,6 @@ private:
          * <p>
          */
         DISCONNECTED_FROM_CLUSTER,
-
-        /**
-         * We get into this state before we try to connect to next cluster. As
-         * soon as the state is `SWITCHING_CLUSTER` any connection happened
-         * without cluster switch intent are no longer allowed and will be
-         * closed.
-         */
-        SWITCHING_CLUSTER
     };
 
     friend std::ostream HAZELCAST_API& operator<<(std::ostream& os,

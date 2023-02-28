@@ -317,8 +317,6 @@ operator<<(std::ostream& os, ClientConnectionManagerImpl::client_state state)
             return os << "INITIALIZED_ON_CLUSTER";
         case client_state::DISCONNECTED_FROM_CLUSTER:
             return os << "DISCONNECTED_FROM_CLUSTER";
-        case client_state::SWITCHING_CLUSTER:
-            return os << "SWITCHING_CLUSTER";
     }
 
     return os;
@@ -476,8 +474,7 @@ ClientConnectionManagerImpl::connect_to_all_members()
         {
             std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
 
-            if (client_state_ == client_state::SWITCHING_CLUSTER ||
-                client_state_ == client_state::DISCONNECTED_FROM_CLUSTER) {
+            if (client_state_ == client_state::DISCONNECTED_FROM_CLUSTER) {
                 // Best effort check to prevent this task from attempting to
                 // open a new connection when the client is either switching
                 // clusters or is not connected to any of the cluster members.
@@ -600,14 +597,6 @@ ClientConnectionManagerImpl::connect_to_cluster()
         submit_connect_to_cluster_task();
     } else {
         do_connect_to_cluster();
-
-        {
-            std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
-
-            if (active_connections_.empty()) {
-                client_state_ = client_state::SWITCHING_CLUSTER;
-            }
-        }
     }
 }
 
