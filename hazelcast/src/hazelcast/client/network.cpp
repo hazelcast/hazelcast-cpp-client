@@ -733,8 +733,6 @@ ClientConnectionManagerImpl::initialize_client_on_cluster(
             }
         }
     } catch (const std::exception& e) {
-        // TODO: Check whether this cluster_name
-        // matches with `clusterDiscoveryService.current().getClusterName()`
         auto cluster_name = client_.get_client_config().get_cluster_name();
 
         logger_.log(
