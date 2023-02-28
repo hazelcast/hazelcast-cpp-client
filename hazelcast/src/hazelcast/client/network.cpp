@@ -472,6 +472,21 @@ ClientConnectionManagerImpl::connect_to_all_members()
 
     for (const auto& m :
          client_.get_client_cluster_service().get_member_list()) {
+
+        {
+            std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
+
+            if (client_state_ == client_state::SWITCHING_CLUSTER ||
+                client_state_ == client_state::DISCONNECTED_FROM_CLUSTER) {
+                // Best effort check to prevent this task from attempting to
+                // open a new connection when the client is either switching
+                // clusters or is not connected to any of the cluster members.
+                // In such occasions, only `do_connect_to_cluster`
+                // method should open new connections.
+                return;
+            }
+        }
+
         if (client_.get_lifecycle_service().is_running() &&
             !get_connection(m.get_uuid()) &&
             connecting_members_.get_or_put_if_absent(m, nullptr).second) {
@@ -1007,20 +1022,6 @@ ClientConnectionManagerImpl::connect_to_all_cluster_members()
 
     for (const auto& member :
          client_.get_client_cluster_service().get_member_list()) {
-
-        {
-            std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
-
-            if (client_state_ == client_state::SWITCHING_CLUSTER ||
-                client_state_ == client_state::DISCONNECTED_FROM_CLUSTER) {
-                // Best effort check to prevent this task from attempting to
-                // open a new connection when the client is either switching
-                // clusters or is not connected to any of the cluster members.
-                // In such occasions, only `doConnectToCandidateCluster`
-                // method should open new connections.
-                return;
-            }
-        }
 
         try {
             get_or_connect(member);
