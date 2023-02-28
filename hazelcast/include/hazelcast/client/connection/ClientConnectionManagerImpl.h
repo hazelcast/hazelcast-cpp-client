@@ -140,7 +140,7 @@ public:
 
     void check_invocation_allowed();
 
-    bool client_initialized_on_cluster();
+    bool client_initialized_on_cluster() const;
 
     void connect_to_all_cluster_members();
 
@@ -308,7 +308,7 @@ private:
     wait_strategy wait_strategy_;
 
     // following fields are updated inside synchronized(clientStateMutex)
-    std::recursive_mutex client_state_mutex_;
+    mutable std::recursive_mutex client_state_mutex_;
     util::SynchronizedMap<boost::uuids::uuid,
                           Connection,
                           boost::hash<boost::uuids::uuid>>

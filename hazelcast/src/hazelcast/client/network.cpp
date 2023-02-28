@@ -995,7 +995,7 @@ ClientConnectionManagerImpl::check_invocation_allowed()
 }
 
 bool
-ClientConnectionManagerImpl::client_initialized_on_cluster()
+ClientConnectionManagerImpl::client_initialized_on_cluster() const
 {
     std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
 
