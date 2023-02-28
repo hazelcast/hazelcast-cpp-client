@@ -238,7 +238,7 @@ private:
     static void shutdown_with_external_thread(
       std::weak_ptr<client::impl::hazelcast_client_instance_impl> client_impl);
 
-    bool do_connect_to_cluster();
+    void do_connect_to_cluster();
 
     std::vector<address> get_possible_member_addresses();
 

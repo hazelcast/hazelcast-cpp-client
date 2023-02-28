@@ -496,7 +496,7 @@ ClientConnectionManagerImpl::connect_to_all_members()
     }
 }
 
-bool
+void
 ClientConnectionManagerImpl::do_connect_to_cluster()
 {
     std::unordered_set<address> tried_addresses;
@@ -516,7 +516,7 @@ ClientConnectionManagerImpl::do_connect_to_cluster()
             tried_addresses_per_attempt.insert(m.get_address());
             auto connection = try_connect(m);
             if (connection) {
-                return true;
+                return;
             }
         }
         // try to connect to a member given via config(explicit config/discovery
@@ -530,7 +530,7 @@ ClientConnectionManagerImpl::do_connect_to_cluster()
             }
             auto connection = try_connect<address>(server_address);
             if (connection) {
-                return true;
+                return;
             }
         }
         tried_addresses.insert(tried_addresses_per_attempt.begin(),
@@ -584,9 +584,7 @@ ClientConnectionManagerImpl::connect_to_cluster()
     if (async_start_) {
         submit_connect_to_cluster_task();
     } else {
-        if (do_connect_to_cluster()) {
-            return;
-        }
+        do_connect_to_cluster();
 
         {
             std::lock_guard<std::recursive_mutex> guard{ client_state_mutex_ };
