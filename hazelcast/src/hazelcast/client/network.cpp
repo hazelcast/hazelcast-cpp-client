@@ -693,7 +693,7 @@ void
 ClientConnectionManagerImpl::initialize_client_on_cluster(
   boost::uuids::uuid target_cluster_id)
 {
-    if (!client_.get_lifecycle_service().is_running()){
+    if (!client_.get_lifecycle_service().is_running()) {
         return;
     }
 

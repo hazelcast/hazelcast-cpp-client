@@ -139,13 +139,14 @@ public:
     boost::uuids::uuid get_client_uuid() const;
 
     /**
-     * Check the connected state and user connection strategy configuration to see if an invocation is allowed at the moment
-     * returns without throwing exception only when is the client is Connected to cluster
+     * Check the connected state and user connection strategy configuration to
+     * see if an invocation is allowed at the moment returns without throwing
+     * exception only when is the client is Connected to cluster
      *
-     * @throws io_exception                    if client is disconnected and ReconnectMode is ON or
-     *                                         if client is starting and async start is false
-     * @throws hazelcast_client_offline        if client is disconnected and ReconnectMode is ASYNC or
-     *                                         if client is starting and async start is true
+     * @throws io_exception                    if client is disconnected and
+     * ReconnectMode is ON or if client is starting and async start is false
+     * @throws hazelcast_client_offline        if client is disconnected and
+     * ReconnectMode is ASYNC or if client is starting and async start is true
      */
     void check_invocation_allowed();
 
