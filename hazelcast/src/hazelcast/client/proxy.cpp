@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,9 @@ const std::chrono::milliseconds imap::UNSET{ -1 };
 reliable_topic::reliable_topic(const std::string& instance_name,
                                spi::ClientContext* context)
   : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context)
-  , executor_(context->get_client_execution_service().get_user_executor())
+  , execution_service_(
+      context->get_client_execution_service().shared_from_this())  
+  , executor_(execution_service_->get_user_executor())
   , logger_(context->get_logger())
 {
     auto reliable_config =

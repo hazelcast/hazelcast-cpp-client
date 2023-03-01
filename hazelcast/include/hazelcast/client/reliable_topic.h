@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,9 @@ namespace client {
  * process m1, m2, m3...mn in order.
  *
  */
-class HAZELCAST_API reliable_topic : public proxy::ProxyImpl
+class HAZELCAST_API reliable_topic
+  : public proxy::ProxyImpl
+  , public std::enable_shared_from_this<reliable_topic>
 {
     friend class spi::ProxyManager;
     friend class hazelcast_client;
@@ -104,8 +106,9 @@ public:
                                       get_serialization_service(),
                                       batch_size_,
                                       logger_,
+                                      execution_service_,
                                       executor_,
-                                      runners_map_));
+                                      shared_from_this()));
         runners_map_.put(id, runner);
         runner->next();
         return std::to_string(id);
@@ -147,19 +150,21 @@ private:
                       serialization::pimpl::SerializationService& service,
                       int batch_size,
                       logger& lg,
+                      std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
+                        execution_service,
                       util::hz_thread_pool& executor,
-                      util::SynchronizedMap<int, util::concurrent::Cancellable>&
-                        runners_map)
+                      std::weak_ptr<reliable_topic> topic)
           : listener_(listener)
           , id_(id)
           , ringbuffer_(rb)
           , cancelled_(false)
           , logger_(lg)
           , name_(topic_name)
+          , execution_service_(std::move(execution_service))
           , executor_(executor)
           , serialization_service_(service)
           , batch_size_(batch_size)
-          , runners_map_(runners_map)
+          , topic_(std::move(topic))
         {
             // we are going to listen to next publication. We don't care about
             // what already has been published.
@@ -179,8 +184,9 @@ private:
             }
 
             auto runner = this->shared_from_this();
+            auto execution_service = this->execution_service_;            
             ringbuffer_->read_many(sequence_, 1, batch_size_)
-              .then(executor_, [runner](boost::future<rb::read_result_set> f) {
+              .then(executor_, [runner,execution_service](boost::future<rb::read_result_set> f) {
                   if (runner->cancelled_) {
                       return;
                   }
@@ -329,7 +335,10 @@ private:
         bool cancel() override
         {
             cancelled_.store(true);
-            runners_map_.remove(id_);
+            auto topic_ptr = topic_.lock();
+            if (topic_ptr) {
+                topic_ptr->runners_map_.remove(id_);
+            }
             return true;
         }
 
@@ -404,14 +413,17 @@ private:
         std::atomic<bool> cancelled_;
         logger& logger_;
         const std::string& name_;
+        std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
+          execution_service_;        
         util::hz_thread_pool& executor_;
         serialization::pimpl::SerializationService& serialization_service_;
         int batch_size_;
-        util::SynchronizedMap<int, util::concurrent::Cancellable>& runners_map_;
+        std::weak_ptr<reliable_topic> topic_;
     };
 
     util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;
     std::atomic<int> runner_counter_{ 0 };
+    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
     util::hz_thread_pool& executor_;
     logger& logger_;
     int batch_size_;

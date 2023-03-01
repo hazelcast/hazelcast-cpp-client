@@ -24,6 +24,8 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/client/serialization/field_kind.h"
+#include "hazelcast/client/serialization/pimpl/compact/default_schema_service.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,72 +34,32 @@
 
 namespace hazelcast {
 namespace client {
+namespace spi {
+class ClientContext;
+}
+
 namespace serialization {
+namespace compact {
 class compact_reader;
 class compact_writer;
+} // namespace compact
 namespace pimpl {
 class schema;
 class default_compact_writer;
 class schema_writer;
-compact_writer HAZELCAST_API
+compact::compact_writer HAZELCAST_API
 create_compact_writer(pimpl::default_compact_writer* default_compact_writer);
-compact_writer HAZELCAST_API
+compact::compact_writer HAZELCAST_API
 create_compact_writer(pimpl::schema_writer* schema_writer);
-compact_reader HAZELCAST_API
+compact::compact_reader HAZELCAST_API
 create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
   const pimpl::schema& schema);
 struct field_descriptor;
-enum HAZELCAST_API field_kind
-{
-    BOOLEAN = 0,
-    ARRAY_OF_BOOLEAN = 1,
-    INT8 = 2,
-    ARRAY_OF_INT8 = 3,
-    INT16 = 6,
-    ARRAY_OF_INT16 = 7,
-    INT32 = 8,
-    ARRAY_OF_INT32 = 9,
-    INT64 = 10,
-    ARRAY_OF_INT64 = 11,
-    FLOAT32 = 12,
-    ARRAY_OF_FLOAT32 = 13,
-    FLOAT64 = 14,
-    ARRAY_OF_FLOAT64 = 15,
-    STRING = 16,
-    ARRAY_OF_STRING = 17,
-    DECIMAL = 18,
-    ARRAY_OF_DECIMAL = 19,
-    TIME = 20,
-    ARRAY_OF_TIME = 21,
-    DATE = 22,
-    ARRAY_OF_DATE = 23,
-    TIMESTAMP = 24,
-    ARRAY_OF_TIMESTAMP = 25,
-    TIMESTAMP_WITH_TIMEZONE = 26,
-    ARRAY_OF_TIMESTAMP_WITH_TIMEZONE = 27,
-    COMPACT = 28,
-    ARRAY_OF_COMPACT = 29,
-    NULLABLE_BOOLEAN = 32,
-    ARRAY_OF_NULLABLE_BOOLEAN = 33,
-    NULLABLE_INT8 = 34,
-    ARRAY_OF_NULLABLE_INT8 = 35,
-    NULLABLE_INT16 = 36,
-    ARRAY_OF_NULLABLE_INT16 = 37,
-    NULLABLE_INT32 = 38,
-    ARRAY_OF_NULLABLE_INT32 = 39,
-    NULLABLE_INT64 = 40,
-    ARRAY_OF_NULLABLE_INT64 = 41,
-    NULLABLE_FLOAT32 = 42,
-    ARRAY_OF_NULLABLE_FLOAT32 = 43,
-    NULLABLE_FLOAT64 = 44,
-    ARRAY_OF_NULLABLE_FLOAT64 = 45,
-};
-static const int NUMBER_OF_FIELD_KINDS = ARRAY_OF_NULLABLE_FLOAT64 + 1;
-
 } // namespace pimpl
 
+namespace compact {
 /**
  * Classes derived from this class should implement the following static
  * methods:
@@ -108,7 +70,7 @@ static const int NUMBER_OF_FIELD_KINDS = ARRAY_OF_NULLABLE_FLOAT64 + 1;
  * @Beta
  * @since 5.1
  */
-struct compact_serializer
+class compact_serializer
 {};
 
 /**
@@ -633,24 +595,23 @@ private:
       const pimpl::schema& schema);
     template<typename T>
     T read_primitive(const std::string& field_name,
-                     enum pimpl::field_kind field_kind,
-                     enum pimpl::field_kind nullable_field_kind,
+                     field_kind kind,
+                     field_kind nullable_kind,
                      const std::string& method_suffix);
     template<typename T>
     T read_primitive(const pimpl::field_descriptor& field_descriptor);
-    bool is_field_exists(const std::string& field_name,
-                         enum pimpl::field_kind kind) const;
+    bool is_field_exists(const std::string& field_name, field_kind kind) const;
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name) const;
     const pimpl::field_descriptor& get_field_descriptor(
       const std::string& field_name,
-      enum pimpl::field_kind field_kind) const;
+      field_kind field_kind) const;
     template<typename T>
     boost::optional<T> read_variable_size(
       const pimpl::field_descriptor& field_descriptor);
     template<typename T>
     boost::optional<T> read_variable_size(const std::string& field_name,
-                                          enum pimpl::field_kind field_kind);
+                                          field_kind field_kind);
     template<typename T>
     T read_variable_size_as_non_null(
       const pimpl::field_descriptor& field_descriptor,
@@ -684,7 +645,7 @@ private:
     read();
     template<typename T>
     typename std::enable_if<
-      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
@@ -711,8 +672,8 @@ private:
     template<typename T>
     boost::optional<T> read_array_of_primitive(
       const std::string& field_name,
-      enum pimpl::field_kind field_kind,
-      enum pimpl::field_kind nullable_field_kind,
+      field_kind kind,
+      field_kind nullable_kind,
       const std::string& method_suffix);
     template<typename T>
     boost::optional<std::vector<boost::optional<T>>>
@@ -729,15 +690,14 @@ private:
     static const offset_func SHORT_OFFSET_READER;
     static const offset_func INT_OFFSET_READER;
     template<typename T>
-    boost::optional<T> read_nullable_primitive(
-      const std::string& field_name,
-      enum pimpl::field_kind field_kind,
-      enum pimpl::field_kind nullable_field_kind);
+    boost::optional<T> read_nullable_primitive(const std::string& field_name,
+                                               field_kind kind,
+                                               field_kind nullable_kind);
     template<typename T>
     boost::optional<std::vector<boost::optional<T>>> read_array_of_nullable(
       const std::string& field_name,
-      enum pimpl::field_kind field_kind,
-      enum pimpl::field_kind nullable_field_kind);
+      field_kind kind,
+      field_kind nullable_kind);
     template<typename T>
     boost::optional<std::vector<boost::optional<T>>>
     read_primitive_array_as_nullable_array(
@@ -751,7 +711,7 @@ private:
     exception::hazelcast_serialization unknown_field(
       const std::string& field_name) const;
     exception::hazelcast_serialization unexpected_field_kind(
-      enum pimpl::field_kind field_kind,
+      field_kind kind,
       const std::string& field_name) const;
     static exception::hazelcast_serialization unexpected_null_value(
       const std::string& field_name,
@@ -1203,6 +1163,7 @@ private:
     pimpl::default_compact_writer* default_compact_writer;
     pimpl::schema_writer* schema_writer;
 };
+} // namespace compact
 
 namespace pimpl {
 
@@ -1370,7 +1331,7 @@ private:
 
     template<typename T>
     typename std::enable_if<
-      std::is_base_of<compact_serializer, hz_serializer<T>>::value,
+      std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
       void>::type
     write(const T& value);
 
@@ -1405,50 +1366,6 @@ private:
     std::vector<int32_t> field_offsets;
 };
 
-struct HAZELCAST_API field_descriptor
-{
-    enum field_kind field_kind;
-    /**
-     * Index of the offset of the non-primitive field. For others, it is -1
-     */
-    int32_t index;
-    /**
-     * Applicable only for primitive fields. For others, it is -1
-     */
-    int32_t offset;
-    /**
-     * Applicable only for boolean field. For others, it is -1
-     */
-    int8_t bit_offset;
-};
-
-std::ostream&
-operator<<(std::ostream& os, const field_descriptor& field_descriptor);
-
-class HAZELCAST_API schema
-{
-public:
-    schema() = default;
-    schema(
-      std::string type_name,
-      std::unordered_map<std::string, field_descriptor>&& field_definition_map);
-    int64_t schema_id() const;
-    size_t number_of_var_size_fields() const;
-    size_t fixed_size_fields_length() const;
-    const std::string& type_name() const;
-    const std::unordered_map<std::string, field_descriptor>& fields() const;
-
-private:
-    std::string type_name_;
-    std::unordered_map<std::string, field_descriptor> field_definition_map_;
-    size_t number_of_var_size_fields_{};
-    size_t fixed_size_fields_length_{};
-    int64_t schema_id_{};
-};
-
-std::ostream&
-operator<<(std::ostream& os, const schema& schema);
-
 } // namespace pimpl
 
 namespace pimpl {
@@ -1464,43 +1381,22 @@ private:
     std::string type_name;
 };
 
-/**
- * Service to put and get metadata to cluster.
- */
-class HAZELCAST_API default_schema_service
-{
-public:
-    /**
-     * Gets the schema with the given id either by
-     * <ul>
-     *     <li>returning it directly from the local registry, if it exists.</li>
-     *     <li>searching the cluster.</li>
-     * </ul>
-     */
-    schema get(int64_t schemaId);
-
-    /**
-     * Puts the schema with the given id to the cluster.
-     */
-    void put(const schema& schema);
-
-private:
-    util::SynchronizedMap<int64_t, schema> schemas;
-};
-
 class HAZELCAST_API compact_stream_serializer
 {
 public:
+    compact_stream_serializer(default_schema_service&);
+
     template<typename T>
     T read(object_data_input& in);
 
     template<typename T>
     void write(const T& object, object_data_output& out);
 
-private:
-    void put_to_schema_service(const schema& schema);
+    template<typename T>
+    static schema build_schema(const T& object);
 
-    default_schema_service schema_service;
+private:
+    default_schema_service& schema_service;
 };
 
 struct HAZELCAST_API field_kind_based_operations
@@ -1520,6 +1416,37 @@ struct HAZELCAST_API field_kind_based_operations
 struct HAZELCAST_API field_operations
 {
     static field_kind_based_operations get(enum field_kind field_kind);
+};
+
+/**
+ * A very collision-resistant fingerprint method used to create automatic
+ * schema ids for the Compact format.
+ */
+class HAZELCAST_API rabin_finger_print
+{
+public:
+    /**
+     * We use uint64_t for computation to match the behaviour of >>> operator
+     * on java. We use >> instead.
+     */
+    static constexpr uint64_t INIT = 0xc15d213aa4d7a795L;
+
+    static uint64_t fingerprint64(uint64_t fp, byte b);
+
+    /**
+     * FingerPrint of a little endian representation of an integer.
+     */
+    static uint64_t fingerprint64(uint64_t fp, int32_t v);
+
+    static uint64_t fingerprint64(uint64_t fp, const std::string& value);
+
+    /**
+     * Calculates the fingerprint of the schema from its 'type_name' and
+     * 'fields'. Fields must be sorted so it accepts fields as std::map
+     */
+    static int64_t fingerprint64(
+      const std::string& type_name,
+      std::map<std::string, field_descriptor>& fields);
 };
 
 } // namespace pimpl

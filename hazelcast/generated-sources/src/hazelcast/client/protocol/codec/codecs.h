@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3078,6 +3078,19 @@ sql_execute_encode(const std::string& sql,
 ClientMessage HAZELCAST_API
 sql_fetch_encode(const sql::impl::query_id& query_id,
                  int32_t cursor_buffer_size);
+
+/**
+ * Replicates schema on cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendschema_encode(const serialization::pimpl::schema& schema);
+
+/**
+ * Sends all the schemas to the cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendallschemas_encode(
+  const std::vector<serialization::pimpl::schema>& schemas);
 
 } // namespace codec
 } // namespace protocol

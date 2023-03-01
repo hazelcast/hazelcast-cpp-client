@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@
 
 #include "HazelcastServerFactory.h"
 #include "remote_controller_client.h"
+#include "TestHelperFunctions.h"
 
 namespace hazelcast {
 namespace client {
@@ -104,17 +105,7 @@ ClientTest::get_ssl_file_path()
 std::string
 ClientTest::random_map_name()
 {
-    return "test_" + boost::replace_all_copy(random_string(), "-", "_");
-}
-
-std::string
-ClientTest::random_string()
-{
-    // performance is not important, hence we can use random_device for the
-    // tests
-    std::random_device rand{};
-    return boost::uuids::to_string(
-      boost::uuids::basic_random_generator<std::random_device>{ rand }());
+    return random_string();
 }
 
 boost::uuids::uuid

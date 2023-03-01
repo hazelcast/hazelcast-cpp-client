@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1878,6 +1878,18 @@ TEST_P(ClientMapTest, testValuesWithpaging_predicate)
     ASSERT_EQ(2, (int)result.size());
     ASSERT_EQ(empl3, result[0]);
     ASSERT_EQ(empl4, result[1]);
+
+    query::greater_less_predicate keyLessThanSevenPredicate(
+      client_, query::query_constants::KEY_ATTRIBUTE_NAME, 7, false, true);
+
+    predSize = 2;
+    auto predicate4 = int_map_->new_paging_predicate<int, employee>(
+      keyLessThanSevenPredicate, EmployeeEntryComparator(), (size_t)predSize);
+    std::vector<employee> result2 =
+      employees_->values<int, employee>(predicate4).get();
+    ASSERT_EQ(2, (int)result2.size());
+    EXPECT_EQ(empl2, result2[0]);
+    EXPECT_EQ(empl3, result2[1]);
 }
 
 TEST_P(ClientMapTest, testKeySetWithPredicate)
@@ -4037,6 +4049,24 @@ TEST_P(ClientMapTest, testExtendedAsciiString)
     ASSERT_TRUE(actualValue.has_value());
     ASSERT_EQ(value, actualValue.value());
 }
+
+TEST_P(ClientMapTest, testWithGetDistrubtedObject)
+{
+    auto tmp_imap = client_.get_distributed_object<imap>(get_test_name()).get();
+
+    tmp_imap->put(1, 1).get();
+    tmp_imap->put(2, 2).get();
+    tmp_imap->put(3, 3).get();
+    EXPECT_EQ(3, tmp_imap->size().get());
+    EXPECT_FALSE(tmp_imap->contains_key(10).get());
+    EXPECT_TRUE(tmp_imap->contains_key(1).get());
+
+    tmp_imap->remove<int, int>(1).get();
+    EXPECT_EQ(2, tmp_imap->size().get());
+    EXPECT_FALSE(tmp_imap->contains_key(1).get());
+    tmp_imap->destroy().get();
+}
+
 } // namespace test
 
 namespace serialization {

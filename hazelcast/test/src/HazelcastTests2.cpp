@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -381,6 +381,48 @@ TEST_F(ClientConfigTest, test_set_instance_name)
     ASSERT_EQ(test_name, client.get_name());
 }
 
+/*
+  Note: In Java side, the label is compared with the the help of
+  ClientService at server side. As C++ client cannot access this service,
+  the label cannot be compared at server side.
+*/
+TEST_F(ClientConfigTest, test_add_label)
+{
+    client_config config;
+    bool is_found = false;
+    std::string label("label_1"), non_existing_label("label_2");
+
+    config.add_label(label);
+    auto& labels = config.get_labels();
+    EXPECT_EQ(1, labels.size());
+    is_found = labels.find(label) != labels.end();
+    EXPECT_TRUE(is_found);
+    is_found = labels.find(non_existing_label) != labels.end();
+    EXPECT_FALSE(is_found);
+}
+
+TEST_F(ClientConfigTest, test_set_label)
+{
+    client_config config;
+    bool is_found = false;
+    std::string label_1("label_1"), label_2("label_2"),
+      non_existing_label("label_3");
+    std::unordered_set<std::string> labels_to_set;
+
+    labels_to_set.insert(label_1);
+    labels_to_set.insert(label_2);
+    config.set_labels(labels_to_set);
+
+    auto& labels = config.get_labels();
+    EXPECT_EQ(2, labels.size());
+    is_found = labels.find(label_1) != labels.end();
+    EXPECT_TRUE(is_found);
+    is_found = labels.find(label_2) != labels.end();
+    EXPECT_TRUE(is_found);
+    is_found = labels.find(non_existing_label) != labels.end();
+    EXPECT_FALSE(is_found);
+}
+
 TEST(connection_retry_config_test, large_jitter)
 {
     ASSERT_THROW(client_config()
@@ -697,6 +739,38 @@ TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers)
 
     client.shutdown().get();
 }
+
+TEST_F(ConfiguredBehaviourTest, testRemoveLifecycleListener)
+{
+    HazelcastServer hazelcastInstance(default_server_factory());
+
+    auto tmp_connection_strategy =
+      client_config_.get_connection_strategy_config();
+    tmp_connection_strategy.set_reconnect_mode(
+      config::client_connection_strategy_config::OFF);
+
+    client_config_.set_connection_strategy_config(
+      std::move(tmp_connection_strategy));
+    hazelcast_client client(new_client(std::move(client_config_)).get());
+    boost::latch shutdownLatch(1);
+    auto lifecycle_id =
+      client.add_lifecycle_listener(lifecycle_listener().on_shutdown(
+        [&shutdownLatch]() { shutdownLatch.try_count_down(); }));
+
+    // no exception at this point
+    auto map = client.get_map(random_map_name()).get();
+    map->put(1, 5).get();
+
+    client.remove_lifecycle_listener(lifecycle_id);
+    hazelcastInstance.shutdown();
+
+    ASSERT_EQ(boost::cv_status::timeout,
+              shutdownLatch.wait_for(boost::chrono::seconds(5)));
+
+    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_client_not_active);
+
+    client.shutdown().get();
+}
 } // namespace connectionstrategy
 } // namespace test
 } // namespace client
@@ -786,7 +860,40 @@ TEST_F(PipeliningTest, testPipeliningFunctionalityDepth100)
 namespace hazelcast {
 namespace client {
 namespace test {
-class PortableVersionTest : public ::testing::Test
+
+class serialization_test_base : public testing::Test
+{
+public:
+    serialization_test_base()
+      : factory_{ "hazelcast/test/resources/serialization.xml" }
+      , member_{ factory_ }
+      , client_{ new_client(config()).get() }
+    {
+        remote_controller_client().ping();
+    }
+
+    serialization::pimpl::default_schema_service& get_schema_service()
+    {
+        return spi::ClientContext{ client_ }.get_schema_service();
+    }
+
+protected:
+    HazelcastServerFactory factory_;
+    HazelcastServer member_;
+    hazelcast_client client_;
+
+private:
+    static client_config config()
+    {
+        client_config cfg;
+
+        cfg.set_cluster_name("serialization-dev");
+
+        return cfg;
+    }
+};
+
+class PortableVersionTest : public serialization_test_base
 {
 public:
     class Child
@@ -834,11 +941,13 @@ public:
 TEST_F(PortableVersionTest, test_nestedPortable_versionedSerializer)
 {
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss1(serializationConfig);
+    serialization::pimpl::SerializationService ss1(serializationConfig,
+                                                   get_schema_service());
 
     serialization_config serializationConfig2;
     serializationConfig2.set_portable_version(6);
-    serialization::pimpl::SerializationService ss2(serializationConfig2);
+    serialization::pimpl::SerializationService ss2(serializationConfig2,
+                                                   get_schema_service());
 
     // make sure ss2 cached class definition of Child
     {
@@ -909,7 +1018,7 @@ struct hz_serializer<test::PortableVersionTest::Parent>
 namespace hazelcast {
 namespace client {
 namespace test {
-class PartitionAwareTest : public ClientTest
+class PartitionAwareTest : public serialization_test_base
 {
 public:
     class SimplePartitionAwareObject : public partition_aware<int>
@@ -932,7 +1041,7 @@ TEST_F(PartitionAwareTest, testSimplePartitionAwareObjectSerialisation)
 {
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     SimplePartitionAwareObject obj;
     serialization::pimpl::data data =
@@ -950,7 +1059,7 @@ TEST_F(PartitionAwareTest, testNonPartitionAwareObjectSerialisation)
 {
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     int obj = 7;
     serialization::pimpl::data data = serializationService.to_data<int>(&obj);
@@ -985,11 +1094,11 @@ struct hz_serializer<test::PartitionAwareTest::SimplePartitionAwareObject>
 namespace hazelcast {
 namespace client {
 namespace test {
-class JsonValueSerializationTest : public ::testing::Test
+class JsonValueSerializationTest : public serialization_test_base
 {
 public:
     JsonValueSerializationTest()
-      : serialization_service_(config_)
+      : serialization_service_(config_, get_schema_service())
     {}
 
 protected:
@@ -1008,7 +1117,7 @@ TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue)
     ASSERT_EQ(jsonValue, jsonDeserialized.value());
 }
 
-class ClientSerializationTest : public ::testing::Test
+class ClientSerializationTest : public serialization_test_base
 {
 protected:
     TestInnerPortable create_inner_portable()
@@ -1082,7 +1191,7 @@ TEST_F(ClientSerializationTest, testCustomSerialization)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     TestCustomXSerializable a{ 131321 };
     serialization::pimpl::data data =
@@ -1104,7 +1213,7 @@ TEST_F(ClientSerializationTest, testRawData)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     char charA[] = "test chars";
     std::vector<char> chars(charA, charA + 10);
     std::vector<byte> bytes;
@@ -1125,7 +1234,7 @@ TEST_F(ClientSerializationTest, testIdentifiedDataSerializable)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     serialization::pimpl::data data;
     TestDataSerializable np{ 4, 'k' };
     data = serializationService.to_data<TestDataSerializable>(&np);
@@ -1146,7 +1255,7 @@ TEST_F(ClientSerializationTest, testRawDataWithoutRegistering)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     char charA[] = "test chars";
     std::vector<char> chars(charA, charA + 10);
     std::vector<byte> bytes;
@@ -1167,7 +1276,7 @@ TEST_F(ClientSerializationTest, testInvalidWrite)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     TestInvalidWritePortable p{ 2131, 123, "q4edfd" };
     ASSERT_THROW(serializationService.to_data<TestInvalidWritePortable>(&p),
                  exception::hazelcast_serialization);
@@ -1178,7 +1287,7 @@ TEST_F(ClientSerializationTest, testInvalidRead)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     TestInvalidReadPortable p{ 2131, 123, "q4edfd" };
     serialization::pimpl::data data =
       serializationService.to_data<TestInvalidReadPortable>(&p);
@@ -1191,12 +1300,12 @@ TEST_F(ClientSerializationTest, testDifferentVersions)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     serialization_config serializationConfig2;
     serializationConfig2.set_portable_version(2);
     serialization::pimpl::SerializationService serializationService2(
-      serializationConfig2);
+      serializationConfig2, get_schema_service());
 
     serialization::pimpl::data data =
       serializationService.to_data<TestNamedPortable>(
@@ -1223,7 +1332,7 @@ TEST_F(ClientSerializationTest, testBasicFunctionality)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     serialization::pimpl::data data;
 
     int x = 3;
@@ -1279,7 +1388,8 @@ TEST_F(ClientSerializationTest, testStringLiterals)
 {
     auto literal = R"delimeter(My example string literal)delimeter";
     serialization_config config;
-    serialization::pimpl::SerializationService serializationService(config);
+    serialization::pimpl::SerializationService serializationService(
+      config, get_schema_service());
     auto data = serializationService.to_data(literal);
     auto obj = serializationService.to_object<decltype(literal)>(data);
     ASSERT_TRUE(obj);
@@ -1291,7 +1401,7 @@ TEST_F(ClientSerializationTest, testBasicFunctionalityWithLargeData)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     serialization::pimpl::data data;
 
     std::vector<byte> bb(LARGE_ARRAY_SIZE);
@@ -1327,12 +1437,12 @@ TEST_F(ClientSerializationTest, testBasicFunctionalityWithDifferentVersions)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     serialization_config serializationConfig2;
     serializationConfig2.set_portable_version(2);
     serialization::pimpl::SerializationService serializationService2(
-      serializationConfig2);
+      serializationConfig2, get_schema_service());
     serialization::pimpl::data data;
 
     int32_t x = 3;
@@ -1389,7 +1499,7 @@ TEST_F(ClientSerializationTest, testDataHash)
 {
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     std::string serializable = "key1";
     serialization::pimpl::data data =
       serializationService.to_data<std::string>(&serializable);
@@ -1402,7 +1512,7 @@ TEST_F(ClientSerializationTest, testPrimitives)
 {
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
     byte by = 2;
     bool boolean = true;
     char c = 'c';
@@ -1431,7 +1541,7 @@ TEST_F(ClientSerializationTest, testPrimitiveArrays)
 {
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     char charArray[] = { 'c', 'h', 'a', 'r' };
     std::vector<char> cc(charArray, charArray + 4);
@@ -1489,7 +1599,8 @@ TEST_F(ClientSerializationTest, testPrimitiveArrays)
 TEST_F(ClientSerializationTest, testWriteObjectWithPortable)
 {
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss(serializationConfig);
+    serialization::pimpl::SerializationService ss(serializationConfig,
+                                                  get_schema_service());
 
     ObjectCarryingPortable<TestNamedPortable> objectCarryingPortable{
         TestNamedPortable{ "name", 2 }
@@ -1504,7 +1615,8 @@ TEST_F(ClientSerializationTest, testWriteObjectWithPortable)
 TEST_F(ClientSerializationTest, testWriteObjectWithIdentifiedDataSerializable)
 {
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss(serializationConfig);
+    serialization::pimpl::SerializationService ss(serializationConfig,
+                                                  get_schema_service());
 
     ObjectCarryingPortable<TestDataSerializable> objectCarryingPortable{
         TestDataSerializable{ 2, 'c' }
@@ -1519,7 +1631,8 @@ TEST_F(ClientSerializationTest, testWriteObjectWithIdentifiedDataSerializable)
 TEST_F(ClientSerializationTest, testWriteObjectWithCustomXSerializable)
 {
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss(serializationConfig);
+    serialization::pimpl::SerializationService ss(serializationConfig,
+                                                  get_schema_service());
     ObjectCarryingPortable<TestCustomXSerializable> objectCarryingPortable{
         TestCustomXSerializable{ 131321 }
     };
@@ -1534,7 +1647,8 @@ TEST_F(ClientSerializationTest, testWriteObjectWithCustomXSerializable)
 TEST_F(ClientSerializationTest, testWriteObjectWithCustomPersonSerializable)
 {
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss(serializationConfig);
+    serialization::pimpl::SerializationService ss(serializationConfig,
+                                                  get_schema_service());
 
     ObjectCarryingPortable<TestCustomPerson> objectCarryingPortable{
         TestCustomPerson{ "TestCustomPerson" }
@@ -1550,7 +1664,8 @@ TEST_F(ClientSerializationTest, testNullData)
 {
     serialization::pimpl::data data;
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss(serializationConfig);
+    serialization::pimpl::SerializationService ss(serializationConfig,
+                                                  get_schema_service());
     auto ptr = ss.to_object<int32_t>(data);
     ASSERT_FALSE(ptr.has_value());
 }
@@ -1560,7 +1675,7 @@ TEST_F(ClientSerializationTest, testMorphingPortableV1ToV2Conversion)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     TestNamedPortable p{ "portable-v1", 123 };
     serialization::pimpl::data data =
@@ -1578,7 +1693,7 @@ TEST_F(ClientSerializationTest, testMorphingPortableV2ToV1Conversion)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     TestNamedPortableV2 p2{ "portable-v2", 123, 9999 };
     serialization::pimpl::data data =
@@ -1595,7 +1710,7 @@ TEST_F(ClientSerializationTest, testMorphingPortableV1ToV3Conversion)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     TestNamedPortable p{ "portable-v1", 123 };
     serialization::pimpl::data data =
@@ -1611,12 +1726,12 @@ TEST_F(ClientSerializationTest,
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     serialization_config serializationConfig2;
     serializationConfig.set_portable_version(5);
     serialization::pimpl::SerializationService serializationService2(
-      serializationConfig2);
+      serializationConfig2, get_schema_service());
 
     TestNamedPortableV2 p2{ "portable-v2", 123, 7 };
     serialization::pimpl::data data2 =
@@ -1633,7 +1748,7 @@ TEST_F(ClientSerializationTest, object_data_input_output)
     serialization_config serializationConfig;
     serializationConfig.set_portable_version(1);
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     serialization::object_data_output out(boost::endian::order::big);
 
@@ -1749,7 +1864,7 @@ TEST_F(ClientSerializationTest, testExtendedAscii)
 
     serialization_config serializationConfig;
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     serialization::pimpl::data data =
       serializationService.to_data<std::string>(&utfStr);
@@ -1764,7 +1879,7 @@ TEST_F(ClientSerializationTest, testGlobalSerializer)
     serializationConfig.set_global_serializer(
       std::make_shared<DummyGlobalSerializer>());
     serialization::pimpl::SerializationService serializationService(
-      serializationConfig);
+      serializationConfig, get_schema_service());
 
     NonSerializableObject obj{ "My class with no serializer" };
 
@@ -1774,6 +1889,54 @@ TEST_F(ClientSerializationTest, testGlobalSerializer)
       serializationService.to_object<NonSerializableObject>(data);
     ASSERT_TRUE(deserializedValue.has_value());
     ASSERT_EQ(obj, deserializedValue.value());
+}
+
+TEST_F(ClientSerializationTest, testTypedData)
+{
+    serialization_config serializationConfig;
+    serializationConfig.set_global_serializer(
+      std::make_shared<DummyGlobalSerializer>());
+    serialization::pimpl::SerializationService serializationService(
+      serializationConfig, get_schema_service());
+
+    std::vector<byte> bytes{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+
+    serialization::pimpl::data tmp_data(bytes);
+    typed_data t(tmp_data, serializationService);
+
+    ASSERT_EQ(t.get_data(), tmp_data);
+}
+
+TEST_F(ClientSerializationTest, testWriteNullPortable)
+{
+    serialization_config serializationConfig;
+    serialization::pimpl::SerializationService serializationService(
+      serializationConfig, get_schema_service());
+
+    serialization::pimpl::data data;
+    TestInnerPortable inner = create_inner_portable();
+    data = serializationService.to_data<TestInnerPortable>(&inner);
+
+    TestNamedPortableV4 portable_object;
+    portable_object.k = 1;
+    portable_object.c_16 = u'a';
+    data = serializationService.to_data<TestNamedPortableV4>(portable_object);
+
+    auto t = serializationService.to_object<TestNamedPortableV4>(data);
+    ASSERT_TRUE(t);
+    EXPECT_EQ(1, t->k);
+    EXPECT_EQ(u'a', t->c_16);
+    EXPECT_FALSE(t->inner_portable.has_value());
+
+    boost::optional<test::TestInnerPortable> tmp_inner = inner;
+    portable_object.k = 2;
+    portable_object.inner_portable = tmp_inner;
+    data = serializationService.to_data<TestNamedPortableV4>(portable_object);
+
+    t = serializationService.to_object<TestNamedPortableV4>(data);
+    ASSERT_TRUE(t);
+    EXPECT_EQ(2, t->k);
+    EXPECT_TRUE(t->inner_portable.has_value());
 }
 
 class serialization_with_server
@@ -2143,15 +2306,15 @@ namespace test {
 namespace internal {
 namespace nearcache {
 class NearCacheRecordStoreTest
-  : public ClientTest
+  : public serialization_test_base
   , public ::testing::WithParamInterface<config::in_memory_format>
 {
 public:
     NearCacheRecordStoreTest()
     {
         ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
-          new serialization::pimpl::SerializationService(
-            serialization_config_));
+          new serialization::pimpl::SerializationService(serialization_config_,
+                                                         get_schema_service()));
     }
 
 protected:
@@ -2412,16 +2575,20 @@ protected:
     {
         int32_t maxSize = DEFAULT_RECORD_COUNT / 2;
 
-        auto nearCacheConfig =
-          create_near_cache_config(DEFAULT_NEAR_CACHE_NAME, in_memory_format);
-
         config::eviction_config evictionConfig;
         evictionConfig.set_maximum_size_policy(
           config::eviction_config::ENTRY_COUNT);
         evictionConfig.set_size(maxSize);
         evictionConfig.set_eviction_policy(eviction_policy);
-        nearCacheConfig.set_eviction_config(evictionConfig);
 
+        config::near_cache_config nearCacheConfig(
+          config::near_cache_config::DEFAULT_TTL_SECONDS,
+          config::near_cache_config::DEFAULT_MAX_IDLE_SECONDS,
+          true,
+          in_memory_format,
+          evictionConfig);
+
+        nearCacheConfig.set_name(DEFAULT_NEAR_CACHE_NAME);
         auto nearCacheRecordStore =
           create_near_cache_record_store(nearCacheConfig, in_memory_format);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class HAZELCAST_API ClientExecutionServiceImpl
 public:
     ClientExecutionServiceImpl(const std::string& name,
                                const client_properties& properties,
-                               int32_t pool_size,
+                               int32_t user_pool_size,
                                spi::lifecycle_service& service);
 
     void start();
@@ -77,12 +77,15 @@ public:
     static void shutdown_thread_pool(hazelcast::util::hz_thread_pool* pool);
 
     util::hz_thread_pool& get_user_executor();
+    util::hz_thread_pool& get_schema_replication_executor();
 
 private:
     std::unique_ptr<util::hz_thread_pool> internal_executor_;
     std::unique_ptr<util::hz_thread_pool> user_executor_;
+    std::unique_ptr<util::hz_thread_pool> schema_replication_executor_;
     spi::lifecycle_service& lifecycle_service_;
     const client_properties& client_properties_;
+    int32_t user_pool_size_;
 
     template<typename CompletionToken>
     std::shared_ptr<boost::asio::steady_timer>
