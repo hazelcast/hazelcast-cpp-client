@@ -264,6 +264,16 @@ public:
     static constexpr const char* CLOUD_URL_BASE_DEFAULT =
       "api.viridian.hazelcast.com";
 
+    static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE =
+      "hazelcast.client.partition.argument.cache.size";
+    static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE_DEFAULT =
+      "100";      
+
+    static constexpr const char* PARTITION_ARGUMENT_CACHE_THRESHOLD =
+      "hazelcast.client.partition.argument.cache.threshold";
+    static constexpr const char* PARTITION_ARGUMENT_CACHE_THRESHOLD_DEFAULT =
+      "120";      
+
     /**
      * Returns the configured boolean value of a {@link ClientProperty}.
      *
@@ -314,6 +324,8 @@ private:
     client_property backup_timeout_millis_;
     client_property fail_on_indeterminate_state_;
     client_property cloud_base_url_;
+    client_property partition_arg_cache_size_;
+    client_property partition_arg_cache_threshold_;
 
     std::unordered_map<std::string, std::string> properties_map_;
 };

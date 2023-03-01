@@ -158,6 +158,7 @@ target_include_directories(
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hazelcast/generated-sources/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
@@ -231,6 +232,7 @@ install(
     DIRECTORY
         hazelcast/include/
         hazelcast/generated-sources/src/
+        3rdparty/
         ${CMAKE_CURRENT_BINARY_DIR}/include/
 
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
