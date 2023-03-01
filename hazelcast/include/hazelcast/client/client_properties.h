@@ -264,6 +264,14 @@ public:
     static constexpr const char* CLOUD_URL_BASE_DEFAULT =
       "api.viridian.hazelcast.com";
 
+    /**
+     * Parametrized SQL queries touching only a single partition benefit from
+     * using the partition owner as the query coordinator, if the partition
+     * owner can be determined from one of the query parameters. When such a
+     * query is executed, the cluster sends the index of such argument to the
+     * client. This parameter configures the size of the cache the client uses
+     * for storing this information.
+     */
     static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE =
       "hazelcast.client.partition.argument.cache.size";
     static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE_DEFAULT =

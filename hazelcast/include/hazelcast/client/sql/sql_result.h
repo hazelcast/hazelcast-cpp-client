@@ -153,6 +153,17 @@ public:
      */
     page_iterator iterator();
 
+    /**
+     * Returns partition argument index
+     *     
+     *
+     * @return the partition argument index of sql result
+     *
+     */
+    uint32_t get_partition_argument_index() {
+        return partition_argument_index_;
+    }    
+
 private:
     friend class sql_service;
 
@@ -163,6 +174,7 @@ private:
     int64_t update_count_;
     std::shared_ptr<sql_row_metadata> row_metadata_;
     std::shared_ptr<sql_page> first_page_;
+    int32_t partition_argument_index_;
 
     bool iterator_requested_;
 
@@ -193,7 +205,8 @@ private:
       int64_t update_count,
       std::shared_ptr<sql_row_metadata> row_metadata,
       std::shared_ptr<sql_page> first_page,
-      int32_t cursor_buffer_size);
+      int32_t cursor_buffer_size,
+      int32_t partition_argument_index = -1);
 
 private:
     boost::future<std::shared_ptr<sql_page>> fetch_page();

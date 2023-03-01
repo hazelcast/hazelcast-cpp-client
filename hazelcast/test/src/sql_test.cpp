@@ -1635,6 +1635,17 @@ TEST_F(sql_encode_test, close)
     EXPECT_EQ(expected_bytes, actual_bytes);
 }
 
+
+class sql_partition_aware_test : public ::testing::Test
+{
+
+};
+
+TEST_F(sql_partition_aware_test, select_routing_test )
+{
+    
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast

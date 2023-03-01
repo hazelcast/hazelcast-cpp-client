@@ -340,6 +340,7 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
+  , partition_argument_index_{-1}
   , serialization_service_(
       spi::ClientContext(client).get_serialization_service())
 {
@@ -353,6 +354,7 @@ sql_statement::sql_statement(spi::ClientContext& client_context,
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
+  , partition_argument_index_{-1}
   , serialization_service_(client_context.get_serialization_service())
 {
     sql(std::move(query));
@@ -445,6 +447,22 @@ sql_statement&
 sql_statement::expected_result_type(sql::sql_expected_result_type type)
 {
     expected_result_type_ = type;
+    return *this;
+}
+
+uint32_t partition_argument_index() const
+{    
+    return partition_argument_index_;
+}
+
+sql_statement&
+sql_statement::partition_argument_index(uint32_t partition_argument_index)
+{
+    if (partition_argument_index < -1) {            
+        BOOST_THROW_EXCEPTION(client::exception::illegal_argument(
+              "The argument index must be >=0, or -1"));            
+    }
+    partition_argument_index_ = partition_argument_index;
     return *this;
 }
 
@@ -601,7 +619,8 @@ sql_result::sql_result(
   int64_t update_count,
   std::shared_ptr<sql_row_metadata> row_metadata,
   std::shared_ptr<sql_page> first_page,
-  int32_t cursor_buffer_size)
+  int32_t cursor_buffer_size,
+  int32_t partition_argument_index)
   : client_context_(client_context)
   , service_(service)
   , connection_(std::move(connection))
@@ -612,6 +631,7 @@ sql_result::sql_result(
   , iterator_requested_(false)
   , closed_(false)
   , cursor_buffer_size_(cursor_buffer_size)
+  , partition_argument_index_(partition_argument_index)
 {
     if (row_metadata_) {
         assert(first_page_);
