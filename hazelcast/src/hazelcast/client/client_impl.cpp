@@ -478,6 +478,18 @@ hazelcast_client_instance_impl::get_sql()
 }
 
 void
+hazelcast_client_instance_impl::send_state_to_cluster()
+{
+    schema_service_.replicate_all_schemas();
+}
+
+bool
+hazelcast_client_instance_impl::should_check_urgent_invocations() const
+{
+    return schema_service_.has_any_schemas();
+}
+
+void
 hazelcast_client_instance_impl::check_discovery_configuration_consistency(
   bool address_list_provided,
   bool aws_enabled,
@@ -1361,6 +1373,21 @@ const boost::uuids::uuid&
 query::originating_member_uuid() const
 {
     return originating_member_uuid_;
+}
+
+invocation_might_contain_compact_data::invocation_might_contain_compact_data(
+  std::string source,
+  const spi::impl::ClientInvocation& invocation)
+  : hazelcast_{
+      move(source),
+      boost::str(
+        boost::format(
+          "The invocation %1% might contain Compact serialized "
+          "data and it is not safe to invoke it when the client is not "
+          "yet initialized on the cluster") %
+        invocation)
+  }
+{
 }
 
 } // namespace exception

@@ -20,6 +20,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "hazelcast/client/spi/ClientContext.h"
 
@@ -28,8 +29,12 @@ random_string()
 {
     std::random_device rand{};
 
-    return boost::uuids::to_string(
+    auto text = boost::uuids::to_string(
       boost::uuids::basic_random_generator<std::random_device>{ rand }());
+
+    boost::replace_all(text, "-", "");
+
+    return "random" + text;
 }
 
 #define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG(                                 \

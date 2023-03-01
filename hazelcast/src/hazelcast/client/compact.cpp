@@ -1995,6 +1995,66 @@ default_schema_service::send_schema_response_decode(
                                           boost::hash<boost::uuids::uuid>>>();
 }
 
+bool
+default_schema_service::has_any_schemas() const
+{
+    return replicateds_.size();
+}
+
+std::ostream&
+operator<<(std::ostream& os, const std::vector<schema>& schemas)
+{
+    os << "Schemas {";
+
+    for (const auto& s : schemas)
+        os << s << " , ";
+
+    os << "}";
+
+    return os;
+}
+
+void
+default_schema_service::replicate_all_schemas()
+{
+    using level = hazelcast::logger::level;
+    using namespace protocol::codec;
+
+    auto logger = context_.get_logger();
+    if (replicateds_.empty()) {
+        if (logger.enabled(level::finest)) {
+            logger.log(level::finest,
+                       "There is no schema to send to the cluster.");
+        }
+
+        return;
+    }
+
+    std::vector<std::shared_ptr<schema>> schemas_sptr = replicateds_.values();
+    std::vector<schema> all_schemas;
+
+    all_schemas.reserve(schemas_sptr.size());
+
+    transform(begin(schemas_sptr),
+              end(schemas_sptr),
+              back_inserter(all_schemas),
+              [](const std::shared_ptr<schema>& s) { return *s; });
+
+    if (logger.enabled(level::finest)) {
+        logger.log(
+          level::finest,
+          (boost::format("Sending schemas to the cluster %1%") % all_schemas)
+            .str());
+    }
+
+    auto message = client_sendallschemas_encode(all_schemas);
+
+    auto invocation =
+      spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
+
+    invocation->invoke_urgent().get();
+}
+
 compact_stream_serializer::compact_stream_serializer(
   default_schema_service& service)
   : schema_service{ service }

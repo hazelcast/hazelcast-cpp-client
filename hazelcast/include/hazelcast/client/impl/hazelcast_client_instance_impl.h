@@ -222,6 +222,14 @@ public:
 
     sql::sql_service& get_sql();
 
+    void send_state_to_cluster();
+
+    /**
+     * Returns {@code true} if we need to check the urgent invocations, by
+     * examining the local registry of the schema service.
+     */
+    bool should_check_urgent_invocations() const;
+
 private:
     client_config client_config_;
     client_properties client_properties_;
