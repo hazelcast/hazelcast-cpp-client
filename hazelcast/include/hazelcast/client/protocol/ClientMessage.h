@@ -466,7 +466,7 @@ public:
     typename std::enable_if<std::is_same<T, local_date>::value,
                             T>::type inline get()
     {
-        auto year = static_cast<uint8_t>(get<int32_t>());
+        auto year = get<int32_t>();
         auto month = static_cast<uint8_t>(get<int8_t>());
         auto day_of_month = static_cast<uint8_t>(get<int8_t>());
         return { year, month, day_of_month };

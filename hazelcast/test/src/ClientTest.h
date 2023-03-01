@@ -17,6 +17,7 @@
 
 #include <utility>
 #include <iterator>
+#include <functional>
 #include <boost/uuid/uuid.hpp>
 
 #include <gtest/gtest.h>
@@ -24,6 +25,8 @@
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/imap.h>
 #include <hazelcast/logger.h>
+
+#include "remote_controller_client.h"
 
 namespace hazelcast {
 namespace client {
@@ -88,6 +91,50 @@ public:
         return entries;
     }
 
+    template<typename Value = int,
+             typename Key = int,
+             typename ValueGenerator = generator<Value>,
+             typename KeyGenerator = key_int_generator>
+    std::unordered_map<Key, Value> populate_map_via_rc(
+      std::function<std::string(const Value&)> fn,
+      const std::string& map_name,
+      const std::string& cluster_id,
+      int n_entries = 10,
+      ValueGenerator&& value_gen = ValueGenerator{},
+      KeyGenerator&& key_gen = KeyGenerator{})
+    {
+        std::unordered_map<Key, Value> entries;
+        entries.reserve(n_entries);
+
+        generate_n(
+          inserter(entries, end(entries)), n_entries, [&value_gen, &key_gen]() {
+              return std::make_pair(key_gen(), value_gen());
+          });
+
+        for (const std::pair<Key, Value>& p : entries) {
+            remote::Response response;
+
+            remote_controller_client().executeOnController(
+              response,
+              cluster_id,
+              (boost::format(
+                 R"(
+                    var map = instance_0.getMap("%1%");
+                    map.set(new java.lang.Integer(%2%), %3%);
+
+                    result = "" + true;
+                )") %
+               map_name % std::to_string(p.first) % fn(p.second))
+                .str(),
+              remote::Lang::JAVASCRIPT);
+
+            if (response.result != "true")
+                throw std::logic_error{ response.message };
+        }
+
+        return entries;
+    }
+
 private:
     std::shared_ptr<logger> logger_;
 };
@@ -125,6 +172,57 @@ struct generator<hazelcast_json_value>
                         "value" : %2%
                     })") % str_gen() % int_gen())
                                        .str() };
+    }
+};
+
+template<>
+struct generator<local_date>
+{
+    local_date operator()()
+    {
+        generator<int> int_gen;
+
+        return local_date{ 2000 + int_gen() % 50,
+                           uint8_t(int_gen() % 11 + 1),
+                           uint8_t(int_gen() % 27 + 1) };
+    }
+};
+
+template<>
+struct generator<local_time>
+{
+    local_time operator()()
+    {
+        generator<int> int_gen;
+
+        return local_time{ uint8_t(int_gen() % 24),
+                           uint8_t(int_gen() % 60),
+                           uint8_t(int_gen() % 60),
+                           int_gen() % 123456 };
+    }
+};
+
+template<>
+struct generator<local_date_time>
+{
+    local_date_time operator()()
+    {
+        generator<local_date> date_gen;
+        generator<local_time> time_gen;
+
+        return local_date_time{ date_gen(), time_gen() };
+    }
+};
+
+template<>
+struct generator<offset_date_time>
+{
+    offset_date_time operator()()
+    {
+        generator<int> int_gen;
+        generator<local_date_time> date_time_gen;
+
+        return offset_date_time{ date_time_gen(), int_gen() % 12 * 3600 };
     }
 };
 
