@@ -21,6 +21,8 @@
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
