@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@
 #include <ostream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+#include <iterator>
+#include <algorithm>
 
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
@@ -47,6 +50,8 @@
 #include "hazelcast/client/sql/impl/sql_error.h"
 #include "hazelcast/client/sql/sql_column_type.h"
 #include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
+#include "hazelcast/client/serialization/pimpl/compact/schema.h"
+#include "hazelcast/client/serialization/pimpl/compact/field_descriptor.h"
 
 namespace hazelcast {
 namespace util {
@@ -190,6 +195,9 @@ struct HAZELCAST_API is_trivial_entry_vector<
  */
 class HAZELCAST_API ClientMessage
 {
+    template<typename T>
+    struct default_nullable_decoder;
+
 public:
     static constexpr size_t EXPECTED_DATA_BLOCK_SIZE = 1024;
 
@@ -531,6 +539,29 @@ public:
 
         // skip end frame
         rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+        return result;
+    }
+
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<
+        T,
+        std::unordered_set<typename T::value_type, typename T::hasher>>::value,
+      T>::type
+    get()
+    {
+        T result;
+
+        auto f = reinterpret_cast<frame_header_type*>(
+          rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+        auto content_length =
+          static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
+        size_t item_count =
+          content_length / ClientMessage::get_sizeof<typename T::value_type>();
+        for (size_t i = 0; i < item_count; ++i) {
+            result.emplace(get<typename T::value_type>());
+        }
 
         return result;
     }
@@ -974,10 +1005,8 @@ public:
     }
 
     template<typename T>
-    boost::optional<T> get_nullable(std::function<T(ClientMessage&)> decoder =
-                                      [](ClientMessage& msg) {
-                                          return msg.get<T>();
-                                      })
+    boost::optional<T> get_nullable(
+      std::function<T(ClientMessage&)> decoder = default_nullable_decoder<T>{})
     {
         if (next_frame_is_null_frame()) {
             // skip next frame with null flag
@@ -1094,6 +1123,10 @@ public:
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
             }
+
+            if (std::is_same<T, serialization::pimpl::data>::value) {
+                contains_serialized_data_in_request_ = true;
+            }
         } else {
             set(*value, is_final);
         }
@@ -1207,6 +1240,14 @@ public:
         header->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
         std::memcpy(
           fp + SIZE_OF_FRAME_LENGTH_AND_FLAGS, &bytes[0], bytes.size());
+
+        const auto& replicated_schemas = value.schemas_will_be_replicated();
+
+        copy(begin(replicated_schemas),
+             end(replicated_schemas),
+             back_inserter(schemas_will_be_replicated_));
+
+        contains_serialized_data_in_request_ = true;
     }
 
     inline void set(const serialization::pimpl::data* value,
@@ -1284,6 +1325,44 @@ public:
         add_end_frame(is_final);
     }
 
+    void set(const serialization::pimpl::field_descriptor& descriptor,
+             const std::string& field_name,
+             bool is_final = false)
+    {
+        add_begin_frame();
+
+        set(frame_header_type{ SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE,
+                               DEFAULT_FLAGS });
+        set(int32_t(descriptor.kind));
+        set(field_name);
+
+        add_end_frame(is_final);
+    }
+
+    void set(const serialization::pimpl::schema& s, bool is_final = false)
+    {
+        add_begin_frame();
+
+        set(s.type_name());
+
+        { // Fields list
+            add_begin_frame();
+
+            for (const auto& p : s.fields()) {
+                const std::string& field_name{ p.first };
+                const serialization::pimpl::field_descriptor& descriptor{
+                    p.second
+                };
+
+                set(descriptor, field_name, false);
+            }
+
+            add_end_frame(false);
+        }
+
+        add_end_frame(is_final);
+    }
+
     //----- Setter methods end ---------------------
 
     //----- utility methods -------------------
@@ -1342,12 +1421,16 @@ public:
     }
 
     void fast_forward_to_end_frame();
+    const std::vector<serialization::pimpl::schema>&
+    schemas_will_be_replicated() const;
 
     static const frame_header_type& null_frame();
     static const frame_header_type& begin_frame();
     static const frame_header_type& end_frame();
 
     void drop_fragmentation_frame();
+
+    bool contains_serialized_data_in_request() const;
 
     friend std::ostream HAZELCAST_API& operator<<(std::ostream& os,
                                                   const ClientMessage& message);
@@ -1356,6 +1439,12 @@ private:
     static const frame_header_type NULL_FRAME;
     static const frame_header_type BEGIN_FRAME;
     static const frame_header_type END_FRAME;
+
+    template<typename T>
+    struct default_nullable_decoder
+    {
+        T operator()(ClientMessage& msg) const { return msg.get<T>(); }
+    };
 
     template<typename T>
     void set_primitive_vector(const std::vector<T>& values,
@@ -1446,6 +1535,8 @@ private:
     std::vector<std::vector<byte>> data_buffer_;
     size_t buffer_index_{ 0 };
     size_t offset_{ 0 };
+    bool contains_serialized_data_in_request_;
+    std::vector<serialization::pimpl::schema> schemas_will_be_replicated_;
 };
 
 template<>

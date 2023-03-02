@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ class client_properties;
 namespace serialization {
 namespace pimpl {
 class SerializationService;
+class default_schema_service;
 }
 } // namespace serialization
 
@@ -153,6 +154,8 @@ public:
     boost::uuids::uuid random_uuid();
 
     cp::internal::session::proxy_session_manager& get_proxy_session_manager();
+
+    serialization::pimpl::default_schema_service& get_schema_service();
 
 private:
     client::impl::hazelcast_client_instance_impl& hazelcast_client_;

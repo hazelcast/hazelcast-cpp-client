@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -741,6 +741,21 @@ TEST_P(BasicClientNearCacheTest, testNearCacheEviction)
                                                 0);
 }
 
+TEST_P(BasicClientNearCacheTest, testSetCacheLocalEntries)
+{
+    /*set_cache_local_entries and is_cache_local_entries methods are deprecated,
+    for codecoverage, these dummy tests are added*/
+    EXPECT_FALSE(near_cache_config_.is_cache_local_entries());
+
+    near_cache_config_.set_cache_local_entries(true);
+
+    EXPECT_TRUE(near_cache_config_.is_cache_local_entries());
+
+    near_cache_config_.set_cache_local_entries(false);
+
+    EXPECT_FALSE(near_cache_config_.is_cache_local_entries());
+}
+
 INSTANTIATE_TEST_SUITE_P(ClientNearCacheTest,
                          BasicClientNearCacheTest,
                          ::testing::Values(config::BINARY, config::OBJECT));
@@ -923,6 +938,14 @@ protected:
         }
     }
 
+    void remove_items(int count)
+    {
+        for (int i = 1; i <= count; ++i) {
+            ASSERT_TRUE(
+              set->remove(std::string("item") + std::to_string(i)).get());
+        }
+    }
+
     void TearDown() override { set->clear().get(); }
 
     static void SetUpTestCase()
@@ -1061,6 +1084,29 @@ TEST_F(ClientSetTest, testListener)
     ASSERT_TRUE(set->remove_item_listener(registrationId).get());
 }
 
+TEST_F(ClientSetTest, testListenerOnRemoved)
+{
+    constexpr int num_of_entry = 5;
+    boost::latch latch1(num_of_entry + 1);
+
+    add_items(num_of_entry);
+    set->add("done").get();
+
+    auto registrationId =
+      set
+        ->add_item_listener(
+          item_listener().on_removed(
+            [&latch1](item_event&& item_event) { latch1.count_down(); }),
+          true)
+        .get();
+
+    remove_items(num_of_entry);
+    set->remove("done").get();
+    ASSERT_OPEN_EVENTUALLY(latch1);
+
+    EXPECT_TRUE(set->remove_item_listener(registrationId).get());
+}
+
 TEST_F(ClientSetTest, testIsEmpty)
 {
     ASSERT_TRUE(set->is_empty().get());
@@ -1081,21 +1127,55 @@ protected:
     {
         explicit ListenerState(int latch_count, int64_t start_sequence = -1)
           : latch1(latch_count)
+          , latch_for_seq_id(latch_count)
+          , latch_for_termination(latch_count)
           , start_sequence(start_sequence)
         {}
 
         boost::latch latch1;
+        boost::latch latch_for_seq_id;
+        boost::latch latch_for_termination;
         int64_t start_sequence;
         std::vector<topic::message> messages;
+        std::vector<int64_t> seq_ids;
     };
 
-    topic::reliable_listener make_listener(std::shared_ptr<ListenerState> state)
+    topic::reliable_listener make_listener(std::shared_ptr<ListenerState> state,
+                                           bool is_throw_exception = false,
+                                           bool is_lvalue = false)
     {
-        return topic::reliable_listener(false, state->start_sequence)
-          .on_received([state](topic::message&& message) {
-              state->messages.push_back(std::move(message));
-              state->latch1.count_down();
-          });
+        auto on_received = [state,
+                            is_throw_exception](topic::message&& message) {
+            state->messages.push_back(std::move(message));
+            state->latch1.count_down();
+            if (is_throw_exception) {
+                BOOST_THROW_EXCEPTION(exception::cancellation(
+                  "reliable_listener user_code::throw_exception", ""));
+            }
+        };
+
+        auto on_store_sequence_id = [state](int64_t seq_no) {
+            state->seq_ids.push_back(seq_no);
+            state->latch_for_seq_id.count_down();
+        };
+
+        auto terminate_on_exception =
+          [state](const exception::iexception& par_exception) -> bool {
+            state->latch_for_termination.count_down();
+            return true;
+        };
+
+        if (is_lvalue) {
+            topic::reliable_listener tmp_listener(false, state->start_sequence);
+            return tmp_listener.on_received(std::move(on_received))
+              .on_store_sequence_id(std::move(on_store_sequence_id))
+              .terminate_on_exception(std::move(terminate_on_exception));
+        } else {
+            return topic::reliable_listener(false, state->start_sequence)
+              .on_received(std::move(on_received))
+              .on_store_sequence_id(std::move(on_store_sequence_id))
+              .terminate_on_exception(std::move(terminate_on_exception));
+        }
     }
 
 protected:
@@ -1144,6 +1224,7 @@ TEST_F(ReliableTopicTest, testBasics)
 
     ASSERT_OPEN_EVENTUALLY(state->latch1);
     ASSERT_EQ(1, state->messages.size());
+    ASSERT_EQ("testBasics", state->messages[0].get_name());
     auto e = state->messages[0].get_message_object().get<employee>();
     ASSERT_TRUE(e.has_value());
     ASSERT_EQ(empl1, e.value());
@@ -1244,13 +1325,66 @@ TEST_F(ReliableTopicTest, testConfig)
     client_config clientConfig;
     clientConfig.get_network_config().add_address(
       address(remote_controller_address(), 5701));
-    config::reliable_topic_config relConfig("testConfig");
+    std::string topic_name("testConfig");
+    config::reliable_topic_config relConfig(topic_name);
     relConfig.set_read_batch_size(2);
     clientConfig.add_reliable_topic_config(relConfig);
+
+    auto& readedClientConfig =
+      clientConfig.get_reliable_topic_config(topic_name);
+    ASSERT_EQ(2, readedClientConfig.get_read_batch_size());
+    ASSERT_EQ(topic_name, readedClientConfig.get_name());
+
     auto configClient = hazelcast::new_client(std::move(clientConfig)).get();
 
-    ASSERT_NO_THROW(topic_ =
-                      configClient.get_reliable_topic("testConfig").get());
+    ASSERT_NO_THROW(topic_ = configClient.get_reliable_topic(topic_name).get());
+
+    auto state = std::make_shared<ListenerState>(5);
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state)));
+
+    std::vector<std::string> items;
+    for (int k = 0; k < 5; k++) {
+        std::string item = std::to_string(k);
+        topic_->publish(item).get();
+        items.push_back(item);
+    }
+
+    ASSERT_OPEN_EVENTUALLY(state->latch1);
+    ASSERT_EQ(5, state->messages.size());
+    for (int k = 0; k < 5; k++) {
+        const auto& msg = state->messages[k];
+        auto val = msg.get_message_object().get<std::string>();
+        EXPECT_TRUE(val.has_value());
+        EXPECT_EQ(items[k], val.value());
+    }
+    EXPECT_TRUE(topic_->remove_message_listener(listener_id_));
+    topic_.reset();
+}
+
+TEST_F(ReliableTopicTest, testConfigWithSetNetworkMethod)
+{
+    client_config clientConfig;
+    auto curr_network_config = clientConfig.get_network_config();
+    curr_network_config.add_address(address(remote_controller_address(), 5701));
+
+    // To increase the code coverage, set_network_config method is used instead
+    // of get_network_config
+    clientConfig.set_network_config(curr_network_config);
+
+    std::string topic_name(get_test_name());
+    config::reliable_topic_config relConfig(topic_name);
+    relConfig.set_read_batch_size(2);
+    clientConfig.add_reliable_topic_config(relConfig);
+
+    auto& readedClientConfig =
+      clientConfig.get_reliable_topic_config(topic_name);
+    ASSERT_EQ(2, readedClientConfig.get_read_batch_size());
+    ASSERT_EQ(topic_name, readedClientConfig.get_name());
+
+    auto configClient = hazelcast::new_client(std::move(clientConfig)).get();
+
+    ASSERT_NO_THROW(topic_ = configClient.get_reliable_topic(topic_name).get());
 
     auto state = std::make_shared<ListenerState>(5);
     ASSERT_NO_THROW(listener_id_ =
@@ -1336,6 +1470,93 @@ TEST_F(ReliableTopicTest, testAlwaysStartAfterTail)
 
     ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
 }
+
+TEST_F(ReliableTopicTest, testSequenceId)
+{
+    ASSERT_NO_THROW(topic_ =
+                      client->get_reliable_topic("testSequenceId").get());
+
+    int64_t start_seq = 0;
+    int msg_count = 5;
+    auto state = std::make_shared<ListenerState>(msg_count);
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state)));
+
+    for (int k = 0; k < 5; k++) {
+        std::string item = std::to_string(k);
+        topic_->publish(item).get();
+    }
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_seq_id);
+    ASSERT_EQ(msg_count, state->seq_ids.size());
+    for (int k = 0; k < msg_count; k++) {
+        auto curr_seq_id = state->seq_ids[k];
+        ASSERT_EQ(curr_seq_id, start_seq + k);
+    }
+
+    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+}
+
+TEST_F(ReliableTopicTest, testSequenceIdForLvalue)
+{
+    ASSERT_NO_THROW(
+      topic_ = client->get_reliable_topic("testSequenceIdForLvalue").get());
+
+    int64_t start_seq = 0;
+    int msg_count = 5;
+    auto state = std::make_shared<ListenerState>(msg_count);
+    ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(
+                      make_listener(state, false, true)));
+
+    for (int k = 0; k < 5; k++) {
+        std::string item = std::to_string(k);
+        topic_->publish(item).get();
+    }
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_seq_id);
+    ASSERT_EQ(msg_count, state->seq_ids.size());
+    for (int k = 0; k < msg_count; k++) {
+        auto curr_seq_id = state->seq_ids[k];
+        ASSERT_EQ(curr_seq_id, start_seq + k);
+    }
+
+    ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+}
+
+TEST_F(ReliableTopicTest, testTerminateCase)
+{
+    ASSERT_NO_THROW(topic_ =
+                      client->get_reliable_topic("testTerminateCase").get());
+
+    auto state = std::make_shared<ListenerState>(1);
+    ASSERT_NO_THROW(listener_id_ =
+                      topic_->add_message_listener(make_listener(state, true)));
+
+    std::string item = std::to_string(0);
+    ASSERT_NO_THROW(topic_->publish(item).get());
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
+
+    // listener is removed when the exception occured
+}
+
+TEST_F(ReliableTopicTest, testTerminateCaseForLValue)
+{
+    ASSERT_NO_THROW(
+      topic_ = client->get_reliable_topic("testTerminateCaseForLValue").get());
+
+    auto state = std::make_shared<ListenerState>(1);
+    ASSERT_NO_THROW(listener_id_ = topic_->add_message_listener(
+                      make_listener(state, true, true)));
+
+    std::string item = std::to_string(0);
+    ASSERT_NO_THROW(topic_->publish(item).get());
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
+
+    // listener is removed when the exception occured
+}
+
 } // namespace test
 } // namespace client
 } // namespace hazelcast
@@ -2044,9 +2265,18 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
     ASSERT_TRUE(datas_opt);
     auto& datas = datas_opt.value();
     ASSERT_EQ(10, datas.size());
+    HazelcastServerFactory factory(
+      "hazelcast/test/resources/serialization.xml");
+    HazelcastServer member(factory);
+    client_config conf;
+    conf.set_cluster_name("serialization-dev");
+    auto client = new_client(std::move(conf)).get();
+    remote_controller_client().ping();
 
     serialization_config serializationConfig;
-    serialization::pimpl::SerializationService ss{ serializationConfig };
+    serialization::pimpl::SerializationService ss{
+        serializationConfig, spi::ClientContext{ client }.get_schema_service()
+    };
     for (int32_t i = 0; i < 10; ++i) {
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].first));
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].second));
@@ -2246,7 +2476,7 @@ protected:
 HazelcastServer* connection_manager_translate::instance_ = nullptr;
 const address connection_manager_translate::private_address{ "localhost",
                                                              5701 };
-const address connection_manager_translate::public_address{ "192.168.0.1",
+const address connection_manager_translate::public_address{ "245.245.245.245",
                                                             5701 };
 
 TEST_F(connection_manager_translate, test_translate_is_used)

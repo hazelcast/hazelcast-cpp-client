@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,27 @@
  */
 
 #pragma once
+
+#include <random>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/algorithm/string.hpp>
+
+#include "hazelcast/client/spi/ClientContext.h"
+
+inline std::string
+random_string()
+{
+    std::random_device rand{};
+
+    auto text = boost::uuids::to_string(
+      boost::uuids::basic_random_generator<std::random_device>{ rand }());
+
+    boost::replace_all(text, "-", "");
+
+    return "random" + text;
+}
 
 #define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG(                                 \
   message, expected, actual, timeoutSeconds)                                   \

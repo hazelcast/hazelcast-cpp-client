@@ -218,7 +218,7 @@ You can find more details on using a Vcpkg installed package from different IDEs
 
 If you need to use `openssl` feature, then you need to install using the following command:
 ```bat
-> .\vcpkg\vcpkg install hazelcast-cpp-client[openssl]
+> .\vcpkg\vcpkg install hazelcast-cpp-client[openssl] --recurse
 ```
 The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
 
@@ -318,6 +318,14 @@ For example, if you want to build the static library with SSL support, you can u
 
 ```sh
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
+```
+
+Note that, if you want to use the `hazelcast-cpp-client` library which is compiled with `-DWITH_OPENSSL=ON` option without `find_package()` then you need to define `HZ_BUILD_WITH_SSL` symbolic constant before including any `hazelcast-cpp-client` header.
+It can be either passed via compiler flags.
+
+For example:
+```sh
+g++ -DHZ_BUILD_WITH_SSL -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_VERSION=5 -I/var/git/hazelcast-cpp-client/build/include -std=gnu++11 -c main.cpp
 ```
 
 ## 1.2. Starting a Hazelcast Cluster
@@ -3600,6 +3608,6 @@ Besides your development contributions as explained in the [Development and Test
 
 # 12. Copyright
 
-Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com) for more information.

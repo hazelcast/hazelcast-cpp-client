@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ public:
     static std::string get_test_name();
     static std::string get_ca_file_path();
     static std::string random_map_name();
-    static std::string random_string();
     static boost::uuids::uuid generate_key_owned_by(spi::ClientContext& context,
                                                     const member& member);
     static client_config get_config(bool ssl_enabled = false,

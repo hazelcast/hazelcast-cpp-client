@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -970,11 +970,13 @@ PortableContext::get_serialization_config() const
     return serialization_config_;
 }
 
-SerializationService::SerializationService(const serialization_config& config)
+SerializationService::SerializationService(
+  const serialization_config& config,
+  default_schema_service& schema_service)
   : serialization_config_(config)
   , portable_context_(serialization_config_)
   , portable_serializer_(portable_context_)
-  , compact_serializer_()
+  , compact_serializer_(schema_service)
 {}
 
 DefaultPortableWriter::DefaultPortableWriter(
@@ -1186,9 +1188,10 @@ data::data()
   : cached_hash_value_(-1)
 {}
 
-data::data(std::vector<byte> buffer)
+data::data(std::vector<byte> buffer, schemas_t s)
   : data_(std::move(buffer))
   , cached_hash_value_(-1)
+  , schemas_will_be_replicated_{ move(s) }
 {
     size_t size = data_.size();
     if (size > 0 && size < data::DATA_OVERHEAD) {
@@ -1246,6 +1249,12 @@ data::get_type() const
     return boost::endian::
       endian_load<boost::uint32_t, 4, boost::endian::order::big>(
         &data_[data::TYPE_OFFSET]);
+}
+
+const data::schemas_t&
+data::schemas_will_be_replicated() const
+{
+    return schemas_will_be_replicated_;
 }
 
 int

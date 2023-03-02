@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@
 #include "hazelcast/client/local_endpoint.h"
 #include "hazelcast/cp/cp_impl.h"
 #include "hazelcast/client/sql/sql_service.h"
+#include "hazelcast/client/serialization/pimpl/compact/compact.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -209,10 +210,19 @@ public:
 
     sql::sql_service& get_sql();
 
+    void send_state_to_cluster();
+
+    /**
+     * Returns {@code true} if we need to check the urgent invocations, by
+     * examining the local registry of the schema service.
+     */
+    bool should_check_urgent_invocations() const;
+
 private:
     client_config client_config_;
     client_properties client_properties_;
     spi::ClientContext client_context_;
+    serialization::pimpl::default_schema_service schema_service_;
     serialization::pimpl::SerializationService serialization_service_;
     std::shared_ptr<connection::ClientConnectionManagerImpl>
       connection_manager_;

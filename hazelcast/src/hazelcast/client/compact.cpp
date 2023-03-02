@@ -15,17 +15,208 @@
  */
 
 #include <utility>
+
+#include <thread>
+#include <chrono>
+
 #include "hazelcast/client/serialization/serialization.h"
+#include "hazelcast/client/serialization/field_kind.h"
+#include "hazelcast/client/serialization/pimpl/compact/schema.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/cluster.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/util/Bits.h"
+#include "hazelcast/client/client_properties.h"
+
 namespace hazelcast {
 namespace client {
 namespace serialization {
+namespace pimpl {
+
+field_descriptor::field_descriptor(field_kind k, int32_t i, int32_t o, int8_t b)
+  : kind{ k }
+  , index{ i }
+  , offset{ o }
+  , bit_offset{ b }
+{
+}
+
+bool
+operator==(const field_descriptor& x, const field_descriptor& y)
+{
+    return x.kind == y.kind;
+}
+
+std::ostream&
+operator<<(std::ostream& os, const field_descriptor& fd)
+{
+    return os << "FieldDescriptor{"
+              << "kind=" << fd.kind << ", index=" << fd.index
+              << ", offset=" << fd.offset << ", bitOffset=" << fd.bit_offset
+              << '}';
+}
+
+} // namespace pimpl
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+namespace hazelcast {
+namespace client {
+namespace serialization {
+
+std::ostream&
+operator<<(std::ostream& os, field_kind kind)
+{
+    switch (kind) {
+        case field_kind::BOOLEAN:
+            os << "BOOLEAN";
+            break;
+        case field_kind::ARRAY_OF_BOOLEAN:
+            os << "ARRAY_OF_BOOLEAN";
+            break;
+        case field_kind::INT8:
+            os << "INT8";
+            break;
+        case field_kind::ARRAY_OF_INT8:
+            os << "ARRAY_OF_INT8";
+            break;
+        case field_kind::INT16:
+            os << "INT16";
+            break;
+        case field_kind::ARRAY_OF_INT16:
+            os << "ARRAY_OF_INT16";
+            break;
+        case field_kind::INT32:
+            os << "INT32";
+            break;
+        case field_kind::ARRAY_OF_INT32:
+            os << "ARRAY_OF_INT32";
+            break;
+        case field_kind::INT64:
+            os << "INT64";
+            break;
+        case field_kind::ARRAY_OF_INT64:
+            os << "ARRAY_OF_INT16";
+            break;
+        case field_kind::FLOAT32:
+            os << "FLOAT32";
+            break;
+        case field_kind::ARRAY_OF_FLOAT32:
+            os << "ARRAY_OF_FLOAT32";
+            break;
+        case field_kind::FLOAT64:
+            os << "FLOAT64";
+            break;
+        case field_kind::ARRAY_OF_FLOAT64:
+            os << "ARRAY_OF_FLOAT64";
+            break;
+        case field_kind::STRING:
+            os << "STRING";
+            break;
+        case field_kind::ARRAY_OF_STRING:
+            os << "ARRAY_OF_STRING";
+            break;
+        case field_kind::DECIMAL:
+            os << "DECIMAL";
+            break;
+        case field_kind::ARRAY_OF_DECIMAL:
+            os << "ARRAY_OF_DECIMAL";
+            break;
+        case field_kind::TIME:
+            os << "TIME";
+            break;
+        case field_kind::ARRAY_OF_TIME:
+            os << "ARRAY_OF_TIME";
+            break;
+        case field_kind::DATE:
+            os << "DATE";
+            break;
+        case field_kind::ARRAY_OF_DATE:
+            os << "ARRAY_OF_DATE";
+            break;
+        case field_kind::TIMESTAMP:
+            os << "TIMESTAMP";
+            break;
+        case field_kind::ARRAY_OF_TIMESTAMP:
+            os << "ARRAY_OF_TIMESTAMP";
+            break;
+        case field_kind::TIMESTAMP_WITH_TIMEZONE:
+            os << "TIMESTAMP_WITH_TIMEZONE";
+            break;
+        case field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE:
+            os << "ARRAY_OF_TIMESTAMP_WITH_TIMEZONE";
+            break;
+        case field_kind::COMPACT:
+            os << "COMPACT";
+            break;
+        case field_kind::ARRAY_OF_COMPACT:
+            os << "ARRAY_OF_COMPACT";
+            break;
+        case field_kind::NULLABLE_BOOLEAN:
+            os << "NULLABLE_BOOLEAN";
+            break;
+        case field_kind::ARRAY_OF_NULLABLE_BOOLEAN:
+            os << "ARRAY_OF_NULLABLE_BOOLEAN";
+            break;
+        case field_kind::NULLABLE_INT8:
+            os << "NULLABLE_INT8";
+            break;
+        case field_kind::ARRAY_OF_NULLABLE_INT8:
+            os << "ARRAY_OF_NULLABLE_INT8";
+            break;
+        case field_kind::NULLABLE_INT16:
+            os << "NULLABLE_INT16";
+            break;
+        case field_kind::ARRAY_OF_NULLABLE_INT16:
+            os << "ARRAY_OF_NULLABLE_INT16";
+            break;
+        case field_kind::NULLABLE_INT32:
+            os << "NULLABLE_INT32";
+            break;
+        case field_kind::ARRAY_OF_NULLABLE_INT32:
+            os << "ARRAY_OF_NULLABLE_INT32";
+            break;
+        case field_kind::NULLABLE_INT64:
+            os << "NULLABLE_INT64";
+            break;
+        case field_kind::ARRAY_OF_NULLABLE_INT64:
+            os << "ARRAY_OF_NULLABLE_INT64";
+            break;
+        case field_kind::NULLABLE_FLOAT32:
+            os << "NULLABLE_FLOAT32";
+            break;
+        case field_kind::ARRAY_OF_NULLABLE_FLOAT32:
+            os << "ARRAY_OF_NULLABLE_FLOAT32";
+            break;
+        case field_kind::NULLABLE_FLOAT64:
+            os << "NULLABLE_FLOAT64";
+            break;
+        case field_kind::ARRAY_OF_NULLABLE_FLOAT64:
+            os << "ARRAY_OF_NULLABLE_FLOAT64";
+            break;
+    }
+
+    return os;
+}
+
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+namespace hazelcast {
+namespace client {
+namespace serialization {
+namespace compact {
 
 compact_writer::compact_writer(
   pimpl::default_compact_writer* default_compact_writer)
   : default_compact_writer(default_compact_writer)
   , schema_writer(nullptr)
 {}
+
 compact_writer::compact_writer(pimpl::schema_writer* schema_writer)
   : default_compact_writer(nullptr)
   , schema_writer(schema_writer)
@@ -37,7 +228,7 @@ compact_writer::write_boolean(const std::string& field_name, bool value)
     if (default_compact_writer) {
         default_compact_writer->write_boolean(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::BOOLEAN);
+        schema_writer->add_field(field_name, field_kind::BOOLEAN);
     }
 }
 void
@@ -46,7 +237,7 @@ compact_writer::write_int8(const std::string& field_name, int8_t value)
     if (default_compact_writer) {
         default_compact_writer->write_int8(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::INT8);
+        schema_writer->add_field(field_name, field_kind::INT8);
     }
 }
 
@@ -56,7 +247,7 @@ compact_writer::write_int16(const std::string& field_name, int16_t value)
     if (default_compact_writer) {
         default_compact_writer->write_int16(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::INT16);
+        schema_writer->add_field(field_name, field_kind::INT16);
     }
 }
 
@@ -66,7 +257,7 @@ compact_writer::write_int32(const std::string& field_name, int32_t value)
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_int32(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::INT32);
+        schema_writer->add_field(field_name, field_kind::INT32);
     }
 }
 
@@ -76,7 +267,7 @@ compact_writer::write_int64(const std::string& field_name, int64_t value)
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_int64(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::INT64);
+        schema_writer->add_field(field_name, field_kind::INT64);
     }
 }
 
@@ -86,7 +277,7 @@ compact_writer::write_float32(const std::string& field_name, float value)
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_float32(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::FLOAT32);
+        schema_writer->add_field(field_name, field_kind::FLOAT32);
     }
 }
 
@@ -96,7 +287,7 @@ compact_writer::write_float64(const std::string& field_name, double value)
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_float64(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::FLOAT64);
+        schema_writer->add_field(field_name, field_kind::FLOAT64);
     }
 }
 
@@ -107,7 +298,7 @@ compact_writer::write_string(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_string(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::STRING);
+        schema_writer->add_field(field_name, field_kind::STRING);
     }
 }
 
@@ -118,7 +309,7 @@ compact_writer::write_decimal(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_decimal(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::DECIMAL);
+        schema_writer->add_field(field_name, field_kind::DECIMAL);
     }
 }
 
@@ -130,7 +321,7 @@ compact_writer::write_time(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_time(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::TIME);
+        schema_writer->add_field(field_name, field_kind::TIME);
     }
 }
 
@@ -142,7 +333,7 @@ compact_writer::write_date(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_date(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::DATE);
+        schema_writer->add_field(field_name, field_kind::DATE);
     }
 }
 
@@ -154,7 +345,7 @@ compact_writer::write_timestamp(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_timestamp(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::TIMESTAMP);
+        schema_writer->add_field(field_name, field_kind::TIMESTAMP);
     }
 }
 
@@ -168,7 +359,7 @@ compact_writer::write_timestamp_with_timezone(
                                                               value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
+                                 field_kind::TIMESTAMP_WITH_TIMEZONE);
     }
 }
 
@@ -180,8 +371,7 @@ compact_writer::write_array_of_boolean(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_boolean(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_BOOLEAN);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_BOOLEAN);
     }
 }
 
@@ -193,7 +383,7 @@ compact_writer::write_array_of_int8(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int8(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT8);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_INT8);
     }
 }
 
@@ -205,7 +395,7 @@ compact_writer::write_array_of_int16(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int16(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT16);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_INT16);
     }
 }
 
@@ -217,7 +407,7 @@ compact_writer::write_array_of_int32(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int32(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT32);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_INT32);
     }
 }
 
@@ -229,7 +419,7 @@ compact_writer::write_array_of_int64(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_int64(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_INT64);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_INT64);
     }
 }
 
@@ -241,8 +431,7 @@ compact_writer::write_array_of_float32(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_float32(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_FLOAT32);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_FLOAT32);
     }
 }
 
@@ -254,8 +443,7 @@ compact_writer::write_array_of_float64(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_float64(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_FLOAT64);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_FLOAT64);
     }
 }
 
@@ -267,8 +455,7 @@ compact_writer::write_array_of_string(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_string(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_STRING);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_STRING);
     }
 }
 
@@ -280,8 +467,7 @@ compact_writer::write_array_of_decimal(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_decimal(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_DECIMAL);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_DECIMAL);
     }
 }
 
@@ -293,7 +479,7 @@ compact_writer::write_array_of_time(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_time(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_TIME);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_TIME);
     }
 }
 
@@ -305,7 +491,7 @@ compact_writer::write_array_of_date(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_date(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::ARRAY_OF_DATE);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_DATE);
     }
 }
 
@@ -317,8 +503,7 @@ compact_writer::write_array_of_timestamp(
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_array_of_timestamp(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_TIMESTAMP);
+        schema_writer->add_field(field_name, field_kind::ARRAY_OF_TIMESTAMP);
     }
 }
 
@@ -331,8 +516,8 @@ compact_writer::write_array_of_timestamp_with_timezone(
         default_compact_writer->write_array_of_timestamp_with_timezone(
           field_name, value);
     } else {
-        schema_writer->add_field(
-          field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
+        schema_writer->add_field(field_name,
+                                 field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
     }
 }
 
@@ -343,8 +528,7 @@ compact_writer::write_nullable_boolean(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_boolean(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::NULLABLE_BOOLEAN);
+        schema_writer->add_field(field_name, field_kind::NULLABLE_BOOLEAN);
     }
 }
 
@@ -355,7 +539,7 @@ compact_writer::write_nullable_int8(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int8(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT8);
+        schema_writer->add_field(field_name, field_kind::NULLABLE_INT8);
     }
 }
 
@@ -366,7 +550,7 @@ compact_writer::write_nullable_int16(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int16(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT16);
+        schema_writer->add_field(field_name, field_kind::NULLABLE_INT16);
     }
 }
 
@@ -377,7 +561,7 @@ compact_writer::write_nullable_int32(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int32(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT32);
+        schema_writer->add_field(field_name, field_kind::NULLABLE_INT32);
     }
 }
 
@@ -388,7 +572,7 @@ compact_writer::write_nullable_int64(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_int64(field_name, value);
     } else {
-        schema_writer->add_field(field_name, pimpl::field_kind::NULLABLE_INT64);
+        schema_writer->add_field(field_name, field_kind::NULLABLE_INT64);
     }
 }
 
@@ -399,8 +583,7 @@ compact_writer::write_nullable_float32(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_float32(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::NULLABLE_FLOAT32);
+        schema_writer->add_field(field_name, field_kind::NULLABLE_FLOAT32);
     }
 }
 
@@ -411,8 +594,7 @@ compact_writer::write_nullable_float64(const std::string& field_name,
     if (default_compact_writer != nullptr) {
         default_compact_writer->write_nullable_float64(field_name, value);
     } else {
-        schema_writer->add_field(field_name,
-                                 pimpl::field_kind::NULLABLE_FLOAT64);
+        schema_writer->add_field(field_name, field_kind::NULLABLE_FLOAT64);
     }
 }
 
@@ -426,7 +608,7 @@ compact_writer::write_array_of_nullable_boolean(
                                                                 value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_NULLABLE_BOOLEAN);
+                                 field_kind::ARRAY_OF_NULLABLE_BOOLEAN);
     }
 }
 
@@ -439,7 +621,7 @@ compact_writer::write_array_of_nullable_int8(
         default_compact_writer->write_array_of_nullable_int8(field_name, value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT8);
+                                 field_kind::ARRAY_OF_NULLABLE_INT8);
     }
 }
 
@@ -453,7 +635,7 @@ compact_writer::write_array_of_nullable_int16(
                                                               value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT16);
+                                 field_kind::ARRAY_OF_NULLABLE_INT16);
     }
 }
 
@@ -467,7 +649,7 @@ compact_writer::write_array_of_nullable_int32(
                                                               value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT32);
+                                 field_kind::ARRAY_OF_NULLABLE_INT32);
     }
 }
 
@@ -481,7 +663,7 @@ compact_writer::write_array_of_nullable_int64(
                                                               value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_NULLABLE_INT64);
+                                 field_kind::ARRAY_OF_NULLABLE_INT64);
     }
 }
 
@@ -495,7 +677,7 @@ compact_writer::write_array_of_nullable_float32(
                                                                 value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_NULLABLE_FLOAT32);
+                                 field_kind::ARRAY_OF_NULLABLE_FLOAT32);
     }
 }
 
@@ -509,22 +691,28 @@ compact_writer::write_array_of_nullable_float64(
                                                                 value);
     } else {
         schema_writer->add_field(field_name,
-                                 pimpl::field_kind::ARRAY_OF_NULLABLE_FLOAT64);
+                                 field_kind::ARRAY_OF_NULLABLE_FLOAT64);
     }
 }
 
+} // namespace compact
+
 namespace pimpl {
-compact_reader
+
+compact::compact_reader
 create_compact_reader(
   pimpl::compact_stream_serializer& compact_stream_serializer,
   object_data_input& object_data_input,
   const pimpl::schema& schema)
 {
-    return compact_reader{ compact_stream_serializer,
-                           object_data_input,
-                           schema };
+    return compact::compact_reader{ compact_stream_serializer,
+                                    object_data_input,
+                                    schema };
 }
+
 } // namespace pimpl
+
+namespace compact {
 
 const compact_reader::offset_func compact_reader::BYTE_OFFSET_READER =
   pimpl::offset_reader::get_offset<int8_t>;
@@ -577,14 +765,14 @@ compact_reader::compact_reader(
 
 bool
 compact_reader::is_field_exists(const std::string& field_name,
-                                enum pimpl::field_kind kind) const
+                                field_kind kind) const
 {
     const auto& fields = schema.fields();
     const auto& field_descriptor = fields.find(field_name);
     if (field_descriptor == fields.end()) {
         return false;
     }
-    return field_descriptor->second.field_kind == kind;
+    return field_descriptor->second.kind == kind;
 }
 
 const pimpl::field_descriptor&
@@ -600,12 +788,12 @@ compact_reader::get_field_descriptor(const std::string& field_name) const
 
 const pimpl::field_descriptor&
 compact_reader::get_field_descriptor(const std::string& field_name,
-                                     enum pimpl::field_kind kind) const
+                                     field_kind kind) const
 {
     const auto& field_descriptor = get_field_descriptor(field_name);
-    if (field_descriptor.field_kind != kind) {
+    if (field_descriptor.kind != kind) {
         BOOST_THROW_EXCEPTION(
-          unexpected_field_kind(field_descriptor.field_kind, field_name));
+          unexpected_field_kind(field_descriptor.kind, field_name));
     }
     return field_descriptor;
 }
@@ -646,12 +834,12 @@ compact_reader::unknown_field(const std::string& field_name) const
 }
 
 exception::hazelcast_serialization
-compact_reader::unexpected_field_kind(enum pimpl::field_kind field_kind,
+compact_reader::unexpected_field_kind(field_kind kind,
                                       const std::string& field_name) const
 {
     return { "compact_reader",
-             (boost::format("Unexpected fieldKind %1% for %2% on %3%") %
-              field_kind % field_name % schema)
+             (boost::format("Unexpected fieldKind %1% for %2% on %3%") % kind %
+              field_name % schema)
                .str() };
 }
 
@@ -690,106 +878,90 @@ compact_reader::read_var_size_position(
 bool
 compact_reader::read_boolean(const std::string& fieldName)
 {
-    return read_primitive<bool>(fieldName,
-                                pimpl::field_kind::BOOLEAN,
-                                pimpl::field_kind::NULLABLE_BOOLEAN,
-                                "boolean");
+    return read_primitive<bool>(
+      fieldName, field_kind::BOOLEAN, field_kind::NULLABLE_BOOLEAN, "boolean");
 }
 
 int8_t
 compact_reader::read_int8(const std::string& fieldName)
 {
-    return read_primitive<int8_t>(fieldName,
-                                  pimpl::field_kind::INT8,
-                                  pimpl::field_kind::NULLABLE_INT8,
-                                  "int8");
+    return read_primitive<int8_t>(
+      fieldName, field_kind::INT8, field_kind::NULLABLE_INT8, "int8");
 }
 
 int16_t
 compact_reader::read_int16(const std::string& field_name)
 {
-    return read_primitive<int16_t>(field_name,
-                                   pimpl::field_kind::INT16,
-                                   pimpl::field_kind::NULLABLE_INT16,
-                                   "int16");
+    return read_primitive<int16_t>(
+      field_name, field_kind::INT16, field_kind::NULLABLE_INT16, "int16");
 }
 
 int32_t
 compact_reader::read_int32(const std::string& field_name)
 {
-    return read_primitive<int32_t>(field_name,
-                                   pimpl::field_kind::INT32,
-                                   pimpl::field_kind::NULLABLE_INT32,
-                                   "int32");
+    return read_primitive<int32_t>(
+      field_name, field_kind::INT32, field_kind::NULLABLE_INT32, "int32");
 }
 
 int64_t
 compact_reader::read_int64(const std::string& field_name)
 {
-    return read_primitive<int64_t>(field_name,
-                                   pimpl::field_kind::INT64,
-                                   pimpl::field_kind::NULLABLE_INT64,
-                                   "int64");
+    return read_primitive<int64_t>(
+      field_name, field_kind::INT64, field_kind::NULLABLE_INT64, "int64");
 }
 
 float
 compact_reader::read_float32(const std::string& field_name)
 {
-    return read_primitive<float>(field_name,
-                                 pimpl::field_kind::FLOAT32,
-                                 pimpl::field_kind::NULLABLE_FLOAT32,
-                                 "float32");
+    return read_primitive<float>(
+      field_name, field_kind::FLOAT32, field_kind::NULLABLE_FLOAT32, "float32");
 }
 
 double
 compact_reader::read_float64(const std::string& field_name)
 {
-    return read_primitive<double>(field_name,
-                                  pimpl::field_kind::FLOAT64,
-                                  pimpl::field_kind::NULLABLE_FLOAT64,
-                                  "float64");
+    return read_primitive<double>(
+      field_name, field_kind::FLOAT64, field_kind::NULLABLE_FLOAT64, "float64");
 }
 
 boost::optional<std::string>
 compact_reader::read_string(const std::string& field_name)
 {
-    return read_variable_size<std::string>(field_name,
-                                           pimpl::field_kind::STRING);
+    return read_variable_size<std::string>(field_name, field_kind::STRING);
 }
 
 boost::optional<big_decimal>
 compact_reader::read_decimal(const std::string& field_name)
 {
-    return read_variable_size<big_decimal>(field_name,
-                                           pimpl::field_kind::DECIMAL);
+    return read_variable_size<big_decimal>(field_name, field_kind::DECIMAL);
 }
 
 boost::optional<hazelcast::client::local_time>
 compact_reader::read_time(const std::string& field_name)
 {
-    return read_variable_size<hazelcast::client::local_time>(
-      field_name, pimpl::field_kind::TIME);
+    return read_variable_size<hazelcast::client::local_time>(field_name,
+                                                             field_kind::TIME);
 }
 
 boost::optional<hazelcast::client::local_date>
 compact_reader::read_date(const std::string& field_name)
 {
-    return read_variable_size<hazelcast::client::local_date>(
-      field_name, pimpl::field_kind::DATE);
+    return read_variable_size<hazelcast::client::local_date>(field_name,
+                                                             field_kind::DATE);
 }
 
 boost::optional<hazelcast::client::local_date_time>
 compact_reader::read_timestamp(const std::string& field_name)
 {
     return read_variable_size<hazelcast::client::local_date_time>(
-      field_name, pimpl::field_kind::TIMESTAMP);
+      field_name, field_kind::TIMESTAMP);
 }
 
 boost::optional<hazelcast::client::offset_date_time>
 compact_reader::read_timestamp_with_timezone(const std::string& field_name)
 {
     return read_variable_size<hazelcast::client::offset_date_time>(
-      field_name, pimpl::field_kind::TIMESTAMP_WITH_TIMEZONE);
+      field_name, field_kind::TIMESTAMP_WITH_TIMEZONE);
 }
 
 boost::optional<std::vector<bool>>
@@ -797,8 +969,8 @@ compact_reader::read_array_of_boolean(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<bool>>(
       field_name,
-      pimpl::field_kind::ARRAY_OF_BOOLEAN,
-      pimpl::ARRAY_OF_NULLABLE_BOOLEAN,
+      field_kind::ARRAY_OF_BOOLEAN,
+      field_kind::ARRAY_OF_NULLABLE_BOOLEAN,
       "boolean");
 }
 
@@ -807,8 +979,8 @@ compact_reader::read_array_of_int8(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int8_t>>(
       field_name,
-      pimpl::field_kind::ARRAY_OF_INT8,
-      pimpl::ARRAY_OF_NULLABLE_INT8,
+      field_kind::ARRAY_OF_INT8,
+      field_kind::ARRAY_OF_NULLABLE_INT8,
       "int8");
 }
 
@@ -817,8 +989,8 @@ compact_reader::read_array_of_int16(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int16_t>>(
       field_name,
-      pimpl::field_kind::ARRAY_OF_INT16,
-      pimpl::ARRAY_OF_NULLABLE_INT16,
+      field_kind::ARRAY_OF_INT16,
+      field_kind::ARRAY_OF_NULLABLE_INT16,
       "int16");
 }
 
@@ -827,8 +999,8 @@ compact_reader::read_array_of_int32(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int32_t>>(
       field_name,
-      pimpl::field_kind::ARRAY_OF_INT32,
-      pimpl::ARRAY_OF_NULLABLE_INT32,
+      field_kind::ARRAY_OF_INT32,
+      field_kind::ARRAY_OF_NULLABLE_INT32,
       "int32");
 }
 boost::optional<std::vector<int64_t>>
@@ -836,8 +1008,8 @@ compact_reader::read_array_of_int64(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<int64_t>>(
       field_name,
-      pimpl::field_kind::ARRAY_OF_INT64,
-      pimpl::ARRAY_OF_NULLABLE_INT64,
+      field_kind::ARRAY_OF_INT64,
+      field_kind::ARRAY_OF_NULLABLE_INT64,
       "int64");
 }
 
@@ -846,8 +1018,8 @@ compact_reader::read_array_of_float32(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<float>>(
       field_name,
-      pimpl::field_kind::ARRAY_OF_FLOAT32,
-      pimpl::ARRAY_OF_NULLABLE_FLOAT32,
+      field_kind::ARRAY_OF_FLOAT32,
+      field_kind::ARRAY_OF_NULLABLE_FLOAT32,
       "float32");
 }
 
@@ -856,8 +1028,8 @@ compact_reader::read_array_of_float64(const std::string& field_name)
 {
     return read_array_of_primitive<std::vector<double>>(
       field_name,
-      pimpl::field_kind::ARRAY_OF_FLOAT64,
-      pimpl::ARRAY_OF_NULLABLE_FLOAT64,
+      field_kind::ARRAY_OF_FLOAT64,
+      field_kind::ARRAY_OF_NULLABLE_FLOAT64,
       "float64");
 }
 
@@ -865,7 +1037,7 @@ boost::optional<std::vector<boost::optional<std::string>>>
 compact_reader::read_array_of_string(const std::string& field_name)
 {
     const auto& descriptor =
-      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_STRING);
+      get_field_descriptor(field_name, field_kind::ARRAY_OF_STRING);
     return read_array_of_variable_size<std::string>(descriptor);
 }
 
@@ -873,7 +1045,7 @@ boost::optional<std::vector<boost::optional<big_decimal>>>
 compact_reader::read_array_of_decimal(const std::string& field_name)
 {
     const auto& descriptor =
-      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_DECIMAL);
+      get_field_descriptor(field_name, field_kind::ARRAY_OF_DECIMAL);
     return read_array_of_variable_size<big_decimal>(descriptor);
 }
 
@@ -881,7 +1053,7 @@ boost::optional<std::vector<boost::optional<local_time>>>
 compact_reader::read_array_of_time(const std::string& field_name)
 {
     const auto& descriptor =
-      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_TIME);
+      get_field_descriptor(field_name, field_kind::ARRAY_OF_TIME);
     return read_array_of_variable_size<local_time>(descriptor);
 }
 
@@ -889,7 +1061,7 @@ boost::optional<std::vector<boost::optional<local_date>>>
 compact_reader::read_array_of_date(const std::string& field_name)
 {
     const auto& descriptor =
-      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_DATE);
+      get_field_descriptor(field_name, field_kind::ARRAY_OF_DATE);
     return read_array_of_variable_size<local_date>(descriptor);
 }
 
@@ -897,7 +1069,7 @@ boost::optional<std::vector<boost::optional<local_date_time>>>
 compact_reader::read_array_of_timestamp(const std::string& field_name)
 {
     const auto& descriptor =
-      get_field_descriptor(field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP);
+      get_field_descriptor(field_name, field_kind::ARRAY_OF_TIMESTAMP);
     return read_array_of_variable_size<local_date_time>(descriptor);
 }
 
@@ -906,129 +1078,130 @@ compact_reader::read_array_of_timestamp_with_timezone(
   const std::string& field_name)
 {
     const auto& descriptor = get_field_descriptor(
-      field_name, pimpl::field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
+      field_name, field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
     return read_array_of_variable_size<offset_date_time>(descriptor);
 }
 
 boost::optional<bool>
 compact_reader::read_nullable_boolean(const std::string& field_name)
 {
-    return read_nullable_primitive<bool>(field_name,
-                                         pimpl::field_kind::BOOLEAN,
-                                         pimpl::field_kind::NULLABLE_BOOLEAN);
+    return read_nullable_primitive<bool>(
+      field_name, field_kind::BOOLEAN, field_kind::NULLABLE_BOOLEAN);
 }
 
 boost::optional<int8_t>
 compact_reader::read_nullable_int8(const std::string& field_name)
 {
     return read_nullable_primitive<int8_t>(
-      field_name, pimpl::field_kind::INT8, pimpl::field_kind::NULLABLE_INT8);
+      field_name, field_kind::INT8, field_kind::NULLABLE_INT8);
 }
 
 boost::optional<int16_t>
 compact_reader::read_nullable_int16(const std::string& field_name)
 {
     return read_nullable_primitive<int16_t>(
-      field_name, pimpl::field_kind::INT16, pimpl::field_kind::NULLABLE_INT16);
+      field_name, field_kind::INT16, field_kind::NULLABLE_INT16);
 }
 
 boost::optional<int32_t>
 compact_reader::read_nullable_int32(const std::string& field_name)
 {
     return read_nullable_primitive<int32_t>(
-      field_name, pimpl::field_kind::INT32, pimpl::field_kind::NULLABLE_INT32);
+      field_name, field_kind::INT32, field_kind::NULLABLE_INT32);
 }
 
 boost::optional<int64_t>
 compact_reader::read_nullable_int64(const std::string& field_name)
 {
     return read_nullable_primitive<int64_t>(
-      field_name, pimpl::field_kind::INT64, pimpl::field_kind::NULLABLE_INT64);
+      field_name, field_kind::INT64, field_kind::NULLABLE_INT64);
 }
 
 boost::optional<float>
 compact_reader::read_nullable_float32(const std::string& field_name)
 {
-    return read_nullable_primitive<float>(field_name,
-                                          pimpl::field_kind::FLOAT32,
-                                          pimpl::field_kind::NULLABLE_FLOAT32);
+    return read_nullable_primitive<float>(
+      field_name, field_kind::FLOAT32, field_kind::NULLABLE_FLOAT32);
 }
 
 boost::optional<double>
 compact_reader::read_nullable_float64(const std::string& field_name)
 {
-    return read_nullable_primitive<double>(field_name,
-                                           pimpl::field_kind::FLOAT64,
-                                           pimpl::field_kind::NULLABLE_FLOAT64);
+    return read_nullable_primitive<double>(
+      field_name, field_kind::FLOAT64, field_kind::NULLABLE_FLOAT64);
 }
 
 boost::optional<std::vector<boost::optional<bool>>>
 compact_reader::read_array_of_nullable_boolean(const std::string& field_name)
 {
     return read_array_of_nullable<bool>(field_name,
-                                        pimpl::field_kind::ARRAY_OF_BOOLEAN,
-                                        pimpl::ARRAY_OF_NULLABLE_BOOLEAN);
+                                        field_kind::ARRAY_OF_BOOLEAN,
+                                        field_kind::ARRAY_OF_NULLABLE_BOOLEAN);
 }
 
 boost::optional<std::vector<boost::optional<int8_t>>>
 compact_reader::read_array_of_nullable_int8(const std::string& field_name)
 {
     return read_array_of_nullable<int8_t>(field_name,
-                                          pimpl::field_kind::ARRAY_OF_INT8,
-                                          pimpl::ARRAY_OF_NULLABLE_INT8);
+                                          field_kind::ARRAY_OF_INT8,
+                                          field_kind::ARRAY_OF_NULLABLE_INT8);
 }
 
 boost::optional<std::vector<boost::optional<int16_t>>>
 compact_reader::read_array_of_nullable_int16(const std::string& field_name)
 {
     return read_array_of_nullable<int16_t>(field_name,
-                                           pimpl::field_kind::ARRAY_OF_INT16,
-                                           pimpl::ARRAY_OF_NULLABLE_INT16);
+                                           field_kind::ARRAY_OF_INT16,
+                                           field_kind::ARRAY_OF_NULLABLE_INT16);
 }
 
 boost::optional<std::vector<boost::optional<int32_t>>>
 compact_reader::read_array_of_nullable_int32(const std::string& field_name)
 {
     return read_array_of_nullable<int32_t>(field_name,
-                                           pimpl::field_kind::ARRAY_OF_INT32,
-                                           pimpl::ARRAY_OF_NULLABLE_INT32);
+                                           field_kind::ARRAY_OF_INT32,
+                                           field_kind::ARRAY_OF_NULLABLE_INT32);
 }
 
 boost::optional<std::vector<boost::optional<int64_t>>>
 compact_reader::read_array_of_nullable_int64(const std::string& field_name)
 {
     return read_array_of_nullable<int64_t>(field_name,
-                                           pimpl::field_kind::ARRAY_OF_INT64,
-                                           pimpl::ARRAY_OF_NULLABLE_INT64);
+                                           field_kind::ARRAY_OF_INT64,
+                                           field_kind::ARRAY_OF_NULLABLE_INT64);
 }
 
 boost::optional<std::vector<boost::optional<float>>>
 compact_reader::read_array_of_nullable_float32(const std::string& field_name)
 {
     return read_array_of_nullable<float>(field_name,
-                                         pimpl::field_kind::ARRAY_OF_FLOAT32,
-                                         pimpl::ARRAY_OF_NULLABLE_FLOAT32);
+                                         field_kind::ARRAY_OF_FLOAT32,
+                                         field_kind::ARRAY_OF_NULLABLE_FLOAT32);
 }
 
 boost::optional<std::vector<boost::optional<double>>>
 compact_reader::read_array_of_nullable_float64(const std::string& field_name)
 {
-    return read_array_of_nullable<double>(field_name,
-                                          pimpl::field_kind::ARRAY_OF_FLOAT64,
-                                          pimpl::ARRAY_OF_NULLABLE_FLOAT64);
+    return read_array_of_nullable<double>(
+      field_name,
+      field_kind::ARRAY_OF_FLOAT64,
+      field_kind::ARRAY_OF_NULLABLE_FLOAT64);
 }
+
+} // namespace compact
 
 namespace pimpl {
 
-compact_writer
+compact::compact_writer
 create_compact_writer(pimpl::default_compact_writer* default_compact_writer)
 {
-    return compact_writer{ default_compact_writer };
+    return compact::compact_writer{ default_compact_writer };
 }
-compact_writer
+
+compact::compact_writer
 create_compact_writer(pimpl::schema_writer* schema_writer)
 {
-    return compact_writer{ schema_writer };
+    return compact::compact_writer{ schema_writer };
 }
 
 default_compact_writer::default_compact_writer(
@@ -1414,7 +1587,7 @@ default_compact_writer::get_fixed_size_field_position(
 
 const field_descriptor&
 default_compact_writer::check_field_definition(const std::string& field_name,
-                                               enum field_kind field_kind) const
+                                               field_kind kind) const
 {
     auto iterator = schema_.fields().find(field_name);
     if (iterator == schema_.fields().end()) {
@@ -1424,7 +1597,7 @@ default_compact_writer::check_field_definition(const std::string& field_name,
            schema_)
             .str()));
     }
-    if (iterator->second.field_kind != field_kind) {
+    if (iterator->second.kind != kind) {
         BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
           "default_compact_writer",
           (boost::format("Invalid field type %1% for %2%") % field_name %
@@ -1475,21 +1648,10 @@ default_compact_writer::set_position_as_null(const std::string& field_name,
     field_offsets[index] = -1;
 }
 
-field_descriptor::field_descriptor(enum field_kind f,
-                                   int32_t i,
-                                   int32_t o,
-                                   int8_t b)
-  : field_kind{ f }
-  , index{ i }
-  , offset{ o }
-  , bit_offset{ b }
-{
-}
-
 std::array<uint64_t, 256>
 init_fp_table()
 {
-    static std::array<uint64_t, 256> FP_TABLE;
+    std::array<uint64_t, 256> FP_TABLE;
     for (int i = 0; i < 256; ++i) {
         uint64_t fp = i;
         for (int j = 0; j < 8; ++j) {
@@ -1500,12 +1662,12 @@ init_fp_table()
     return FP_TABLE;
 }
 
-static std::array<uint64_t, 256> FP_TABLE = init_fp_table();
 constexpr uint64_t rabin_finger_print::INIT;
 
 uint64_t
 rabin_finger_print::fingerprint64(uint64_t fp, byte b)
 {
+    static std::array<uint64_t, 256> FP_TABLE = init_fp_table();
     return (fp >> 8) ^ FP_TABLE[(int)(fp ^ b) & 0xff];
 }
 
@@ -1542,7 +1704,7 @@ rabin_finger_print::fingerprint64(
     for (const auto& entry : fields) {
         const field_descriptor& descriptor = entry.second;
         fingerPrint = fingerprint64(fingerPrint, entry.first);
-        fingerPrint = fingerprint64(fingerPrint, (int)descriptor.field_kind);
+        fingerPrint = fingerprint64(fingerPrint, (int)descriptor.kind);
     }
 
     int64_t signed_fp{};
@@ -1554,10 +1716,8 @@ rabin_finger_print::fingerprint64(
 bool
 kind_size_comparator(const field_descriptor* i, const field_descriptor* j)
 {
-    auto i_kind_size =
-      field_operations::get(i->field_kind).kind_size_in_byte_func();
-    auto j_kind_size =
-      field_operations::get(j->field_kind).kind_size_in_byte_func();
+    auto i_kind_size = field_operations::get(i->kind).kind_size_in_byte_func();
+    auto j_kind_size = field_operations::get(j->kind).kind_size_in_byte_func();
     return i_kind_size > j_kind_size;
 }
 
@@ -1575,7 +1735,7 @@ schema::schema(
       field_definition_map_.begin(), field_definition_map_.end());
     for (auto& item : sorted_fields) {
         field_descriptor& descriptor = item.second;
-        field_kind kind = descriptor.field_kind;
+        field_kind kind = descriptor.kind;
         if (field_operations::get(kind).kind_size_in_byte_func() ==
             field_kind_based_operations::VARIABLE_SIZE) {
             variable_size_fields.push_back(&descriptor);
@@ -1592,8 +1752,8 @@ schema::schema(
     int offset = 0;
     for (auto descriptor : fixed_size_fields) {
         descriptor->offset = offset;
-        offset += field_operations::get(descriptor->field_kind)
-                    .kind_size_in_byte_func();
+        offset +=
+          field_operations::get(descriptor->kind).kind_size_in_byte_func();
     }
 
     int8_t bit_offset = 0;
@@ -1619,7 +1779,10 @@ schema::schema(
     }
 
     for (auto& item : sorted_fields) {
-        field_definition_map_[item.first] = item.second;
+        auto field = field_definition_map_.find(item.first);
+
+        assert(field != end(field_definition_map_));
+        field->second = item.second;
     }
 
     number_of_var_size_fields_ = index;
@@ -1656,12 +1819,28 @@ schema::fields() const
     return field_definition_map_;
 }
 
+bool
+operator==(const schema& x, const schema& y)
+{
+    return x.number_of_var_size_fields() == y.number_of_var_size_fields() &&
+           x.fixed_size_fields_length() == y.fixed_size_fields_length() &&
+           x.schema_id() == y.schema_id() && x.type_name() == y.type_name() &&
+           x.fields() == y.fields();
+}
+
+bool
+operator!=(const schema& x, const schema& y)
+{
+    return !(x == y);
+}
+
 std::ostream&
 operator<<(std::ostream& os, const schema& schema)
 {
-    os << "type name " << schema.type_name() << ",number of var size fields "
-       << schema.number_of_var_size_fields() << ",fixed size fields length "
-       << schema.fixed_size_fields_length() << ",fields {";
+    os << "Schema { className = " << schema.type_name()
+       << ", numberOfComplextFields = " << schema.number_of_var_size_fields()
+       << ",primitivesLength = " << schema.fixed_size_fields_length()
+       << ",fields {";
     for (const auto& item : schema.fields()) {
         os << item.first << " " << item.second << ",";
     }
@@ -1669,23 +1848,23 @@ operator<<(std::ostream& os, const schema& schema)
     return os;
 }
 
-std::ostream&
-operator<<(std::ostream& os, const field_descriptor& field_descriptor)
-{
-    os << field_descriptor.field_kind;
-    return os;
-}
-
 } // namespace pimpl
 
 namespace pimpl {
+
 schema_writer::schema_writer(std::string type_name)
   : type_name(std::move(type_name))
 {}
+
 void
 schema_writer::add_field(std::string field_name, enum field_kind kind)
 {
-    field_definition_map[std::move(field_name)] = field_descriptor{ kind };
+    if (field_definition_map.find(field_name) != end(field_definition_map)) {
+        BOOST_THROW_EXCEPTION(exception::hazelcast_serialization{
+          "Field with the name '" + field_name + "' already exists." });
+    }
+
+    field_definition_map.emplace(move(field_name), field_descriptor{ kind });
 }
 
 schema
@@ -1694,28 +1873,192 @@ schema_writer::build() &&
     return schema{ type_name, std::move(field_definition_map) };
 }
 
+default_schema_service::default_schema_service(spi::ClientContext& context)
+  : retry_pause_millis_{ context.get_client_properties().get_integer(
+      context.get_client_properties().get_invocation_retry_pause_millis()) }
+  , max_put_retry_count_{ context.get_client_properties().get_integer(
+      client_property{ MAX_PUT_RETRY_COUNT, MAX_PUT_RETRY_COUNT_DEFAULT }) }
+  , context_{ context }
+{
+}
+
 schema
 default_schema_service::get(int64_t schemaId)
 {
-    auto ptr = schemas.get(schemaId);
-    if (ptr == nullptr) {
-        // TODO sancar throw schema_does_not_exist;
+    auto ptr = replicateds_.get(schemaId);
+
+    if (!ptr) {
+        throw exception::illegal_state{ "default_schema_service::get",
+                                        "Schema doesn't exist for this type" };
     }
+
     return *ptr;
-}
-void
-default_schema_service::put(const schema& schema_v)
-{
-    if (schemas.contains_key(schema_v.schema_id())) {
-        return;
-    }
-    schemas.put(schema_v.schema_id(), std::make_shared<schema>(schema_v));
 }
 
 void
-compact_stream_serializer::put_to_schema_service(const schema& schema)
+default_schema_service::replicate_schema_in_cluster(schema s)
 {
-    schema_service.put(schema);
+    using hazelcast::client::protocol::ClientMessage;
+    using namespace protocol::codec;
+
+    for (int i = 0; i < max_put_retry_count_; ++i) {
+        auto message = client_sendschema_encode(s);
+
+        auto invocation =
+          spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
+
+        auto response = invocation->invoke().get();
+        auto replicated_member_uuids = send_schema_response_decode(response);
+        auto members = context_.get_cluster().get_members();
+
+        bool contains;
+        for (const member& member : members) {
+
+            contains = replicated_member_uuids.find(member.get_uuid()) !=
+                       end(replicated_member_uuids);
+
+            if (!contains) {
+                if (i == (max_put_retry_count_ - 1)) {
+                    throw exception::illegal_state{
+                        "default_schema_service::replicate_schema_attempt",
+                        (boost::format("The schema %1% cannot be "
+                                       "replicated in the cluster, after "
+                                       "%2% retries. It might be the case "
+                                       "that the client is experiencing a "
+                                       "split-brain, and continue putting "
+                                       "the data associated with that "
+                                       "schema might result in data loss. "
+                                       "It might be possible to replicate "
+                                       "the schema after some time, when "
+                                       "the cluster is healed.") %
+                         s % max_put_retry_count_)
+                          .str()
+                    };
+                } else {
+                    std::this_thread::sleep_for(
+                      std::chrono::milliseconds{ retry_pause_millis_ });
+
+                    if (!context_.get_lifecycle_service().is_running()) {
+                        return;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        if (contains) {
+            put_if_absent(std::move(s));
+
+            break;
+        }
+    }
+}
+
+bool
+default_schema_service::is_schema_replicated(const schema& s)
+{
+    return bool(replicateds_.get(s.schema_id()));
+}
+
+void
+default_schema_service::put_if_absent(schema s)
+{
+    auto s_p = std::make_shared<schema>(std::move(s));
+    auto existing = replicateds_.put_if_absent(s_p->schema_id(), s_p);
+
+    if (!existing) {
+        return;
+    }
+
+    if (*s_p != *existing) {
+        throw exception::illegal_state{
+            "default_schema_service::replicate_schema_attempt",
+            (boost::format("Schema with schemaId %1% "
+                           "already exists. Existing "
+                           "schema %2%, new schema %3%") %
+             s_p->schema_id() % *existing % *s_p)
+              .str()
+        };
+    }
+}
+
+/**
+ * Decodes response of send schema request
+ */
+std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>
+default_schema_service::send_schema_response_decode(
+  protocol::ClientMessage& message)
+{
+    message.skip_frame();
+    return message.get<std::unordered_set<boost::uuids::uuid,
+                                          boost::hash<boost::uuids::uuid>>>();
+}
+
+bool
+default_schema_service::has_any_schemas() const
+{
+    return replicateds_.size();
+}
+
+std::ostream&
+operator<<(std::ostream& os, const std::vector<schema>& schemas)
+{
+    os << "Schemas {";
+
+    for (const auto& s : schemas)
+        os << s << " , ";
+
+    os << "}";
+
+    return os;
+}
+
+void
+default_schema_service::replicate_all_schemas()
+{
+    using level = hazelcast::logger::level;
+    using namespace protocol::codec;
+
+    auto logger = context_.get_logger();
+    if (replicateds_.empty()) {
+        if (logger.enabled(level::finest)) {
+            logger.log(level::finest,
+                       "There is no schema to send to the cluster.");
+        }
+
+        return;
+    }
+
+    std::vector<std::shared_ptr<schema>> schemas_sptr = replicateds_.values();
+    std::vector<schema> all_schemas;
+
+    all_schemas.reserve(schemas_sptr.size());
+
+    transform(begin(schemas_sptr),
+              end(schemas_sptr),
+              back_inserter(all_schemas),
+              [](const std::shared_ptr<schema>& s) { return *s; });
+
+    if (logger.enabled(level::finest)) {
+        logger.log(
+          level::finest,
+          (boost::format("Sending schemas to the cluster %1%") % all_schemas)
+            .str());
+    }
+
+    auto message = client_sendallschemas_encode(all_schemas);
+
+    auto invocation =
+      spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
+
+    invocation->invoke_urgent().get();
+}
+
+compact_stream_serializer::compact_stream_serializer(
+  default_schema_service& service)
+  : schema_service{ service }
+{
 }
 
 field_kind_based_operations::field_kind_based_operations()
@@ -1727,62 +2070,40 @@ field_kind_based_operations::field_kind_based_operations(
   : kind_size_in_byte_func(std::move(kind_size_in_byte_func))
 {}
 field_kind_based_operations
-field_operations::get(enum field_kind field_kind)
+field_operations::get(field_kind kind)
 {
-    static const field_kind_based_operations ALL[NUMBER_OF_FIELD_KINDS] = {
-        field_kind_based_operations{ []() { return 0; } },
-        field_kind_based_operations{},
-        field_kind_based_operations{ []() { return 1; } },
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{
-          []() { return util::Bits::SHORT_SIZE_IN_BYTES; } },
-        field_kind_based_operations{},
-        field_kind_based_operations(
-          []() { return util::Bits::INT_SIZE_IN_BYTES; }),
-        field_kind_based_operations{},
-        field_kind_based_operations{
-          []() { return util::Bits::LONG_SIZE_IN_BYTES; } },
-        field_kind_based_operations{},
-        field_kind_based_operations{
-          []() { return util::Bits::FLOAT_SIZE_IN_BYTES; } },
-        field_kind_based_operations{},
-        field_kind_based_operations{
-          []() { return util::Bits::DOUBLE_SIZE_IN_BYTES; } },
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{},
-        field_kind_based_operations{}
-    };
-    return ALL[field_kind];
+    using util::Bits;
+
+    switch (kind) {
+        case field_kind::BOOLEAN:
+            return field_kind_based_operations{ []() { return 0; } };
+        case field_kind::INT8:
+            return field_kind_based_operations{ []() { return 1; } };
+        case field_kind::INT16:
+            return field_kind_based_operations{ []() {
+                return Bits::SHORT_SIZE_IN_BYTES;
+            } };
+        case field_kind::INT32:
+            return field_kind_based_operations{ []() {
+                return Bits::INT_SIZE_IN_BYTES;
+            } };
+        case field_kind::INT64:
+            return field_kind_based_operations{ []() {
+                return Bits::LONG_SIZE_IN_BYTES;
+            } };
+        case field_kind::FLOAT32:
+            return field_kind_based_operations{ []() {
+                return Bits::FLOAT_SIZE_IN_BYTES;
+            } };
+        case field_kind::FLOAT64:
+            return field_kind_based_operations{ []() {
+                return Bits::DOUBLE_SIZE_IN_BYTES;
+            } };
+        default:
+            return field_kind_based_operations{};
+    }
+
+    return field_kind_based_operations{};
 }
 } // namespace pimpl
 } // namespace serialization

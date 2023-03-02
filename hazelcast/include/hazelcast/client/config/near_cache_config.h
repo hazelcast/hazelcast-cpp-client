@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,6 +188,7 @@ public:
       const in_memory_format& in_memory_format);
 
     /**
+     * @deprecated This method has no effect on client side.
      * If true, cache local entries also.
      * This is useful when in-memory-format for Near Cache is different than the
      * map's one.
@@ -197,6 +198,7 @@ public:
     bool is_cache_local_entries() const;
 
     /**
+     * @deprecated This method has no effect on client side.
      * True to cache local entries also.
      * This is useful when in-memory-format for Near Cache is different than the
      * map's one.
@@ -253,8 +255,6 @@ private:
      * </ul>
      */
     eviction_config eviction_config_;
-
-    int32_t calculate_max_size(int32_t max_size);
 };
 
 } // namespace config

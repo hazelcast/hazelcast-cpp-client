@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -530,6 +530,35 @@ TEST_F(ClientListTest, testListener)
     ASSERT_TRUE(list->remove_item_listener(registrationId).get());
 }
 
+TEST_F(ClientListTest, testListenerOnRemoved)
+{
+    boost::latch latch1(1);
+
+    item_listener listener;
+
+    list->add("item-1").get();
+
+    listener.on_removed([&latch1](item_event&& item_event) {
+        auto type = item_event.get_event_type();
+        EXPECT_EQ(item_event_type::REMOVED, type);
+        EXPECT_EQ("MyList", item_event.get_name());
+        std::string host = item_event.get_member().get_address().get_host();
+        EXPECT_TRUE(host == "localhost" || host == "127.0.0.1");
+        EXPECT_EQ(5701, item_event.get_member().get_address().get_port());
+        EXPECT_EQ("item-1", item_event.get_item().get<std::string>().value());
+        latch1.count_down();
+    });
+
+    auto registrationId =
+      list->add_item_listener(std::move(listener), true).get();
+
+    list->remove("item-1").get();
+
+    ASSERT_OPEN_EVENTUALLY(latch1);
+
+    EXPECT_TRUE(list->remove_item_listener(registrationId).get());
+}
+
 TEST_F(ClientListTest, testIsEmpty)
 {
     ASSERT_TRUE(list->is_empty().get());
@@ -610,6 +639,31 @@ TEST_F(ClientQueueTest, testListener)
     ASSERT_NO_THROW(q->destroy().get());
 }
 
+TEST_F(ClientQueueTest, testListenerOnRemoved)
+{
+    EXPECT_EQ(0, q->size().get());
+    constexpr int num_of_entry = 5;
+    boost::latch latch1(num_of_entry);
+
+    auto listener = item_listener().on_removed(
+      [&latch1](item_event&& item_event) { latch1.count_down(); });
+
+    for (int i = 0; i < num_of_entry; i++) {
+        EXPECT_TRUE(
+          q->offer(std::string("event_item") + std::to_string(i)).get());
+    }
+
+    auto id = q->add_item_listener(std::move(listener), true).get();
+
+    for (int i = 0; i < num_of_entry; i++) {
+        ASSERT_TRUE(
+          q->remove(std::string("event_item") + std::to_string(i)).get());
+    }
+
+    ASSERT_OPEN_EVENTUALLY(latch1);
+    EXPECT_TRUE(q->remove_item_listener(id).get());
+}
+
 TEST_F(ClientQueueTest, testOfferPoll)
 {
     for (int i = 0; i < 10; i++) {
@@ -626,7 +680,7 @@ TEST_F(ClientQueueTest, testOfferPoll)
 
     std::thread offer_in_background([]() {
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        q->offer("item1");
+        q->offer("item1").get();
     });
 
     boost::optional<std::string> item =
@@ -668,7 +722,7 @@ TEST_F(ClientQueueTest, testTake)
     // start a thread to offer an item
     std::thread offer_in_background([]() {
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        q->offer("item1");
+        q->offer("item1").get();
     });
 
     item = q->take<std::string>().get(); //  should block till it gets an item
@@ -682,7 +736,7 @@ TEST_F(ClientQueueTest, testRemainingCapacity)
 {
     int capacity = q->remaining_capacity().get();
     ASSERT_TRUE(capacity > 10000);
-    q->offer("item");
+    q->offer("item").get();
     ASSERT_EQ(capacity - 1, q->remaining_capacity().get());
 }
 
@@ -1569,9 +1623,13 @@ TEST_P(AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole)
 
 TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
 {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    GTEST_SKIP();
+#else  
     if (GetParam() && !std::getenv("INSIDE_AWS")) {
         GTEST_SKIP();
     }
+#endif
 
     client_config clientConfig = get_config();
 
@@ -1587,8 +1645,13 @@ TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
     clientConfig.get_network_config().get_aws_config().set_inside_aws(
       GetParam());
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+  // FIPS mode can be enabled over SSL conf
+  //https://wiki.openssl.org/index.php/OpenSSL_3.0
+#else
     // Turn Fips mode on
     FIPS_mode_set(1);
+#endif
 
     auto hazelcastClient = new_client(std::move(clientConfig)).get();
     auto map = hazelcastClient.get_map("myMap").get();

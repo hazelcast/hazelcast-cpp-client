@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,9 @@ hazelcast_client_instance_impl::hazelcast_client_instance_impl(
   : client_config_(std::move(config))
   , client_properties_(client_config_.get_properties())
   , client_context_(*this)
-  , serialization_service_(client_config_.get_serialization_config())
+  , schema_service_{ client_context_ }
+  , serialization_service_(client_config_.get_serialization_config(),
+                           schema_service_)
   , cluster_service_(client_context_)
   , transaction_manager_(client_context_)
   , cluster_(cluster_service_)
@@ -479,6 +481,18 @@ hazelcast_client_instance_impl::get_sql()
 }
 
 void
+hazelcast_client_instance_impl::send_state_to_cluster()
+{
+    schema_service_.replicate_all_schemas();
+}
+
+bool
+hazelcast_client_instance_impl::should_check_urgent_invocations() const
+{
+    return schema_service_.has_any_schemas();
+}
+
+void
 hazelcast_client_instance_impl::check_discovery_configuration_consistency(
   bool address_list_provided,
   bool aws_enabled,
@@ -492,7 +506,7 @@ hazelcast_client_instance_impl::check_discovery_configuration_consistency(
     if (cloud_enabled)
         count++;
     if (count > 1) {
-        throw exception::illegal_state(
+        BOOST_THROW_EXCEPTION(exception::illegal_state(
           "hazelcast_client_instance_impl::check_discovery_configuration_"
           "consistency",
           (boost::format(
@@ -500,7 +514,7 @@ hazelcast_client_instance_impl::check_discovery_configuration_consistency(
              "members given explicitly : %1%, aws discovery: %2%, "
              "hazelcast.cloud enabled : %3%") %
            address_list_provided % aws_enabled % cloud_enabled)
-            .str());
+            .str()));
     }
 }
 
@@ -1362,6 +1376,21 @@ const boost::uuids::uuid&
 query::originating_member_uuid() const
 {
     return originating_member_uuid_;
+}
+
+invocation_might_contain_compact_data::invocation_might_contain_compact_data(
+  std::string source,
+  const spi::impl::ClientInvocation& invocation)
+  : hazelcast_{
+      move(source),
+      boost::str(
+        boost::format(
+          "The invocation %1% might contain Compact serialized "
+          "data and it is not safe to invoke it when the client is not "
+          "yet initialized on the cluster") %
+        invocation)
+  }
+{
 }
 
 } // namespace exception

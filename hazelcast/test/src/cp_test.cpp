@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -499,9 +499,14 @@ TEST_F(basic_latch_test, test_wait_for_when_timeout)
     ASSERT_EQ(std::cv_status::timeout,
               cp_structure_->wait_for(std::chrono::milliseconds(100)).get());
     auto elapsed = std::chrono::steady_clock::now() - start;
+
+    // Real awaited time can be lower than expected.
+    // 70 milliseconds is an approximation for 100 ms.
+    // Ref:
+    // https://stackoverflow.com/questions/8415628/java-scheduled-executor-accuracy
     ASSERT_GE(
       std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count(),
-      100);
+      70);
     ASSERT_EQ(1, cp_structure_->get_count().get());
 }
 
@@ -517,6 +522,17 @@ TEST_F(basic_latch_test, test_multiple_destroy)
 {
     ASSERT_NO_THROW(cp_structure_->destroy().get());
     ASSERT_NO_THROW(cp_structure_->destroy().get());
+}
+
+TEST_F(basic_latch_test, test_try_wait)
+{
+    cp_structure_->try_set_count(1).get();
+
+    ASSERT_FALSE(cp_structure_->try_wait().get());
+
+    cp_structure_->count_down().get();
+
+    ASSERT_TRUE_EVENTUALLY(cp_structure_->try_wait().get());
 }
 
 class basic_lock_test : public cp_test<hazelcast::cp::fenced_lock>
@@ -893,6 +909,19 @@ TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown)
                                                       script.str().c_str(),
                                                       Lang::JAVASCRIPT),
        response.success && response.result == "0"));
+}
+
+TEST_F(basic_lock_test, test_equality_operator)
+{
+    auto fenced_locked_1 =
+      client_->get_cp_subsystem().get_lock(get_test_name()).get();
+    auto fenced_locked_2 =
+      client_->get_cp_subsystem().get_lock(get_test_name()).get();
+    auto fenced_locked_3 =
+      client_->get_cp_subsystem().get_lock(get_test_name() + "_3").get();
+
+    EXPECT_TRUE(*fenced_locked_1 == *fenced_locked_2);
+    EXPECT_FALSE(*fenced_locked_1 == *fenced_locked_3);
 }
 
 class basic_sessionless_semaphore_test

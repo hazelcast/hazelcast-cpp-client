@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <thread>
 #include <future>
 #include <vector>
+#include <mutex>
 #include <boost/asio.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
@@ -137,7 +138,23 @@ public:
 
     boost::uuids::uuid get_client_uuid() const;
 
+    /**
+     * Check the connected state and user connection strategy configuration to
+     * see if an invocation is allowed at the moment returns without throwing
+     * exception only when is the client is Connected to cluster
+     *
+     * @throws io_exception                    if client is disconnected and
+     * ReconnectMode is ON or if client is starting and async start is false
+     * @throws hazelcast_client_offline        if client is disconnected and
+     * ReconnectMode is ASYNC or if client is starting and async start is true
+     */
     void check_invocation_allowed();
+
+    /**
+     * Returns {@code true} if the client is initialized on the cluster, by
+     * sending its local state, if necessary.
+     */
+    bool client_initialized_on_cluster() const;
 
     void connect_to_all_cluster_members();
 
@@ -160,6 +177,42 @@ private:
         std::string server_version;
     };
 
+    enum class client_state
+    {
+        /**
+         * Clients start with this state. Once a client connects to a cluster,
+         * it directly switches to {@link #INITIALIZED_ON_CLUSTER} instead of
+         * {@link #CONNECTED_TO_CLUSTER} because on startup a client has no
+         * local state to send to the cluster.
+         */
+        INITIAL,
+
+        /**
+         * When a client switches to a new cluster, it moves to this state.
+         * It means that the client has connected to a new cluster but not sent
+         * its local state to the new cluster yet.
+         */
+        CONNECTED_TO_CLUSTER,
+
+        /**
+         * When a client sends its local state to the cluster it has connected,
+         * it switches to this state.
+         * <p>
+         * Invocations are allowed in this state.
+         */
+        INITIALIZED_ON_CLUSTER,
+
+        /**
+         * When the client closes the last connection to the cluster it
+         * currently connected to, it switches to this state.
+         * <p>
+         */
+        DISCONNECTED_FROM_CLUSTER,
+    };
+
+    friend std::ostream HAZELCAST_API& operator<<(std::ostream& os,
+                                                  client_state);
+
     auth_response authenticate_on_cluster(
       std::shared_ptr<Connection>& connection);
 
@@ -178,7 +231,7 @@ private:
     static void shutdown_with_external_thread(
       std::weak_ptr<client::impl::hazelcast_client_instance_impl> client_impl);
 
-    bool do_connect_to_cluster();
+    void do_connect_to_cluster();
 
     std::vector<address> get_possible_member_addresses();
 
@@ -196,6 +249,8 @@ private:
     }
 
     void check_client_active();
+
+    void initialize_client_on_cluster(boost::uuids::uuid);
 
     template<typename T>
     std::shared_ptr<Connection> try_connect(const T& target)
@@ -255,7 +310,7 @@ private:
     wait_strategy wait_strategy_;
 
     // following fields are updated inside synchronized(clientStateMutex)
-    std::recursive_mutex client_state_mutex_;
+    mutable std::recursive_mutex client_state_mutex_;
     util::SynchronizedMap<boost::uuids::uuid,
                           Connection,
                           boost::hash<boost::uuids::uuid>>
@@ -267,7 +322,9 @@ private:
 #else
     std::atomic<boost::uuids::uuid> cluster_id_;
 #endif
+    client_state client_state_;
     std::atomic_bool connect_to_cluster_task_submitted_;
+    bool established_initial_cluster_connection;
 
     bool use_public_address_{ false };
 
@@ -283,6 +340,7 @@ private:
 
     address translate(const member& m);
 };
+
 } // namespace connection
 } // namespace client
 } // namespace hazelcast

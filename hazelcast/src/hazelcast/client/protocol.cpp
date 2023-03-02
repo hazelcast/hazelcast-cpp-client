@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,10 +56,12 @@ const ClientMessage::frame_header_type ClientMessage::END_FRAME{
 
 ClientMessage::ClientMessage()
   : retryable_(false)
+  , contains_serialized_data_in_request_(false)
 {}
 
 ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame)
   : retryable_(false)
+  , contains_serialized_data_in_request_(false)
 {
     auto* initial_frame =
       reinterpret_cast<frame_header_type*>(wr_ptr(REQUEST_HEADER_LEN));
@@ -399,6 +401,12 @@ ClientMessage::fast_forward_to_end_frame()
     }
 }
 
+const std::vector<serialization::pimpl::schema>&
+ClientMessage::schemas_will_be_replicated() const
+{
+    return schemas_will_be_replicated_;
+}
+
 const ClientMessage::frame_header_type&
 ClientMessage::null_frame()
 {
@@ -423,6 +431,12 @@ ClientMessage::drop_fragmentation_frame()
     data_buffer_[0].erase(data_buffer_[0].begin(),
                           data_buffer_[0].begin() + FRAGMENTATION_ID_OFFSET +
                             INT64_SIZE);
+}
+
+bool
+ClientMessage::contains_serialized_data_in_request() const
+{
+    return contains_serialized_data_in_request_;
 }
 
 void

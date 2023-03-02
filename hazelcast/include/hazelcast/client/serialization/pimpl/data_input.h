@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,9 @@ class ByteBuffer;
 namespace client {
 namespace serialization {
 class portable_reader;
+namespace compact {
 class compact_reader;
+}
 namespace pimpl {
 template<typename Container>
 class data_input

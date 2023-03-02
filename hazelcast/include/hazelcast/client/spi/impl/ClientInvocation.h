@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@
 
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
+
+#include "hazelcast/client/serialization/pimpl/compact/default_schema_service.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -152,10 +154,14 @@ private:
     static constexpr int MAX_FAST_INVOCATION_COUNT = 5;
     static constexpr int UNASSIGNED_PARTITION = -1;
 
+    boost::future<void> replicate_schemas(
+      std::vector<serialization::pimpl::schema> schemas);
+
     logger& logger_;
     lifecycle_service& lifecycle_service_;
     ClientInvocationServiceImpl& invocation_service_;
     std::shared_ptr<ClientExecutionServiceImpl> execution_service_;
+    serialization::pimpl::default_schema_service& schema_service_;
     boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>>
       client_message_;
     std::shared_ptr<sequence::CallIdSequence> call_id_sequence_;
