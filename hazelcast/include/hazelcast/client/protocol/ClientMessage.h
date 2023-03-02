@@ -195,6 +195,9 @@ struct HAZELCAST_API is_trivial_entry_vector<
  */
 class HAZELCAST_API ClientMessage
 {
+    template<typename T>
+    struct default_nullable_decoder;
+
 public:
     static constexpr size_t EXPECTED_DATA_BLOCK_SIZE = 1024;
 
@@ -1002,10 +1005,8 @@ public:
     }
 
     template<typename T>
-    boost::optional<T> get_nullable(std::function<T(ClientMessage&)> decoder =
-                                      [](ClientMessage& msg) {
-                                          return msg.get<T>();
-                                      })
+    boost::optional<T> get_nullable(
+      std::function<T(ClientMessage&)> decoder = default_nullable_decoder<T>{})
     {
         if (next_frame_is_null_frame()) {
             // skip next frame with null flag
@@ -1438,6 +1439,12 @@ private:
     static const frame_header_type NULL_FRAME;
     static const frame_header_type BEGIN_FRAME;
     static const frame_header_type END_FRAME;
+
+    template<typename T>
+    struct default_nullable_decoder
+    {
+        T operator()(ClientMessage& msg) const { return msg.get<T>(); }
+    };
 
     template<typename T>
     void set_primitive_vector(const std::vector<T>& values,
