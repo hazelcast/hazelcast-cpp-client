@@ -842,7 +842,7 @@ ClientConnectionManagerImpl::on_authenticated(
                 client_state_ = client_state::CONNECTED_TO_CLUSTER;
                 auto self = shared_from_this();
                 boost::asio::post(
-                  executor_->get_executor(), [self, new_cluster_id, this]() {
+                  executor_->get_executor(), [self, new_cluster_id]() {
                       self->initialize_client_on_cluster(new_cluster_id);
                   });
             } else {
