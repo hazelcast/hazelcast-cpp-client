@@ -2995,6 +2995,7 @@ cluster_view_listener::try_register(
     auto conn_id = connection->get_connection_id();
 
     invocation->invoke_urgent().then(
+      boost::launch::sync,
       [weak_self, handler, conn_id](boost::future<protocol::ClientMessage> f) {
           auto self = weak_self.lock();
           if (!self)
