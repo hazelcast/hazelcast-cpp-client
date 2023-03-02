@@ -21,6 +21,7 @@
 #include <functional>
 #include <stdint.h>
 
+#include "hazelcast/util/byte.h"
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/pimpl/compact/schema.h"
 
