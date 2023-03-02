@@ -111,7 +111,7 @@ public:
               return std::make_pair(key_gen(), value_gen());
           });
 
-        for (const std::pair<Key, Value>& p : entries) {
+        for (std::pair<Key, Value> p : entries) {
             remote::Response response;
 
             remote_controller_client().executeOnController(
