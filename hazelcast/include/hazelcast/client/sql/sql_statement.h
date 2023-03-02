@@ -199,7 +199,7 @@ public:
      *
      * @return partition argument index, -1 if not set.
      */
-    uint32_t partition_argument_index() const;
+    int32_t partition_argument_index() const;
 
     /**
      * Set the partition argument index. If there's no such argument, use -1.
@@ -212,7 +212,7 @@ public:
      * @param partition_argument_index index of the partition-determining argument
      *     of the statement
      */
-    sql_statement& partition_argument_index(uint32_t partition_argument_index);
+    sql_statement& partition_argument_index(int32_t partition_argument_index);
 
     /**
      * Gets the schema name.

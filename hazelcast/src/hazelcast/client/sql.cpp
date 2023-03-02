@@ -120,6 +120,8 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
     static constexpr size_t RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET =
       RESPONSE_UPDATE_COUNT_FIELD_OFFSET + protocol::ClientMessage::INT64_SIZE;
 
+    static constexpr size_t RESPONSE_PARTITION_ARGUMENT_INDEX_FIELD_OFFSET = RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET + protocol::ClientMessage::BOOL_SIZE;
+
     sql_execute_response_parameters response;
 
     auto initial_frame_header = msg.read_frame_header();
@@ -134,10 +136,20 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
                              protocol::ClientMessage::BOOL_SIZE)) {
         response.is_infinite_rows = msg.get<bool>();
         response.is_infinite_rows_exist = true;
+
+        uint32_t skip_frame_len = static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET + protocol::ClientMessage::BOOL_SIZE);
+        if (frame_len >=
+            static_cast<int32_t>(RESPONSE_PARTITION_ARGUMENT_INDEX_FIELD_OFFSET +
+                                protocol::ClientMessage::INT32_SIZE)) {
+            response.partition_argument_index = msg.get<int32_t>();
+            response.is_partition_argument_index_exists = true;
+            skip_frame_len += protocol::ClientMessage::INT32_SIZE;
+        }else {
+            response.is_partition_argument_index_exists = false;
+        }        
+
         // skip initial_frame
-        msg.rd_ptr(frame_len -
-                   static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
-                                        protocol::ClientMessage::BOOL_SIZE));
+        msg.rd_ptr(frame_len - skip_frame_len);
     } else {
         response.is_infinite_rows_exist = false;
         // skip initial_frame
@@ -450,13 +462,13 @@ sql_statement::expected_result_type(sql::sql_expected_result_type type)
     return *this;
 }
 
-uint32_t partition_argument_index() const
+int32_t partition_argument_index() const
 {    
     return partition_argument_index_;
 }
 
 sql_statement&
-sql_statement::partition_argument_index(uint32_t partition_argument_index)
+sql_statement::partition_argument_index(int32_t partition_argument_index)
 {
     if (partition_argument_index < -1) {            
         BOOST_THROW_EXCEPTION(client::exception::illegal_argument(

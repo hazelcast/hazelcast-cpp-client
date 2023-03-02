@@ -160,7 +160,7 @@ public:
      * @return the partition argument index of sql result
      *
      */
-    uint32_t get_partition_argument_index() {
+    int32_t get_partition_argument_index() {
         return partition_argument_index_;
     }    
 

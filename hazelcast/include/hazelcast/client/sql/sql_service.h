@@ -141,6 +141,8 @@ private:
         boost::optional<impl::sql_error> error;
         bool is_infinite_rows = false;
         bool is_infinite_rows_exist = false;
+        int32_t partition_argument_index = -1;
+        bool is_partition_argument_index_exists = false;
     };
 
     struct sql_fetch_response_parameters
