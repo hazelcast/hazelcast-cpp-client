@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,32 @@ namespace test {
 namespace compact {
 
 class CompactSchemaReplicationOnClusterRestart : public compact_test_base
-{};
+{
+protected:
+    int number_of_schemas_on_member()
+    {
+        Response response;
+
+        remote_controller_client().executeOnController(
+          response,
+          factory_.get_cluster_id(),
+          R"(
+              var length = instance_0.getOriginal().node.getSchemaService().getAllSchemas().size();
+              result = "" + length;
+          )",
+          Lang::JAVASCRIPT);
+
+        if (response.result.empty()) {
+            (void)[]
+            {
+                GTEST_FAIL();
+            }
+            ();
+        }
+
+        return std::stoi(response.result);
+    }
+};
 
 TEST_F(CompactSchemaReplicationOnClusterRestart, on_cluster_restart)
 {
@@ -52,6 +77,20 @@ TEST_F(CompactSchemaReplicationOnClusterRestart, on_cluster_restart)
 
     ASSERT_TRUE_EVENTUALLY(check_schema_on_backend(schema_parent) &&
                            check_schema_on_backend(schema_child));
+}
+
+TEST_F(CompactSchemaReplicationOnClusterRestart,
+       dont_replicate_if_there_are_no_schema_on_cluster_restart)
+{
+    auto condition = [this]() { return number_of_schemas_on_member() == 0; };
+
+    ASSERT_TRUE_EVENTUALLY(condition());
+
+    member_.shutdown();
+
+    HazelcastServer another_member{ factory_ };
+
+    ASSERT_TRUE_EVENTUALLY(condition());
 }
 
 } // namespace compact

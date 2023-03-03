@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ operator<<(std::ostream& os, field_kind kind)
             os << "INT64";
             break;
         case field_kind::ARRAY_OF_INT64:
-            os << "ARRAY_OF_INT16";
+            os << "ARRAY_OF_INT64";
             break;
         case field_kind::FLOAT32:
             os << "FLOAT32";
@@ -1887,12 +1887,36 @@ default_schema_service::get(int64_t schemaId)
 {
     auto ptr = replicateds_.get(schemaId);
 
-    if (!ptr) {
+    if (ptr) {
+        return *ptr;
+    }
+
+    auto logger = context_.get_logger();
+    if (logger.enabled(logger::level::finest)) {
+        logger.log(
+          logger::level::finest,
+          boost::str(boost::format("Could not find schema id %1% locally, will "
+                                   "search on the cluster %1%") %
+                     schemaId));
+    }
+
+    using namespace protocol::codec;
+
+    auto message = client_fetchschema_encode(schemaId);
+
+    auto invocation =
+      spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
+    auto response = invocation->invoke().get();
+
+    response.skip_frame();
+    auto sch = response.get_nullable<schema>();
+
+    if (!sch) {
         throw exception::illegal_state{ "default_schema_service::get",
                                         "Schema doesn't exist for this type" };
     }
 
-    return *ptr;
+    return *sch;
 }
 
 void

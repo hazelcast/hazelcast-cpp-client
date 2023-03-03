@@ -41,7 +41,7 @@ struct hz_serializer<test::compact::a_type> : compact::compact_serializer
     static void write(const test::compact::a_type& object,
                       compact::compact_writer& writer)
     {
-        writer.write_boolean("x", object.x);
+        writer.write_int32("x", object.x);
         writer.write_compact<test::compact::nested_type>("nested",
                                                          object.nested);
     }

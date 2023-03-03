@@ -3092,6 +3092,12 @@ ClientMessage HAZELCAST_API
 client_sendallschemas_encode(
   const std::vector<serialization::pimpl::schema>& schemas);
 
+/**
+ * Fetches a schema from the cluster with the given schemaId
+ */
+ClientMessage HAZELCAST_API
+client_fetchschema_encode(int64_t schema_id);
+
 } // namespace codec
 } // namespace protocol
 } // namespace client
