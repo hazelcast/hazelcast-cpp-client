@@ -103,26 +103,27 @@ private:
                 // this can happen if the cache is concurrently modified
                 return;
             }
-            boost::heap::priority_queue<int64_t> oldest_timestamps =
-                    new PriorityQueue<>(entriesToRemove + 1, Comparator.<Long>naturalOrder().reversed());
+            std::priority_queue<int64_t, std::vector<int64_t>, std::greater<int64_t>> oldest_timestamps;                    
 
             // 1st pass
-            for (ValueAndTimestamp<V> valueAndTimestamp : cache.values()) {
-                oldestTimestamps.add(valueAndTimestamp.timestamp);
-                if (oldestTimestamps.size() > entriesToRemove) {
-                    oldestTimestamps.poll();
+            auto values = cache.values();
+            for (ValueAndTimestamp<V> valueAndTimestamp : values) {
+                oldest_timestamps.push(valueAndTimestamp.timestamp);
+                if (oldest_timestamps.size() > entriesToRemove) {
+                    oldest_timestamps.pop();
                 }
             }
 
             // find out the highest value in the queue - the value, below which entries will be removed
-            if (oldestTimestamps.isEmpty()) {
+            if (oldest_timestamps.empty()) {
                 // this can happen if the cache is concurrently modified
                 return;
             }
-            long removeThreshold = oldestTimestamps.poll();
+            int64_t remove_threshold = oldest_timestamps.top();
+            oldest_timestamps.pop();
 
             // 2nd pass
-            cache.values().removeIf(v -> v.timestamp <= removeThreshold);
+            cache.values().removeIf(v -> v.timestamp <= remove_threshold);
         } finally {
             cleanupLock.set(false);
         }
