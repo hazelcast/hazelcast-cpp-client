@@ -1572,7 +1572,7 @@ ClientInvocation::invoke_on_selection()
         }
     } catch (exception::iexception&) {
         notify_exception(std::current_exception());
-    } catch (std::exception&) {
+    } catch (std::exception& exp) {
         HZ_LOG(
           logger_,
           finest,
