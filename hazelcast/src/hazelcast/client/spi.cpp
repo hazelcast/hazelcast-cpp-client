@@ -1573,6 +1573,11 @@ ClientInvocation::invoke_on_selection()
     } catch (exception::iexception&) {
         notify_exception(std::current_exception());
     } catch (std::exception&) {
+        HZ_LOG(logger_,
+                   finest,
+                   boost::str(boost::format(
+                                "Unexpected exception. %1%") %
+                              exp.what() ));        
         assert(false);
     }
 }
@@ -3005,7 +3010,8 @@ cluster_view_listener::try_register(
               handler->on_listener_register();
               return;
           }
-
+          
+          f.get(); //get unhandled exception
           // completes with exception, listener needs to be reregistered
           self->try_reregister_to_random_connection(conn_id);
       });
