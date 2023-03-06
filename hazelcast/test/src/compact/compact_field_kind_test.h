@@ -16,52 +16,19 @@
 
 #pragma once
 
-#include <memory>
 #include <sstream>
 
 #include <gtest/gtest.h>
-
-#include "hazelcast/client/hazelcast_client.h"
-#include "../remote_controller_client.h"
-#include "../TestHelperFunctions.h"
-
-#include "compact_test_base.h"
-#include "serialization/sample_compact_type.h"
 
 namespace hazelcast {
 namespace client {
 namespace test {
 namespace compact {
 
-class CompactMix : public compact_test_base
+class CompactFieldKind : public testing::Test
 {};
 
-TEST_F(CompactMix, schema_service_get_non_existing_schema)
-{
-    spi::ClientContext ctx{ client };
-
-    serialization::pimpl::default_schema_service service{ ctx };
-
-    ASSERT_EQ(service.get(1000), nullptr);
-}
-
-TEST_F(CompactMix, schema_equality)
-{
-    auto x = get_schema<sample_compact_type>();
-    auto y = get_schema<sample_compact_type>();
-
-    ASSERT_EQ(x, y);
-}
-
-TEST_F(CompactMix, schema_inequality)
-{
-    auto x = get_schema<sample_compact_type>();
-    auto y = get_schema<nested_type>();
-
-    ASSERT_NE(x, y);
-}
-
-TEST_F(CompactMix, field_kind_output)
+TEST_F(CompactFieldKind, field_kind_output)
 {
     using field_kind = serialization::field_kind;
     auto to_string = [](field_kind kind) {
