@@ -610,7 +610,7 @@ T inline compact_stream_serializer::read(object_data_input& in)
         return hz_serializer<T>::read(reader);
     }
 
-    auto schema = schema_service.get(schema_id);
+    auto schema = schema_service.get(schema_id, hz_serializer<T>::type_name());
     if (schema.type_name() != hz_serializer<T>::type_name()) {
         auto exception = exception::hazelcast_serialization{
             "compact_stream_serializer",

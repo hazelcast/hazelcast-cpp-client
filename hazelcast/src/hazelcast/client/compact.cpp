@@ -1883,7 +1883,7 @@ default_schema_service::default_schema_service(spi::ClientContext& context)
 }
 
 schema
-default_schema_service::get(int64_t schemaId)
+default_schema_service::get(int64_t schemaId, const std::string& type_name)
 {
     auto ptr = replicateds_.get(schemaId);
 
@@ -1912,8 +1912,13 @@ default_schema_service::get(int64_t schemaId)
     auto sch = response.get_nullable<schema>();
 
     if (!sch) {
-        throw exception::illegal_state{ "default_schema_service::get",
-                                        "Schema doesn't exist for this type" };
+        throw exception::hazelcast_serialization{
+            "default_schema_service::get",
+            boost::str(
+              boost::format(
+                "The schema can not be found with id %1% for '%2%' type") %
+              schemaId % type_name)
+        };
     }
 
     return std::move(*sch);
