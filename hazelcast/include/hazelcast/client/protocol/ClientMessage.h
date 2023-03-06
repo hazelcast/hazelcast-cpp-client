@@ -23,7 +23,7 @@
 
 #include <cassert>
 #include <memory>
-#include <ostream>
+#include <iosfwd>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
