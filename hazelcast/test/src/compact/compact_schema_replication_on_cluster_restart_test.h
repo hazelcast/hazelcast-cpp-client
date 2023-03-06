@@ -90,7 +90,7 @@ TEST_F(CompactSchemaReplicationOnClusterRestart,
 
     HazelcastServer another_member{ factory_ };
 
-    ASSERT_TRUE_EVENTUALLY(condition());
+    ASSERT_TRUE_ALL_THE_TIME(condition(), 1);
 }
 
 } // namespace compact
