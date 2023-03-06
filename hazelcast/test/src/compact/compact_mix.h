@@ -26,7 +26,7 @@
 #include "../TestHelperFunctions.h"
 
 #include "compact_test_base.h"
-#include "serialization/a_type.h"
+#include "serialization/sample_compact_type.h"
 
 namespace hazelcast {
 namespace client {
@@ -47,15 +47,15 @@ TEST_F(CompactMix, schema_service_get_non_existing_schema)
 
 TEST_F(CompactMix, schema_equality)
 {
-    auto x = get_schema<a_type>();
-    auto y = get_schema<a_type>();
+    auto x = get_schema<sample_compact_type>();
+    auto y = get_schema<sample_compact_type>();
 
     ASSERT_EQ(x, y);
 }
 
 TEST_F(CompactMix, schema_inequality)
 {
-    auto x = get_schema<a_type>();
+    auto x = get_schema<sample_compact_type>();
     auto y = get_schema<nested_type>();
 
     ASSERT_NE(x, y);

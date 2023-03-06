@@ -27,7 +27,7 @@
 #include "../TestHelperFunctions.h"
 
 #include "compact_test_base.h"
-#include "serialization/a_type.h"
+#include "serialization/sample_compact_type.h"
 
 namespace hazelcast {
 namespace client {
@@ -64,12 +64,12 @@ protected:
 
 TEST_F(CompactSchemaReplicationOnClusterRestart, on_cluster_restart)
 {
-    auto schema_parent = get_schema<a_type>();
+    auto schema_parent = get_schema<sample_compact_type>();
     auto schema_child = get_schema<nested_type>();
 
     auto map = client.get_map(random_string()).get();
 
-    map->put(random_string(), a_type{}).get();
+    map->put(random_string(), sample_compact_type{}).get();
 
     member_.shutdown();
 

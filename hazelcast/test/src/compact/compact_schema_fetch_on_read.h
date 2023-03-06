@@ -25,7 +25,7 @@
 #include "../TestHelperFunctions.h"
 
 #include "compact_test_base.h"
-#include "serialization/a_type.h"
+#include "serialization/sample_compact_type.h"
 
 namespace hazelcast {
 namespace client {
@@ -59,7 +59,7 @@ protected:
                     result = "true";
                         )") %
            serialization::hz_serializer<nested_type>::type_name() %
-           serialization::hz_serializer<a_type>::type_name() % map_name_ % key_)
+           serialization::hz_serializer<sample_compact_type>::type_name() % map_name_ % key_)
             .str(),
           Lang::JAVASCRIPT);
 
@@ -100,7 +100,7 @@ TEST_F(CompactSchemaFetchOnRead, imap_get)
     put_record_with_rc();
 
     auto map = client.get_map(map_name_).get();
-    auto a_t = map->get<std::string, a_type>(key_).get();
+    auto a_t = map->get<std::string, sample_compact_type>(key_).get();
 
     EXPECT_EQ(a_t->x, 100);
     EXPECT_EQ(a_t->nested.y, 101);
@@ -112,7 +112,7 @@ TEST_F(CompactSchemaFetchOnRead, throw_exception_on_typename_mismatch)
 
     auto map = client.get_map(map_name_).get();
 
-    auto fn = [=]() { map->get<std::string, a_type>(key_).get(); };
+    auto fn = [=]() { map->get<std::string, sample_compact_type>(key_).get(); };
 
     EXPECT_THROW(fn(), exception::hazelcast_serialization);
 }
@@ -132,7 +132,7 @@ TEST_F(CompactSchemaFetchOnRead, sql_read)
                      "'valueFormat' = 'compact', "
                      "'valueCompactTypeName' = '%2%' "
                      ")") %
-       map_name_ % serialization::hz_serializer<a_type>::type_name())
+       map_name_ % serialization::hz_serializer<sample_compact_type>::type_name())
         .str();
 
     (void)client.get_sql().execute(query).get();
