@@ -73,8 +73,14 @@ TEST_F(CompactSchemaReplicationOnClusterRestart, on_cluster_restart)
 
     member_.shutdown();
 
+    boost::latch connected_latch(1);
+
+    client.add_lifecycle_listener(lifecycle_listener().on_connected(
+      [&connected_latch]() { connected_latch.try_count_down(); }));
+
     HazelcastServer another_member{ factory_ };
 
+    ASSERT_OPEN_EVENTUALLY(connected_latch);
     ASSERT_TRUE_EVENTUALLY(check_schema_on_backend(schema_parent) &&
                            check_schema_on_backend(schema_child));
 }
