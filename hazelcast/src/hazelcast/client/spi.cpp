@@ -1573,10 +1573,6 @@ ClientInvocation::invoke_on_selection()
     } catch (exception::iexception&) {
         notify_exception(std::current_exception());
     } catch (std::exception& exp) {
-        HZ_LOG(
-          logger_,
-          finest,
-          boost::str(boost::format("Unexpected exception. %1%") % exp.what()));
         assert(false);
     }
 }
@@ -3013,8 +3009,10 @@ cluster_view_listener::try_register(
           try {
               f.get();
           } catch (exception::hazelcast_client_not_active& e) {
-              /*If client is shutdown, we should not retry for another
-               * connection*/
+              /**
+               * If client is shutdown, we should not retry for another
+               * connection
+               * */
               return;
           }
           // completes with exception, listener needs to be reregistered
