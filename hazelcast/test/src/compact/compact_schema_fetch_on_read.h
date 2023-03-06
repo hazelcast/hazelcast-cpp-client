@@ -38,6 +38,11 @@ protected:
     std::string map_name_{ random_string() };
     std::string key_{ random_string() };
 
+    serialization::pimpl::default_schema_service& schema_service()
+    {
+        return spi::ClientContext{ client }.get_schema_service();
+    }
+
     void put_record_with_rc()
     {
         Response response;
@@ -104,6 +109,19 @@ TEST_F(CompactSchemaFetchOnRead, imap_get)
 
     EXPECT_EQ(a_t->x, 100);
     EXPECT_EQ(a_t->nested.y, 101);
+}
+
+TEST_F(CompactSchemaFetchOnRead, ensure_schema_is_cached)
+{
+    put_record_with_rc();
+
+    auto map = client.get_map(map_name_).get();
+
+    ASSERT_FALSE(schema_service().has_any_schemas());
+
+    map->get<std::string, sample_compact_type>(key_).get();
+
+    ASSERT_TRUE(schema_service().has_any_schemas());
 }
 
 TEST_F(CompactSchemaFetchOnRead, throw_exception_on_typename_mismatch)

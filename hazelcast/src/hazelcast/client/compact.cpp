@@ -1902,10 +1902,10 @@ default_schema_service::get(int64_t schemaId)
 
     using namespace protocol::codec;
 
-    auto message = client_fetchschema_encode(schemaId);
+    auto request_message = client_fetchschema_encode(schemaId);
 
-    auto invocation =
-      spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
+    auto invocation = spi::impl::ClientInvocation::create(
+      context_, request_message, SERVICE_NAME);
     auto message = invocation->invoke().get();
 
     message.skip_frame();
