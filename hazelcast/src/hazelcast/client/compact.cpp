@@ -1882,13 +1882,13 @@ default_schema_service::default_schema_service(spi::ClientContext& context)
 {
 }
 
-schema
-default_schema_service::get(int64_t schemaId, const std::string& type_name)
+std::shared_ptr<schema>
+default_schema_service::get(int64_t schemaId)
 {
     auto ptr = replicateds_.get(schemaId);
 
     if (ptr) {
-        return *ptr;
+        return ptr;
     }
 
     auto logger = context_.get_logger();
@@ -1906,24 +1906,19 @@ default_schema_service::get(int64_t schemaId, const std::string& type_name)
 
     auto invocation =
       spi::impl::ClientInvocation::create(context_, message, SERVICE_NAME);
-    auto response = invocation->invoke().get();
+    auto message = invocation->invoke().get();
 
-    response.skip_frame();
-    auto sch = response.get_nullable<schema>();
+    message.skip_frame();
+    auto sch = message.get_nullable<schema>();
+
+    std::shared_ptr<schema> schema_ptr;
 
     if (sch) {
-        replicateds_.put_if_absent(schemaId, std::make_shared<schema>(*sch));
-    } else {
-        throw exception::hazelcast_serialization{
-            "default_schema_service::get",
-            boost::str(
-              boost::format(
-                "The schema can not be found with id %1% for '%2%' type") %
-              schemaId % type_name)
-        };
+        schema_ptr = std::make_shared<schema>(std::move(*sch));
+        replicateds_.put_if_absent(schemaId, schema_ptr);
     }
 
-    return std::move(*sch);
+    return schema_ptr;
 }
 
 void

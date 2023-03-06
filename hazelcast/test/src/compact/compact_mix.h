@@ -42,7 +42,7 @@ TEST_F(CompactMix, schema_service_get_non_existing_schema)
 
     serialization::pimpl::default_schema_service service{ ctx };
 
-    ASSERT_THROW(service.get(1000, ""), exception::hazelcast_serialization);
+    ASSERT_EQ(service.get(1000), nullptr);
 }
 
 TEST_F(CompactMix, schema_equality)

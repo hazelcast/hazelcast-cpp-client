@@ -61,7 +61,7 @@ public:
      *     <li>searching the cluster.</li>
      * </ul>
      */
-    schema get(int64_t schemaId, const std::string& type_name);
+    std::shared_ptr<schema> get(int64_t schemaId);
 
     /**
      * Replicates schema on the cluster

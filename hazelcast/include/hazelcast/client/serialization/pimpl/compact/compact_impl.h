@@ -610,17 +610,28 @@ T inline compact_stream_serializer::read(object_data_input& in)
         return hz_serializer<T>::read(reader);
     }
 
-    auto schema = schema_service.get(schema_id, hz_serializer<T>::type_name());
-    if (schema.type_name() != hz_serializer<T>::type_name()) {
+    auto schema = schema_service.get(schema_id);
+
+    if (!schema) {
+        throw exception::hazelcast_serialization{
+            "compact_stream_serializer::read",
+            boost::str(
+              boost::format(
+                "The schema can not be found with id %1% for '%2%' type") %
+              schema_id % hz_serializer<T>::type_name())
+        };
+    }
+
+    if (schema->type_name() != hz_serializer<T>::type_name()) {
         auto exception = exception::hazelcast_serialization{
             "compact_stream_serializer",
             (boost::format("Unexpected typename. expected %1%, received %2%") %
-             hz_serializer<T>::type_name() % schema.type_name())
+             hz_serializer<T>::type_name() % schema->type_name())
               .str()
         };
         BOOST_THROW_EXCEPTION(exception);
     }
-    compact::compact_reader reader = create_compact_reader(*this, in, schema);
+    compact::compact_reader reader = create_compact_reader(*this, in, *schema);
     return hz_serializer<T>::read(reader);
 }
 
