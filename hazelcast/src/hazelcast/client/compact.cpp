@@ -1911,7 +1911,9 @@ default_schema_service::get(int64_t schemaId, const std::string& type_name)
     response.skip_frame();
     auto sch = response.get_nullable<schema>();
 
-    if (!sch) {
+    if (sch) {
+        replicateds_.put_if_absent(schemaId, std::make_shared<schema>(*sch));
+    } else {
         throw exception::hazelcast_serialization{
             "default_schema_service::get",
             boost::str(
