@@ -46,19 +46,17 @@ public:
       HeapNearCacheRecordMap<K, V, KS, record::NearCacheObjectRecord<V>>>
       ANCRS;
 
-    NearCacheObjectRecordStore(const std::string& name,
-                               const client::config::near_cache_config& config,
+    NearCacheObjectRecordStore(const client::config::near_cache_config& config,
                                serialization::pimpl::SerializationService& ss)
       : BaseHeapNearCacheRecordStore<K,
                                      V,
                                      serialization::pimpl::data,
-                                     record::NearCacheObjectRecord<V>>(name,
-                                                                       config,
+                                     record::NearCacheObjectRecord<V>>(config,
                                                                        ss)
     {}
 
 protected:
-    int64_t get_key_storage_memory_cost(KS* key) const override
+    int64_t get_key_storage_memory_cost(KS* /* key */) const override
     {
         // memory cost for "OBJECT" in memory format is totally not supported,
         // so just return zero
@@ -66,7 +64,7 @@ protected:
     }
 
     int64_t get_record_storage_memory_cost(
-      record::NearCacheObjectRecord<V>* record) const override
+      record::NearCacheObjectRecord<V>* /* record */) const override
     {
         // memory cost for "OBJECT" in memory format is totally not supported,
         // so just return zero
