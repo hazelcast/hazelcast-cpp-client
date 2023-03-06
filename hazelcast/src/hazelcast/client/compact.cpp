@@ -1916,7 +1916,7 @@ default_schema_service::get(int64_t schemaId)
                                         "Schema doesn't exist for this type" };
     }
 
-    return *sch;
+    return std::move(*sch);
 }
 
 void
