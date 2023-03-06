@@ -3010,7 +3010,13 @@ cluster_view_listener::try_register(
               return;
           }
 
-          f.get(); // get unhandled exception
+          try {
+              f.get();
+          } catch (exception::hazelcast_client_not_active& e) {
+              /*If client is shutdown, we should not retry for another
+               * connection*/
+              return;
+          }
           // completes with exception, listener needs to be reregistered
           self->try_reregister_to_random_connection(conn_id);
       });
