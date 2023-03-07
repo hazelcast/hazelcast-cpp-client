@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -558,29 +558,17 @@ default_compact_writer::write(const T& value)
 }
 
 template<typename T>
-struct schema_of
-{
-    static schema build_schema()
-    {
-        T t;
-        schema_writer schema_writer(hz_serializer<T>::type_name());
-        serialization::compact::compact_writer writer =
-          create_compact_writer(&schema_writer);
-        serialization::hz_serializer<T>::write(t, writer);
-        return std::move(schema_writer).build();
-    }
-
-    const static schema schema_v;
-};
-
-template<typename T>
-const schema schema_of<T>::schema_v = schema_of<T>::build_schema();
-
-template<typename T>
 class class_to_schema
 {
 public:
-    static const schema& get() { return value_; }
+    static const schema* get()
+    {
+        if (is_initialized_) {
+            return &value_;
+        } else {
+            return nullptr;
+        }
+    }
 
     static void set(const T& object)
     {
@@ -613,26 +601,37 @@ template<typename T>
 T inline compact_stream_serializer::read(object_data_input& in)
 {
     int64_t schema_id = in.read<int64_t>();
-    const auto& local_schema = schema_of<T>::schema_v;
+    const schema* local_schema = class_to_schema<T>::get();
     // optimization to avoid hitting shared map in the schema_service,
     // in the case incoming data's schema is same as the local schema
-    if (schema_id == local_schema.schema_id()) {
+    if (local_schema && schema_id == local_schema->schema_id()) {
         compact::compact_reader reader =
-          create_compact_reader(*this, in, local_schema);
+          create_compact_reader(*this, in, *local_schema);
         return hz_serializer<T>::read(reader);
     }
-    // This path will run only in schema evolution case
+
     auto schema = schema_service.get(schema_id);
-    if (schema.type_name() != hz_serializer<T>::type_name()) {
+
+    if (!schema) {
+        throw exception::hazelcast_serialization{
+            "compact_stream_serializer::read",
+            boost::str(
+              boost::format(
+                "The schema can not be found with id %1% for '%2%' type") %
+              schema_id % hz_serializer<T>::type_name())
+        };
+    }
+
+    if (schema->type_name() != hz_serializer<T>::type_name()) {
         auto exception = exception::hazelcast_serialization{
             "compact_stream_serializer",
             (boost::format("Unexpected typename. expected %1%, received %2%") %
-             hz_serializer<T>::type_name() % schema.type_name())
+             hz_serializer<T>::type_name() % schema->type_name())
               .str()
         };
         BOOST_THROW_EXCEPTION(exception);
     }
-    compact::compact_reader reader = create_compact_reader(*this, in, schema);
+    compact::compact_reader reader = create_compact_reader(*this, in, *schema);
     return hz_serializer<T>::read(reader);
 }
 
@@ -642,7 +641,7 @@ void inline compact_stream_serializer::write(const T& object,
 {
     class_to_schema<T>::set(object);
 
-    const schema& schema_v = class_to_schema<T>::get();
+    const schema& schema_v = *class_to_schema<T>::get();
 
     if (!schema_service.is_schema_replicated(schema_v)) {
         out.schemas_will_be_replicated_.push_back(schema_v);

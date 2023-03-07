@@ -122,9 +122,9 @@ private:
 
 TEST_F(CompactSchemaValidation, validate)
 {
-    auto schema = get_schema<a_type>();
+    auto schema = get_schema<sample_compact_type>();
 
-    replicate_schema<a_type>();
+    replicate_schema<sample_compact_type>();
 
     auto actual = read_schema_from_server(schema);
 

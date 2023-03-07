@@ -2571,6 +2571,27 @@ TEST_F(
     EXPECT_THROW(connection_manager.get_or_connect(dummy_member),
                  exception::hazelcast_);
 }
+
+struct ClientStateOutput : ::testing::Test
+{};
+
+TEST_F(ClientStateOutput, test_output)
+{
+    using client_state = connection::ClientConnectionManagerImpl::client_state;
+
+    auto to_string = [](client_state st){
+        std::stringstream ss;
+
+        ss << st;
+
+        return ss.str();
+    };
+
+    EXPECT_EQ(to_string(client_state::CONNECTED_TO_CLUSTER), "CONNECTED_TO_CLUSTER");
+    EXPECT_EQ(to_string(client_state::DISCONNECTED_FROM_CLUSTER), "DISCONNECTED_FROM_CLUSTER");
+    EXPECT_EQ(to_string(client_state::INITIAL), "INITIAL");
+    EXPECT_EQ(to_string(client_state::INITIALIZED_ON_CLUSTER), "INITIALIZED_ON_CLUSTER");
+}
 } // namespace test
 } // namespace client
 } // namespace hazelcast
