@@ -674,12 +674,6 @@ ClientConnectionManagerImpl::~ClientConnectionManagerImpl()
     shutdown();
 }
 
-logger&
-ClientConnectionManagerImpl::get_logger()
-{
-    return client_.get_logger();
-}
-
 void
 ClientConnectionManagerImpl::check_client_active()
 {
