@@ -2,4 +2,6 @@
 
     <cluster-name>compact-dev</cluster-name>
 
+    <jet enabled="true" />
+
 </hazelcast>

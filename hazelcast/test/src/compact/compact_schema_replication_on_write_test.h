@@ -27,7 +27,7 @@
 #include "../TestHelperFunctions.h"
 
 #include "compact_test_base.h"
-#include "serialization/a_type.h"
+#include "serialization/sample_compact_type.h"
 
 namespace hazelcast {
 namespace client {
@@ -39,7 +39,7 @@ class CompactSchemaReplicationOnWrite : public compact_test_base
 
 TEST_F(CompactSchemaReplicationOnWrite, imap_put)
 {
-    auto schema_parent = get_schema<a_type>();
+    auto schema_parent = get_schema<sample_compact_type>();
     auto schema_child = get_schema<nested_type>();
 
     ASSERT_EQ(check_schema_on_backend(schema_parent), false);
@@ -47,7 +47,7 @@ TEST_F(CompactSchemaReplicationOnWrite, imap_put)
 
     auto map = client.get_map(random_string()).get();
 
-    map->put(random_string(), a_type{}).get();
+    map->put(random_string(), sample_compact_type{}).get();
 
     ASSERT_EQ(check_schema_on_backend(schema_parent), true);
     ASSERT_EQ(check_schema_on_backend(schema_child), true);
