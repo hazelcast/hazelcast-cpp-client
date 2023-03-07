@@ -5821,6 +5821,22 @@ client_sendallschemas_encode(
     return msg;
 }
 
+ClientMessage
+client_fetchschema_encode(int64_t schema_id)
+{
+    size_t initial_frame_size =
+      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
+    ClientMessage msg(initial_frame_size, true);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.fetchschema");
+
+    msg.set_message_type(static_cast<int32_t>(5120));
+    msg.set_partition_id(-1);
+
+    msg.set(schema_id);
+    return msg;
+}
+
 } // namespace codec
 } // namespace protocol
 } // namespace client

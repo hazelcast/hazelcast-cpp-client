@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ operator<<(std::ostream& os, field_kind kind)
             os << "INT64";
             break;
         case field_kind::ARRAY_OF_INT64:
-            os << "ARRAY_OF_INT16";
+            os << "ARRAY_OF_INT64";
             break;
         case field_kind::FLOAT32:
             os << "FLOAT32";
@@ -1882,17 +1882,43 @@ default_schema_service::default_schema_service(spi::ClientContext& context)
 {
 }
 
-schema
+std::shared_ptr<schema>
 default_schema_service::get(int64_t schemaId)
 {
     auto ptr = replicateds_.get(schemaId);
 
-    if (!ptr) {
-        throw exception::illegal_state{ "default_schema_service::get",
-                                        "Schema doesn't exist for this type" };
+    if (ptr) {
+        return ptr;
     }
 
-    return *ptr;
+    auto logger = context_.get_logger();
+    if (logger.enabled(logger::level::finest)) {
+        logger.log(
+          logger::level::finest,
+          boost::str(boost::format("Could not find schema id %1% locally, will "
+                                   "search on the cluster %1%") %
+                     schemaId));
+    }
+
+    using namespace protocol::codec;
+
+    auto request_message = client_fetchschema_encode(schemaId);
+
+    auto invocation = spi::impl::ClientInvocation::create(
+      context_, request_message, SERVICE_NAME);
+    auto message = invocation->invoke().get();
+
+    message.skip_frame();
+    auto sch = message.get_nullable<schema>();
+
+    std::shared_ptr<schema> schema_ptr;
+
+    if (sch) {
+        schema_ptr = std::make_shared<schema>(std::move(*sch));
+        replicateds_.put_if_absent(schemaId, schema_ptr);
+    }
+
+    return schema_ptr;
 }
 
 void

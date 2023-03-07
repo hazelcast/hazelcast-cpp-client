@@ -714,13 +714,11 @@ ClientConnectionManagerImpl::initialize_client_on_cluster(
             std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
 
             if (target_cluster_id == cluster_id_) {
-                if (logger_.enabled(hazelcast::logger::level::fine)) {
-                    logger_.log(
-                      hazelcast::logger::level::fine,
-                      (boost::format("Client state is sent to cluster: %1%") %
-                       target_cluster_id)
-                        .str());
-                }
+                HZ_LOG(logger_,
+                       fine,
+                       (boost::format("Client state is sent to cluster: %1%") %
+                        target_cluster_id)
+                         .str());
 
                 client_state_ = client_state::INITIALIZED_ON_CLUSTER;
                 fire_life_cycle_event(lifecycle_event::CLIENT_CONNECTED);

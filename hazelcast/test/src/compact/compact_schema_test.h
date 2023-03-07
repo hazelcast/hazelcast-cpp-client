@@ -265,6 +265,31 @@ TEST_F(CompactSchemaTest, test_with_no_fields)
     ASSERT_EQ(no_fields_schema.number_of_var_size_fields(), 0);
 }
 
+TEST_F(CompactSchemaTest, schema_service_get_non_existing_schema)
+{
+    spi::ClientContext ctx{ client };
+
+    serialization::pimpl::default_schema_service service{ ctx };
+
+    ASSERT_EQ(service.get(1000), nullptr);
+}
+
+TEST_F(CompactSchemaTest, schema_equality)
+{
+    auto x = get_schema<sample_compact_type>();
+    auto y = get_schema<sample_compact_type>();
+
+    ASSERT_EQ(x, y);
+}
+
+TEST_F(CompactSchemaTest, schema_inequality)
+{
+    auto x = get_schema<sample_compact_type>();
+    auto y = get_schema<nested_type>();
+
+    ASSERT_NE(x, y);
+}
+
 } // namespace compact
 } // namespace test
 } // namespace client
