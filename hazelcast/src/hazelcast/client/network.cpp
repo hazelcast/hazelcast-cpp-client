@@ -733,7 +733,9 @@ ClientConnectionManagerImpl::initialize_client_on_cluster(
                             (boost::format("Cannot set client state to %1%"
                                            " because current cluster id: %2%"
                                            " is different than expected cluster"
-                                           " id: %3%"))
+                                           " id: %3%") %
+                             client_state::INITIALIZED_ON_CLUSTER %
+                             cluster_id_ % target_cluster_id)
                               .str());
             }
         }
