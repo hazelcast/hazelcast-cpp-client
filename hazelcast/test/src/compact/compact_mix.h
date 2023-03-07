@@ -1,34 +1,51 @@
-/*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #pragma once
 
+#include <memory>
 #include <sstream>
 
 #include <gtest/gtest.h>
+
+#include "hazelcast/client/hazelcast_client.h"
+#include "../remote_controller_client.h"
+#include "../TestHelperFunctions.h"
+
+#include "compact_test_base.h"
+#include "serialization/a_type.h"
 
 namespace hazelcast {
 namespace client {
 namespace test {
 namespace compact {
 
-class CompactFieldKind : public testing::Test
+class CompactMix : public compact_test_base
 {};
 
-TEST_F(CompactFieldKind, field_kind_output)
+TEST_F(CompactMix, schema_service_get_non_existing_schema)
+{
+    spi::ClientContext ctx{ client };
+
+    serialization::pimpl::default_schema_service service{ ctx };
+
+    ASSERT_THROW(service.get(1000), exception::illegal_state);
+}
+
+TEST_F(CompactMix, schema_equality)
+{
+    auto x = get_schema<a_type>();
+    auto y = get_schema<a_type>();
+
+    ASSERT_EQ(x, y);
+}
+
+TEST_F(CompactMix, schema_inequality)
+{
+    auto x = get_schema<a_type>();
+    auto y = get_schema<nested_type>();
+
+    ASSERT_NE(x, y);
+}
+
+TEST_F(CompactMix, field_kind_output)
 {
     using field_kind = serialization::field_kind;
     auto to_string = [](field_kind kind) {
@@ -39,7 +56,6 @@ TEST_F(CompactFieldKind, field_kind_output)
         return os.str();
     };
 
-    EXPECT_EQ(to_string(field_kind::NOT_AVAILABLE), "NOT_AVAILABLE");
     EXPECT_EQ(to_string(field_kind::BOOLEAN), "BOOLEAN");
     EXPECT_EQ(to_string(field_kind::ARRAY_OF_BOOLEAN), "ARRAY_OF_BOOLEAN");
     EXPECT_EQ(to_string(field_kind::INT8), "INT8");
