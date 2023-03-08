@@ -320,7 +320,7 @@ For example, if you want to build the static library with SSL support, you can u
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
 ```
 
-Note that, if you want to use the `hazelcast-cpp-client` library with `-DWITH_OPENSSL=ON` option without `find_package()` then you need to define `HZ_BUILD_WITH_SSL` symbolic constant before including any `hazelcast-cpp-client` header. Those symbolic constants can be defined via compiler options or can be passed directly through cmake as `-DVARIABLE=VALUE` pairs.
+Note that, if you want to use the `hazelcast-cpp-client` library with `-DWITH_OPENSSL=ON` option without `find_package()` then you need to define `HZ_BUILD_WITH_SSL` symbolic constant before including any `hazelcast-cpp-client` header. This symbolic constant can be defined via compiler options or can be passed directly through cmake command as `-DVARIABLE=VALUE` pairs.
 
 For example:
 ```sh
