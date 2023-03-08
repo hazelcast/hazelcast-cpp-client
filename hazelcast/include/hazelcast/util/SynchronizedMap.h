@@ -19,7 +19,6 @@
 #include <unordered_map>
 #include <vector>
 #include <memory>
-#include <iostream>
 
 #include "hazelcast/util/export.h"
 #include <mutex>

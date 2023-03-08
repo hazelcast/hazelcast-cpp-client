@@ -16,7 +16,7 @@
 #pragma once
 
 #include <memory>
-#include <ostream>
+#include <iosfwd>
 #include <stdint.h>
 #include <atomic>
 #include <unordered_map>
