@@ -17,7 +17,7 @@
 #pragma once
 
 #include <string>
-#include <ostream>
+#include <iosfwd>
 
 #include "hazelcast/util/export.h"
 

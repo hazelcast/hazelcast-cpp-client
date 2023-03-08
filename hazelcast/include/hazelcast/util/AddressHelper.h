@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <ostream>
+#include <iosfwd>
 #include <vector>
 
 #include "hazelcast/client/address.h"
