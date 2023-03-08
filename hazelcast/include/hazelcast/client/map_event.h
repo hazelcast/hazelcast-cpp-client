@@ -20,7 +20,7 @@
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/entry_event.h"
 #include <string>
-#include <ostream>
+#include <iosfwd>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

@@ -19,7 +19,7 @@
 
 #include <unordered_map>
 #include <string>
-#include <ostream>
+#include <iosfwd>
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/pimpl/compact/field_descriptor.h"

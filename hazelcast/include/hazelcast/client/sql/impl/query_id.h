@@ -17,7 +17,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <ostream>
+#include <iosfwd>
 
 #include "hazelcast/util/export.h"
 
