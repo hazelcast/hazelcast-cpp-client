@@ -117,7 +117,6 @@ struct HAZELCAST_API
       const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& lhs,
       const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& rhs)
       const noexcept;
-    ;
 };
 
 template<>
