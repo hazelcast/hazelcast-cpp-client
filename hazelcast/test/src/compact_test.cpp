@@ -27,3 +27,4 @@
 #include "compact/compact_generic_record_builder_test.h"
 #include "compact/compact_generic_record_test.h"
 #include "compact/compact_generic_record_integration_test.h"
+#include "compact/compact_generic_record_array_overloads.h"
