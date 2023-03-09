@@ -34,6 +34,9 @@
 namespace hazelcast {
 namespace client {
 namespace serialization {
+namespace pimpl {
+class compact_stream_serializer;
+}
 namespace generic_record {
 
 /**
@@ -1191,6 +1194,7 @@ private:
     };
 
     friend class generic_record;
+    friend class pimpl::compact_stream_serializer;
     generic_record_builder(
       pimpl::schema); // DeserializedSchemaBoundGenericRecordBuilder
     generic_record_builder(

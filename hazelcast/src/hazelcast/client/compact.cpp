@@ -88,10 +88,10 @@ generic_record_builder::generic_record_builder(std::string type_name)
 {
 }
 
-generic_record_builder::generic_record_builder(pimpl::schema boundary)
+generic_record_builder::generic_record_builder(pimpl::schema record_schema)
   : strategy_{ strategy::schema_bounded }
   , already_built_{ false }
-  , writer_or_schema_{ std::move(boundary) }
+  , writer_or_schema_{ std::move(record_schema) }
 {
 }
 
@@ -3660,7 +3660,7 @@ compact_stream_serializer::read_generic_record(object_data_input& in)
     auto sch = schema_service.get(schema_id);
 
     compact::compact_reader reader = create_compact_reader(*this, in, *sch);
-    generic_record::generic_record_builder builder{ sch->type_name() };
+    generic_record::generic_record_builder builder{ *sch };
 
     for (const std::pair<const std::string, field_descriptor>& p : sch->fields()) {
         const std::string& field_name = p.first;
