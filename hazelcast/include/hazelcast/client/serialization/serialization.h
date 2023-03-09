@@ -1377,7 +1377,7 @@ public:
         std::shared_ptr<ClassDefinition> nestedClassDef =
           create_nested_class_def(*portable);
         builder_.add_portable_field(field_name, nestedClassDef);
-    };
+    }
 
     template<typename T>
     void write_portable_array(const std::string& field_name,
@@ -1392,7 +1392,7 @@ public:
         std::shared_ptr<ClassDefinition> nestedClassDef =
           create_nested_class_def((*portables)[0]);
         builder_.add_portable_array_field(field_name, nestedClassDef);
-    };
+    }
 
     std::shared_ptr<ClassDefinition> register_and_get();
 

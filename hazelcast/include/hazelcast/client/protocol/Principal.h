@@ -17,7 +17,7 @@
 
 #include <string>
 #include <memory>
-#include <ostream>
+#include <iosfwd>
 
 #include "hazelcast/util/export.h"
 
