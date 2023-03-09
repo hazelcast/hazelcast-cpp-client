@@ -16,7 +16,7 @@
 #pragma once
 
 #include <string>
-#include <ostream>
+#include <iosfwd>
 
 #include "hazelcast/client/config/eviction_policy.h"
 #include "eviction_strategy_type.h"

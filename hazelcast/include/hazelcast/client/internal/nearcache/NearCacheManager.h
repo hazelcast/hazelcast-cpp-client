@@ -60,7 +60,7 @@ public:
     {
         return std::static_pointer_cast<NearCache<KS, V>>(
           near_cache_map_.get(name));
-    };
+    }
 
     /**
      * Creates a new {@link NearCache} with given configurations or returns
