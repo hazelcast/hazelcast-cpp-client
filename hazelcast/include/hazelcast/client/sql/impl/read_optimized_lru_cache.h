@@ -96,57 +96,9 @@ public:
     }
 
     void remove(const K& key) { cache_.remove(key); }
+    
 
-private:
-    void do_cleanup()
-    {
-        // if no thread is cleaning up, we'll do it
-        if (!cleanup_lock_.try_lock()) {
-            return;
-        }
-
-        try {
-            auto entries_to_remove = cache_.size() - capacity_;
-            if (entries_to_remove <= 0) {
-                // this can happen if the cache is concurrently modified
-                return;
-            }
-            std::priority_queue<int64_t,
-                                std::vector<int64_t>,
-                                std::greater<int64_t>>
-              oldest_timestamps;
-
-            // 1st pass
-            const auto values = cache_.values();
-            for (const auto& value_and_timestamp : values) {
-                oldest_timestamps.push(value_and_timestamp->timestamp_);
-                if (oldest_timestamps.size() > entries_to_remove) {
-                    oldest_timestamps.pop();
-                }
-            }
-
-            // find out the highest value in the queue - the value, below which
-            // entries will be removed
-            if (oldest_timestamps.empty()) {
-                // this can happen if the cache is concurrently modified
-                return;
-            }
-            int64_t remove_threshold = oldest_timestamps.top();
-            oldest_timestamps.pop();
-
-            // 2nd pass
-            cache_.remove_values_if(
-              [remove_threshold](const value_and_timestamp<V>& v) -> bool {
-                  return (v.timestamp_ <= remove_threshold);
-                  return true;
-              });
-
-            cleanup_lock_.release();
-        } catch (std::exception& e) {
-            throw;
-        }
-    }
-
+protected:
     class custom_atomic_lock
     {
     public:
@@ -189,6 +141,56 @@ private:
     };
 
     util::SynchronizedMap<K, value_and_timestamp<V>> cache_;
+
+private:
+    void do_cleanup()
+    {
+        // if no thread is cleaning up, we'll do it
+        if (!cleanup_lock_.try_lock()) {
+            return;
+        }
+
+        try {
+            auto entries_to_remove = cache_.size() - capacity_;
+            if (entries_to_remove <= 0) {
+                // this can happen if the cache is concurrently modified
+                return;
+            }
+
+            /*max heap*/
+            std::priority_queue<int64_t>
+              oldest_timestamps;
+
+            // 1st pass
+            const auto values = cache_.values();
+            for (const auto& value_and_timestamp : values) {
+                oldest_timestamps.push(value_and_timestamp->timestamp_);
+                if (oldest_timestamps.size() > entries_to_remove) {
+                    oldest_timestamps.pop();
+                }
+            }
+
+            // find out the highest value in the queue - the value, below which
+            // entries will be removed
+            if (oldest_timestamps.empty()) {
+                // this can happen if the cache is concurrently modified
+                return;
+            }
+            int64_t remove_threshold = oldest_timestamps.top();
+            oldest_timestamps.pop();
+
+            // 2nd pass
+            cache_.remove_values_if(
+              [remove_threshold](const value_and_timestamp<V>& v) -> bool {
+                  return (v.timestamp_ <= remove_threshold);                  
+              });
+
+            cleanup_lock_.release();
+        } catch (std::exception& e) {
+            throw;
+        }
+    }
+    
     custom_atomic_lock cleanup_lock_;
     int32_t capacity_;
     int32_t cleanup_threshold_;
