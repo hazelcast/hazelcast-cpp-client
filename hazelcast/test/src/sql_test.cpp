@@ -10,6 +10,7 @@
 #include <hazelcast/client/sql/sql_statement.h>
 #include <hazelcast/client/sql/hazelcast_sql_exception.h>
 #include <hazelcast/client/sql/impl/sql_error_code.h>
+#include <hazelcast/client/sql/impl/read_optimized_lru_cache.h>
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
@@ -1633,6 +1634,100 @@ TEST_F(sql_encode_test, close)
 
     ASSERT_EQ(actual_bytes.size(), expected_bytes.size());
     EXPECT_EQ(expected_bytes, actual_bytes);
+}
+
+
+template<typename K, typename V>
+class read_optimized_lru_cache_for_testing : public sql::impl::read_optimized_lru_cache<K,V>{
+ 
+     public:
+         read_optimized_lru_cache_for_testing(int32_t capacity,
+                                              int32_t cleanup_threshold):sql::impl::read_optimized_lru_cache<K,V>(capacity, cleanup_threshold){
+
+         }
+
+        int32_t get_cache_size(){
+            return this->cache_.size();
+        }
+
+        V get_cache_value(K k){
+            return this->cache_.get(k)->value_;
+        }
+};
+
+class read_optimized_lru_cache_test : public ::testing::Test{
+
+    public:
+        read_optimized_lru_cache_for_testing<int32_t, int32_t> lru;
+        read_optimized_lru_cache_test():lru(2,3){}
+};
+
+TEST_F(read_optimized_lru_cache_test, put_and_get_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    lru.put(1, std::make_shared<int32_t>(10));
+    EXPECT_EQ(1, lru.get_cache_size());
+    EXPECT_EQ(10, lru.get_cache_value(1));
+}
+
+TEST_F(read_optimized_lru_cache_test, get_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    EXPECT_EQ(nullptr, lru.get(1));
+    lru.put(1, std::make_shared<int32_t>(10));
+    EXPECT_EQ(10, *(lru.get(1)));    
+}
+
+TEST_F(read_optimized_lru_cache_test, put_nullptr_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    ASSERT_THROW( lru.put(1, nullptr),client::exception::illegal_argument );
+}
+
+TEST_F(read_optimized_lru_cache_test, get_or_default_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    EXPECT_EQ(2, *(lru.get_or_default(1, std::make_shared<int32_t>(2))) );
+
+    lru.put(3, std::make_shared<int32_t>(10));
+
+    EXPECT_EQ(10, *(lru.get_or_default(3, std::make_shared<int32_t>(2))) );
+}
+
+TEST_F(read_optimized_lru_cache_test, put_and_remove_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    lru.put(1, std::make_shared<int32_t>(10));
+    EXPECT_EQ(1, lru.get_cache_size());
+    lru.remove(1);
+    EXPECT_EQ(0, lru.get_cache_size());
+}
+
+TEST_F(read_optimized_lru_cache_test, eviction_test)
+{    
+    lru.put(42, std::make_shared<int32_t>(42));
+    // a little sleep to ensure the lastUsed timestamps are different even on a very imprecise clock
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(43, std::make_shared<int32_t>(43));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(44, std::make_shared<int32_t>(44));
+    EXPECT_EQ(3, lru.get_cache_size());
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(45, std::make_shared<int32_t>(45));
+    EXPECT_EQ(2, lru.get_cache_size() );    
+    EXPECT_EQ(44, lru.get_cache_value(44));
+    EXPECT_EQ(45, lru.get_cache_value(45));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(46, std::make_shared<int32_t>(46));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.get(44); // access makes the value the least recently used one
+
+    lru.put(47, std::make_shared<int32_t>(47));
+    EXPECT_EQ(2, lru.get_cache_size());
+    EXPECT_EQ(44, lru.get_cache_value(44));
+    EXPECT_EQ(47, lru.get_cache_value(47));
 }
 
 class sql_partition_aware_test : public ::testing::Test
