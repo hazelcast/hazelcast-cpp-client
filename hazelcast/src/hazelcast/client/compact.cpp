@@ -88,7 +88,7 @@ generic_record_builder::generic_record_builder(std::string type_name)
 {
 }
 
-generic_record_builder::generic_record_builder(pimpl::schema record_schema)
+generic_record_builder::generic_record_builder(std::shared_ptr<pimpl::schema> record_schema)
   : strategy_{ strategy::schema_bounded }
   , already_built_{ false }
   , writer_or_schema_{ std::move(record_schema) }
@@ -96,7 +96,7 @@ generic_record_builder::generic_record_builder(pimpl::schema record_schema)
 }
 
 generic_record_builder::generic_record_builder(
-  pimpl::schema boundary,
+  std::shared_ptr<pimpl::schema> boundary,
   std::unordered_map<std::string, boost::any> objects)
   : strategy_{ strategy::cloner }
   , already_built_{ false }
@@ -134,12 +134,12 @@ generic_record_builder::build()
           boost::get<pimpl::schema_writer>(writer_or_schema_);
 
         already_built_ = true;
-        return generic_record{ std::move(writer).build(), std::move(objects_) };
+        return generic_record{ std::make_shared<pimpl::schema>(std::move(writer).build()), std::move(objects_) };
     } else {
-        pimpl::schema& schema = boost::get<pimpl::schema>(writer_or_schema_);
+        std::shared_ptr<pimpl::schema> schema = boost::get<std::shared_ptr<pimpl::schema>>(writer_or_schema_);
 
         if (strategy_ == strategy::schema_bounded) {
-            const auto& fields = schema.fields();
+            const auto& fields = schema->fields();
 
             for (const auto& p : fields) {
                 const std::string& field_name = p.first;
@@ -153,7 +153,7 @@ generic_record_builder::build()
         }
 
         already_built_ = true;
-        return generic_record{ std::move(schema), std::move(objects_) };
+        return generic_record{ move(schema), std::move(objects_) };
     }
 }
 
@@ -617,7 +617,7 @@ generic_record_builder::set_array_of_generic_record(
 }
 
 generic_record::generic_record(
-  pimpl::schema s,
+  std::shared_ptr<pimpl::schema> s,
   std::unordered_map<std::string, boost::any> objects)
   : schema_{ std::move(s) }
   , objects_{ std::move(objects) }
@@ -627,7 +627,7 @@ generic_record::generic_record(
 const pimpl::schema&
 generic_record::get_schema() const
 {
-    return schema_;
+    return *schema_;
 }
 
 generic_record_builder
@@ -647,7 +647,7 @@ generic_record::get_field_names() const
 {
     std::unordered_set<std::string> field_names;
 
-    const auto& fields = schema_.fields();
+    const auto& fields = schema_->fields();
 
     transform(begin(fields),
               end(fields),
@@ -662,7 +662,7 @@ generic_record::get_field_names() const
 field_kind
 generic_record::get_field_kind(const std::string& field_name) const
 {
-    auto descriptor = schema_.get_field(field_name);
+    auto descriptor = schema_->get_field(field_name);
 
     if (!descriptor) {
         return field_kind::NOT_AVAILABLE;
@@ -3659,8 +3659,18 @@ compact_stream_serializer::read_generic_record(object_data_input& in)
 
     auto sch = schema_service.get(schema_id);
 
+    if (!sch) {
+        throw exception::hazelcast_serialization{
+            "compact_stream_serializer::read_generic_record",
+            boost::str(
+              boost::format(
+                "The schema can not be found with id %1%") %
+              schema_id)
+        };
+    }
+
     compact::compact_reader reader = create_compact_reader(*this, in, *sch);
-    generic_record::generic_record_builder builder{ *sch };
+    generic_record::generic_record_builder builder{ sch };
 
     for (const std::pair<const std::string, field_descriptor>& p : sch->fields()) {
         const std::string& field_name = p.first;

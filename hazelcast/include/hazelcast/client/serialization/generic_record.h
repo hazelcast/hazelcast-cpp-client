@@ -39,7 +39,7 @@ namespace pimpl {
 class compact_stream_serializer;
 }
 namespace generic_record {
-struct generic_record_builder;
+class generic_record_builder;
 
 /**
  * A generic object interface that is returned to the user when the domain class
@@ -1034,7 +1034,7 @@ private:
     friend bool HAZELCAST_API operator!=(const generic_record&,
                                          const generic_record&);
 
-    generic_record(pimpl::schema, std::unordered_map<std::string, boost::any>);
+    generic_record(std::shared_ptr<pimpl::schema>, std::unordered_map<std::string, boost::any>);
 
     const pimpl::schema& get_schema() const;
     friend boost::property_tree::ptree write_generic_record(
@@ -1045,7 +1045,7 @@ private:
     {
         field_kind kinds[] = { kinds_ts... };
         boost::optional<pimpl::field_descriptor> desc =
-          schema_.get_field(field_name);
+          schema_->get_field(field_name);
 
         if (!desc) {
             BOOST_THROW_EXCEPTION(exception::hazelcast_serialization{
@@ -1270,7 +1270,7 @@ private:
             field_name, primitive, nullable, method_suffix));
     }
 
-    pimpl::schema schema_;
+    std::shared_ptr<pimpl::schema> schema_;
     std::unordered_map<std::string, boost::any> objects_;
 
     /**

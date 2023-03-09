@@ -1196,9 +1196,9 @@ private:
     friend class generic_record;
     friend class pimpl::compact_stream_serializer;
     generic_record_builder(
-      pimpl::schema); // DeserializedSchemaBoundGenericRecordBuilder
+      std::shared_ptr<pimpl::schema>); // DeserializedSchemaBoundGenericRecordBuilder
     generic_record_builder(
-      pimpl::schema,
+      std::shared_ptr<pimpl::schema>,
       std::unordered_map<std::string,
                          boost::any>); // DeserializedGenericRecordCloner
 
@@ -1216,8 +1216,8 @@ private:
 
         if (strategy_ == strategy::cloner ||
             strategy_ == strategy::schema_bounded) {
-            const pimpl::schema& schema =
-              boost::get<pimpl::schema>(writer_or_schema_);
+            const auto& schema =
+              *boost::get<std::shared_ptr<pimpl::schema>>(writer_or_schema_);
 
             check_type_with_schema(schema, field_name, kind);
         }
@@ -1261,7 +1261,7 @@ private:
     bool already_built_;
     std::unordered_set<std::string> overwritten_fields_;
     std::unordered_map<std::string, boost::any> objects_;
-    boost::variant<pimpl::schema_writer, pimpl::schema> writer_or_schema_;
+    boost::variant<pimpl::schema_writer, std::shared_ptr<pimpl::schema>> writer_or_schema_;
 };
 
 } // namespace generic_record
