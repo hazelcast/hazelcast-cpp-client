@@ -15,16 +15,15 @@
  */
 #pragma once
 
-#include <boost/heap/priority_queue.hpp>
+#include <queue>
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/export.h"
-
 
 namespace hazelcast {
 namespace client {
 namespace sql {
 namespace impl {
- 
+
 /**
  * Implementation of an LRU cache optimized for read-heavy use cases.
  * <p>
@@ -40,81 +39,94 @@ namespace impl {
  * size of the cache. This is done to optimize the happy path when the keys fit
  * into the cache.
  */
-template<typename K, typename V>    
+template<typename K, typename V>
 class HAZELCAST_API read_optimized_lru_cache
-{    
-    public:
-
+{
+public:
     /**
      * @param cleanup_threshold The size at which the cache will clean up oldest
-     *     entries in batch. `cleanup_threshold - capacity` entries will be removed.
+     *     entries in batch. `cleanup_threshold - capacity` entries will be
+     * removed.
      */
-    explicit read_optimized_lru_cache(int32_t capacity, int32_t cleanup_threshold) {
-        if (capacity <= 0) {            
-            BOOST_THROW_EXCEPTION( client::exception::illegal_argument("capacity <= 0"))
+    explicit read_optimized_lru_cache(int32_t capacity,
+                                      int32_t cleanup_threshold)
+    {
+        if (capacity <= 0) {
+            BOOST_THROW_EXCEPTION(
+              client::exception::illegal_argument("capacity <= 0"));
         }
         if (cleanup_threshold <= capacity) {
-            BOOST_THROW_EXCEPTION( client::exception::illegal_argument("cleanupThreshold <= capacity") )            
+            BOOST_THROW_EXCEPTION(client::exception::illegal_argument(
+              "cleanupThreshold <= capacity"));
         }
 
         capacity_ = capacity;
         cleanup_threshold_ = cleanup_threshold;
     }
 
-    std::shared_ptr<V> get_or_default(K key, V default_value) {
-        auto existing_value = get(key);
-        return existing_value != nullptr ? existing_value : default_value;
+    std::shared_ptr<V> get_or_default(const K& key,
+                                      const std::shared_ptr<V>& default_value)
+    {
+        const auto existing_value = get(key);
+        return (existing_value != nullptr) ? existing_value : default_value;
     }
 
-    std::shared_ptr<V> get(K key) {
-        auto value_from_cache = cache.get(key);
+    std::shared_ptr<V> get(const K& key)
+    {
+        auto value_from_cache = cache_.get(key);
         if (value_from_cache == nullptr) {
             return nullptr;
         }
         value_from_cache->touch();
-        return value_from_cache->value;
+        return std::make_shared<int32_t>(value_from_cache->value_);
     }
 
-    void put(K key, std::shared_ptr<V> value) {
+    void put(const K& key, const std::shared_ptr<V>& value)
+    {
         if (value == nullptr) {
-            BOOST_THROW_EXCEPTION(client::exception::illegal_argument("Null values are disallowed"));            
+            BOOST_THROW_EXCEPTION(client::exception::illegal_argument(
+              "Null values are disallowed"));
         }
 
-        auto old_value = cache.put(key, make_shared<V>(ValueAndTimestamp(value)));
-        if (old_value == nullptr && cache.size() > cleanup_threshold_) {
+        auto old_value =
+          cache_.put(key, std::make_shared<value_and_timestamp<V>>(*value));
+        if (old_value == nullptr && cache_.size() > cleanup_threshold_) {
             do_cleanup();
         }
     }
 
-    void remove(K key) {
-        cache.remove(key);
-    }
+    void remove(const K& key) { cache_.remove(key); }
 
 private:
-    void do_cleanup() {
+    void do_cleanup()
+    {
         // if no thread is cleaning up, we'll do it
-        if (!cleanup_lock_.compare_and_set(false, true)) {
+        if (!cleanup_lock_.try_lock()) {
             return;
         }
 
         try {
-            int entries_to_remove = cache.size() - capacity;
+            auto entries_to_remove = cache_.size() - capacity_;
             if (entries_to_remove <= 0) {
                 // this can happen if the cache is concurrently modified
                 return;
             }
-            std::priority_queue<int64_t, std::vector<int64_t>, std::greater<int64_t>> oldest_timestamps;                    
+            std::priority_queue<int64_t,
+                                std::vector<int64_t>,
+                                std::greater<int64_t>>
+              oldest_timestamps;
 
             // 1st pass
-            auto values = cache.values();
-            for (ValueAndTimestamp<V> valueAndTimestamp : values) {
-                oldest_timestamps.push(valueAndTimestamp.timestamp);
-                if (oldest_timestamps.size() > entriesToRemove) {
+            const auto values = cache_.values();
+            for (const auto& value_and_timestamp : values) {
+                oldest_timestamps.push(value_and_timestamp->timestamp_);
+                if (oldest_timestamps.size() > entries_to_remove) {
                     oldest_timestamps.pop();
                 }
             }
 
-            // find out the highest value in the queue - the value, below which entries will be removed
+            // find out the highest value in the queue - the value, below which
+            // entries will be removed
             if (oldest_timestamps.empty()) {
                 // this can happen if the cache is concurrently modified
                 return;
@@ -123,34 +135,61 @@ private:
             oldest_timestamps.pop();
 
             // 2nd pass
-            cache.values().removeIf(v -> v.timestamp <= remove_threshold);
-        } finally {
-            cleanupLock.set(false);
+            cache_.remove_values_if(                
+              [remove_threshold](const value_and_timestamp<V>& v) -> bool{                
+                  return (v.timestamp_ <= remove_threshold);
+                  return true;
+              });
+
+            cleanup_lock_.release();
+        } catch (std::exception& e) {
+            throw;
         }
     }
 
-    SynchronizedMap<K, ValueAndTimestamp<V>> cache_;
-    std::atomic<bool> cleanup_lock_;
-    int32_t capacity_;
-    int32_t cleanup_threshold_;    
+    class custom_atomic_lock
+    {
+    public:
+        explicit custom_atomic_lock(bool initial_value = false)
+          : lock_(initial_value)
+        {
+        }
 
-    // package-visible for tests
-    static class ValueAndTimestamp<V> {
-        private static final AtomicLongFieldUpdater<ValueAndTimestamp> TIMESTAMP_UPDATER =
-                AtomicLongFieldUpdater.newUpdater(ValueAndTimestamp.class, "timestamp");
+        custom_atomic_lock(const custom_atomic_lock&) = delete;
+        const custom_atomic_lock& operator=(const custom_atomic_lock&) = delete;
 
-        final V value;
-        volatile long timestamp;
+        bool try_lock() { 
+            bool expected = false;
+            return lock_.compare_exchange_strong(expected, true); }
 
-        ValueAndTimestamp(V value) {
-            this.value = value;
+        void release() { lock_.store(false); }
+
+        ~custom_atomic_lock() { release(); }
+
+    private:
+        std::atomic<bool> lock_;
+    };
+
+    template<typename T>
+    class value_and_timestamp
+    {
+        public:
+        const T value_;
+        int64_t timestamp_;
+
+        value_and_timestamp(T value)
+          : value_(value)
+        {
             touch();
         }
 
-        public void touch() {
-            TIMESTAMP_UPDATER.lazySet(this, System.nanoTime());
-        }
-    }
+        void touch() { timestamp_ = util::current_time_nanos(); }
+    };
+
+    util::SynchronizedMap<K, value_and_timestamp<V>> cache_;
+    custom_atomic_lock cleanup_lock_;
+    int32_t capacity_;
+    int32_t cleanup_threshold_;
 };
 
 } // namespace impl

@@ -1072,7 +1072,6 @@ client_properties::client_properties(
                                  FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT)
   , cloud_base_url_(CLOUD_URL_BASE, CLOUD_URL_BASE_DEFAULT)
   , partition_arg_cache_size_(PARTITION_ARGUMENT_CACHE_SIZE,PARTITION_ARGUMENT_CACHE_SIZE_DEFAULT)
-  , partition_arg_cache_threshold_(PARTITION_ARGUMENT_CACHE_THRESHOLD,PARTITION_ARGUMENT_CACHE_THRESHOLD_DEFAULT)
   , properties_map_(properties)
 {}
 
@@ -1199,6 +1198,12 @@ const client_property&
 client_properties::cloud_base_url() const
 {
     return cloud_base_url_;
+}
+
+const client_property&
+client_properties::partition_arg_cache_size() const
+{
+    return partition_arg_cache_size_;
 }
 
 namespace exception {

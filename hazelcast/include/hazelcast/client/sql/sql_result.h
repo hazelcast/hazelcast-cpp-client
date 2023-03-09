@@ -154,12 +154,12 @@ public:
     page_iterator iterator();
 
     /**
-     * Returns partition argument index
-     *     
-     *
-     * @return the partition argument index of sql result
-     *
-     */
+     * Returns index of the query parameter that should be used as a partition
+     * key to determine the coordinator for future executions of the same query,
+     * or -1 if there's no such parameter.
+     * 
+     *  @return the partition argument index of sql result
+     */    
     int32_t get_partition_argument_index() {
         return partition_argument_index_;
     }    
@@ -173,8 +173,7 @@ private:
     impl::query_id query_id_;
     int64_t update_count_;
     std::shared_ptr<sql_row_metadata> row_metadata_;
-    std::shared_ptr<sql_page> first_page_;
-    int32_t partition_argument_index_;
+    std::shared_ptr<sql_page> first_page_;    
 
     bool iterator_requested_;
 
@@ -184,6 +183,8 @@ private:
     std::mutex mtx_;
 
     int32_t cursor_buffer_size_;
+
+    int32_t partition_argument_index_;
 
     /**
      * This is a PRIVATE API. Do NOT use it.
@@ -196,6 +197,7 @@ private:
      * @param row_metadata The row metadata of the sql result
      * @param first_page The first page of the sql result
      * @param cursor_buffer_size The cursor buffer size of the sql result
+     * @param partition_argument_index The partition argument index of the sql result
      */
     sql_result(
       spi::ClientContext* client_context,
