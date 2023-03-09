@@ -4,57 +4,33 @@ on:
   push:
     branches:
       - master
-  pull_request_target:
-    branches:
-      - master
 
 jobs:
-  check_for_membership:
+  coverage:
     runs-on: ubuntu-20.04
-    name: Check membership of given user  
-    outputs:
-      check-result: ${{ steps.composite.outputs.check-result }}
-    steps: 
-      - name: Action for membership check
-        id: composite
-        uses: hazelcast/hazelcast-tpm/membership@main
-        with:
-          organization-name: 'hazelcast'
-          member-name: ${{ github.event.pull_request.head.repo.owner.login }}
-          token: ${{ secrets.PAT }}
 
-  run-tests:
-    runs-on: ubuntu-20.04
-    needs: [check_for_membership]
-    if: github.event_name == 'push' || needs.check_for_membership.outputs.check-result == 'true' || github.event_name == 'workflow_dispatch'
     name: Create and upload coverage
     steps:
-      - name: Checkout code for PR
-        if: github.event_name == 'pull_request_target'
+      - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: refs/pull/${{ github.event.pull_request.number }}/merge
-          
-      - name: Checkout repository for push event
-        if: github.event_name == 'push'
-        uses: actions/checkout@v2
-              
-      - name: Checkout PR coming from community.
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/checkout@v2
-        with:
-          ref: refs/pull/${{ github.event.inputs.pr_number }}/merge
 
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb gcovr
+          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl
+
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh 1.78.0
+
       - name: Install Thrift
         run: |
           sudo ./scripts/install-thrift.sh 0.13.0
+
       - name: Build
         env:
           BUILD_DIR: build
@@ -66,6 +42,7 @@ jobs:
               -DWITH_OPENSSL=ON                                            \
               -DBUILD_TESTS=ON                                             \
               -DBUILD_EXAMPLES=OFF
+
       - name: Test
         env:
           BUILD_DIR: build
@@ -78,6 +55,7 @@ jobs:
           sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
           sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
           ./scripts/test-unix.sh
+
       - name: Collect coverage info
         run: |
           # collect and list coverage info
@@ -86,6 +64,7 @@ jobs:
           lcov --list coverage.info
           # generate HTML views
           genhtml coverage.info --output-directory=coverage-html-reports
+
       - name: Upload HTML views as artifact
         uses: actions/upload-artifact@v2
         with:
@@ -93,23 +72,8 @@ jobs:
           path: |
             coverage.info
             coverage-html-reports
-            
-      - name: Publish results to Codecov for PR coming from hazelcast organization
-        if: ${{ github.event_name == 'pull_request_target' }}
+
+      - name: Publish on Codecov
         uses: codecov/codecov-action@v2
         with:
           files: coverage.info
-          override_pr: ${{ github.event.pull_request.number }}
-          
-      - name: Publish results to Codecov for Push
-        if: ${{ github.event_name == 'push' }}
-        uses: codecov/codecov-action@v2
-        with:
-          files: coverage.info
-          
-      - name: Publish result to Codecov for PR coming from community
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        uses: codecov/codecov-action@v2
-        with:
-          files: coverage.info
-          override_pr: ${{ github.event.inputs.pr_number }}
