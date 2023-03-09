@@ -82,7 +82,7 @@ generic_record_builder::set_string(std::string field_name, const char* cstr)
 }
 
 generic_record_builder::generic_record_builder(std::string type_name)
-  : strategy_{ strategy::normal }
+  : strategy_{ strategy::default_builder }
   , already_built_{ false }
   , writer_or_schema_{ pimpl::schema_writer{ move(type_name) } }
 {
@@ -129,7 +129,7 @@ generic_record_builder::check_type_with_schema(const pimpl::schema& schema,
 generic_record
 generic_record_builder::build()
 {
-    if (strategy_ == strategy::normal) {
+    if (strategy_ == strategy::default_builder) {
         pimpl::schema_writer& writer =
           boost::get<pimpl::schema_writer>(writer_or_schema_);
 
@@ -3586,7 +3586,7 @@ field_kind_based_operations::field_kind_based_operations(
   , write_json_formatted_field(std::move(json_fn))
 {}
 
-field_kind_based_operations
+const field_kind_based_operations&
 field_operations::get(field_kind kind)
 {
     using util::Bits;

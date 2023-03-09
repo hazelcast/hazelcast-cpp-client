@@ -1441,7 +1441,7 @@ struct HAZELCAST_API field_kind_based_operations
 
 struct HAZELCAST_API field_operations
 {
-    static field_kind_based_operations get(enum field_kind field_kind);
+    static const field_kind_based_operations& get(enum field_kind field_kind);
 };
 
 /**

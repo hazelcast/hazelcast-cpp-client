@@ -36,6 +36,11 @@ namespace client {
 namespace serialization {
 namespace generic_record {
 
+/**
+ * Concrete class for creating {@link generic_record} instances.
+ * It is not thread-safe.
+ * @since 5.2
+ */
 class HAZELCAST_API generic_record_builder
 {
 public:
@@ -66,8 +71,8 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
-     *                  definition.
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -77,15 +82,15 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_boolean(std::string field, bool value);
+    generic_record_builder& set_boolean(std::string field_name, bool value);
 
     /**
      * It is legal to set the field again only when Builder is created with
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema/class
-     *                  definition.
+     * @param field_name name of the field as it is defined in its schema/class
+     * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -95,14 +100,14 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_int8(std::string field, int8_t value);
+    generic_record_builder& set_int8(std::string field_name, int8_t value);
 
     /**
      * It is legal to set the field again only when Builder is created with
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -112,14 +117,14 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_int16(std::string field, int16_t value);
+    generic_record_builder& set_int16(std::string field_name, int16_t value);
 
     /**
      * It is legal to set the field again only when Builder is created with
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -129,14 +134,14 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_int32(std::string field, int32_t value);
+    generic_record_builder& set_int32(std::string field_name, int32_t value);
 
     /**
      * It is legal to set the field again only when Builder is created with
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -147,14 +152,14 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_int64(std::string field, int64_t value);
+    generic_record_builder& set_int64(std::string field_name, int64_t value);
 
     /**
      * It is legal to set the field again only when Builder is created with
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      *                  definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -165,14 +170,14 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_float32(std::string field, float value);
+    generic_record_builder& set_float32(std::string field_name, float value);
 
     /**
      * It is legal to set the field again only when Builder is created with
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -183,14 +188,14 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_float64(std::string field, double value);
+    generic_record_builder& set_float64(std::string field_name, double value);
 
     /**
      * It is legal to set the field again only when Builder is created with
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -200,7 +205,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_nullable_boolean(std::string field,
+    generic_record_builder& set_nullable_boolean(std::string field_name,
                                                  boost::optional<bool> value);
 
     /**
@@ -208,7 +213,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -218,7 +223,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_nullable_int8(std::string field,
+    generic_record_builder& set_nullable_int8(std::string field_name,
                                               boost::optional<int8_t> value);
 
     /**
@@ -226,7 +231,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -236,7 +241,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_nullable_int16(std::string field,
+    generic_record_builder& set_nullable_int16(std::string field_name,
                                                boost::optional<int16_t> value);
 
     /**
@@ -244,7 +249,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -254,7 +259,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_nullable_int32(std::string field,
+    generic_record_builder& set_nullable_int32(std::string field_name,
                                                boost::optional<int32_t> value);
 
     /**
@@ -262,7 +267,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -272,7 +277,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_nullable_int64(std::string field,
+    generic_record_builder& set_nullable_int64(std::string field_name,
                                                boost::optional<int64_t> value);
 
     /**
@@ -280,7 +285,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -290,7 +295,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_nullable_float32(std::string field,
+    generic_record_builder& set_nullable_float32(std::string field_name,
                                                  boost::optional<float> value);
 
     /**
@@ -298,7 +303,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -308,7 +313,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_nullable_float64(std::string field,
+    generic_record_builder& set_nullable_float64(std::string field_name,
                                                  boost::optional<double> value);
 
     /**
@@ -316,7 +321,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -326,7 +331,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_string(std::string field,
+    generic_record_builder& set_string(std::string field_name,
                                        boost::optional<std::string> value);
 
     /**
@@ -334,7 +339,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema/class
+     * @param field_name name of the field as it is defined in its schema/class
      *                  definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -345,7 +350,8 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_string(std::string field, const char* cstr);
+    generic_record_builder& set_string(std::string field_name,
+                                       const char* cstr);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -353,7 +359,7 @@ public:
      * illegal to set to the same field twice. This method allows nested
      * structures. Subclass should also be created as `generic_record`.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -365,7 +371,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_generic_record(
-      std::string field,
+      std::string field_name,
       boost::optional<generic_record> value);
 
     /**
@@ -376,7 +382,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -386,7 +392,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_decimal(std::string field,
+    generic_record_builder& set_decimal(std::string field_name,
                                         boost::optional<big_decimal> value);
 
     /**
@@ -396,7 +402,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -407,7 +413,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_time(std::string field,
+    generic_record_builder& set_time(std::string field_name,
                                      boost::optional<local_time> value);
 
     /**
@@ -418,7 +424,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -429,7 +435,7 @@ public:
      *                                            {@link
      * generic_record::new_builder_with_clone()}.
      */
-    generic_record_builder& set_date(std::string field,
+    generic_record_builder& set_date(std::string field_name,
                                      boost::optional<local_date> value);
 
     /**
@@ -440,7 +446,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -452,7 +458,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_timestamp(
-      std::string field,
+      std::string field_name,
       boost::optional<local_date_time> value);
 
     /**
@@ -464,7 +470,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -476,7 +482,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_timestamp_with_timezone(
-      std::string field,
+      std::string field_name,
       boost::optional<offset_date_time> value);
 
     /**
@@ -484,7 +490,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -496,7 +502,7 @@ public:
      *                                            generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_boolean(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<bool>> value);
 
     /**
@@ -504,7 +510,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -516,7 +522,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_int8(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<int8_t>> value);
 
     /**
@@ -524,7 +530,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -536,7 +542,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_int16(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<int16_t>> value);
 
     /**
@@ -544,7 +550,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -556,7 +562,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_int32(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<int32_t>> value);
 
     /**
@@ -564,7 +570,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -576,7 +582,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_int64(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<int64_t>> value);
 
     /**
@@ -584,7 +590,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -596,7 +602,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_float32(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<float>> value);
 
     /**
@@ -604,7 +610,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -616,7 +622,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_float64(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<double>> value);
 
     /**
@@ -624,7 +630,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -635,7 +641,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_nullable_boolean(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<bool>>> value);
 
     /**
@@ -643,7 +649,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -654,7 +660,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_nullable_int8(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<int8_t>>> value);
 
     /**
@@ -662,7 +668,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -673,7 +679,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_nullable_int16(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<int16_t>>> value);
 
     /**
@@ -681,7 +687,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -692,7 +698,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_nullable_int32(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<int32_t>>> value);
 
     /**
@@ -700,7 +706,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -711,7 +717,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_nullable_int64(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<int64_t>>> value);
 
     /**
@@ -719,7 +725,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -730,7 +736,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_nullable_float32(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<float>>> value);
 
     /**
@@ -738,7 +744,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. <p> Supported only for Compact
      *
-     * @param field     name of the field as it is defined in its schema.
+     * @param field_name name of the field as it is defined in its schema.
      * @param value     to set to generic_record
      * @return itself for chaining
      * @throws exception::hazelcast_serialization if the field name does not
@@ -749,7 +755,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_nullable_float64(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<double>>> value);
 
     /**
@@ -757,7 +763,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. Array items can not be null.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -769,7 +775,7 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_string(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<std::string>>> value);
 
     /**
@@ -777,7 +783,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. Array items can not be null.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -790,7 +796,7 @@ public:
      * @see set_decimal()
      */
     generic_record_builder& set_array_of_decimal(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<big_decimal>>> value);
 
     /**
@@ -798,7 +804,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. Array items can not be null.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -811,7 +817,7 @@ public:
      * @see set_time()
      */
     generic_record_builder& set_array_of_time(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<local_time>>> value);
 
     /**
@@ -819,7 +825,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. Array items can not be null.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -832,7 +838,7 @@ public:
      * @see set_date()
      */
     generic_record_builder& set_array_of_date(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<local_date>>> value);
 
     /**
@@ -840,7 +846,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. Array items can not be null.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -853,7 +859,7 @@ public:
      * @see set_timestamp()
      */
     generic_record_builder& set_array_of_timestamp(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<local_date_time>>> value);
 
     /**
@@ -861,7 +867,7 @@ public:
      * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
      * illegal to set to the same field twice. Array items can not be null.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -874,7 +880,7 @@ public:
      * @see set_timestamp_with_timezone()
      */
     generic_record_builder& set_array_of_timestamp_with_timezone(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<offset_date_time>>> value);
 
     /**
@@ -888,7 +894,7 @@ public:
      * it is not allowed write an array containing different item
      * types or a {@link exception::hazelcast_serialization} will be thrown.
      *
-     * @param field     name of the field as it is defined in its schema
+     * @param field_name name of the field as it is defined in its schema
      * definition.
      * @param value     to set to generic_record
      * @return itself for chaining
@@ -900,13 +906,13 @@ public:
      * generic_record::new_builder_with_clone()}.
      */
     generic_record_builder& set_array_of_generic_record(
-      std::string field,
+      std::string field_name,
       boost::optional<std::vector<boost::optional<generic_record>>> value);
 
 private:
     enum class strategy
     {
-        normal,
+        default_builder,
         cloner,
         schema_bounded
     };
@@ -926,7 +932,9 @@ private:
     {
         if (already_built_) {
             BOOST_THROW_EXCEPTION(exception::hazelcast_serialization{
-              "Illegal to write after record is built." });
+              boost::str(boost::format("Illegal to write after record is "
+                                       "built. {field : %1%, kind : %2%}") %
+                         field_name % kind) });
         }
 
         if (strategy_ == strategy::cloner ||
@@ -958,7 +966,7 @@ private:
             (void)objects_.emplace(field_name, std::move(value));
         }
 
-        if (strategy_ == strategy::normal) {
+        if (strategy_ == strategy::default_builder) {
             pimpl::schema_writer& writer =
               boost::get<pimpl::schema_writer>(writer_or_schema_);
 

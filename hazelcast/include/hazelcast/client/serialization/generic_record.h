@@ -41,6 +41,21 @@ class compact_stream_serializer;
 namespace generic_record {
 struct generic_record_builder;
 
+/**
+ * A generic object interface that is returned to the user when the domain class
+ * can not be created from any of the distributed Hazelcast data structures like
+ * {@link imap}, {@link iqueue} etc.
+ *
+ * GenericRecord also allows reading from a cluster without having the classes
+ * on the client side.
+ * If `T` is specified as `generic_record`, any compact objects can be read and
+ * written objects back to the cluster without the need to have the domain
+ * classes definition on client side. <p> Currently, only compact serializable
+ * objects are supported.
+ *
+ * Multiple threads can simultaneous read from generic_record but concurrent
+ * writes are not supported.
+ */
 class HAZELCAST_API generic_record
 {
 public:
