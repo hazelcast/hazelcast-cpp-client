@@ -246,16 +246,14 @@ public:
     void remove_values_if(Comparator comp)
     {
         std::lock_guard<std::mutex> lg(map_lock_);
-        
-        for( auto iter = internal_map_.begin(); iter != internal_map_.end(); )
-        {                        
-            if( iter->second != nullptr && comp(*(iter->second) ) )
-            {
+
+        for (auto iter = internal_map_.begin(); iter != internal_map_.end();) {
+            if (iter->second != nullptr && comp(*(iter->second))) {
                 iter = internal_map_.erase(iter);
-            }else{
+            } else {
                 ++iter;
             }
-        }        
+        }
     }
 
 private:

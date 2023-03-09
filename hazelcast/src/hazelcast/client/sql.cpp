@@ -45,12 +45,14 @@ sql_service::sql_service(client::spi::ClientContext& context)
                           .get_network_config()
                           .is_smart_routing();
 
-    const auto & client_properties = client_context_.get_client_properties();
-    const int32_t partition_arg_cache_size =
-      client_properties.get_integer( client_properties.partition_arg_cache_size() );
+    const auto& client_properties = client_context_.get_client_properties();
+    const int32_t partition_arg_cache_size = client_properties.get_integer(
+      client_properties.partition_arg_cache_size());
     const int32_t partition_arg_cache_threshold =
       partition_arg_cache_size + std::min(partition_arg_cache_size / 10, 50);
-    partition_argument_index_cache_ = std::make_shared<impl::read_optimized_lru_cache<std::string, int32_t>>(partition_arg_cache_size, partition_arg_cache_threshold);
+    partition_argument_index_cache_ =
+      std::make_shared<impl::read_optimized_lru_cache<std::string, int32_t>>(
+        partition_arg_cache_size, partition_arg_cache_threshold);
 }
 
 sql::impl::query_id
@@ -68,14 +70,15 @@ sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
 
-    auto arg_index =
-      statement.partition_argument_index() != -1
-        ? statement.partition_argument_index()
-        : *(partition_argument_index_cache_->get_or_default(statement.sql(), std::make_shared<int32_t>(-1) ));
+    auto arg_index = statement.partition_argument_index() != -1
+                       ? statement.partition_argument_index()
+                       : *(partition_argument_index_cache_->get_or_default(
+                           statement.sql(), std::make_shared<int32_t>(-1)));
 
     auto partition_id = extract_partition_id(statement, arg_index);
-    std::shared_ptr<connection::Connection> query_conn = partition_id != boost::none ? query_connection(partition_id.value())
-                                           : query_connection();
+    std::shared_ptr<connection::Connection> query_conn =
+      partition_id != boost::none ? query_connection(partition_id.value())
+                                  : query_connection();
 
     sql::impl::query_id qid = create_query_id(query_conn);
 
@@ -93,7 +96,7 @@ sql_service::execute(const sql_statement& statement)
       client_context_, request, "", query_conn);
 
     auto cursor_buffer_size = statement.cursor_buffer_size();
-    
+
     auto sql_query = statement.sql();
     return invocation->invoke().then(
       boost::launch::sync,
@@ -105,7 +108,7 @@ sql_service::execute(const sql_statement& statement)
                                              arg_index,
                                              response,
                                              query_conn,
-                                             qid, 
+                                             qid,
                                              cursor_buffer_size);
           } catch (const std::exception& e) {
               rethrow(e, query_conn);
@@ -236,11 +239,12 @@ sql_service::handle_execute_response(
           std::move(response.error->message),
           std::move(response.error->suggestion)));
     } else {
-        if (is_smart_routing_ &&
-            response.partition_argument_index != original_partition_argument_index) {
+        if (is_smart_routing_ && response.partition_argument_index !=
+                                   original_partition_argument_index) {
             if (response.partition_argument_index != -1) {
                 partition_argument_index_cache_->put(
-                  sql_query, std::make_shared<int32_t>(response.partition_argument_index));
+                  sql_query,
+                  std::make_shared<int32_t>(response.partition_argument_index));
             } else {
                 partition_argument_index_cache_->remove(sql_query);
             }
@@ -256,8 +260,7 @@ sql_service::handle_execute_response(
                      std::move(response.row_metadata),
                      std::move(response.first_page),
                      cursor_buffer_size,
-                     response.partition_argument_index
-                     ));
+                     response.partition_argument_index));
 }
 
 std::shared_ptr<connection::Connection>
@@ -298,15 +301,17 @@ sql_service::query_connection(int32_t partition_id)
     std::shared_ptr<connection::Connection> connection;
     try {
         const auto node_id =
-        client_context_.get_partition_service().get_partition_owner(partition_id);
+          client_context_.get_partition_service().get_partition_owner(
+            partition_id);
 
-        if(node_id.is_nil()){
+        if (node_id.is_nil()) {
             return query_connection();
         }
 
-        connection = client_context_.get_connection_manager().get_connection(node_id);
+        connection =
+          client_context_.get_connection_manager().get_connection(node_id);
 
-        if( connection == nullptr ){
+        if (connection == nullptr) {
             return query_connection();
         }
     } catch (const std::exception& e) {
@@ -316,17 +321,19 @@ sql_service::query_connection(int32_t partition_id)
     return connection;
 }
 
-boost::optional<int32_t> sql_service::extract_partition_id(const sql_statement& statement, int32_t arg_index)
-{    
-    if(!is_smart_routing_){
+boost::optional<int32_t>
+sql_service::extract_partition_id(const sql_statement& statement,
+                                  int32_t arg_index)
+{
+    if (!is_smart_routing_) {
         return boost::none;
     }
 
-    if(statement.serialized_parameters_.size() == 0){
+    if (statement.serialized_parameters_.size() == 0) {
         return boost::none;
     }
 
-    if( arg_index >= statement.serialized_parameters_.size() || arg_index < 0 ){
+    if (arg_index >= statement.serialized_parameters_.size() || arg_index < 0) {
         return boost::none;
     }
 

@@ -133,7 +133,8 @@ private:
     friend sql_result;
 
     client::spi::ClientContext& client_context_;
-    std::shared_ptr<impl::read_optimized_lru_cache<std::string, int32_t>> partition_argument_index_cache_;
+    std::shared_ptr<impl::read_optimized_lru_cache<std::string, int32_t>>
+      partition_argument_index_cache_;
     bool is_smart_routing_;
 
     struct sql_execute_response_parameters
@@ -157,9 +158,12 @@ private:
     explicit sql_service(client::spi::ClientContext& context);
 
     std::shared_ptr<connection::Connection> query_connection();
-    std::shared_ptr<connection::Connection> query_connection(int32_t partition_id);
+    std::shared_ptr<connection::Connection> query_connection(
+      int32_t partition_id);
 
-    boost::optional<int32_t> extract_partition_id(const sql_statement& statement, int32_t arg_index);
+    boost::optional<int32_t> extract_partition_id(
+      const sql_statement& statement,
+      int32_t arg_index);
 
     void rethrow(const std::exception& exc_ptr);
     void rethrow(const std::exception& cause_ptr,

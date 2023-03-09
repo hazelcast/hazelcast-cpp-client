@@ -209,8 +209,8 @@ public:
      * communication. Setting a value higher than the actual number of arguments
      * will have no effect.
      *
-     * @param partition_argument_index index of the partition-determining argument
-     *     of the statement
+     * @param partition_argument_index index of the partition-determining
+     * argument of the statement
      */
     sql_statement& partition_argument_index(int32_t partition_argument_index);
 

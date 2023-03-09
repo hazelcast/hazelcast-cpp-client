@@ -276,8 +276,7 @@ public:
      */
     static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE =
       "hazelcast.client.sql.partition.argument.cache.size";
-    static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE_DEFAULT =
-      "1024";      
+    static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE_DEFAULT = "1024";
 
     /**
      * Returns the configured boolean value of a {@link ClientProperty}.

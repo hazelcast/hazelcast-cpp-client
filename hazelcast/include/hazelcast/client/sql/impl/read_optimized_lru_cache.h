@@ -135,8 +135,8 @@ private:
             oldest_timestamps.pop();
 
             // 2nd pass
-            cache_.remove_values_if(                
-              [remove_threshold](const value_and_timestamp<V>& v) -> bool{                
+            cache_.remove_values_if(
+              [remove_threshold](const value_and_timestamp<V>& v) -> bool {
                   return (v.timestamp_ <= remove_threshold);
                   return true;
               });
@@ -158,9 +158,11 @@ private:
         custom_atomic_lock(const custom_atomic_lock&) = delete;
         const custom_atomic_lock& operator=(const custom_atomic_lock&) = delete;
 
-        bool try_lock() { 
+        bool try_lock()
+        {
             bool expected = false;
-            return lock_.compare_exchange_strong(expected, true); }
+            return lock_.compare_exchange_strong(expected, true);
+        }
 
         void release() { lock_.store(false); }
 
@@ -173,7 +175,7 @@ private:
     template<typename T>
     class value_and_timestamp
     {
-        public:
+    public:
         const T value_;
         int64_t timestamp_;
 
