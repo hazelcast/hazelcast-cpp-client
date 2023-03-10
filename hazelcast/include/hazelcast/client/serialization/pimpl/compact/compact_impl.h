@@ -16,6 +16,7 @@
 #pragma once
 
 #include "hazelcast/client/serialization/pimpl/compact/compact.h"
+#include "hazelcast/client/serialization/generic_record_builder.h"
 #include "hazelcast/util/finally.h"
 #include "hazelcast/util/IOUtil.h"
 #include <type_traits>
@@ -171,6 +172,14 @@ typename std::enable_if<
 compact_reader::read()
 {
     return compact_stream_serializer.template read<T>(object_data_input);
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<generic_record::generic_record, T>::value,
+                        typename boost::optional<T>>::type
+compact_reader::read()
+{
+    return compact_stream_serializer.read_generic_record(object_data_input);
 }
 
 template<typename T>
@@ -520,6 +529,14 @@ typename std::enable_if<
 default_compact_writer::write(const T& value)
 {
     compact_stream_serializer_.template write<T>(value, object_data_output_);
+}
+
+template<typename T>
+typename std::enable_if<std::is_same<generic_record::generic_record, T>::value,
+                        void>::type
+default_compact_writer::write(const T& value)
+{
+    compact_stream_serializer_.write_generic_record(value, object_data_output_);
 }
 
 template<typename T>

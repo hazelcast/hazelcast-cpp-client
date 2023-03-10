@@ -24,3 +24,7 @@
 #include "compact/compact_schema_fetch_on_read.h"
 #include "compact/compact_read_write_integration_test.h"
 #include "compact/compact_field_kind_test.h"
+#include "compact/compact_generic_record_builder_test.h"
+#include "compact/compact_generic_record_test.h"
+#include "compact/compact_generic_record_integration_test.h"
+#include "compact/compact_generic_record_array_overloads.h"

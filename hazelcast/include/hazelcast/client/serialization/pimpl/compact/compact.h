@@ -20,12 +20,14 @@
 // serialization.h not in the beginning but later to avoid cyclic dependency.
 
 #include <boost/thread/future.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <utility>
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/serialization/field_kind.h"
 #include "hazelcast/client/serialization/pimpl/compact/default_schema_service.h"
+#include "hazelcast/client/serialization/pimpl/compact/schema_writer.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -646,6 +648,11 @@ private:
     template<typename T>
     typename std::enable_if<
       std::is_base_of<compact::compact_serializer, hz_serializer<T>>::value,
+      typename boost::optional<T>>::type
+    read();
+    template<typename T>
+    typename std::enable_if<
+      std::is_same<generic_record::generic_record, T>::value,
       typename boost::optional<T>>::type
     read();
     template<typename T>
@@ -1336,6 +1343,12 @@ private:
     write(const T& value);
 
     template<typename T>
+    typename std::enable_if<
+      std::is_same<generic_record::generic_record, T>::value,
+      void>::type
+    write(const T& value);
+
+    template<typename T>
     typename std::enable_if<std::is_same<std::vector<bool>, T>::value,
                             void>::type
     write(const T& value);
@@ -1369,17 +1382,6 @@ private:
 } // namespace pimpl
 
 namespace pimpl {
-class HAZELCAST_API schema_writer
-{
-public:
-    explicit schema_writer(std::string type_name);
-    void add_field(std::string field_name, enum field_kind kind);
-    schema build() &&;
-
-private:
-    std::unordered_map<std::string, field_descriptor> field_definition_map;
-    std::string type_name;
-};
 
 class HAZELCAST_API compact_stream_serializer
 {
@@ -1389,11 +1391,16 @@ public:
     template<typename T>
     T read(object_data_input& in);
 
+    generic_record::generic_record read_generic_record(object_data_input& in);
+
     template<typename T>
     void write(const T& object, object_data_output& out);
 
     template<typename T>
     static schema build_schema(const T& object);
+
+    void write_generic_record(const generic_record::generic_record& record,
+                              object_data_output& out);
 
 private:
     default_schema_service& schema_service;
@@ -1401,21 +1408,40 @@ private:
 
 struct HAZELCAST_API field_kind_based_operations
 {
+    using kind_size_in_bytes_fn = std::function<int()>;
+    using write_field_from_record_to_writer_fn =
+      std::function<void(default_compact_writer&,
+                         const generic_record::generic_record&,
+                         const std::string&)>;
+    using read_generic_record_or_primitive_fn =
+      std::function<void(compact::compact_reader&,
+                         generic_record::generic_record_builder&,
+                         const std::string&)>;
+    using write_json_formatted_field_fn =
+      std::function<void(boost::property_tree::ptree&,
+                         const generic_record::generic_record&,
+                         const std::string&)>;
+
     static constexpr int VARIABLE_SIZE = -1;
 
     static constexpr int DEFAULT_KIND_SIZE_IN_BYTES() { return VARIABLE_SIZE; }
 
     field_kind_based_operations();
 
-    explicit field_kind_based_operations(
-      std::function<int()> kind_size_in_byte_func);
+    explicit field_kind_based_operations(kind_size_in_bytes_fn,
+                                         write_field_from_record_to_writer_fn,
+                                         read_generic_record_or_primitive_fn,
+                                         write_json_formatted_field_fn);
 
-    std::function<int()> kind_size_in_byte_func;
+    kind_size_in_bytes_fn kind_size_in_byte_func;
+    write_field_from_record_to_writer_fn write_field_from_record_to_writer;
+    read_generic_record_or_primitive_fn read_generic_record_or_primitive;
+    write_json_formatted_field_fn write_json_formatted_field;
 };
 
 struct HAZELCAST_API field_operations
 {
-    static field_kind_based_operations get(enum field_kind field_kind);
+    static const field_kind_based_operations& get(enum field_kind field_kind);
 };
 
 /**
