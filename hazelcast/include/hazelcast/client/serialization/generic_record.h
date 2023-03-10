@@ -127,6 +127,13 @@ public:
     field_kind get_field_kind(const std::string& field_name) const;
 
     /**
+     * @param fieldName the name of the field
+     * @return true if field exists in the schema/class definition. Note that
+     * returns true even if the field is null.
+     */
+    bool has_field(std::string field_name) const;
+
+    /**
      * @param field_name the name of the field
      * @return the value of the field
      * @throws exception::hazelcast_serialization if the field name does not

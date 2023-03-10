@@ -124,6 +124,15 @@ TEST_F(CompactGenericRecordTest, test_get_field_kind)
               internal_generic_record->get_field_kind("ss"));
 }
 
+TEST_F(CompactGenericRecordTest, test_has_field)
+{
+    generic_record record =
+      generic_record_builder{ "test" }.set_string("s", "s").build();
+
+    EXPECT_TRUE(record.has_field("s"));
+    EXPECT_FALSE(record.has_field("b"));
+}
+
 TEST_F(CompactGenericRecordTest,
        test_get_field_throws_exception_when_field_does_not_exist)
 {

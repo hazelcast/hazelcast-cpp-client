@@ -784,6 +784,12 @@ generic_record::get_field_kind(const std::string& field_name) const
 }
 
 bool
+generic_record::has_field(std::string field_name) const
+{
+    return objects_.find(field_name) != end(objects_);
+}
+
+bool
 generic_record::get_boolean(const std::string& field_name) const
 {
     return get_non_null<bool>(
