@@ -91,6 +91,20 @@ class HAZELCAST_API compact_reader
 {
 public:
     /**
+     * Returns the kind of the field for the given field name.
+     * <p>
+     * If the field with the given name does not exist,
+     * {@link field_kind#NOT_AVAILABLE} is returned.
+     * <p>
+     * This method can be used to check the existence of a field, which can be
+     * useful when the class is evolved.
+     *
+     * @param field_name name of the field.
+     * @return kind of the field
+     */
+    field_kind get_field_kind(const std::string& field_name);
+
+    /**
      * Reads a boolean.
      *
      * @param field_name name of the field.
