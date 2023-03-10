@@ -2522,6 +2522,18 @@ compact_reader::read_var_size_position(
              : offset + data_start_position;
 }
 
+field_kind
+compact_reader::get_field_kind(const std::string& field_name)
+{
+    auto descriptor = schema.get_field(field_name);
+
+    if (!descriptor) {
+        return field_kind::NOT_AVAILABLE;
+    }
+
+    return descriptor->kind;
+}
+
 bool
 compact_reader::read_boolean(const std::string& fieldName)
 {
