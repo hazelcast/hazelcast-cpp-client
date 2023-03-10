@@ -96,12 +96,12 @@ generic_record_builder::generic_record_builder(std::shared_ptr<pimpl::schema> re
 }
 
 generic_record_builder::generic_record_builder(
-  std::shared_ptr<pimpl::schema> boundary,
+  std::shared_ptr<pimpl::schema> record_schema,
   std::unordered_map<std::string, boost::any> objects)
   : strategy_{ strategy::cloner }
   , already_built_{ false }
   , objects_{ std::move(objects) }
-  , writer_or_schema_{ std::move(boundary) }
+  , writer_or_schema_{ std::move(record_schema) }
 {
 }
 

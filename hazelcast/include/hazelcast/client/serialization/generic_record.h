@@ -127,7 +127,7 @@ public:
     field_kind get_field_kind(const std::string& field_name) const;
 
     /**
-     * @param fieldName the name of the field
+     * @param field_name the name of the field
      * @return true if field exists in the schema/class definition. Note that
      * returns true even if the field is null.
      */
