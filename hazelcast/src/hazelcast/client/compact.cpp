@@ -3573,7 +3573,7 @@ default_schema_service::default_schema_service(spi::ClientContext& context)
       context.get_client_properties().get_invocation_retry_pause_millis()) }
   , max_put_retry_count_{ context.get_client_properties().get_integer(
       client_property{ MAX_PUT_RETRY_COUNT, MAX_PUT_RETRY_COUNT_DEFAULT }) }
-  , context_{ context }
+  , context_(context)
 {
 }
 
@@ -3778,7 +3778,7 @@ default_schema_service::replicate_all_schemas()
 
 compact_stream_serializer::compact_stream_serializer(
   default_schema_service& service)
-  : schema_service{ service }
+  : schema_service(service)
 {
 }
 
@@ -3859,8 +3859,8 @@ field_operations::get(field_kind kind)
     using util::Bits;
     using namespace boost::property_tree;
 
-    static const char* NULL_STRING = "null";
-    static const char* BOOL_STRING[2] = { "true", "false" };
+    static const std::string NULL_STRING = "null";
+    static const std::string BOOL_STRING[2] = { "true", "false" };
 
     static auto time_to_string = [](const local_time& lt) {
         return boost::str(boost::format("%02d:%02d:%02d.%d") % int(lt.hours) %
@@ -3933,7 +3933,7 @@ field_operations::get(field_kind kind)
 
                   for (bool value : *values) {
                       array.push_back(
-                        ptree::value_type("", BOOL_STRING[value]));
+                        std::make_pair("", ptree(BOOL_STRING[value])));
                   }
 
                   parent.put_child(field_name, array);
@@ -3984,7 +3984,7 @@ field_operations::get(field_kind kind)
 
                   for (auto value : *values) {
                       array.push_back(
-                        ptree::value_type("", std::to_string(value)));
+                        std::make_pair("", ptree(std::to_string(value))));
                   }
 
                   parent.put_child(field_name, array);
@@ -4037,7 +4037,7 @@ field_operations::get(field_kind kind)
 
                   for (auto value : *values) {
                       array.push_back(
-                        ptree::value_type("", std::to_string(value)));
+                        std::make_pair("", ptree(std::to_string(value))));
                   }
 
                   parent.put_child(field_name, array);
@@ -4088,7 +4088,7 @@ field_operations::get(field_kind kind)
 
                   for (auto value : *values) {
                       array.push_back(
-                        ptree::value_type("", std::to_string(value)));
+                        std::make_pair("", ptree(std::to_string(value))));
                   }
 
                   parent.put_child(field_name, array);
@@ -4139,7 +4139,7 @@ field_operations::get(field_kind kind)
 
                   for (auto value : *values) {
                       array.push_back(
-                        ptree::value_type("", std::to_string(value)));
+                        std::make_pair("", ptree(std::to_string(value))));
                   }
 
                   parent.put_child(field_name, array);
@@ -4190,7 +4190,7 @@ field_operations::get(field_kind kind)
 
                   for (auto value : *values) {
                       array.push_back(
-                        ptree::value_type("", std::to_string(value)));
+                        std::make_pair("", ptree(std::to_string(value))));
                   }
 
                   parent.put_child(field_name, array);
@@ -4241,7 +4241,7 @@ field_operations::get(field_kind kind)
 
                   for (auto value : *values) {
                       array.push_back(
-                        ptree::value_type("", std::to_string(value)));
+                        std::make_pair("", ptree(std::to_string(value))));
                   }
 
                   parent.put_child(field_name, array);
@@ -4298,9 +4298,10 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
-                          array.push_back(ptree::value_type("", *value));
+                          array.push_back(std::make_pair("", ptree(*value)));
                       }
                   }
 
@@ -4360,12 +4361,13 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
-                      } else {
                           array.push_back(
-                            ptree::value_type("",
-                                              value->unscaled.str() + "E" +
-                                                std::to_string(value->scale)));
+                            std::make_pair("", ptree(NULL_STRING)));
+                      } else {
+                          array.push_back(std::make_pair(
+                            "",
+                            ptree(value->unscaled.str() + "E" +
+                                  std::to_string(value->scale))));
                       }
                   }
 
@@ -4423,10 +4425,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", time_to_string(*value)));
+                            std::make_pair("", ptree(time_to_string(*value))));
                       }
                   }
 
@@ -4484,10 +4487,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", date_to_string(*value)));
+                            std::make_pair("", ptree(date_to_string(*value))));
                       }
                   }
 
@@ -4545,10 +4549,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
-                      } else {
                           array.push_back(
-                            ptree::value_type("", timestamp_to_string(*value)));
+                            std::make_pair("", ptree(NULL_STRING)));
+                      } else {
+                          array.push_back(std::make_pair(
+                            "", ptree(timestamp_to_string(*value))));
                       }
                   }
 
@@ -4611,10 +4616,12 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
-                          array.push_back(ptree::value_type(
-                            "", timestamp_with_timezone_to_string(*value)));
+                          array.push_back(std::make_pair(
+                            "",
+                            ptree(timestamp_with_timezone_to_string(*value))));
                       }
                   }
 
@@ -4677,10 +4684,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
-                          array.push_back(ptree::value_type(
-                            "", write_generic_record(*value)));
+                          array.push_back(
+                            std::make_pair("", write_generic_record(*value)));
                       }
                   }
 
@@ -4743,10 +4751,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", BOOL_STRING[*value]));
+                            std::make_pair("", ptree(BOOL_STRING[*value])));
                       }
                   }
 
@@ -4807,10 +4816,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", std::to_string(*value)));
+                            std::make_pair("", ptree(std::to_string(*value))));
                       }
                   }
 
@@ -4871,10 +4881,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", std::to_string(*value)));
+                            std::make_pair("", ptree(std::to_string(*value))));
                       }
                   }
 
@@ -4935,10 +4946,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", std::to_string(*value)));
+                            std::make_pair("", ptree(std::to_string(*value))));
                       }
                   }
 
@@ -4999,10 +5011,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", std::to_string(*value)));
+                            std::make_pair("", ptree(std::to_string(*value))));
                       }
                   }
 
@@ -5063,10 +5076,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", std::to_string(*value)));
+                            std::make_pair("", ptree(std::to_string(*value))));
                       }
                   }
 
@@ -5127,10 +5141,11 @@ field_operations::get(field_kind kind)
 
                   for (const auto& value : *values) {
                       if (!value) {
-                          array.push_back(ptree::value_type("", NULL_STRING));
+                          array.push_back(
+                            std::make_pair("", ptree(NULL_STRING)));
                       } else {
                           array.push_back(
-                            ptree::value_type("", std::to_string(*value)));
+                            std::make_pair("", ptree(std::to_string(*value))));
                       }
                   }
 
