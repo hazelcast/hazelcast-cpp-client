@@ -82,6 +82,8 @@ TEST_F(CompactGenericRecordTest, test_generic_record_to_string_valid_json)
 
     ss << record;
 
+    std::cout << ss.str() << std::endl;
+
     boost::property_tree::ptree pt;
 
     ASSERT_NO_THROW(boost::property_tree::read_json(ss, pt));

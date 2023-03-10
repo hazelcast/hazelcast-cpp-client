@@ -51,11 +51,7 @@ protected:
           Lang::JAVASCRIPT);
 
         if (response.result.empty()) {
-            (void)[]
-            {
-                GTEST_FAIL();
-            }
-            ();
+            []() { GTEST_FAIL(); }();
         }
 
         return std::stoi(response.result);
