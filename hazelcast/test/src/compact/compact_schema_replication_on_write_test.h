@@ -45,7 +45,7 @@ TEST_F(CompactSchemaReplicationOnWrite, imap_put)
     ASSERT_EQ(check_schema_on_backend(schema_parent), false);
     ASSERT_EQ(check_schema_on_backend(schema_child), false);
 
-    auto map = client.get_map(random_string()).get();
+    auto map = client->get_map(random_string()).get();
 
     map->put(random_string(), sample_compact_type{}).get();
 

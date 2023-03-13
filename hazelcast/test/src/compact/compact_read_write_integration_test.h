@@ -41,7 +41,7 @@ TEST_F(CompactReadWriteIntegrationTest, map_put_get)
     auto map_name = random_string();
     auto key = random_string();
 
-    auto map = client.get_map(map_name).get();
+    auto map = client->get_map(map_name).get();
 
     map->put(key, dto).get();
     auto actual = map->get<std::string, main_dto>(key).get();
@@ -57,7 +57,7 @@ TEST_F(CompactReadWriteIntegrationTest, write_read_sql)
     auto key = random_string();
     auto type_name = serialization::hz_serializer<sample_compact_type>::type_name();
 
-    auto map = client.get_map(map_name).get();
+    auto map = client->get_map(map_name).get();
 
     map->put(key, value).get();
 
@@ -74,9 +74,9 @@ TEST_F(CompactReadWriteIntegrationTest, write_read_sql)
                          map_name % type_name)
                           .str();
 
-    (void)client.get_sql().execute(query).get();
+    (void)client->get_sql().execute(query).get();
 
-    auto result = client.get_sql()
+    auto result = client->get_sql()
                     .execute(str(boost::format("SELECT * FROM %1%") % map_name))
                     .get();
 

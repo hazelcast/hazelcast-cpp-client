@@ -40,7 +40,7 @@ protected:
 
     serialization::pimpl::default_schema_service& schema_service()
     {
-        return spi::ClientContext{ client }.get_schema_service();
+        return spi::ClientContext{ *client }.get_schema_service();
     }
 
     void put_record_with_rc()
@@ -49,7 +49,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           (boost::format(
              R"(
                     var nested_type = com.hazelcast.nio.serialization.genericrecord.GenericRecordBuilder.compact("%1%").setInt32("y", 101).build();
@@ -64,7 +64,8 @@ protected:
                     result = "true";
                         )") %
            serialization::hz_serializer<nested_type>::type_name() %
-           serialization::hz_serializer<sample_compact_type>::type_name() % map_name_ % key_)
+           serialization::hz_serializer<sample_compact_type>::type_name() %
+           map_name_ % key_)
             .str(),
           Lang::JAVASCRIPT);
 
@@ -78,7 +79,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           (boost::format(
              R"(
                     var value = com.hazelcast.nio.serialization.genericrecord.GenericRecordBuilder.compact("wrong_type_name").build();
@@ -104,7 +105,7 @@ TEST_F(CompactSchemaFetchOnRead, imap_get)
 {
     put_record_with_rc();
 
-    auto map = client.get_map(map_name_).get();
+    auto map = client->get_map(map_name_).get();
     auto a_t = map->get<std::string, sample_compact_type>(key_).get();
 
     EXPECT_EQ(a_t->x, 100);
@@ -115,7 +116,7 @@ TEST_F(CompactSchemaFetchOnRead, ensure_schema_is_cached)
 {
     put_record_with_rc();
 
-    auto map = client.get_map(map_name_).get();
+    auto map = client->get_map(map_name_).get();
 
     ASSERT_FALSE(schema_service().has_any_schemas());
 
@@ -128,7 +129,7 @@ TEST_F(CompactSchemaFetchOnRead, throw_exception_on_typename_mismatch)
 {
     put_record_with_different_name();
 
-    auto map = client.get_map(map_name_).get();
+    auto map = client->get_map(map_name_).get();
 
     auto fn = [=]() { map->get<std::string, sample_compact_type>(key_).get(); };
 
@@ -153,10 +154,10 @@ TEST_F(CompactSchemaFetchOnRead, sql_read)
        map_name_ % serialization::hz_serializer<sample_compact_type>::type_name())
         .str();
 
-    (void)client.get_sql().execute(query).get();
+    (void)client->get_sql().execute(query).get();
 
     auto result =
-      client.get_sql()
+      client->get_sql()
         .execute(str(boost::format("SELECT * FROM %1%") % map_name_))
         .get();
 
