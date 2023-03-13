@@ -41,7 +41,7 @@ class CompactSerializationTest : public compact_test_base
 public:
     SerializationService& serialization_service()
     {
-        return spi::ClientContext{ client }.get_serialization_service();
+        return spi::ClientContext{ *client }.get_serialization_service();
     }
 
     template<typename T>
