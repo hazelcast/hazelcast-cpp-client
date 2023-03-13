@@ -33,21 +33,20 @@ class compact_test_base : public testing::Test
 public:
     using schema_t = serialization::pimpl::schema;
 
-    compact_test_base()
-      : factory_{ "hazelcast/test/resources/compact.xml" }
-      , member_{ factory_ }
-      , client{ new_client(config()).get() }
-    {
-        remote_controller_client().ping();
-    }
+    compact_test_base() {}
 
 protected:
     void SetUp() override
     {
-        auto version = client.get_cluster().get_members().front().get_version();
-
-        if (version < member::version{ 5, 2, 0 })
+        if (cluster_version() < member::version{ 5, 2, 0 })
             GTEST_SKIP();
+
+        factory_.reset(
+          new HazelcastServerFactory{ "hazelcast/test/resources/compact.xml" });
+        member_.reset(new HazelcastServer{ *factory_ });
+        client.reset(new hazelcast_client{ new_client(config()).get() });
+
+        remote_controller_client().ping();
     }
 
     template<typename T>
@@ -55,7 +54,7 @@ protected:
     {
         auto schema = get_schema<T>();
 
-        spi::ClientContext context{ client };
+        spi::ClientContext context{ *client };
 
         ASSERT_NO_THROW(
           context.get_schema_service().replicate_schema_in_cluster(schema));
@@ -67,7 +66,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           (boost::format(
              R"(
                         var schemas = instance_0.getOriginal().node.getSchemaService().getAllSchemas();
@@ -98,9 +97,9 @@ protected:
         return compact_stream_serializer::build_schema(T{});
     }
 
-    HazelcastServerFactory factory_;
-    HazelcastServer member_;
-    hazelcast_client client;
+    std::unique_ptr<HazelcastServerFactory> factory_;
+    std::unique_ptr<HazelcastServer> member_;
+    std::unique_ptr<hazelcast_client> client;
 
 private:
     static client_config config()
@@ -108,6 +107,7 @@ private:
         client_config cfg;
 
         cfg.set_cluster_name("compact-dev");
+        cfg.get_logger_config().level(logger::level::finest);
 
         return cfg;
     }

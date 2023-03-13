@@ -117,8 +117,6 @@ public:
     void add_connection_listener(
       const std::shared_ptr<ConnectionListener>& connection_listener);
 
-    logger& get_logger();
-
     std::shared_ptr<Connection> get_random_connection();
 
     /**
@@ -160,23 +158,6 @@ public:
 
     void notify_backup(int64_t call_id);
 
-private:
-    static constexpr size_t EXECUTOR_CORE_POOL_SIZE = 10;
-    static constexpr int32_t CLIENT = 1;
-    static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
-    static constexpr int SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
-
-    struct auth_response
-    {
-        byte status;
-        boost::uuids::uuid member_uuid;
-        byte serialization_version;
-        int32_t partition_count;
-        boost::uuids::uuid cluster_id;
-        boost::optional<address> server_address;
-        std::string server_version;
-    };
-
     enum class client_state
     {
         /**
@@ -212,6 +193,23 @@ private:
 
     friend std::ostream HAZELCAST_API& operator<<(std::ostream& os,
                                                   client_state);
+
+private:
+    static constexpr size_t EXECUTOR_CORE_POOL_SIZE = 10;
+    static constexpr int32_t CLIENT = 1;
+    static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
+    static constexpr int SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
+
+    struct auth_response
+    {
+        byte status;
+        boost::uuids::uuid member_uuid;
+        byte serialization_version;
+        int32_t partition_count;
+        boost::uuids::uuid cluster_id;
+        boost::optional<address> server_address;
+        std::string server_version;
+    };
 
     auth_response authenticate_on_cluster(
       std::shared_ptr<Connection>& connection);

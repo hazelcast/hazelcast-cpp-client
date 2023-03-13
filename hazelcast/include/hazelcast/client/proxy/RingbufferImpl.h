@@ -77,7 +77,6 @@ class HAZELCAST_API RingbufferImpl : public PartitionSpecificClientProxy
 {
 public:
     static constexpr const char* SERVICE_NAME = "hz:impl:ringbufferService";
-    ;
 
     /**
      * The maximum number of items that can be retrieved in 1 go using the

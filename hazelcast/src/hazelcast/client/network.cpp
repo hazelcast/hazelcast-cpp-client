@@ -674,12 +674,6 @@ ClientConnectionManagerImpl::~ClientConnectionManagerImpl()
     shutdown();
 }
 
-logger&
-ClientConnectionManagerImpl::get_logger()
-{
-    return client_.get_logger();
-}
-
 void
 ClientConnectionManagerImpl::check_client_active()
 {
@@ -720,13 +714,11 @@ ClientConnectionManagerImpl::initialize_client_on_cluster(
             std::lock_guard<std::recursive_mutex> guard(client_state_mutex_);
 
             if (target_cluster_id == cluster_id_) {
-                if (logger_.enabled(hazelcast::logger::level::fine)) {
-                    logger_.log(
-                      hazelcast::logger::level::fine,
-                      (boost::format("Client state is sent to cluster: %1%") %
-                       target_cluster_id)
-                        .str());
-                }
+                HZ_LOG(logger_,
+                       fine,
+                       (boost::format("Client state is sent to cluster: %1%") %
+                        target_cluster_id)
+                         .str());
 
                 client_state_ = client_state::INITIALIZED_ON_CLUSTER;
                 fire_life_cycle_event(lifecycle_event::CLIENT_CONNECTED);
@@ -735,7 +727,9 @@ ClientConnectionManagerImpl::initialize_client_on_cluster(
                             (boost::format("Cannot set client state to %1%"
                                            " because current cluster id: %2%"
                                            " is different than expected cluster"
-                                           " id: %3%"))
+                                           " id: %3%") %
+                             client_state::INITIALIZED_ON_CLUSTER %
+                             cluster_id_ % target_cluster_id)
                               .str());
             }
         }

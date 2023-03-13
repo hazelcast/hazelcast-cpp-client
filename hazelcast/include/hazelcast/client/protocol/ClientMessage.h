@@ -23,7 +23,7 @@
 
 #include <cassert>
 #include <memory>
-#include <ostream>
+#include <iosfwd>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -915,6 +915,44 @@ public:
         fast_forward_to_end_frame();
 
         return h;
+    }
+
+    template<typename T>
+    typename std::
+      enable_if<std::is_same<T, serialization::pimpl::schema>::value, T>::type
+      get()
+    {
+        using namespace serialization;
+        using namespace serialization::pimpl;
+
+        // skip begin frame
+        skip_frame();
+
+        auto type_name = get<std::string>();
+
+        std::unordered_map<std::string, field_descriptor> fields;
+        {
+            skip_frame();
+
+            while (!next_frame_is_data_structure_end_frame()) {
+                skip_frame();
+
+                // skip bytes in initial frame
+                (void)rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+                auto key = get<int>();
+                auto field_name = get<std::string>();
+
+                fast_forward_to_end_frame();
+
+                fields.insert(std::make_pair(
+                  field_name, field_descriptor{ field_kind(key) }));
+            }
+        }
+
+        fast_forward_to_end_frame();
+
+        return schema{ type_name, move(fields) };
     }
 
     /**

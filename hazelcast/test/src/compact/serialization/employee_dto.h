@@ -66,6 +66,8 @@ struct hz_serializer<test::compact::employee_dto>
 
         return test::compact::employee_dto{ age, rank, id, isHired, isFired };
     }
+
+    static std::string type_name() { return "employee_dto"; }
 };
 
 } // namespace serialization

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,3 +21,10 @@
 #include "compact/compact_schema_replication_on_cluster_restart_test.h"
 #include "compact/compact_schema_validation_test.h"
 #include "compact/compact_schema_replication_stress_test.h"
+#include "compact/compact_schema_fetch_on_read.h"
+#include "compact/compact_read_write_integration_test.h"
+#include "compact/compact_field_kind_test.h"
+#include "compact/compact_generic_record_builder_test.h"
+#include "compact/compact_generic_record_test.h"
+#include "compact/compact_generic_record_integration_test.h"
+#include "compact/compact_generic_record_array_overloads.h"

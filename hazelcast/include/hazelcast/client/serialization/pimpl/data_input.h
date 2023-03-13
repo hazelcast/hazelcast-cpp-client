@@ -23,7 +23,6 @@
 #include <string>
 #include <memory>
 #include <stdint.h>
-#include <sstream>
 #include <boost/endian/conversion.hpp>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
