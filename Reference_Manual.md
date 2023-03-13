@@ -40,9 +40,13 @@
    * [4. Serialization](#4-serialization)
       * [4.1. identified_data_serializer Serialization](#41-identified_data_serializer-serialization)
       * [4.2. portable_serializer Serialization](#42-portable_serializer-serialization)
-      * [4.3. Custom Serialization](#43-custom-serialization)
-      * [4.4. JSON Serialization](#44-json-serialization)
-      * [4.5. Global Serialization](#45-global-serialization)
+      * [4.3. compact_serializer Serialization](#43-compact_serializer-serialization)
+        * [4.3.1. Compact Serializer](#431-compact-serializer)
+        * [4.3.2. Schema Evolution](#432-schema-evolution)
+        * [4.3.3. Generic Record](#433-generic-record)
+      * [4.4. Custom Serialization](#44-custom-serialization)
+      * [4.5. JSON Serialization](#45-json-serialization)
+      * [4.6. Global Serialization](#46-global-serialization)
    * [5. Setting Up Client Network](#5-setting-up-client-network)
       * [5.1. Providing Member Addresses](#51-providing-member-addresses)
       * [5.2. Setting Smart Routing](#52-setting-smart-routing)
@@ -940,9 +944,125 @@ namespace hazelcast {
 
 Note that, this is very similar to `identified_data_serializer` implementation except the method signatures and the derived marker class of `portable_serializer` for the specialized serializer.
 
-`hz_serializer<Person>` specialization of `hz_serializer` should implement the above four methods, namely `get_factory_id`, `get_class_id`, `write_portable`, `read_portable`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as friend to your object class. You use the `portable_writer` class methods when serializing the object into binary bytes and you use the `portable_reader` class methods when de-serializing the bytes into the concrete object instance. 
+`hz_serializer<Person>` specialization of `hz_serializer` should implement the above four methods, namely `get_factory_id`, `get_class_id`, `write_portable`, `read_portable`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as friend to your object class. You use the `portable_writer` class methods when serializing the object into binary bytes and you use the `portable_reader` class methods when de-serializing the bytes into the concrete object instance.
 
-## 4.3. Custom Serialization
+## 4.3. compact_serializer Serialization
+As an enhancement to the existing serialization methods, Hazelcast offers compact serialization, with the following main features:
+
+- Separates the schema from the data and stores it for each type, instead of each object which results in less memory and bandwidth usage compared to other formats
+- Does not require a class to implement an interface or change the source code of the class in any way
+- Supports schema evolution which permits adding or removing fields, or changing the types of fields
+- Can work with any kind of types
+- Platform and language independent
+- Supports partial deserialization of fields, without deserializing the whole objects during queries or indexing
+
+Hazelcast achieves these features by having a well-known schema of objects and replicating them across the cluster which enables members and clients to fetch schemas they don’t have in their local registries. Each serialized object carries just a schema identifier and relies on the schema distribution service or configuration to match identifiers with the actual schema. Once the schemas are fetched, they are cached locally on the members and clients so that the next operations that use the schema do not incur extra costs.
+
+Schemas help Hazelcast to identify the locations of the fields on the serialized binary data. With this information, Hazelcast can deserialize individual fields of the data, without reading the whole binary. This results in a better query and indexing performance.
+
+Schemas can evolve freely by adding or removing fields. Even, the types of the fields can be changed. Multiple versions of the schema may live in the same cluster and both the old and new readers may read the compatible parts of the data. This feature is especially useful in rolling upgrade scenarios.
+
+The Compact serialization does not require any changes in the user classes as it doesn’t need a class to implement a particular interface. Serializers might be implemented and specified separately from the classes.
+
+The underlying format of the compact serialized objects is platform and language independent.
+
+Refer to [documentation](https://docs.hazelcast.com/hazelcast/5.3-snapshot/compact-binary-specification) for more details about compact binary serialization.
+### 4.3.1. Compact Serializer
+Another way to use compact serialization is to implement the `hz_serializer<T> : compact::compact_serializer` specialization for a `T`. A basic serializer could look like:
+
+``` C++
+class PersonDTO
+{
+    int age;
+    std::string name;
+    std::string surname;
+};
+
+namespace hazelcast {
+namespace client {
+namespace serialization {
+
+template<>
+struct hz_serializer<PersonDTO> : compact::compact_serializer
+{
+    static void write(const PersonDTO& object, compact::compact_writer& out)
+    {
+        out.write_int32("age", object.age);
+        out.write_string("name", object.name);
+        out.write_string("surname", object.surname);
+    }
+
+    static PersonDTO read(compact::compact_reader& in)
+    {
+        PersonDTO person;
+
+        person.age = in.read_int32("age");
+        boost::optional<std::string> name = in.read_string("name");
+
+        if (name) {
+            person.name = *name;
+        }
+
+        boost::optional<std::string> surname = in.read_string("surname");
+
+        if (surname) {
+            person.surname = *surname;
+        }
+
+        return person;
+    }
+
+    static std::string type_name() { return "person"; }
+};
+
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+```
+
+### 4.3.2. Schema Evolution
+Compact serialization permits schemas and classes to evolve by adding or removing fields, or by changing the types of fields. More than one version of a class may live in the same cluster and different clients or members might use different versions of the class.
+
+Hazelcast handles the versioning internally. So, you don’t have to change anything in the classes or serializers apart from the added, removed, or changed fields.
+
+Hazelcast achieves this by identifying each version of the class by a unique fingerprint. Any change in a class results in a different fingerprint. Hazelcast uses a 64-bit Rabin Fingerprint to assign identifiers to schemas, which has an extremely low collision rate.
+
+Different versions of the schema with different identifiers are replicated in the cluster and can be fetched by clients or members internally. That allows old readers to read fields of the classes they know when they try to read data serialized by a new writer. Similarly, new readers might read fields of the classes available in the data, when they try to read data serialized by an old writer.
+
+This means that for one type name, there can be several schemas.
+
+In addition, the `compact::compact_reader` class exposes methods such as `field_kind get_field_kind(string name)` which returns the kind (i.e. the actual type) of the field.
+
+### 4.3.3. Generic Record
+Compact serialization introduces the `generic_record` and `generic_record_builder` classes, which represents a container and builder object that can be used in place of domain classes. The client always knows how to (de) serialize compact instances and therefore does not require any configuration in order to handle them.
+
+A new record can be created as such:
+
+``` C++
+using namespace hazelcast::client::serialization::generic_record;
+
+generic_record record = generic_record_builder{ "type-name" }
+                            .set_boolean("field-name-1", true)
+                            .set_int32("field-name-2", 123)
+                            .set_string("field-name-3", "hello")
+                            .build();
+
+// Put into map and wait
+map->put(1234, record).get();
+```
+
+A generic record can be used as such:
+
+``` C++
+auto rec = map->get<int, generic_record>(1234).get();
+bool field1 = rec->get_boolean("field-name-1");
+int field2 = rec->get_int32("field-name-2");
+boost::optional<std::string> field3 = rec->get_string("field-name-3");
+```
+
+Refer to the general [documentation](https://docs.hazelcast.com/hazelcast/latest/serialization/compact-serialization) for more details on how to access domain objects without domain classes. [Supported types](https://docs.hazelcast.com/hazelcast/latest/serialization/compact-serialization#supported-types) are listed here.
+
+## 4.4. Custom Serialization
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects. It allows you alsoan integration point for any external serialization frameworks such as protobuf, flatbuffers, etc. 
 
@@ -981,7 +1101,7 @@ namespace hazelcast {
 
 `hz_serializer<Person>` specialization of `hz_serializer` should implement the above three methods, namely `get_type_id`, `write`, `read`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as friend to your object class. You use the `object_data_output` class methods when serializing the object into binary bytes and you use the `object_data_input` class methods when de-serializing the bytes into the concrete object instance. 
 
-## 4.4. JSON Serialization
+## 4.5. JSON Serialization
 
 You can use the JSON formatted strings as objects in Hazelcast cluster. Creating JSON objects in the cluster does not require any server side coding and hence you can just send a JSON formatted string object to the cluster and query these objects by fields.
 
@@ -1008,7 +1128,7 @@ auto result = map->values<hazelcast::client::hazelcast_json_value>(
 hazelcast::client::query::greater_less_predicate(hz, "age", 6, false, true)).get();
 ```
 
-## 4.5. Global Serialization
+## 4.6. Global Serialization
 
 The global serializer is registered as a fallback serializer to handle all other objects if a serializer cannot be located for them.
 
