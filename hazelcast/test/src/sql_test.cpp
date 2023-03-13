@@ -54,9 +54,9 @@ struct portable_pojo
         tiny_int_val = static_cast<byte>(val);
         small_int_val = static_cast<int16_t>(val);
         int_val = static_cast<int32_t>(val);
-        big_int_val = static_cast<int64_t>(val);;
-        real_val = static_cast<float>(val);;
-        double_val = static_cast<double>(val);;
+        big_int_val = static_cast<int64_t>(val);
+        real_val = static_cast<float>(val);
+        double_val = static_cast<double>(val);
 
         char_val = 'c';
         varchar_val = std::to_string(val);
@@ -578,6 +578,26 @@ protected:
     int total_member_client_cursors() {
         return member_client_cursors(0) + member_client_cursors(1);
     }
+
+    template<typename... Params>
+    void check_partition_argument_index(std::string sql,
+                                        std::shared_ptr<int32_t> expected_index,
+                                        Params&&... arguments)
+    {
+        auto& sql_service = client.get_sql();
+        EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
+                  nullptr);
+        sql_service.execute(sql, std::forward<Params>(arguments)...).get();
+
+        if (expected_index == nullptr) {
+            EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
+                      nullptr);
+        } else {
+            EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(sql),
+                      *expected_index);
+        }
+    }
+
     static std::unique_ptr<HazelcastServer> member_;
     static std::unique_ptr<HazelcastServer> member2_;
 
@@ -1495,6 +1515,47 @@ TEST_F(SqlTest, select)
 */
 }
 
+TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
+{
+    create_mapping("VARCHAR");
+
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (__key, this) VALUES (?, ?)") % map_name)
+        .str(),
+      std::make_shared<int32_t>(0),
+      1,
+      "value");
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name)
+        .str(),
+      std::make_shared<int32_t>(1),
+      "value",
+      2);
+    // no dynamic argument
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) VALUES ('value', 3)") %
+       map_name)
+        .str(),
+      nullptr);
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) "
+                     "VALUES ('value', 4), ('value', 5)") %
+       map_name)
+        .str(),
+      nullptr);
+    // has dynamic argument, but multiple rows
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?), (?, ?)") %
+       map_name)
+        .str(),
+      nullptr,
+      "value",
+      6,
+      "value",
+      7);
+}
+
+
 class sql_encode_test : public ::testing::Test
 {
 public:
@@ -1636,30 +1697,32 @@ TEST_F(sql_encode_test, close)
     EXPECT_EQ(expected_bytes, actual_bytes);
 }
 
-
 template<typename K, typename V>
-class read_optimized_lru_cache_for_testing : public sql::impl::read_optimized_lru_cache<K,V>{
- 
-     public:
-         read_optimized_lru_cache_for_testing(int32_t capacity,
-                                              int32_t cleanup_threshold):sql::impl::read_optimized_lru_cache<K,V>(capacity, cleanup_threshold){
+class read_optimized_lru_cache_for_testing
+  : public sql::impl::read_optimized_lru_cache<K, V>
+{
 
-         }
+public:
+    read_optimized_lru_cache_for_testing(int32_t capacity,
+                                         int32_t cleanup_threshold)
+      : sql::impl::read_optimized_lru_cache<K, V>(capacity, cleanup_threshold)
+    {
+    }
 
-        int32_t get_cache_size(){
-            return this->cache_.size();
-        }
+    int32_t get_cache_size() { return this->cache_.size(); }
 
-        V get_cache_value(K k){
-            return this->cache_.get(k)->value_;
-        }
+    V get_cache_value(K k) { return this->cache_.get(k)->value_; }
 };
 
-class read_optimized_lru_cache_test : public ::testing::Test{
+class read_optimized_lru_cache_test : public ::testing::Test
+{
 
-    public:
-        read_optimized_lru_cache_for_testing<int32_t, int32_t> lru;
-        read_optimized_lru_cache_test():lru(2,3){}
+public:
+    read_optimized_lru_cache_for_testing<int32_t, int32_t> lru;
+    read_optimized_lru_cache_test()
+      : lru(2, 3)
+    {
+    }
 };
 
 TEST_F(read_optimized_lru_cache_test, put_and_get_test)
@@ -1675,23 +1738,23 @@ TEST_F(read_optimized_lru_cache_test, get_test)
     EXPECT_EQ(0, lru.get_cache_size());
     EXPECT_EQ(nullptr, lru.get(1));
     lru.put(1, std::make_shared<int32_t>(10));
-    EXPECT_EQ(10, *(lru.get(1)));    
+    EXPECT_EQ(10, *(lru.get(1)));
 }
 
 TEST_F(read_optimized_lru_cache_test, put_nullptr_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
-    ASSERT_THROW( lru.put(1, nullptr),client::exception::illegal_argument );
+    ASSERT_THROW(lru.put(1, nullptr), client::exception::illegal_argument);
 }
 
 TEST_F(read_optimized_lru_cache_test, get_or_default_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
-    EXPECT_EQ(2, *(lru.get_or_default(1, std::make_shared<int32_t>(2))) );
+    EXPECT_EQ(2, *(lru.get_or_default(1, std::make_shared<int32_t>(2))));
 
     lru.put(3, std::make_shared<int32_t>(10));
 
-    EXPECT_EQ(10, *(lru.get_or_default(3, std::make_shared<int32_t>(2))) );
+    EXPECT_EQ(10, *(lru.get_or_default(3, std::make_shared<int32_t>(2))));
 }
 
 TEST_F(read_optimized_lru_cache_test, put_and_remove_test)
@@ -1704,9 +1767,10 @@ TEST_F(read_optimized_lru_cache_test, put_and_remove_test)
 }
 
 TEST_F(read_optimized_lru_cache_test, eviction_test)
-{    
+{
     lru.put(42, std::make_shared<int32_t>(42));
-    // a little sleep to ensure the lastUsed timestamps are different even on a very imprecise clock
+    // a little sleep to ensure the lastUsed timestamps are different even on a
+    // very imprecise clock
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     lru.put(43, std::make_shared<int32_t>(43));
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -1715,7 +1779,7 @@ TEST_F(read_optimized_lru_cache_test, eviction_test)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     lru.put(45, std::make_shared<int32_t>(45));
-    EXPECT_EQ(2, lru.get_cache_size() );    
+    EXPECT_EQ(2, lru.get_cache_size());
     EXPECT_EQ(44, lru.get_cache_value(44));
     EXPECT_EQ(45, lru.get_cache_value(45));
 
@@ -1729,11 +1793,6 @@ TEST_F(read_optimized_lru_cache_test, eviction_test)
     EXPECT_EQ(44, lru.get_cache_value(44));
     EXPECT_EQ(47, lru.get_cache_value(47));
 }
-
-class sql_partition_aware_test : public ::testing::Test
-{};
-
-TEST_F(sql_partition_aware_test, select_routing_test) {}
 
 } // namespace test
 } // namespace client
