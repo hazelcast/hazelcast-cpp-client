@@ -43,7 +43,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           R"(
               var length = instance_0.getOriginal().node.getSchemaService().getAllSchemas().size();
               result = "" + length;
@@ -63,18 +63,18 @@ TEST_F(CompactSchemaReplicationOnClusterRestart, on_cluster_restart)
     auto schema_parent = get_schema<sample_compact_type>();
     auto schema_child = get_schema<nested_type>();
 
-    auto map = client.get_map(random_string()).get();
+    auto map = client->get_map(random_string()).get();
 
     map->put(random_string(), sample_compact_type{}).get();
 
-    member_.shutdown();
+    member_->shutdown();
 
     boost::latch connected_latch(1);
 
-    client.add_lifecycle_listener(lifecycle_listener().on_connected(
+    client->add_lifecycle_listener(lifecycle_listener().on_connected(
       [&connected_latch]() { connected_latch.try_count_down(); }));
 
-    HazelcastServer another_member{ factory_ };
+    HazelcastServer another_member{ *factory_ };
 
     ASSERT_OPEN_EVENTUALLY(connected_latch);
     ASSERT_TRUE_EVENTUALLY(check_schema_on_backend(schema_parent) &&
@@ -88,14 +88,14 @@ TEST_F(CompactSchemaReplicationOnClusterRestart,
 
     ASSERT_TRUE_EVENTUALLY(condition());
 
-    member_.shutdown();
+    member_->shutdown();
 
     boost::latch connected_latch(1);
 
-    client.add_lifecycle_listener(lifecycle_listener().on_connected(
+    client->add_lifecycle_listener(lifecycle_listener().on_connected(
       [&connected_latch]() { connected_latch.try_count_down(); }));
 
-    HazelcastServer another_member{ factory_ };
+    HazelcastServer another_member{ *factory_ };
 
     ASSERT_OPEN_EVENTUALLY(connected_latch);
     ASSERT_TRUE_ALL_THE_TIME(condition(), 1);

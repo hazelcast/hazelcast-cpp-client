@@ -68,7 +68,7 @@ TEST_F(CompactSchemaReplicationStress, test)
 {
     using replication_work_t =
       boost::future<std::vector<serialization::pimpl::schema>>;
-    auto map = client.get_map(random_string()).get();
+    auto map = client->get_map(random_string()).get();
 
     replication_work_t replication_works[] = {
         boost::async(boost::launch::async, replicate_schemas<0, 10>, map),
