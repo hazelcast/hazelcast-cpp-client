@@ -184,7 +184,7 @@ Please see [example instructions](https://docs.conan.io/en/latest/getting_starte
 - You need to put the following lines to your `conanfile.txt`:
 ```
 [requires]
-hazelcast-cpp-client/5.1.0
+hazelcast-cpp-client/5.2.0
 
 [generators]
 cmake
@@ -240,22 +240,22 @@ Follow the instructions for your platform:
 * [Windows](#1134-windows-users)
 
 #### 1.1.3.3. Linux and MacOS Users
-Here is how you download and extract version 5.1.0 using the **curl** command:
+Here is how you download and extract version 5.2.0 using the **curl** command:
 ```sh
-curl -Lo hazelcast-cpp-client-5.1.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v5.1.0.tar.gz
-tar xzf hazelcast-cpp-client-5.1.0.tar.gz
+curl -Lo hazelcast-cpp-client-5.2.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v5.2.0.tar.gz
+tar xzf hazelcast-cpp-client-5.2.0.tar.gz
 ```
 
 Alternatively, you may clone the repository and checkout a specific version:
 ```sh
 git clone https://github.com/hazelcast/hazelcast-cpp-client.git
 cd hazelcast-cpp-client
-git checkout v5.1.0
+git checkout v5.2.0
 ```
 
 Once you are in the source directory of the Hazelcast C++ client library, create and change into a new directory:
 ```sh
-cd hazelcast-cpp-client-5.1.0
+cd hazelcast-cpp-client-5.2.0
 mkdir build
 cd build
 ```
@@ -279,7 +279,7 @@ Download and extract the release archive from the
 
 Open a `cmd` window and change into the folder where you extracted the contents of the release archive. Then create and change into a new directory:
 ```bat
-cd hazelcast-cpp-client-5.1.0
+cd hazelcast-cpp-client-5.2.0
 mkdir build
 cd build
 ```
