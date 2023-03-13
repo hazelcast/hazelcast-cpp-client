@@ -39,7 +39,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           (boost::format(
              R"(
                         var clusterMap = instance_0.getMap("%1%");
@@ -71,7 +71,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           (boost::format(
              R"(
                 var map = instance_0.getMap("%1%");
@@ -143,9 +143,9 @@ protected:
                     record.getFieldKind("date") === com.hazelcast.nio.serialization.FieldKind.DATE &&
                     record.getDate("date").getYear() == 2023 &&
                     record.getDate("date").getMonthValue() == 2 &&)"
-            // Splitted into two chunks
-            // Because MSVC complains about it !!!
-            R"(
+             // Splitted into two chunks
+             // Because MSVC complains about it !!!
+             R"(
                     record.getDate("date").getDayOfMonth() == 6 &&
                     record.getFieldKind("date_null") === com.hazelcast.nio.serialization.FieldKind.DATE &&
                     record.getDate("date_null") === null &&
@@ -302,7 +302,7 @@ TEST_F(CompactGenericRecordIntegrationTest, test_put_generic_record_back)
     // Counterpart is 'test' but using random string is
     // better to prevent name clashes.
     auto map_name = random_string();
-    auto map = client.get_map(map_name).get();
+    auto map = client->get_map(map_name).get();
 
     named_compact expected{ "foo", 900 };
 
@@ -319,7 +319,7 @@ TEST_F(CompactGenericRecordIntegrationTest, test_put_generic_record_back)
 
 TEST_F(CompactGenericRecordIntegrationTest, test_put_get)
 {
-    auto map = client.get_map(random_string()).get();
+    auto map = client->get_map(random_string()).get();
 
     map->put(1, create_generic_record()).get();
     boost::optional<generic_record> record =
@@ -618,7 +618,7 @@ TEST_F(CompactGenericRecordIntegrationTest,
     auto record = create_generic_record();
 
     auto map_name = random_string();
-    client.get_map(map_name).get()->put(1, record).get();
+    client->get_map(map_name).get()->put(1, record).get();
 
     validate_record(map_name);
 }
@@ -629,9 +629,9 @@ TEST_F(CompactGenericRecordIntegrationTest, test_put_and_read_with_sql)
     auto record = create_generic_record(type_name);
 
     auto map_name = random_string();
-    client.get_map(map_name).get()->put(1, record).get();
+    client->get_map(map_name).get()->put(1, record).get();
 
-    (void)client.get_sql()
+    (void)client->get_sql()
       .execute(boost::str(boost::format(
                             R"(
                     CREATE MAPPING "%1%" (
@@ -649,7 +649,7 @@ TEST_F(CompactGenericRecordIntegrationTest, test_put_and_read_with_sql)
       .get();
 
     auto result =
-      client.get_sql()
+      client->get_sql()
         .execute(boost::str(boost::format("SELECT * FROM %1%") % map_name))
         .get();
 

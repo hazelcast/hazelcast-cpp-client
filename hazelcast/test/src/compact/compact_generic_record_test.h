@@ -37,7 +37,7 @@ protected:
 
     SerializationService& serialization_service()
     {
-        return spi::ClientContext{ client }.get_serialization_service();
+        return spi::ClientContext{ *client }.get_serialization_service();
     }
 
     void assert_setter_throws(generic_record_builder& builder,
@@ -113,7 +113,7 @@ TEST_F(CompactGenericRecordTest, test_get_field_kind)
     auto data = service.to_data(record);
 
     // Ensure that schema is distributed
-    client.get_map(random_string()).get()->put(random_string(), record).get();
+    client->get_map(random_string()).get()->put(random_string(), record).get();
     auto internal_generic_record = service.to_object<generic_record>(data);
 
     ASSERT_TRUE(internal_generic_record.has_value());
@@ -150,7 +150,7 @@ TEST_F(CompactGenericRecordTest,
     auto data = ss.to_data(record);
 
     // Ensure that schema is distributed
-    client.get_map(random_string()).get()->put(random_string(), record).get();
+    client->get_map(random_string()).get()->put(random_string(), record).get();
     boost::optional<generic_record> internal_generic_record =
       ss.to_object<generic_record>(data);
 
@@ -183,7 +183,7 @@ TEST_F(CompactGenericRecordTest,
     auto data = ss.to_data(record);
 
     // Ensure that schema is distributed
-    client.get_map(random_string()).get()->put(random_string(), record).get();
+    client->get_map(random_string()).get()->put(random_string(), record).get();
     boost::optional<generic_record> internal_generic_record =
       ss.to_object<generic_record>(data);
 

@@ -1358,6 +1358,9 @@ TEST_F(SqlTest, test_streaming_sql_query)
 
 TEST_F(SqlTest, test_date)
 {
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping("DATE");
 
     auto expecteds = populate_map_via_rc<local_date>(
@@ -1378,6 +1381,9 @@ TEST_F(SqlTest, test_date)
 
 TEST_F(SqlTest, test_time)
 {
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping("TIME");
 
     auto expecteds = populate_map_via_rc<local_time>(
@@ -1399,6 +1405,9 @@ TEST_F(SqlTest, test_time)
 
 TEST_F(SqlTest, test_timestamp)
 {
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping("TIMESTAMP");
 
     auto expecteds = populate_map_via_rc<local_date_time>(
@@ -1422,6 +1431,9 @@ TEST_F(SqlTest, test_timestamp)
 
 TEST_F(SqlTest, test_timestamp_with_timezone)
 {
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     create_mapping("TIMESTAMP WITH TIME ZONE");
 
     auto expecteds = populate_map_via_rc<offset_date_time>(

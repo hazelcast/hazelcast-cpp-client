@@ -49,7 +49,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           (boost::format(
              R"(
                         var schemas = instance_0.getOriginal().node.getSchemaService().getAllSchemas();

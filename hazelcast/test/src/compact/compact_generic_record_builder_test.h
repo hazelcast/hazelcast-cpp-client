@@ -31,7 +31,7 @@ class CompactGenericRecordBuilderTest : public compact_test_base
 protected:
     SerializationService& serialization_service()
     {
-        return spi::ClientContext{ client }.get_serialization_service();
+        return spi::ClientContext{ *client }.get_serialization_service();
     }
 };
 
@@ -129,7 +129,7 @@ TEST_F(CompactGenericRecordBuilderTest,
     }
 
     // Ensure that schema is distributed
-    client.get_map(random_string())
+    client->get_map(random_string())
       .get()
       ->put(random_string(), list.front())
       .get();
