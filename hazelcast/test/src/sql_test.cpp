@@ -322,12 +322,16 @@ protected:
         }
     }
 
-    void create_mapping(std::string value_format = "INTEGER")
+    void create_mapping(std::string value_format = "INTEGER",
+                        boost::optional<std::string> par_map_name = boost::none)
     {
         // Mapping is not supported before 5.0.0
         if (cluster_version() < member::version{ 5, 0, 0 })
             return;
 
+        std::string curr_map_name = map_name;
+        if (par_map_name.has_value())
+            curr_map_name = *par_map_name;
         std::string query =
           (boost::format("CREATE MAPPING %1% ( "
                          "__key INT, "
@@ -338,7 +342,7 @@ protected:
                          "'keyFormat' = 'int', "
                          "'valueFormat' = '%3%' "
                          ")") %
-           map_name % value_format % boost::to_lower_copy(value_format))
+           curr_map_name % value_format % boost::to_lower_copy(value_format))
             .str();
 
         client.get_sql().execute(query).get();
@@ -368,6 +372,26 @@ protected:
         client.get_sql().execute(query).get();
     }
 
+    void create_mapping_for_portable_as_key(int factory_id,
+                                            int class_id)
+    {
+        if (cluster_version() < member::version{ 5, 0, 0 })
+            return;
+
+        std::string query = (boost::format("CREATE MAPPING %1% "
+                                           "TYPE IMap "
+                                           "OPTIONS ("
+                                           "'keyFormat' = 'portable', "
+                                           "'valueFormat' = 'varchar', "
+                                           "'keyPortableFactoryId' = '%2%', "
+                                           "'keyPortableClassId' = '%3%'"
+                                           ")") %
+                             map_name % factory_id % class_id)
+                              .str();
+
+        client.get_sql().execute(query).get();
+    }
+
     void create_mapping_for_student()
     {
         create_mapping_for_portable(
@@ -375,6 +399,13 @@ protected:
                 age BIGINT,
                 height REAL
             )",
+          serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
+          serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
+    }
+
+    void create_mapping_for_student_as_key()
+    {
+        create_mapping_for_portable_as_key(
           serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
           serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
     }
@@ -1555,6 +1586,122 @@ TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
       7);
 }
 
+TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
+{
+    create_mapping_for_student_as_key();
+
+    // partition argument index not supported if `__key` isn't directly assigned
+    // to
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, age, height) VALUES (?, ?, ?)") % map_name)
+        .str(),
+      nullptr,
+      "value1",
+      1, (float)1.72);
+
+    try{
+    // this test case is here just for completeness to show that we cannot support complex keys and partition argument
+    check_partition_argument_index((boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name).str(), nullptr,
+            "value-1", student{2, 1.72});
+    }catch(exception::iexception& ie)
+    {
+        auto msg = ie.get_message();
+        ASSERT_NE(std::string::npos, msg.find("Writing to top-level fields of type OBJECT not supported"));
+    }
+}
+
+TEST_F(SqlTest, test_partition_based_routing)
+{
+    std::string test_map_name{ random_map_name() };
+    auto test_map = client.get_map(test_map_name).get();
+
+    create_mapping("VARCHAR");
+    create_mapping("VARCHAR", test_map_name);
+
+    check_partition_argument_index(
+      (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    check_partition_argument_index(
+      (boost::format("UPDATE %1% SET this = ? WHERE __key = ?") % map_name)
+        .str(),
+      std::make_shared<int32_t>(1),
+      "testVal",
+      1);
+
+    check_partition_argument_index(
+      (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    check_partition_argument_index(
+      (boost::format(
+         "SELECT JSON_OBJECT(this : __key) FROM %1% WHERE __key = ?") %
+       map_name)
+        .str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    check_partition_argument_index(
+      (boost::format(
+         "SELECT JSON_ARRAY(__key, this) FROM %1% WHERE __key = ?") %
+       map_name)
+        .str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    // aggregation
+    check_partition_argument_index(
+      (boost::format(
+         "SELECT JSON_OBJECTAGG(this : __key) FROM %1% WHERE __key = ?") %
+       map_name)
+        .str(),
+      nullptr,
+      1);
+    check_partition_argument_index(
+      (boost::format("SELECT SUM(__key) FROM %1% WHERE __key = ?") % map_name)
+        .str(),
+      nullptr,
+      1);
+    check_partition_argument_index(
+      (boost::format("SELECT COUNT(*) FROM %1% WHERE __key = ?") % map_name)
+        .str(),
+      nullptr,
+      1);
+
+    // join
+    check_partition_argument_index(
+      (boost::format("SELECT * FROM %1% t1 JOIN %2% t2 ON t1.__key = t2.__key "
+                     "WHERE t1.__key = ?") %
+       map_name % test_map_name)
+        .str(),
+      nullptr,
+      1);
+
+    check_partition_argument_index(
+      (boost::format("SELECT t1.*, t2.* FROM %1% t1 JOIN %2% t2 USING(__key) "
+                     "WHERE t1.__key = ?") %
+       map_name % test_map_name)
+        .str(),
+      nullptr,
+      1);
+}
+
+
+TEST_F(SqlTest, test_partition_based_routing_complex_key){
+
+    create_mapping_for_student_as_key();
+    
+    check_partition_argument_index( (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
+                std::make_shared<int32_t>(0), student{2, 1.72});
+
+    check_partition_argument_index( (boost::format( "UPDATE %1% SET this = ? WHERE __key = ?") % map_name).str(),
+                std::make_shared<int32_t>(1), "testVal", student{2, 1.72});
+
+    check_partition_argument_index( (boost::format( "DELETE FROM %1% WHERE __key = ?") % map_name).str(),
+                std::make_shared<int32_t>(0), student{2, 1.72});                    
+}
 
 class sql_encode_test : public ::testing::Test
 {
