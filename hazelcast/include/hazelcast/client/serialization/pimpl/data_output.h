@@ -138,6 +138,7 @@ public:
     typename std::enable_if<std::is_same<std::vector<byte>, T>::value ||
                               std::is_same<std::vector<char>, T>::value ||
                               std::is_same<std::vector<bool>, T>::value ||
+                              std::is_same<std::vector<int8_t>, T>::value ||
                               std::is_same<std::vector<int16_t>, T>::value ||
                               std::is_same<std::vector<int32_t>, T>::value ||
                               std::is_same<std::vector<int64_t>, T>::value ||
@@ -349,6 +350,7 @@ template<typename T>
 typename std::enable_if<std::is_same<std::vector<byte>, T>::value ||
                           std::is_same<std::vector<char>, T>::value ||
                           std::is_same<std::vector<bool>, T>::value ||
+                          std::is_same<std::vector<int8_t>, T>::value ||
                           std::is_same<std::vector<int16_t>, T>::value ||
                           std::is_same<std::vector<int32_t>, T>::value ||
                           std::is_same<std::vector<int64_t>, T>::value ||

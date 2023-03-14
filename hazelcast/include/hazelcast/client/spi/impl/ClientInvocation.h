@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <ostream>
+#include <iosfwd>
 #include <memory>
 #include <atomic>
 

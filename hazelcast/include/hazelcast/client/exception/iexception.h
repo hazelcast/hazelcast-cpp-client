@@ -17,7 +17,7 @@
 
 #include <string>
 #include <stdexcept>
-#include <ostream>
+#include <iosfwd>
 
 #include <boost/format.hpp>
 #include <boost/exception_ptr.hpp>

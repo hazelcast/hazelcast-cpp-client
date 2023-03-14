@@ -21,7 +21,7 @@
 
 #include "hazelcast/client/address.h"
 #include <boost/uuid/uuid.hpp>
-#include <ostream>
+#include <iosfwd>
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

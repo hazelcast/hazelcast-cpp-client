@@ -24,7 +24,7 @@ namespace client {
 namespace test {
 namespace compact {
 
-struct a_type
+struct sample_compact_type
 {
     int x;
     nested_type nested;
@@ -36,19 +36,19 @@ struct a_type
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::a_type> : compact::compact_serializer
+struct hz_serializer<test::compact::sample_compact_type> : compact::compact_serializer
 {
-    static void write(const test::compact::a_type& object,
+    static void write(const test::compact::sample_compact_type& object,
                       compact::compact_writer& writer)
     {
-        writer.write_boolean("x", object.x);
+        writer.write_int32("x", object.x);
         writer.write_compact<test::compact::nested_type>("nested",
                                                          object.nested);
     }
 
-    static test::compact::a_type read(compact::compact_reader& reader)
+    static test::compact::sample_compact_type read(compact::compact_reader& reader)
     {
-        test::compact::a_type object;
+        test::compact::sample_compact_type object;
 
         object.x = reader.read_int32("x");
         object.nested =

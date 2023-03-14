@@ -70,7 +70,7 @@ public:
     {
         joined_ = std::forward<Handler>(h);
         return *this;
-    };
+    }
 
     /**
      * \copydoc membership_listener::on_joined
@@ -81,7 +81,7 @@ public:
     {
         on_joined(std::forward<Handler>(h));
         return std::move(*this);
-    };
+    }
 
     /**
      * Set an handler function to be invoked when an existing member leaves the
@@ -94,7 +94,7 @@ public:
     {
         left_ = std::forward<Handler>(h);
         return *this;
-    };
+    }
 
     /**
      * \copydoc membership_listener::on_left
@@ -105,7 +105,7 @@ public:
     {
         on_left(std::forward<Handler>(h));
         return std::move(*this);
-    };
+    }
 
     /**
      * Set an handler function to be invoked once when this listener is
@@ -118,7 +118,7 @@ public:
     {
         init_ = std::forward<Handler>(h);
         return *this;
-    };
+    }
 
     /**
      * \copydoc membership_listener::on_init
@@ -129,7 +129,7 @@ public:
     {
         on_init(std::forward<Handler>(h));
         return std::move(*this);
-    };
+    }
 
 private:
     using handler_t = std::function<void(const membership_event&)>;

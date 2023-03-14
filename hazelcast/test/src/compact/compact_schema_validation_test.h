@@ -49,7 +49,7 @@ protected:
 
         remote_controller_client().executeOnController(
           response,
-          factory_.get_cluster_id(),
+          factory_->get_cluster_id(),
           (boost::format(
              R"(
                         var schemas = instance_0.getOriginal().node.getSchemaService().getAllSchemas();
@@ -122,9 +122,9 @@ private:
 
 TEST_F(CompactSchemaValidation, validate)
 {
-    auto schema = get_schema<a_type>();
+    auto schema = get_schema<sample_compact_type>();
 
-    replicate_schema<a_type>();
+    replicate_schema<sample_compact_type>();
 
     auto actual = read_schema_from_server(schema);
 
