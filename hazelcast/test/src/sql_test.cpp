@@ -629,6 +629,7 @@ protected:
         }
     }
 
+
     static std::unique_ptr<HazelcastServer> member_;
     static std::unique_ptr<HazelcastServer> member2_;
 
@@ -1586,30 +1587,6 @@ TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
       7);
 }
 
-TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
-{
-    create_mapping_for_student_as_key();
-
-    // partition argument index not supported if `__key` isn't directly assigned
-    // to
-    check_partition_argument_index(
-      (boost::format("INSERT INTO %1% (this, age, height) VALUES (?, ?, ?)") % map_name)
-        .str(),
-      nullptr,
-      "value1",
-      1, (float)1.72);
-
-    try{
-    // this test case is here just for completeness to show that we cannot support complex keys and partition argument
-    check_partition_argument_index((boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name).str(), nullptr,
-            "value-1", student{2, 1.72});
-    }catch(exception::iexception& ie)
-    {
-        auto msg = ie.get_message();
-        ASSERT_NE(std::string::npos, msg.find("Writing to top-level fields of type OBJECT not supported"));
-    }
-}
-
 TEST_F(SqlTest, test_partition_based_routing)
 {
     std::string test_map_name{ random_map_name() };
@@ -1688,6 +1665,48 @@ TEST_F(SqlTest, test_partition_based_routing)
       1);
 }
 
+TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
+{
+    std::string custom_map_name{random_map_name()};
+    auto custom_map = client.get_map(custom_map_name).get();    
+    auto sql =
+      (boost::format("CREATE OR REPLACE MAPPING %1% ("
+                     "key BIGINT EXTERNAL NAME \"__key.key\", "
+                     "this VARCHAR "
+                     ") TYPE IMap OPTIONS( "
+                     "'keyFormat'='portable'"
+                     ", 'keyPortableFactoryId'='%2%'"
+                     ", 'keyPortableClassId'='%3%'"
+                     ", 'keyPortableClassVersion'='0'"
+                     ", 'valueFormat'='varchar'"
+                     ")") %
+       custom_map_name %
+       serialization::hz_serializer<portable_pojo_key>::PORTABLE_FACTORY_ID %
+       serialization::hz_serializer<portable_pojo_key>::PORTABLE_KEY_CLASS_ID)
+        .str();
+
+    client.get_sql().execute(sql).get();
+        
+    // partition argument index not supported if `__key` isn't directly assigned
+    // to
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, key) VALUES (?, ?)") % custom_map_name)
+        .str(),
+      nullptr,
+      "value1",
+      1);
+
+    create_mapping_for_student_as_key();
+    try{
+    // this test case is here just for completeness to show that we cannot support complex keys and partition argument
+    check_partition_argument_index((boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name).str(), nullptr,
+            "value-1", student{2, 1.72});
+    }catch(exception::iexception& ie)
+    {
+        auto msg = ie.get_message();
+        ASSERT_NE(std::string::npos, msg.find("Writing to top-level fields of type OBJECT not supported"));
+    }
+}
 
 TEST_F(SqlTest, test_partition_based_routing_complex_key){
 
