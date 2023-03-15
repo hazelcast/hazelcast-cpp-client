@@ -17,12 +17,28 @@
 
 #include "hazelcast/util/export.h"
 
+/**
+@brief hazelcast
+*/
 namespace hazelcast {
+/**
+@brief client
+*/
 namespace client {
+/**
+@brief sql
+*/
 namespace sql {
+/**
+@brief impl
+*/
 namespace impl {
 
-enum class HAZELCAST_API sql_error_code
+/**
+@brief sql_error_code
+*/
+
+enum sql_error_code
 {
     /** Generic error. */
     GENERIC = -1,

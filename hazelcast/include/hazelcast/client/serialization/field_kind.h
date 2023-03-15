@@ -17,12 +17,23 @@
 #pragma once
 
 #include <iosfwd>
-
+/**
+@brief hazelcast
+*/
 namespace hazelcast {
+/**
+@brief client
+*/
 namespace client {
+/**
+@brief serialization
+*/
 namespace serialization {
 
-enum class HAZELCAST_API field_kind
+/**
+@brief field_kind
+*/
+enum class field_kind
 {
     NOT_AVAILABLE = 0,
     BOOLEAN = 1,

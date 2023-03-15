@@ -21,9 +21,14 @@
 #define HZ_LOG(lg, lvl, msg)
 #endif
 
+/**
+@brief hazelcast
+*/   
 namespace hazelcast {
-
-class HAZELCAST_API logger
+/**
+@brief logger
+*/ 
+class logger
 {
 public:
     /**
@@ -55,7 +60,9 @@ private:
     const handler_type handler_;
     static std::mutex cout_lock_;
 };
-
+/**
+@brief level
+*/  
 enum class logger::level : int
 {
     all = (std::numeric_limits<int>::min)(),

@@ -47,10 +47,17 @@
                                 // 'min' in asio wait_traits
 #endif
 
+/**
+@brief hazelcast
+*/ 
 namespace hazelcast {
-namespace util {
+
+namespace util {  
 class hz_thread_pool;
 }
+/**
+@brief client
+*/
 namespace client {
 class Credentials;
 class load_balancer;
@@ -60,6 +67,7 @@ class ClientMessage;
 }
 
 namespace spi {
+  
 namespace impl {
 class ClientExecutionServiceImpl;
 }
@@ -73,6 +81,9 @@ namespace security {
 class credentials;
 }
 
+/**
+@brief Connection
+*/
 namespace connection {
 class Connection;
 
@@ -80,10 +91,12 @@ class ConnectionListener;
 
 class AddressProvider;
 
+
 /**
- * Responsible for managing {@link Connection} objects.
- */
-class HAZELCAST_API ClientConnectionManagerImpl
+@brief ClientConnectionManagerImpl
+  Responsible for managing {@link Connection} objects.
+*/
+class ClientConnectionManagerImpl
   : public ConnectionListenable
   , public std::enable_shared_from_this<ClientConnectionManagerImpl>
 {
@@ -158,6 +171,9 @@ public:
 
     void notify_backup(int64_t call_id);
 
+    /**
+    @brief client_state
+    */ 
     enum class client_state
     {
         /**

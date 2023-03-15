@@ -22,13 +22,24 @@
 #pragma warning(disable : 4251) // for dll export
 #endif
 
-namespace hazelcast {
-namespace client {
-namespace config {
 /**
+@brief hazelcast
+*/ 
+namespace hazelcast {
+/**
+@brief client
+*/     
+namespace client {
+/**
+@brief config
+*/     
+namespace config {
+   
+/**
+@brief eviction_strategy_type
  * Interface for configuration information about eviction.
- */
-enum class HAZELCAST_API eviction_strategy_type
+*/ 
+enum class eviction_strategy_type
 {
     /**
      * Sampling based eviction strategy type

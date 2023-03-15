@@ -17,11 +17,23 @@
 
 #include "hazelcast/util/export.h"
 
+/**
+@brief 
+*/
 namespace hazelcast {
+/**
+@brief 
+*/    
 namespace client {
+/**
+@brief 
+*/    
 namespace sql {
+/**
+@brief sql_expected_result_type
+*/    
 
-enum class HAZELCAST_API sql_expected_result_type
+enum class sql_expected_result_type
 {
     any = 0,
     rows = 1,
