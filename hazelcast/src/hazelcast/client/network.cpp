@@ -1057,6 +1057,7 @@ ClientConnectionManagerImpl::connect(const address& addr)
                                                    client_,
                                                    ++connection_id_gen_,
                                                    *socket_factory_,
+                                                   *this,
                                                    connection_timeout_millis_);
     connection->connect();
 
@@ -1192,6 +1193,7 @@ Connection::Connection(
   spi::ClientContext& client_context,
   int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
   internal::socket::SocketFactory& socket_factory,
+  ClientConnectionManagerImpl& client_connection_manager,
   std::chrono::milliseconds& connect_timeout_in_millis)
   : read_handler(*this, 16 << 10)
   , start_time_(std::chrono::system_clock::now())
@@ -1204,6 +1206,7 @@ Connection::Connection(
   , alive_(true)
   , last_write_time_(std::chrono::steady_clock::now().time_since_epoch())
 {
+    (void)client_connection_manager;
     socket_ = socket_factory.create(address, connect_timeout_in_millis);
 }
 

@@ -334,6 +334,7 @@ std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
 hazelcast_client_instance_impl::init_execution_service()
 {
     return std::make_shared<spi::impl::ClientExecutionServiceImpl>(
+      instance_name_,
       client_properties_,
       client_config_.get_executor_pool_size(),
       lifecycle_service_);

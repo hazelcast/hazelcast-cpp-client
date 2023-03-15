@@ -59,6 +59,7 @@ class address;
 class socket_interceptor;
 
 namespace connection {
+class ClientConnectionManagerImpl;
 
 class HAZELCAST_API Connection
   : public util::Closeable
@@ -69,6 +70,7 @@ public:
                spi::ClientContext& client_context,
                int32_t connection_id,
                internal::socket::SocketFactory& socket_factory,
+               ClientConnectionManagerImpl& client_connection_manager,
                std::chrono::milliseconds& connect_timeout_in_millis);
 
     ~Connection() override;

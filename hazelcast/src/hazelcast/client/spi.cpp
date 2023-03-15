@@ -1334,13 +1334,16 @@ ClientInvocationServiceImpl::fail_on_indeterminate_state() const
 }
 
 ClientExecutionServiceImpl::ClientExecutionServiceImpl(
+  const std::string& name,
   const client_properties& properties,
   int32_t user_pool_size,
   spi::lifecycle_service& service)
   : lifecycle_service_(service)
   , client_properties_(properties)
   , user_pool_size_(user_pool_size)
-{}
+{
+    (void)name;
+}
 
 void
 ClientExecutionServiceImpl::start()

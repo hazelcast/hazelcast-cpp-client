@@ -40,7 +40,8 @@ class HAZELCAST_API ClientExecutionServiceImpl
   : public std::enable_shared_from_this<ClientExecutionServiceImpl>
 {
 public:
-    ClientExecutionServiceImpl(const client_properties& properties,
+    ClientExecutionServiceImpl(const std::string& name,
+                               const client_properties& properties,
                                int32_t user_pool_size,
                                spi::lifecycle_service& service);
 

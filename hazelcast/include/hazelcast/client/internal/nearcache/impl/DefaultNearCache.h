@@ -64,7 +64,7 @@ public:
     {
         if (near_cache_record_store_.get() == NULL) {
             near_cache_record_store_ =
-              create_near_cache_record_store(near_cache_config_);
+              create_near_cache_record_store(name_, near_cache_config_);
         }
         near_cache_record_store_->initialize();
 
@@ -152,6 +152,7 @@ public:
 
 private:
     std::unique_ptr<NearCacheRecordStore<KS, V>> create_near_cache_record_store(
+      const std::string& name,
       const client::config::near_cache_config& near_cache_config)
     {
         client::config::in_memory_format inMemoryFormat =
@@ -160,11 +161,11 @@ private:
             case client::config::BINARY:
                 return std::unique_ptr<NearCacheRecordStore<KS, V>>(
                   new store::NearCacheDataRecordStore<K, V, KS>(
-                    near_cache_config, serialization_service_));
+                    name, near_cache_config, serialization_service_));
             case client::config::OBJECT:
                 return std::unique_ptr<NearCacheRecordStore<KS, V>>(
                   new store::NearCacheObjectRecordStore<K, V, KS>(
-                    near_cache_config, serialization_service_));
+                    name, near_cache_config, serialization_service_));
             default:
                 std::ostringstream out;
                 out << "Invalid in memory format: " << (int)inMemoryFormat;
