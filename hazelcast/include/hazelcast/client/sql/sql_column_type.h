@@ -17,14 +17,26 @@
 
 #include "hazelcast/util/export.h"
 
+/**
+@brief hazelcast
+*/ 
 namespace hazelcast {
+/**
+@brief client
+*/     
 namespace client {
+/**
+@brief sql
+*/     
 namespace sql {
 
-enum class HAZELCAST_API sql_column_type
+/**
+@brief sql_column_type
+*/     
+enum class sql_column_type
 {
-    /** VARCHAR type, represented by std::string */
-    varchar = 0,
+    
+    varchar = 0, /**< VARCHAR type, represented by std::string */
 
     /** BOOLEAN type, represented by bool */
     boolean = 1,

@@ -792,7 +792,6 @@ EXCLUDE_PATTERNS       = */util/* \
                          */map/* \
                          */protocol/* \
                          */proxy/* \
-                         */serialization/pimpl/* \
                          */spi/* \
                          */topic/impl/* \
                          */txn/* \
