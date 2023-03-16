@@ -3675,6 +3675,24 @@ TEST_F(DataOutputTest, testWriteChar_16_LittleEndian)
     ASSERT_EQ(std::vector<byte>({ 0xAC, 0x20 }), dataOutput.to_byte_array());
 }
 
+TEST_F(DataOutputTest, testWriteInt8)
+{
+    std::vector<byte> bytes{ 0x34, 0x12 };
+    serialization::pimpl::data_output dataOutput(boost::endian::order::big);
+    dataOutput.write<int8_t>(0x34);
+    dataOutput.write<int8_t>(0x12);
+    ASSERT_EQ(bytes, dataOutput.to_byte_array());
+}
+
+TEST_F(DataOutputTest, testWriteInt8_LittleEndian)
+{
+    std::vector<byte> bytes{ 0x1A, 0x5F };
+    serialization::pimpl::data_output dataOutput(boost::endian::order::little);
+    dataOutput.write<int8_t>(0x1A);
+    dataOutput.write<int8_t>(0x5F);
+    ASSERT_EQ(bytes, dataOutput.to_byte_array());
+}
+
 TEST_F(DataOutputTest, testWriteShort)
 {
     std::vector<byte> bytes{ 0x12, 0x34 };

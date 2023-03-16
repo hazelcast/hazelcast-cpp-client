@@ -48,16 +48,25 @@ TEST_F(CompactRabinFingerprintTest, test_i8_fingerprint)
 {
     check_each(std::vector<entry_t<byte>>{
       // Before               Val   After(Expected)
-      { 100, -5, -6165936963810616235 },
-      { INT64_MIN, 0, 36028797018963968 },
-      { 9223372036854775807, 113, -3588673659009074035 },
-      { -13, -13, 72057594037927935 },
-      { 42, 42, 0 },
-      { 42, -42, -1212835703325587522 },
-      { 0, 0, 0 },
-      { -123456789, 0, 7049212178818848951 },
-      { 123456789, 127, -8322440716502314713 },
-      { 127, -128, -7333697815154264656 },
+      std::tuple<int64_t, byte, int64_t>{
+        int64_t(100), byte(-5), int64_t(-6165936963810616235) },
+      std::tuple<int64_t, byte, int64_t>{
+        int64_t(INT64_MIN), byte(0), int64_t(36028797018963968) },
+      std::tuple<int64_t, byte, int64_t>{ int64_t(9223372036854775807),
+                                          byte(113),
+                                          int64_t(-3588673659009074035) },
+      std::tuple<int64_t, byte, int64_t>{
+        int64_t(-13), byte(-13), int64_t(72057594037927935) },
+      std::tuple<int64_t, byte, int64_t>{ int64_t(42), byte(42), int64_t(0) },
+      std::tuple<int64_t, byte, int64_t>{
+        int64_t(42), byte(-42), int64_t(-1212835703325587522) },
+      std::tuple<int64_t, byte, int64_t>{ int64_t(0), byte(0), int64_t(0) },
+      std::tuple<int64_t, byte, int64_t>{
+        int64_t(-123456789), byte(0), int64_t(7049212178818848951) },
+      std::tuple<int64_t, byte, int64_t>{
+        int64_t(123456789), byte(127), int64_t(-8322440716502314713) },
+      std::tuple<int64_t, byte, int64_t>{
+        int64_t(127), byte(-128), int64_t(-7333697815154264656) },
     });
 }
 
@@ -65,31 +74,46 @@ TEST_F(CompactRabinFingerprintTest, test_i32_fingerprint)
 {
     check_each(std::vector<entry_t<int>>{
       // Before               Val            After(Expected)
-      { INT64_MIN, 2147483647, 6066553457199370002 },
-      { 9223372036854775807, INT32_MIN, 6066553459773452525 },
-      { 9223372036854707, 42, -961937498224213201 },
-      { -42, -42, 4294967295 },
-      { 42, 42, 0 },
-      { 42, -442, 7797744281030715531 },
-      { 0, 0, 0 },
-      { -123456789, 0, -565582369564281851 },
-      { 123456786669, 42127, 7157681543413310373 },
-      { 2147483647, INT32_MIN, -7679311364898232185 } });
+      std::tuple<int64_t, int, int64_t>{
+        INT64_MIN, 2147483647, 6066553457199370002 },
+      std::tuple<int64_t, int, int64_t>{
+        9223372036854775807, INT32_MIN, 6066553459773452525 },
+      std::tuple<int64_t, int, int64_t>{
+        9223372036854707, 42, -961937498224213201 },
+      std::tuple<int64_t, int, int64_t>{ -42, -42, 4294967295 },
+      std::tuple<int64_t, int, int64_t>{ 42, 42, 0 },
+      std::tuple<int64_t, int, int64_t>{ 42, -442, 7797744281030715531 },
+      std::tuple<int64_t, int, int64_t>{ 0, 0, 0 },
+      std::tuple<int64_t, int, int64_t>{ -123456789, 0, -565582369564281851 },
+      std::tuple<int64_t, int, int64_t>{
+        123456786669, 42127, 7157681543413310373 },
+      std::tuple<int64_t, int, int64_t>{
+        2147483647, INT32_MIN, -7679311364898232185 } });
 }
 
 TEST_F(CompactRabinFingerprintTest, test_str_fingerprint)
 {
     check_each(std::vector<entry_t<std::string>>{
-      { 0, "hazelcast", 8164249978089638648 },
-      { -31231241235, "üğişçö", 6128923854942458838 },
-      { 41231542121235, "😀 😃 😄", -6875080751809013377 },
-      { rabin_finger_print::INIT, "STUdent", 1896492170246289820 },
-      { rabin_finger_print::INIT, "aü😄", -2084249746924383631 },
-      { rabin_finger_print::INIT, "", -2316162475121075004 },
-      { -123321, "xyz", 2601391163390439688 },
-      { 132132123132132, "    ç", -7699875372487088773 },
-      { 42, "42", 7764866287864698590 },
-      { -42, "-42", -3434092993477103253 } });
+      std::tuple<int64_t, std::string, int64_t>{
+        0, "hazelcast", 8164249978089638648 },
+      std::tuple<int64_t, std::string, int64_t>{
+        -31231241235, "üğişçö", 6128923854942458838 },
+      std::tuple<int64_t, std::string, int64_t>{
+        41231542121235, "😀 😃 😄", -6875080751809013377 },
+      std::tuple<int64_t, std::string, int64_t>{
+        rabin_finger_print::INIT, "STUdent", 1896492170246289820 },
+      std::tuple<int64_t, std::string, int64_t>{
+        rabin_finger_print::INIT, "aü😄", -2084249746924383631 },
+      std::tuple<int64_t, std::string, int64_t>{
+        rabin_finger_print::INIT, "", -2316162475121075004 },
+      std::tuple<int64_t, std::string, int64_t>{
+        -123321, "xyz", 2601391163390439688 },
+      std::tuple<int64_t, std::string, int64_t>{
+        132132123132132, "    ç", -7699875372487088773 },
+      std::tuple<int64_t, std::string, int64_t>{
+        42, "42", 7764866287864698590 },
+      std::tuple<int64_t, std::string, int64_t>{
+        -42, "-42", -3434092993477103253 } });
 }
 
 // hazelcast.internal.serialization.impl.compact.RabinFingerPrintTest::testRabinFingerprint()

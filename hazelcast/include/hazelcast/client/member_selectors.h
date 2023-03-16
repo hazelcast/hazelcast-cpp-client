@@ -17,7 +17,6 @@
 #pragma once
 
 #include <memory>
-#include <ostream>
 
 namespace hazelcast {
 namespace client {

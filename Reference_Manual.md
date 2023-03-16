@@ -40,9 +40,13 @@
    * [4. Serialization](#4-serialization)
       * [4.1. identified_data_serializer Serialization](#41-identified_data_serializer-serialization)
       * [4.2. portable_serializer Serialization](#42-portable_serializer-serialization)
-      * [4.3. Custom Serialization](#43-custom-serialization)
-      * [4.4. JSON Serialization](#44-json-serialization)
-      * [4.5. Global Serialization](#45-global-serialization)
+      * [4.3. compact_serializer Serialization](#43-compact_serializer-serialization)
+        * [4.3.1. Compact Serializer](#431-compact-serializer)
+        * [4.3.2. Schema Evolution](#432-schema-evolution)
+        * [4.3.3. Generic Record](#433-generic-record)
+      * [4.4. Custom Serialization](#44-custom-serialization)
+      * [4.5. JSON Serialization](#45-json-serialization)
+      * [4.6. Global Serialization](#46-global-serialization)
    * [5. Setting Up Client Network](#5-setting-up-client-network)
       * [5.1. Providing Member Addresses](#51-providing-member-addresses)
       * [5.2. Setting Smart Routing](#52-setting-smart-routing)
@@ -184,7 +188,7 @@ Please see [example instructions](https://docs.conan.io/en/latest/getting_starte
 - You need to put the following lines to your `conanfile.txt`:
 ```
 [requires]
-hazelcast-cpp-client/5.1.0
+hazelcast-cpp-client/5.2.0
 
 [generators]
 cmake
@@ -240,22 +244,22 @@ Follow the instructions for your platform:
 * [Windows](#1134-windows-users)
 
 #### 1.1.3.3. Linux and MacOS Users
-Here is how you download and extract version 5.1.0 using the **curl** command:
+Here is how you download and extract version 5.2.0 using the **curl** command:
 ```sh
-curl -Lo hazelcast-cpp-client-5.1.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v5.1.0.tar.gz
-tar xzf hazelcast-cpp-client-5.1.0.tar.gz
+curl -Lo hazelcast-cpp-client-5.2.0.tar.gz https://github.com/hazelcast/hazelcast-cpp-client/archive/v5.2.0.tar.gz
+tar xzf hazelcast-cpp-client-5.2.0.tar.gz
 ```
 
 Alternatively, you may clone the repository and checkout a specific version:
 ```sh
 git clone https://github.com/hazelcast/hazelcast-cpp-client.git
 cd hazelcast-cpp-client
-git checkout v5.1.0
+git checkout v5.2.0
 ```
 
 Once you are in the source directory of the Hazelcast C++ client library, create and change into a new directory:
 ```sh
-cd hazelcast-cpp-client-5.1.0
+cd hazelcast-cpp-client-5.2.0
 mkdir build
 cd build
 ```
@@ -279,7 +283,7 @@ Download and extract the release archive from the
 
 Open a `cmd` window and change into the folder where you extracted the contents of the release archive. Then create and change into a new directory:
 ```bat
-cd hazelcast-cpp-client-5.1.0
+cd hazelcast-cpp-client-5.2.0
 mkdir build
 cd build
 ```
@@ -320,8 +324,7 @@ For example, if you want to build the static library with SSL support, you can u
 cmake .. -DWITH_OPENSSL=ON -DBUILD_SHARED_LIBS=OFF
 ```
 
-Note that, if you want to use the `hazelcast-cpp-client` library which is compiled with `-DWITH_OPENSSL=ON` option without `find_package()` then you need to define `HZ_BUILD_WITH_SSL` symbolic constant before including any `hazelcast-cpp-client` header.
-It can be either passed via compiler flags.
+Note that, if you want to use the `hazelcast-cpp-client` library with `-DWITH_OPENSSL=ON` option without `find_package()` then you need to define `HZ_BUILD_WITH_SSL` symbolic constant before including any `hazelcast-cpp-client` header. This symbolic constant can be defined via compiler options or can be passed directly through cmake command as `-DVARIABLE=VALUE` pairs.
 
 For example:
 ```sh
@@ -357,17 +360,17 @@ Follow the instructions below to create a Hazelcast cluster:
 
 You should see a log similar to the following, which means that your single member cluster is ready to be used:
 
-```
+<pre>
 Nov 19, 2022 2:52:59 PM com.hazelcast.internal.cluster.ClusterService
-INFO: [192.168.1.112]:5701 [dev] [5.1.0]
+INFO: [192.168.1.112]:5701 [dev] [<i>5.x.x</i>]
 
 Members {size:1, ver:1} [
         Member [192.168.1.112]:5701 - 360ba49b-ef33-4590-9abd-ceff3e31dc06 this
 ]
 
 Nov 19, 2022 2:52:59 PM com.hazelcast.core.LifecycleService
-INFO: [192.168.1.112]:5701 [dev] [5.1.0] [192.168.1.112]:5701 is STARTED
-```
+INFO: [192.168.1.112]:5701 [dev] [<i>5.x.x</i>] [192.168.1.112]:5701 is STARTED
+</pre>
 
 #### 1.2.1.3. Adding User Java Library to Java CLASSPATH
 
@@ -597,21 +600,21 @@ int main() {
 }
 ```
 This should print logs about the cluster members and information about the client itself such as client type and local address port.
-```
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-18/11/2022 21:22:26.837 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
-18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
-18/11/2022 21:22:26.841 INFO: [139868341360384] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
+<pre>
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+18/11/2022 21:22:26.837 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
+18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
+18/11/2022 21:22:26.841 INFO: [139868341360384] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
 
 Members [1]  {
         Member[10.212.1.117]:5701 - a27f900e-b1eb-48be-aa46-d7a4922ef704
 }
 
 Started the Hazelcast C++ client instance hz.client_1
-```
+</pre>
 Congratulations! You just started a Hazelcast C++ Client.
 
 **Using a Map**
@@ -651,14 +654,14 @@ int main() {
 
 **Output**
 
-```
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-18/11/2022 21:22:26.837 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
-18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
-18/11/2022 21:22:26.841 INFO: [139868341360384] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
+<pre>
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+18/11/2022 21:22:26.837 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
+18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
+18/11/2022 21:22:26.841 INFO: [139868341360384] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
 
 Members [1]  {
         Member[10.212.1.117]:5701 - a27f900e-b1eb-48be-aa46-d7a4922ef704
@@ -667,7 +670,7 @@ Added IT personnel. Logging all known personnel
 Alice is in IT department
 Clark is in IT department
 Bob is in IT department
-```
+</pre>
 
 You see this example puts all the IT personnel into a cluster-wide `personnel_map` and then prints all the known personnel.
 
@@ -710,14 +713,14 @@ auto personnel = hz.get_map("personnel_map").get();
 
 **Output**
 
-```
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
-18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-18/11/2022 21:22:26.837 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
-18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
-18/11/2022 21:22:26.841 INFO: [139868341360384] client_1[dev] [5.1.0] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
+<pre>
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:375] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent Client (75121987-12fe-4ede-860d-59222e6d3ef2) is STARTING
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:379] (Wed Nov 18 17:25:23 2022 +0300:3b11bea) LifecycleService::LifecycleEvent STARTING
+18/11/2022 21:22:26.835 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+18/11/2022 21:22:26.837 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[10.212.1.117:5701]
+18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+18/11/2022 21:22:26.840 INFO: [139868602337152] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:a27f900e-b1eb-48be-aa46-d7a4922ef704, server version: 4.2, local address: Address[10.212.1.116:37946]
+18/11/2022 21:22:26.841 INFO: [139868341360384] client_1[dev] [<i>5.x.x</i>] [/home/ihsan/hazelcast-cpp-client/hazelcast/src/hazelcast/client/spi.cpp:881]
 
 Members [1]  {
         Member[10.212.1.117]:5701 - a27f900e-b1eb-48be-aa46-d7a4922ef704
@@ -728,7 +731,7 @@ Erwing is in Sales department
 Fatih is in Sales department
 Bob is in IT department
 Clark is in IT department
-```
+</pre>
 
 You will see this time we add only the sales employees but we get the list all known employees including the ones in IT. That is because our map lives in the cluster and no matter which client we use, we can access the whole map.
 
@@ -941,9 +944,125 @@ namespace hazelcast {
 
 Note that, this is very similar to `identified_data_serializer` implementation except the method signatures and the derived marker class of `portable_serializer` for the specialized serializer.
 
-`hz_serializer<Person>` specialization of `hz_serializer` should implement the above four methods, namely `get_factory_id`, `get_class_id`, `write_portable`, `read_portable`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as friend to your object class. You use the `portable_writer` class methods when serializing the object into binary bytes and you use the `portable_reader` class methods when de-serializing the bytes into the concrete object instance. 
+`hz_serializer<Person>` specialization of `hz_serializer` should implement the above four methods, namely `get_factory_id`, `get_class_id`, `write_portable`, `read_portable`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as friend to your object class. You use the `portable_writer` class methods when serializing the object into binary bytes and you use the `portable_reader` class methods when de-serializing the bytes into the concrete object instance.
 
-## 4.3. Custom Serialization
+## 4.3. compact_serializer Serialization
+As an enhancement to the existing serialization methods, Hazelcast offers compact serialization, with the following main features:
+
+- Separates the schema from the data and stores it for each type, instead of each object which results in less memory and bandwidth usage compared to other formats
+- Does not require a class to implement an interface or change the source code of the class in any way
+- Supports schema evolution which permits adding or removing fields, or changing the types of fields
+- Can work with any kind of types
+- Platform and language independent
+- Supports partial deserialization of fields, without deserializing the whole objects during queries or indexing
+
+Hazelcast achieves these features by having a well-known schema of objects and replicating them across the cluster which enables members and clients to fetch schemas they don’t have in their local registries. Each serialized object carries just a schema identifier and relies on the schema distribution service or configuration to match identifiers with the actual schema. Once the schemas are fetched, they are cached locally on the members and clients so that the next operations that use the schema do not incur extra costs.
+
+Schemas help Hazelcast to identify the locations of the fields on the serialized binary data. With this information, Hazelcast can deserialize individual fields of the data, without reading the whole binary. This results in a better query and indexing performance.
+
+Schemas can evolve freely by adding or removing fields. Even, the types of the fields can be changed. Multiple versions of the schema may live in the same cluster and both the old and new readers may read the compatible parts of the data. This feature is especially useful in rolling upgrade scenarios.
+
+The Compact serialization does not require any changes in the user classes as it doesn’t need a class to implement a particular interface. Serializers might be implemented and specified separately from the classes.
+
+The underlying format of the compact serialized objects is platform and language independent.
+
+Refer to [documentation](https://docs.hazelcast.com/hazelcast/5.3-snapshot/compact-binary-specification) for more details about compact binary serialization.
+### 4.3.1. Compact Serializer
+Another way to use compact serialization is to implement the `hz_serializer<T> : compact::compact_serializer` specialization for a `T`. A basic serializer could look like:
+
+``` C++
+class PersonDTO
+{
+    int age;
+    std::string name;
+    std::string surname;
+};
+
+namespace hazelcast {
+namespace client {
+namespace serialization {
+
+template<>
+struct hz_serializer<PersonDTO> : compact::compact_serializer
+{
+    static void write(const PersonDTO& object, compact::compact_writer& out)
+    {
+        out.write_int32("age", object.age);
+        out.write_string("name", object.name);
+        out.write_string("surname", object.surname);
+    }
+
+    static PersonDTO read(compact::compact_reader& in)
+    {
+        PersonDTO person;
+
+        person.age = in.read_int32("age");
+        boost::optional<std::string> name = in.read_string("name");
+
+        if (name) {
+            person.name = *name;
+        }
+
+        boost::optional<std::string> surname = in.read_string("surname");
+
+        if (surname) {
+            person.surname = *surname;
+        }
+
+        return person;
+    }
+
+    static std::string type_name() { return "person"; }
+};
+
+} // namespace serialization
+} // namespace client
+} // namespace hazelcast
+```
+
+### 4.3.2. Schema Evolution
+Compact serialization permits schemas and classes to evolve by adding or removing fields, or by changing the types of fields. More than one version of a class may live in the same cluster and different clients or members might use different versions of the class.
+
+Hazelcast handles the versioning internally. So, you don’t have to change anything in the classes or serializers apart from the added, removed, or changed fields.
+
+Hazelcast achieves this by identifying each version of the class by a unique fingerprint. Any change in a class results in a different fingerprint. Hazelcast uses a 64-bit Rabin Fingerprint to assign identifiers to schemas, which has an extremely low collision rate.
+
+Different versions of the schema with different identifiers are replicated in the cluster and can be fetched by clients or members internally. That allows old readers to read fields of the classes they know when they try to read data serialized by a new writer. Similarly, new readers might read fields of the classes available in the data, when they try to read data serialized by an old writer.
+
+This means that for one type name, there can be several schemas.
+
+In addition, the `compact::compact_reader` class exposes methods such as `field_kind get_field_kind(string name)` which returns the kind (i.e. the actual type) of the field.
+
+### 4.3.3. Generic Record
+Compact serialization introduces the `generic_record` and `generic_record_builder` classes, which represents a container and builder object that can be used in place of domain classes. The client always knows how to (de) serialize compact instances and therefore does not require any configuration in order to handle them.
+
+A new record can be created as such:
+
+``` C++
+using namespace hazelcast::client::serialization::generic_record;
+
+generic_record record = generic_record_builder{ "type-name" }
+                            .set_boolean("field-name-1", true)
+                            .set_int32("field-name-2", 123)
+                            .set_string("field-name-3", "hello")
+                            .build();
+
+// Put into map and wait
+map->put(1234, record).get();
+```
+
+A generic record can be used as such:
+
+``` C++
+auto rec = map->get<int, generic_record>(1234).get();
+bool field1 = rec->get_boolean("field-name-1");
+int field2 = rec->get_int32("field-name-2");
+boost::optional<std::string> field3 = rec->get_string("field-name-3");
+```
+
+Refer to the general [documentation](https://docs.hazelcast.com/hazelcast/latest/serialization/compact-serialization) for more details on how to access domain objects without domain classes. [Supported types](https://docs.hazelcast.com/hazelcast/latest/serialization/compact-serialization#supported-types) are listed here.
+
+## 4.4. Custom Serialization
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects. It allows you alsoan integration point for any external serialization frameworks such as protobuf, flatbuffers, etc. 
 
@@ -982,7 +1101,7 @@ namespace hazelcast {
 
 `hz_serializer<Person>` specialization of `hz_serializer` should implement the above three methods, namely `get_type_id`, `write`, `read`. In case that the object fields are non-public, you can always define struct `hz_serializer<Person>` as friend to your object class. You use the `object_data_output` class methods when serializing the object into binary bytes and you use the `object_data_input` class methods when de-serializing the bytes into the concrete object instance. 
 
-## 4.4. JSON Serialization
+## 4.5. JSON Serialization
 
 You can use the JSON formatted strings as objects in Hazelcast cluster. Creating JSON objects in the cluster does not require any server side coding and hence you can just send a JSON formatted string object to the cluster and query these objects by fields.
 
@@ -1009,7 +1128,7 @@ auto result = map->values<hazelcast::client::hazelcast_json_value>(
 hazelcast::client::query::greater_less_predicate(hz, "age", 6, false, true)).get();
 ```
 
-## 4.5. Global Serialization
+## 4.6. Global Serialization
 
 The global serializer is registered as a fallback serializer to handle all other objects if a serializer cannot be located for them.
 
@@ -2223,25 +2342,25 @@ int main() {
 
 **Output:**
 
-```
-20/11/2022 12:26:43.340 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:375] (Fri Nov 20 11:03:59 2022 +0300:f2326084c3) LifecycleService::LifecycleEvent Client (7add62a3-c6ec-4002-a9d8-79ed4639f8e9) is STARTING
-20/11/2022 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:379] (Fri Nov 20 11:03:59 2022 +0300:f2326084c3) LifecycleService::LifecycleEvent STARTING
-20/11/2022 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
-20/11/2022 12:26:43.398 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[127.0.0.1:5701]
-20/11/2022 12:26:43.409 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
-20/11/2022 12:26:43.410 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:8324bc53-8190-400c-bcbf-e582834a0542, server version: 4.2, local address: Address[127.0.0.1:63383]
-20/11/2022 12:26:43.412 INFO: [0x7000062b8000] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:881]
+<pre>
+20/11/2022 12:26:43.340 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:375] (Fri Nov 20 11:03:59 2022 +0300:f2326084c3) LifecycleService::LifecycleEvent Client (7add62a3-c6ec-4002-a9d8-79ed4639f8e9) is STARTING
+20/11/2022 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:379] (Fri Nov 20 11:03:59 2022 +0300:f2326084c3) LifecycleService::LifecycleEvent STARTING
+20/11/2022 12:26:43.343 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:387] LifecycleService::LifecycleEvent STARTED
+20/11/2022 12:26:43.398 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/network.cpp:587] Trying to connect to Address[127.0.0.1:5701]
+20/11/2022 12:26:43.409 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:411] LifecycleService::LifecycleEvent CLIENT_CONNECTED
+20/11/2022 12:26:43.410 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/network.cpp:637] Authenticated with server  Address[:5701]:8324bc53-8190-400c-bcbf-e582834a0542, server version: 4.2, local address: Address[127.0.0.1:63383]
+20/11/2022 12:26:43.412 INFO: [0x7000062b8000] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:881]
 
 Members [1]  {
 	Member[localhost]:5701 - 8324bc53-8190-400c-bcbf-e582834a0542
 }
 Client connected to the cluster
-20/11/2022 12:26:48.700 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:395] LifecycleService::LifecycleEvent SHUTTING_DOWN
-20/11/2022 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/network.cpp:545] Removed connection to endpoint: Address[localhost:5701], connection: ClientConnection{alive=0, connectionId=1, remoteEndpoint=Address[localhost:5701], lastReadTime=2022-11-20 12:26:43.-286, closedTime=2022-11-20 12:26:48.000, connected server version=4.2}
-20/11/2022 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:419] LifecycleService::LifecycleEvent CLIENT_DISCONNECTED
+20/11/2022 12:26:48.700 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:395] LifecycleService::LifecycleEvent SHUTTING_DOWN
+20/11/2022 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/network.cpp:545] Removed connection to endpoint: Address[localhost:5701], connection: ClientConnection{alive=0, connectionId=1, remoteEndpoint=Address[localhost:5701], lastReadTime=2022-11-20 12:26:43.-286, closedTime=2022-11-20 12:26:48.000, connected server version=4.2}
+20/11/2022 12:26:48.701 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:419] LifecycleService::LifecycleEvent CLIENT_DISCONNECTED
 Client is disconnected from the cluster
-20/11/2022 12:26:48.703 INFO: [0x11a0acdc0] hz.client_1[dev] [5.1.0] [../hazelcast/src/hazelcast/client/spi.cpp:403] LifecycleService::LifecycleEvent SHUTDOWN
-```
+20/11/2022 12:26:48.703 INFO: [0x11a0acdc0] hz.client_1[dev] [<i>5.x.x</i>] [../hazelcast/src/hazelcast/client/spi.cpp:403] LifecycleService::LifecycleEvent SHUTDOWN
+</pre>
 
 ### 7.5.2. Distributed Data Structure Events
 

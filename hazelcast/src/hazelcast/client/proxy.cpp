@@ -31,6 +31,10 @@
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/topic/reliable_listener.h"
+#include "hazelcast/client/proxy/ITopicImpl.h"
+#include "hazelcast/client/proxy/ReplicatedMapImpl.h"
+#include "hazelcast/client/flake_id_generator.h"
+#include "hazelcast/client/reliable_topic.h"
 
 namespace hazelcast {
 namespace client {

@@ -22,6 +22,8 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <gtest/gtest.h>
+
 #include "hazelcast/client/spi/ClientContext.h"
 
 inline std::string
@@ -128,3 +130,17 @@ random_string()
     } catch (...) {                                                            \
         FAIL();                                                                \
     }
+
+template<typename Exception, typename Fn, typename Handler>
+inline void
+assert_that_thrown_by(Fn fn, Handler h)
+{
+    try {
+        fn();
+        GTEST_FAIL();
+    } catch (const Exception& e) {
+        h(e);
+    } catch (...) {
+        GTEST_FAIL();
+    }
+}

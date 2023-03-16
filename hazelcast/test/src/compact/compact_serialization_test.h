@@ -41,7 +41,7 @@ class CompactSerializationTest : public compact_test_base
 public:
     SerializationService& serialization_service()
     {
-        return spi::ClientContext{ client }.get_serialization_service();
+        return spi::ClientContext{ *client }.get_serialization_service();
     }
 
     template<typename T>
@@ -114,6 +114,33 @@ TEST_F(CompactSerializationTest, test_field_order_fixed_size)
     check_schema_field(schema, "rank", 12, -1, -1);
     check_schema_field(schema, "isFired", 16, -1, 0);
     check_schema_field(schema, "isHired", 16, -1, 1);
+}
+
+TEST_F(CompactSerializationTest, test_get_field_kind)
+{
+    schema_writer schema_writer("typeName");
+    auto writer = serialization::pimpl::create_compact_writer(&schema_writer);
+    serialization::hz_serializer<employee_dto>::write(employee_dto{}, writer);
+    auto schema = std::move(schema_writer).build();
+
+    auto data = serialization_service().to_data(employee_dto{});
+
+    serialization::object_data_input input{
+        boost::endian::order::little,
+        data.to_byte_array(),
+        0,
+        serialization_service().get_portable_serializer(),
+        serialization_service().get_compact_serializer(),
+        serialization_service().get_data_serializer(),
+        nullptr
+    };
+
+    auto reader = serialization::pimpl::create_compact_reader(
+      serialization_service().get_compact_serializer(), input, schema);
+
+    EXPECT_EQ(reader.get_field_kind("age"), serialization::field_kind::INT32);
+    EXPECT_EQ(reader.get_field_kind("non_existent_field"),
+              serialization::field_kind::NOT_AVAILABLE);
 }
 
 TEST_F(CompactSerializationTest, test_schema_writer_counts)

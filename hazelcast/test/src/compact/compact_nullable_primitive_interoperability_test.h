@@ -54,7 +54,7 @@ class CompactNullablePrimitiveInteroperabilityTest : public compact_test_base
 protected:
     SerializationService& serialization_service()
     {
-        return spi::ClientContext{ client }.get_serialization_service();
+        return spi::ClientContext{ *client }.get_serialization_service();
     }
 };
 

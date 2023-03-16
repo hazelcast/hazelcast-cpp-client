@@ -41,6 +41,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
+#include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
@@ -2994,6 +2995,7 @@ cluster_view_listener::try_register(
     auto conn_id = connection->get_connection_id();
 
     invocation->invoke_urgent().then(
+      boost::launch::sync,
       [weak_self, handler, conn_id](boost::future<protocol::ClientMessage> f) {
           auto self = weak_self.lock();
           if (!self)
@@ -3004,6 +3006,15 @@ cluster_view_listener::try_register(
               return;
           }
 
+          try {
+              f.get();
+          } catch (exception::hazelcast_client_not_active& e) {
+              /**
+               * If client is shutdown, we should not retry for another
+               * connection
+               * */
+              return;
+          }
           // completes with exception, listener needs to be reregistered
           self->try_reregister_to_random_connection(conn_id);
       });

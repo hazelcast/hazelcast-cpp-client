@@ -16,45 +16,20 @@
 #pragma once
 
 #include <atomic>
-#include <memory>
-#include <cstdint>
-#include <vector>
 #include <random>
 #include <boost/uuid/uuid.hpp>
 
-#include "hazelcast/client/map/NearCachedClientMapProxy.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/proxy/RingbufferImpl.h"
-#include "hazelcast/client/imap.h"
-#include "hazelcast/client/multi_map.h"
-#include "hazelcast/client/replicated_map.h"
-#include "hazelcast/client/iqueue.h"
-#include "hazelcast/client/iset.h"
-#include "hazelcast/client/ilist.h"
-#include "hazelcast/client/itopic.h"
-#include "hazelcast/client/pn_counter.h"
-#include "hazelcast/client/transaction_options.h"
 #include "hazelcast/client/transaction_context.h"
 #include "hazelcast/client/cluster.h"
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/spi/lifecycle_service.h"
 #include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/ringbuffer.h"
-#include "hazelcast/client/reliable_topic.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
-#include "hazelcast/client/spi/impl/listener/cluster_view_listener.h"
-#include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
-#include "hazelcast/client/impl/statistics/Statistics.h"
-#include "hazelcast/client/flake_id_generator.h"
-#include "hazelcast/client/iexecutor_service.h"
 #include "hazelcast/client/local_endpoint.h"
-#include "hazelcast/cp/cp.h"
 #include "hazelcast/cp/cp_impl.h"
-#include "hazelcast/logger.h"
 #include "hazelcast/client/sql/sql_service.h"
 #include "hazelcast/client/serialization/pimpl/compact/compact.h"
 
@@ -64,17 +39,25 @@
 #endif
 
 namespace hazelcast {
+class logger;
 namespace client {
 class hazelcast_client;
+class imap;
 namespace connection {
 class ClientConnectionManagerImpl;
 class AddressProvider;
 } // namespace connection
 
+namespace internal {
+namespace nearcache {
+class NearCacheManager;
+} // namespace nearcache
+} // namespace internal
+
 namespace serialization {
 namespace pimpl {
 class SerializationService;
-}
+} // namespace pimpl
 } // namespace serialization
 namespace spi {
 class ClientContext;
@@ -82,18 +65,23 @@ class lifecycle_service;
 
 namespace impl {
 class ClientExecutionServiceImpl;
+class ClientInvocationServiceImpl;
 class ClientPartitionServiceImpl;
+class Statistics;
 namespace listener {
 class listener_service_impl;
-}
+} // namespace listener
+namespace sequence {
+class CallIdSequence;
+} // namespace sequence
 } // namespace impl
 } // namespace spi
-
-class transaction_context;
 
 class transaction_options;
 
 class cluster;
+
+class cluster_view_listener;
 
 namespace impl {
 class ClientLockReferenceIdGenerator;

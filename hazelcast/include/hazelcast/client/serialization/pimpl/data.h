@@ -21,6 +21,7 @@
 #include <functional>
 #include <stdint.h>
 
+#include "hazelcast/util/byte.h"
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/pimpl/compact/schema.h"
 
@@ -116,7 +117,6 @@ struct HAZELCAST_API
       const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& lhs,
       const std::shared_ptr<hazelcast::client::serialization::pimpl::data>& rhs)
       const noexcept;
-    ;
 };
 
 template<>

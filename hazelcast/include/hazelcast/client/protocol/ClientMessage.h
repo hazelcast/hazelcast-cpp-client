@@ -23,7 +23,7 @@
 
 #include <cassert>
 #include <memory>
-#include <ostream>
+#include <iosfwd>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -195,6 +195,9 @@ struct HAZELCAST_API is_trivial_entry_vector<
  */
 class HAZELCAST_API ClientMessage
 {
+    template<typename T>
+    struct default_nullable_decoder;
+
 public:
     static constexpr size_t EXPECTED_DATA_BLOCK_SIZE = 1024;
 
@@ -466,7 +469,7 @@ public:
     typename std::enable_if<std::is_same<T, local_date>::value,
                             T>::type inline get()
     {
-        auto year = static_cast<uint8_t>(get<int32_t>());
+        auto year = get<int32_t>();
         auto month = static_cast<uint8_t>(get<int8_t>());
         auto day_of_month = static_cast<uint8_t>(get<int8_t>());
         return { year, month, day_of_month };
@@ -914,6 +917,44 @@ public:
         return h;
     }
 
+    template<typename T>
+    typename std::
+      enable_if<std::is_same<T, serialization::pimpl::schema>::value, T>::type
+      get()
+    {
+        using namespace serialization;
+        using namespace serialization::pimpl;
+
+        // skip begin frame
+        skip_frame();
+
+        auto type_name = get<std::string>();
+
+        std::unordered_map<std::string, field_descriptor> fields;
+        {
+            skip_frame();
+
+            while (!next_frame_is_data_structure_end_frame()) {
+                skip_frame();
+
+                // skip bytes in initial frame
+                (void)rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+                auto key = get<int>();
+                auto field_name = get<std::string>();
+
+                fast_forward_to_end_frame();
+
+                fields.insert(std::make_pair(
+                  field_name, field_descriptor{ field_kind(key) }));
+            }
+        }
+
+        fast_forward_to_end_frame();
+
+        return schema{ type_name, move(fields) };
+    }
+
     /**
      * Reads the header of the current frame.
      * The cursor must be at a frame's beginning.
@@ -1002,10 +1043,8 @@ public:
     }
 
     template<typename T>
-    boost::optional<T> get_nullable(std::function<T(ClientMessage&)> decoder =
-                                      [](ClientMessage& msg) {
-                                          return msg.get<T>();
-                                      })
+    boost::optional<T> get_nullable(
+      std::function<T(ClientMessage&)> decoder = default_nullable_decoder<T>{})
     {
         if (next_frame_is_null_frame()) {
             // skip next frame with null flag
@@ -1438,6 +1477,12 @@ private:
     static const frame_header_type NULL_FRAME;
     static const frame_header_type BEGIN_FRAME;
     static const frame_header_type END_FRAME;
+
+    template<typename T>
+    struct default_nullable_decoder
+    {
+        T operator()(ClientMessage& msg) const { return msg.get<T>(); }
+    };
 
     template<typename T>
     void set_primitive_vector(const std::vector<T>& values,

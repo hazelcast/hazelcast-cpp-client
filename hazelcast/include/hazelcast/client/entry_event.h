@@ -16,7 +16,7 @@
 #pragma once
 
 #include <memory>
-#include <ostream>
+#include <iosfwd>
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/serialization/serialization.h"
 

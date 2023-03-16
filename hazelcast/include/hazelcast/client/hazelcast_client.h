@@ -18,6 +18,12 @@
 #include <boost/utility/string_view.hpp>
 
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
+#include "hazelcast/client/flake_id_generator.h"
+#include "hazelcast/client/iexecutor_service.h"
+#include "hazelcast/client/itopic.h"
+#include "hazelcast/client/pn_counter.h"
+#include "hazelcast/client/reliable_topic.h"
+#include "hazelcast/client/replicated_map.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

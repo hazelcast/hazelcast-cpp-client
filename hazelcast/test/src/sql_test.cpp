@@ -1528,6 +1528,106 @@ TEST_F(SqlTest, test_streaming_sql_query)
     for_each_row_until(200, result);
 }
 
+TEST_F(SqlTest, test_date)
+{
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
+    create_mapping("DATE");
+
+    auto expecteds = populate_map_via_rc<local_date>(
+      [](const local_date& date) {
+          return boost::str(
+            boost::format("java.time.LocalDate.of(%1%, %2%, %3%)") %
+            int(date.year) % int(date.month) % int(date.day_of_month));
+      },
+      map_name,
+      server_factory_->get_cluster_id());
+
+    auto result = select_all();
+
+    for_each_row(result,
+                 assert_row_count(expecteds.size()),
+                 assert_entries_equal<local_date>{ expecteds });
+}
+
+TEST_F(SqlTest, test_time)
+{
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
+    create_mapping("TIME");
+
+    auto expecteds = populate_map_via_rc<local_time>(
+      [](const local_time& time) {
+          return boost::str(
+            boost::format("java.time.LocalTime.of(%1%, %2%, %3%, %4%)") %
+            int(time.hours) % int(time.minutes) % int(time.seconds) %
+            int(time.nanos));
+      },
+      map_name,
+      server_factory_->get_cluster_id());
+
+    auto result = select_all();
+
+    for_each_row(result,
+                 assert_row_count(expecteds.size()),
+                 assert_entries_equal<local_time>{ expecteds });
+}
+
+TEST_F(SqlTest, test_timestamp)
+{
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
+    create_mapping("TIMESTAMP");
+
+    auto expecteds = populate_map_via_rc<local_date_time>(
+      [](const local_date_time& dt) {
+          return boost::str(
+            boost::format(
+              "java.time.LocalDateTime.of(%1%, %2%, %3%, %4%, %5%, %6%, %7%)") %
+            dt.date.year % int(dt.date.month) % int(dt.date.day_of_month) %
+            int(dt.time.hours) % int(dt.time.minutes) % int(dt.time.seconds) %
+            int(dt.time.nanos));
+      },
+      map_name,
+      server_factory_->get_cluster_id());
+
+    auto result = select_all();
+
+    for_each_row(result,
+                 assert_row_count(expecteds.size()),
+                 assert_entries_equal<local_date_time>{ expecteds });
+}
+
+TEST_F(SqlTest, test_timestamp_with_timezone)
+{
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
+    create_mapping("TIMESTAMP WITH TIME ZONE");
+
+    auto expecteds = populate_map_via_rc<offset_date_time>(
+      [](const offset_date_time& dt) {
+          return boost::str(
+            boost::format("java.time.OffsetDateTime.of(%1%, %2%, %3%, %4%, "
+                          "%5%, %6%, %7%, java.time.ZoneOffset.ofHours(%8%))") %
+            dt.date_time.date.year % int(dt.date_time.date.month) %
+            int(dt.date_time.date.day_of_month) % int(dt.date_time.time.hours) %
+            int(dt.date_time.time.minutes) % int(dt.date_time.time.seconds) %
+            int(dt.date_time.time.nanos) % (dt.zone_offset_in_seconds / 3600));
+      },
+      map_name,
+      server_factory_->get_cluster_id());
+
+    auto result = select_all();
+
+    for_each_row(result,
+                 assert_row_count(expecteds.size()),
+                 assert_entries_equal<offset_date_time>{ expecteds });
+}
+
 TEST_F(SqlTest, exception)
 {
     sql::sql_service service = client.get_sql();
