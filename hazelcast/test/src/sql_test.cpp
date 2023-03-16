@@ -421,6 +421,61 @@ protected:
 
     portable_pojo value(int64_t i) { return portable_pojo{ i }; }
 
+    int32_t get_direct_imap_queries_executed(int32_t instance_index)
+    {   
+        auto script_template = 
+            (boost::format("var optimizer = Java.type('com.hazelcast.jet.sql.impl.CalciteSqlOptimizer'); \n"
+            "optimizer = instance_%1%.getOriginal().node.nodeEngine.getSqlService().getOptimizer();\n"
+            "result = \"\" + optimizer.getPlanExecutor().getDirectIMapQueriesExecuted();\n"            
+            ) % instance_index).str();        
+
+
+        Response response;
+        remote_controller_client().executeOnController(
+            response,
+            server_factory_->get_cluster_id(),
+            std::string(script_template),
+            Lang::JAVASCRIPT);
+
+        EXPECT_TRUE(response.success);
+        return std::stoi(response.result);        
+    }
+
+    std::string get_uuid_of_instance(int32_t instance_index)
+    {        
+        auto script_template = 
+            (boost::format("result = \"\" + instance_%1%.getOriginal().node.nodeEngine.getLocalMember().getUuid();\n") % instance_index).str();
+
+        Response response;
+        remote_controller_client().executeOnController(
+            response,
+            server_factory_->get_cluster_id(),
+            std::string(script_template),
+            Lang::JAVASCRIPT);
+
+        EXPECT_TRUE(response.success);
+        return response.result;
+    }
+
+    std::vector<int32_t> prepare_member_to_instance_mapping()
+    {
+        std::vector<member> members = client.get_cluster().get_members();
+        std::vector<int32_t> instance_mapping(members.size());
+                   
+        for(int i = 0; i < members.size(); i++ ){
+            std::string curr_uuid = get_uuid_of_instance(i);
+
+            for(int j = 0; j < members.size(); j++ )
+            {
+                if( curr_uuid == to_string( members[j].get_uuid() ) )
+                {
+                    instance_mapping[j] = i;
+                }
+            }
+        }
+        return instance_mapping;
+    }    
+
     struct assert_row_count
     {
         using sql_row = sql::sql_page::sql_row;
@@ -628,6 +683,52 @@ protected:
                       *expected_index);
         }
     }
+
+    int32_t get_partition_owner_index(int64_t key){
+        std::vector<member> members = client.get_cluster().get_members();
+        spi::ClientContext clientContext(client);
+        auto partition_id = clientContext.get_partition_service().get_partition_id(clientContext.get_serialization_service().to_data(key));        
+        auto owner = clientContext.get_partition_service().get_partition_owner(partition_id);
+
+        for( int i = 0; i < members.size(); i++ )          
+        {            
+            if ( members[i].get_uuid() == owner ) {
+                return i;
+            }            
+        }
+        
+        EXPECT_TRUE(false) << "Partition Owner not found for key: " <<  key;
+        return 0;
+    }
+
+    void  test_query(std::string sql, int32_t keyCount) {        
+
+        std::vector<int32_t> member_2_instance_mapping = prepare_member_to_instance_mapping();
+        int32_t members_size = client.get_cluster().get_members().size();
+        // warm up cache
+        client.get_sql().execute(sql, 0).get();
+
+        // collect pre-execution metrics
+        std::vector<uint64_t> expected_counts(members_size);
+        for(int i = 0; i < expected_counts.size();i++){
+            expected_counts[i] = get_direct_imap_queries_executed(member_2_instance_mapping[i]);
+        }
+    
+        // run queries
+        for (int64_t i = 1; i < keyCount; i++) {
+            client.get_sql().execute(sql, i).get();
+            expected_counts[get_partition_owner_index(i)]++;
+        }
+
+        // assert
+        std::vector<uint64_t> actual_counts(members_size);
+
+        for(int i = 0; i < actual_counts.size();i++){
+            actual_counts[i] = get_direct_imap_queries_executed(member_2_instance_mapping[i]);
+        }
+
+        ASSERT_EQ( expected_counts, actual_counts );
+    }    
 
 
     static std::unique_ptr<HazelcastServer> member_;
@@ -1721,6 +1822,27 @@ TEST_F(SqlTest, test_partition_based_routing_complex_key){
     check_partition_argument_index( (boost::format( "DELETE FROM %1% WHERE __key = ?") % map_name).str(),
                 std::make_shared<int32_t>(0), student{2, 1.72});                    
 }
+
+TEST_F(SqlTest, test_routing_for_select){
+    create_mapping();
+    test_query( (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(), 100);
+}
+
+TEST_F(SqlTest, test_routing_for_insert){
+    create_mapping("VARCHAR");
+    test_query( (boost::format("INSERT INTO %1% (this, __key) VALUES ('testVal', ?)") % map_name).str(), 100);
+}
+
+TEST_F(SqlTest, test_routing_for_update){
+    create_mapping("VARCHAR");
+    test_query( (boost::format("UPDATE %1% SET this = 'testVal' WHERE __key = ?") % map_name).str(), 100);
+}
+
+TEST_F(SqlTest, test_routing_for_delete){
+    create_mapping("VARCHAR");
+    test_query( (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(), 100);
+}
+
 
 class sql_encode_test : public ::testing::Test
 {
