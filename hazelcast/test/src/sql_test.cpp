@@ -686,6 +686,8 @@ protected:
             EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
                       nullptr);
         } else {
+            EXPECT_NE(sql_service.partition_argument_index_cache_->get(sql),
+                      nullptr);
             EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(sql),
                       *expected_index);
         }
