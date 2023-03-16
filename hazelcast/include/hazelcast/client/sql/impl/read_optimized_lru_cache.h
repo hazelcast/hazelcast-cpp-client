@@ -96,7 +96,6 @@ public:
     }
 
     void remove(const K& key) { cache_.remove(key); }
-    
 
 protected:
     class custom_atomic_lock
@@ -158,8 +157,7 @@ private:
             }
 
             /*max heap*/
-            std::priority_queue<int64_t>
-              oldest_timestamps;
+            std::priority_queue<int64_t> oldest_timestamps;
 
             // 1st pass
             const auto values = cache_.values();
@@ -182,7 +180,7 @@ private:
             // 2nd pass
             cache_.remove_values_if(
               [remove_threshold](const value_and_timestamp<V>& v) -> bool {
-                  return (v.timestamp_ <= remove_threshold);                  
+                  return (v.timestamp_ <= remove_threshold);
               });
 
             cleanup_lock_.release();
@@ -190,7 +188,7 @@ private:
             throw;
         }
     }
-    
+
     custom_atomic_lock cleanup_lock_;
     int32_t capacity_;
     int32_t cleanup_threshold_;

@@ -130,7 +130,7 @@ public:
 
     std::shared_ptr<impl::read_optimized_lru_cache<std::string, int32_t>>
       partition_argument_index_cache_;
-      
+
 private:
     friend client::impl::hazelcast_client_instance_impl;
     friend sql_result;
