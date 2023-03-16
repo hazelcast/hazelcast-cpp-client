@@ -304,6 +304,7 @@ protected:
     {
         member_.reset();
         member2_.reset();
+        member3_.reset();
         server_factory_.reset();
     }
 
