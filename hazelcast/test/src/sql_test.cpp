@@ -747,8 +747,6 @@ protected:
     static std::unique_ptr<HazelcastServer> member_;
     static std::unique_ptr<HazelcastServer> member2_;
     static std::unique_ptr<HazelcastServer> member3_;
-
-private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
 };
 
@@ -1766,6 +1764,9 @@ TEST_F(SqlTest, select)
 
 TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
     create_mapping("VARCHAR");
 
     check_partition_argument_index(
@@ -1806,6 +1807,8 @@ TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
 
 TEST_F(SqlTest, test_partition_based_routing)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
     std::string test_map_name{ random_map_name() };
     auto test_map = client.get_map(test_map_name).get();
 
@@ -1884,6 +1887,8 @@ TEST_F(SqlTest, test_partition_based_routing)
 
 TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+      GTEST_SKIP();
     std::string custom_map_name{ random_map_name() };
     auto custom_map = client.get_map(custom_map_name).get();
     auto sql =
@@ -1935,6 +1940,8 @@ TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
 
 TEST_F(SqlTest, test_partition_based_routing_complex_key)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
 
     create_mapping_for_student_as_key();
 
@@ -1958,6 +1965,9 @@ TEST_F(SqlTest, test_partition_based_routing_complex_key)
 
 TEST_F(SqlTest, test_routing_for_select)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+      GTEST_SKIP();
+
     create_mapping();
     test_query_for_routing(
       (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
@@ -1966,6 +1976,9 @@ TEST_F(SqlTest, test_routing_for_select)
 
 TEST_F(SqlTest, test_routing_for_insert)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
     create_mapping("VARCHAR");
     test_query_for_routing(
       (boost::format("INSERT INTO %1% (this, __key) VALUES ('testVal', ?)") %
@@ -1976,6 +1989,9 @@ TEST_F(SqlTest, test_routing_for_insert)
 
 TEST_F(SqlTest, test_routing_for_update)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+      GTEST_SKIP();
+
     create_mapping("VARCHAR");
     test_query_for_routing(
       (boost::format("UPDATE %1% SET this = 'testVal' WHERE __key = ?") %
@@ -1986,6 +2002,9 @@ TEST_F(SqlTest, test_routing_for_update)
 
 TEST_F(SqlTest, test_routing_for_delete)
 {
+    if (cluster_version() < member::version{ 5, 3, 0 })
+      GTEST_SKIP();
+
     create_mapping("VARCHAR");
     test_query_for_routing(
       (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(), 100);
