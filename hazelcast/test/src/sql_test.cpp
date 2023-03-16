@@ -297,6 +297,7 @@ protected:
         server_factory_.reset(new HazelcastServerFactory(config_file_path));
         member_.reset(new HazelcastServer(*server_factory_));
         member2_.reset(new HazelcastServer(*server_factory_));
+        member3_.reset(new HazelcastServer(*server_factory_));
     }
 
     static void TearDownTestSuite()
@@ -710,7 +711,7 @@ protected:
         return 0;
     }
 
-    void test_query(std::string sql, int32_t keyCount)
+    void test_query_for_routing(std::string sql, int32_t keyCount)
     {
 
         std::vector<int32_t> member_2_instance_mapping =
@@ -745,6 +746,7 @@ protected:
 
     static std::unique_ptr<HazelcastServer> member_;
     static std::unique_ptr<HazelcastServer> member2_;
+    static std::unique_ptr<HazelcastServer> member3_;
 
 private:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
@@ -763,6 +765,7 @@ struct generator<test::student>
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_{};
 std::unique_ptr<HazelcastServer> SqlTest::member_{};
 std::unique_ptr<HazelcastServer> SqlTest::member2_{};
+std::unique_ptr<HazelcastServer> SqlTest::member3_{};
 
 TEST_F(SqlTest, test_hazelcast_exception)
 {
@@ -778,7 +781,8 @@ TEST_F(SqlTest, test_hazelcast_exception)
         auto uuid_str = boost::uuids::to_string(ex.originating_member_id());
 
         ASSERT_TRUE(uuid_str == member_->get_member().uuid ||
-                    uuid_str == member2_->get_member().uuid);
+                    uuid_str == member2_->get_member().uuid ||
+                    uuid_str == member3_->get_member().uuid );
     }
 }
 
@@ -1855,7 +1859,7 @@ TEST_F(SqlTest, test_partition_based_routing_complex_key)
 TEST_F(SqlTest, test_routing_for_select)
 {
     create_mapping();
-    test_query(
+    test_query_for_routing(
       (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
       100);
 }
@@ -1863,7 +1867,7 @@ TEST_F(SqlTest, test_routing_for_select)
 TEST_F(SqlTest, test_routing_for_insert)
 {
     create_mapping("VARCHAR");
-    test_query(
+    test_query_for_routing(
       (boost::format("INSERT INTO %1% (this, __key) VALUES ('testVal', ?)") %
        map_name)
         .str(),
@@ -1873,7 +1877,7 @@ TEST_F(SqlTest, test_routing_for_insert)
 TEST_F(SqlTest, test_routing_for_update)
 {
     create_mapping("VARCHAR");
-    test_query(
+    test_query_for_routing(
       (boost::format("UPDATE %1% SET this = 'testVal' WHERE __key = ?") %
        map_name)
         .str(),
@@ -1883,7 +1887,7 @@ TEST_F(SqlTest, test_routing_for_update)
 TEST_F(SqlTest, test_routing_for_delete)
 {
     create_mapping("VARCHAR");
-    test_query(
+    test_query_for_routing(
       (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(), 100);
 }
 
