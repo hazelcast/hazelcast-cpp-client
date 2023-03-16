@@ -99,6 +99,8 @@ public:
 
     const client_property& cloud_base_url() const;
 
+    const client_property& partition_arg_cache_size() const;
+
     /**
      * Client will be sending heartbeat messages to members and this is the
      * timeout. If there is no any message passing between client and member
@@ -265,6 +267,18 @@ public:
       "api.viridian.hazelcast.com";
 
     /**
+     * Parametrized SQL queries touching only a single partition benefit from
+     * using the partition owner as the query coordinator, if the partition
+     * owner can be determined from one of the query parameters. When such a
+     * query is executed, the cluster sends the index of such argument to the
+     * client. This parameter configures the size of the cache the client uses
+     * for storing this information.
+     */
+    static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE =
+      "hazelcast.client.sql.partition.argument.cache.size";
+    static constexpr const char* PARTITION_ARGUMENT_CACHE_SIZE_DEFAULT = "1024";
+
+    /**
      * Returns the configured boolean value of a {@link ClientProperty}.
      *
      * @param property the {@link ClientProperty} to get the value from
@@ -314,6 +328,7 @@ private:
     client_property backup_timeout_millis_;
     client_property fail_on_indeterminate_state_;
     client_property cloud_base_url_;
+    client_property partition_arg_cache_size_;
 
     std::unordered_map<std::string, std::string> properties_map_;
 };
