@@ -693,25 +693,29 @@ protected:
                       *expected_index);
         }
     }
-    
+
     void check_partition_argument_index(sql::sql_statement statement,
                                         std::shared_ptr<int32_t> expected_index)
     {
         auto& sql_service = client.get_sql();
-        EXPECT_EQ(sql_service.partition_argument_index_cache_->get(statement.sql()),
-                  nullptr);
+        EXPECT_EQ(
+          sql_service.partition_argument_index_cache_->get(statement.sql()),
+          nullptr);
         sql_service.execute(statement).get();
 
         if (expected_index == nullptr) {
-            EXPECT_EQ(sql_service.partition_argument_index_cache_->get(statement.sql()),
-                      nullptr);
+            EXPECT_EQ(
+              sql_service.partition_argument_index_cache_->get(statement.sql()),
+              nullptr);
         } else {
-            EXPECT_NE(sql_service.partition_argument_index_cache_->get(statement.sql()),
-                      nullptr);
-            EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(statement.sql()),
+            EXPECT_NE(
+              sql_service.partition_argument_index_cache_->get(statement.sql()),
+              nullptr);
+            EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(
+                        statement.sql()),
                       *expected_index);
         }
-    }    
+    }
 
     int32_t get_partition_owner_index(int64_t key)
     {
@@ -802,7 +806,7 @@ TEST_F(SqlTest, test_hazelcast_exception)
 
         ASSERT_TRUE(uuid_str == member_->get_member().uuid ||
                     uuid_str == member2_->get_member().uuid ||
-                    uuid_str == member3_->get_member().uuid );
+                    uuid_str == member3_->get_member().uuid);
     }
 }
 
@@ -1841,7 +1845,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
     statement1.add_parameter(1);
     statement1.add_parameter("value");
     check_partition_argument_index(statement1, std::make_shared<int32_t>(0));
-    EXPECT_EQ( *statement1.partition_argument_index(), 0);
+    EXPECT_EQ(*statement1.partition_argument_index(), 0);
 
     sql::sql_statement statement2(
       client,
@@ -1851,7 +1855,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
     statement2.add_parameter(2);
 
     check_partition_argument_index(statement2, std::make_shared<int32_t>(1));
-    EXPECT_EQ( *statement2.partition_argument_index(), 1);
+    EXPECT_EQ(*statement2.partition_argument_index(), 1);
 
     sql::sql_statement statement3(
       client,
@@ -1861,7 +1865,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
 
     // no dynamic argument
     check_partition_argument_index(statement3, nullptr);
-    EXPECT_EQ( *statement3.partition_argument_index(), -1);
+    EXPECT_EQ(*statement3.partition_argument_index(), -1);
 
     sql::sql_statement statement4(
       client,
@@ -1871,7 +1875,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
         .str());
 
     check_partition_argument_index(statement4, nullptr);
-    EXPECT_EQ( *statement4.partition_argument_index(), -1);
+    EXPECT_EQ(*statement4.partition_argument_index(), -1);
 
     sql::sql_statement statement5(
       client,
@@ -1885,7 +1889,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
 
     // has dynamic argument, but multiple rows
     check_partition_argument_index(statement5, nullptr);
-    EXPECT_EQ( *statement5.partition_argument_index(), -1);
+    EXPECT_EQ(*statement5.partition_argument_index(), -1);
 }
 
 TEST_F(SqlTest, test_partition_based_routing)
@@ -1971,7 +1975,7 @@ TEST_F(SqlTest, test_partition_based_routing)
 TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
 {
     if (cluster_version() < member::version{ 5, 3, 0 })
-      GTEST_SKIP();
+        GTEST_SKIP();
     std::string custom_map_name{ random_map_name() };
     auto custom_map = client.get_map(custom_map_name).get();
     auto sql =
@@ -2049,7 +2053,7 @@ TEST_F(SqlTest, test_partition_based_routing_complex_key)
 TEST_F(SqlTest, test_routing_for_select)
 {
     if (cluster_version() < member::version{ 5, 3, 0 })
-      GTEST_SKIP();
+        GTEST_SKIP();
 
     create_mapping();
     test_query_for_routing(
@@ -2073,7 +2077,7 @@ TEST_F(SqlTest, test_routing_for_insert)
 TEST_F(SqlTest, test_routing_for_update)
 {
     if (cluster_version() < member::version{ 5, 3, 0 })
-      GTEST_SKIP();
+        GTEST_SKIP();
 
     create_mapping("VARCHAR");
     test_query_for_routing(
@@ -2086,7 +2090,7 @@ TEST_F(SqlTest, test_routing_for_update)
 TEST_F(SqlTest, test_routing_for_delete)
 {
     if (cluster_version() < member::version{ 5, 3, 0 })
-      GTEST_SKIP();
+        GTEST_SKIP();
 
     create_mapping("VARCHAR");
     test_query_for_routing(
@@ -2264,14 +2268,16 @@ public:
 
 TEST_F(read_optimized_lru_cache_test, construction_test)
 {
-  using cache_type = sql::impl::read_optimized_lru_cache<int32_t, int32_t>;
-  std::shared_ptr<cache_type> lru_cache;
+    using cache_type = sql::impl::read_optimized_lru_cache<int32_t, int32_t>;
+    std::shared_ptr<cache_type> lru_cache;
 
-  ASSERT_THROW( std::make_shared<cache_type>(0,0), exception::illegal_argument );
+    ASSERT_THROW(std::make_shared<cache_type>(0, 0),
+                 exception::illegal_argument);
 
-  ASSERT_THROW( std::make_shared<cache_type>(10,5), exception::illegal_argument );
+    ASSERT_THROW(std::make_shared<cache_type>(10, 5),
+                 exception::illegal_argument);
 
-  ASSERT_NO_THROW( std::make_shared<cache_type>(10,15) );
+    ASSERT_NO_THROW(std::make_shared<cache_type>(10, 15));
 }
 
 TEST_F(read_optimized_lru_cache_test, put_and_get_test)

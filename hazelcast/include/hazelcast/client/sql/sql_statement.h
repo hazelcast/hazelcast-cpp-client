@@ -242,7 +242,7 @@ private:
      * @param partition_argument_index index of the partition-determining
      * argument of the statement
      */
-    sql_statement& partition_argument_index(int32_t partition_argument_index);    
+    sql_statement& partition_argument_index(int32_t partition_argument_index);
 
     std::string sql_;
     std::vector<data> serialized_parameters_;
