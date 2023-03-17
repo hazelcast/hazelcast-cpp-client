@@ -179,7 +179,8 @@ private:
       protocol::ClientMessage& msg,
       std::shared_ptr<connection::Connection> connection,
       impl::query_id id,
-      int32_t cursor_buffer_size);
+      int32_t cursor_buffer_size,
+      std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_ptr);
 
     static sql_execute_response_parameters decode_execute_response(
       protocol::ClientMessage& msg);

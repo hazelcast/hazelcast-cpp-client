@@ -69,9 +69,11 @@ boost::future<std::shared_ptr<sql_result>>
 sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
+    
+    int32_t statement_par_arg_index = statement.partition_argument_index() != nullptr ? statement.partition_argument_index()->load() : -1;    
 
-    auto arg_index = statement.partition_argument_index() != -1
-                       ? statement.partition_argument_index()
+    auto arg_index = statement_par_arg_index != -1
+                       ? statement_par_arg_index
                        : *(partition_argument_index_cache_->get_or_default(
                            statement.sql(), std::make_shared<int32_t>(-1)));
 
@@ -97,10 +99,11 @@ sql_service::execute(const sql_statement& statement)
 
     auto cursor_buffer_size = statement.cursor_buffer_size();
 
+    std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_ptr = statement.partition_argument_index();
     auto sql_query = statement.sql();
     return invocation->invoke().then(
       boost::launch::sync,
-      [this, query_conn, qid, cursor_buffer_size, sql_query, arg_index](
+      [this, query_conn, qid, cursor_buffer_size, sql_query, arg_index, statement_par_arg_index_ptr](
         boost::future<ClientMessage> response_fut) {
           try {
               auto response = response_fut.get();
@@ -109,7 +112,8 @@ sql_service::execute(const sql_statement& statement)
                                              response,
                                              query_conn,
                                              qid,
-                                             cursor_buffer_size);
+                                             cursor_buffer_size,
+                                             statement_par_arg_index_ptr);
           } catch (const std::exception& e) {
               rethrow(e, query_conn);
           }
@@ -228,7 +232,8 @@ sql_service::handle_execute_response(
   protocol::ClientMessage& msg,
   std::shared_ptr<connection::Connection> connection,
   impl::query_id id,
-  int32_t cursor_buffer_size)
+  int32_t cursor_buffer_size,
+  std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_ptr)
 {
     auto response = decode_execute_response(msg);
     if (response.error) {
@@ -245,6 +250,11 @@ sql_service::handle_execute_response(
                 partition_argument_index_cache_->put(
                   sql_query,
                   std::make_shared<int32_t>(response.partition_argument_index));
+                  auto temp_shared_ptr = statement_par_arg_index_ptr.lock();
+                  if( temp_shared_ptr )
+                  {
+                    temp_shared_ptr->store(response.partition_argument_index);
+                  }
             } else {
                 partition_argument_index_cache_->remove(sql_query);
             }
@@ -444,7 +454,7 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
-  , partition_argument_index_{ -1 }
+  , partition_argument_index_{ nullptr }
   , serialization_service_(
       spi::ClientContext(client).get_serialization_service())
 {
@@ -458,7 +468,7 @@ sql_statement::sql_statement(spi::ClientContext& client_context,
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
-  , partition_argument_index_{ -1 }
+  , partition_argument_index_{ nullptr }
   , serialization_service_(client_context.get_serialization_service())
 {
     sql(std::move(query));
@@ -554,7 +564,7 @@ sql_statement::expected_result_type(sql::sql_expected_result_type type)
     return *this;
 }
 
-int32_t
+std::shared_ptr<std::atomic<int32_t>>
 sql_statement::partition_argument_index() const
 {
     return partition_argument_index_;
@@ -567,7 +577,7 @@ sql_statement::partition_argument_index(int32_t partition_argument_index)
         BOOST_THROW_EXCEPTION(client::exception::illegal_argument(
           "The argument index must be >=0, or -1"));
     }
-    partition_argument_index_ = partition_argument_index;
+    *partition_argument_index_ = partition_argument_index;
     return *this;
 }
 

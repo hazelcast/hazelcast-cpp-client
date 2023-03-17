@@ -199,7 +199,7 @@ public:
      *
      * @return partition argument index, -1 if not set.
      */
-    int32_t partition_argument_index() const;
+    std::shared_ptr<std::atomic<int32_t>> partition_argument_index() const;
 
     /**
      * Set the partition argument index. If there's no such argument, use -1.
@@ -250,7 +250,7 @@ private:
     std::chrono::milliseconds timeout_;
     sql::sql_expected_result_type expected_result_type_;
     boost::optional<std::string> schema_;
-    int32_t partition_argument_index_;
+    std::shared_ptr<std::atomic<int32_t>> partition_argument_index_;
 
     serialization_service& serialization_service_;
 
