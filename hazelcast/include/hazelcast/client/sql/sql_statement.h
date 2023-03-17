@@ -202,19 +202,6 @@ public:
     std::shared_ptr<std::atomic<int32_t>> partition_argument_index() const;
 
     /**
-     * Set the partition argument index. If there's no such argument, use -1.
-     * <p>
-     * Setting a wrong argument index will not cause incorrect query results,
-     * but might cause performance degradation due to more network
-     * communication. Setting a value higher than the actual number of arguments
-     * will have no effect.
-     *
-     * @param partition_argument_index index of the partition-determining
-     * argument of the statement
-     */
-    sql_statement& partition_argument_index(int32_t partition_argument_index);
-
-    /**
      * Gets the schema name.
      *
      * @return the schema name or \code{.cpp}boost::none\endcode if there is
@@ -243,6 +230,19 @@ private:
     using serialization_service = serialization::pimpl::SerializationService;
 
     sql_statement(spi::ClientContext& client_context, std::string query);
+
+    /**
+     * Set the partition argument index. If there's no such argument, use -1.
+     * <p>
+     * Setting a wrong argument index will not cause incorrect query results,
+     * but might cause performance degradation due to more network
+     * communication. Setting a value higher than the actual number of arguments
+     * will have no effect.
+     *
+     * @param partition_argument_index index of the partition-determining
+     * argument of the statement
+     */
+    sql_statement& partition_argument_index(int32_t partition_argument_index);    
 
     std::string sql_;
     std::vector<data> serialized_parameters_;

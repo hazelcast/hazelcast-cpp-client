@@ -1841,6 +1841,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
     statement1.add_parameter(1);
     statement1.add_parameter("value");
     check_partition_argument_index(statement1, std::make_shared<int32_t>(0));
+    EXPECT_EQ( *statement1.partition_argument_index(), 0);
 
     sql::sql_statement statement2(
       client,
@@ -1850,6 +1851,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
     statement2.add_parameter(2);
 
     check_partition_argument_index(statement2, std::make_shared<int32_t>(1));
+    EXPECT_EQ( *statement2.partition_argument_index(), 1);
 
     sql::sql_statement statement3(
       client,
@@ -1859,6 +1861,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
 
     // no dynamic argument
     check_partition_argument_index(statement3, nullptr);
+    EXPECT_EQ( *statement3.partition_argument_index(), -1);
 
     sql::sql_statement statement4(
       client,
@@ -1868,6 +1871,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
         .str());
 
     check_partition_argument_index(statement4, nullptr);
+    EXPECT_EQ( *statement4.partition_argument_index(), -1);
 
     sql::sql_statement statement5(
       client,
@@ -1881,6 +1885,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
 
     // has dynamic argument, but multiple rows
     check_partition_argument_index(statement5, nullptr);
+    EXPECT_EQ( *statement5.partition_argument_index(), -1);
 }
 
 TEST_F(SqlTest, test_partition_based_routing)

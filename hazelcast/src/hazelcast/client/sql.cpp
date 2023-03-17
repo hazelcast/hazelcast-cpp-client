@@ -454,7 +454,7 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
-  , partition_argument_index_{ nullptr }
+  , partition_argument_index_{ std::make_shared<std::atomic<int32_t>>(-1) }
   , serialization_service_(
       spi::ClientContext(client).get_serialization_service())
 {
