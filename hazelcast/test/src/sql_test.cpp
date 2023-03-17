@@ -693,6 +693,25 @@ protected:
                       *expected_index);
         }
     }
+    
+    void check_partition_argument_index(sql::sql_statement statement,
+                                        std::shared_ptr<int32_t> expected_index)
+    {
+        auto& sql_service = client.get_sql();
+        EXPECT_EQ(sql_service.partition_argument_index_cache_->get(statement.sql()),
+                  nullptr);
+        sql_service.execute(statement).get();
+
+        if (expected_index == nullptr) {
+            EXPECT_EQ(sql_service.partition_argument_index_cache_->get(statement.sql()),
+                      nullptr);
+        } else {
+            EXPECT_NE(sql_service.partition_argument_index_cache_->get(statement.sql()),
+                      nullptr);
+            EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(statement.sql()),
+                      *expected_index);
+        }
+    }    
 
     int32_t get_partition_owner_index(int64_t key)
     {
@@ -1808,6 +1827,62 @@ TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
       7);
 }
 
+TEST_F(SqlTest, test_partition_based_routing_with_statements)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping("VARCHAR");
+
+    sql::sql_statement statement1(
+      client,
+      (boost::format("INSERT INTO %1% (__key, this) VALUES (?, ?)") % map_name)
+        .str());
+    statement1.add_parameter(1);
+    statement1.add_parameter("value");
+    check_partition_argument_index(statement1, std::make_shared<int32_t>(0));
+
+    sql::sql_statement statement2(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name)
+        .str());
+    statement2.add_parameter("value");
+    statement2.add_parameter(2);
+
+    check_partition_argument_index(statement2, std::make_shared<int32_t>(1));
+
+    sql::sql_statement statement3(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) VALUES ('value', 3)") %
+       map_name)
+        .str());
+
+    // no dynamic argument
+    check_partition_argument_index(statement3, nullptr);
+
+    sql::sql_statement statement4(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) "
+                     "VALUES ('value', 4), ('value', 5)") %
+       map_name)
+        .str());
+
+    check_partition_argument_index(statement4, nullptr);
+
+    sql::sql_statement statement5(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?), (?, ?)") %
+       map_name)
+        .str());
+    statement5.add_parameter("value");
+    statement5.add_parameter(6);
+    statement5.add_parameter("value");
+    statement5.add_parameter(7);
+
+    // has dynamic argument, but multiple rows
+    check_partition_argument_index(statement5, nullptr);
+}
+
 TEST_F(SqlTest, test_partition_based_routing)
 {
     if (cluster_version() < member::version{ 5, 3, 0 })
@@ -2181,6 +2256,18 @@ public:
     {
     }
 };
+
+TEST_F(read_optimized_lru_cache_test, construction_test)
+{
+  using cache_type = sql::impl::read_optimized_lru_cache<int32_t, int32_t>;
+  std::shared_ptr<cache_type> lru_cache;
+
+  ASSERT_THROW( std::make_shared<cache_type>(0,0), exception::illegal_argument );
+
+  ASSERT_THROW( std::make_shared<cache_type>(10,5), exception::illegal_argument );
+
+  ASSERT_NO_THROW( std::make_shared<cache_type>(10,15) );
+}
 
 TEST_F(read_optimized_lru_cache_test, put_and_get_test)
 {
