@@ -687,7 +687,7 @@ protected:
             EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
                       nullptr);
         } else {
-            EXPECT_NE(sql_service.partition_argument_index_cache_->get(sql),
+            ASSERT_NE(sql_service.partition_argument_index_cache_->get(sql),
                       nullptr);
             EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(sql),
                       *expected_index);
@@ -708,7 +708,7 @@ protected:
               sql_service.partition_argument_index_cache_->get(statement.sql()),
               nullptr);
         } else {
-            EXPECT_NE(
+            ASSERT_NE(
               sql_service.partition_argument_index_cache_->get(statement.sql()),
               nullptr);
             EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(
@@ -2271,21 +2271,21 @@ TEST_F(read_optimized_lru_cache_test, construction_test)
     using cache_type = sql::impl::read_optimized_lru_cache<int32_t, int32_t>;
     std::shared_ptr<cache_type> lru_cache;
 
-    ASSERT_THROW(std::make_shared<cache_type>(0, 0),
+    EXPECT_THROW(std::make_shared<cache_type>(0, 0),
                  exception::illegal_argument);
 
-    ASSERT_THROW(std::make_shared<cache_type>(10, 5),
+    EXPECT_THROW(std::make_shared<cache_type>(10, 5),
                  exception::illegal_argument);
 
-    ASSERT_NO_THROW(std::make_shared<cache_type>(10, 15));
+    EXPECT_NO_THROW(std::make_shared<cache_type>(10, 15));
 }
 
-TEST_F(read_optimized_lru_cache_test, put_and_get_test)
+TEST_F(read_optimized_lru_cache_test, put_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
     lru.put(1, std::make_shared<int32_t>(10));
     EXPECT_EQ(1, lru.get_cache_size());
-    EXPECT_EQ(10, lru.get_cache_value(1));
+    EXPECT_EQ(10 , lru.get_cache_value(1));
 }
 
 TEST_F(read_optimized_lru_cache_test, get_test)
@@ -2299,7 +2299,7 @@ TEST_F(read_optimized_lru_cache_test, get_test)
 TEST_F(read_optimized_lru_cache_test, put_nullptr_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
-    ASSERT_THROW(lru.put(1, nullptr), client::exception::illegal_argument);
+    EXPECT_THROW(lru.put(1, nullptr), client::exception::illegal_argument);
 }
 
 TEST_F(read_optimized_lru_cache_test, get_or_default_test)

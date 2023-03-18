@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ namespace impl {
  * <p>
  * It stores the entries in a {SynchronizedMap}, along with the last
  * access time. It allows the size to grow beyond the capacity, up to
- * `cleanupThreshold`, at which point the inserting thread will remove a batch
+ * `cleanup_threshold_`, at which point the inserting thread will remove a batch
  * of the eldest items in two passes.
  * <p>
  * The cleanup process isn't synchronized to guarantee that the capacity is not
@@ -44,12 +44,14 @@ class HAZELCAST_API read_optimized_lru_cache
 {
 public:
     /**
+     * @param capacity Capacity of the cache
      * @param cleanup_threshold The size at which the cache will clean up oldest
-     *     entries in batch. `cleanup_threshold - capacity` entries will be
-     * removed.
+     *    entries in batch. `cleanup_threshold - capacity` entries will be removed
+     * @throws exception::illegal_argument if capacity is smaller or equal to 0,
+     * or if the cleanup_threshold is smaller than capacity 
      */
-    explicit read_optimized_lru_cache(int32_t capacity,
-                                      int32_t cleanup_threshold)
+    explicit read_optimized_lru_cache(const int32_t capacity,
+                                      const int32_t cleanup_threshold)
     {
         if (capacity <= 0) {
             BOOST_THROW_EXCEPTION(
@@ -64,6 +66,12 @@ public:
         cleanup_threshold_ = cleanup_threshold;
     }
 
+    /**
+     * @param key the key of the cache entry
+     * @param default_value the default value if the key is not cached.
+     * @returns Returns the value to which the specified key is cached,
+     * or default value if this cache contains no mapping for the key.
+     */
     std::shared_ptr<V> get_or_default(const K& key,
                                       const std::shared_ptr<V>& default_value)
     {
@@ -71,6 +79,12 @@ public:
         return (existing_value != nullptr) ? existing_value : default_value;
     }
 
+    /**
+     * @param key the key of the cache entry
+     * Returns the value to which the specified key is cached,
+     * or {@code null} if this cache contains no mapping for the key.
+     * @returns Returns the value to which the specified key is cached     
+     */
     std::shared_ptr<V> get(const K& key)
     {
         auto value_from_cache = cache_.get(key);
@@ -81,6 +95,11 @@ public:
         return std::make_shared<int32_t>(value_from_cache->value_);
     }
 
+    /**
+     * @param key the key of the cache entry
+     * @param value the value of the cache entry     
+     * @throws exception::illegal_argument if the value equals to nullptr     
+     */
     void put(const K& key, const std::shared_ptr<V>& value)
     {
         if (value == nullptr) {
@@ -95,9 +114,16 @@ public:
         }
     }
 
+    /**
+     * @param key the key of the cache entry
+     * Removes the cached value for the given key
+     */
     void remove(const K& key) { cache_.remove(key); }
 
 protected:
+    /**
+     * Helper class to for simulation atomic lock with RAII
+    */
     class custom_atomic_lock
     {
     public:
@@ -123,6 +149,9 @@ protected:
         std::atomic<bool> lock_;
     };
 
+    /**
+     * Helper class to hold the value with timestamp.
+    */
     template<typename T>
     class value_and_timestamp
     {
@@ -142,6 +171,10 @@ protected:
     util::SynchronizedMap<K, value_and_timestamp<V>> cache_;
 
 private:
+
+    /**
+     * Cleans the cache
+    */
     void do_cleanup()
     {
         // if no thread is cleaning up, we'll do it

@@ -237,7 +237,7 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
 std::shared_ptr<sql_result>
 sql_service::handle_execute_response(
   const std::string& sql_query,
-  int32_t original_partition_argument_index,
+  const int32_t original_partition_argument_index,
   protocol::ClientMessage& msg,
   std::shared_ptr<connection::Connection> connection,
   impl::query_id id,
@@ -277,8 +277,7 @@ sql_service::handle_execute_response(
                      response.update_count,
                      std::move(response.row_metadata),
                      std::move(response.first_page),
-                     cursor_buffer_size,
-                     response.partition_argument_index));
+                     cursor_buffer_size));
 }
 
 std::shared_ptr<connection::Connection>
@@ -341,7 +340,7 @@ sql_service::query_connection(int32_t partition_id)
 
 boost::optional<int32_t>
 sql_service::extract_partition_id(const sql_statement& statement,
-                                  int32_t arg_index)
+                                  int32_t arg_index) const
 {
     if (!is_smart_routing_) {
         return boost::none;
@@ -742,8 +741,7 @@ sql_result::sql_result(spi::ClientContext* client_context,
                        int64_t update_count,
                        std::shared_ptr<sql_row_metadata> row_metadata,
                        std::shared_ptr<sql_page> first_page,
-                       int32_t cursor_buffer_size,
-                       int32_t partition_argument_index)
+                       int32_t cursor_buffer_size)
   : client_context_(client_context)
   , service_(service)
   , connection_(std::move(connection))
@@ -754,7 +752,6 @@ sql_result::sql_result(spi::ClientContext* client_context,
   , iterator_requested_(false)
   , closed_(false)
   , cursor_buffer_size_(cursor_buffer_size)
-  , partition_argument_index_(partition_argument_index)
 {
     if (row_metadata_) {
         assert(first_page_);

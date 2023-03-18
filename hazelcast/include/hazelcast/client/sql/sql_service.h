@@ -165,7 +165,7 @@ private:
 
     boost::optional<int32_t> extract_partition_id(
       const sql_statement& statement,
-      int32_t arg_index);
+      const int32_t arg_index) const;
 
     void rethrow(const std::exception& exc_ptr);
     void rethrow(const std::exception& cause_ptr,
@@ -175,7 +175,7 @@ private:
 
     std::shared_ptr<sql_result> handle_execute_response(
       const std::string& sql_query,
-      int32_t original_partition_argument_index,
+      const int32_t original_partition_argument_index,
       protocol::ClientMessage& msg,
       std::shared_ptr<connection::Connection> connection,
       impl::query_id id,
