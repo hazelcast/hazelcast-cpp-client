@@ -243,9 +243,9 @@ public:
     }
 
     /**
-     * @param comp Map is iterated from beginning to the end and removed if the lambda comp
-     *  return true.
-     */    
+     * @param comp Map is iterated from beginning to the end and removed if the
+     * lambda comp return true.
+     */
     template<typename Comparator>
     void remove_values_if(Comparator comp)
     {

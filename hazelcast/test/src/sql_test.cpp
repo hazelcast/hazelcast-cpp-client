@@ -2285,7 +2285,7 @@ TEST_F(read_optimized_lru_cache_test, put_test)
     EXPECT_EQ(0, lru.get_cache_size());
     lru.put(1, std::make_shared<int32_t>(10));
     EXPECT_EQ(1, lru.get_cache_size());
-    EXPECT_EQ(10 , lru.get_cache_value(1));
+    EXPECT_EQ(10, lru.get_cache_value(1));
 }
 
 TEST_F(read_optimized_lru_cache_test, get_test)
