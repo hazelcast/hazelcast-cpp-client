@@ -119,9 +119,6 @@ public:
         using reference = std::shared_ptr<sql_page>&;
         using iterator_category = std::input_iterator_tag;
 
-        page_iterator_sync(page_iterator&&, std::chrono::milliseconds timeout);
-        page_iterator_sync() = default;
-
         /**
          * Sets timeout for page fetch operation.
         */
@@ -165,6 +162,11 @@ public:
         page_iterator_sync& operator++();
 
     private:
+
+        friend class sql_result;
+        page_iterator_sync(page_iterator&&, std::chrono::milliseconds timeout);
+        page_iterator_sync() = default;
+
         struct non_copyables
         {
             explicit non_copyables(page_iterator&&);
