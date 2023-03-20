@@ -324,6 +324,14 @@ protected:
         server_factory_.reset();
     }
 
+    void SetUp() override
+    {
+        // SQL API messages are not supported before 4.2.0
+        if (cluster_version() < member::version{ 4, 2, 0 }) {
+            GTEST_SKIP();
+        }
+    }
+
     void create_mapping(std::string value_format = "INTEGER")
     {
         // Mapping is not supported before 5.0.0
