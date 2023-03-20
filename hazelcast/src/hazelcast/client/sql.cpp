@@ -350,7 +350,7 @@ sql_service::extract_partition_id(const sql_statement& statement,
         return boost::none;
     }
 
-    if (arg_index >= statement.serialized_parameters_.size() || arg_index < 0) {
+    if (arg_index >= static_cast<int32_t>(statement.serialized_parameters_.size()) || arg_index < 0) {
         return boost::none;
     }
 
