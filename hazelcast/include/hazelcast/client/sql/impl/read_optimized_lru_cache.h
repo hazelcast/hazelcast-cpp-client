@@ -40,7 +40,7 @@ namespace impl {
  * into the cache.
  */
 template<typename K, typename V>
-class HAZELCAST_API read_optimized_lru_cache
+class read_optimized_lru_cache
 {
 public:
     /**
