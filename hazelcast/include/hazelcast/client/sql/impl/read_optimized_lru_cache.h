@@ -192,7 +192,7 @@ private:
           });
     }
 
-    std::atomic<bool> cleanup_lock_;
+    std::atomic<bool> cleanup_lock_{false};
     uint32_t capacity_;
     uint32_t cleanup_threshold_;
 };
