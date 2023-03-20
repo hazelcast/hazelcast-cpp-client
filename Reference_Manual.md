@@ -3684,6 +3684,7 @@ Exceptions which can be thrown by SQL API are stated at below:
 - `sql_result::iterator()` can throw two types of exceptions.
   - `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
 - `sql_result::row_metadata()` can throw `illegal_state` exception if the result contains only update count.
+- `sql_result::pbegin()` calls `sql_result::iterator()` method internally, so it throws same exceptions.
 - `sql_page::sql_row::get_object(int)` can throw `index_out_of_bounds` exception if the index is out of range.
 - `sql_page::sql_row::get_object(std::string)` can throw `illegal_argument` exception if the column doesn't exist.
 - `sql_result::page_iterator_sync::operator++()` can throw `no_such_element` exception if the fetch operation is timed out.
