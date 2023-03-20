@@ -3683,8 +3683,9 @@ Exceptions which can be thrown by SQL API are stated at below:
   - `illegal_access` is thrown if page fetch operation is already progress. To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
 - `sql_result::iterator()` can throw two types of exceptions.
   - `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
-- `sql_result::row_metadata()` can throw `illegal_state` exception if the result contains only update count.
+  - `sql_result::iterator()` throws `hazelcast_sql_exception` if it sql_result is already closed.
 - `sql_result::pbegin()` calls `sql_result::iterator()` method internally, so it throws same exceptions.
+- `sql_result::row_metadata()` can throw `illegal_state` exception if the result contains only update count.
 - `sql_page::sql_row::get_object(int)` can throw `index_out_of_bounds` exception if the index is out of range.
 - `sql_page::sql_row::get_object(std::string)` can throw `illegal_argument` exception if the column doesn't exist.
 - `sql_result::page_iterator_sync::operator++()` can throw `no_such_element` exception if the fetch operation is timed out.
