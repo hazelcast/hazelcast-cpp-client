@@ -472,10 +472,10 @@ protected:
         std::vector<member> members = client.get_cluster().get_members();
         std::vector<int32_t> instance_mapping(members.size());
 
-        for (int i = 0; i < members.size(); i++) {
+        for (size_t i = 0; i < members.size(); i++) {
             std::string curr_uuid = get_uuid_of_instance(i);
 
-            for (int j = 0; j < members.size(); j++) {
+            for (size_t j = 0; j < members.size(); j++) {
                 if (curr_uuid == to_string(members[j].get_uuid())) {
                     instance_mapping[j] = i;
                 }
@@ -727,7 +727,7 @@ protected:
         auto owner = clientContext.get_partition_service().get_partition_owner(
           partition_id);
 
-        for (int i = 0; i < members.size(); i++) {
+        for (size_t i = 0; i < members.size(); i++) {
             if (members[i].get_uuid() == owner) {
                 return i;
             }
@@ -748,7 +748,7 @@ protected:
 
         // collect pre-execution metrics
         std::vector<uint64_t> expected_counts(members_size);
-        for (int i = 0; i < expected_counts.size(); i++) {
+        for (size_t i = 0; i < expected_counts.size(); i++) {
             expected_counts[i] =
               get_direct_imap_queries_executed(member_2_instance_mapping[i]);
         }
@@ -762,7 +762,7 @@ protected:
         // assert
         std::vector<uint64_t> actual_counts(members_size);
 
-        for (int i = 0; i < actual_counts.size(); i++) {
+        for (size_t i = 0; i < actual_counts.size(); i++) {
             actual_counts[i] =
               get_direct_imap_queries_executed(member_2_instance_mapping[i]);
         }
