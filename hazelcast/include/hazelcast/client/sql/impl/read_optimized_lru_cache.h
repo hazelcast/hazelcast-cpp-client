@@ -123,34 +123,6 @@ public:
 
 protected:
     /**
-     * Helper class to for simulation atomic lock with RAII
-     */
-    class custom_atomic_lock
-    {
-    public:
-        explicit custom_atomic_lock(bool initial_value = false)
-          : lock_(initial_value)
-        {
-        }
-
-        custom_atomic_lock(const custom_atomic_lock&) = delete;
-        const custom_atomic_lock& operator=(const custom_atomic_lock&) = delete;
-
-        bool try_lock()
-        {
-            bool expected = false;
-            return lock_.compare_exchange_strong(expected, true);
-        }
-
-        void release() { lock_.store(false); }
-
-        ~custom_atomic_lock() { release(); }
-
-    private:
-        std::atomic<bool> lock_;
-    };
-
-    /**
      * Helper class to hold the value with timestamp.
      */
     template<typename T>
@@ -177,52 +149,50 @@ private:
      */
     void do_cleanup()
     {
+        bool expected = false;
         // if no thread is cleaning up, we'll do it
-        if (!cleanup_lock_.try_lock()) {
+        if (!cleanup_lock_.compare_exchange_strong(expected, true)) {
             return;
         }
 
-        try {
-            if (capacity_ >= cache_.size()) {
-                // this can happen if the cache is concurrently modified
-                return;
-            }
-            auto entries_to_remove = cache_.size() - capacity_;
+        util::finally release_lock(
+          [this]() { this->cleanup_lock_.store(false); });
 
-            /*max heap*/
-            std::priority_queue<int64_t> oldest_timestamps;
-
-            // 1st pass
-            const auto values = cache_.values();
-            for (const auto& value_and_timestamp : values) {
-                oldest_timestamps.push(value_and_timestamp->timestamp_);
-                if (oldest_timestamps.size() > entries_to_remove) {
-                    oldest_timestamps.pop();
-                }
-            }
-
-            // find out the highest value in the queue - the value, below which
-            // entries will be removed
-            if (oldest_timestamps.empty()) {
-                // this can happen if the cache is concurrently modified
-                return;
-            }
-            int64_t remove_threshold = oldest_timestamps.top();
-            oldest_timestamps.pop();
-
-            // 2nd pass
-            cache_.remove_values_if(
-              [remove_threshold](const value_and_timestamp<V>& v) -> bool {
-                  return (v.timestamp_ <= remove_threshold);
-              });
-
-            cleanup_lock_.release();
-        } catch (std::exception& e) {
-            throw;
+        if (capacity_ >= cache_.size()) {
+            // this can happen if the cache is concurrently modified
+            return;
         }
+        auto entries_to_remove = cache_.size() - capacity_;
+
+        /*max heap*/
+        std::priority_queue<int64_t> oldest_timestamps;
+
+        // 1st pass
+        const auto values = cache_.values();
+        for (const auto& value_and_timestamp : values) {
+            oldest_timestamps.push(value_and_timestamp->timestamp_);
+            if (oldest_timestamps.size() > entries_to_remove) {
+                oldest_timestamps.pop();
+            }
+        }
+
+        // find out the highest value in the queue - the value, below which
+        // entries will be removed
+        if (oldest_timestamps.empty()) {
+            // this can happen if the cache is concurrently modified
+            return;
+        }
+        int64_t remove_threshold = oldest_timestamps.top();
+        oldest_timestamps.pop();
+
+        // 2nd pass
+        cache_.remove_values_if(
+          [remove_threshold](const value_and_timestamp<V>& v) -> bool {
+              return (v.timestamp_ <= remove_threshold);
+          });
     }
 
-    custom_atomic_lock cleanup_lock_;
+    std::atomic<bool> cleanup_lock_;
     uint32_t capacity_;
     uint32_t cleanup_threshold_;
 };

@@ -70,10 +70,10 @@ sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
 
-    int32_t statement_par_arg_index =
-      statement.partition_argument_index() != nullptr
-        ? statement.partition_argument_index()->load()
-        : -1;
+    auto statement_par_arg_index_ptr = statement.partition_argument_index();
+    int32_t statement_par_arg_index = statement_par_arg_index_ptr != nullptr
+                                        ? statement_par_arg_index_ptr->load()
+                                        : -1;
 
     auto arg_index = statement_par_arg_index != -1
                        ? statement_par_arg_index
@@ -102,8 +102,9 @@ sql_service::execute(const sql_statement& statement)
 
     auto cursor_buffer_size = statement.cursor_buffer_size();
 
-    std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_ptr =
-      statement.partition_argument_index();
+    std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_weak_ptr =
+      statement_par_arg_index_ptr;
+
     auto sql_query = statement.sql();
     return invocation->invoke().then(
       boost::launch::sync,
@@ -113,7 +114,8 @@ sql_service::execute(const sql_statement& statement)
        cursor_buffer_size,
        sql_query,
        arg_index,
-       statement_par_arg_index_ptr](boost::future<ClientMessage> response_fut) {
+       statement_par_arg_index_weak_ptr](
+        boost::future<ClientMessage> response_fut) {
           try {
               auto response = response_fut.get();
               return handle_execute_response(sql_query,
@@ -122,7 +124,7 @@ sql_service::execute(const sql_statement& statement)
                                              query_conn,
                                              qid,
                                              cursor_buffer_size,
-                                             statement_par_arg_index_ptr);
+                                             statement_par_arg_index_weak_ptr);
           } catch (const std::exception& e) {
               rethrow(e, query_conn);
           }
@@ -259,8 +261,8 @@ sql_service::handle_execute_response(
                 partition_argument_index_cache_->put(
                   sql_query,
                   std::make_shared<int32_t>(response.partition_argument_index));
-                auto temp_shared_ptr = statement_par_arg_index_ptr.lock();
-                if (temp_shared_ptr) {
+
+                if (auto temp_shared_ptr = statement_par_arg_index_ptr.lock()) {
                     temp_shared_ptr->store(response.partition_argument_index);
                 }
             } else {
@@ -350,7 +352,9 @@ sql_service::extract_partition_id(const sql_statement& statement,
         return boost::none;
     }
 
-    if (arg_index >= static_cast<int32_t>(statement.serialized_parameters_.size()) || arg_index < 0) {
+    if (arg_index >=
+          static_cast<int32_t>(statement.serialized_parameters_.size()) ||
+        arg_index < 0) {
         return boost::none;
     }
 
