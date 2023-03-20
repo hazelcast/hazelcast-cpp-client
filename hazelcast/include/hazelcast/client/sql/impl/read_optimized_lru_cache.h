@@ -51,12 +51,12 @@ public:
      * @throws exception::illegal_argument if capacity is smaller or equal to 0,
      * or if the cleanup_threshold is smaller than capacity
      */
-    explicit read_optimized_lru_cache(const int32_t capacity,
-                                      const int32_t cleanup_threshold)
+    explicit read_optimized_lru_cache(const uint32_t capacity,
+                                      const uint32_t cleanup_threshold)
     {
-        if (capacity <= 0) {
+        if (capacity == 0) {
             BOOST_THROW_EXCEPTION(
-              client::exception::illegal_argument("capacity <= 0"));
+              client::exception::illegal_argument("capacity == 0"));
         }
         if (cleanup_threshold <= capacity) {
             BOOST_THROW_EXCEPTION(client::exception::illegal_argument(
@@ -183,11 +183,11 @@ private:
         }
 
         try {
-            auto entries_to_remove = cache_.size() - capacity_;
-            if (entries_to_remove <= 0) {
+            if (capacity_ >= cache_.size()) {
                 // this can happen if the cache is concurrently modified
                 return;
             }
+            auto entries_to_remove = cache_.size() - capacity_;
 
             /*max heap*/
             std::priority_queue<int64_t> oldest_timestamps;
@@ -223,8 +223,8 @@ private:
     }
 
     custom_atomic_lock cleanup_lock_;
-    int32_t capacity_;
-    int32_t cleanup_threshold_;
+    uint32_t capacity_;
+    uint32_t cleanup_threshold_;
 };
 
 } // namespace impl
