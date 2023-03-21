@@ -181,6 +181,70 @@ public:
     };
 
     /**
+     * Copy is allowed for convenience but it does shallow copy so it should be avoided.
+    */
+    class HAZELCAST_API row_iterator_sync
+    {
+    public:
+        using difference_type = void;
+        using value_type = sql_page::sql_row;
+        using pointer = sql_page::sql_row*;
+        using reference = const sql_page::sql_row&;
+        using iterator_category = std::input_iterator_tag;
+
+        /**
+         * Sets timeout for page fetch operation.
+        */
+        void set_timeout(std::chrono::milliseconds);
+
+        /**
+         * Retrieves the timeout
+        */
+        std::chrono::milliseconds timeout() const;
+
+        friend HAZELCAST_API bool operator==(const row_iterator_sync&,
+                                             const row_iterator_sync&);
+        friend HAZELCAST_API bool operator!=(const row_iterator_sync&,
+                                             const row_iterator_sync&);
+
+        /**
+         * Returns current row. It might block in case of the current page is empty.
+         *
+         * @throws exception::no_such_element if the iterator points to the past-end
+        */
+        const sql_page::sql_row& operator*() const;
+
+
+        /**
+         * Returns current row. It might block in case of the current page is empty.
+         *
+         * @throws exception::no_such_element if the iterator points to the past-end
+        */
+        const sql_page::sql_row* operator->() const;
+
+        /**
+         * Post increment operator is deleted because copy is discouraged.
+        */
+        row_iterator_sync operator++(int) = delete;
+
+        /**
+         * Fetches next row in blocking manner. If page is already fetched, it doesn't block, otherwise it blocks.
+         *
+         * @throws exception::no_such_element if the iterator points to the past-end or operation is timedout.
+        */
+        row_iterator_sync& operator++();
+
+    private:
+
+        friend class sql_result;
+        row_iterator_sync(page_iterator_sync&&);
+        row_iterator_sync() = default;
+
+        mutable page_iterator_sync iterator_;
+        std::size_t row_idx_;
+    };
+
+    /**
      * The destructor closes the result if it were open.
      */
     virtual ~sql_result();
@@ -236,6 +300,9 @@ public:
     page_iterator_sync pbegin(
       std::chrono::milliseconds timeout = std::chrono::milliseconds{ -1 });
     page_iterator_sync pend();
+    row_iterator_sync begin(
+      std::chrono::milliseconds timeout = std::chrono::milliseconds{ -1 });
+    row_iterator_sync end();
 
 private:
     friend class sql_service;
