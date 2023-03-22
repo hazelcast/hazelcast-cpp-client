@@ -140,7 +140,7 @@ jobs:
           path: C:\Thrift
           key: ${{ runner.os }}-${{ matrix.arch.address_model }}-build-thrift-0.13-${{ matrix.build_type }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch.address_model }}-build-thrift-0.13-${{ matrix.build_type }}-
+            ${{ runner.os }}-${{ matrix.arch.address_model }}-build-thrift-0.13-${{ matrix.build_type }}
             
       - if: ${{ steps.cache-thrift.outputs.cache-hit != 'true' }}
         name: Install Thrift
