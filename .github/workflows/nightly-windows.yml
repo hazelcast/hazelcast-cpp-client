@@ -112,9 +112,9 @@ jobs:
           cache-name: cache-boost-version
         with:          
           path: C:\Boost
-          key: ${{ runner.os }}-${{ matrix.arch.address_model }}-build-${{ matrix.vc_boost.boost_archive_name }}-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch.address_model }}-build-${{ matrix.vc_boost.boost_archive_name }}-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
             
       - if: ${{ steps.cache-boost.outputs.cache-hit != 'true' }}
         name: Install Boost
@@ -138,9 +138,9 @@ jobs:
           cache-name: cache-thrift-version
         with:          
           path: C:\Thrift
-          key: ${{ runner.os }}-${{ matrix.arch.address_model }}-build-thrift-0.13-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch.address_model }}-build-thrift-0.13-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
             
       - if: ${{ steps.cache-thrift.outputs.cache-hit != 'true' }}
         name: Install Thrift
