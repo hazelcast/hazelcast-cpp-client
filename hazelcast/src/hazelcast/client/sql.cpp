@@ -262,8 +262,8 @@ sql_service::handle_execute_response(
                   sql_query,
                   std::make_shared<int32_t>(response.partition_argument_index));
 
-                if (auto temp_shared_ptr = statement_par_arg_index_ptr.lock()) {
-                    temp_shared_ptr->store(response.partition_argument_index);
+                if (auto argument_index = statement_par_arg_index_ptr.lock()) {
+                    argument_index->store(response.partition_argument_index);
                 }
             } else {
                 partition_argument_index_cache_->remove(sql_query);
