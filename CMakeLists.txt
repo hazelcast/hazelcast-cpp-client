@@ -17,7 +17,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(hazelcast-cpp-client
-        VERSION 5.2.0
+        VERSION 5.3
         DESCRIPTION "Hazelcast C++ Client"
         LANGUAGES CXX)
 
