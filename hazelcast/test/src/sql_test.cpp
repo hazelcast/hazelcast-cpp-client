@@ -261,25 +261,36 @@ namespace hazelcast {
 namespace client {
 namespace test {
 
-class SqlTest : public ClientTest
+enum class iterator_type
+{
+    page_iterator,
+    page_iterator_sync
+};
+
+class SqlTest
+  : public ClientTest
+  , public ::testing::WithParamInterface<iterator_type>
 {
 public:
+    static std::unique_ptr<HazelcastServerFactory> server_factory_;
+    static std::unique_ptr<HazelcastServer> member_;
+    static std::unique_ptr<HazelcastServer> member2_;
     hazelcast_client client;
     std::string map_name;
     imap_t map;
+
+    SqlTest()
+      : client{ hazelcast::new_client(get_config()).get() }
+      , map_name{ random_map_name() }
+      , map{ client.get_map(map_name).get() }
+    {
+    }
 
     static client_config get_config()
     {
         client_config cfg = ClientTest::get_config();
         cfg.set_cluster_name("sql-dev");
         return cfg;
-    }
-
-    SqlTest()
-      : client{ hazelcast::new_client(get_config()).get() }
-      , map_name{ random_map_name() }
-    {
-        map = client.get_map(map_name).get();
     }
 
 protected:
@@ -298,6 +309,14 @@ protected:
         member2_.reset(new HazelcastServer(*server_factory_));
     }
 
+    void TearDown() override
+    {
+        try {
+            map->destroy().get();
+        } catch (...) {
+        }
+    }
+
     static void TearDownTestSuite()
     {
         member_.reset();
@@ -310,14 +329,6 @@ protected:
         // SQL API messages are not supported before 4.2.0
         if (cluster_version() < member::version{ 4, 2, 0 }) {
             GTEST_SKIP();
-        }
-    }
-
-    void TearDown() override
-    {
-        try {
-            map->destroy().get();
-        } catch (...) {
         }
     }
 
@@ -378,11 +389,16 @@ protected:
           serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
     }
 
-    std::shared_ptr<sql::sql_result> select_all()
+    std::shared_ptr<sql::sql_result> select_all(int cursor_size = 10)
     {
-        return client.get_sql()
-          .execute((boost::format("SELECT * FROM %1%") % map_name).str())
-          .get();
+        sql::sql_statement statement{ client,
+                        (boost::format(
+                                R"(
+                SELECT * FROM %1%
+            )") % map_name).str() };
+
+        statement.cursor_buffer_size(cursor_size);
+        return client.get_sql().execute(statement).get();
     }
 
     portable_pojo_key key(int64_t i) { return { i }; }
@@ -437,16 +453,34 @@ protected:
                             std::shared_ptr<sql::sql_result> result,
                             Fns&&... fn)
     {
-        for (auto itr = result->iterator(); itr.has_next();) {
-            auto page = itr.next().get();
+        switch (GetParam()) {
+            case iterator_type::page_iterator: {
+                for (auto itr = result->iterator(); itr.has_next();) {
+                    auto page = itr.next().get();
 
-            for (auto const& row : page->rows()) {
-                int _[] = { 0, ((void)fn(row), 0)... };
-                (void)_;
+                    for (auto const& row : page->rows()) {
+                        int _[] = { 0, ((void)fn(row), 0)... };
+                        (void)_;
 
-                if (!--n_rows)
-                    return;
-            }
+                        if (!--n_rows)
+                            return;
+                    }
+                }
+            } break;
+            case iterator_type::page_iterator_sync: {
+                for (auto itr = result->pbegin(); itr != result->pend();
+                     ++itr) {
+                    auto page = *itr;
+
+                    for (auto const& row : page->rows()) {
+                        int _[] = { 0, ((void)fn(row), 0)... };
+                        (void)_;
+
+                        if (!--n_rows)
+                            return;
+                    }
+                }
+            } break;
         }
     }
 
@@ -577,10 +611,11 @@ protected:
     int total_member_client_cursors() {
         return member_client_cursors(0) + member_client_cursors(1);
     }
-    static std::unique_ptr<HazelcastServer> member_;
-    static std::unique_ptr<HazelcastServer> member2_;
-    static std::unique_ptr<HazelcastServerFactory> server_factory_;
 };
+
+std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_;
+std::unique_ptr<HazelcastServer> SqlTest::member_;
+std::unique_ptr<HazelcastServer> SqlTest::member2_;
 
 template<>
 struct generator<test::student>
@@ -592,9 +627,24 @@ struct generator<test::student>
     }
 };
 
-std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_{};
-std::unique_ptr<HazelcastServer> SqlTest::member_{};
-std::unique_ptr<HazelcastServer> SqlTest::member2_{};
+std::string
+printer(const testing::TestParamInfo<iterator_type>& type)
+{
+    switch (type.param) {
+        case iterator_type::page_iterator:
+            return "page_iterator";
+        case iterator_type::page_iterator_sync:
+            return "page_iterator_sync";
+    }
+
+    return "unknown";
+}
+
+INSTANTIATE_TEST_SUITE_P(SqlTestWithDifferentIterators,
+                         SqlTest,
+                         ::testing::Values(iterator_type::page_iterator,
+                                           iterator_type::page_iterator_sync),
+                         printer);
 
 TEST_F(SqlTest, test_hazelcast_exception)
 {
@@ -854,7 +904,7 @@ TEST_F(SqlTest, statement_with_params)
 }
 
 // These tests ported from python-client, sql_test.py
-TEST_F(SqlTest, test_execute)
+TEST_P(SqlTest, test_execute)
 {
     create_mapping();
     auto expecteds = populate_map(map, 11);
@@ -866,7 +916,7 @@ TEST_F(SqlTest, test_execute)
                  assert_entries_equal<int>{ expecteds });
 }
 
-TEST_F(SqlTest, test_execute_with_params)
+TEST_P(SqlTest, test_execute_with_params)
 {
     create_mapping();
     auto expecteds = populate_map(map, 13);
@@ -929,7 +979,7 @@ TEST_F(SqlTest, test_execute_with_mismatched_params_when_params_has_more)
                     handler);
 }
 
-TEST_F(SqlTest, test_execute_statement)
+TEST_P(SqlTest, test_execute_statement)
 {
     static constexpr int N_ENTRIES = 12;
 
@@ -947,7 +997,7 @@ TEST_F(SqlTest, test_execute_statement)
                  assert_entries_equal<std::string>{ expecteds });
 }
 
-TEST_F(SqlTest, test_execute_statement_with_params)
+TEST_P(SqlTest, test_execute_statement_with_params)
 {
     create_mapping_for_student();
 
@@ -1068,7 +1118,7 @@ TEST_F(SqlTest,
                     handler);
 }
 
-TEST_F(SqlTest, test_execute_statement_with_timeout)
+TEST_P(SqlTest, test_execute_statement_with_timeout)
 {
     create_mapping_for_student();
     auto expecteds = populate_map<test::student>(map, 100);
@@ -1133,8 +1183,9 @@ TEST_F(SqlTest, test_execute_with_cursor_buffer_size)
 
     auto result = client.get_sql().execute(statement).get();
 
-    for (auto itr = result->iterator(); itr.has_next();)
+    for (auto itr = result->iterator(); itr.has_next();) {
         EXPECT_EQ(itr.next().get()->row_count(), CURSOR_BUFFER_SIZE);
+    }
 }
 
 TEST_F(SqlTest, test_execute_with_schema)
@@ -1290,7 +1341,7 @@ TEST_F(SqlTest, test_null)
     EXPECT_EQ(type, sql::sql_column_type::null);
 }
 
-TEST_F(SqlTest, test_object)
+TEST_P(SqlTest, test_object)
 {
     create_mapping_for_student();
     auto expecteds = populate_map<test::student>(map);
@@ -1327,7 +1378,7 @@ TEST_F(SqlTest, test_null_only_column)
     EXPECT_FALSE(value.has_value());
 }
 
-TEST_F(SqlTest, test_json)
+TEST_P(SqlTest, test_json)
 {
     // `JSON` is not supported before 5.1.0
     if (cluster_version() < member::version{ 5, 1, 0 })
@@ -1343,7 +1394,7 @@ TEST_F(SqlTest, test_json)
                  assert_entries_equal<hazelcast_json_value>{ expecteds });
 }
 
-TEST_F(SqlTest, test_streaming_sql_query)
+TEST_P(SqlTest, test_streaming_sql_query)
 {
     // `TABLE` clause is not supported before 5.0.0
     if (cluster_version() < member::version{ 5, 0, 0 })
@@ -1356,7 +1407,7 @@ TEST_F(SqlTest, test_streaming_sql_query)
     for_each_row_until(200, result);
 }
 
-TEST_F(SqlTest, test_date)
+TEST_P(SqlTest, test_date)
 {
     if (cluster_version() < member::version{ 5, 0, 0 })
         GTEST_SKIP();
@@ -1379,7 +1430,7 @@ TEST_F(SqlTest, test_date)
                  assert_entries_equal<local_date>{ expecteds });
 }
 
-TEST_F(SqlTest, test_time)
+TEST_P(SqlTest, test_time)
 {
     if (cluster_version() < member::version{ 5, 0, 0 })
         GTEST_SKIP();
@@ -1403,7 +1454,7 @@ TEST_F(SqlTest, test_time)
                  assert_entries_equal<local_time>{ expecteds });
 }
 
-TEST_F(SqlTest, test_timestamp)
+TEST_P(SqlTest, test_timestamp)
 {
     if (cluster_version() < member::version{ 5, 0, 0 })
         GTEST_SKIP();
@@ -1429,7 +1480,7 @@ TEST_F(SqlTest, test_timestamp)
                  assert_entries_equal<local_date_time>{ expecteds });
 }
 
-TEST_F(SqlTest, test_timestamp_with_timezone)
+TEST_P(SqlTest, test_timestamp_with_timezone)
 {
     if (cluster_version() < member::version{ 5, 0, 0 })
         GTEST_SKIP();
@@ -1461,6 +1512,57 @@ TEST_F(SqlTest, exception)
     sql::sql_service service = client.get_sql();
     EXPECT_THROW(service.execute("FOO BAR", 42).get(),
                  hazelcast::client::sql::hazelcast_sql_exception);
+}
+
+TEST_F(SqlTest, find_with_page_sync_iterator)
+{
+    create_mapping();
+    auto numbers = populate_map(map, 500);
+
+    auto searchee = numbers[numbers.size() / 2];
+    auto result = select_all();
+
+    auto found_page_itr = std::find_if(
+        result->pbegin(),
+        result->pend(),
+        [searchee](std::shared_ptr<sql::sql_page> page){
+            return find_if(
+                begin(page->rows()),
+                end(page->rows()),
+                [searchee](const sql::sql_page::sql_row& row){
+                    return row.get_object<int>(1).value() == searchee;
+                }
+            ) != end(page->rows());
+        }
+    );
+
+    ASSERT_NE(found_page_itr, result->pend());
+
+    bool exist = any_of(
+        begin(found_page_itr->rows()),
+        end(found_page_itr->rows()),
+        [searchee](const sql::sql_page::sql_row& row){
+            return row.get_object<int>(1).value() == searchee;
+        }
+    );
+
+    ASSERT_TRUE(exist);
+}
+
+TEST_F(SqlTest, timeout_for_page_iterator_sync)
+{
+    // `generate_stream(1)` generates a row per seconds, so it will guaranteed
+    // that it will timeout
+    auto result =
+      client.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
+
+    auto statement = [&result](){
+        auto it = result->pbegin(std::chrono::milliseconds{ 1 });
+        ++it;
+        ++it;
+    };
+
+    ASSERT_THROW(statement(), hazelcast::client::exception::no_such_element);
 }
 
 // ported from Java SqlBasicClientTest.testSelect

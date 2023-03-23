@@ -15,6 +15,9 @@
  */
 #pragma once
 
+#include <iterator>
+#include <chrono>
+
 #include <boost/thread/future.hpp>
 
 #include "hazelcast/util/export.h"
@@ -64,6 +67,10 @@ class sql_service;
 class HAZELCAST_API sql_result : public std::enable_shared_from_this<sql_result>
 {
 public:
+
+    /**
+     * Copy is allowed for convenience but it does shallow copy so it should be avoided.
+    */
     class HAZELCAST_API page_iterator
     {
     public:
@@ -98,6 +105,79 @@ public:
         serialization::pimpl::SerializationService* serialization_;
         std::shared_ptr<sql_result> result_;
         std::shared_ptr<sql_page> first_page_;
+    };
+
+    /**
+     * Copy is allowed for convenience but it does shallow copy so it should be avoided.
+    */
+    class HAZELCAST_API page_iterator_sync
+    {
+    public:
+        using difference_type = void;
+        using value_type = std::shared_ptr<sql_page>;
+        using pointer = std::shared_ptr<sql_page>;
+        using reference = std::shared_ptr<sql_page>&;
+        using iterator_category = std::input_iterator_tag;
+
+        /**
+         * Sets timeout for page fetch operation.
+        */
+        void set_timeout(std::chrono::milliseconds);
+
+        /**
+         * Retrieves the timeout
+        */
+        std::chrono::milliseconds timeout() const;
+
+        friend HAZELCAST_API bool operator==(const page_iterator_sync&,
+                                             const page_iterator_sync&);
+        friend HAZELCAST_API bool operator!=(const page_iterator_sync&,
+                                             const page_iterator_sync&);
+
+
+        /**
+         * Dereferences current page. It doesn't block.
+         *
+         * @throws exception::no_such_element if the iterator points to the past-end
+        */
+        std::shared_ptr<sql_page> operator*() const;
+
+        /**
+         * Dereferences current page.
+         *
+         * @throws no_such_element if the iterator points to the past-end
+        */
+        std::shared_ptr<sql_page> operator->() const;
+
+        /**
+         * Post increment operator is deleted.
+        */
+        page_iterator_sync operator++(int) = delete;
+
+        /**
+         * Fetches next page with blocking manner.
+         * 
+         * @throws exception::no_such_element if the iterator points to the past-end or operation is timedout.
+        */
+        page_iterator_sync& operator++();
+
+    private:
+
+        friend class sql_result;
+        page_iterator_sync(page_iterator&&, std::chrono::milliseconds timeout);
+        page_iterator_sync() = default;
+
+        struct non_copyables
+        {
+            explicit non_copyables(page_iterator&&);
+
+            boost::future<std::shared_ptr<sql_page>> preloaded_page_;
+            page_iterator iter_;
+        };
+
+        std::shared_ptr<non_copyables> block_;
+        std::shared_ptr<sql_page> current_;
+        std::chrono::milliseconds timeout_;
     };
 
     /**
@@ -152,6 +232,10 @@ public:
      *
      */
     page_iterator iterator();
+
+    page_iterator_sync pbegin(
+      std::chrono::milliseconds timeout = std::chrono::milliseconds{ -1 });
+    page_iterator_sync pend();
 
 private:
     friend class sql_service;
