@@ -1,0 +1,532 @@
+#
+# Workflow: Build&Test PR for Hazelcast organization members
+# This workflow builds multiple configurations for MacOS, Windows, Ubuntu i386 and Ubuntu x64
+# If all the builds and tests are success, the PR can be merged.
+# It also runs code-coverage and upload the result as an artifact.
+
+name: Build&Test PR
+on: 
+
+  # automatic on every pull request
+  pull_request_target:
+
+  # manual (for community PRs that we want to force-run here)  
+  workflow_dispatch:
+    inputs:
+
+      # the PR number eg 712
+      pr_number:
+        description: Enter guest PR number to run test & coverage on it.
+        required: true
+
+      # the PR HEAD commit SHA which MUST have been verified
+      pr_commit:
+        description: Enter guest PR verified HEAD commit SHA.
+        required: true
+env:
+  boost_version: 1.78.0
+  boost_archive_name: 'boost_1_78_0.tar.gz'
+  boost_folder_name: 'boost_1_78_0'
+  boost_include_folder: 'C:\Boost\include\boost-1_78'
+  boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
+  thrift_version: 0.13.0
+  run_tests: false
+  
+jobs:
+
+  # test hazelcast membership
+  test-membership:
+    name: Test Hazelcast Membership
+    runs-on: ubuntu-latest
+    outputs:
+      is-hazelcast: ${{ steps.test-membership.outputs.is-member }}
+
+    steps:
+      # checkout the hazelcast/hazelcast-csharp-client repository
+      # bare minimum - just to use actions
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+          submodules: false
+
+      - name: Test
+        id: test-membership
+        uses: ./.github/actions/test-membership
+        with:
+          organization-name: hazelcast
+          member-name: ${{ github.actor }}
+          token: ${{ secrets.GH_TOKEN }}
+          
+  # ensure we are an Hazelcast organization member OR manually running
+  ensure-membership:
+    name: Ensure Membership
+    runs-on: ubuntu-latest
+    needs: test-membership
+    strategy:
+      fail-fast: false    
+      
+    if: needs.test-membership.outputs.is-hazelcast == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Report
+        shell: bash
+        run: echo "User ${{ github.event.pull_request.head.repo.owner.login }} is a member of the Hazelcast organization"          
+
+
+  # get
+  get-refs:
+    name: Get Refs
+    runs-on: ubuntu-latest
+    needs: ensure-membership
+    outputs:
+      ref: ${{ steps.get-refs.outputs.ref }}
+      merged-ref: ${{ steps.get-refs.outputs.merged-ref }}
+
+    steps:
+      - name: Get Refs
+        id: get-refs
+        shell: bash
+        run: |
+          echo "EVENT: ${{ github.event_name }}"
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "PR_NUMBER: ${{ inputs.pr_number }}"
+            echo "PR_COMMIT: ${{ inputs.pr_commit }}"
+            echo "ref=refs/pull/${{ inputs.pr_number }}/merge" >> $GITHUB_OUTPUT
+            echo "merged-ref=${{ inputs.pr_commit }}" >> $GITHUB_OUTPUT
+          else
+            echo "PR_NUMBER: ${{ github.event.pull_request.number }}"
+            echo "ref=refs/pull/${{ github.event.pull_request.number }}/merge" >> $GITHUB_OUTPUT
+            echo "merged-ref=''" >> $GITHUB_OUTPUT
+          fi
+          
+  # run for code-coverage and upload the result as an artifact.
+  code-coverage:
+    runs-on: ubuntu-20.04
+    needs: get-refs
+    
+    name: Code Coverage
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.get-refs.outputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Install Necessary Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl          
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+      - name: Install Boost
+        run: |
+          sudo ./scripts/install-boost.sh ${{ env.boost_version }}
+      - name: Install Thrift
+        run: |
+          sudo ./scripts/install-thrift.sh ${{ env.thrift_version }}
+      - name: Build
+        env:
+          BUILD_DIR: build
+          COVERAGE: ON
+        run: |
+          ./scripts/build-unix.sh                                          \
+              -DCMAKE_BUILD_TYPE=Debug                                     \
+              -DBUILD_SHARED_LIBS=ON                                       \
+              -DWITH_OPENSSL=ON                                            \
+              -DBUILD_TESTS=ON                                             \
+              -DBUILD_EXAMPLES=OFF
+      - name: Test
+        if: ${{ env.run_tests }}
+        env:
+          BUILD_DIR: build
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        run: |
+          ulimit -c unlimited
+          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+          ./scripts/test-unix.sh
+      - name: Collect coverage info
+        run: |
+          # collect and list coverage info
+          lcov --capture --directory . --no-external -o coverage.info \
+               --include "`pwd`/hazelcast/*" --exclude "`pwd`/hazelcast/test/*"
+          lcov --list coverage.info
+          # generate HTML views
+          genhtml coverage.info --output-directory=coverage-html-reports
+      - name: Upload HTML views as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: |
+            coverage.info
+            coverage-html-reports 
+
+  Ubuntu-i386:
+    needs: get-refs
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type:
+          - type: Debug
+            warn_as_err: ON
+          - type: Release
+            warn_as_err: OFF
+            
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
+
+    runs-on: ubuntu-latest
+    container:
+      image: i386/ubuntu
+      options: --privileged
+
+    name: ubuntu-i386-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+
+    steps:
+      - name: Install Necessary Packages
+        run: |
+          apt-get update
+          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-11-jre-headless gdb curl
+
+      - name: Make sure the target architecture is 32 bit
+        run: |
+          echo 'int main() { return sizeof(void*) != 4; }' > test.c
+          gcc test.c -oa
+          ./a
+          rm a test.c
+
+
+      - name: Checkout Code
+        uses: actions/checkout@v1
+        with:
+          ref: ${{ needs.get-refs.outputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+
+      - name: Install Boost
+        run: |
+          ./scripts/install-boost.sh ${{ env.boost_version }}
+
+      - name: Install Thrift
+        run: |
+          ./scripts/install-thrift.sh ${{ env.thrift_version }}
+
+      - name: Build & Install
+        env:
+          BUILD_DIR: build
+          INSTALL: ON
+          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
+        run: |
+          ./scripts/build-unix.sh                                         \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}            \
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}        \
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}            \
+              -DBUILD_TESTS=ON                                            \
+              -DBUILD_EXAMPLES=OFF
+
+      - name: Test
+        if: ${{ env.run_tests }}
+        env:
+          BUILD_DIR: build
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        run: |
+          ulimit -c unlimited
+          echo 'core' > /proc/sys/kernel/core_pattern
+          echo '1' > /proc/sys/kernel/core_uses_pid
+
+          ./scripts/test-unix.sh
+
+
+  Ubuntu-x86_64:
+    needs: get-refs
+    strategy:
+      fail-fast: false
+      matrix:
+
+        build_type:
+          - type: Debug
+            warn_as_err: ON
+          - type: Release
+            warn_as_err: OFF
+
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+
+        with_openssl:
+          - toggle: OFF
+            name: noSSL
+          - toggle: ON
+            name: SSL
+
+    runs-on: ubuntu-latest
+
+    name: ubuntu-x64-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+    steps:
+      - name: Install Necessary Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y net-tools libssl-dev gdb curl
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.get-refs.outputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+
+      - name: Install Boost
+        run: |
+          sudo ./scripts/install-boost.sh ${{env.boost_version}}
+
+      - name: Install Thrift
+        run: |
+          sudo ./scripts/install-thrift.sh ${{env.thrift_version}}
+
+      - name: Build & Install
+        env:
+          BUILD_DIR: build
+          INSTALL: ON
+          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
+        run: |
+          ./scripts/build-unix.sh                                          \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}             \
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination   \
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}         \
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}             \
+              -DBUILD_TESTS=ON                                             \
+              -DBUILD_EXAMPLES=OFF
+
+      - name: Test
+        if: ${{ env.run_tests }}
+        env:
+          BUILD_DIR: build
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        run: |
+          ulimit -c unlimited
+          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+
+          ./scripts/test-unix.sh
+
+  Windows:
+    needs: get-refs
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - cmake: Win32
+            choco_options: '--x86'
+            address_model: 32
+          - cmake: x64
+            choco_options: ''
+            address_model: 64
+        build_type:
+          - Debug
+          - Release
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
+
+    runs-on: 'windows-latest'
+    env:
+      JOB_NAME: win_${{ matrix.arch.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
+    name: win-${{ matrix.arch.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.get-refs.outputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Download hazelcast-enterprise-tests.jar
+        shell: pwsh
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.2.0-tests.jar
+      - name: Install SysInternals
+        run: |
+            Invoke-WebRequest `
+                "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
+                -OutFile "sys-internals.zip" `
+                -UserAgent "''"
+            Expand-Archive sys-internals.zip -DestinationPath sys-internals
+            ls sys-internals
+      - uses: nick-fields/retry@v2
+        name: Install OpenSSL
+        if: matrix.with_openssl.toggle == 'ON'
+        with:
+          timeout_minutes: 10
+          max_attempts : 4
+          retry_on: error
+          command: |
+            choco install openssl ${{ matrix.arch.choco_options }}
+            Invoke-WebRequest `
+                "https://curl.se/ca/cacert.pem" `
+                -OutFile "C:\cacert.pem"
+      - name: Install Boost
+        run: |
+          Invoke-WebRequest `
+              "${{ env.boost_url }}" `
+              -OutFile "${{ env.boost_archive_name }}" `
+              -UserAgent "''"
+          tar xzf ${{ env.boost_archive_name }}
+          rm ${{ env.boost_archive_name }}
+          cd ${{ env.boost_folder_name }}
+          .\bootstrap.bat
+          .\b2 address-model=${{ matrix.arch.address_model }} --with-atomic --with-thread --with-chrono install
+          cd ..
+          Remove-Item ${{ env.boost_folder_name }} -Recurse -Force
+      - name: Install Thrift
+        run: |
+          Invoke-WebRequest `
+              "https://archive.apache.org/dist/thrift/0.13.0/thrift-0.13.0.tar.gz" `
+              -OutFile "thrift-0.13.0.tar.gz"
+          tar xzf thrift-0.13.0.tar.gz
+          rm thrift-0.13.0.tar.gz
+          cd thrift-0.13.0\build
+          cmake .. -A ${{ matrix.arch.cmake }} `
+                   -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
+                   -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
+                   -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
+                   -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=${{ env.boost_include_folder }} -DCMAKE_INSTALL_PREFIX=C:\Thrift
+          cmake --build . --target install --config ${{ matrix.build_type }}
+          mkdir C:\Thrift\bin
+          cd ../..
+          Remove-Item thrift-0.13.0 -Recurse -Force
+      - name: Build & Install
+        env:
+          BUILD_DIR: build
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          BIT_VERSION: ${{ matrix.arch.address_model }}
+          INSTALL: ON
+          CXXFLAGS: '/I C:\Thrift\include\'
+        run: |
+          .\scripts\build-windows.bat `
+              -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
+              -DBUILD_TESTS=ON `
+              -DBUILD_EXAMPLES=OFF
+      - name: Test
+        if: ${{ env.run_tests }}
+        env:
+          BUILD_DIR: build
+          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+          SSL_CERT_FILE: 'C:\cacert.pem'
+        run: |
+          $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
+          .\scripts\test-windows.bat
+          $dump | wait-process
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: dump-${{ env.JOB_NAME }}
+          path: |
+            **/*.pdb
+            *.dmp
+            
+  macOS-x86_64:
+    needs: get-refs
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type:
+          - type: Debug
+            warn_as_err: ON
+          - type: Release
+            warn_as_err: OFF
+
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
+
+    runs-on: macos-latest
+
+    name: macOS-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }} ,${{ matrix.with_openssl.name }})
+    env:
+      OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.get-refs.outputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Install Dependencies
+        run: |
+          brew install openssl@1.1 thrift curl
+          ./scripts/install-boost.sh ${{env.boost_version}}
+      - name: Download hazelcast-enterprise-tests.jar
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+      - name: Build & Install
+        env:
+          BUILD_DIR: build
+          INSTALL: ON
+          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
+        run: |
+          ./scripts/build-unix.sh                                         \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}            \
+              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
+              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}        \
+              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}            \
+              -DBUILD_TESTS=ON                                            \
+              -DBUILD_EXAMPLES=OFF
+      - name: Test
+        if: ${{ env.run_tests }}
+        env:
+          BUILD_DIR: build
+          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        run: |
+          ./scripts/test-unix.sh
