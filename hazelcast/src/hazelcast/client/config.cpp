@@ -902,7 +902,7 @@ near_cache_config::near_cache_config(const std::string& cache_name)
 
 near_cache_config::near_cache_config(const std::string& cache_name,
                                      in_memory_format memory_format)
-  : near_cache_config(name_)
+  : near_cache_config(cache_name)
 {
     this->in_memory_format_ = memory_format;
 }

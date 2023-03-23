@@ -78,7 +78,7 @@ public:
     virtual std::unique_ptr<std::vector<
       std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E>>>>
     evaluate(util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E>>&
-               eviction_candidates) const
+               /* eviction_candidates */) const
     {
         assert(0);
         return std::unique_ptr<std::vector<std::shared_ptr<

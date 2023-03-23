@@ -70,11 +70,11 @@ public:
      *
      * @return evicted entry count
      */
-    virtual int evict(S* evictable_store,
+    virtual int evict(S* /* evictable_store*/,
                       EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E>*
-                        eviction_policy_evaluator,
-                      EvictionChecker* eviction_checker,
-                      EvictionListener<A, E>* eviction_listener)
+                        /* eviction_policy_evaluator*/,
+                      EvictionChecker* /* eviction_checker*/,
+                      EvictionListener<A, E>* /* eviction_listener */)
     {
         assert(0);
         return 0;

@@ -180,25 +180,25 @@ namespace map {
 namespace impl {
 namespace nearcache {
 bool
-TrueMarkerImpl::try_mark(const serialization::pimpl::data& key)
+TrueMarkerImpl::try_mark(const serialization::pimpl::data& /* key */)
 {
     return true;
 }
 
 bool
-TrueMarkerImpl::try_unmark(const serialization::pimpl::data& key)
+TrueMarkerImpl::try_unmark(const serialization::pimpl::data& /* key */)
 {
     return true;
 }
 
 bool
-TrueMarkerImpl::try_remove(const serialization::pimpl::data& key)
+TrueMarkerImpl::try_remove(const serialization::pimpl::data& /* key */)
 {
     return true;
 }
 
 void
-TrueMarkerImpl::force_unmark(const serialization::pimpl::data& key)
+TrueMarkerImpl::force_unmark(const serialization::pimpl::data& /* key */)
 {}
 
 void
