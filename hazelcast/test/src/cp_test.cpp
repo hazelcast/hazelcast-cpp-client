@@ -58,6 +58,10 @@ protected:
         if (cp_structure_) {
             cp_structure_->destroy().get();
         }
+
+        if (client_) {
+            client_->shutdown().get();
+        }
     }
 
     static void SetUpTestCase()

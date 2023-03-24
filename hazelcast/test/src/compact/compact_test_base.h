@@ -53,6 +53,13 @@ protected:
         remote_controller_client().ping();
     }
 
+    void TearDown() override
+    {
+        if (client) {
+            client->shutdown().get();
+        }
+    }
+
     template<typename T>
     void replicate_schema()
     {

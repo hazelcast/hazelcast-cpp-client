@@ -2973,7 +2973,6 @@ ClientTxnTest::ClientTxnTest()
         }
         return boost::make_optional<member>(std::move(members[0]));
     }));
-
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
     second_.reset(new HazelcastServer(hazelcast_instance_factory_));
@@ -3201,9 +3200,7 @@ TEST_F(ClientTxnTest, testTxnInitAndNextMethodRValue)
             return boost::make_optional<member>(std::move(members[0]));
         }));
 
-    if (client_ != nullptr) {
-        client_->shutdown().get();
-    }
+    client_->shutdown().get();
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
 

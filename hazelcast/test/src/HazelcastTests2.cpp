@@ -1979,6 +1979,13 @@ protected:
         map_ = client_->get_map("serialization_with_server_map").get();
     }
 
+    void TearDown() override
+    {
+        if (client_) {
+            client_->shutdown().get();
+        }
+    }
+
 protected:
     static Response get_value_from_server()
     {
