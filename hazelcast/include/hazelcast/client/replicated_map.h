@@ -358,10 +358,10 @@ private:
 
     private:
         void fire_map_wide_event(
-          const boost::optional<serialization::pimpl::data>& key,
-          const boost::optional<serialization::pimpl::data>& value,
-          const boost::optional<serialization::pimpl::data>& old_value,
-          const boost::optional<serialization::pimpl::data>& merging_value,
+          const boost::optional<serialization::pimpl::data>& /* key */,
+          const boost::optional<serialization::pimpl::data>& /* value */,
+          const boost::optional<serialization::pimpl::data>& /* old_value */,
+          const boost::optional<serialization::pimpl::data>& /* merging_value */,
           int32_t event_type,
           boost::uuids::uuid uuid,
           int32_t number_of_affected_entries)
@@ -382,7 +382,7 @@ private:
           const boost::optional<serialization::pimpl::data>& merging_value,
           int32_t event_type,
           boost::uuids::uuid uuid,
-          int32_t number_of_affected_entries)
+          int32_t /* number_of_affected_entries */)
         {
             typed_data eventKey, val, oldVal, mergingVal;
             if (value) {

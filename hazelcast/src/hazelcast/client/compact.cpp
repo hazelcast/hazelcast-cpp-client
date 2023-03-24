@@ -1590,8 +1590,8 @@ operator==(const generic_record& x, const generic_record& y)
                      boost::any_cast<boost::optional<
                        std::vector<boost::optional<generic_record>>>>(y);
           },
-          [](const boost::any& x, const boost::any& y) { return false; }, //[31]
-          [](const boost::any& x, const boost::any& y) { return false; }, //[32]
+          [](const boost::any& /*x*/, const boost::any& /*y*/) { return false; }, //[31]
+          [](const boost::any& /*x*/, const boost::any& /*y*/) { return false; }, //[32]
           [](const boost::any& x, const boost::any& y) { //[33] NULLABLE_BOOLEAN
               return boost::any_cast<boost::optional<bool>>(x) ==
                      boost::any_cast<boost::optional<bool>>(y);

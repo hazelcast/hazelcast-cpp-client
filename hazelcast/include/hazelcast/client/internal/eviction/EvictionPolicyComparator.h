@@ -70,8 +70,8 @@ public:
      *
      * @return the result of comparison
      */
-    int compare(const EvictableEntryView<K, V>* e1,
-                const EvictableEntryView<K, V>* e2) const override
+    int compare(const EvictableEntryView<K, V>* /* e1 */,
+                const EvictableEntryView<K, V>* /* e2 */) const override
     {
         assert(0);
         return 0;
