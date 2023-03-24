@@ -222,6 +222,8 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
+        client2->shutdown().get();
         delete client;
         delete client2;
         delete instance1;
@@ -612,6 +614,9 @@ TEST_F(ClientReplicatedMapInvalidation, testNearCacheInvalidation)
 
     ASSERT_FALSE_EVENTUALLY(
       (replicatedMap1->get<int, int>(1).get().has_value()));
+
+    client1.shutdown().get();
+    client2.shutdown().get();
 }
 
 } // namespace test
@@ -703,6 +708,8 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
+        client2->shutdown().get();        
         delete client;
         delete client2;
         delete instance1;
@@ -1647,6 +1654,7 @@ class ClientTopicTest : public ClientTest
 {
 public:
     ClientTopicTest();
+    ~ClientTopicTest(){ client_.shutdown().get();}
 
 protected:
     HazelcastServer instance_;

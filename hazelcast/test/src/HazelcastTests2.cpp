@@ -379,6 +379,7 @@ TEST_F(ClientConfigTest, test_set_instance_name)
       new_client(std::move(client_config().set_instance_name(test_name)))
         .get());
     ASSERT_EQ(test_name, client.get_name());
+    client.shutdown().get();
 }
 
 /*
@@ -800,6 +801,7 @@ public:
     {
         delete instance;
         instance = nullptr;
+        client->shutdown().get();
         delete client;
         client = nullptr;
         delete expected;
@@ -875,6 +877,10 @@ public:
     serialization::pimpl::default_schema_service& get_schema_service()
     {
         return spi::ClientContext{ client_ }.get_schema_service();
+    }
+
+    ~serialization_test_base(){
+      client_.shutdown().get();
     }
 
 protected:
@@ -1965,6 +1971,7 @@ protected:
                                   : "dev");
         config.get_serialization_config().set_byte_order(GetParam());
 
+        client_->shutdown().get();
         client_.reset(
           new hazelcast_client(new_client(std::move(config)).get()));
         map_ = client_->get_map("serialization_with_server_map").get();

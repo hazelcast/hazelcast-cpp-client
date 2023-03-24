@@ -823,6 +823,10 @@ protected:
         client_config_ = new_client_config();
         client_config_->add_near_cache_config(config);
 
+        if( client_ != nullptr )
+        {
+            client_->shutdown().get();
+        }
         client_.reset(
           new hazelcast_client(new_client(std::move(*client_config_)).get()));
         map_ = client_->get_map(mapName).get();
@@ -957,6 +961,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         delete instance;
 
@@ -1194,6 +1199,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         delete instance;
 
@@ -1360,6 +1366,8 @@ TEST_F(ReliableTopicTest, testConfig)
     }
     EXPECT_TRUE(topic_->remove_message_listener(listener_id_));
     topic_.reset();
+
+    configClient.shutdown().get();
 }
 
 TEST_F(ReliableTopicTest, testConfigWithSetNetworkMethod)
@@ -1407,6 +1415,8 @@ TEST_F(ReliableTopicTest, testConfigWithSetNetworkMethod)
     }
     ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
     topic_.reset();
+
+    configClient.shutdown().get();
 }
 
 TEST_F(ReliableTopicTest, testMessageFieldSetCorrectly)
@@ -1776,6 +1786,8 @@ protected:
         }
 
         monitor.wait();
+
+        hazelcastClient.shutdown().get();
     }
 };
 
@@ -1853,6 +1865,8 @@ TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled)
     }
     t.join();
     ASSERT_EQ(expected, map->size().get());
+
+    client.shutdown().get();
 }
 
 TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart)
@@ -1890,6 +1904,8 @@ TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart)
 
     // Shut down the server
     ASSERT_TRUE(server2.shutdown());
+
+    client.shutdown().get();
 }
 
 TEST_F(IssueTest, testIssue221)
@@ -1910,6 +1926,8 @@ TEST_F(IssueTest, testIssue221)
 
     ASSERT_THROW((map->get<int, int>(1).get()),
                  exception::hazelcast_client_not_active);
+
+    client.shutdown().get();                 
 }
 
 TEST_F(IssueTest, issue_888)
@@ -1936,6 +1954,7 @@ TEST_F(IssueTest, issue_888)
                       ->remove_all(query::in_predicate(
                         hz, query::query_constants::KEY_ATTRIBUTE_NAME, myKeys))
                       .get());
+    hz.shutdown().get();                      
 }
 
 TEST_F(IssueTest,
@@ -1965,6 +1984,7 @@ TEST_F(IssueTest,
     }
 
     t.join();
+    hz.shutdown().get();
 }
 
 TEST_F(IssueTest, testIssue753)
@@ -2008,6 +2028,8 @@ TEST_F(IssueTest, testIssue753)
       .get();
 
     ASSERT_OPEN_EVENTUALLY(success_async_deferred);
+
+    hz.shutdown().get();
 }
 
 TEST_F(
@@ -2043,6 +2065,8 @@ TEST_F(
     }
 
     ASSERT_NO_THROW(pipe->results());
+
+    hz.shutdown().get();
 }
 TEST_F(IssueTest,TestIssue1005){
     HazelcastServerFactory fac("hazelcast/test/resources/lock-expiration.xml");
@@ -2058,6 +2082,8 @@ TEST_F(IssueTest,TestIssue1005){
     std::this_thread::sleep_for(std::chrono::seconds(1));
     exp_lock->lock().get();
     exp_lock->unlock().get();
+
+    c.shutdown().get();
 }
 } // namespace test
 } // namespace client
@@ -2281,6 +2307,7 @@ TEST(ClientMessageTest, testFragmentedMessageHandling)
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].first));
         ASSERT_EQ(i, ss.to_object<int32_t>(&datas[i].second));
     }
+    client.shutdown().get();
 }
 
 TEST(ClientMessageTest, test_encode_sql_query_id)
@@ -2436,6 +2463,8 @@ TEST(hot_restart_test, test_membership_events)
 
     ASSERT_OPEN_EVENTUALLY(leave);
     ASSERT_OPEN_EVENTUALLY(join);
+
+    client.shutdown().get();
 }
 
 class connection_manager_translate : public ClientTest
@@ -2496,6 +2525,8 @@ TEST_F(connection_manager_translate, test_translate_is_used)
     // throws exception because it can't connect to the cluster using translated
     // public unreachable address
     ASSERT_THROW(connection_manager.start(), exception::illegal_state);
+
+    client.shutdown().get();
 }
 
 TEST_F(connection_manager_translate,
@@ -2519,6 +2550,8 @@ TEST_F(connection_manager_translate,
 
     auto conn = ctx.get_connection_manager().get_or_connect(m);
     ASSERT_TRUE(conn);
+
+    client.shutdown().get();
 }
 
 TEST_F(connection_manager_translate,
@@ -2542,6 +2575,8 @@ TEST_F(connection_manager_translate,
 
     ASSERT_THROW(ctx.get_connection_manager().get_or_connect(m),
                  boost::system::system_error);
+
+    client.shutdown().get();                 
 }
 
 TEST_F(connection_manager_translate, default_config_uses_private_addresses)
@@ -2570,6 +2605,8 @@ TEST_F(
       std::unordered_map<endpoint_qualifier, address>{});
     EXPECT_THROW(connection_manager.get_or_connect(dummy_member),
                  exception::hazelcast_);
+
+    client.shutdown().get();                 
 }
 
 struct ClientStateOutput : ::testing::Test
@@ -2646,6 +2683,10 @@ TEST_P(ThreadPoolTest, testEqualThreadAndJobs)
     client_config config;
     config.set_executor_pool_size(num_of_thread);
 
+    if( client != nullptr )
+    {
+        client->shutdown().get();
+    }
     client = new hazelcast_client{ new_client(std::move(config)).get() };
 
     spi::ClientContext ctx(*client);

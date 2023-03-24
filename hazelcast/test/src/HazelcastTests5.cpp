@@ -438,6 +438,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         delete instance;
 
@@ -494,6 +495,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         delete instance2;
         delete instance;
@@ -568,6 +570,7 @@ public:
 
     static void TearDownTestSuite()
     {
+        client->shutdown().get();
         delete client;
         delete instance;
 
@@ -777,6 +780,10 @@ public:
       , int_map_(client_.get_map(intMapName).get())
       , employees_(client_.get_map(employeesMapName).get())
     {}
+
+    ~ClientMapTest(){
+      client_.shutdown().get();
+    }
 
     static void SetUpTestCase()
     {

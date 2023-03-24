@@ -106,6 +106,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         delete instance;
 
@@ -354,6 +355,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         delete instance;
         delete sslFactory;
@@ -596,6 +598,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         delete instance;
         delete instance2;
@@ -927,6 +930,7 @@ protected:
 
     static void TearDownTestCase()
     {
+        client->shutdown().get();
         delete client;
         for (HazelcastServer* server : instances) {
             server->shutdown();
@@ -1589,6 +1593,7 @@ TEST_P(AwsClientTest, testClientAwsMemberNonDefaultPortConfig)
     auto val = map->get<int, int>(5).get();
     ASSERT_TRUE(val.has_value());
     ASSERT_EQ(20, val.value());
+    hazelcastClient.shutdown().get();
 }
 
 TEST_P(AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole)
@@ -1619,6 +1624,7 @@ TEST_P(AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole)
     auto val = map->get<int, int>(5).get();
     ASSERT_TRUE(val.has_value());
     ASSERT_EQ(20, val.value());
+    hazelcastClient.shutdown().get();
 }
 
 TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
@@ -1659,6 +1665,7 @@ TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
     auto val = map->get<int, int>(5).get();
     ASSERT_TRUE(val);
     ASSERT_EQ(20, *val);
+    hazelcastClient.shutdown().get();
 }
 
 TEST_F(AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect)
@@ -1680,6 +1687,7 @@ TEST_F(AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect)
       .set_inside_aws(true);
 
     auto hazelcastClient = new_client(std::move(clientConfig)).get();
+    hazelcastClient.shutdown().get();
 }
 
 TEST_F(AwsClientTest,
@@ -1701,6 +1709,8 @@ TEST_F(AwsClientTest,
       .set_inside_aws(true);
 
     auto hazelcastClient = new_client(std::move(clientConfig)).get();
+
+    hazelcastClient.shutdown().get();
 }
 
 INSTANTIATE_TEST_SUITE_P(AwsClientTest,
