@@ -518,9 +518,9 @@ private:
 
         void handle_imapinvalidation(
           const boost::optional<serialization::pimpl::data>& key,
-          boost::uuids::uuid source_uuid,
-          boost::uuids::uuid partition_uuid,
-          int64_t sequence) override
+          boost::uuids::uuid /* source_uuid */,
+          boost::uuids::uuid /* partition_uuid */,
+          int64_t /* sequence */) override
         {
             // null key means Near Cache has to remove all entries in it (see
             // MapAddNearCacheEntryListenerMessageTask)
@@ -534,9 +534,9 @@ private:
 
         void handle_imapbatchinvalidation(
           const std::vector<serialization::pimpl::data>& keys,
-          const std::vector<boost::uuids::uuid>& source_uuids,
-          const std::vector<boost::uuids::uuid>& partition_uuids,
-          const std::vector<int64_t>& sequences) override
+          const std::vector<boost::uuids::uuid>& /* source_uuids */,
+          const std::vector<boost::uuids::uuid>& /* partition_uuids */,
+          const std::vector<int64_t>& /* sequences */) override
         {
             for (auto& k : keys) {
                 near_cache_->invalidate(
