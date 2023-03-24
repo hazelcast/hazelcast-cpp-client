@@ -39,7 +39,7 @@ class SampleableConcurrentHashMap
   : public SynchronizedMap<std::shared_ptr<KS>, VS>
 {
 public:
-    SampleableConcurrentHashMap(int32_t initial_capacity) {}
+    SampleableConcurrentHashMap(int32_t /* initial_capacity */) {}
 
     /**
      * Entry to define keys and values for sampling.
