@@ -412,7 +412,7 @@ TEST_F(ClientStatisticsTest, testClientStatisticsContent)
               statsFromServer.result.find(std::string("nc.") + test_name + "." +
                                           "creationTime"));
 
-  client.shutdown().get();                                      
+    client.shutdown().get();
 }
 
 TEST_F(ClientStatisticsTest, testStatisticsCollectionNonDefaultPeriod)
@@ -1729,7 +1729,7 @@ TEST_F(MemberAttributeTest, testInitialValues)
     ASSERT_TRUE(member.lookup_attribute(attribute_name));
     ASSERT_EQ("test-member-attribute-value",
               *member.get_attribute(attribute_name));
-    
+
     hazelcastClient.shutdown().get();
 }
 
@@ -2161,7 +2161,7 @@ TEST_P(SimpleListenerTest, testSharedClusterListeners)
     ASSERT_TRUE(
       cluster.remove_membership_listener(sampleListenerRegistrationId));
 
-    hazelcastClient.shutdown().get();      
+    hazelcastClient.shutdown().get();
 }
 
 TEST_P(SimpleListenerTest, testClusterListeners)
@@ -2450,7 +2450,10 @@ ClientTxnMapTest::ClientTxnMapTest()
   , client_(get_new_client())
 {}
 
-ClientTxnMapTest::~ClientTxnMapTest(){ client_.shutdown().get();}
+ClientTxnMapTest::~ClientTxnMapTest()
+{
+    client_.shutdown().get();
+}
 
 TEST_F(ClientTxnMapTest, testPutGet)
 {
@@ -2873,7 +2876,10 @@ ClientTxnSetTest::ClientTxnSetTest()
   , client_(get_new_client())
 {}
 
-ClientTxnSetTest::~ClientTxnSetTest(){client_.shutdown().get();}
+ClientTxnSetTest::~ClientTxnSetTest()
+{
+    client_.shutdown().get();
+}
 
 TEST_F(ClientTxnSetTest, testAddRemove)
 {
@@ -3182,7 +3188,7 @@ TEST_F(ClientTxnTest, testTxnInitAndNextMethodRValue)
             }
             return boost::make_optional<member>(std::move(members[0]));
         }));
-    
+
     client_->shutdown().get();
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
@@ -3216,7 +3222,10 @@ ClientTxnListTest::ClientTxnListTest()
   , client_(get_new_client())
 {}
 
-ClientTxnListTest::~ClientTxnListTest(){ client_.shutdown().get();}
+ClientTxnListTest::~ClientTxnListTest()
+{
+    client_.shutdown().get();
+}
 
 TEST_F(ClientTxnListTest, testAddRemove)
 {
@@ -3272,7 +3281,10 @@ ClientTxnMultiMapTest::ClientTxnMultiMapTest()
   , client_(get_new_client())
 {}
 
-ClientTxnMultiMapTest::~ClientTxnMultiMapTest(){ client_.shutdown().get(); };
+ClientTxnMultiMapTest::~ClientTxnMultiMapTest()
+{
+    client_.shutdown().get();
+};
 
 TEST_F(ClientTxnMultiMapTest, testRemoveIfExists)
 {
@@ -3376,7 +3388,10 @@ ClientTxnQueueTest::ClientTxnQueueTest()
   , client_(get_new_client())
 {}
 
-ClientTxnQueueTest::~ClientTxnQueueTest(){ client_.shutdown().get();};
+ClientTxnQueueTest::~ClientTxnQueueTest()
+{
+    client_.shutdown().get();
+};
 
 TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll1)
 {

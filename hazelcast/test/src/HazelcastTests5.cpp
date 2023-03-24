@@ -781,9 +781,7 @@ public:
       , employees_(client_.get_map(employeesMapName).get())
     {}
 
-    ~ClientMapTest(){
-      client_.shutdown().get();
-    }
+    ~ClientMapTest() { client_.shutdown().get(); }
 
     static void SetUpTestCase()
     {

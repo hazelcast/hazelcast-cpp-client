@@ -709,7 +709,7 @@ protected:
     static void TearDownTestCase()
     {
         client->shutdown().get();
-        client2->shutdown().get();        
+        client2->shutdown().get();
         delete client;
         delete client2;
         delete instance1;
@@ -1654,7 +1654,7 @@ class ClientTopicTest : public ClientTest
 {
 public:
     ClientTopicTest();
-    ~ClientTopicTest(){ client_.shutdown().get();}
+    ~ClientTopicTest() { client_.shutdown().get(); }
 
 protected:
     HazelcastServer instance_;

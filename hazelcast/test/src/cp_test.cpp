@@ -44,7 +44,7 @@ protected:
 
     virtual void SetUp()
     {
-        if(client_!=nullptr){
+        if (client_ != nullptr) {
             client_->shutdown().get();
         }
         client_.reset(
@@ -912,7 +912,6 @@ TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown)
                                                       script.str().c_str(),
                                                       Lang::JAVASCRIPT),
        response.success && response.result == "0"));
-        
 }
 
 TEST_F(basic_lock_test, test_equality_operator)

@@ -823,8 +823,7 @@ protected:
         client_config_ = new_client_config();
         client_config_->add_near_cache_config(config);
 
-        if( client_ != nullptr )
-        {
+        if (client_ != nullptr) {
             client_->shutdown().get();
         }
         client_.reset(
@@ -1927,7 +1926,7 @@ TEST_F(IssueTest, testIssue221)
     ASSERT_THROW((map->get<int, int>(1).get()),
                  exception::hazelcast_client_not_active);
 
-    client.shutdown().get();                 
+    client.shutdown().get();
 }
 
 TEST_F(IssueTest, issue_888)
@@ -1954,7 +1953,7 @@ TEST_F(IssueTest, issue_888)
                       ->remove_all(query::in_predicate(
                         hz, query::query_constants::KEY_ATTRIBUTE_NAME, myKeys))
                       .get());
-    hz.shutdown().get();                      
+    hz.shutdown().get();
 }
 
 TEST_F(IssueTest,
@@ -2576,7 +2575,7 @@ TEST_F(connection_manager_translate,
     ASSERT_THROW(ctx.get_connection_manager().get_or_connect(m),
                  boost::system::system_error);
 
-    client.shutdown().get();                 
+    client.shutdown().get();
 }
 
 TEST_F(connection_manager_translate, default_config_uses_private_addresses)
@@ -2606,7 +2605,7 @@ TEST_F(
     EXPECT_THROW(connection_manager.get_or_connect(dummy_member),
                  exception::hazelcast_);
 
-    client.shutdown().get();                 
+    client.shutdown().get();
 }
 
 struct ClientStateOutput : ::testing::Test
@@ -2683,8 +2682,7 @@ TEST_P(ThreadPoolTest, testEqualThreadAndJobs)
     client_config config;
     config.set_executor_pool_size(num_of_thread);
 
-    if( client != nullptr )
-    {
+    if (client != nullptr) {
         client->shutdown().get();
     }
     client = new hazelcast_client{ new_client(std::move(config)).get() };

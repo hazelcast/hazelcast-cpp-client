@@ -45,8 +45,7 @@ protected:
           new HazelcastServerFactory{ "hazelcast/test/resources/compact.xml" });
         member_.reset(new HazelcastServer{ *factory_ });
 
-        if( client != nullptr )
-        {
+        if (client != nullptr) {
             client->shutdown().get();
         }
         client.reset(new hazelcast_client{ new_client(config()).get() });

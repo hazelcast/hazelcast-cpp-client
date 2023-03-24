@@ -879,9 +879,7 @@ public:
         return spi::ClientContext{ client_ }.get_schema_service();
     }
 
-    ~serialization_test_base(){
-      client_.shutdown().get();
-    }
+    ~serialization_test_base() { client_.shutdown().get(); }
 
 protected:
     HazelcastServerFactory factory_;

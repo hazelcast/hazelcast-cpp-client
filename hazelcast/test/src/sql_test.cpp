@@ -286,9 +286,7 @@ public:
     {
     }
 
-    ~SqlTest(){
-        client.shutdown().get();
-    }
+    ~SqlTest() { client.shutdown().get(); }
 
     static client_config get_config()
     {
