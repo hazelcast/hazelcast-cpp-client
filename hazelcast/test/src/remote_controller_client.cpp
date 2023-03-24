@@ -79,7 +79,12 @@ cluster_version()
 
     version.major = std::stoi(major_minor_patch.at(0));
     version.minor = std::stoi(major_minor_patch.at(1));
-    version.patch = std::stoi(major_minor_patch.at(2));
+
+    if (major_minor_patch.size() > 2) {
+      version.patch = std::stoi(major_minor_patch.at(2));
+    } else {
+      version.patch = 0;
+    }
 
     return version;
 }
