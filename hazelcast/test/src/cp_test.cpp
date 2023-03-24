@@ -44,7 +44,7 @@ protected:
 
     virtual void SetUp()
     {
-        if (client_ != nullptr) {
+        if (client_) {
             client_->shutdown().get();
         }
         client_.reset(

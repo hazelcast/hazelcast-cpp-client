@@ -438,12 +438,15 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
         delete instance;
 
         unknown_object_map = nullptr;
-        client = nullptr;
         instance = nullptr;
     }
 
@@ -495,13 +498,15 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         delete instance2;
         delete instance;
 
         int_map = nullptr;
-        client = nullptr;
         instance2 = nullptr;
         instance = nullptr;
     }
@@ -570,13 +575,16 @@ public:
 
     static void TearDownTestSuite()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
         delete instance;
 
         map.reset();
         instance = nullptr;
-        client = nullptr;
     }
 
     void TearDown() override { map->clear().get(); }

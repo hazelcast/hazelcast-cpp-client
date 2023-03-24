@@ -960,12 +960,14 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         delete instance;
 
         set = nullptr;
-        client = nullptr;
         instance = nullptr;
     }
 
@@ -1198,11 +1200,13 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         delete instance;
 
-        client = nullptr;
         instance = nullptr;
     }
 

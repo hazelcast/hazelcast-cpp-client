@@ -801,9 +801,11 @@ public:
     {
         delete instance;
         instance = nullptr;
-        client->shutdown().get();
-        delete client;
-        client = nullptr;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         delete expected;
         expected = nullptr;
     }
@@ -1969,7 +1971,9 @@ protected:
                                   : "dev");
         config.get_serialization_config().set_byte_order(GetParam());
 
-        client_->shutdown().get();
+        if (client_) {
+            client_->shutdown().get();
+        }
         client_.reset(
           new hazelcast_client(new_client(std::move(config)).get()));
         map_ = client_->get_map("serialization_with_server_map").get();

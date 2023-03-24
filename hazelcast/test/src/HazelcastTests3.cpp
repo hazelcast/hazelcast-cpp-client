@@ -222,15 +222,21 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        client2->shutdown().get();
-        delete client;
-        delete client2;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
+        if (client2) {
+            client2->shutdown().get();
+            delete client2;
+            client2 = nullptr;
+        }
+
         delete instance1;
         delete factory;
 
-        client = nullptr;
-        client2 = nullptr;
         instance1 = nullptr;
         factory = nullptr;
     }
@@ -708,15 +714,20 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        client2->shutdown().get();
-        delete client;
-        delete client2;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
+        if (client2) {
+            client2->shutdown().get();
+            delete client2;
+            client2 = nullptr;
+        }
         delete instance1;
         delete instance2;
 
-        client = nullptr;
-        client2 = nullptr;
         instance1 = nullptr;
         instance2 = nullptr;
     }

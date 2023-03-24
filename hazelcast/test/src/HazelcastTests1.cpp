@@ -619,10 +619,16 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        client2->shutdown().get();
-        delete client;
-        delete client2;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
+
+        if (client2) {
+            client2->shutdown().get();
+            delete client2;
+        }
+
         delete instance;
 
         client = nullptr;
@@ -1753,8 +1759,11 @@ public:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
+
         delete instance;
 
         client = nullptr;
@@ -1912,8 +1921,10 @@ public:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
         delete instance;
 
         client = nullptr;
@@ -2339,8 +2350,10 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
         delete instance;
 
         client = nullptr;
@@ -2961,7 +2974,6 @@ ClientTxnTest::ClientTxnTest()
         return boost::make_optional<member>(std::move(members[0]));
     }));
 
-    client_->shutdown().get();
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
     second_.reset(new HazelcastServer(hazelcast_instance_factory_));
@@ -3189,7 +3201,9 @@ TEST_F(ClientTxnTest, testTxnInitAndNextMethodRValue)
             return boost::make_optional<member>(std::move(members[0]));
         }));
 
-    client_->shutdown().get();
+    if (client_ != nullptr) {
+        client_->shutdown().get();
+    }
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
 

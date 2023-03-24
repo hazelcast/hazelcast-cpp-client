@@ -106,12 +106,15 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
         delete instance;
 
         mm = nullptr;
-        client = nullptr;
         instance = nullptr;
     }
 
@@ -355,12 +358,14 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         delete instance;
         delete sslFactory;
 
-        client = nullptr;
         instance = nullptr;
     }
 
@@ -598,13 +603,16 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
         delete instance;
         delete instance2;
 
         q = nullptr;
-        client = nullptr;
         instance = nullptr;
     }
 
@@ -930,14 +938,15 @@ protected:
 
     static void TearDownTestCase()
     {
-        client->shutdown().get();
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         for (HazelcastServer* server : instances) {
             server->shutdown();
             delete server;
         }
-
-        client = nullptr;
     }
 
     static std::vector<HazelcastServer*> instances;
