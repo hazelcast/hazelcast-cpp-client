@@ -76,7 +76,7 @@ template<typename EXCEPTION>
 class ExceptionFactoryImpl : public ExceptionFactory
 {
 public:
-    std::exception_ptr create_exception(const ClientExceptionFactory& factory,
+    std::exception_ptr create_exception(const ClientExceptionFactory& /* factory */,
                                         const std::string& source,
                                         const std::string& message,
                                         const std::string& details,
