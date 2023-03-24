@@ -34,6 +34,7 @@
 #include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
 #include "hazelcast/client/config/logger_config.h"
+#include "hazelcast/client/config/client_tpc_config.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/lifecycle_listener.h"
 #include "hazelcast/client/membership_listener.h"
@@ -447,6 +448,33 @@ public:
      */
     bool backup_acks_enabled();
 
+    /**
+     * Returns the client_tpc_config
+     *
+     * @return the client_tpc_config
+     * @since 5.3
+     */
+    config::client_tpc_config& get_tpc_config();
+
+    /**
+     * Returns the client_tpc_config
+     *
+     * @return the client_tpc_config
+     * @since 5.3
+     */
+    const config::client_tpc_config& get_tpc_config() const;
+
+    /**
+     * Sets the client_tpc_config
+     *
+     * @param tpc_config client_tpc_config to set
+     * @return configured {@link client_config} for chaining
+     * @throws illegal_argument_exception if the {@code tpc_config} is {@code
+     * null}
+     * @since 5.3
+     */
+    client_config& set_tpc_config(config::client_tpc_config);
+
 private:
     friend class reliable_topic;
 
@@ -499,6 +527,8 @@ private:
     std::unordered_set<std::string> labels_;
 
     bool backup_acks_enabled_ = true;
+
+    config::client_tpc_config tpc_config_;
 };
 
 } // namespace client

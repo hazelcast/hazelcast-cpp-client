@@ -40,7 +40,7 @@ class Connection;
 class HAZELCAST_API ReadHandler
 {
 public:
-    ReadHandler(Connection& connection, size_t buffer_size);
+    ReadHandler(Connection& connection, size_t buffer_size) noexcept;
 
     ~ReadHandler();
 
@@ -53,7 +53,8 @@ public:
 
 private:
     protocol::ClientMessageBuilder<Connection> builder_;
-    std::atomic<std::chrono::steady_clock::duration> last_read_time_;
+    mutable std::mutex read_time_mtx_;
+    std::chrono::steady_clock::time_point last_read_time_;
 };
 } // namespace connection
 } // namespace client

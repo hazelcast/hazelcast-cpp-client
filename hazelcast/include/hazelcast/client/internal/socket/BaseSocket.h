@@ -40,14 +40,16 @@ public:
                const address& addr,
                client::config::socket_options& socket_options,
                boost::asio::io_context& io,
-               std::chrono::milliseconds& connect_timeout_in_millis)
-      : socket_options_(socket_options)
+               std::chrono::milliseconds& connect_timeout_in_millis,
+               connection::Connection& connection)
+      : is_closed_{ true }
+      , socket_options_(socket_options)
       , remote_endpoint_(addr)
       , io_(io)
-      , socket_strand_(io)
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io)
+      , read_handler_(connection, 16384)
     {}
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -61,14 +63,16 @@ public:
                client::config::socket_options& socket_options,
                boost::asio::io_context& io,
                std::chrono::milliseconds& connect_timeout_in_millis,
+               connection::Connection& connection,
                CONTEXT& context)
-      : socket_options_(socket_options)
+      : is_closed_{ true }
+      , socket_options_(socket_options)
       , remote_endpoint_(addr)
       , io_(io)
-      , socket_strand_(io)
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io, context)
+      , read_handler_(connection, 16384)
     {}
 #endif // HZ_BUILD_WITH_SSL
 
@@ -101,7 +105,10 @@ public:
             static constexpr const char* PROTOCOL_TYPE_BYTES = "CP2";
             boost::asio::write(socket_,
                                boost::asio::buffer(PROTOCOL_TYPE_BYTES, 3));
+
+            is_closed_ = false;
         } catch (...) {
+            is_closed_ = true;
             connectTimer.cancel();
             close();
             throw;
@@ -111,37 +118,51 @@ public:
         do_read(std::move(connection));
     }
 
+    bool write(std::vector<byte> buffer) override
+    {
+        if (is_closed_) {
+            return false;
+        }
+
+        boost::system::error_code error;
+        boost::asio::write(socket_, boost::asio::buffer(buffer), error);
+
+        return error.value() == boost::system::errc::success;
+    }
+
     void async_write(
       const std::shared_ptr<connection::Connection> connection,
       const std::shared_ptr<spi::impl::ClientInvocation> invocation) override
     {
         check_connection(connection, invocation);
         auto message = invocation->get_client_message();
-        socket_strand_.post([connection, invocation, message, this]() mutable {
-            if (!check_connection(connection, invocation)) {
-                return;
-            }
 
-            add_invocation_to_map(connection, invocation, message);
+        connection->get_executor().post(
+          [connection, invocation, message, this]() mutable {
+              if (!check_connection(connection, invocation)) {
+                  return;
+              }
 
-            auto& datas = message->get_buffer();
+              add_invocation_to_map(connection, invocation, message);
 
-            entry outbox_entry;
-            outbox_entry.buffers.reserve(datas.size());
-            for (const auto& data : datas) {
-                outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
-            }
-            outbox_entry.message = std::move(message);
-            outbox_entry.invocation = std::move(invocation);
-            this->outbox_.push_back(std::move(outbox_entry));
+              auto& datas = message->get_buffer();
 
-            if (this->outbox_.size() > 1) {
-                // async write is in progress
-                return;
-            }
+              entry outbox_entry;
+              outbox_entry.buffers.reserve(datas.size());
+              for (const auto& data : datas) {
+                  outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
+              }
+              outbox_entry.message = std::move(message);
+              outbox_entry.invocation = std::move(invocation);
+              this->outbox_.push_back(std::move(outbox_entry));
 
-            do_write(connection);
-        });
+              if (this->outbox_.size() > 1) {
+                  // async write is in progress
+                  return;
+              }
+
+              do_write(connection);
+          });
     }
 
     // always called from within the socket_strand_
@@ -149,6 +170,8 @@ public:
     {
         boost::system::error_code ignored;
         socket_.lowest_layer().close(ignored);
+
+        is_closed_ = true;
     }
 
     address get_address() const override
@@ -181,9 +204,20 @@ public:
         return remote_endpoint_;
     }
 
-    boost::asio::io_context::strand& get_executor() noexcept override
+    std::chrono::steady_clock::time_point last_read_time() const override
     {
-        return socket_strand_;
+        return read_handler_.get_last_read_time();
+    }
+
+    std::chrono::steady_clock::time_point last_write_time() const override
+    {
+        std::lock_guard<std::mutex> lock{ write_time_mtx_ };
+        return last_write_time_;
+    }
+
+    bool is_closed() const override
+    {
+        return is_closed_;
     }
 
 protected:
@@ -222,11 +256,12 @@ protected:
     void do_read(const std::shared_ptr<connection::Connection> connection)
     {
         socket_.async_read_some(
-          boost::asio::buffer(connection->read_handler.byte_buffer.ix(),
-                              connection->read_handler.byte_buffer.remaining()),
-          socket_strand_.wrap(
+          boost::asio::buffer(read_handler_.byte_buffer.ix(),
+                              read_handler_.byte_buffer.remaining()),
+          connection->get_executor().wrap(
             [=](const boost::system::error_code& ec, std::size_t bytes_read) {
                 if (ec) {
+                    is_closed_ = true;
                     // prevent any exceptions
                     util::IOUtil::close_resource(
                       connection.get(),
@@ -237,10 +272,9 @@ protected:
                     return;
                 }
 
-                connection->read_handler.byte_buffer.safe_increment_position(
-                  bytes_read);
+                read_handler_.byte_buffer.safe_increment_position(bytes_read);
 
-                connection->read_handler.handle();
+                read_handler_.handle();
 
                 do_read(connection);
             }));
@@ -255,6 +289,7 @@ protected:
               this->outbox_.pop_front();
 
               if (ec) {
+                  is_closed_ = true;
                   auto message =
                     (boost::format{ "Error %1% during invocation write for %2% "
                                     "on connection %3%" } %
@@ -263,7 +298,10 @@ protected:
                   connection->close(message);
               } else {
                   // update the connection write time
-                  connection->last_write_time(std::chrono::steady_clock::now());
+                  {
+                      std::lock_guard<std::mutex> lock{ write_time_mtx_ };
+                      last_write_time_ = std::chrono::steady_clock::now();
+                  }
 
                   if (!this->outbox_.empty()) {
                       do_write(connection);
@@ -273,7 +311,7 @@ protected:
 
         const auto& message = outbox_[0].buffers;
         boost::asio::async_write(
-          socket_, message, socket_strand_.wrap(handler));
+          socket_, message, connection->get_executor().wrap(handler));
     }
 
     virtual void post_connect() {}
@@ -330,12 +368,14 @@ protected:
         message->set_correlation_id(message_call_id);
     }
 
+    std::atomic<bool> is_closed_;
     client::config::socket_options& socket_options_;
     address remote_endpoint_;
     boost::asio::io_context& io_;
-    boost::asio::io_context::strand socket_strand_;
     std::chrono::milliseconds connect_timeout_;
     boost::asio::ip::tcp::resolver& resolver_;
+    mutable std::mutex write_time_mtx_;
+    std::chrono::steady_clock::time_point last_write_time_;
     T socket_;
     int32_t call_id_counter_{ 0 };
     struct entry
@@ -347,6 +387,7 @@ protected:
 
     typedef std::deque<entry> Outbox;
     Outbox outbox_;
+    connection::ReadHandler read_handler_;
 };
 } // namespace socket
 } // namespace internal

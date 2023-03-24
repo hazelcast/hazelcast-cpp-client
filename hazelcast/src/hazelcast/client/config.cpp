@@ -1367,6 +1367,53 @@ client_config::backup_acks_enabled(bool enabled)
     return *this;
 }
 
+config::client_tpc_config&
+client_config::get_tpc_config()
+{
+    return tpc_config_;
+}
+
+config::client_tpc_config::client_tpc_config()
+  : enabled_{ false }
+{
+}
+
+bool
+config::client_tpc_config::is_enabled() const
+{
+    return enabled_;
+}
+
+config::client_tpc_config&
+config::client_tpc_config::set_enabled(bool enabled)
+{
+    enabled_ = enabled;
+
+    return *this;
+}
+
+const config::client_tpc_config&
+client_config::get_tpc_config() const
+{
+    return tpc_config_;
+}
+
+client_config&
+client_config::set_tpc_config(config::client_tpc_config config)
+{
+    tpc_config_ = config;
+
+    return *this;
+}
+
+std::ostream&
+operator<<(std::ostream& os, const config::client_tpc_config& cfg)
+{
+    return os << "TpcConfig {"
+                 "enabled="
+              << cfg.is_enabled() << "}";
+}
+
 bool
 client_config::backup_acks_enabled()
 {

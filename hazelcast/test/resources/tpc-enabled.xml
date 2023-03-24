@@ -1,0 +1,9 @@
+<hazelcast xmlns="http://www.hazelcast.com/schema/config">
+
+    <cluster-name>tpc-cluster</cluster-name>
+
+    <tpc enabled="true">
+        <eventloop-count>4</eventloop-count>
+    </tpc>
+
+</hazelcast>

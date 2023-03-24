@@ -1,0 +1,7 @@
+<hazelcast xmlns="http://www.hazelcast.com/schema/config">
+
+    <cluster-name>tpc-cluster</cluster-name>
+
+    <tpc enabled="false"></tpc>
+
+</hazelcast>

@@ -19,6 +19,7 @@
 
 #include "hazelcast/client/config/socket_options.h"
 #include "hazelcast/client/address.h"
+#include "hazelcast/client/connection/ReadHandler.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -45,6 +46,8 @@ public:
     virtual void connect(
       const std::shared_ptr<connection::Connection> connection) = 0;
 
+    virtual bool write(std::vector<byte> buffer) = 0;
+
     virtual void async_write(
       const std::shared_ptr<connection::Connection> connection,
       const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
@@ -52,6 +55,12 @@ public:
     virtual void close() = 0;
 
     virtual address get_address() const = 0;
+
+    virtual std::chrono::steady_clock::time_point last_read_time() const = 0;
+
+    virtual std::chrono::steady_clock::time_point last_write_time() const = 0;
+
+    virtual bool is_closed() const = 0;
 
     /**
      *
@@ -62,9 +71,10 @@ public:
     virtual boost::optional<address> local_socket_address() const = 0;
 
     virtual const address& get_remote_endpoint() const = 0;
-
-    virtual boost::asio::io_context::strand& get_executor() noexcept = 0;
 };
+
+std::ostream HAZELCAST_API&
+operator<<(std::ostream& os, const socket&);
 } // namespace client
 } // namespace hazelcast
 

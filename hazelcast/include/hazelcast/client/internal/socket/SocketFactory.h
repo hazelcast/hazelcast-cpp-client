@@ -53,7 +53,10 @@ public:
 
     std::unique_ptr<hazelcast::client::socket> create(
       const address& address,
-      std::chrono::milliseconds& connect_timeout_in_millis);
+      std::chrono::milliseconds& connect_timeout_in_millis,
+      connection::Connection& connection);
+
+    boost::asio::io_context& io_ctx();
 
 private:
     spi::ClientContext& client_context_;

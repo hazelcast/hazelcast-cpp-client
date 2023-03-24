@@ -83,6 +83,10 @@ public:
 
     void close(const std::string& reason, std::exception_ptr cause);
 
+    void set_tpc_channels(std::vector<std::unique_ptr<socket>>);
+
+    const std::vector<std::unique_ptr<socket>>& get_tpc_channels();
+
     void write(
       const std::shared_ptr<spi::impl::ClientInvocation>& client_invocation);
 
@@ -123,14 +127,13 @@ public:
 
     void deregister_invocation(int64_t call_id);
 
-    void last_write_time(std::chrono::steady_clock::time_point tp);
-
     std::chrono::steady_clock::time_point last_write_time() const;
+
+    boost::asio::io_context::strand& get_executor();
 
     friend std::ostream& operator<<(std::ostream& os,
                                     const Connection& connection);
 
-    ReadHandler read_handler;
     std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>>
       invocations;
 
@@ -151,10 +154,12 @@ private:
     // TODO: check if they need to be atomic
     boost::optional<address> remote_address_;
     boost::uuids::uuid remote_uuid_;
+    std::atomic<bool> tpc_channels_initialized_;
+    std::vector<std::unique_ptr<socket>> tpc_channels_;
     logger& logger_;
     std::atomic_bool alive_;
     std::unique_ptr<boost::asio::steady_timer> backup_timer_;
-    std::atomic<std::chrono::steady_clock::duration> last_write_time_;
+    boost::asio::io_context::strand socket_strand_;
 
     void schedule_periodic_backup_cleanup(
       std::chrono::milliseconds backup_timeout,

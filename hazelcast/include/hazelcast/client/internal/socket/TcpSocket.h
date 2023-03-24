@@ -35,7 +35,8 @@ public:
               const address& address,
               client::config::socket_options& socket_options,
               std::chrono::milliseconds& connect_timeout_in_millis,
-              boost::asio::ip::tcp::resolver& resolver);
+              boost::asio::ip::tcp::resolver& resolver,
+              connection::Connection&);
 };
 } // namespace socket
 } // namespace internal

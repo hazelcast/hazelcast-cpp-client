@@ -5837,6 +5837,84 @@ client_fetchschema_encode(int64_t schema_id)
     return msg;
 }
 
+ClientMessage
+experimental_authentication_encode(const std::string& cluster_name,
+                                   const std::string* username,
+                                   const std::string* password,
+                                   boost::uuids::uuid uuid,
+                                   const std::string& client_type,
+                                   byte serialization_version,
+                                   const std::string& client_hazelcast_version,
+                                   const std::string& client_name,
+                                   const std::vector<std::string>& labels)
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN +
+                                ClientMessage::UUID_SIZE +
+                                ClientMessage::UINT8_SIZE;
+    ClientMessage msg(initial_frame_size);
+    msg.set_retryable(true);
+    msg.set_operation_name("experimental.authentication");
+
+    msg.set_message_type(static_cast<int32_t>(16580864));
+    msg.set_partition_id(-1);
+
+    msg.set(uuid);
+    msg.set(serialization_version);
+    msg.set(cluster_name);
+
+    msg.set_nullable(username);
+
+    msg.set_nullable(password);
+
+    msg.set(client_type);
+
+    msg.set(client_hazelcast_version);
+
+    msg.set(client_name);
+
+    msg.set(labels, true);
+
+    return msg;
+}
+
+ClientMessage
+experimental_authenticationcustom_encode(
+  const std::string& cluster_name,
+  const std::vector<byte>& credentials,
+  boost::uuids::uuid uuid,
+  const std::string& client_type,
+  byte serialization_version,
+  const std::string& client_hazelcast_version,
+  const std::string& client_name,
+  const std::vector<std::string>& labels)
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN +
+                                ClientMessage::UUID_SIZE +
+                                ClientMessage::UINT8_SIZE;
+    ClientMessage msg(initial_frame_size);
+    msg.set_retryable(true);
+    msg.set_operation_name("experimental.authenticationcustom");
+
+    msg.set_message_type(static_cast<int32_t>(16581120));
+    msg.set_partition_id(-1);
+
+    msg.set(uuid);
+    msg.set(serialization_version);
+    msg.set(cluster_name);
+
+    msg.set(credentials);
+
+    msg.set(client_type);
+
+    msg.set(client_hazelcast_version);
+
+    msg.set(client_name);
+
+    msg.set(labels, true);
+
+    return msg;
+}
+
 } // namespace codec
 } // namespace protocol
 } // namespace client

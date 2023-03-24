@@ -53,7 +53,11 @@ private:
     std::chrono::milliseconds heartbeat_timeout_;
     std::shared_ptr<boost::asio::steady_timer> timer_;
 
-    void check_connection(const std::shared_ptr<Connection>& connection);
+    void check(const std::shared_ptr<Connection>& connection);
+    void check(const std::shared_ptr<Connection>&,
+               socket& tpc_channel,
+               int index,
+               std::chrono::steady_clock::time_point now);
 
     static void on_heartbeat_stopped(
       const std::shared_ptr<Connection>& connection,

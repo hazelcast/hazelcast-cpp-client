@@ -3098,6 +3098,34 @@ client_sendallschemas_encode(
 ClientMessage HAZELCAST_API
 client_fetchschema_encode(int64_t schema_id);
 
+/**
+ * Makes an authentication request to the cluster.
+ */
+ClientMessage HAZELCAST_API
+experimental_authentication_encode(const std::string& cluster_name,
+                                   const std::string* username,
+                                   const std::string* password,
+                                   boost::uuids::uuid uuid,
+                                   const std::string& client_type,
+                                   byte serialization_version,
+                                   const std::string& client_hazelcast_version,
+                                   const std::string& client_name,
+                                   const std::vector<std::string>& labels);
+
+/**
+ * Makes an authentication request to the cluster using custom credentials.
+ */
+ClientMessage HAZELCAST_API
+experimental_authenticationcustom_encode(
+  const std::string& cluster_name,
+  const std::vector<byte>& credentials,
+  boost::uuids::uuid uuid,
+  const std::string& client_type,
+  byte serialization_version,
+  const std::string& client_hazelcast_version,
+  const std::string& client_name,
+  const std::vector<std::string>& labels);
+
 } // namespace codec
 } // namespace protocol
 } // namespace client

@@ -35,6 +35,7 @@
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/connection/ConnectionListenable.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
+#include "hazelcast/client/connection/authentication_response.h"
 #include "hazelcast/client/config/client_connection_strategy_config.h"
 #include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/logger.h"
@@ -200,18 +201,7 @@ private:
     static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
     static constexpr int SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
 
-    struct auth_response
-    {
-        byte status;
-        boost::uuids::uuid member_uuid;
-        byte serialization_version;
-        int32_t partition_count;
-        boost::uuids::uuid cluster_id;
-        boost::optional<address> server_address;
-        std::string server_version;
-    };
-
-    auth_response authenticate_on_cluster(
+    authentication_response authenticate_on_cluster(
       std::shared_ptr<Connection>& connection);
 
     void fire_connection_added_event(
@@ -275,7 +265,10 @@ private:
      */
     std::shared_ptr<Connection> on_authenticated(
       const std::shared_ptr<Connection>& connection,
-      auth_response& response);
+      const authentication_response& response);
+
+    void connect_to_tpc_ports(std::shared_ptr<Connection>,
+                              std::vector<int> ports);
 
     std::atomic_bool alive_;
     logger& logger_;
@@ -300,6 +293,7 @@ private:
     const config::client_connection_strategy_config::reconnect_mode
       reconnect_mode_;
     const bool smart_routing_enabled_;
+    const bool is_tpc_aware_client_;
     boost::optional<boost::asio::steady_timer> connect_to_members_timer_;
     boost::uuids::uuid client_uuid_;
     boost::chrono::milliseconds authentication_timeout_;
