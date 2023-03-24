@@ -1008,6 +1008,9 @@ protected:
 
     void create_no_near_cache_context()
     {
+        if (client_ != nullptr) {
+            client_->shutdown().get();
+        }
         client_ = std::unique_ptr<hazelcast_client>(
           new hazelcast_client{ new_client(get_config()).get() });
         no_near_cache_map_ = client_->get_replicated_map(get_test_name()).get();
@@ -1017,6 +1020,9 @@ protected:
     {
         client_config nearCachedClientConfig = get_config();
         nearCachedClientConfig.add_near_cache_config(near_cache_config_);
+        if (near_cached_client_ != nullptr) {
+            near_cached_client_->shutdown().get();
+        }
         near_cached_client_ =
           std::unique_ptr<hazelcast_client>(new hazelcast_client(
             new_client(std::move(nearCachedClientConfig)).get()));
