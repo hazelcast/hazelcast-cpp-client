@@ -1993,7 +1993,7 @@ private:
     }
 
     template<typename T>
-    void write_hash(const void* obj, data_output& out)
+    void write_hash(const void* /* obj */, data_output& out)
     {
         out.write(0, boost::endian::order::big);
     }
@@ -2522,6 +2522,7 @@ typename std::enable_if<
                                                                     type_id)
 {
     assert(type_id == static_cast<int32_t>(hz_serializer<T>::get_type_id()));
+    (void)type_id;
 
     return boost::optional<T>(read<T>());
 }

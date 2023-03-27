@@ -1222,6 +1222,7 @@ private:
                           field_kind nullable,
                           const std::string& method_suffix) const
     {
+        (void)method_suffix;
         using optional_nullable_array_t =
           boost::optional<std::vector<boost::optional<T>>>;
         using optional_primitive_array_t = boost::optional<std::vector<T>>;

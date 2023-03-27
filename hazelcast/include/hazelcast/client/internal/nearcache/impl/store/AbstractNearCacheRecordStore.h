@@ -93,14 +93,14 @@ public:
     */
 
     // public for tests.
-    virtual const std::shared_ptr<R> get_record(const std::shared_ptr<KS>& key)
+    virtual const std::shared_ptr<R> get_record(const std::shared_ptr<KS>& /* key */)
     {
         assert(0);
         return std::shared_ptr<R>();
     }
 
-    void on_evict(const std::shared_ptr<KS>& key,
-                  const std::shared_ptr<R>& record,
+    void on_evict(const std::shared_ptr<KS>& /* key */,
+                  const std::shared_ptr<R>& /* record */,
                   bool was_expired) override
     {
         if (was_expired) {
@@ -235,7 +235,7 @@ public:
 protected:
     virtual std::unique_ptr<eviction::MaxSizeChecker>
     create_near_cache_max_size_checker(
-      const client::config::eviction_config& eviction_config,
+      const client::config::eviction_config&,
       const client::config::near_cache_config&)
     {
         assert(0);
@@ -249,9 +249,9 @@ protected:
         return std::unique_ptr<NCRM>();
     }
 
-    virtual int64_t get_key_storage_memory_cost(KS* key) const = 0;
+    virtual int64_t get_key_storage_memory_cost(KS* /* key */) const = 0;
 
-    virtual int64_t get_record_storage_memory_cost(R* record) const = 0;
+    virtual int64_t get_record_storage_memory_cost(R* /* record */) const = 0;
 
     int64_t get_total_storage_memory_cost(KS* key, R* record) const
     {
@@ -259,7 +259,7 @@ protected:
                get_record_storage_memory_cost(record);
     }
 
-    virtual std::unique_ptr<R> value_to_record(const std::shared_ptr<V>& value)
+    virtual std::unique_ptr<R> value_to_record(const std::shared_ptr<V>& /* value */)
     {
         assert(0);
         return std::unique_ptr<R>();
@@ -273,32 +273,32 @@ protected:
                                 }
     */
 
-    virtual std::shared_ptr<V> record_to_value(const R* record)
+    virtual std::shared_ptr<V> record_to_value(const R* /*record */)
     {
         assert(0);
         return std::shared_ptr<V>();
     }
 
-    virtual std::shared_ptr<R> put_record(const std::shared_ptr<KS>& key,
-                                          const std::shared_ptr<R>& record)
+    virtual std::shared_ptr<R> put_record(const std::shared_ptr<KS>& /* key */,
+                                          const std::shared_ptr<R>& /* record */)
     {
         assert(0);
         return std::shared_ptr<R>();
     }
 
-    virtual void put_to_record(std::shared_ptr<R>& record,
-                               const std::shared_ptr<V>& value)
+    virtual void put_to_record(std::shared_ptr<R>& /* record */,
+                               const std::shared_ptr<V>& /* value */)
     {
         assert(0);
     }
 
-    virtual std::shared_ptr<R> remove_record(const std::shared_ptr<KS>& key)
+    virtual std::shared_ptr<R> remove_record(const std::shared_ptr<KS>& /* key */)
     {
         assert(0);
         return std::shared_ptr<R>();
     }
 
-    virtual bool contains_record_key(const std::shared_ptr<KS>& key) const
+    virtual bool contains_record_key(const std::shared_ptr<KS>& /* key */) const
     {
         assert(0);
         return false;
@@ -330,7 +330,7 @@ protected:
     }
 
     std::unique_ptr<eviction::EvictionChecker> create_eviction_checker(
-      const client::config::near_cache_config& cache_config)
+      const client::config::near_cache_config& /* cache_config */)
     {
         return std::unique_ptr<eviction::EvictionChecker>(
           new MaxSizeEvictionChecker(max_size_checker_.get()));
@@ -367,7 +367,7 @@ protected:
 
     std::shared_ptr<V> data_to_value(
       const std::shared_ptr<serialization::pimpl::data>& data,
-      void* dummy)
+      void* /* dummy */)
     {
         return data;
         /*
@@ -425,7 +425,7 @@ protected:
         }
     }
 
-    void on_record_create(const std::shared_ptr<KS>& key,
+    void on_record_create(const std::shared_ptr<KS>&/* key */,
                           const std::shared_ptr<R>& record)
     {
         record->set_creation_time(util::current_time_millis());
@@ -437,21 +437,21 @@ protected:
         record->increment_access_hit();
     }
 
-    void on_get(const std::shared_ptr<KS>& key,
-                const std::shared_ptr<V>& value,
-                const std::shared_ptr<R>& record)
+    void on_get(const std::shared_ptr<KS>& /* key */,
+                const std::shared_ptr<V>& /* value */,
+                const std::shared_ptr<R>& /* record */)
     {}
 
-    void on_get_error(const std::shared_ptr<KS>& key,
-                      const std::shared_ptr<V>& value,
-                      const std::shared_ptr<R>& record,
-                      const exception::iexception& error)
+    void on_get_error(const std::shared_ptr<KS>& /* key */,
+                      const std::shared_ptr<V>& /* value */,
+                      const std::shared_ptr<R>& /* record */,
+                      const exception::iexception& /* error */)
     {}
 
-    void on_put(const std::shared_ptr<KS>& key,
-                const std::shared_ptr<V>& value,
-                const std::shared_ptr<R>& record,
-                const std::shared_ptr<R>& old_record)
+    void on_put(const std::shared_ptr<KS>& /* key */,
+                const std::shared_ptr<V>& /* value */,
+                const std::shared_ptr<R>& /* record */,
+                const std::shared_ptr<R>& /* old_record */)
     {}
 
     /*
@@ -462,11 +462,11 @@ protected:
                                 }
     */
 
-    void on_put_error(const std::shared_ptr<KS>& key,
-                      const std::shared_ptr<V>& value,
-                      const std::shared_ptr<R>& record,
-                      const std::shared_ptr<R>& old_record,
-                      const exception::iexception& error)
+    void on_put_error(const std::shared_ptr<KS>& /* key */,
+                      const std::shared_ptr<V>& /* value */,
+                      const std::shared_ptr<R>& /* record */,
+                      const std::shared_ptr<R>& /* old_record */,
+                      const exception::iexception& /* error */)
     {}
 
     /*
@@ -478,19 +478,19 @@ protected:
                                 }
     */
 
-    void on_remove(const std::shared_ptr<KS>& key,
-                   const std::shared_ptr<R>& record,
-                   bool removed)
+    void on_remove(const std::shared_ptr<KS>& /* key */,
+                   const std::shared_ptr<R>& /* record */,
+                   bool /* removed */)
     {}
 
-    void on_remove_error(const std::shared_ptr<KS>& key,
-                         const std::shared_ptr<R>& record,
-                         bool removed,
-                         const exception::iexception& error)
+    void on_remove_error(const std::shared_ptr<KS>& /* key */,
+                         const std::shared_ptr<R>& /* record */,
+                         bool /* removed */,
+                         const exception::iexception& /* error */)
     {}
 
-    void on_expire(const std::shared_ptr<KS>& key,
-                   const std::shared_ptr<R>& record)
+    void on_expire(const std::shared_ptr<KS>& /* key */,
+                   const std::shared_ptr<R>& /* record */)
     {
         near_cache_stats_->increment_expirations();
     }

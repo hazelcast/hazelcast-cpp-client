@@ -286,6 +286,8 @@ public:
     {
     }
 
+    ~SqlTest() { client.shutdown().get(); }
+
     static client_config get_config()
     {
         client_config cfg = ClientTest::get_config();
@@ -1551,6 +1553,10 @@ TEST_F(SqlTest, find_with_page_sync_iterator)
 
 TEST_F(SqlTest, timeout_for_page_iterator_sync)
 {
+    // `TABLE` clause is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
     // `generate_stream(1)` generates a row per seconds, so it will guaranteed
     // that it will timeout
     auto result =

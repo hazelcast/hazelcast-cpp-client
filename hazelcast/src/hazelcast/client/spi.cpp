@@ -1341,7 +1341,9 @@ ClientExecutionServiceImpl::ClientExecutionServiceImpl(
   : lifecycle_service_(service)
   , client_properties_(properties)
   , user_pool_size_(user_pool_size)
-{}
+{
+    (void)name;
+}
 
 void
 ClientExecutionServiceImpl::start()
@@ -3094,14 +3096,14 @@ cluster_view_listener::event_handler::event_handler(
 
 protocol::ClientMessage
 ClientInvocationServiceImpl::BackupListenerMessageCodec::encode_add_request(
-  bool local_only) const
+  bool /* local_only */) const
 {
     return protocol::codec::client_localbackuplistener_encode();
 }
 
 protocol::ClientMessage
 ClientInvocationServiceImpl::BackupListenerMessageCodec::encode_remove_request(
-  boost::uuids::uuid real_registration_id) const
+  boost::uuids::uuid /* real_registration_id */) const
 {
     assert(0);
     return protocol::ClientMessage(0);
@@ -3109,7 +3111,7 @@ ClientInvocationServiceImpl::BackupListenerMessageCodec::encode_remove_request(
 
 void
 ClientInvocationServiceImpl::noop_backup_event_handler::handle_backup(
-  int64_t source_invocation_correlation_id)
+  int64_t /* source_invocation_correlation_id */)
 {
     assert(0);
 }
@@ -3175,9 +3177,9 @@ cloud_discovery::cloud_discovery(config::cloud_config& config,
   , timeout_(timeout)
 {}
 #else
-cloud_discovery::cloud_discovery(config::cloud_config& config,
-                                 std::string cloud_base_url,
-                                 std::chrono::steady_clock::duration timeout)
+cloud_discovery::cloud_discovery(config::cloud_config& /* config */,
+                                 std::string /* cloud_base_url */,
+                                 std::chrono::steady_clock::duration /* timeout */)
 {}
 #endif // HZ_BUILD_WITH_SSL
 

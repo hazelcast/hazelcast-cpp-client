@@ -480,12 +480,12 @@ private:
 
         void handle_entry(
           const boost::optional<serialization::pimpl::data>& key,
-          const boost::optional<serialization::pimpl::data>& value,
-          const boost::optional<serialization::pimpl::data>& old_value,
-          const boost::optional<serialization::pimpl::data>& merging_value,
+          const boost::optional<serialization::pimpl::data>& /* value */,
+          const boost::optional<serialization::pimpl::data>& /* old_value */,
+          const boost::optional<serialization::pimpl::data>& /* merging_value */,
           int32_t event_type,
-          boost::uuids::uuid uuid,
-          int32_t number_of_affected_entries) override
+          boost::uuids::uuid /* uuid */,
+          int32_t /* number_of_affected_entries */) override
         {
             switch (event_type) {
                 case static_cast<int32_t>(entry_event::type::ADDED):

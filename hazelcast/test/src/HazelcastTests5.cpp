@@ -438,11 +438,15 @@ protected:
 
     static void TearDownTestCase()
     {
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
         delete instance;
 
         unknown_object_map = nullptr;
-        client = nullptr;
         instance = nullptr;
     }
 
@@ -494,12 +498,15 @@ protected:
 
     static void TearDownTestCase()
     {
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         delete instance2;
         delete instance;
 
         int_map = nullptr;
-        client = nullptr;
         instance2 = nullptr;
         instance = nullptr;
     }
@@ -568,12 +575,16 @@ public:
 
     static void TearDownTestSuite()
     {
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
         delete instance;
 
         map.reset();
         instance = nullptr;
-        client = nullptr;
     }
 
     void TearDown() override { map->clear().get(); }
@@ -777,6 +788,8 @@ public:
       , int_map_(client_.get_map(intMapName).get())
       , employees_(client_.get_map(employeesMapName).get())
     {}
+
+    ~ClientMapTest() { client_.shutdown().get(); }
 
     static void SetUpTestCase()
     {
