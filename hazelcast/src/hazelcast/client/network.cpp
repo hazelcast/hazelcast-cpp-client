@@ -1206,6 +1206,7 @@ Connection::Connection(
   , alive_(true)
   , last_write_time_(std::chrono::steady_clock::now().time_since_epoch())
 {
+    (void)client_connection_manager;
     socket_ = socket_factory.create(address, connect_timeout_in_millis);
 }
 

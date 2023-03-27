@@ -379,6 +379,7 @@ TEST_F(ClientConfigTest, test_set_instance_name)
       new_client(std::move(client_config().set_instance_name(test_name)))
         .get());
     ASSERT_EQ(test_name, client.get_name());
+    client.shutdown().get();
 }
 
 /*
@@ -800,8 +801,11 @@ public:
     {
         delete instance;
         instance = nullptr;
-        delete client;
-        client = nullptr;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
         delete expected;
         expected = nullptr;
     }
@@ -876,6 +880,8 @@ public:
     {
         return spi::ClientContext{ client_ }.get_schema_service();
     }
+
+    ~serialization_test_base() { client_.shutdown().get(); }
 
 protected:
     HazelcastServerFactory factory_;
@@ -1965,9 +1971,19 @@ protected:
                                   : "dev");
         config.get_serialization_config().set_byte_order(GetParam());
 
+        if (client_) {
+            client_->shutdown().get();
+        }
         client_.reset(
           new hazelcast_client(new_client(std::move(config)).get()));
         map_ = client_->get_map("serialization_with_server_map").get();
+    }
+
+    void TearDown() override
+    {
+        if (client_) {
+            client_->shutdown().get();
+        }
     }
 
 protected:

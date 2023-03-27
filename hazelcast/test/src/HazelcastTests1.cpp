@@ -285,6 +285,8 @@ TEST_F(ClientStatisticsTest, testClientStatisticsDisabledByDefault)
     ASSERT_TRUE(statsFromServer.success);
     ASSERT_TRUE(statsFromServer.message.empty())
       << "Statistics should be disabled by default.";
+
+    client.shutdown().get();
 }
 
 TEST_F(ClientStatisticsTest, testNoUpdateWhenDisabled)
@@ -296,6 +298,8 @@ TEST_F(ClientStatisticsTest, testNoUpdateWhenDisabled)
     auto client = hazelcast::new_client(std::move(clientConfig)).get();
 
     ASSERT_TRUE_ALL_THE_TIME(get_stats().empty(), 2);
+
+    client.shutdown().get();
 }
 
 TEST_F(ClientStatisticsTest, testClientStatisticsDisabledWithWrongValue)
@@ -314,6 +318,8 @@ TEST_F(ClientStatisticsTest, testClientStatisticsDisabledWithWrongValue)
     ASSERT_TRUE(statsFromServer.success);
     ASSERT_TRUE(statsFromServer.message.empty())
       << "Statistics should not be enabled with wrong value.";
+
+    client.shutdown().get();
 }
 
 TEST_F(ClientStatisticsTest, testClientStatisticsContent)
@@ -405,6 +411,8 @@ TEST_F(ClientStatisticsTest, testClientStatisticsContent)
     ASSERT_NE(std::string::npos,
               statsFromServer.result.find(std::string("nc.") + test_name + "." +
                                           "creationTime"));
+
+    client.shutdown().get();
 }
 
 TEST_F(ClientStatisticsTest, testStatisticsCollectionNonDefaultPeriod)
@@ -500,6 +508,8 @@ TEST_F(ClientStatisticsTest, testStatisticsCollectionNonDefaultPeriod)
       << mapHitsKey << " stat should exist (" << to_string(statsMap) << ")";
     ASSERT_EQ("1", statsMap[mapHitsKey])
       << "Expected 1 map hits (" << to_string(statsMap) << ")";
+
+    client->shutdown().get();
 }
 
 TEST_F(ClientStatisticsTest, testStatisticsPeriod)
@@ -520,6 +530,8 @@ TEST_F(ClientStatisticsTest, testStatisticsPeriod)
 
     ASSERT_NE(initialStats, get_stats())
       << "initial statistics should not be the same as current stats";
+
+    client->shutdown().get();
 }
 } // namespace test
 } // namespace client
@@ -607,8 +619,16 @@ protected:
 
     static void TearDownTestCase()
     {
-        delete client;
-        delete client2;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
+
+        if (client2) {
+            client2->shutdown().get();
+            delete client2;
+        }
+
         delete instance;
 
         client = nullptr;
@@ -887,6 +907,7 @@ protected:
         auto client = new_client(std::move(config)).get();
         auto map = client.get_map("test").get();
         ASSERT_NO_THROW(map->put(5, std::vector<byte>(1024)).get());
+        client.shutdown().get();
     }
 
     void test_ssl_disabled()
@@ -1429,6 +1450,8 @@ TEST_P(ClusterTest, testAllClientStates)
     ASSERT_OPEN_EVENTUALLY(disconnectedLatch);
     ASSERT_OPEN_EVENTUALLY(shuttingDownLatch);
     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
+
+    client.shutdown().get();
 }
 
 TEST_P(ClusterTest, testConnectionAttemptPeriod)
@@ -1519,6 +1542,8 @@ TEST_F(HeartbeatTest, testPing)
 
     // perform a map put
     ASSERT_NO_THROW(hz.get_map("short-heartbeat-map").get()->put(1, 1));
+
+    hz.shutdown().get();
 }
 } // namespace test
 } // namespace client
@@ -1552,6 +1577,7 @@ TEST_F(SocketInterceptorTest, interceptSSLBasic)
     config.set_socket_interceptor(std::move(interceptor));
     hazelcast_client hz{ hazelcast::new_client(std::move(config)).get() };
     interceptorLatch.wait_for(boost::chrono::seconds(2));
+    hz.shutdown().get();
 }
 
 #endif
@@ -1565,6 +1591,7 @@ TEST_F(SocketInterceptorTest, interceptBasic)
     config.set_socket_interceptor(std::move(interceptor));
     hazelcast_client hz{ hazelcast::new_client(std::move(config)).get() };
     interceptorLatch.wait_for(boost::chrono::seconds(2));
+    hz.shutdown().get();
 }
 } // namespace test
 } // namespace client
@@ -1598,6 +1625,8 @@ TEST_F(SocketOptionsTest, testConfiguration)
     ASSERT_FALSE(socketOptions.is_tcp_no_delay());
     ASSERT_EQ(5, socketOptions.get_linger_seconds());
     ASSERT_EQ(bufferSize, socketOptions.get_buffer_size_in_bytes());
+
+    client.shutdown().get();
 }
 } // namespace test
 } // namespace client
@@ -1620,6 +1649,8 @@ TEST_F(ClientAuthenticationTest, testUserPasswordCredentials)
         std::make_shared<security::username_password_credentials>("test-user",
                                                                   "test-pass"));
     hazelcast_client hz{ hazelcast::new_client(std::move(config)).get() };
+
+    hz.shutdown().get();
 }
 
 TEST_F(ClientAuthenticationTest, testTokenCredentials)
@@ -1632,6 +1663,8 @@ TEST_F(ClientAuthenticationTest, testTokenCredentials)
     config.set_cluster_name("token-credentials-dev")
       .set_credentials(std::make_shared<security::token_credentials>(my_token));
     hazelcast_client hz{ hazelcast::new_client(std::move(config)).get() };
+
+    hz.shutdown().get();
 }
 
 TEST_F(ClientAuthenticationTest, testIncorrectGroupName)
@@ -1677,6 +1710,8 @@ TEST_F(ClientEnpointTest, testConnectedClientEnpoint)
     ASSERT_TRUE(localAddress);
     ASSERT_EQ(*localAddress, *endpointAddress);
     ASSERT_EQ(connectionManager.get_client_uuid(), endpoint.get_uuid());
+
+    client.shutdown().get();
 }
 } // namespace test
 } // namespace client
@@ -1700,6 +1735,8 @@ TEST_F(MemberAttributeTest, testInitialValues)
     ASSERT_TRUE(member.lookup_attribute(attribute_name));
     ASSERT_EQ("test-member-attribute-value",
               *member.get_attribute(attribute_name));
+
+    hazelcastClient.shutdown().get();
 }
 
 } // namespace test
@@ -1722,7 +1759,11 @@ public:
 
     static void TearDownTestCase()
     {
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
+
         delete instance;
 
         client = nullptr;
@@ -1880,7 +1921,10 @@ public:
 
     static void TearDownTestCase()
     {
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
         delete instance;
 
         client = nullptr;
@@ -1958,6 +2002,8 @@ TEST_F(ClientPNCounterNoDataMemberTest, noDataMemberExceptionIsThrown)
 
     ASSERT_THROW(pnCounter->add_and_get(5).get(),
                  exception::no_data_member_in_cluster);
+
+    hz.shutdown().get();
 }
 
 /**
@@ -2012,6 +2058,8 @@ TEST_F(ClientPNCounterConsistencyLostTest,
     terminate_member(*currentTarget, instance, instance2);
 
     ASSERT_THROW(pnCounter->add_and_get(5).get(), exception::consistency_lost);
+
+    hz.shutdown().get();
 }
 
 TEST_F(ClientPNCounterConsistencyLostTest,
@@ -2042,6 +2090,8 @@ TEST_F(ClientPNCounterConsistencyLostTest,
     pnCounter->reset().get();
 
     pnCounter->add_and_get(5).get();
+
+    hz.shutdown().get();
 }
 } // namespace pncounter
 } // namespace crdt
@@ -2121,6 +2171,8 @@ TEST_P(SimpleListenerTest, testSharedClusterListeners)
       cluster.remove_membership_listener(initialListenerRegistrationId));
     ASSERT_TRUE(
       cluster.remove_membership_listener(sampleListenerRegistrationId));
+
+    hazelcastClient.shutdown().get();
 }
 
 TEST_P(SimpleListenerTest, testClusterListeners)
@@ -2154,6 +2206,8 @@ TEST_P(SimpleListenerTest, testClusterListeners)
 
     ASSERT_TRUE(cluster.remove_membership_listener(init_id));
     ASSERT_TRUE(cluster.remove_membership_listener(id));
+
+    hazelcastClient.shutdown().get();
 }
 
 TEST_P(SimpleListenerTest, testClusterListenersFromConfig)
@@ -2184,6 +2238,8 @@ TEST_P(SimpleListenerTest, testClusterListenersFromConfig)
     ASSERT_OPEN_EVENTUALLY(memberRemovedInit);
 
     instance.shutdown();
+
+    hazelcastClient.shutdown().get();
 }
 
 TEST_P(SimpleListenerTest, testDeregisterListener)
@@ -2221,6 +2277,8 @@ TEST_P(SimpleListenerTest, testDeregisterListener)
     map->clear().get();
     ASSERT_OPEN_EVENTUALLY(map_clearedLatch);
     ASSERT_TRUE(map->remove_entry_listener(listenerRegistrationId).get());
+
+    hazelcastClient.shutdown().get();
 }
 
 TEST_P(SimpleListenerTest, testEmptyListener)
@@ -2249,6 +2307,8 @@ TEST_P(SimpleListenerTest, testEmptyListener)
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     ASSERT_TRUE(map->remove_entry_listener(listenerRegistrationId).get());
+
+    hazelcastClient.shutdown().get();
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2290,7 +2350,10 @@ protected:
 
     static void TearDownTestCase()
     {
-        delete client;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+        }
         delete instance;
 
         client = nullptr;
@@ -2400,7 +2463,10 @@ ClientTxnMapTest::ClientTxnMapTest()
   , client_(get_new_client())
 {}
 
-ClientTxnMapTest::~ClientTxnMapTest() = default;
+ClientTxnMapTest::~ClientTxnMapTest()
+{
+    client_.shutdown().get();
+}
 
 TEST_F(ClientTxnMapTest, testPutGet)
 {
@@ -2823,7 +2889,10 @@ ClientTxnSetTest::ClientTxnSetTest()
   , client_(get_new_client())
 {}
 
-ClientTxnSetTest::~ClientTxnSetTest() = default;
+ClientTxnSetTest::~ClientTxnSetTest()
+{
+    client_.shutdown().get();
+}
 
 TEST_F(ClientTxnSetTest, testAddRemove)
 {
@@ -2972,6 +3041,8 @@ TEST_F(ClientTxnTest, testTxnCommitUniSocket)
     auto retrievedElement = q->poll<std::string>().get();
     ASSERT_TRUE(retrievedElement.has_value());
     ASSERT_EQ(value, retrievedElement.value());
+
+    uniSocketClient.shutdown().get();
 }
 
 TEST_F(ClientTxnTest, testTxnCommitWithOptions)
@@ -3100,6 +3171,7 @@ TEST_F(ClientTxnTest, testTxnInitAndNextMethod)
       });
 
     clientConfig.set_load_balancer(std::move(tmp_load_balancer));
+    client_->shutdown().get();
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
 
@@ -3127,6 +3199,8 @@ TEST_F(ClientTxnTest, testTxnInitAndNextMethodRValue)
             }
             return boost::make_optional<member>(std::move(members[0]));
         }));
+
+    client_->shutdown().get();
     client_.reset(
       new hazelcast_client{ new_client(std::move(clientConfig)).get() });
 
@@ -3159,7 +3233,10 @@ ClientTxnListTest::ClientTxnListTest()
   , client_(get_new_client())
 {}
 
-ClientTxnListTest::~ClientTxnListTest() = default;
+ClientTxnListTest::~ClientTxnListTest()
+{
+    client_.shutdown().get();
+}
 
 TEST_F(ClientTxnListTest, testAddRemove)
 {
@@ -3215,7 +3292,10 @@ ClientTxnMultiMapTest::ClientTxnMultiMapTest()
   , client_(get_new_client())
 {}
 
-ClientTxnMultiMapTest::~ClientTxnMultiMapTest() = default;
+ClientTxnMultiMapTest::~ClientTxnMultiMapTest()
+{
+    client_.shutdown().get();
+};
 
 TEST_F(ClientTxnMultiMapTest, testRemoveIfExists)
 {
@@ -3319,7 +3399,10 @@ ClientTxnQueueTest::ClientTxnQueueTest()
   , client_(get_new_client())
 {}
 
-ClientTxnQueueTest::~ClientTxnQueueTest() = default;
+ClientTxnQueueTest::~ClientTxnQueueTest()
+{
+    client_.shutdown().get();
+};
 
 TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll1)
 {

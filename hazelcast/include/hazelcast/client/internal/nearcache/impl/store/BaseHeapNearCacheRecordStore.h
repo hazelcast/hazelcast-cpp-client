@@ -53,7 +53,9 @@ public:
       const client::config::near_cache_config& near_cache_config,
       serialization::pimpl::SerializationService& serialization_service)
       : ANCRS(near_cache_config, serialization_service)
-    {}
+    {
+        (void)name;
+    }
 
     const std::shared_ptr<R> get_record(const std::shared_ptr<KS>& key) override
     {
@@ -112,7 +114,7 @@ protected:
 
     std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R>>
     create_near_cache_record_map(
-      const client::config::near_cache_config& near_cache_config) override
+      const client::config::near_cache_config& /* near_cache_config */) override
     {
         return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R>>(
           new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serialization_service_,
