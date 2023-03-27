@@ -42,7 +42,7 @@ jobs:
       is-hazelcast: ${{ steps.test-membership.outputs.is-member }}
 
     steps:
-      # checkout the hazelcast/hazelcast-csharp-client repository
+      # checkout the hazelcast/hazelcast-cpp-client repository
       # bare minimum - just to use actions
       - name: Checkout code
         uses: actions/checkout@v3
@@ -208,7 +208,6 @@ jobs:
           gcc test.c -oa
           ./a
           rm a test.c
-
 
       - name: Checkout Code
         uses: actions/checkout@v1
