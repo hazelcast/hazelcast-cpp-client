@@ -44,9 +44,20 @@ protected:
         factory_.reset(
           new HazelcastServerFactory{ "hazelcast/test/resources/compact.xml" });
         member_.reset(new HazelcastServer{ *factory_ });
+
+        if (client != nullptr) {
+            client->shutdown().get();
+        }
         client.reset(new hazelcast_client{ new_client(config()).get() });
 
         remote_controller_client().ping();
+    }
+
+    void TearDown() override
+    {
+        if (client) {
+            client->shutdown().get();
+        }
     }
 
     template<typename T>

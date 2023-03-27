@@ -222,13 +222,21 @@ protected:
 
     static void TearDownTestCase()
     {
-        delete client;
-        delete client2;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
+        if (client2) {
+            client2->shutdown().get();
+            delete client2;
+            client2 = nullptr;
+        }
+
         delete instance1;
         delete factory;
 
-        client = nullptr;
-        client2 = nullptr;
         instance1 = nullptr;
         factory = nullptr;
     }
@@ -612,6 +620,9 @@ TEST_F(ClientReplicatedMapInvalidation, testNearCacheInvalidation)
 
     ASSERT_FALSE_EVENTUALLY(
       (replicatedMap1->get<int, int>(1).get().has_value()));
+
+    client1.shutdown().get();
+    client2.shutdown().get();
 }
 
 } // namespace test
@@ -703,13 +714,20 @@ protected:
 
     static void TearDownTestCase()
     {
-        delete client;
-        delete client2;
+        if (client) {
+            client->shutdown().get();
+            delete client;
+            client = nullptr;
+        }
+
+        if (client2) {
+            client2->shutdown().get();
+            delete client2;
+            client2 = nullptr;
+        }
         delete instance1;
         delete instance2;
 
-        client = nullptr;
-        client2 = nullptr;
         instance1 = nullptr;
         instance2 = nullptr;
     }
@@ -990,6 +1008,9 @@ protected:
 
     void create_no_near_cache_context()
     {
+        if (client_ != nullptr) {
+            client_->shutdown().get();
+        }
         client_ = std::unique_ptr<hazelcast_client>(
           new hazelcast_client{ new_client(get_config()).get() });
         no_near_cache_map_ = client_->get_replicated_map(get_test_name()).get();
@@ -999,6 +1020,9 @@ protected:
     {
         client_config nearCachedClientConfig = get_config();
         nearCachedClientConfig.add_near_cache_config(near_cache_config_);
+        if (near_cached_client_ != nullptr) {
+            near_cached_client_->shutdown().get();
+        }
         near_cached_client_ =
           std::unique_ptr<hazelcast_client>(new hazelcast_client(
             new_client(std::move(nearCachedClientConfig)).get()));
@@ -1647,6 +1671,7 @@ class ClientTopicTest : public ClientTest
 {
 public:
     ClientTopicTest();
+    ~ClientTopicTest() { client_.shutdown().get(); }
 
 protected:
     HazelcastServer instance_;
