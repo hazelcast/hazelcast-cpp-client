@@ -286,6 +286,8 @@ public:
     {
     }
 
+    ~SqlTest() { client.shutdown().get(); }
+
     static client_config get_config()
     {
         client_config cfg = ClientTest::get_config();
