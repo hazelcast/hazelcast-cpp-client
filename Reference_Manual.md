@@ -3350,19 +3350,19 @@ If no logging configuration is made by the user, the client prints log messages 
 
 You can set the minimum level in which the log messages are printed using `logger_config::level`:
 ```c++
-clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
+clientConfig.get_logger_config().level(hazelcast::logger::level::warning);
 ```
 
 `hazelcast::logger::level::off` and `hazelcast::logger::level::all` can be used to enable or disable all levels:
 
 ```c++
-clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables logging completely
-clientConfig.getLoggerConfig().level(hazelcast::logger::level::all); // enables all log levels
+clientConfig.get_logger_config().level(hazelcast::logger::level::off); // disables logging completely
+clientConfig.get_logger_config().level(hazelcast::logger::level::all); // enables all log levels
 ```
 
 You can set a callback function to be called on each log message via `logger_config::handler`:
 ```c++
-    clientConfig.getLoggerConfig().handler(my_log_handler);
+    clientConfig.get_logger_config().handler(my_log_handler);
 ```
 Setting a log handler will disable the default log handling behavior. 
 
