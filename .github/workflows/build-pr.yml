@@ -120,6 +120,7 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+          cp hazelcast-enterprise-5.2.0-tests.jar hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh ${{ env.boost_version }}
@@ -218,6 +219,7 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+          cp hazelcast-enterprise-5.2.0-tests.jar hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
 
       - name: Install Boost
         run: |
@@ -298,6 +300,7 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+          cp hazelcast-enterprise-5.2.0-tests.jar hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
 
       - name: Install Boost
         run: |
@@ -377,6 +380,7 @@ jobs:
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
           Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.2.0-tests.jar
+          Copy-Item hazelcast-enterprise-5.2.0-tests.jar -Destination hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
       - name: Install SysInternals
         run: |
             Invoke-WebRequest `
@@ -506,6 +510,8 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.2.0-tests.jar
+          cp hazelcast-enterprise-5.2.0-tests.jar hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+
       - name: Build & Install
         env:
           BUILD_DIR: build
