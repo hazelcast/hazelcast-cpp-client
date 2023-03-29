@@ -668,6 +668,18 @@ sql_result::pend()
     return page_iterator_sync{};
 }
 
+sql_result::row_iterator_sync
+sql_result::begin(std::chrono::milliseconds timeout)
+{
+    return row_iterator_sync{ pbegin(timeout) };
+}
+
+sql_result::row_iterator_sync
+sql_result::end()
+{
+    return row_iterator_sync{};
+}
+
 void
 sql_result::check_closed() const
 {
@@ -678,6 +690,68 @@ sql_result::check_closed() const
             "Query was cancelled by the user")),
           service_->client_id());
     }
+}
+
+sql_result::row_iterator_sync::row_iterator_sync(page_iterator_sync&& iterator)
+  : iterator_{ std::move(iterator) }
+  , row_idx_{}
+{
+}
+
+void
+sql_result::row_iterator_sync::set_timeout(std::chrono::milliseconds timeout)
+{
+    iterator_.set_timeout(timeout);
+}
+
+std::chrono::milliseconds
+sql_result::row_iterator_sync::timeout() const
+{
+    return iterator_.timeout();
+}
+
+const sql_page::sql_row&
+sql_result::row_iterator_sync::operator*() const
+{
+    while (iterator_->rows().empty()) {
+        ++iterator_;
+    }
+
+    return iterator_->rows().at(row_idx_);
+}
+
+const sql_page::sql_row*
+sql_result::row_iterator_sync::operator->() const
+{
+    return &(operator*());
+}
+
+sql_result::row_iterator_sync&
+sql_result::row_iterator_sync::operator++()
+{
+    ++row_idx_;
+
+    while (iterator_ != page_iterator_sync{} &&
+           row_idx_ >= iterator_->rows().size()) {
+        ++iterator_;
+        row_idx_ = 0;
+    }
+
+    return *this;
+}
+
+bool
+operator==(const sql_result::row_iterator_sync& x,
+           const sql_result::row_iterator_sync& y)
+{
+    return x.iterator_ == y.iterator_;
+}
+
+bool
+operator!=(const sql_result::row_iterator_sync& x,
+           const sql_result::row_iterator_sync& y)
+{
+    return !(x == y);
 }
 
 boost::future<void>
