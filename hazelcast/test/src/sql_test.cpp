@@ -264,7 +264,8 @@ namespace test {
 enum class iterator_type
 {
     page_iterator,
-    page_iterator_sync
+    page_iterator_sync,
+    row_iterator_sync
 };
 
 class SqlTest
@@ -483,6 +484,15 @@ protected:
                     }
                 }
             } break;
+            case iterator_type::row_iterator_sync: {
+                for (const auto& row : *result) {
+                    int _[] = { 0, ((void)fn(row), 0)... };
+                    (void)_;
+
+                    if (!--n_rows)
+                        return;
+                }
+            }
         }
     }
 
@@ -637,6 +647,8 @@ printer(const testing::TestParamInfo<iterator_type>& type)
             return "page_iterator";
         case iterator_type::page_iterator_sync:
             return "page_iterator_sync";
+        case iterator_type::row_iterator_sync:
+            return "row_iterator_sync";
     }
 
     return "unknown";
@@ -645,7 +657,8 @@ printer(const testing::TestParamInfo<iterator_type>& type)
 INSTANTIATE_TEST_SUITE_P(SqlTestWithDifferentIterators,
                          SqlTest,
                          ::testing::Values(iterator_type::page_iterator,
-                                           iterator_type::page_iterator_sync),
+                                           iterator_type::page_iterator_sync,
+                                           iterator_type::row_iterator_sync),
                          printer);
 
 TEST_F(SqlTest, test_hazelcast_exception)
@@ -1551,6 +1564,26 @@ TEST_F(SqlTest, find_with_page_sync_iterator)
     ASSERT_TRUE(exist);
 }
 
+TEST_F(SqlTest, find_with_row_sync_iterator)
+{
+    create_mapping();
+    auto numbers = populate_map(map, 500);
+
+    auto searchee = numbers[numbers.size() / 2];
+    auto result = select_all();
+
+    auto found_row_itr = std::find_if(
+        begin(*result),
+        end(*result),
+        [searchee](const sql::sql_page::sql_row& row){
+            return row.get_object<int>(1).value() == searchee;
+        }
+    );
+
+    ASSERT_NE(found_row_itr, end(*result));
+    ASSERT_EQ(found_row_itr->get_object<int>(1).value(), searchee);
+}
+
 TEST_F(SqlTest, timeout_for_page_iterator_sync)
 {
     // `TABLE` clause is not supported before 5.0.0
@@ -1564,6 +1597,26 @@ TEST_F(SqlTest, timeout_for_page_iterator_sync)
 
     auto statement = [&result](){
         auto it = result->pbegin(std::chrono::milliseconds{ 1 });
+        ++it;
+        ++it;
+    };
+
+    ASSERT_THROW(statement(), hazelcast::client::exception::no_such_element);
+}
+
+TEST_F(SqlTest, timeout_for_row_iterator_sync)
+{
+    // `TABLE` clause is not supported before 5.0.0
+    if (cluster_version() < member::version{ 5, 0, 0 })
+        GTEST_SKIP();
+
+    // `generate_stream(1)` generates a row per seconds, so it will guaranteed
+    // that it will timeout
+    auto result =
+      client.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
+
+    auto statement = [&result](){
+        auto it = result->begin(std::chrono::milliseconds{ 1 });
         ++it;
         ++it;
     };

@@ -149,6 +149,7 @@
          * [7.11.8 Iterators](#7118-iterators)
             * [7.11.8.1 page_iterator](#71181-page_iterator)
             * [7.11.8.2 page_iterator_sync](#71182-page_iterator)
+            * [7.11.8.3 row_iterator_sync](#71182-row_iterator)
    * [8. Development and Testing](#8-development-and-testing)
       * [8.1. Testing](#81-testing)
    * [9. Getting Help](#9-getting-help)
@@ -3690,6 +3691,8 @@ Exceptions which can be thrown by SQL API are stated at below:
 - `sql_page::sql_row::get_object(std::string)` can throw `illegal_argument` exception if the column doesn't exist.
 - `sql_result::page_iterator_sync::operator++()` can throw `no_such_element` exception if the fetch operation is timed out.
 - `sql_result::page_iterator_sync::operator*()` can throw `no_such_element` exception if the iterator points to past-end element;
+- `sql_result::row_iterator_sync::operator++()` can throw `no_such_element` exception if the fetch operation is timed out.
+- `sql_result::row_iterator_sync::operator*()` can throw `no_such_element` exception if the iterator points to past-end element;
 
 In addition, any method which returns `boost::future<T>` can throw an exception.
 Unless otherwise is stated, `sql::hazelcast_sql_exception` is thrown.
@@ -3699,6 +3702,7 @@ There are several iterators in SQL Api to satisfy different use cases. They are 
 
 - `page_iterator` (Async page iterator)
 - `page_iterator_sync` (Sync page iterator)
+- `row_iterator_sync` (Sync row iterator)
 
 Reminder 1, only one type of iterator can be used. So it is suggested to choose appropriate one to fetch `SELECT` query results.
 
@@ -3739,6 +3743,36 @@ auto result = client.get_sql().execute("SELECT * FROM integers").get();
 std::vector<std::shared_ptr<sql_page>> pages;
 
 copy(result->pbegin(), result->pend(), back_inserter(pages));
+```
+
+#### 7.11.8.3 row_iterator_sync
+`row_iterator_sync` is the third iterator which wraps `page_iterator_sync` and allows user to iterate over rows rather than pages.
+It is similar to native C++ iterators. So it can be used with `algorithm` header.
+It supports `operator*()`, `operator->()`, `operator++()` operators. Post increment operator is marked as `delete`.
+`timeout` can be set, it is used when fetching new page. It throws `exception::no_such_element` exception if the fetch operation is timed out.
+`row_iterator_sync` is copyable but it is there only for convenience. Copy is shallow copy so copied instances should not be used simultaneously.
+This iterator is acquired by `sql_result::begin()` and `sql_result::end()`. Hence, this iterator can be used in `range-for` loop. `timeout` is defaulted to `std::chrono::milliseconds{ -1 }` which means wait forever.
+
+`range-for` loop example:
+``` C++
+auto result = client.get_sql().execute("SELECT * FROM integers").get();
+
+for (const sql_page::sql_row& row : *result) {
+    std::cout << row.get_object<int>(0);
+}
+```
+
+`algorithm` header example:
+``` C++
+auto result = client.get_sql().execute("SELECT * FROM integers").get();
+
+std::vector<int> numbers;
+
+transform(
+    begin(*result),
+    end(*result),
+    back_inserter(numbers),
+    [](const sql_page::sql_row& row) { return *row.get_object<int>(0); });
 ```
 
 # 8. Development and Testing
