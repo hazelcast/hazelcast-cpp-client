@@ -19,6 +19,7 @@
 #include "hazelcast/client/sql/sql_result.h"
 #include "hazelcast/client/sql/sql_statement.h"
 #include "hazelcast/client/sql/hazelcast_sql_exception.h"
+#include "hazelcast/client/sql/impl/read_optimized_lru_cache.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -127,11 +128,16 @@ public:
     boost::future<std::shared_ptr<sql_result>> execute(
       const sql_statement& statement);
 
+    std::shared_ptr<impl::read_optimized_lru_cache<std::string, int32_t>>
+      partition_argument_index_cache_;
+
 private:
     friend client::impl::hazelcast_client_instance_impl;
     friend sql_result;
 
     client::spi::ClientContext& client_context_;
+
+    bool is_smart_routing_;
 
     struct sql_execute_response_parameters
     {
@@ -141,6 +147,8 @@ private:
         boost::optional<impl::sql_error> error;
         bool is_infinite_rows = false;
         bool is_infinite_rows_exist = false;
+        int32_t partition_argument_index = -1;
+        bool is_partition_argument_index_exists = false;
     };
 
     struct sql_fetch_response_parameters
@@ -152,6 +160,12 @@ private:
     explicit sql_service(client::spi::ClientContext& context);
 
     std::shared_ptr<connection::Connection> query_connection();
+    std::shared_ptr<connection::Connection> query_connection(
+      int32_t partition_id);
+
+    boost::optional<int32_t> extract_partition_id(
+      const sql_statement& statement,
+      const int32_t arg_index) const;
 
     void rethrow(const std::exception& exc_ptr);
     void rethrow(const std::exception& cause_ptr,
@@ -160,10 +174,13 @@ private:
     boost::uuids::uuid client_id();
 
     std::shared_ptr<sql_result> handle_execute_response(
+      const std::string& sql_query,
+      const int32_t original_partition_argument_index,
       protocol::ClientMessage& msg,
       std::shared_ptr<connection::Connection> connection,
       impl::query_id id,
-      int32_t cursor_buffer_size);
+      int32_t cursor_buffer_size,
+      std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_ptr);
 
     static sql_execute_response_parameters decode_execute_response(
       protocol::ClientMessage& msg);

@@ -242,6 +242,24 @@ public:
         return internal_map_.empty();
     }
 
+    /**
+     * @param comp Map is iterated from beginning to the end and removed if the
+     * lambda comp return true.
+     */
+    template<typename Comparator>
+    void remove_values_if(Comparator comp)
+    {
+        std::lock_guard<std::mutex> lg(map_lock_);
+
+        for (auto iter = internal_map_.begin(); iter != internal_map_.end();) {
+            if (iter->second != nullptr && comp(*(iter->second))) {
+                iter = internal_map_.erase(iter);
+            } else {
+                ++iter;
+            }
+        }
+    }
+
 private:
     std::unordered_map<K, std::shared_ptr<V>, Hash> internal_map_;
     mutable std::mutex map_lock_;
