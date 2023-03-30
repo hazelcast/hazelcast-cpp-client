@@ -60,7 +60,7 @@ public:
      * @param key the key from which to get the associated value.
      * @return the value associated with the given {@code key}.
      */
-    virtual std::shared_ptr<V> get(const std::shared_ptr<K>& key)
+    virtual std::shared_ptr<V> get(const std::shared_ptr<K>& /* key */)
     {
         assert(0);
         return std::shared_ptr<V>();
@@ -72,8 +72,8 @@ public:
      * @param key   the key to which the given value will be associated.
      * @param value the value that will be associated with the key.
      */
-    virtual void put(const std::shared_ptr<K>& key,
-                     const std::shared_ptr<V>& value)
+    virtual void put(const std::shared_ptr<K>& /* key */,
+                     const std::shared_ptr<V>& /* value */)
     {
         assert(0);
     }
@@ -97,7 +97,7 @@ public:
      *
      * @param key the key of the value will be invalidated
      */
-    virtual bool invalidate(const std::shared_ptr<K>& key)
+    virtual bool invalidate(const std::shared_ptr<K>& /* key */)
     {
         assert(0);
         return false;
@@ -133,8 +133,8 @@ public:
      * {@code candidates}.
      */
     virtual const std::shared_ptr<V> select_to_save(
-      const std::shared_ptr<V>& value,
-      const std::shared_ptr<serialization::pimpl::data>& value_data) const
+      const std::shared_ptr<V>& /* value */,
+      const std::shared_ptr<serialization::pimpl::data>& /* value_data */) const
     {
         assert(0);
         return std::shared_ptr<V>();

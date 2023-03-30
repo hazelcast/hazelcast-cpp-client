@@ -159,7 +159,7 @@ namespace impl {
 std::atomic<int32_t> hazelcast_client_instance_impl::CLIENT_ID(0);
 
 hazelcast_client_instance_impl::hazelcast_client_instance_impl(
-  hazelcast::client::hazelcast_client& client,
+  hazelcast::client::hazelcast_client& /* client */,
   client_config config)
   : client_config_(std::move(config))
   , client_properties_(client_config_.get_properties())

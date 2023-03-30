@@ -146,6 +146,10 @@
          * [7.11.5 Read Row Metadata](#7115-read-row-metadata)
          * [7.11.6 Read Table Column Value](#7116-read-table-column-value)
          * [7.11.7 Error Handling](#7117-error-handling)
+         * [7.11.8 Iterators](#7118-iterators)
+            * [7.11.8.1 page_iterator](#71181-page_iterator)
+            * [7.11.8.2 page_iterator_sync](#71182-page_iterator)
+            * [7.11.8.3 row_iterator_sync](#71182-row_iterator)
    * [8. Development and Testing](#8-development-and-testing)
       * [8.1. Testing](#81-testing)
    * [9. Getting Help](#9-getting-help)
@@ -3680,12 +3684,96 @@ Exceptions which can be thrown by SQL API are stated at below:
   - `illegal_access` is thrown if page fetch operation is already progress. To prevent this wait for the `boost::future<sql_page>` which belongs to previous `next()` call.
 - `sql_result::iterator()` can throw two types of exceptions.
   - `illegal_state` is thrown if it is not an `SELECT` query or `sql_result::iterator()` is requested more than once.
+  - `sql_result::iterator()` throws `hazelcast_sql_exception` if it sql_result is already closed.
+- `sql_result::pbegin()` calls `sql_result::iterator()` method internally, so it throws same exceptions.
 - `sql_result::row_metadata()` can throw `illegal_state` exception if the result contains only update count.
 - `sql_page::sql_row::get_object(int)` can throw `index_out_of_bounds` exception if the index is out of range.
 - `sql_page::sql_row::get_object(std::string)` can throw `illegal_argument` exception if the column doesn't exist.
+- `sql_result::page_iterator_sync::operator++()` can throw `no_such_element` exception if the fetch operation is timed out.
+- `sql_result::page_iterator_sync::operator*()` can throw `no_such_element` exception if the iterator points to past-end element;
+- `sql_result::row_iterator_sync::operator++()` can throw `no_such_element` exception if the fetch operation is timed out.
+- `sql_result::row_iterator_sync::operator*()` can throw `no_such_element` exception if the iterator points to past-end element;
 
 In addition, any method which returns `boost::future<T>` can throw an exception.
 Unless otherwise is stated, `sql::hazelcast_sql_exception` is thrown.
+
+### 7.11.8 Iterators
+There are several iterators in SQL Api to satisfy different use cases. They are listed below:
+
+- `page_iterator` (Async page iterator)
+- `page_iterator_sync` (Sync page iterator)
+- `row_iterator_sync` (Sync row iterator)
+
+Reminder 1, only one type of iterator can be used. So it is suggested to choose appropriate one to fetch `SELECT` query results.
+
+Reminder 2, it is not possible to iterate from beginning to end more than once.
+
+Reminder 3, it is not possible to acquire iterators more than once, so consecutive calls to `sql_result::iterator()`, `sql_result::pbegin(std::chrono::milliseconds timeout)`, `sql_result::begin(std::chrono::milliseconds timeout)` methods will throw `illegal_state` exception.
+
+#### 7.11.8.1 page_iterator
+`page_iterator` is the basic and the most essential one. It supports fetching pages asynchronously by `next()` method which returns `boost::future<sql_page>`.
+Therefore, users are able to fetch `SELECT` query results page by page. It is acquired by calling `sql_result::iterator()` method.
+
+``` C++
+auto result = sql.execute("SELECT * FROM integers").get();
+
+for (auto itr = result->iterator(); itr.has_next();) {
+    auto page = itr.next().get();
+
+    std::cout << "There are " << page->row_count() << " rows the page."
+                << std::endl;
+
+    for (auto const& row : page->rows()) {
+        std::cout << "(" << row.get_object<int>(0) << ")" << std::endl;
+    }
+}
+```
+
+#### 7.11.8.2 page_iterator_sync
+`page_iterator_sync` is the second iterator which wraps `page_iterator` and serves it as a sync iterator. It allows users to iterator over pages.
+It is similar to native C++ iterators. So it can be used with `algorithm` header.
+It supports `operator*()`, `operator->()`, `operator++()` operators. Post increment operator is marked as `delete`.
+`operator++()`(pre-increment operator) fetches the next page in a blocking manner. `timeout` can be set. `operator++()` might throw `exception::no_such_element` exception if the fetch operation is timed out.
+`page_iterator_sync` is copyable but it is there only for convenience. Copy is shallow copy so copied instances should not be used simultaneously.
+This iterator is acquired by `sql_result::pbegin(std::chrono::milliseconds timeout)` and `sql_result::pend()`. `timeout` is defaulted to `std::chrono::milliseconds{ -1 }` which means wait forever.
+
+``` C++
+auto result = client.get_sql().execute("SELECT * FROM integers").get();
+
+std::vector<std::shared_ptr<sql_page>> pages;
+
+copy(result->pbegin(), result->pend(), back_inserter(pages));
+```
+
+#### 7.11.8.3 row_iterator_sync
+`row_iterator_sync` is the third iterator which wraps `page_iterator_sync` and allows user to iterate over rows rather than pages.
+It is similar to native C++ iterators. So it can be used with `algorithm` header.
+It supports `operator*()`, `operator->()`, `operator++()` operators. Post increment operator is marked as `delete`.
+`timeout` can be set, it is used when fetching new page. It throws `exception::no_such_element` exception if the fetch operation is timed out.
+`row_iterator_sync` is copyable but it is there only for convenience. Copy is shallow copy so copied instances should not be used simultaneously.
+This iterator is acquired by `sql_result::begin()` and `sql_result::end()`. Hence, this iterator can be used in `range-for` loop. `timeout` is defaulted to `std::chrono::milliseconds{ -1 }` which means wait forever.
+
+`range-for` loop example:
+``` C++
+auto result = client.get_sql().execute("SELECT * FROM integers").get();
+
+for (const sql_page::sql_row& row : *result) {
+    std::cout << row.get_object<int>(0);
+}
+```
+
+`algorithm` header example:
+``` C++
+auto result = client.get_sql().execute("SELECT * FROM integers").get();
+
+std::vector<int> numbers;
+
+transform(
+    begin(*result),
+    end(*result),
+    back_inserter(numbers),
+    [](const sql_page::sql_row& row) { return *row.get_object<int>(0); });
+```
 
 # 8. Development and Testing
 

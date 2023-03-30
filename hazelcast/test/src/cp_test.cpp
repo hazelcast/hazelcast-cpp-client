@@ -44,6 +44,9 @@ protected:
 
     virtual void SetUp()
     {
+        if (client_) {
+            client_->shutdown().get();
+        }
         client_.reset(
           new hazelcast_client(new_client(get_client_config()).get()));
         auto test_name = get_test_name();
@@ -54,6 +57,10 @@ protected:
     {
         if (cp_structure_) {
             cp_structure_->destroy().get();
+        }
+
+        if (client_) {
+            client_->shutdown().get();
         }
     }
 
@@ -1306,6 +1313,8 @@ TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies)
     ASSERT_TRUE(cp_structure_->init(1).get());
     ASSERT_TRUE(cp_structure_->try_acquire().get());
     ASSERT_FALSE(semaphore2->try_acquire().get());
+
+    client2.shutdown().get();
 }
 
 class basic_session_semaphore_test
@@ -1725,6 +1734,7 @@ TEST_F(basic_session_semaphore_test, test_acquire_on_multiple_proxies)
     ASSERT_TRUE(cp_structure_->init(1).get());
     ASSERT_TRUE(cp_structure_->try_acquire().get());
     ASSERT_FALSE(semaphore2->try_acquire().get());
+    client2.shutdown().get();
 }
 
 } // namespace cp

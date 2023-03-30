@@ -170,7 +170,7 @@ proxy_session_manager::heartbeat(const raft_group_id& group_id,
 
 void
 proxy_session_manager::invalidate_session(const raft_group_id& group_id,
-                                          int64_t session_id)
+                                          int64_t /* session_id */)
 {
     {
         boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);

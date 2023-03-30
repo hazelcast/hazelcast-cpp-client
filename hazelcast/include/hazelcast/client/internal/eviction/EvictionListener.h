@@ -54,9 +54,9 @@ public:
      * @param wasExpired           {@code true} if the entry was evicted due to
      * expiration, {@code false} otherwise
      */
-    virtual void on_evict(const std::shared_ptr<A>& evicted_entry_accessor,
-                          const std::shared_ptr<E>& evicted_entry,
-                          bool was_expired)
+    virtual void on_evict(const std::shared_ptr<A>& /* evicted_entry_accessor */,
+                          const std::shared_ptr<E>& /* evicted_entry */,
+                          bool /* was_expired */)
     {
         assert(0);
     }

@@ -250,7 +250,7 @@ protected:
     {
         auto handler =
           [connection, this](const boost::system::error_code& ec,
-                             std::size_t bytes_written) {
+                             std::size_t /* bytes_written */) {
               auto invocation = std::move(outbox_[0].invocation);
               this->outbox_.pop_front();
 
