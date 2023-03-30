@@ -277,6 +277,7 @@ public:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
     static std::unique_ptr<HazelcastServer> member_;
     static std::unique_ptr<HazelcastServer> member2_;
+    static std::unique_ptr<HazelcastServer> member3_;
     hazelcast_client client;
     std::string map_name;
     imap_t map;
@@ -815,11 +816,7 @@ protected:
 
         ASSERT_EQ(expected_counts, actual_counts);
     }
-
-    static std::unique_ptr<HazelcastServer> member_;
-    static std::unique_ptr<HazelcastServer> member2_;
-    static std::unique_ptr<HazelcastServer> member3_;
-    static std::unique_ptr<HazelcastServerFactory> server_factory_;
+    
 };
 
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_;
