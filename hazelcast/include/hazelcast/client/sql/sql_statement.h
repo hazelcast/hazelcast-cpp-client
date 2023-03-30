@@ -195,6 +195,13 @@ public:
     sql_statement& expected_result_type(sql_expected_result_type type);
 
     /**
+     * Get the partition argument index value
+     *
+     * @return partition argument index, -1 if not set.
+     */
+    std::shared_ptr<std::atomic<int32_t>> partition_argument_index() const;
+
+    /**
      * Gets the schema name.
      *
      * @return the schema name or \code{.cpp}boost::none\endcode if there is
@@ -224,12 +231,26 @@ private:
 
     sql_statement(spi::ClientContext& client_context, std::string query);
 
+    /**
+     * Set the partition argument index. If there's no such argument, use -1.
+     * <p>
+     * Setting a wrong argument index will not cause incorrect query results,
+     * but might cause performance degradation due to more network
+     * communication. Setting a value higher than the actual number of arguments
+     * will have no effect.
+     *
+     * @param partition_argument_index index of the partition-determining
+     * argument of the statement
+     */
+    sql_statement& partition_argument_index(int32_t partition_argument_index);
+
     std::string sql_;
     std::vector<data> serialized_parameters_;
     int32_t cursor_buffer_size_;
     std::chrono::milliseconds timeout_;
     sql::sql_expected_result_type expected_result_type_;
     boost::optional<std::string> schema_;
+    std::shared_ptr<std::atomic<int32_t>> partition_argument_index_;
 
     serialization_service& serialization_service_;
 

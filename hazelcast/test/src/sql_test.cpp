@@ -10,6 +10,7 @@
 #include <hazelcast/client/sql/sql_statement.h>
 #include <hazelcast/client/sql/hazelcast_sql_exception.h>
 #include <hazelcast/client/sql/impl/sql_error_code.h>
+#include <hazelcast/client/sql/impl/read_optimized_lru_cache.h>
 
 #include "ClientTest.h"
 #include "HazelcastServer.h"
@@ -53,9 +54,9 @@ struct portable_pojo
         tiny_int_val = static_cast<byte>(val);
         small_int_val = static_cast<int16_t>(val);
         int_val = static_cast<int32_t>(val);
-        big_int_val = static_cast<int64_t>(val);;
-        real_val = static_cast<float>(val);;
-        double_val = static_cast<double>(val);;
+        big_int_val = static_cast<int64_t>(val);
+        real_val = static_cast<float>(val);
+        double_val = static_cast<double>(val);
 
         char_val = 'c';
         varchar_val = std::to_string(val);
@@ -276,6 +277,7 @@ public:
     static std::unique_ptr<HazelcastServerFactory> server_factory_;
     static std::unique_ptr<HazelcastServer> member_;
     static std::unique_ptr<HazelcastServer> member2_;
+    static std::unique_ptr<HazelcastServer> member3_;
     hazelcast_client client;
     std::string map_name;
     imap_t map;
@@ -310,6 +312,7 @@ protected:
         server_factory_.reset(new HazelcastServerFactory(config_file_path));
         member_.reset(new HazelcastServer(*server_factory_));
         member2_.reset(new HazelcastServer(*server_factory_));
+        member3_.reset(new HazelcastServer(*server_factory_));
     }
 
     void TearDown() override
@@ -324,6 +327,7 @@ protected:
     {
         member_.reset();
         member2_.reset();
+        member3_.reset();
         server_factory_.reset();
     }
 
@@ -335,12 +339,17 @@ protected:
         }
     }
 
-    void create_mapping(std::string value_format = "INTEGER")
+
+    void create_mapping(std::string value_format = "INTEGER",
+                        boost::optional<std::string> par_map_name = boost::none)
     {
         // Mapping is not supported before 5.0.0
         if (cluster_version() < member::version{ 5, 0, 0 })
             return;
 
+        std::string curr_map_name = map_name;
+        if (par_map_name.has_value())
+            curr_map_name = *par_map_name;
         std::string query =
           (boost::format("CREATE MAPPING %1% ( "
                          "__key INT, "
@@ -351,7 +360,7 @@ protected:
                          "'keyFormat' = 'int', "
                          "'valueFormat' = '%3%' "
                          ")") %
-           map_name % value_format % boost::to_lower_copy(value_format))
+           curr_map_name % value_format % boost::to_lower_copy(value_format))
             .str();
 
         client.get_sql().execute(query).get();
@@ -381,6 +390,25 @@ protected:
         client.get_sql().execute(query).get();
     }
 
+    void create_mapping_for_portable_as_key(int factory_id, int class_id)
+    {
+        if (cluster_version() < member::version{ 5, 0, 0 })
+            return;
+
+        std::string query = (boost::format("CREATE MAPPING %1% "
+                                           "TYPE IMap "
+                                           "OPTIONS ("
+                                           "'keyFormat' = 'portable', "
+                                           "'valueFormat' = 'varchar', "
+                                           "'keyPortableFactoryId' = '%2%', "
+                                           "'keyPortableClassId' = '%3%'"
+                                           ")") %
+                             map_name % factory_id % class_id)
+                              .str();
+
+        client.get_sql().execute(query).get();
+    }
+
     void create_mapping_for_student()
     {
         create_mapping_for_portable(
@@ -392,6 +420,13 @@ protected:
           serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
     }
 
+    void create_mapping_for_student_as_key()
+    {
+        create_mapping_for_portable_as_key(
+          serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
+          serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
+    }
+    
     std::shared_ptr<sql::sql_result> select_all(int cursor_size = 10)
     {
         sql::sql_statement statement{ client,
@@ -407,6 +442,68 @@ protected:
     portable_pojo_key key(int64_t i) { return { i }; }
 
     portable_pojo value(int64_t i) { return portable_pojo{ i }; }
+
+    int32_t get_direct_imap_queries_executed(int32_t instance_index)
+    {
+        auto script_template =
+          (boost::format(
+             "var optimizer = "
+             "Java.type('com.hazelcast.jet.sql.impl.CalciteSqlOptimizer'); \n"
+             "optimizer = "
+             "instance_%1%.getOriginal().node.nodeEngine.getSqlService()."
+             "getOptimizer();\n"
+             "result = \"\" + "
+             "optimizer.getPlanExecutor().getDirectIMapQueriesExecuted();\n") %
+           instance_index)
+            .str();
+
+        Response response;
+        remote_controller_client().executeOnController(
+          response,
+          server_factory_->get_cluster_id(),
+          std::string(script_template),
+          Lang::JAVASCRIPT);
+
+        EXPECT_TRUE(response.success);
+        return std::stoi(response.result);
+    }
+
+    std::string get_uuid_of_instance(int32_t instance_index)
+    {
+        auto script_template =
+          (boost::format("result = \"\" + "
+                         "instance_%1%.getOriginal().node.nodeEngine."
+                         "getLocalMember().getUuid();\n") %
+           instance_index)
+            .str();
+
+        Response response;
+        remote_controller_client().executeOnController(
+          response,
+          server_factory_->get_cluster_id(),
+          std::string(script_template),
+          Lang::JAVASCRIPT);
+
+        EXPECT_TRUE(response.success);
+        return response.result;
+    }
+
+    std::vector<int32_t> prepare_member_to_instance_mapping()
+    {
+        std::vector<member> members = client.get_cluster().get_members();
+        std::vector<int32_t> instance_mapping(members.size());
+
+        for (size_t i = 0; i < members.size(); i++) {
+            std::string curr_uuid = get_uuid_of_instance(i);
+
+            for (size_t j = 0; j < members.size(); j++) {
+                if (curr_uuid == to_string(members[j].get_uuid())) {
+                    instance_mapping[j] = i;
+                }
+            }
+        }
+        return instance_mapping;
+    }
 
     struct assert_row_count
     {
@@ -623,11 +720,109 @@ protected:
     int total_member_client_cursors() {
         return member_client_cursors(0) + member_client_cursors(1);
     }
+    template<typename... Params>
+    void check_partition_argument_index(std::string sql,
+                                        std::shared_ptr<int32_t> expected_index,
+                                        Params&&... arguments)
+    {
+        auto& sql_service = client.get_sql();
+        EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
+                  nullptr);
+        sql_service.execute(sql, std::forward<Params>(arguments)...).get();
+
+        if (expected_index == nullptr) {
+            EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
+                      nullptr);
+        } else {
+            ASSERT_NE(sql_service.partition_argument_index_cache_->get(sql),
+                      nullptr);
+            EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(sql),
+                      *expected_index);
+        }
+    }
+
+    void check_partition_argument_index(sql::sql_statement statement,
+                                        std::shared_ptr<int32_t> expected_index)
+    {
+        auto& sql_service = client.get_sql();
+        EXPECT_EQ(
+          sql_service.partition_argument_index_cache_->get(statement.sql()),
+          nullptr);
+        sql_service.execute(statement).get();
+
+        if (expected_index == nullptr) {
+            EXPECT_EQ(
+              sql_service.partition_argument_index_cache_->get(statement.sql()),
+              nullptr);
+        } else {
+            ASSERT_NE(
+              sql_service.partition_argument_index_cache_->get(statement.sql()),
+              nullptr);
+            EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(
+                        statement.sql()),
+                      *expected_index);
+        }
+    }
+
+    int32_t get_partition_owner_index(int64_t key)
+    {
+        std::vector<member> members = client.get_cluster().get_members();
+        spi::ClientContext clientContext(client);
+        auto partition_id =
+          clientContext.get_partition_service().get_partition_id(
+            clientContext.get_serialization_service().to_data(key));
+        auto owner = clientContext.get_partition_service().get_partition_owner(
+          partition_id);
+
+        for (size_t i = 0; i < members.size(); i++) {
+            if (members[i].get_uuid() == owner) {
+                return i;
+            }
+        }
+
+        EXPECT_TRUE(false) << "Partition Owner not found for key: " << key;
+        return 0;
+    }
+
+    void test_query_for_routing(std::string sql, int32_t keyCount)
+    {
+
+        std::vector<int32_t> member_2_instance_mapping =
+          prepare_member_to_instance_mapping();
+        int32_t members_size = client.get_cluster().get_members().size();
+        // warm up cache
+        client.get_sql().execute(sql, 0).get();
+
+        // collect pre-execution metrics
+        std::vector<uint64_t> expected_counts(members_size);
+        for (size_t i = 0; i < expected_counts.size(); i++) {
+            expected_counts[i] =
+              get_direct_imap_queries_executed(member_2_instance_mapping[i]);
+        }
+
+        // run queries
+        for (int64_t i = 1; i < keyCount; i++) {
+            client.get_sql().execute(sql, i).get();
+            expected_counts[get_partition_owner_index(i)]++;
+        }
+
+        // assert
+        std::vector<uint64_t> actual_counts(members_size);
+
+        for (size_t i = 0; i < actual_counts.size(); i++) {
+            actual_counts[i] =
+              get_direct_imap_queries_executed(member_2_instance_mapping[i]);
+        }
+
+        ASSERT_EQ(expected_counts, actual_counts);
+    }
+    
 };
 
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_;
 std::unique_ptr<HazelcastServer> SqlTest::member_;
 std::unique_ptr<HazelcastServer> SqlTest::member2_;
+std::unique_ptr<HazelcastServer> SqlTest::member3_;
 
 template<>
 struct generator<test::student>
@@ -638,6 +833,7 @@ struct generator<test::student>
                               float(rand() % 1000) * 2.0f };
     }
 };
+
 
 std::string
 printer(const testing::TestParamInfo<iterator_type>& type)
@@ -675,7 +871,8 @@ TEST_F(SqlTest, test_hazelcast_exception)
         auto uuid_str = boost::uuids::to_string(ex.originating_member_id());
 
         ASSERT_TRUE(uuid_str == member_->get_member().uuid ||
-                    uuid_str == member2_->get_member().uuid);
+                    uuid_str == member2_->get_member().uuid ||
+                    uuid_str == member3_->get_member().uuid);
     }
 }
 
@@ -1753,6 +1950,315 @@ TEST_F(SqlTest, select)
 */
 }
 
+TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping("VARCHAR");
+
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (__key, this) VALUES (?, ?)") % map_name)
+        .str(),
+      std::make_shared<int32_t>(0),
+      1,
+      "value");
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name)
+        .str(),
+      std::make_shared<int32_t>(1),
+      "value",
+      2);
+    // no dynamic argument
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) VALUES ('value', 3)") %
+       map_name)
+        .str(),
+      nullptr);
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) "
+                     "VALUES ('value', 4), ('value', 5)") %
+       map_name)
+        .str(),
+      nullptr);
+    // has dynamic argument, but multiple rows
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?), (?, ?)") %
+       map_name)
+        .str(),
+      nullptr,
+      "value",
+      6,
+      "value",
+      7);
+}
+
+TEST_F(SqlTest, test_partition_based_routing_with_statements)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping("VARCHAR");
+
+    sql::sql_statement statement1(
+      client,
+      (boost::format("INSERT INTO %1% (__key, this) VALUES (?, ?)") % map_name)
+        .str());
+    statement1.add_parameter(1);
+    statement1.add_parameter("value");
+    check_partition_argument_index(statement1, std::make_shared<int32_t>(0));
+    EXPECT_EQ(*statement1.partition_argument_index(), 0);
+
+    sql::sql_statement statement2(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name)
+        .str());
+    statement2.add_parameter("value");
+    statement2.add_parameter(2);
+
+    check_partition_argument_index(statement2, std::make_shared<int32_t>(1));
+    EXPECT_EQ(*statement2.partition_argument_index(), 1);
+
+    sql::sql_statement statement3(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) VALUES ('value', 3)") %
+       map_name)
+        .str());
+
+    // no dynamic argument
+    check_partition_argument_index(statement3, nullptr);
+    EXPECT_EQ(*statement3.partition_argument_index(), -1);
+
+    sql::sql_statement statement4(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) "
+                     "VALUES ('value', 4), ('value', 5)") %
+       map_name)
+        .str());
+
+    check_partition_argument_index(statement4, nullptr);
+    EXPECT_EQ(*statement4.partition_argument_index(), -1);
+
+    sql::sql_statement statement5(
+      client,
+      (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?), (?, ?)") %
+       map_name)
+        .str());
+    statement5.add_parameter("value");
+    statement5.add_parameter(6);
+    statement5.add_parameter("value");
+    statement5.add_parameter(7);
+
+    // has dynamic argument, but multiple rows
+    check_partition_argument_index(statement5, nullptr);
+    EXPECT_EQ(*statement5.partition_argument_index(), -1);
+}
+
+TEST_F(SqlTest, test_partition_based_routing)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+    std::string test_map_name{ random_map_name() };
+    auto test_map = client.get_map(test_map_name).get();
+
+    create_mapping("VARCHAR");
+    create_mapping("VARCHAR", test_map_name);
+
+    check_partition_argument_index(
+      (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    check_partition_argument_index(
+      (boost::format("UPDATE %1% SET this = ? WHERE __key = ?") % map_name)
+        .str(),
+      std::make_shared<int32_t>(1),
+      "testVal",
+      1);
+
+    check_partition_argument_index(
+      (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    check_partition_argument_index(
+      (boost::format(
+         "SELECT JSON_OBJECT(this : __key) FROM %1% WHERE __key = ?") %
+       map_name)
+        .str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    check_partition_argument_index(
+      (boost::format(
+         "SELECT JSON_ARRAY(__key, this) FROM %1% WHERE __key = ?") %
+       map_name)
+        .str(),
+      std::make_shared<int32_t>(0),
+      1);
+
+    // aggregation
+    check_partition_argument_index(
+      (boost::format(
+         "SELECT JSON_OBJECTAGG(this : __key) FROM %1% WHERE __key = ?") %
+       map_name)
+        .str(),
+      nullptr,
+      1);
+    check_partition_argument_index(
+      (boost::format("SELECT SUM(__key) FROM %1% WHERE __key = ?") % map_name)
+        .str(),
+      nullptr,
+      1);
+    check_partition_argument_index(
+      (boost::format("SELECT COUNT(*) FROM %1% WHERE __key = ?") % map_name)
+        .str(),
+      nullptr,
+      1);
+
+    // join
+    check_partition_argument_index(
+      (boost::format("SELECT * FROM %1% t1 JOIN %2% t2 ON t1.__key = t2.__key "
+                     "WHERE t1.__key = ?") %
+       map_name % test_map_name)
+        .str(),
+      nullptr,
+      1);
+
+    check_partition_argument_index(
+      (boost::format("SELECT t1.*, t2.* FROM %1% t1 JOIN %2% t2 USING(__key) "
+                     "WHERE t1.__key = ?") %
+       map_name % test_map_name)
+        .str(),
+      nullptr,
+      1);
+}
+
+TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+    std::string custom_map_name{ random_map_name() };
+    auto custom_map = client.get_map(custom_map_name).get();
+    auto sql =
+      (boost::format("CREATE OR REPLACE MAPPING %1% ("
+                     "key BIGINT EXTERNAL NAME \"__key.key\", "
+                     "this VARCHAR "
+                     ") TYPE IMap OPTIONS( "
+                     "'keyFormat'='portable'"
+                     ", 'keyPortableFactoryId'='%2%'"
+                     ", 'keyPortableClassId'='%3%'"
+                     ", 'keyPortableClassVersion'='0'"
+                     ", 'valueFormat'='varchar'"
+                     ")") %
+       custom_map_name %
+       serialization::hz_serializer<portable_pojo_key>::PORTABLE_FACTORY_ID %
+       serialization::hz_serializer<portable_pojo_key>::PORTABLE_KEY_CLASS_ID)
+        .str();
+
+    client.get_sql().execute(sql).get();
+
+    // partition argument index not supported if `__key` isn't directly assigned
+    // to
+    check_partition_argument_index(
+      (boost::format("INSERT INTO %1% (this, key) VALUES (?, ?)") %
+       custom_map_name)
+        .str(),
+      nullptr,
+      "value1",
+      1);
+
+    create_mapping_for_student_as_key();
+    try {
+        // this test case is here just for completeness to show that we cannot
+        // support complex keys and partition argument
+        check_partition_argument_index(
+          (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") %
+           map_name)
+            .str(),
+          nullptr,
+          "value-1",
+          student{ 2, 1.72 });
+    } catch (exception::iexception& ie) {
+        auto msg = ie.get_message();
+        ASSERT_NE(
+          std::string::npos,
+          msg.find("Writing to top-level fields of type OBJECT not supported"));
+    }
+}
+
+TEST_F(SqlTest, test_partition_based_routing_complex_key)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping_for_student_as_key();
+
+    check_partition_argument_index(
+      (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
+      std::make_shared<int32_t>(0),
+      student{ 2, 1.72 });
+
+    check_partition_argument_index(
+      (boost::format("UPDATE %1% SET this = ? WHERE __key = ?") % map_name)
+        .str(),
+      std::make_shared<int32_t>(1),
+      "testVal",
+      student{ 2, 1.72 });
+
+    check_partition_argument_index(
+      (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(),
+      std::make_shared<int32_t>(0),
+      student{ 2, 1.72 });
+}
+
+TEST_F(SqlTest, test_routing_for_select)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping();
+    test_query_for_routing(
+      (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
+      100);
+}
+
+TEST_F(SqlTest, test_routing_for_insert)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping("VARCHAR");
+    test_query_for_routing(
+      (boost::format("INSERT INTO %1% (this, __key) VALUES ('testVal', ?)") %
+       map_name)
+        .str(),
+      100);
+}
+
+TEST_F(SqlTest, test_routing_for_update)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping("VARCHAR");
+    test_query_for_routing(
+      (boost::format("UPDATE %1% SET this = 'testVal' WHERE __key = ?") %
+       map_name)
+        .str(),
+      100);
+}
+
+TEST_F(SqlTest, test_routing_for_delete)
+{
+    if (cluster_version() < member::version{ 5, 3, 0 })
+        GTEST_SKIP();
+
+    create_mapping("VARCHAR");
+    test_query_for_routing(
+      (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(), 100);
+}
+
 class sql_encode_test : public ::testing::Test
 {
 public:
@@ -1892,6 +2398,117 @@ TEST_F(sql_encode_test, close)
 
     ASSERT_EQ(actual_bytes.size(), expected_bytes.size());
     EXPECT_EQ(expected_bytes, actual_bytes);
+}
+
+template<typename K, typename V>
+class read_optimized_lru_cache_for_testing
+  : public sql::impl::read_optimized_lru_cache<K, V>
+{
+
+public:
+    read_optimized_lru_cache_for_testing(int32_t capacity,
+                                         int32_t cleanup_threshold)
+      : sql::impl::read_optimized_lru_cache<K, V>(capacity, cleanup_threshold)
+    {
+    }
+
+    int32_t get_cache_size() { return this->cache_.size(); }
+
+    V get_cache_value(K k) { return this->cache_.get(k)->value_; }
+};
+
+class read_optimized_lru_cache_test : public ::testing::Test
+{
+
+public:
+    read_optimized_lru_cache_for_testing<int32_t, int32_t> lru;
+    read_optimized_lru_cache_test()
+      : lru(2, 3)
+    {
+    }
+};
+
+TEST_F(read_optimized_lru_cache_test, construction_test)
+{
+    using cache_type = sql::impl::read_optimized_lru_cache<int32_t, int32_t>;
+    std::shared_ptr<cache_type> lru_cache;
+
+    EXPECT_THROW(std::make_shared<cache_type>(0, 0),
+                 exception::illegal_argument);
+
+    EXPECT_THROW(std::make_shared<cache_type>(10, 5),
+                 exception::illegal_argument);
+
+    EXPECT_NO_THROW(std::make_shared<cache_type>(10, 15));
+}
+
+TEST_F(read_optimized_lru_cache_test, put_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    lru.put(1, std::make_shared<int32_t>(10));
+    EXPECT_EQ(1, lru.get_cache_size());
+    EXPECT_EQ(10, lru.get_cache_value(1));
+}
+
+TEST_F(read_optimized_lru_cache_test, get_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    EXPECT_EQ(nullptr, lru.get(1));
+    lru.put(1, std::make_shared<int32_t>(10));
+    EXPECT_EQ(10, *(lru.get(1)));
+}
+
+TEST_F(read_optimized_lru_cache_test, put_nullptr_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    EXPECT_THROW(lru.put(1, nullptr), client::exception::illegal_argument);
+}
+
+TEST_F(read_optimized_lru_cache_test, get_or_default_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    EXPECT_EQ(2, *(lru.get_or_default(1, std::make_shared<int32_t>(2))));
+
+    lru.put(3, std::make_shared<int32_t>(10));
+
+    EXPECT_EQ(10, *(lru.get_or_default(3, std::make_shared<int32_t>(2))));
+}
+
+TEST_F(read_optimized_lru_cache_test, put_and_remove_test)
+{
+    EXPECT_EQ(0, lru.get_cache_size());
+    lru.put(1, std::make_shared<int32_t>(10));
+    EXPECT_EQ(1, lru.get_cache_size());
+    lru.remove(1);
+    EXPECT_EQ(0, lru.get_cache_size());
+}
+
+TEST_F(read_optimized_lru_cache_test, eviction_test)
+{
+    lru.put(42, std::make_shared<int32_t>(42));
+    // a little sleep to ensure the lastUsed timestamps are different even on a
+    // very imprecise clock
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(43, std::make_shared<int32_t>(43));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(44, std::make_shared<int32_t>(44));
+    EXPECT_EQ(3, lru.get_cache_size());
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(45, std::make_shared<int32_t>(45));
+    EXPECT_EQ(2, lru.get_cache_size());
+    EXPECT_EQ(44, lru.get_cache_value(44));
+    EXPECT_EQ(45, lru.get_cache_value(45));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.put(46, std::make_shared<int32_t>(46));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lru.get(44); // access makes the value the least recently used one
+
+    lru.put(47, std::make_shared<int32_t>(47));
+    EXPECT_EQ(2, lru.get_cache_size());
+    EXPECT_EQ(44, lru.get_cache_value(44));
+    EXPECT_EQ(47, lru.get_cache_value(47));
 }
 
 } // namespace test

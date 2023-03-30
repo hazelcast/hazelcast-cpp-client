@@ -41,6 +41,18 @@ namespace sql {
 sql_service::sql_service(client::spi::ClientContext& context)
   : client_context_(context)
 {
+    is_smart_routing_ = client_context_.get_client_config()
+                          .get_network_config()
+                          .is_smart_routing();
+
+    const auto& client_properties = client_context_.get_client_properties();
+    const int32_t partition_arg_cache_size = client_properties.get_integer(
+      client_properties.partition_arg_cache_size());
+    const int32_t partition_arg_cache_threshold =
+      partition_arg_cache_size + std::min(partition_arg_cache_size / 10, 50);
+    partition_argument_index_cache_ =
+      std::make_shared<impl::read_optimized_lru_cache<std::string, int32_t>>(
+        partition_arg_cache_size, partition_arg_cache_threshold);
 }
 
 sql::impl::query_id
@@ -58,7 +70,21 @@ sql_service::execute(const sql_statement& statement)
 {
     using protocol::ClientMessage;
 
-    auto query_conn = query_connection();
+    auto statement_par_arg_index_ptr = statement.partition_argument_index();
+    int32_t statement_par_arg_index = statement_par_arg_index_ptr != nullptr
+                                        ? statement_par_arg_index_ptr->load()
+                                        : -1;
+
+    auto arg_index = statement_par_arg_index != -1
+                       ? statement_par_arg_index
+                       : *(partition_argument_index_cache_->get_or_default(
+                           statement.sql(), std::make_shared<int32_t>(-1)));
+
+    auto partition_id = extract_partition_id(statement, arg_index);
+    std::shared_ptr<connection::Connection> query_conn =
+      partition_id != boost::none ? query_connection(partition_id.value())
+                                  : query_connection();
+
     sql::impl::query_id qid = create_query_id(query_conn);
 
     auto request = protocol::codec::sql_execute_encode(
@@ -76,14 +102,29 @@ sql_service::execute(const sql_statement& statement)
 
     auto cursor_buffer_size = statement.cursor_buffer_size();
 
+    std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_weak_ptr =
+      statement_par_arg_index_ptr;
+
+    auto sql_query = statement.sql();
     return invocation->invoke().then(
       boost::launch::sync,
-      [this, query_conn, qid, cursor_buffer_size](
+      [this,
+       query_conn,
+       qid,
+       cursor_buffer_size,
+       sql_query,
+       arg_index,
+       statement_par_arg_index_weak_ptr](
         boost::future<ClientMessage> response_fut) {
           try {
               auto response = response_fut.get();
-              return handle_execute_response(
-                response, query_conn, qid, cursor_buffer_size);
+              return handle_execute_response(sql_query,
+                                             arg_index,
+                                             response,
+                                             query_conn,
+                                             qid,
+                                             cursor_buffer_size,
+                                             statement_par_arg_index_weak_ptr);
           } catch (const std::exception& e) {
               rethrow(e, query_conn);
           }
@@ -120,6 +161,10 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
     static constexpr size_t RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET =
       RESPONSE_UPDATE_COUNT_FIELD_OFFSET + protocol::ClientMessage::INT64_SIZE;
 
+    static constexpr size_t RESPONSE_PARTITION_ARGUMENT_INDEX_FIELD_OFFSET =
+      RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
+      protocol::ClientMessage::BOOL_SIZE;
+
     sql_execute_response_parameters response;
 
     auto initial_frame_header = msg.read_frame_header();
@@ -134,10 +179,22 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
                              protocol::ClientMessage::BOOL_SIZE)) {
         response.is_infinite_rows = msg.get<bool>();
         response.is_infinite_rows_exist = true;
+
+        uint32_t skip_frame_len =
+          static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
+                               protocol::ClientMessage::BOOL_SIZE);
+        if (frame_len >= static_cast<int32_t>(
+                           RESPONSE_PARTITION_ARGUMENT_INDEX_FIELD_OFFSET +
+                           protocol::ClientMessage::INT32_SIZE)) {
+            response.partition_argument_index = msg.get<int32_t>();
+            response.is_partition_argument_index_exists = true;
+            skip_frame_len += protocol::ClientMessage::INT32_SIZE;
+        } else {
+            response.is_partition_argument_index_exists = false;
+        }
+
         // skip initial_frame
-        msg.rd_ptr(frame_len -
-                   static_cast<int32_t>(RESPONSE_IS_INFINITE_ROWS_FIELD_OFFSET +
-                                        protocol::ClientMessage::BOOL_SIZE));
+        msg.rd_ptr(frame_len - skip_frame_len);
     } else {
         response.is_infinite_rows_exist = false;
         // skip initial_frame
@@ -147,7 +204,8 @@ sql_service::decode_execute_response(protocol::ClientMessage& msg)
 
     auto column_metadata = msg.get_nullable<std::vector<sql_column_metadata>>();
     if (column_metadata) {
-        response.row_metadata = std::make_shared<sql_row_metadata>(std::move(column_metadata.value()));
+        response.row_metadata = std::make_shared<sql_row_metadata>(
+          std::move(column_metadata.value()));
     }
     auto row_metadata = response.row_metadata;
     auto page = msg.get_nullable<std::shared_ptr<sql::sql_page>>(
@@ -170,8 +228,8 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
     // empty initial frame
     message.skip_frame();
 
-    auto page =
-      message.get_nullable<std::shared_ptr<sql::sql_page>>([](protocol::ClientMessage& msg) {
+    auto page = message.get_nullable<std::shared_ptr<sql::sql_page>>(
+      [](protocol::ClientMessage& msg) {
           return protocol::codec::builtin::sql_page_codec::decode(msg);
       });
     auto error = message.get<boost::optional<impl::sql_error>>();
@@ -180,10 +238,13 @@ sql_service::decode_fetch_response(protocol::ClientMessage message)
 
 std::shared_ptr<sql_result>
 sql_service::handle_execute_response(
+  const std::string& sql_query,
+  const int32_t original_partition_argument_index,
   protocol::ClientMessage& msg,
   std::shared_ptr<connection::Connection> connection,
   impl::query_id id,
-  int32_t cursor_buffer_size)
+  int32_t cursor_buffer_size,
+  std::weak_ptr<std::atomic<int32_t>> statement_par_arg_index_ptr)
 {
     auto response = decode_execute_response(msg);
     if (response.error) {
@@ -193,6 +254,21 @@ sql_service::handle_execute_response(
           response.error->code,
           std::move(response.error->message),
           std::move(response.error->suggestion)));
+    } else {
+        if (is_smart_routing_ && response.partition_argument_index !=
+                                   original_partition_argument_index) {
+            if (response.partition_argument_index != -1) {
+                partition_argument_index_cache_->put(
+                  sql_query,
+                  std::make_shared<int32_t>(response.partition_argument_index));
+
+                if (auto argument_index = statement_par_arg_index_ptr.lock()) {
+                    argument_index->store(response.partition_argument_index);
+                }
+            } else {
+                partition_argument_index_cache_->remove(sql_query);
+            }
+        }
     }
 
     return std::shared_ptr<sql_result>(
@@ -236,6 +312,55 @@ sql_service::query_connection()
     }
 
     return connection;
+}
+
+std::shared_ptr<connection::Connection>
+sql_service::query_connection(int32_t partition_id)
+{
+    std::shared_ptr<connection::Connection> connection;
+    try {
+        const auto node_id =
+          client_context_.get_partition_service().get_partition_owner(
+            partition_id);
+
+        if (node_id.is_nil()) {
+            return query_connection();
+        }
+
+        connection =
+          client_context_.get_connection_manager().get_connection(node_id);
+
+        if (connection == nullptr) {
+            return query_connection();
+        }
+    } catch (const std::exception& e) {
+        rethrow(e);
+    }
+
+    return connection;
+}
+
+boost::optional<int32_t>
+sql_service::extract_partition_id(const sql_statement& statement,
+                                  int32_t arg_index) const
+{
+    if (!is_smart_routing_) {
+        return boost::none;
+    }
+
+    if (statement.serialized_parameters_.size() == 0) {
+        return boost::none;
+    }
+
+    if (arg_index >=
+          static_cast<int32_t>(statement.serialized_parameters_.size()) ||
+        arg_index < 0) {
+        return boost::none;
+    }
+
+    const auto key = statement.serialized_parameters_[arg_index];
+
+    return client_context_.get_partition_service().get_partition_id(key);
 }
 
 void
@@ -340,6 +465,7 @@ sql_statement::sql_statement(hazelcast_client& client, std::string query)
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
+  , partition_argument_index_{ std::make_shared<std::atomic<int32_t>>(-1) }
   , serialization_service_(
       spi::ClientContext(client).get_serialization_service())
 {
@@ -353,6 +479,7 @@ sql_statement::sql_statement(spi::ClientContext& client_context,
   , timeout_{ TIMEOUT_NOT_SET }
   , expected_result_type_{ sql_expected_result_type::any }
   , schema_{}
+  , partition_argument_index_{ nullptr }
   , serialization_service_(client_context.get_serialization_service())
 {
     sql(std::move(query));
@@ -448,6 +575,23 @@ sql_statement::expected_result_type(sql::sql_expected_result_type type)
     return *this;
 }
 
+std::shared_ptr<std::atomic<int32_t>>
+sql_statement::partition_argument_index() const
+{
+    return partition_argument_index_;
+}
+
+sql_statement&
+sql_statement::partition_argument_index(int32_t partition_argument_index)
+{
+    if (partition_argument_index < -1) {
+        BOOST_THROW_EXCEPTION(client::exception::illegal_argument(
+          "The argument index must be >=0, or -1"));
+    }
+    *partition_argument_index_ = partition_argument_index;
+    return *this;
+}
+
 hazelcast_sql_exception::hazelcast_sql_exception(
   std::string source,
   boost::uuids::uuid originating_member_id,
@@ -485,7 +629,8 @@ hazelcast_sql_exception::suggestion() const
 
 namespace impl {
 
-std::ostream& operator<<(std::ostream& os, const query_id& id)
+std::ostream&
+operator<<(std::ostream& os, const query_id& id)
 {
     os << "query_id{member_id: " << boost::uuids::to_string(id.member_id)
        << " local_id: " << boost::uuids::to_string(id.local_id) << "}";
@@ -593,15 +738,14 @@ query_utils::member_of_same_larger_version_group(
 
 } // namespace impl
 
-sql_result::sql_result(
-  spi::ClientContext* client_context,
-  sql_service* service,
-  std::shared_ptr<connection::Connection> connection,
-  impl::query_id id,
-  int64_t update_count,
-  std::shared_ptr<sql_row_metadata> row_metadata,
-  std::shared_ptr<sql_page> first_page,
-  int32_t cursor_buffer_size)
+sql_result::sql_result(spi::ClientContext* client_context,
+                       sql_service* service,
+                       std::shared_ptr<connection::Connection> connection,
+                       impl::query_id id,
+                       int64_t update_count,
+                       std::shared_ptr<sql_row_metadata> row_metadata,
+                       std::shared_ptr<sql_page> first_page,
+                       int32_t cursor_buffer_size)
   : client_context_(client_context)
   , service_(service)
   , connection_(std::move(connection))
@@ -761,7 +905,7 @@ sql_result::close()
         return boost::make_ready_future();
     }
 
-    auto release_resources = [this](){
+    auto release_resources = [this]() {
         {
             std::lock_guard<std::mutex> guard{ mtx_ };
             closed_ = true;
@@ -773,8 +917,7 @@ sql_result::close()
         first_page_.reset();
     };
 
-    try
-    {
+    try {
         auto f = service_->close(connection_, query_id_);
 
         release_resources();
@@ -1020,8 +1163,7 @@ sql_page::page_data::row_count() const
     return columns_[0].size();
 }
 
-sql_page::sql_row::sql_row(size_t row_index,
-                           std::shared_ptr<page_data> shared)
+sql_page::sql_row::sql_row(size_t row_index, std::shared_ptr<page_data> shared)
   : row_index_(row_index)
   , page_data_(std::move(shared))
 {
