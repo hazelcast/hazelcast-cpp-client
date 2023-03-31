@@ -154,7 +154,7 @@ int main() {
 * Cluster-wide unique ID generator, called [FlakeIdGenerator](https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples/learning-basics/unique-names)
 * Distributed, CRDT based counter, called [PNCounter](examples/distributed-primitives/crdt-pncounter)
 * Distributed concurrency primitives from CP Subsystem such as [FencedLock](examples/cp/fenced_lock.cpp), [Semaphore](examples/cp/counting_semphore.cpp), [AtomicLong](examples/cp/atomic_long.cpp)
-* Integration with [Hazelcast Cloud](https://viridian.hazelcast.com/)
+* Integration with [Viridian](https://viridian.hazelcast.com/) (Hazelcast Cloud)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
 * Ability to listen client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.com/clients/cplusplus/#client-features).
