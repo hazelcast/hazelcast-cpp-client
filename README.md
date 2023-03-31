@@ -36,7 +36,6 @@ For more info, check out Hazelcast [repository](https://github.com/hazelcast/haz
 
 hazelcast-cpp-client is the official C++ library API for using the Hazelcast in-memory database platform. It requires C++11 support.  
 
-The library can be installed using package managers [Conan](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#111-conan-users) and [Vcpkg](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#112-vcpkg-users) or directly [from source code](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#113-install-from-source-code-using-cmake) using [CMake](https://cmake.org/).
 
 ## Installation
 ### Hazelcast
@@ -65,9 +64,7 @@ as described [here](Reference_Manual.md#12-starting-hazelcast-cluster).
 
 ### Client
 
-#### Installing
-
-##### Vcpkg Users
+#### Vcpkg Users
 Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The package name is `hazelcast-cpp-client`.
 
 Please see [getting started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
@@ -91,8 +88,8 @@ The above code snippet will install `hazelcast-cpp-client` with its `boost` and 
 
 After the installation, the library is available for usage. For example, if you are using CMake for your builds, you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
 ```bat
-> cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
-> cmake --build [build directory]
+cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+cmake --build [build directory]
 ```
 
 The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
