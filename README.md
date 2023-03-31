@@ -39,7 +39,6 @@ hazelcast-cpp-client is the official C++ library API for using the Hazelcast in-
 
 The library can be installed using package managers [Conan](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#111-conan-users) and [Vcpkg](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#112-vcpkg-users) or directly [from source code](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#113-install-from-source-code-using-cmake) using [CMake](https://cmake.org/).
 
-* [Hazelcast Community Slack - C++ Client Channel](https://hazelcastcommunity.slack.com/channels/cpp-client)
 ## Installation
 ### Hazelcast
 Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles the storage and
