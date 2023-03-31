@@ -38,7 +38,6 @@ hazelcast-cpp-client is the official C++ library API for using the Hazelcast in-
 
 The library can be installed using package managers [Conan](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#111-conan-users) and [Vcpkg](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#112-vcpkg-users) or directly [from source code](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md#113-install-from-source-code-using-cmake) using [CMake](https://cmake.org/).
 
-* [Hazelcast Community Slack - C++ Client Channel](https://hazelcastcommunity.slack.com/channels/cpp-client)
 ## Installation
 ### Hazelcast
 Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles the storage and
@@ -76,17 +75,17 @@ Please see [getting started](https://github.com/microsoft/vcpkg#getting-started)
 If you use Linux or Mac:
 
 ```sh
-> git clone https://github.com/microsoft/vcpkg
-> ./vcpkg/bootstrap-vcpkg.sh
-> ./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
+git clone https://github.com/microsoft/vcpkg
+./vcpkg/bootstrap-vcpkg.sh
+./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
 ``` 
 
 If you use Windows:
 
 ```bat
-> git clone https://github.com/microsoft/vcpkg
-> .\vcpkg\bootstrap-vcpkg.bat
-> .\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
+git clone https://github.com/microsoft/vcpkg
+.\vcpkg\bootstrap-vcpkg.bat
+.\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
 ``` 
 The above code snippet will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
 
