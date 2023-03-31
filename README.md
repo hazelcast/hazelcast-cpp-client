@@ -14,6 +14,9 @@
         <!-- markdownlint-disable-next-line MD013 -->
         <img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter">
     </a>
+    <a href="LICENSE">
+        <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="Chat on Slack">
+    </a>    
 </p>
 
 ---
@@ -159,10 +162,6 @@ int main() {
 ## Documentation
 
 You can find the detailed documentation at the [documentation site](https://hazelcast.github.io/hazelcast-cpp-client/doc-index.html) and the [API reference](https://hazelcast.github.io/hazelcast-cpp-client/api-index.html).
-
-## License
-
-hazelcast-cpp-client library is an open source project using the [Apache 2 License](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/LICENSE).
 
 ## Copyright
 
