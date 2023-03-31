@@ -82,8 +82,8 @@ sql_service::execute(const sql_statement& statement)
 
     auto partition_id = extract_partition_id(statement, arg_index);
     std::shared_ptr<connection::Connection> query_conn =
-      partition_id != boost::none ? query_connection(partition_id.value())
-                                  : query_connection();
+      partition_id ? query_connection(partition_id.value())
+                   : query_connection();
 
     sql::impl::query_id qid = create_query_id(query_conn);
 
@@ -358,7 +358,7 @@ sql_service::extract_partition_id(const sql_statement& statement,
         return boost::none;
     }
 
-    const auto key = statement.serialized_parameters_[arg_index];
+    const auto& key = statement.serialized_parameters_[arg_index];
 
     return client_context_.get_partition_service().get_partition_id(key);
 }

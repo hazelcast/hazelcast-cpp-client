@@ -130,7 +130,7 @@ protected:
     {
     public:
         const T value_;
-        int64_t timestamp_;
+        std::atomic<int64_t> timestamp_;
 
         value_and_timestamp(T value)
           : value_(value)
@@ -138,7 +138,7 @@ protected:
             touch();
         }
 
-        void touch() { timestamp_ = util::current_time_nanos(); }
+        void touch() { timestamp_.store(util::current_time_nanos()); }
     };
 
     util::SynchronizedMap<K, value_and_timestamp<V>> cache_;
