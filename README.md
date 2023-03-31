@@ -77,17 +77,17 @@ Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started)
 If you use Linux or Mac:
 
 ```sh
-> git clone https://github.com/microsoft/vcpkg
-> ./vcpkg/bootstrap-vcpkg.sh
-> ./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
+git clone https://github.com/microsoft/vcpkg
+./vcpkg/bootstrap-vcpkg.sh
+./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
 ``` 
 
 If you use Windows:
 
 ```bat
-> git clone https://github.com/microsoft/vcpkg
-> .\vcpkg\bootstrap-vcpkg.bat
-> .\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
+git clone https://github.com/microsoft/vcpkg
+.\vcpkg\bootstrap-vcpkg.bat
+.\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
 ``` 
 The above code snippet will install `hazelcast-cpp-client` with its `boost` dependencies.
 
