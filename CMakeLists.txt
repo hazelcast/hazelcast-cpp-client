@@ -129,6 +129,7 @@ target_link_libraries(
 target_compile_definitions(
         ${PROJECT_NAME}
         PUBLIC BOOST_THREAD_VERSION=5
+        BOOST_BIND_GLOBAL_PLACEHOLDERS
 )
 
 # If building WITH_OPENSSL, add OpenSSL::SSL and OpenSSL::Crypto as dependencies
