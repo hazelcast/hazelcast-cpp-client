@@ -77,8 +77,8 @@ sql_service::execute(const sql_statement& statement)
 
     auto arg_index = statement_par_arg_index != -1
                        ? statement_par_arg_index
-                       : *(partition_argument_index_cache_->get_or_default(
-                           statement.sql(), std::make_shared<int32_t>(-1)));
+                       : (partition_argument_index_cache_->get_or_default(
+                           statement.sql(), -1));
 
     auto partition_id = extract_partition_id(statement, arg_index);
     std::shared_ptr<connection::Connection> query_conn =
@@ -259,8 +259,7 @@ sql_service::handle_execute_response(
                                    original_partition_argument_index) {
             if (response.partition_argument_index != -1) {
                 partition_argument_index_cache_->put(
-                  sql_query,
-                  std::make_shared<int32_t>(response.partition_argument_index));
+                  sql_query, response.partition_argument_index);
 
                 if (auto argument_index = statement_par_arg_index_ptr.lock()) {
                     argument_index->store(response.partition_argument_index);

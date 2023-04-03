@@ -73,43 +73,36 @@ public:
      * @returns Returns the value to which the specified key is cached,
      * or default value if this cache contains no mapping for the key.
      */
-    std::shared_ptr<V> get_or_default(const K& key,
-                                      const std::shared_ptr<V>& default_value)
+    V get_or_default(const K& key, const V& default_value)
     {
         const auto existing_value = get(key);
-        return (existing_value != nullptr) ? existing_value : default_value;
+        return existing_value ? *existing_value : default_value;
     }
 
     /**
      * @param key the key of the cache entry
      * Returns the value to which the specified key is cached,
-     * or {@code null} if this cache contains no mapping for the key.
+     * or {@code boost::none} if this cache contains no mapping for the key.
      * @returns Returns the value to which the specified key is cached
      */
-    std::shared_ptr<V> get(const K& key)
+    boost::optional<V> get(const K& key)
     {
         auto value_from_cache = cache_.get(key);
         if (value_from_cache == nullptr) {
-            return nullptr;
+            return boost::none;
         }
         value_from_cache->touch();
-        return std::make_shared<int32_t>(value_from_cache->value_);
+        return boost::make_optional(value_from_cache->value_);
     }
 
     /**
      * @param key the key of the cache entry
      * @param value the value of the cache entry
-     * @throws exception::illegal_argument if the value equals to nullptr
      */
-    void put(const K& key, const std::shared_ptr<V>& value)
+    void put(const K& key, const V& value)
     {
-        if (value == nullptr) {
-            BOOST_THROW_EXCEPTION(client::exception::illegal_argument(
-              "Null values are disallowed"));
-        }
-
         auto old_value =
-          cache_.put(key, std::make_shared<value_and_timestamp<V>>(*value));
+          cache_.put(key, std::make_shared<value_and_timestamp<V>>(value));
         if (old_value == nullptr && cache_.size() > cleanup_threshold_) {
             do_cleanup();
         }
