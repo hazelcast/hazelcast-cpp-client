@@ -97,11 +97,9 @@ cmake --build [build directory]
 
 The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
 
-You can find more details on using a Vcpkg installed package from different IDEs in your projects from the [Vcpkg Official Getting Started](https://github.com/microsoft/vcpkg#getting-started) documentation.
-
 ##### Other Methods
 
-You can also install the hazelcast-cpp-client with Conan and from source code. You can more information from [Reference Manual](https://github.com/akeles85/hazelcast-cpp-client/blob/readme_update/Reference_Manual.md#11-installing).
+You can also install the hazelcast-cpp-client with [conan](https://conan.io/) and from source code. You can more information from [Reference Manual](https://github.com/akeles85/hazelcast-cpp-client/blob/readme_update/Reference_Manual.md#11-installing).
 
 ## Overview
 
@@ -126,19 +124,19 @@ cmake --build build && ^
 ```
 
 The sample code creates a client, the client automatically connects to the cluster.
-It creates a map named "personel_map" and puts the records inside it.
+It creates a map named "personnel_map" and puts the records inside it.
 It then gets all the entries from the cluster and prints them.
 ```c++
 #include <hazelcast/client/hazelcast_client.h>
 int main() {
     auto hz = hazelcast::new_client().get(); // Connects to the cluster
 
-    auto personel = hz.get_map("personel_map").get();
-    personel->put<std::string, std::string>("Alice", "IT").get();
-    personel->put<std::string, std::string>("Bob", "IT").get();
-    personel->put<std::string, std::string>("Clark", "IT").get();
-    std::cout << "Added IT personel. Logging all known personel" << std::endl;
-    for (const auto &entry : personel->entry_set<std::string, std::string>().get()) {
+    auto personnel = hz.get_map("personnel_map").get();
+    personnel->put<std::string, std::string>("Alice", "IT").get();
+    personnel->put<std::string, std::string>("Bob", "IT").get();
+    personnel->put<std::string, std::string>("Clark", "IT").get();
+    std::cout << "Added IT personnel. Logging all known personnel" << std::endl;
+    for (const auto &entry : personnel->entry_set<std::string, std::string>().get()) {
         std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
     }
     
