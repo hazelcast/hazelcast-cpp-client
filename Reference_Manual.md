@@ -6,8 +6,8 @@
    * [Release Notes](#release-notes)
    * [1. Getting Started](#1-getting-started)
       * [1.1. Installing](#11-installing)
-         * [1.1.1. Conan Users](#111-conan-users)
-         * [1.1.2. Vcpkg Users](#112-vcpkg-users)
+         * [1.1.1. Vcpkg Users](#111-vcpkg-users)
+         * [1.1.2. Conan Users](#112-conan-users)
          * [1.1.3. Install From Source Code Using CMake](#113-install-from-source-code-using-cmake)
             * [1.1.3.1. Requirements](#1131-requirements)
             * [1.1.3.2. Downloading Source Code](#1132-downloading-source-code)
@@ -184,7 +184,35 @@ This chapter provides information on how to get started with your Hazelcast C++ 
 
 ## 1.1. Installing
 
-### 1.1.1. Conan Users
+### 1.1.1. Vcpkg Users (Recommended)
+Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The package name is `hazelcast-cpp-client`.
+
+Please see [getting started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
+
+If you use Linux or Mac:
+
+```sh
+git clone https://github.com/microsoft/vcpkg
+./vcpkg/bootstrap-vcpkg.sh
+./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
+``` 
+
+If you use Windows:
+
+```bat
+git clone https://github.com/microsoft/vcpkg
+.\vcpkg\bootstrap-vcpkg.bat
+.\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
+``` 
+The above code snippet will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
+
+After the installation, the library is available for usage. For example, if you are using CMake for your builds, you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
+```bat
+cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+cmake --build [build directory]
+```
+
+### 1.2.1. Conan Users
 Hazelcast C++ client package is indexed at [Conan Center Index](https://conan.io/center/hazelcast-cpp-client). You can use [Conan package manager](https://conan.io/) to install Hazelcast C++ client. The package name is `hazelcast-cpp-client`.
 
 Please see [example instructions](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) on how to use conan package manager with your application. In summary,
@@ -203,32 +231,6 @@ $ mkdir build && cd build
 $ conan install ..
 ```
 This generates the `conanbuildinfo.cmake` file to be included in your CMakeLists.txt. Please follow the instructions at the [example page](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) and build your application.
-
-### 1.1.2. Vcpkg Users
-Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The port name is `hazelcast-cpp-client`.
-
-Please see [Getting Started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
-
-```bat
-> git clone https://github.com/microsoft/vcpkg
-> .\vcpkg\bootstrap-vcpkg.bat
-> .\vcpkg\vcpkg install hazelcast-cpp-client
-``` 
-The above code snippet will install `hazelcast-cpp-client` with its `boost` dependencies.
-
-After the installation, the library is available for usage. For example, if you are using CMake for your builds, you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
-```bat
-> cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
-> cmake --build [build directory]
-```
-
-You can find more details on using a Vcpkg installed package from different IDEs in your projects from the [Vcpkg Official Getting Started](https://github.com/microsoft/vcpkg#getting-started) documentation.
-
-If you need to use `openssl` feature, then you need to install using the following command:
-```bat
-> .\vcpkg\vcpkg install hazelcast-cpp-client[openssl] --recurse
-```
-The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
 
 ### 1.1.3. Install From Source Code Using CMake
 #### 1.1.3.1. Requirements
@@ -276,9 +278,12 @@ See the [advanced installation](#1135-advanced-installation) section for configu
 
 Run `cmake` again to build and install the library:
 ```sh
-cmake --build .
+cmake --build . 
 sudo cmake --build . --target install
 ```
+
+You could speed up the build process with paralel threads like 'cmake --build . -j 4'
+
 See [this section](#11351-custom-install-location) for information on how to use a different installation location.
 
 #### 1.1.3.4. Windows Users
@@ -429,15 +434,25 @@ Here is how you can compile an example from the examples directory:
 g++ -std=c++11 \
     examples/path/to/example.cpp \
     -DBOOST_THREAD_VERSION=5 \
-    -lhazelcast-cpp-client -lboost_thread -lboost_chrono
+    -lhazelcast-cpp-client -lboost_thread -lboost_chrono -lssl -lcrypto
 ``` 
+
+If your enviroment could not find openssl library, you could define it like below (As an example: `-L/opt/homebrew/Cellar/openssl@1.1/1.1.1t/lib`)
+
+```
+g++ -std=c++11 \
+    examples/path/to/example.cpp \
+    -DBOOST_THREAD_VERSION=5 \
+    -lhazelcast-cpp-client -lboost_thread -lboost_chrono -lssl -lcrypto
+    -L/opt/homebrew/Cellar/openssl@1.1/1.1.1t/lib
+```
 
 If a custom installation directory was used during installation, then you may also need to use the `-L` and `-I` options to add the library and include paths to the compiler's search path.
 ```
 g++ -std=c++11 \
     examples/path/to/example.cpp \
     -I /path/to/install/include -L /path/to/install/lib \
-    -lhazelcast-cpp-client -lboost_thread -lboost_chrono 
+    -lhazelcast-cpp-client -lboost_thread -lboost_chrono  -lssl -lcrypto
 ```
 
 #### 1.3.3. Windows Users
@@ -600,6 +615,7 @@ The following example first creates a programmatic configuration object. Then, i
 int main() {
     auto hz = hazelcast::new_client().get(); // Connects to the cluster
     std::cout << "Started the Hazelcast C++ client instance " << hz.get_name() << std::endl; // Prints client instance name
+    hz.shutdown().get();
     return 0;
 }
 ```
@@ -628,7 +644,7 @@ Let's manipulate a distributed map on a cluster using the client.
 Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
 
 ```c++
-g++ IT.cpp -o IT -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
+g++ IT.cpp -o IT -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5 -lssl -lcrypto --std=c++11
 ```
 Then, you can run the application using the following command:
  
@@ -636,7 +652,7 @@ Then, you can run the application using the following command:
 ./IT
 ```
 
-**main.cpp**
+**IT.cpp**
 
 ```c++
 #include <hazelcast/client/hazelcast_client.h>
@@ -651,7 +667,7 @@ int main() {
     for (const auto &entry : personnel->entry_set<std::string, std::string>().get()) {
         std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
     }
-    
+    hz.shutdown().get();
     return 0;
 }
 ```
@@ -683,7 +699,7 @@ Now create a `Sales.cpp` file, compile and run it as shown below.
 **Compile:**
 
 ```c++
-g++ Sales.cpp -o Sales -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5
+g++ Sales.cpp -o Sales -lhazelcast-cpp-client -lboost_thread -lboost_chrono -DBOOST_THREAD_VERSION=5 -lssl -lcrypto --std=c++11
 ```
 **Run**
 
@@ -710,8 +726,8 @@ auto personnel = hz.get_map("personnel_map").get();
     for (const auto &entry : personnel.entry_set().get()) {
         std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
     }
-
-    return 0;
+hz.shutdown().get();
+return 0;
 }
 ```
 
@@ -1253,7 +1269,7 @@ The following are configuration element descriptions:
 * `initial_backoff_duration`: Specifies how long to wait (backoff) after the first failure before retrying.
 * `max_backoff_duration`: Specifies the upper limit for the backoff between each cluster connect tries.
 * `multiplier`: Factor to multiply the backoff after a failed retry.
-* `cluster_connect)timeout`: Timeout value for the client to give up to connect to the current cluster. If the client can not connect during this time, then it shuts down and it can not be re-used.
+* `cluster_connect_timeout`: Timeout value for the client to give up to connect to the current cluster. If the client can not connect during this time, then it shuts down and it can not be re-used.
 * `jitter`: Specifies by how much to randomize backoffs.
 
 ## 5.6. Enabling Client TLS/SSL
@@ -1544,7 +1560,7 @@ If you want to enable the validation of server certificate on the client side an
     auto hz = hazelcast::new_client(std::move(config)).get();
 ```
 
-The client will connect if the server has a certificate which is properly signed by well known Certificate Authorities(CA). On Windows, you may need to set the well known CA Authorities file path since OpenSSL may not find the well known certifite authorities file. This can be solved by providing the [SSL_CERT_FILE](https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set_default_verify_paths.html) environment variable set to point a file path that has all the needed well known certificate authorities. For example, you can get such a file maintained by Mozilla at https://curl.se/docs/caextract.html.
+The client will connect if the server has a certificate which is properly signed by well known Certificate Authorities(CA). On Windows, you may need to set the well known CA Authorities file path since OpenSSL may not find the well known certifite authorities file. This can be solved by providing the [SSL_CERT_FILE](https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_default_verify_paths.html) environment variable set to point a file path that has all the needed well known certificate authorities. For example, you can get such a file maintained by Mozilla at https://curl.se/docs/caextract.html.
 
 If the server is using a user generated certificate file which is not signed by the well known CA authorities, then you can use the public certificate of the server to configure the client to connect and verify the server. Here is an example configuration for this:
 
@@ -1593,7 +1609,6 @@ In some cases, you may want to limit the cipher suites allowed for a client whil
 ```c++
     config.get_network_config().get_ssl_config().
             set_cipher_list("HIGH");     // optional setting (values for string are described at
-                                                // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html and
                                                 // https://www.openssl.org/docs/man1.1.1/man1/ciphers.html
 ```
 
@@ -1926,6 +1941,7 @@ void listen_with_default_config() {
   } else {
       std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
   }
+  client.shutdown().get();
 }
 
 void listen_with_config() {
@@ -1952,6 +1968,8 @@ void listen_with_config() {
   } else {
     std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
   }
+
+  client.shutdown().get();
 }
 ```
 
@@ -1975,6 +1993,8 @@ std::cout << "Counter new value before adding is: " << pnCounter->get_and_add(2)
 std::cout << "Counter new value is: " << pnCounter->get().get() << std::endl;
 
 std::cout << "Decremented counter by one to: " << pnCounter->decrement_and_get().get() << std::endl;
+
+hz.shutdown().get();
 ```
 
 ### 7.4.10 Using flake_id_generator
@@ -2280,11 +2300,12 @@ int main() {
   auto initialMemberListener = make_initial_membership_listener();
   
   hazelcast::client::cluster *clusterPtr = nullptr;
-  boost::uuids::uuid listenerId, initialListenerId;
+  boost::uuids::uuid listenerId, initialListenerId;  
+  std::unique_ptr<client::hazelcast_client> hz;
   try {
-    auto hz = hazelcast::new_client().get();
+    hz = std::unique_ptr<hazelcast_client>( hazelcast::new_client().get() );
     
-    hazelcast::client::cluster &cluster = hz.get_cluster().get();
+    hazelcast::client::cluster &cluster = hz->get_cluster().get();
     clusterPtr = &cluster;
     auto members = cluster.get_members();
     std::cout << "The following are members in the cluster:" << std::endl;
@@ -2306,8 +2327,10 @@ int main() {
       clusterPtr->remove_membership_listener(listenerId).get();
       clusterPtr->remove_membership_listener(initialListenerId).get();
     }
+    hz->shutdown().get();
     exit(-1);
   }
+  hz->shutdown().get();
 ...
 ```
 
@@ -2315,12 +2338,12 @@ int main() {
 
 The `lifecycle_listener` interface notifies for the following events:
 
-* `starting`: The client is starting.
-* `started`: The client has started.
-* `shutting_down`: The client is shutting down.
-* `shutdown`: The client’s shutdown has completed.
-* `client_connected`: The client is connected to the cluster.
-* `client_disconnected`: The client is disconnected from the cluster.
+* `STARTING`: The client is starting.
+* `STARTED`: The client has started.
+* `SHUTTING_DOWN`: The client is shutting down.
+* `SHUTDOWN`: The client’s shutdown has completed.
+* `CLIENT_CONNECTED`: The client is connected to the cluster.
+* `CLIENT_DISCONNECTED`: The client is disconnected from the cluster.
 
 The following is an example of the `lifecycle_listener` that is added to the `client_config` object and its output.
 
@@ -2396,7 +2419,7 @@ int main() {
   map->remove<int, std::string>(1).get();
   
   /* ... */
-  
+  hz.shutdown().get();
   return 0;
 }
 ```
@@ -2423,6 +2446,7 @@ int main() {
   
   /* ... */
   
+  hz.shutdown().get();
   return 0;
 }
 ```
@@ -3084,7 +3108,7 @@ The C++ client provides paging for defined predicates. With its `paging_predicat
 ```c++
 auto map = hz.get_map("personMap").get();
 // paging_predicate with inner predicate (value < 10)
-auto predicate = intMap->new_paging_predicate<int, int>(5,
+auto pagingPredicate = intMap->new_paging_predicate<int, int>(5,
         query::greater_less_predicate(client, query::query_constants::THIS_ATTRIBUTE_NAME, 10, false, false));
 
 // Set page to retrieve third page
@@ -3482,6 +3506,7 @@ for (auto itr = result->iterator(); itr.has_next();)
                   << '\n';
     }
 }
+hz.shutdown().get();
 ```
 
 **Note-1**: First call to `sql_result::page_iterator::next()` function will return `ready` future because first page is already loaded as a result of the sql_service::execute call.
@@ -3525,6 +3550,7 @@ auto itr = result->iterator();
 auto page = itr.next().get();
 
 std::cout << page.row_count() << std::endl; // This may print zero if no data is yet generated at the server side.
+hz.shutdown().get();
 ```
 **Note-5**: `boost::future<std::shared_ptr<sql_result>>` is returned from `sql_service::execute` and `boost::future<std::shared_ptr<sql_page>>` is returned from `sql_result::page_iterator::next()`.
 
@@ -3543,6 +3569,7 @@ catch (const hazelcast_sql_exception&)
 {
     // Do error handling
 }
+hz.shutdown().get();
 ```
 
 ``` C++
@@ -3632,6 +3659,8 @@ std::cout << "name : "      << age_col_metadata.name
           << " type : "     << int(age_col_metadata.type)
           << " nullable : " << age_col_metadata.nullable
           << std::endl;
+
+hz.shutdown().get();          
 ```
 **Note :** There is no metadata for non-`SELECT` queries.
 
