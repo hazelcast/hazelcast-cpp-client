@@ -95,8 +95,6 @@ cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/b
 cmake --build [build directory]
 ```
 
-The above code will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
-
 ##### Other Methods
 
 You can also install the hazelcast-cpp-client with [conan](https://conan.io/) and from source code. You can more information from [Reference Manual](https://github.com/akeles85/hazelcast-cpp-client/blob/readme_update/Reference_Manual.md#11-installing).
@@ -124,7 +122,7 @@ cmake --build build && ^
 ```
 
 The sample code creates a client, the client automatically connects to the cluster.
-It creates a map named "personnel_map" and puts the records inside it.
+It creates a map named `personnel_map` and puts the records inside it.
 It then gets all the entries from the cluster and prints them.
 ```c++
 #include <hazelcast/client/hazelcast_client.h>
