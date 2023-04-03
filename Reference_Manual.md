@@ -1281,7 +1281,7 @@ As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key st
 
 ## 5.7. Enabling Hazelcast AWS Discovery
 
-The C++ client can discover the existing Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the [describe-instances] (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html) query of AWS. The client finds only the up and running instances and filters them based on the filter config provided at the `client_aws_config` configuration.
+The C++ client can discover the existing Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the [describe-instances](http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html) query of AWS. The client finds only the up and running instances and filters them based on the filter config provided at the `client_aws_config` configuration.
  
 The following is an example configuration:
 
@@ -1303,7 +1303,7 @@ and [the AWS examples directory](https://github.com/hazelcast/hazelcast-cpp-clie
 for more details.
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
-If you are using [Hazelcast Cloud Service](https://cloud.hazelcast.com) and you want to write an application that will utilize the Hazelcast cloud database service, you can use the C++ client. The configuration is very simple, you just need to set the cluster name, discovery token and enable the cloud discovery on network settings. Here is an example configuration:
+If you are using [Hazelcast Viridian](https://viridian.hazelcast.com/) and you want to write an application that will utilize the Hazelcast cloud database service, you can use the C++ client. The configuration is very simple, you just need to set the cluster name, discovery token and enable the cloud discovery on network settings. Here is an example configuration:
 
 ```c++
     hazelcast::client::client_config config;
