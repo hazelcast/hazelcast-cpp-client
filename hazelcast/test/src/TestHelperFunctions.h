@@ -89,18 +89,18 @@ random_string()
 
 #define ASSERT_EQ_PTR(expected, actual, type)                                  \
     do {                                                                       \
-        ASSERT_NE((type*)NULL, actual);                                        \
+        ASSERT_NE((type*)nullptr, actual);                                     \
         ASSERT_EQ((expected), (*actual));                                      \
     } while (0)
 
-#define ASSERT_NULL(msg, value, type) ASSERT_EQ((type*)NULL, value) << msg
-#define ASSERT_NOTNULL(value, type) ASSERT_NE((type*)NULL, value)
+#define ASSERT_NULL(msg, value, type) ASSERT_EQ((type*)nullptr, value) << msg
+#define ASSERT_NOTNULL(value, type) ASSERT_NE((type*)nullptr, value)
 #define ASSERT_TRUE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(true, (value))
 #define ASSERT_FALSE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(false, (value))
 #define ASSERT_TRUE_EVENTUALLY_WITH_TIMEOUT(value, timeout)                    \
     ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(value, true, timeout)
 #define ASSERT_NULL_EVENTUALLY(value, type)                                    \
-    ASSERT_EQ_EVENTUALLY((type*)NULL, value)
+    ASSERT_EQ_EVENTUALLY((type*)nullptr, value)
 #define ASSERT_OPEN_EVENTUALLY(latch1)                                         \
     ASSERT_EQ(boost::cv_status::no_timeout,                                    \
               (const_cast<boost::latch&>(latch1))                              \

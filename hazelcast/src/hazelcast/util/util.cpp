@@ -402,7 +402,7 @@ localtime(const time_t* clock, struct tm* result)
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     returnCode = localtime_s(result, clock);
 #else
-    if (NULL != localtime_r(clock, result)) {
+    if (nullptr != localtime_r(clock, result)) {
         returnCode = 0;
     }
 #endif
@@ -628,7 +628,7 @@ namespace util {
 void
 IOUtil::close_resource(Closeable* closable, const char* close_reason)
 {
-    if (closable != NULL) {
+    if (closable != nullptr) {
         try {
             closable->close(close_reason);
         } catch (client::exception::iexception&) {

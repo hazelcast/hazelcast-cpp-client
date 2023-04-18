@@ -279,7 +279,7 @@ protected:
         const std::pair<size_t, std::pair<K*, V*>>* nearestAnchorEntry =
           predicate.getNearestAnchorEntry();
         int nearestPage =
-          (NULL == nearestAnchorEntry ? -1 : (int)nearestAnchorEntry->first);
+          (nullptr == nearestAnchorEntry ? -1 : (int)nearestAnchorEntry->first);
         size_t page = predicate.getPage();
         size_t pageSize = predicate.getPageSize();
         size_t begin = pageSize * (page - nearestPage - 1);

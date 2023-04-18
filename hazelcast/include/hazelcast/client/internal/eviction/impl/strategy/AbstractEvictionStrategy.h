@@ -68,7 +68,7 @@ public:
               EvictionChecker* eviction_checker,
               EvictionListener<A, E>* eviction_listener) override
     {
-        if (eviction_checker != NULL) {
+        if (eviction_checker != nullptr) {
             if (eviction_checker->is_eviction_required()) {
                 return evict_internal(evictable_store,
                                       eviction_policy_evaluator,

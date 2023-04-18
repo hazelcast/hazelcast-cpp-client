@@ -122,7 +122,7 @@ public:
     int evict(std::vector<std::shared_ptr<C>>* eviction_candidates,
               eviction::EvictionListener<KS, R>* eviction_listener) override
     {
-        if (eviction_candidates == NULL) {
+        if (eviction_candidates == nullptr) {
             return 0;
         }
         int actualEvictedCount = 0;
@@ -133,9 +133,9 @@ public:
             const std::shared_ptr<C>& evictionCandidate = *it;
             if (util::SynchronizedMap<std::shared_ptr<KS>, R>::remove(
                   evictionCandidate->get_accessor())
-                  .get() != NULL) {
+                  .get() != nullptr) {
                 actualEvictedCount++;
-                if (eviction_listener != NULL) {
+                if (eviction_listener != nullptr) {
                     eviction_listener->on_evict(
                       evictionCandidate->get_accessor(),
                       evictionCandidate->get_evictable(),
@@ -154,7 +154,7 @@ public:
           samples =
             util::SampleableConcurrentHashMap<K, V, KS, R>::get_random_samples(
               sample_count);
-        if (NULL == samples.get()) {
+        if (nullptr == samples.get()) {
             return std::unique_ptr<
               util::Iterable<eviction::EvictionCandidate<K, V, KS, R>>>();
         }

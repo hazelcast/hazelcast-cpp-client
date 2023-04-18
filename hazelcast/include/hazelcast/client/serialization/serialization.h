@@ -1367,7 +1367,7 @@ public:
     template<typename T>
     void write_portable(const std::string& field_name, const T* portable)
     {
-        if (NULL == portable) {
+        if (nullptr == portable) {
             BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
               "ClassDefinitionWriter::write_portable",
               "Cannot write null portable without explicitly registering class "
@@ -1383,7 +1383,7 @@ public:
     void write_portable_array(const std::string& field_name,
                               const std::vector<T>* portables)
     {
-        if (NULL == portables || portables->size() == 0) {
+        if (nullptr == portables || portables->size() == 0) {
             BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
               "ClassDefinitionWriter::write_portableArray",
               "Cannot write null portable array without explicitly registering "
@@ -1882,7 +1882,7 @@ public:
     template<typename T>
     inline std::shared_ptr<data> to_shared_data(const T* object)
     {
-        if (NULL == object) {
+        if (nullptr == object) {
             return std::shared_ptr<data>();
         }
         return std::shared_ptr<data>(new data(to_data<T>(object)));
@@ -1986,7 +1986,7 @@ private:
         const partition_aware<PK_TYPE>* partitionAwareObj =
           static_cast<const partition_aware<PK_TYPE>*>(obj);
         const PK_TYPE* pk = partitionAwareObj->get_partition_key();
-        if (pk != NULL) {
+        if (pk != nullptr) {
             data partitionKey = to_data<PK_TYPE>(pk);
             out.write<int32_t>(partitionKey.get_partition_hash());
         }
@@ -2769,7 +2769,7 @@ PortableContext::lookup_or_register_class_definition(const T& portable)
       lookup_class_definition(hz_serializer<T>::get_factory_id(),
                               hz_serializer<T>::get_class_id(),
                               portableVersion);
-    if (cd.get() == NULL) {
+    if (cd.get() == nullptr) {
         ClassDefinitionBuilder classDefinitionBuilder(
           hz_serializer<T>::get_factory_id(),
           hz_serializer<T>::get_class_id(),

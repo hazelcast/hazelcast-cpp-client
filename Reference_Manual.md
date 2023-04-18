@@ -2648,7 +2648,7 @@ public member_selector {
 public:
 bool select(const member &member) const override {
 const std::string *attribute = member.get_attribute("my.special.executor");
-if (attribute == NULL) {
+if (attribute == nullptr) {
 return false;
 }
 

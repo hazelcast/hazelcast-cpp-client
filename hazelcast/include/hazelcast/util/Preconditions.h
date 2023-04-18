@@ -125,7 +125,7 @@ public:
       const std::shared_ptr<T>& argument,
       const std::string& arg_name)
     {
-        if (argument == NULL) {
+        if (argument == nullptr) {
             throw(client::exception::exception_builder<
                     client::exception::illegal_argument>("")
                   << "argument " << arg_name << " can't be null")

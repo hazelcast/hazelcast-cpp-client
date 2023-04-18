@@ -23,7 +23,7 @@ main()
     auto map = hz.get_replicated_map("somemap").get();
 
     std::ostringstream out;
-    out << time(NULL);
+    out << time(nullptr);
     const std::string& key = out.str();
 
     map->put<std::string, std::string>(key, "1").get();

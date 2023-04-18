@@ -84,11 +84,11 @@ public:
       const client::config::near_cache_config& near_cache_config)
     {
         std::shared_ptr<BaseNearCache> nearCache = near_cache_map_.get(name);
-        if (NULL == nearCache.get()) {
+        if (nullptr == nearCache.get()) {
             {
                 std::lock_guard<std::mutex> guard(mutex_);
                 nearCache = near_cache_map_.get(name);
-                if (NULL == nearCache.get()) {
+                if (nullptr == nearCache.get()) {
                     nearCache =
                       create_near_cache<K, V, KS>(name, near_cache_config);
                     nearCache->initialize();

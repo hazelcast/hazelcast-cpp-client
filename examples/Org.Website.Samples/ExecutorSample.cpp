@@ -101,7 +101,7 @@ public:
     {
         const std::string* attribute =
           member.get_attribute("my.special.executor");
-        if (attribute == NULL) {
+        if (attribute == nullptr) {
             return false;
         }
 

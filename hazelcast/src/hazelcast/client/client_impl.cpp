@@ -1161,7 +1161,7 @@ client_properties::get_string(const client_property& property) const
     }
 
     const char* value = property.get_system_property();
-    if (value != NULL) {
+    if (value != nullptr) {
         return value;
     }
 

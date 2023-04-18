@@ -127,7 +127,7 @@ protected:
         std::shared_ptr<R> oldRecord = ANCRS::records_->put(key, record);
         ANCRS::near_cache_stats_->increment_owned_entry_memory_cost(
           ANCRS::get_total_storage_memory_cost(key, record));
-        if (oldRecord.get() != NULL) {
+        if (oldRecord.get() != nullptr) {
             ANCRS::near_cache_stats_->decrement_owned_entry_memory_cost(
               ANCRS::get_total_storage_memory_cost(key, oldRecord));
         }

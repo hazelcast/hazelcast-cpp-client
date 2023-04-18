@@ -268,9 +268,9 @@ ec2_request_signer::hmac_sh_a256_bytes(const void* key_buffer,
     size_t len = 32;
     EVP_MD_CTX *mdctx;
     mdctx = EVP_MD_CTX_new();
-    EVP_PKEY *skey = NULL;
-    skey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, NULL, (const unsigned char *)key_buffer, key_len);
-    EVP_DigestSignInit(mdctx, NULL, EVP_sha256(), NULL, skey);
+    EVP_PKEY *skey = nullptr;
+    skey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, (const unsigned char *)key_buffer, key_len);
+    EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), nullptr, skey);
     EVP_DigestSignUpdate(mdctx, data, data_len);
     EVP_DigestSignFinal(mdctx, hash, &len);
     EVP_PKEY_free(skey);
@@ -284,7 +284,7 @@ ec2_request_signer::hmac_sh_a256_bytes(const void* key_buffer,
     HMAC_CTX_init(hmac);
 #endif
 
-    HMAC_Init_ex(hmac, key_buffer, key_len, EVP_sha256(), NULL);
+    HMAC_Init_ex(hmac, key_buffer, key_len, EVP_sha256(), nullptr);
     HMAC_Update(hmac, data, data_len);
     unsigned int len = 32;
     HMAC_Final(hmac, hash, &len);

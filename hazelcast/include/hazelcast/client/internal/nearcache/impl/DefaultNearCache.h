@@ -62,7 +62,7 @@ public:
 
     void initialize() override
     {
-        if (near_cache_record_store_.get() == NULL) {
+        if (near_cache_record_store_.get() == nullptr) {
             near_cache_record_store_ =
               create_near_cache_record_store(name_, near_cache_config_);
         }

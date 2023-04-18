@@ -119,7 +119,7 @@ public:
         std::shared_ptr<V> value;
         try {
             record = get_record(key);
-            if (record.get() != NULL) {
+            if (record.get() != nullptr) {
                 if (is_record_expired(record)) {
                     invalidate(key);
                     on_expire(key, record);
@@ -164,7 +164,7 @@ public:
         bool removed = false;
         try {
             record = remove_record(key);
-            if (record.get() != NULL) {
+            if (record.get() != nullptr) {
                 removed = true;
                 near_cache_stats_->decrement_owned_entry_count();
                 near_cache_stats_->decrement_owned_entry_memory_cost(
@@ -173,7 +173,7 @@ public:
             }
             near_cache_stats_->increment_invalidation_requests();
             on_remove(key, record, removed);
-            return record.get() != NULL;
+            return record.get() != nullptr;
         } catch (exception::iexception& error) {
             on_remove_error(key, record, removed, error);
             throw;
@@ -228,7 +228,7 @@ public:
 
         if (is_eviction_enabled()) {
             eviction_strategy_->evict(
-              records_.get(), eviction_policy_evaluator_.get(), NULL, this);
+              records_.get(), eviction_policy_evaluator_.get(), nullptr, this);
         }
     }
 
@@ -336,12 +336,12 @@ protected:
           new MaxSizeEvictionChecker(max_size_checker_.get()));
     }
 
-    bool is_available() const { return records_.get() != NULL; }
+    bool is_available() const { return records_.get() != nullptr; }
 
     std::shared_ptr<serialization::pimpl::data> value_to_data(
       const std::shared_ptr<V>& value)
     {
-        if (value.get() != NULL) {
+        if (value.get() != nullptr) {
             return std::shared_ptr<serialization::pimpl::data>(
               new serialization::pimpl::data(
                 serialization_service_.to_data<V>(value.get())));
@@ -371,7 +371,7 @@ protected:
     {
         return data;
         /*
-                                        if (data.get() != NULL) {
+                                        if (data.get() != nullptr) {
                                             auto value =
            serializationService.to_object<V>(data.get()); return
            std::shared_ptr<V>(new V(std::move(value).value())); } else { return
@@ -390,7 +390,7 @@ protected:
     const std::shared_ptr<serialization::pimpl::data> to_data(
       const std::shared_ptr<V>& obj)
     {
-        if (obj.get() == NULL) {
+        if (obj.get() == nullptr) {
             return std::shared_ptr<serialization::pimpl::data>();
         } else {
             return value_to_data(obj);
@@ -400,8 +400,8 @@ protected:
     /*
                                 std::shared_ptr<V>
        toValue(std::shared_ptr<serialization::pimpl::data> &obj) { if (obj.get()
-       == NULL) { return std::shared_ptr<V>(); } else { return dataToValue(obj,
-       (V *)NULL);
+       == nullptr) { return std::shared_ptr<V>(); } else { return dataToValue(obj,
+       (V *)nullptr);
                                     }
                                 }
     */
@@ -497,8 +497,8 @@ protected:
 
     bool is_eviction_enabled()
     {
-        return eviction_strategy_.get() != NULL &&
-               eviction_policy_evaluator_.get() != NULL &&
+        return eviction_strategy_.get() != nullptr &&
+               eviction_policy_evaluator_.get() != nullptr &&
                eviction_policy_ !=
                  hazelcast::client::config::eviction_policy::NONE;
     }
@@ -540,7 +540,7 @@ private:
 
         bool is_eviction_required() const override
         {
-            return max_size_checker_ != NULL &&
+            return max_size_checker_ != nullptr &&
                    max_size_checker_->is_reached_to_max_size();
         }
 
@@ -569,7 +569,7 @@ private:
             record = value_to_record(value);
             on_record_create(key, record);
             oldRecord = put_record(key, record);
-            if (oldRecord.get() == NULL) {
+            if (oldRecord.get() == nullptr) {
                 near_cache_stats_->increment_owned_entry_count();
             }
             on_put(key, value, record, oldRecord);

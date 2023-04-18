@@ -64,20 +64,20 @@ public:
 
         int32_t hash_code()
         {
-            return (key_ == NULL ? 0 : key_->hashCode()) ^
-                   (value_ == NULL ? 0 : value_->hashCode());
+            return (key_ == nullptr ? 0 : key_->hashCode()) ^
+                   (value_ == nullptr ? 0 : value_->hashCode());
         }
 
         std::string to_string()
         {
             std::ostringstream out;
-            if (NULL == key_.get()) {
+            if (nullptr == key_.get()) {
                 out << "null";
             } else {
                 out << *key_;
             }
             out << "=";
-            if (NULL == value_.get()) {
+            if (nullptr == value_.get()) {
                 out << "null";
             } else {
                 out << *value_;
@@ -95,7 +95,7 @@ public:
         static bool eq(const std::shared_ptr<T>& o1,
                        const std::shared_ptr<T>& o2)
         {
-            return o1.get() == NULL ? (o2.get() == NULL) : (*o1 == *o2);
+            return o1.get() == nullptr ? (o2.get() == nullptr) : (*o1 == *o2);
         }
     };
 
@@ -202,7 +202,7 @@ protected:
           expirable =
             std::dynamic_pointer_cast<client::internal::eviction::Expirable>(
               value);
-        if (NULL != expirable.get()) {
+        if (nullptr != expirable.get()) {
             return !(expirable->is_expired_at(now));
         }
         return true;
@@ -210,7 +210,7 @@ protected:
 
     virtual bool is_valid_for_sampling(const std::shared_ptr<VS>& value) const
     {
-        return value.get() != NULL;
+        return value.get() != nullptr;
     }
 
     virtual std::shared_ptr<E> create_sampling_entry(
@@ -260,7 +260,7 @@ private:
                 current_index_ = start_index_;
             }
             // If current entry is not initialized yet, initialize it
-            if (current_entry_.get() == NULL) {
+            if (current_entry_.get() == nullptr) {
                 current_entry_ =
                   internal_map_.get_entry((size_t)current_index_);
             }
@@ -272,7 +272,7 @@ private:
                 if ((size_t)current_index_ >= internal_map_.size()) {
                     current_index_ = 0;
                 }
-                while (current_entry_.get() != NULL) {
+                while (current_entry_.get() != nullptr) {
                     std::shared_ptr<VS> value = current_entry_->second;
                     std::shared_ptr<KS> key = current_entry_->first;
                     current_entry_ =
@@ -293,12 +293,12 @@ private:
         bool has_next() override
         {
             iterate();
-            return current_sample_.get() != NULL;
+            return current_sample_.get() != nullptr;
         }
 
         std::shared_ptr<E> next() override
         {
-            if (current_sample_.get() != NULL) {
+            if (current_sample_.get() != nullptr) {
                 return current_sample_;
             } else {
                 BOOST_THROW_EXCEPTION(client::exception::no_such_element(

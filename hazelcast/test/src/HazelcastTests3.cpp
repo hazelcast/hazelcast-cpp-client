@@ -1263,7 +1263,7 @@ TEST_P(BasicClientReplicatedMapNearCacheTest,
         // fetch internal value directly from Near Cache
         std::shared_ptr<serialization::pimpl::data> key = get_near_cache_key(i);
         auto value = near_cache_->get(key);
-        if (value.get() != NULL) {
+        if (value.get() != nullptr) {
             // the internal value should either be `null` or `NULL_OBJECT`
             ASSERT_EQ((hazelcast::client::internal::nearcache::NearCache<
                         serialization::pimpl::data,

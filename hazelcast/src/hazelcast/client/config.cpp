@@ -761,7 +761,7 @@ matching_point_config_pattern_matcher::matches(
             candidate.reset(new std::string(pattern));
         }
     }
-    if (duplicate.get() != NULL) {
+    if (duplicate.get() != nullptr) {
         throw(exception::exception_builder<exception::invalid_configuration>(
                 "MatchingPointConfigPatternMatcher::matches")
               << "Configuration " << item_name

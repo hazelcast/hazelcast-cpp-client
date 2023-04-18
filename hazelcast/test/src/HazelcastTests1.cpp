@@ -266,7 +266,7 @@ protected:
     static HazelcastServer* instance;
 };
 
-HazelcastServer* ClientStatisticsTest::instance = NULL;
+HazelcastServer* ClientStatisticsTest::instance = nullptr;
 
 TEST_F(ClientStatisticsTest, testClientStatisticsDisabledByDefault)
 {

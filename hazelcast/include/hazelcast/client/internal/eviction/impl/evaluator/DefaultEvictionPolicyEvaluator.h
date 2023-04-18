@@ -86,7 +86,7 @@ public:
         while (iterator->has_next()) {
             std::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E>>
               currentEvictionCandidate = iterator->next();
-            if (selectedEvictionCandidate.get() == NULL) {
+            if (selectedEvictionCandidate.get() == nullptr) {
                 selectedEvictionCandidate = currentEvictionCandidate;
             } else {
                 std::shared_ptr<E> evictable =
@@ -117,7 +117,7 @@ private:
         eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E>>&
         eviction_candidate) const
     {
-        if (eviction_candidate.get() == NULL) {
+        if (eviction_candidate.get() == nullptr) {
             return std::unique_ptr<std::vector<std::shared_ptr<
               eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E>>>>();
         } else {
@@ -134,11 +134,11 @@ private:
     bool is_expired(int64_t now, const Evictable<V>* evictable) const
     {
         bool expired = false;
-        if (evictable != NULL) {
+        if (evictable != nullptr) {
             // If evictable is also an expirable
             const Expirable* expirable =
               dynamic_cast<const Expirable*>(evictable);
-            if (expirable != NULL) {
+            if (expirable != nullptr) {
                 // If there is an expired candidate, let's evict that one
                 // immediately
                 expired = expirable->is_expired_at(now);

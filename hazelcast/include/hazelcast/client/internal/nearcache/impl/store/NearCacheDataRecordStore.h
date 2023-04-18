@@ -67,13 +67,13 @@ protected:
           // reference to this key data inside map ("store" field)
           REFERENCE_SIZE
           // cost of this key data
-          + (key != NULL ? key->total_size() : 0);
+          + (key != nullptr ? key->total_size() : 0);
     }
 
     int64_t get_record_storage_memory_cost(
       record::NearCacheDataRecord* record) const override
     {
-        if (record == NULL) {
+        if (record == nullptr) {
             return 0L;
         }
         std::shared_ptr<serialization::pimpl::data> value = record->get_value();
@@ -83,7 +83,7 @@ protected:
           // reference to "value" field
           + REFERENCE_SIZE
           // heap cost of this value data
-          + (value.get() != NULL ? (int64_t)value->total_size() : 0)
+          + (value.get() != nullptr ? (int64_t)value->total_size() : 0)
           // 3 primitive int64_t typed fields: "creationTime", "expirationTime"
           // and "accessTime"
           + (3 * (sizeof(std::atomic<int64_t>)))
@@ -114,11 +114,11 @@ protected:
     {
         const std::shared_ptr<serialization::pimpl::data> value =
           record->get_value();
-        if (value.get() == NULL) {
+        if (value.get() == nullptr) {
             ANCRS::near_cache_stats_->increment_misses();
             return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
         }
-        return ANCRS::data_to_value(value, (V*)NULL);
+        return ANCRS::data_to_value(value, (V*)nullptr);
     }
 
     void put_to_record(std::shared_ptr<record::NearCacheDataRecord>& record,

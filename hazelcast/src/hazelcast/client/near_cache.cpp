@@ -37,10 +37,10 @@ bool
 NearCacheManager::clear_near_cache(const std::string& name)
 {
     std::shared_ptr<BaseNearCache> nearCache = near_cache_map_.get(name);
-    if (nearCache.get() != NULL) {
+    if (nearCache.get() != nullptr) {
         nearCache->clear();
     }
-    return nearCache.get() != NULL;
+    return nearCache.get() != nullptr;
 }
 
 void
@@ -60,10 +60,10 @@ bool
 NearCacheManager::destroy_near_cache(const std::string& name)
 {
     std::shared_ptr<BaseNearCache> nearCache = near_cache_map_.remove(name);
-    if (nearCache.get() != NULL) {
+    if (nearCache.get() != nullptr) {
         nearCache->destroy();
     }
-    return nearCache.get() != NULL;
+    return nearCache.get() != nullptr;
 }
 
 void

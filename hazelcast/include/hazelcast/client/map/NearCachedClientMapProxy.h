@@ -60,7 +60,7 @@ public:
       : imap(instance_name, context)
       , cache_local_entries_(false)
       , invalidate_on_change_(false)
-      , key_state_marker_(NULL)
+      , key_state_marker_(nullptr)
       , near_cache_config_(
           *context->get_client_config().get_near_cache_config(instance_name))
       , logger_(context->get_logger())

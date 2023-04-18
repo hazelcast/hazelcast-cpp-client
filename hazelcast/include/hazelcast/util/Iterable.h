@@ -36,7 +36,7 @@ public:
     virtual Iterator<T>* iterator()
     {
         assert(0);
-        return NULL;
+        return nullptr;
     }
 };
 } // namespace util

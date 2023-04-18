@@ -952,12 +952,12 @@ PortableContext::get_class_definition_context(int factory_id)
 {
     std::shared_ptr<ClassDefinitionContext> value =
       class_def_context_map_.get(factory_id);
-    if (value == NULL) {
+    if (value == nullptr) {
         value = std::shared_ptr<ClassDefinitionContext>(
           new ClassDefinitionContext(factory_id, this));
         std::shared_ptr<ClassDefinitionContext> current =
           class_def_context_map_.put_if_absent(factory_id, value);
-        if (current != NULL) {
+        if (current != nullptr) {
             value = current;
         }
     }
@@ -1101,7 +1101,7 @@ SerializationService::get_object_type(const data* data)
 {
     object_type type;
 
-    if (NULL == data) {
+    if (nullptr == data) {
         type.type_id = serialization_constants::CONSTANT_TYPE_NULL;
         return type;
     }
@@ -1304,7 +1304,7 @@ int
 ClassDefinitionContext::get_class_version(int class_id)
 {
     std::shared_ptr<int> version = current_class_versions_.get(class_id);
-    return version != NULL ? *version : -1;
+    return version != nullptr ? *version : -1;
 }
 
 void
@@ -1312,7 +1312,7 @@ ClassDefinitionContext::set_class_version(int class_id, int version)
 {
     std::shared_ptr<int> current = current_class_versions_.put_if_absent(
       class_id, std::shared_ptr<int>(new int(version)));
-    if (current != NULL && *current != version) {
+    if (current != nullptr && *current != version) {
         std::stringstream error;
         error << "Class-id: " << class_id << " is already registered!";
         BOOST_THROW_EXCEPTION(exception::illegal_argument(
@@ -1331,7 +1331,7 @@ std::shared_ptr<ClassDefinition>
 ClassDefinitionContext::register_class_definition(
   std::shared_ptr<ClassDefinition> cd)
 {
-    if (cd.get() == NULL) {
+    if (cd.get() == nullptr) {
         return std::shared_ptr<ClassDefinition>();
     }
     if (cd->get_factory_id() != factory_id_) {
@@ -1347,7 +1347,7 @@ ClassDefinitionContext::register_class_definition(
       combine_to_long(cd->get_class_id(), cd->get_version());
     std::shared_ptr<ClassDefinition> currentCd =
       versioned_definitions_.put_if_absent(versionedClassId, cd);
-    if (currentCd.get() == NULL) {
+    if (currentCd.get() == nullptr) {
         return cd;
     }
 
@@ -1591,11 +1591,11 @@ operator()(
         return false;
     }
 
-    if (leftPtr == NULL) {
+    if (leftPtr == nullptr) {
         return true;
     }
 
-    if (rightPtr == NULL) {
+    if (rightPtr == nullptr) {
         return false;
     }
 

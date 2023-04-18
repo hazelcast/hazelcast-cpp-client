@@ -94,7 +94,7 @@ protected:
       const record::NearCacheObjectRecord<V>* record) override
     {
         const std::shared_ptr<V> value = record->get_value();
-        if (value.get() == NULL) {
+        if (value.get() == nullptr) {
             return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
         }
         return value;

@@ -132,7 +132,7 @@ member::get_attribute(const std::string& key) const
     if (attributes_.end() != it) {
         return &(it->second);
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
