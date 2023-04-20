@@ -1190,7 +1190,7 @@ TEST_F(ClientExecutorServiceTest, testSubmitCallableToMembers)
     for (const member& member : members) {
         ASSERT_EQ(1U, futuresMap.count(member));
         auto it = futuresMap.find(member);
-        ASSERT_NE(futuresMap.end(), it);
+        ASSERT_NE(futuresMap.cend(), it);
         auto uuid = (*it).second.get_future().get();
         ASSERT_TRUE(uuid);
         ASSERT_EQ(member.get_uuid(), uuid);
@@ -1410,7 +1410,7 @@ TEST_F(ClientExecutorServiceTest, testExecuteOnMembers)
     auto map = client->get_map(testName).get();
 
     std::vector<member> allMembers = client->get_cluster().get_members();
-    std::vector<member> members(allMembers.begin(), allMembers.begin() + 2);
+    std::vector<member> members(allMembers.cbegin(), allMembers.cbegin() + 2);
 
     executor::tasks::MapPutPartitionAwareCallable<std::string> callable(
       testName, "key");
@@ -1750,7 +1750,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesTagAndValueSet)
       get_logger());
     std::unordered_map<std::string, std::string> results = desc.execute();
     ASSERT_EQ(results.size(), 1U);
-    ASSERT_NE(results.end(),
+    ASSERT_NE(results.cend(),
               results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
 }
 
@@ -1785,7 +1785,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet)
       get_logger());
     std::unordered_map<std::string, std::string> results = desc.execute();
     ASSERT_EQ(results.size(), 1U);
-    ASSERT_NE(results.end(),
+    ASSERT_NE(results.cend(),
               results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
 }
 
@@ -1819,7 +1819,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet)
       get_logger());
     std::unordered_map<std::string, std::string> results = desc.execute();
     ASSERT_EQ(results.size(), 1U);
-    ASSERT_NE(results.end(),
+    ASSERT_NE(results.cend(),
               results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
 }
 
@@ -1854,7 +1854,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesSecurityGroup)
       get_logger());
     std::unordered_map<std::string, std::string> results = desc.execute();
     ASSERT_EQ(results.size(), 1U);
-    ASSERT_NE(results.end(),
+    ASSERT_NE(results.cend(),
               results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
 }
 
@@ -1890,13 +1890,13 @@ TEST_F(CloudUtilityTest, testUnmarshallResponseXml)
       hazelcast::client::aws::utility::cloud_utility::unmarshal_the_response(
         responseStream, get_logger());
     ASSERT_EQ(4U, results.size());
-    ASSERT_NE(results.end(), results.find("10.0.16.13"));
+    ASSERT_NE(results.cend(), results.find("10.0.16.13"));
     ASSERT_EQ("", results["10.0.16.13"]);
-    ASSERT_NE(results.end(), results.find("10.0.16.17"));
+    ASSERT_NE(results.cend(), results.find("10.0.16.17"));
     ASSERT_EQ("54.85.192.215", results["10.0.16.17"]);
-    ASSERT_NE(results.end(), results.find("10.0.16.25"));
+    ASSERT_NE(results.cend(), results.find("10.0.16.25"));
     ASSERT_EQ("", results["10.0.16.25"]);
-    ASSERT_NE(results.end(), results.find("172.30.4.118"));
+    ASSERT_NE(results.cend(), results.find("172.30.4.118"));
     ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
 }
 
@@ -1910,7 +1910,7 @@ protected:
       int port)
     {
         auto found = addresses.find(address{ private_ip, port });
-        ASSERT_NE(addresses.end(), found);
+        ASSERT_NE(addresses.cend(), found);
         ASSERT_EQ((address{ public_ip, port }), found->second);
     }
 };

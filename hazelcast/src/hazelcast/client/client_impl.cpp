@@ -777,7 +777,7 @@ from_bytes(std::vector<int8_t> v)
     if (is_negative) {
         twos_complement(v);
     }
-    import_bits(i, v.begin(), v.end(), 8);
+    import_bits(i, v.cbegin(), v.cend(), 8);
     if (is_negative) {
         return -i;
     }
@@ -793,12 +793,12 @@ to_bytes(const boost::multiprecision::cpp_int& i)
         twos_complement(v);
         if (v[0] > 0) {
             // add -1 as the most significant to have a negative sign bit
-            v.insert(v.begin(), -1);
+            v.insert(v.cbegin(), -1);
         }
     } else {
         // add 0 as the most significant byte to have a positive sign bit
         if (v[0] < 0) {
-            v.insert(v.begin(), 0);
+            v.insert(v.cbegin(), 0);
         }
     }
     return v;
@@ -1156,7 +1156,7 @@ client_properties::get_string(const client_property& property) const
 {
     std::unordered_map<std::string, std::string>::const_iterator valueIt =
       properties_map_.find(property.get_name());
-    if (valueIt != properties_map_.end()) {
+    if (valueIt != properties_map_.cend()) {
         return valueIt->second;
     }
 

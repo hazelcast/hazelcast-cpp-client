@@ -1305,7 +1305,7 @@ sql_row_metadata::find_column(const std::string& column_name) const
 sql_row_metadata::const_iterator
 sql_row_metadata::end() const
 {
-    return name_to_index_.end();
+    return name_to_index_.cend();
 }
 bool
 operator==(const sql_row_metadata& lhs, const sql_row_metadata& rhs)

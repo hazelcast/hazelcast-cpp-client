@@ -62,12 +62,12 @@ proxy_session_manager::get_or_create_session(const raft_group_id& group_id)
     }
 
     auto session = sessions_.find(group_id);
-    if (session == sessions_.end() || !session->second.is_valid()) {
+    if (session == sessions_.cend() || !session->second.is_valid()) {
         // upgrade to write lock
         boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(
           read_lock);
         session = sessions_.find(group_id);
-        if (session == sessions_.end() || !session->second.is_valid()) {
+        if (session == sessions_.cend() || !session->second.is_valid()) {
             session = create_new_session(group_id);
         }
     }
@@ -175,7 +175,7 @@ proxy_session_manager::invalidate_session(const raft_group_id& group_id,
     {
         boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
         auto session = sessions_.find(group_id);
-        if (session != sessions_.end()) {
+        if (session != sessions_.cend()) {
             // upgrade to write lock
             boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(
               read_lock);
@@ -198,7 +198,7 @@ proxy_session_manager::release_session(const raft_group_id& group_id,
 {
     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
     auto session = sessions_.find(group_id);
-    if (session != sessions_.end() && session->second.id == session_id) {
+    if (session != sessions_.cend() && session->second.id == session_id) {
         session->second.release(count);
     }
 }
@@ -208,7 +208,7 @@ proxy_session_manager::get_session(const raft_group_id& group_id)
 {
     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
     auto session = sessions_.find(group_id);
-    return session == sessions_.end() ? NO_SESSION_ID : session->second.id;
+    return session == sessions_.cend() ? NO_SESSION_ID : session->second.id;
 }
 
 int64_t
@@ -218,7 +218,7 @@ proxy_session_manager::get_or_create_unique_thread_id(
     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
     auto key = std::make_pair(group_id, util::get_current_thread_id());
     auto global_thread_id_it = thread_ids_.find(key);
-    if (global_thread_id_it != thread_ids_.end()) {
+    if (global_thread_id_it != thread_ids_.cend()) {
         return global_thread_id_it->second;
     }
 
@@ -227,7 +227,7 @@ proxy_session_manager::get_or_create_unique_thread_id(
     // upgrade to write lock
     boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(read_lock);
     global_thread_id_it = thread_ids_.find(key);
-    if (global_thread_id_it != thread_ids_.end()) {
+    if (global_thread_id_it != thread_ids_.cend()) {
         return global_thread_id_it->second;
     }
 
@@ -274,7 +274,7 @@ proxy_session_manager::get_session_acquire_count(const raft_group_id& group_id,
 {
     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
     auto session = sessions_.find(group_id);
-    return session != sessions_.end() && session->second.id == session_id
+    return session != sessions_.cend() && session->second.id == session_id
              ? session->second.acquire_count.load()
              : 0;
 }

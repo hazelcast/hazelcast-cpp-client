@@ -383,7 +383,7 @@ client_network_config&
 client_network_config::add_addresses(const std::vector<address>& addresses)
 {
     address_list_.insert(
-      address_list_.end(), addresses.begin(), addresses.end());
+      address_list_.cend(), addresses.cbegin(), addresses.cend());
     return *this;
 }
 
@@ -1179,7 +1179,7 @@ const config::reliable_topic_config&
 client_config::get_reliable_topic_config(const std::string& name)
 {
     auto it = reliable_topic_config_map_.find(name);
-    if (it != reliable_topic_config_map_.end()) {
+    if (it != reliable_topic_config_map_.cend()) {
         return it->second;
     }
 
@@ -1192,7 +1192,7 @@ const config::reliable_topic_config*
 client_config::lookup_reliable_topic_config(const std::string& name) const
 {
     auto it = reliable_topic_config_map_.find(name);
-    if (it != reliable_topic_config_map_.end()) {
+    if (it != reliable_topic_config_map_.cend()) {
         return &it->second;
     }
 
@@ -1224,7 +1224,7 @@ client_config::get_near_cache_config(const std::string& name) const
     }
 
     auto config_it = near_cache_config_map_.find("default");
-    if (config_it != near_cache_config_map_.end()) {
+    if (config_it != near_cache_config_map_.cend()) {
         return &near_cache_config_map_.find("default")->second;
     }
 
@@ -1308,7 +1308,7 @@ client_config::get_flake_id_generator_config(const std::string& name)
         return config;
     }
     auto defConfig = flake_id_generator_config_map_.find("default");
-    if (defConfig == flake_id_generator_config_map_.end()) {
+    if (defConfig == flake_id_generator_config_map_.cend()) {
         flake_id_generator_config_map_.emplace(
           "default", config::client_flake_id_generator_config("default"));
     }

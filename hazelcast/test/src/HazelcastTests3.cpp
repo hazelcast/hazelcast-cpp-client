@@ -165,7 +165,7 @@ protected:
     template<typename T>
     bool contains(std::vector<T>& values, const T& value)
     {
-        return std::find(values.begin(), values.end(), value) != values.end();
+        return std::find(values.cbegin(), values.cend(), value) != values.cend();
     }
 
     static TEST_VALUES_TYPE build_test_values()

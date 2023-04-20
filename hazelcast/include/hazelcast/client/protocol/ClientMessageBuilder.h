@@ -103,7 +103,7 @@ private:
         bool result = false;
 
         auto found = partial_messages_.find(fragmentation_id);
-        if (partial_messages_.end() != found) {
+        if (partial_messages_.cend() != found) {
             found->second->append(std::move(msg));
             if (is_end_fragment) {
                 // remove from message from map

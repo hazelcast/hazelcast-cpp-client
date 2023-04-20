@@ -156,10 +156,10 @@ TEST_F(AddressHelperTest, testGetPossibleSocketAddresses)
       util::AddressHelper::get_socket_addresses(addr, get_logger());
     ASSERT_EQ(3U, addresses.size());
     std::unordered_set<address> socketAddresses;
-    socketAddresses.insert(addresses.begin(), addresses.end());
-    ASSERT_NE(socketAddresses.end(), socketAddresses.find(address(addr, 5701)));
-    ASSERT_NE(socketAddresses.end(), socketAddresses.find(address(addr, 5702)));
-    ASSERT_NE(socketAddresses.end(), socketAddresses.find(address(addr, 5703)));
+    socketAddresses.insert(addresses.cbegin(), addresses.cend());
+    ASSERT_NE(socketAddresses.cend(), socketAddresses.find(address(addr, 5701)));
+    ASSERT_NE(socketAddresses.cend(), socketAddresses.find(address(addr, 5702)));
+    ASSERT_NE(socketAddresses.cend(), socketAddresses.find(address(addr, 5703)));
 }
 
 TEST_F(AddressHelperTest, testAddressHolder)
@@ -302,8 +302,8 @@ TEST_F(ClientConfigTest, testAddresseses)
     auto configuredAddresses =
       clientConfig.get_network_config().get_addresses();
     ASSERT_EQ(2U, addresses.size());
-    std::vector<address> configuredAddressVector(configuredAddresses.begin(),
-                                                 configuredAddresses.end());
+    std::vector<address> configuredAddressVector(configuredAddresses.cbegin(),
+                                                 configuredAddresses.cend());
     std::sort(configuredAddressVector.begin(), configuredAddressVector.end());
     ASSERT_EQ(addresses, configuredAddressVector);
 }
@@ -396,9 +396,9 @@ TEST_F(ClientConfigTest, test_add_label)
     config.add_label(label);
     auto& labels = config.get_labels();
     EXPECT_EQ(1, labels.size());
-    is_found = labels.find(label) != labels.end();
+    is_found = labels.find(label) != labels.cend();
     EXPECT_TRUE(is_found);
-    is_found = labels.find(non_existing_label) != labels.end();
+    is_found = labels.find(non_existing_label) != labels.cend();
     EXPECT_FALSE(is_found);
 }
 
@@ -416,11 +416,11 @@ TEST_F(ClientConfigTest, test_set_label)
 
     auto& labels = config.get_labels();
     EXPECT_EQ(2, labels.size());
-    is_found = labels.find(label_1) != labels.end();
+    is_found = labels.find(label_1) != labels.cend();
     EXPECT_TRUE(is_found);
-    is_found = labels.find(label_2) != labels.end();
+    is_found = labels.find(label_2) != labels.cend();
     EXPECT_TRUE(is_found);
-    is_found = labels.find(non_existing_label) != labels.end();
+    is_found = labels.find(non_existing_label) != labels.cend();
     EXPECT_FALSE(is_found);
 }
 

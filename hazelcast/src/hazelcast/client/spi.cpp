@@ -141,8 +141,8 @@ ProxyManager::destroy_proxy(ClientProxy& proxy)
     {
         std::lock_guard<std::recursive_mutex> guard(lock_);
         auto it = proxies_.find(objectNamespace);
-        registeredProxy = it == proxies_.end() ? nullptr : it->second.get();
-        if (it != proxies_.end()) {
+        registeredProxy = it == proxies_.cend() ? nullptr : it->second.get();
+        if (it != proxies_.cend()) {
             proxies_.erase(it);
         }
     }
@@ -922,7 +922,7 @@ ClientClusterServiceImpl::get_member(boost::uuids::uuid uuid) const
     assert(!uuid.is_nil());
     auto members_view_ptr = member_list_snapshot_.load();
     const auto it = members_view_ptr->members.find(uuid);
-    if (it == members_view_ptr->members.end()) {
+    if (it == members_view_ptr->members.cend()) {
         return boost::none;
     }
     return { it->second };
@@ -1124,11 +1124,11 @@ ClientClusterServiceImpl::create_snapshot(int32_t version,
         } else {
             auto found = address_map.find(CLIENT);
             address member_address;
-            if (found != address_map.end()) {
+            if (found != address_map.cend()) {
                 member_address = found->second;
             } else {
                 found = address_map.find(MEMBER);
-                assert(found != address_map.end());
+                assert(found != address_map.cend());
                 member_address = found->second;
             }
             member new_member(member_address,
@@ -2279,7 +2279,7 @@ ClientPartitionServiceImpl::get_partition_owner(int32_t partition_id)
 {
     auto table_ptr = partition_table_.load();
     auto it = table_ptr->partitions.find(partition_id);
-    if (it != table_ptr->partitions.end()) {
+    if (it != table_ptr->partitions.cend()) {
         return it->second;
     }
     return boost::uuids::nil_uuid();
@@ -2797,8 +2797,8 @@ listener_service_impl::deregister_listener_internal(
 
     auto listener_registrations =
       listenerRegistration->registrations.entry_set();
-    for (auto it = listener_registrations.begin();
-         it != listener_registrations.end();) {
+    for (auto it = listener_registrations.cbegin();
+         it != listener_registrations.cend();) {
         const auto& registration = it->second;
         const auto& subscriber = it->first;
         try {
@@ -3150,7 +3150,7 @@ remote_address_provider::translate(const address& addr)
     {
         std::lock_guard<std::mutex> guard(lock_);
         auto found = private_to_public_.find(addr);
-        if (found != private_to_public_.end()) {
+        if (found != private_to_public_.cend()) {
             return found->second;
         }
     }
@@ -3161,7 +3161,7 @@ remote_address_provider::translate(const address& addr)
     private_to_public_ = address_map;
 
     auto found = private_to_public_.find(addr);
-    if (found != private_to_public_.end()) {
+    if (found != private_to_public_.cend()) {
         return found->second;
     }
 

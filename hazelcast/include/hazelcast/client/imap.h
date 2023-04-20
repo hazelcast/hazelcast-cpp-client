@@ -1063,7 +1063,7 @@ public:
             resultFutures.push_back(
               put_all_internal(partitionId, std::move(partitionEntry.second)));
         }
-        return boost::when_all(resultFutures.begin(), resultFutures.end())
+        return boost::when_all(resultFutures.cbegin(), resultFutures.cend())
           .then(boost::launch::sync,
                 [](boost::future<boost::csbl::vector<
                      boost::future<protocol::ClientMessage>>> futures) {
@@ -1308,8 +1308,8 @@ private:
       query::iteration_type iteration_type,
       std::vector<std::pair<K, boost::optional<V>>> entries)
     {
-        std::sort(entries.begin(),
-                  entries.end(),
+        std::sort(entries.cbegin(),
+                  entries.cend(),
                   [&](const std::pair<K, boost::optional<V>>& lhs,
                       const std::pair<K, boost::optional<V>>& rhs) {
                       auto comparator = predicate.getComparator();

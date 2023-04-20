@@ -291,7 +291,7 @@ ClientMessage::append(std::shared_ptr<ClientMessage> msg)
     // since we make sure that this is guaranteed at the caller that they are
     // matching !
     data_buffer_.insert(
-      data_buffer_.end(), msg->data_buffer_.begin(), msg->data_buffer_.end());
+      data_buffer_.cend(), msg->data_buffer_.cbegin(), msg->data_buffer_.cend());
 }
 
 bool
@@ -428,8 +428,8 @@ ClientMessage::end_frame()
 void
 ClientMessage::drop_fragmentation_frame()
 {
-    data_buffer_[0].erase(data_buffer_[0].begin(),
-                          data_buffer_[0].begin() + FRAGMENTATION_ID_OFFSET +
+    data_buffer_[0].erase(data_buffer_[0].cbegin(),
+                          data_buffer_[0].cbegin() + FRAGMENTATION_ID_OFFSET +
                             INT64_SIZE);
 }
 
@@ -709,8 +709,8 @@ ClientExceptionFactory::~ClientExceptionFactory()
     for (std::unordered_map<
            int,
            hazelcast::client::protocol::ExceptionFactory*>::const_iterator it =
-           error_code_to_factory_.begin();
-         error_code_to_factory_.end() != it;
+           error_code_to_factory_.cbegin();
+         error_code_to_factory_.cend() != it;
          ++it) {
         delete (it->second);
     }
@@ -721,7 +721,7 @@ ClientExceptionFactory::register_exception(int32_t error_code,
                                            ExceptionFactory* factory)
 {
     auto it = error_code_to_factory_.find(error_code);
-    if (error_code_to_factory_.end() != it) {
+    if (error_code_to_factory_.cend() != it) {
         char msg[100];
         util::hz_snprintf(
           msg, 100, "Error code %d was already registered!!!", error_code);
@@ -741,7 +741,7 @@ ClientExceptionFactory::create_exception(
         return nullptr;
     }
     auto factory = error_code_to_factory_.find(begin->error_code);
-    if (error_code_to_factory_.end() == factory) {
+    if (error_code_to_factory_.cend() == factory) {
         factory = error_code_to_factory_.find(
           protocol::client_protocol_error_codes::UNDEFINED);
     }
@@ -756,7 +756,7 @@ std::exception_ptr
 ClientExceptionFactory::create_exception(
   const std::vector<codec::ErrorHolder>& errors) const
 {
-    return create_exception(errors.begin(), errors.end());
+    return create_exception(errors.cbegin(), errors.cend());
 }
 
 UsernamePasswordCredentials::UsernamePasswordCredentials(

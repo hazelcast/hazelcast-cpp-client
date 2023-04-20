@@ -197,7 +197,7 @@ metrics_dictionary::get_dictionary_id(const std::string& word)
 
     auto word_position = word_to_id.find(word);
 
-    if (word_position == word_to_id.end()) {
+    if (word_position == word_to_id.cend()) {
         const int next_id = static_cast<int>(word_to_id.size());
         word_to_id[word] = next_id;
 
@@ -267,7 +267,7 @@ output_buffer::write(const std::string& str)
 void
 output_buffer::write(const std::vector<byte>& vec)
 {
-    buffer_.insert(buffer_.end(), vec.begin(), vec.end());
+    buffer_.insert(buffer_.cend(), vec.cbegin(), vec.cend());
 }
 
 const std::vector<byte>&

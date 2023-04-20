@@ -982,8 +982,8 @@ protected:
                      const std::string& item) const
     {
         bool found = false;
-        for (std::vector<std::string>::const_iterator it = items.begin();
-             it != items.end();
+        for (std::vector<std::string>::const_iterator it = items.cbegin();
+             it != items.cend();
              ++it) {
             if (item == *it) {
                 found = true;
@@ -2344,7 +2344,7 @@ TEST(ClientMessageTest, test_encode_sql_query_id)
 
     std::vector<unsigned char> actual_bytes;
     for (const auto& piece : msg.get_buffer()) {
-        actual_bytes.insert(actual_bytes.end(), piece.begin(), piece.end());
+        actual_bytes.insert(actual_bytes.cend(), piece.cbegin(), piece.cend());
     }
 
     EXPECT_EQ(expected_bytes, actual_bytes);

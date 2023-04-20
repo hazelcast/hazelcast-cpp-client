@@ -404,7 +404,7 @@ protected:
                         std::move(entry.second));
                       bool marked = false;
                       auto foundEntry = markers->find(key);
-                      if (foundEntry != markers->end()) {
+                      if (foundEntry != markers->cend()) {
                           marked = foundEntry->second;
                           markers->erase(foundEntry);
                       }
@@ -601,8 +601,8 @@ private:
 
     void unmark_remaining_marked_keys(MARKER_MAP& markers)
     {
-        for (MARKER_MAP::const_iterator it = markers.begin();
-             it != markers.end();
+        for (MARKER_MAP::const_iterator it = markers.cbegin();
+             it != markers.cend();
              ++it) {
             if (it->second) {
                 key_state_marker_->force_unmark(*it->first);

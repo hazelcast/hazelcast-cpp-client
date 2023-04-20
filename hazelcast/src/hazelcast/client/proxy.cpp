@@ -580,7 +580,7 @@ PNCounterImpl::get_crdt_operation_target(
 {
     auto replicaAddress = current_target_replica_address_.load();
     if (replicaAddress &&
-        excluded_addresses.find(*replicaAddress) == excluded_addresses.end()) {
+        excluded_addresses.find(*replicaAddress) == excluded_addresses.cend()) {
         return replicaAddress;
     }
 
@@ -588,7 +588,7 @@ PNCounterImpl::get_crdt_operation_target(
         std::lock_guard<std::mutex> guard(target_selection_mutex_);
         replicaAddress = current_target_replica_address_.load();
         if (!replicaAddress || excluded_addresses.find(*replicaAddress) !=
-                                 excluded_addresses.end()) {
+                                 excluded_addresses.cend()) {
             current_target_replica_address_ =
               choose_target_replica(excluded_addresses);
         }
@@ -624,7 +624,7 @@ PNCounterImpl::get_replica_addresses(
 
     std::vector<member> replicaMembers;
     for (int i = 0; i < currentReplicaCount; i++) {
-        if (excluded_members.find(dataMembers[i]) == excluded_members.end()) {
+        if (excluded_members.find(dataMembers[i]) == excluded_members.cend()) {
             replicaMembers.push_back(dataMembers[i]);
         }
     }
