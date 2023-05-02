@@ -44,7 +44,7 @@ public:
         std::vector<std::string> keys(size);
         size_t index = 0;
         for (const auto& e : config_patterns) {
-            keys[index] = e.first;
+            keys[index++] = e.first;
         }
         std::shared_ptr<std::string> configPatternKey =
           config_pattern_matcher.matches(keys, item_name);
