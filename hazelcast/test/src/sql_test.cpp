@@ -722,42 +722,42 @@ protected:
     }
     template<typename... Params>
     void check_partition_argument_index(std::string sql,
-                                        std::shared_ptr<int32_t> expected_index,
+                                        boost::optional<int32_t> expected_index,
                                         Params&&... arguments)
     {
         auto& sql_service = client.get_sql();
         EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
-                  nullptr);
+                  boost::none);
         sql_service.execute(sql, std::forward<Params>(arguments)...).get();
 
-        if (expected_index == nullptr) {
+        if (expected_index == boost::none) {
             EXPECT_EQ(sql_service.partition_argument_index_cache_->get(sql),
-                      nullptr);
+                      boost::none);
         } else {
             ASSERT_NE(sql_service.partition_argument_index_cache_->get(sql),
-                      nullptr);
+                      boost::none);
             EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(sql),
                       *expected_index);
         }
     }
 
     void check_partition_argument_index(sql::sql_statement statement,
-                                        std::shared_ptr<int32_t> expected_index)
+                                        boost::optional<int32_t> expected_index)
     {
         auto& sql_service = client.get_sql();
         EXPECT_EQ(
           sql_service.partition_argument_index_cache_->get(statement.sql()),
-          nullptr);
+          boost::none);
         sql_service.execute(statement).get();
 
-        if (expected_index == nullptr) {
+        if (expected_index == boost::none) {
             EXPECT_EQ(
               sql_service.partition_argument_index_cache_->get(statement.sql()),
-              nullptr);
+              boost::none);
         } else {
             ASSERT_NE(
               sql_service.partition_argument_index_cache_->get(statement.sql()),
-              nullptr);
+              boost::none);
             EXPECT_EQ(*sql_service.partition_argument_index_cache_->get(
                         statement.sql()),
                       *expected_index);
@@ -1960,13 +1960,13 @@ TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
     check_partition_argument_index(
       (boost::format("INSERT INTO %1% (__key, this) VALUES (?, ?)") % map_name)
         .str(),
-      std::make_shared<int32_t>(0),
+      boost::make_optional<int32_t>(0),
       1,
       "value");
     check_partition_argument_index(
       (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") % map_name)
         .str(),
-      std::make_shared<int32_t>(1),
+      boost::make_optional<int32_t>(1),
       "value",
       2);
     // no dynamic argument
@@ -1974,19 +1974,19 @@ TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
       (boost::format("INSERT INTO %1% (this, __key) VALUES ('value', 3)") %
        map_name)
         .str(),
-      nullptr);
+      boost::none);
     check_partition_argument_index(
       (boost::format("INSERT INTO %1% (this, __key) "
                      "VALUES ('value', 4), ('value', 5)") %
        map_name)
         .str(),
-      nullptr);
+      boost::none);
     // has dynamic argument, but multiple rows
     check_partition_argument_index(
       (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?), (?, ?)") %
        map_name)
         .str(),
-      nullptr,
+      boost::none,
       "value",
       6,
       "value",
@@ -2006,7 +2006,8 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
         .str());
     statement1.add_parameter(1);
     statement1.add_parameter("value");
-    check_partition_argument_index(statement1, std::make_shared<int32_t>(0));
+    check_partition_argument_index(statement1,
+                                   boost::make_optional<int32_t>(0));
     EXPECT_EQ(*statement1.partition_argument_index(), 0);
 
     sql::sql_statement statement2(
@@ -2016,7 +2017,8 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
     statement2.add_parameter("value");
     statement2.add_parameter(2);
 
-    check_partition_argument_index(statement2, std::make_shared<int32_t>(1));
+    check_partition_argument_index(statement2,
+                                   boost::make_optional<int32_t>(1));
     EXPECT_EQ(*statement2.partition_argument_index(), 1);
 
     sql::sql_statement statement3(
@@ -2026,7 +2028,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
         .str());
 
     // no dynamic argument
-    check_partition_argument_index(statement3, nullptr);
+    check_partition_argument_index(statement3, boost::none);
     EXPECT_EQ(*statement3.partition_argument_index(), -1);
 
     sql::sql_statement statement4(
@@ -2036,7 +2038,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
        map_name)
         .str());
 
-    check_partition_argument_index(statement4, nullptr);
+    check_partition_argument_index(statement4, boost::none);
     EXPECT_EQ(*statement4.partition_argument_index(), -1);
 
     sql::sql_statement statement5(
@@ -2050,7 +2052,7 @@ TEST_F(SqlTest, test_partition_based_routing_with_statements)
     statement5.add_parameter(7);
 
     // has dynamic argument, but multiple rows
-    check_partition_argument_index(statement5, nullptr);
+    check_partition_argument_index(statement5, boost::none);
     EXPECT_EQ(*statement5.partition_argument_index(), -1);
 }
 
@@ -2066,19 +2068,19 @@ TEST_F(SqlTest, test_partition_based_routing)
 
     check_partition_argument_index(
       (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
-      std::make_shared<int32_t>(0),
+      boost::make_optional<int32_t>(0),
       1);
 
     check_partition_argument_index(
       (boost::format("UPDATE %1% SET this = ? WHERE __key = ?") % map_name)
         .str(),
-      std::make_shared<int32_t>(1),
+      boost::make_optional<int32_t>(1),
       "testVal",
       1);
 
     check_partition_argument_index(
       (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(),
-      std::make_shared<int32_t>(0),
+      boost::make_optional<int32_t>(0),
       1);
 
     check_partition_argument_index(
@@ -2086,7 +2088,7 @@ TEST_F(SqlTest, test_partition_based_routing)
          "SELECT JSON_OBJECT(this : __key) FROM %1% WHERE __key = ?") %
        map_name)
         .str(),
-      std::make_shared<int32_t>(0),
+      boost::make_optional<int32_t>(0),
       1);
 
     check_partition_argument_index(
@@ -2094,7 +2096,7 @@ TEST_F(SqlTest, test_partition_based_routing)
          "SELECT JSON_ARRAY(__key, this) FROM %1% WHERE __key = ?") %
        map_name)
         .str(),
-      std::make_shared<int32_t>(0),
+      boost::make_optional<int32_t>(0),
       1);
 
     // aggregation
@@ -2103,17 +2105,17 @@ TEST_F(SqlTest, test_partition_based_routing)
          "SELECT JSON_OBJECTAGG(this : __key) FROM %1% WHERE __key = ?") %
        map_name)
         .str(),
-      nullptr,
+      boost::none,
       1);
     check_partition_argument_index(
       (boost::format("SELECT SUM(__key) FROM %1% WHERE __key = ?") % map_name)
         .str(),
-      nullptr,
+      boost::none,
       1);
     check_partition_argument_index(
       (boost::format("SELECT COUNT(*) FROM %1% WHERE __key = ?") % map_name)
         .str(),
-      nullptr,
+      boost::none,
       1);
 
     // join
@@ -2122,7 +2124,7 @@ TEST_F(SqlTest, test_partition_based_routing)
                      "WHERE t1.__key = ?") %
        map_name % test_map_name)
         .str(),
-      nullptr,
+      boost::none,
       1);
 
     check_partition_argument_index(
@@ -2130,7 +2132,7 @@ TEST_F(SqlTest, test_partition_based_routing)
                      "WHERE t1.__key = ?") %
        map_name % test_map_name)
         .str(),
-      nullptr,
+      boost::none,
       1);
 }
 
@@ -2164,7 +2166,7 @@ TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
       (boost::format("INSERT INTO %1% (this, key) VALUES (?, ?)") %
        custom_map_name)
         .str(),
-      nullptr,
+      boost::none,
       "value1",
       1);
 
@@ -2176,7 +2178,7 @@ TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
           (boost::format("INSERT INTO %1% (this, __key) VALUES (?, ?)") %
            map_name)
             .str(),
-          nullptr,
+          boost::none,
           "value-1",
           student{ 2, 1.72 });
     } catch (exception::iexception& ie) {
@@ -2196,19 +2198,19 @@ TEST_F(SqlTest, test_partition_based_routing_complex_key)
 
     check_partition_argument_index(
       (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
-      std::make_shared<int32_t>(0),
+      boost::make_optional<int32_t>(0),
       student{ 2, 1.72 });
 
     check_partition_argument_index(
       (boost::format("UPDATE %1% SET this = ? WHERE __key = ?") % map_name)
         .str(),
-      std::make_shared<int32_t>(1),
+      boost::make_optional<int32_t>(1),
       "testVal",
       student{ 2, 1.72 });
 
     check_partition_argument_index(
       (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(),
-      std::make_shared<int32_t>(0),
+      boost::make_optional<int32_t>(0),
       student{ 2, 1.72 });
 }
 
@@ -2445,7 +2447,7 @@ TEST_F(read_optimized_lru_cache_test, construction_test)
 TEST_F(read_optimized_lru_cache_test, put_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
-    lru.put(1, std::make_shared<int32_t>(10));
+    lru.put(1, 10);
     EXPECT_EQ(1, lru.get_cache_size());
     EXPECT_EQ(10, lru.get_cache_value(1));
 }
@@ -2453,31 +2455,25 @@ TEST_F(read_optimized_lru_cache_test, put_test)
 TEST_F(read_optimized_lru_cache_test, get_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
-    EXPECT_EQ(nullptr, lru.get(1));
-    lru.put(1, std::make_shared<int32_t>(10));
+    EXPECT_EQ(boost::none, lru.get(1));
+    lru.put(1, 10);
     EXPECT_EQ(10, *(lru.get(1)));
-}
-
-TEST_F(read_optimized_lru_cache_test, put_nullptr_test)
-{
-    EXPECT_EQ(0, lru.get_cache_size());
-    EXPECT_THROW(lru.put(1, nullptr), client::exception::illegal_argument);
 }
 
 TEST_F(read_optimized_lru_cache_test, get_or_default_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
-    EXPECT_EQ(2, *(lru.get_or_default(1, std::make_shared<int32_t>(2))));
+    EXPECT_EQ(2, lru.get_or_default(1, 2));
 
-    lru.put(3, std::make_shared<int32_t>(10));
+    lru.put(3, 10);
 
-    EXPECT_EQ(10, *(lru.get_or_default(3, std::make_shared<int32_t>(2))));
+    EXPECT_EQ(10, lru.get_or_default(3, 2));
 }
 
 TEST_F(read_optimized_lru_cache_test, put_and_remove_test)
 {
     EXPECT_EQ(0, lru.get_cache_size());
-    lru.put(1, std::make_shared<int32_t>(10));
+    lru.put(1, 10);
     EXPECT_EQ(1, lru.get_cache_size());
     lru.remove(1);
     EXPECT_EQ(0, lru.get_cache_size());
@@ -2485,27 +2481,27 @@ TEST_F(read_optimized_lru_cache_test, put_and_remove_test)
 
 TEST_F(read_optimized_lru_cache_test, eviction_test)
 {
-    lru.put(42, std::make_shared<int32_t>(42));
+    lru.put(42, 42);
     // a little sleep to ensure the lastUsed timestamps are different even on a
     // very imprecise clock
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    lru.put(43, std::make_shared<int32_t>(43));
+    lru.put(43, 43);
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    lru.put(44, std::make_shared<int32_t>(44));
+    lru.put(44, 44);
     EXPECT_EQ(3, lru.get_cache_size());
 
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    lru.put(45, std::make_shared<int32_t>(45));
+    lru.put(45, 45);
     EXPECT_EQ(2, lru.get_cache_size());
     EXPECT_EQ(44, lru.get_cache_value(44));
     EXPECT_EQ(45, lru.get_cache_value(45));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    lru.put(46, std::make_shared<int32_t>(46));
+    lru.put(46, 46);
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     lru.get(44); // access makes the value the least recently used one
 
-    lru.put(47, std::make_shared<int32_t>(47));
+    lru.put(47, 47);
     EXPECT_EQ(2, lru.get_cache_size());
     EXPECT_EQ(44, lru.get_cache_value(44));
     EXPECT_EQ(47, lru.get_cache_value(47));
