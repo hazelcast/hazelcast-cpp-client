@@ -8,7 +8,7 @@ on:
         description: Enable/Disable test stage
         default: true
   schedule:
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
 
 jobs:
   nightly-Windows:
@@ -17,41 +17,41 @@ jobs:
       matrix:
         vc_boost:
           - name: msvc-2019_boost_1730
-            image: 'windows-2019'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.73.0/source/boost_1_73_0.tar.gz'
-            boost_archive_name: 'boost_1_73_0.tar.gz'
-            boost_folder_name: 'boost_1_73_0'
+            image: "windows-2019"
+            boost_url: "https://boostorg.jfrog.io/artifactory/main/release/1.73.0/source/boost_1_73_0.tar.gz"
+            boost_archive_name: "boost_1_73_0.tar.gz"
+            boost_folder_name: "boost_1_73_0"
             boost_include_folder: 'C:\Boost\include\boost-1_73'
           - name: msvc-2019_boost_1800
-            image: 'windows-2019'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
-            boost_archive_name: 'boost_1_80_0.tar.gz'
-            boost_folder_name: 'boost_1_80_0'
+            image: "windows-2019"
+            boost_url: "https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz"
+            boost_archive_name: "boost_1_80_0.tar.gz"
+            boost_folder_name: "boost_1_80_0"
             boost_include_folder: 'C:\Boost\include\boost-1_80'
           - name: msvc-2022_boost_1780
-            image: 'windows-2022'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
-            boost_archive_name: 'boost_1_78_0.tar.gz'
-            boost_folder_name: 'boost_1_78_0'
+            image: "windows-2022"
+            boost_url: "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz"
+            boost_archive_name: "boost_1_78_0.tar.gz"
+            boost_folder_name: "boost_1_78_0"
             boost_include_folder: 'C:\Boost\include\boost-1_78'
           - name: msvc-2022_boost_1800
-            image: 'windows-2022'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
-            boost_archive_name: 'boost_1_80_0.tar.gz'
-            boost_folder_name: 'boost_1_80_0'
+            image: "windows-2022"
+            boost_url: "https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz"
+            boost_archive_name: "boost_1_80_0.tar.gz"
+            boost_folder_name: "boost_1_80_0"
             boost_include_folder: 'C:\Boost\include\boost-1_80'
           - name: msvc-latest_boost_1800
-            image: 'windows-latest'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
-            boost_archive_name: 'boost_1_80_0.tar.gz'
-            boost_folder_name: 'boost_1_80_0'
+            image: "windows-latest"
+            boost_url: "https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz"
+            boost_archive_name: "boost_1_80_0.tar.gz"
+            boost_folder_name: "boost_1_80_0"
             boost_include_folder: 'C:\Boost\include\boost-1_80'
         arch:
           - cmake: Win32
             choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
             address_model: 32
           - cmake: x64
-            choco_options: ''
+            choco_options: ""
             address_model: 64
         build_type:
           - Debug
@@ -63,9 +63,9 @@ jobs:
             name: Shared
         with_openssl:
           - toggle: OFF
-            name: 'noSSL'
+            name: "noSSL"
           - toggle: ON
-            name: 'SSL'
+            name: "SSL"
 
     runs-on: ${{ matrix.vc_boost.image }}
     env:
@@ -81,23 +81,23 @@ jobs:
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.1-tests.jar
 
       - name: Install SysInternals
         run: |
-            Invoke-WebRequest `
-                "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
-                -OutFile "sys-internals.zip" `
-                -UserAgent "''"
-            Expand-Archive sys-internals.zip -DestinationPath sys-internals
-            ls sys-internals
+          Invoke-WebRequest `
+              "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
+              -OutFile "sys-internals.zip" `
+              -UserAgent "''"
+          Expand-Archive sys-internals.zip -DestinationPath sys-internals
+          ls sys-internals
 
       - uses: nick-fields/retry@v2
         name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
         with:
           timeout_minutes: 10
-          max_attempts : 4
+          max_attempts: 4
           retry_on: error
           command: |
             choco install openssl ${{ matrix.arch.choco_options }}
@@ -108,12 +108,12 @@ jobs:
       - name: Cache Boost Version
         id: cache-boost
         uses: actions/cache@v3
-        with:          
+        with:
           path: C:\Boost
           key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
           restore-keys: |
             ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
-            
+
       - if: ${{ steps.cache-boost.outputs.cache-hit != 'true' }}
         name: Install Boost
         run: |
@@ -132,12 +132,12 @@ jobs:
       - name: Cache Thrift Version
         id: cache-thrift
         uses: actions/cache@v3
-        with:          
+        with:
           path: C:\Thrift
           key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
           restore-keys: |
             ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
-            
+
       - if: ${{ steps.cache-thrift.outputs.cache-hit != 'true' }}
         name: Install Thrift
         run: |
