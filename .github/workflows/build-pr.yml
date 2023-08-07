@@ -5,15 +5,13 @@
 # It also runs code-coverage and upload the result as an artifact.
 
 name: Build&Test PR
-on: 
-
+on:
   # automatic on every pull request
   pull_request_target:
 
-  # manual (for community PRs that we want to force-run here)  
+  # manual (for community PRs that we want to force-run here)
   workflow_dispatch:
     inputs:
-
       # the PR number eg 712
       pr_number:
         description: Enter guest PR number to run test & coverage on it.
@@ -25,15 +23,14 @@ on:
         required: true
 env:
   boost_version: 1.78.0
-  boost_archive_name: 'boost_1_78_0.tar.gz'
-  boost_folder_name: 'boost_1_78_0'
+  boost_archive_name: "boost_1_78_0.tar.gz"
+  boost_folder_name: "boost_1_78_0"
   boost_include_folder: 'C:\Boost\include\boost-1_78'
-  boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
+  boost_url: "https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz"
   thrift_version: 0.13.0
   run_tests: false
-  
-jobs:
 
+jobs:
   # test hazelcast membership
   test-membership:
     name: Test Hazelcast Membership
@@ -58,21 +55,20 @@ jobs:
           organization-name: hazelcast
           member-name: ${{ github.actor }}
           token: ${{ secrets.GH_TOKEN }}
-          
+
   # ensure we are an Hazelcast organization member OR manually running
   ensure-membership:
     name: Ensure Membership
     runs-on: ubuntu-latest
     needs: test-membership
     strategy:
-      fail-fast: false    
-      
+      fail-fast: false
+
     if: needs.test-membership.outputs.is-hazelcast == 'true' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Report
         shell: bash
-        run: echo "User ${{ github.event.pull_request.head.repo.owner.login }} is a member of the Hazelcast organization"          
-
+        run: echo "User ${{ github.event.pull_request.head.repo.owner.login }} is a member of the Hazelcast organization"
 
   # get
   get-refs:
@@ -99,12 +95,12 @@ jobs:
             echo "ref=refs/pull/${{ github.event.pull_request.number }}/merge" >> $GITHUB_OUTPUT
             echo "merged-ref=''" >> $GITHUB_OUTPUT
           fi
-          
+
   # run for code-coverage and upload the result as an artifact.
   code-coverage:
     runs-on: ubuntu-20.04
     needs: get-refs
-    
+
     name: Code Coverage
     steps:
       - name: Checkout code
@@ -116,10 +112,10 @@ jobs:
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl          
+          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh ${{ env.boost_version }}
@@ -164,7 +160,7 @@ jobs:
           name: coverage-report
           path: |
             coverage.info
-            coverage-html-reports 
+            coverage-html-reports
 
   Ubuntu-i386:
     needs: get-refs
@@ -176,7 +172,7 @@ jobs:
             warn_as_err: ON
           - type: Release
             warn_as_err: OFF
-            
+
         shared_libs:
           - toggle: OFF
             name: Static
@@ -185,9 +181,9 @@ jobs:
 
         with_openssl:
           - toggle: OFF
-            name: 'noSSL'
+            name: "noSSL"
           - toggle: ON
-            name: 'SSL'
+            name: "SSL"
 
     runs-on: ubuntu-latest
     container:
@@ -217,7 +213,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
 
       - name: Install Boost
         run: |
@@ -256,13 +252,11 @@ jobs:
 
           ./scripts/test-unix.sh
 
-
   Ubuntu-x86_64:
     needs: get-refs
     strategy:
       fail-fast: false
       matrix:
-
         build_type:
           - type: Debug
             warn_as_err: ON
@@ -297,7 +291,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
 
       - name: Install Boost
         run: |
@@ -343,10 +337,10 @@ jobs:
       matrix:
         arch:
           - cmake: Win32
-            choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
+            choco_options: "--x86"
             address_model: 32
           - cmake: x64
-            choco_options: ''
+            choco_options: ""
             address_model: 64
         build_type:
           - Debug
@@ -358,11 +352,11 @@ jobs:
             name: Shared
         with_openssl:
           - toggle: OFF
-            name: 'noSSL'
+            name: "noSSL"
           - toggle: ON
-            name: 'SSL'
+            name: "SSL"
 
-    runs-on: 'windows-latest'
+    runs-on: "windows-latest"
     env:
       JOB_NAME: win_${{ matrix.arch.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     name: win-${{ matrix.arch.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
@@ -376,21 +370,21 @@ jobs:
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.1-tests.jar
       - name: Install SysInternals
         run: |
-            Invoke-WebRequest `
-                "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
-                -OutFile "sys-internals.zip" `
-                -UserAgent "''"
-            Expand-Archive sys-internals.zip -DestinationPath sys-internals
-            ls sys-internals
+          Invoke-WebRequest `
+              "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
+              -OutFile "sys-internals.zip" `
+              -UserAgent "''"
+          Expand-Archive sys-internals.zip -DestinationPath sys-internals
+          ls sys-internals
       - uses: nick-fields/retry@v2
         name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
         with:
           timeout_minutes: 10
-          max_attempts : 4
+          max_attempts: 4
           retry_on: error
           command: |
             choco install openssl ${{ matrix.arch.choco_options }}
@@ -463,7 +457,7 @@ jobs:
           path: |
             **/*.pdb
             *.dmp
-            
+
   macOS-x86_64:
     needs: get-refs
     strategy:
@@ -483,9 +477,9 @@ jobs:
 
         with_openssl:
           - toggle: OFF
-            name: 'noSSL'
+            name: "noSSL"
           - toggle: ON
-            name: 'SSL'
+            name: "SSL"
 
     runs-on: macos-latest
 
@@ -505,7 +499,7 @@ jobs:
           ./scripts/install-boost.sh ${{env.boost_version}}
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
 
       - name: Build & Install
         env:
