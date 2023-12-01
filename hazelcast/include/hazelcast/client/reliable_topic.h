@@ -312,6 +312,7 @@ private:
                                "Terminating MessageListener %1% on topic: %2%. "
                                "Reason: HazelcastInstance is shutting down") %
                              id_ % name_));
+                    break;
                 case protocol::DISTRIBUTED_OBJECT_DESTROYED:
                     HZ_LOG(logger_,
                            finest,
@@ -320,6 +321,7 @@ private:
                                "Terminating MessageListener %1% on topic: %2%. "
                                "Reason: Topic is destroyed") %
                              id_ % name_));
+                    break;
                 default:
                     HZ_LOG(logger_,
                            warning,
