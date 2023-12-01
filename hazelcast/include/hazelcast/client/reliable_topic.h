@@ -341,6 +341,7 @@ private:
             if (topic_ptr) {
                 topic_ptr->runners_map_.remove(id_);
             }
+            listener_.on_cancel_();
             return true;
         }
 
