@@ -37,7 +37,8 @@ publish_with_non_default_config()
 
     auto topic = client.get_reliable_topic(topicName).get();
 
-    topic->publish(std::string("My first message with non-default config")).get();
+    topic->publish(std::string("My first message with non-default config"))
+      .get();
 }
 
 int
