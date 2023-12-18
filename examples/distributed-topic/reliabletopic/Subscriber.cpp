@@ -17,7 +17,9 @@
 #include <hazelcast/client/topic/reliable_listener.h>
 
 hazelcast::client::topic::reliable_listener
-make_listener(std::atomic<int>& n_received_messages, int64_t sequence_id = -1)
+make_listener(std::atomic<int>& n_received_messages,
+              const std::string& topic_name,
+              int64_t sequence_id = -1)
 {
     using namespace hazelcast::client::topic;
 
@@ -27,13 +29,17 @@ make_listener(std::atomic<int>& n_received_messages, int64_t sequence_id = -1)
 
           auto object = message.get_message_object().get<std::string>();
           if (object) {
-              std::cout << "[GenericListener::onMessage] Received message: "
-                        << *object << " for topic:" << message.get_name();
+              std::cout << "[on_received] Received message: " << *object
+                        << " for topic: " << message.get_name() << std::endl;
           } else {
-              std::cout << "[GenericListener::onMessage] Received message with "
-                           "NULL object for topic:"
-                        << message.get_name();
+              std::cout << "[on_received] Received message with "
+                           "NULL object for topic: "
+                        << message.get_name() << std::endl;
           }
+      })
+      .on_cancel([topic_name]() {
+          std::cout << "[on_cancel] Cancelling listener for topic "
+                    << topic_name << std::endl;
       });
 }
 
@@ -46,8 +52,8 @@ listen_with_default_config()
     auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{ 0 };
-    auto listenerId =
-      topic->add_message_listener(make_listener(numberOfMessagesReceived));
+    auto listenerId = topic->add_message_listener(
+      make_listener(numberOfMessagesReceived, topicName));
 
     std::cout << "Registered the listener with listener id:" << listenerId
               << std::endl;
@@ -79,8 +85,8 @@ listen_with_config()
     auto topic = client.get_reliable_topic(topicName).get();
 
     std::atomic<int> numberOfMessagesReceived{ 0 };
-    auto listenerId =
-      topic->add_message_listener(make_listener(numberOfMessagesReceived));
+    auto listenerId = topic->add_message_listener(
+      make_listener(numberOfMessagesReceived, topicName));
 
     std::cout << "Registered the listener with listener id:" << listenerId
               << std::endl;

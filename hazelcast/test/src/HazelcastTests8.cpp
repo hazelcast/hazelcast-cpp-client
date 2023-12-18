@@ -1142,12 +1142,14 @@ protected:
           : latch1(latch_count)
           , latch_for_seq_id(latch_count)
           , latch_for_termination(latch_count)
+          , latch_for_cancel(latch_count)
           , start_sequence(start_sequence)
         {}
 
         boost::latch latch1;
         boost::latch latch_for_seq_id;
         boost::latch latch_for_termination;
+        boost::latch latch_for_cancel;
         int64_t start_sequence;
         std::vector<topic::message> messages;
         std::vector<int64_t> seq_ids;
@@ -1178,16 +1180,24 @@ protected:
             return true;
         };
 
+        auto cancel_handler =
+          [state]() -> bool {
+            state->latch_for_cancel.count_down();
+            return true;
+        };
+
         if (is_lvalue) {
             topic::reliable_listener tmp_listener(false, state->start_sequence);
             return tmp_listener.on_received(std::move(on_received))
               .on_store_sequence_id(std::move(on_store_sequence_id))
-              .terminate_on_exception(std::move(terminate_on_exception));
+              .terminate_on_exception(std::move(terminate_on_exception))
+              .on_cancel(std::move(cancel_handler));
         } else {
             return topic::reliable_listener(false, state->start_sequence)
               .on_received(std::move(on_received))
               .on_store_sequence_id(std::move(on_store_sequence_id))
-              .terminate_on_exception(std::move(terminate_on_exception));
+              .terminate_on_exception(std::move(terminate_on_exception))
+              .on_cancel(std::move(cancel_handler));
         }
     }
 
@@ -1248,6 +1258,8 @@ TEST_F(ReliableTopicTest, testBasics)
     // remove listener
     ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
     ASSERT_FALSE(topic_->remove_message_listener(listener_id_));
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_cancel);
 }
 
 TEST_F(ReliableTopicTest, testListenerSequence)
@@ -1273,6 +1285,8 @@ TEST_F(ReliableTopicTest, testListenerSequence)
 
     // remove listener
     ASSERT_TRUE(topic_->remove_message_listener(listener_id_));
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_cancel);
 }
 
 TEST_F(ReliableTopicTest, removeMessageListener_whenExisting)
@@ -1295,6 +1309,8 @@ TEST_F(ReliableTopicTest, removeMessageListener_whenExisting)
     ASSERT_EQ(boost::cv_status::timeout,
               state->latch1.wait_for(boost::chrono::seconds(2)));
     ASSERT_EQ(0, state->messages.size());
+
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_cancel);
 }
 
 TEST_F(ReliableTopicTest, removeMessageListener_whenNonExisting)
@@ -1556,6 +1572,7 @@ TEST_F(ReliableTopicTest, testTerminateCase)
     ASSERT_NO_THROW(topic_->publish(item).get());
 
     ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_cancel);
 
     // listener is removed when the exception occured
 }
@@ -1573,6 +1590,7 @@ TEST_F(ReliableTopicTest, testTerminateCaseForLValue)
     ASSERT_NO_THROW(topic_->publish(item).get());
 
     ASSERT_OPEN_EVENTUALLY(state->latch_for_termination);
+    ASSERT_OPEN_EVENTUALLY(state->latch_for_cancel);
 
     // listener is removed when the exception occured
 }
