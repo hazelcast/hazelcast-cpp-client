@@ -1910,15 +1910,26 @@ A reliable_topic usage example is shown below.
 hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
   using namespace hazelcast::client::topic;
   
-  return reliable_listener(false, sequence_id).on_received([&n_received_messages](message &&message){
-      ++n_received_messages;
-      auto object = message.get_message_object().get<std::string>();
-      if (object) {
-        std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name() << std::endl;
-      } else {
-        std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" << message.get_name() << std::endl;
-      }
-  });
+  return reliable_listener(false, sequence_id)
+              .on_received([&n_received_messages](message &&message){
+                  ++n_received_messages;
+                  auto object = message.get_message_object().get<std::string>();
+                  if (object) {
+                      std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.get_name() << std::endl;
+                  } else {
+                      std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" << message.get_name() << std::endl;
+                  }
+              })
+              .on_store_sequence_id([](int64_t seq_no) {
+                  std::cout << "The last received item sequence id is : " << seq_no << std::endl;
+              })
+              .terminate_on_exception([state](const exception::iexception& par_exception) -> bool{
+                  std::cout << "terminate_on_exception is called" << std::endl;
+                  return true;
+              })
+              .on_cancel([]() {
+                  std::cout << "on_cancel is called" << std::endl;
+              });
 }
 
 void listen_with_default_config() {
@@ -1972,6 +1983,7 @@ void listen_with_config() {
   client.shutdown().get();
 }
 ```
+The above examples composes a reliable topic listener which listens to new messages and increment received message count atomically. The listener also prints a debug message for each callback function available in the listener. `on_store_sequence_id` callback function is used to store the last received message sequence id. `terminate_on_exception` gives the user a chance to evaluate the exception and continue or terminate the listener. `on_cancel` callback function is a way to notify the user before the listener is cancelled for any reason so that user can take necessary action. The first example uses a default config for the reliable topic and the second one uses a custom configuration.
 
 ### 7.4.9 Using pn_counter
 
