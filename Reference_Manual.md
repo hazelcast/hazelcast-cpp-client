@@ -1983,7 +1983,7 @@ void listen_with_config() {
   client.shutdown().get();
 }
 ```
-The above examples composes a reliable topic listener which listens to new messages and increment received message count atomically. The listener also prints a debug message for each callback function available in the listener. `on_store_sequence_id` callback function is used to store the last received message sequence id. `terminate_on_exception` gives the user a chance to evaluate the exception and continue or terminate the listener. `on_cancel` callback function is a way to notify the user before the listener is cancelled for any reason so that user can take necessary action. The first example uses a default config for the reliable topic and the second one uses a custom configuration.
+The above examples compose a reliable topic listener that listens to the new messages and increments the received message count atomically. The listener also prints a debug message for each callback function available in the listener. The `on_store_sequence_id` callback function is used to store the last received message's sequence ID. The `terminate_on_exception` function allows you to evaluate the exception and continue or terminate the listener. The `on_cancel` callback function notifies you before the listener is cancelled for any reason so that you can take the necessary action. The first example uses a default configuration for the reliable topic, and the second one uses a custom configuration.
 
 ### 7.4.9 Using pn_counter
 
