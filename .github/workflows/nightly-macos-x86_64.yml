@@ -8,7 +8,7 @@ on:
         description: Enable/Disable test stage
         default: true
   schedule:
-    - cron: "0 0 * * *"
+    - cron: '0 0 * * *'
 
 jobs:
   nightly-macOS-x86_64:
@@ -16,8 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         boost:
-          - version: 1.71.0
-          - version: 1.76.0
+            - version: 1.71.0
+            - version: 1.76.0
 
         build_type:
           - type: Debug
@@ -33,9 +33,9 @@ jobs:
 
         with_openssl:
           - toggle: OFF
-            name: "noSSL"
+            name: 'noSSL'
           - toggle: ON
-            name: "SSL"
+            name: 'SSL'
 
     runs-on: macos-latest
 
@@ -56,7 +56,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
 
       - name: Build & Install
         env:
