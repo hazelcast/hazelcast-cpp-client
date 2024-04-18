@@ -11,7 +11,6 @@ set SNAPSHOT_REPO=https://oss.sonatype.org/content/repositories/snapshots
 set RELEASE_REPO=http://repo1.maven.apache.org/maven2
 set ENTERPRISE_RELEASE_REPO=https://repository.hazelcast.com/release/
 set ENTERPRISE_SNAPSHOT_REPO=https://repository.hazelcast.com/snapshot/
-set MAVEN_DEPENDENCY_PLUGIN_VERSION=3.6.0
 
 if not "x%HZ_VERSION:SNAPSHOT=%"=="x%HZ_VERSION%" (
     set REPO=%SNAPSHOT_REPO%

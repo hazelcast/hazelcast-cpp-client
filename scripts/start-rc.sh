@@ -43,7 +43,6 @@ SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
 RELEASE_REPO="http://repo1.maven.apache.org/maven2"
 ENTERPRISE_RELEASE_REPO="https://repository.hazelcast.com/release/"
 ENTERPRISE_SNAPSHOT_REPO="https://repository.hazelcast.com/snapshot/"
-MAVEN_DEPENDENCY_PLUGIN_VERSION=3.6.0
 
 if [[ ${HZ_VERSION} == *-SNAPSHOT ]]
 then
