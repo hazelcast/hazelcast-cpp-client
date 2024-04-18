@@ -166,11 +166,37 @@ public:
         return std::move(*this);
     }
 
+    /**
+     * Set an handler function which will be called when the listener is
+     * cancelled.
+     *
+     * \param h a `void` function object with no parameters
+     */
+    template<typename Handler,
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
+    reliable_listener& on_cancel(Handler&& h) &
+    {
+        on_cancel_ = std::move(h);
+        return *this;
+    }
+
+    /**
+     * \copydoc reliable_listener::on_cancel
+     */
+    template<typename Handler,
+             typename = util::enable_if_rvalue_ref_trait<Handler&&>>
+    reliable_listener&& on_cancel(Handler&& h) &&
+    {
+        on_cancel(std::move(h));
+        return std::move(*this);
+    }
+
 private:
     using received_handler_t = std::function<void(message&&)>;
     using store_sequence_id_handler_t = std::function<void(int64_t)>;
     using exception_handler_t =
       std::function<bool(const exception::iexception&)>;
+    using on_cancel_handler_t = std::function<void()>;
 
     bool loss_tolerant_;
     int64_t initial_sequence_id_;
@@ -180,6 +206,7 @@ private:
     exception_handler_t terminal_{ [](const exception::iexception&) {
         return false;
     } };
+    on_cancel_handler_t on_cancel_{util::noop<>};
 };
 
 } // namespace topic

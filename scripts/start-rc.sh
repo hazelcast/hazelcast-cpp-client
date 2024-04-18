@@ -5,6 +5,21 @@ function version_greater_equal()
     printf '%s\n%s\n' "$2" "$1" | sort --check=quiet --version-sort
 }
 
+function downloadFromMaven()
+{
+  remoteRepository=$1
+  artifact=$2
+  echo "Downloading ${artifact} from remote repository: ${remoteRepository}"
+  mvn -q dependency:get -Dtransitive=false -DremoteRepositories=${remoteRepository} -Dartifact=${artifact}
+  mvn -q dependency:copy -Dartifact=${artifact} -DoutputDirectory=.
+  if [ $? -ne 0 ]; then
+    echo "Failed download to download ${artifact} from remote repository: ${remoteRepository}"
+    exit 1
+  else
+    echo "Downloaded ${artifact} from remote repository: ${remoteRepository}"
+  fi
+}
+
 function cleanup {
     echo "cleanup is being performed."
     if [ "x${rcPid}" != "x" ]
@@ -42,23 +57,13 @@ fi
 if [ -f "hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar" ]; then
     echo "remote controller already exist, not downloading from maven."
 else
-    echo "Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}"
-    mvn -q org.apache.maven.plugins:maven-dependency-plugin:${MAVEN_DEPENDENCY_PLUGIN_VERSION}:get -Dtransitive=false -DremoteRepositories=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION} -Ddest=hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar
-    if [ $? -ne 0 ]; then
-        echo "Failed download remote-controller jar com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}"
-        exit 1
-    fi
+    downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}"
 fi
 
 if [ -f "hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar" ]; then
     echo "hazelcast-test.jar already exists, not downloading from maven."
 else
-    echo "Downloading: hazelcast test jar com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests"
-    mvn -q org.apache.maven.plugins:maven-dependency-plugin:${MAVEN_DEPENDENCY_PLUGIN_VERSION}:get -Dtransitive=false -DremoteRepositories=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests -Ddest=hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar
-    if [ $? -ne 0 ]; then
-        echo "Failed download hazelcast test jar com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests"
-        exit 1
-    fi
+    downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests"
 fi
 
 version_greater_equal ${HZ_VERSION} 4.2.0
@@ -73,24 +78,14 @@ if [[ ${INCLUDE_SQL} -eq "1" ]]; then
     if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
         echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
     else
-        echo "Downloading: hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
-        mvn -q org.apache.maven.plugins:maven-dependency-plugin:${MAVEN_DEPENDENCY_PLUGIN_VERSION}:get -Dtransitive=false -DremoteRepositories=${SNAPSHOT_REPO} -Dartifact=com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar -Ddest=hazelcast-sql-${HZ_VERSION}.jar
-        if [ $? -ne 0 ]; then
-            echo "Failed download hazelcast-sql-${HZ_VERSION}.jar com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
-            exit 1
-        fi
+        downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
     fi
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
 echo "hazelcast-enterprise.jar already exists, not downloading from maven."
 else
-    echo "Downloading: hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
-    mvn -q org.apache.maven.plugins:maven-dependency-plugin:${MAVEN_DEPENDENCY_PLUGIN_VERSION}:get -Dtransitive=false -DremoteRepositories=${ENTERPRISE_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} -Ddest=hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar
-    if [ $? -ne 0 ]; then
-        echo "Failed download hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
-        exit 1
-    fi
+    downloadFromMaven ${ENTERPRISE_REPO} "com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar"
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar" ]; then
