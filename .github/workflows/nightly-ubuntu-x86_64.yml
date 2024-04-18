@@ -51,9 +51,15 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Read Hazelcast Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: hazelcast-config
+        with:
+          config: ${{ github.workspace }}/.github/hazelcast-config.yml
+
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise--tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ steps.hazelcast-config.outputs['hazelcast-version'] }}-tests.jar
 
       - name: Install Boost
         run: |
