@@ -119,7 +119,7 @@ jobs:
           sudo apt-get install -y net-tools libssl-dev gdb gcovr curl          
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh ${{ env.boost_version }}
@@ -217,7 +217,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
 
       - name: Install Boost
         run: |
@@ -297,7 +297,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
 
       - name: Install Boost
         run: |
@@ -376,7 +376,7 @@ jobs:
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.1-tests.jar
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.7-tests.jar
       - name: Install SysInternals
         run: |
             Invoke-WebRequest `
@@ -505,7 +505,7 @@ jobs:
           ./scripts/install-boost.sh ${{env.boost_version}}
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
 
       - name: Build & Install
         env:

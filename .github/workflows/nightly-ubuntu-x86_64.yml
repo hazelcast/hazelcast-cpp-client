@@ -8,7 +8,7 @@ on:
         description: Enable/Disable test stage
         default: true
   schedule:
-    - cron: "0 20 * * *"
+    - cron: '0 20 * * *'
 
 jobs:
   nightly-Ubuntu-x86_64:
@@ -53,7 +53,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.1-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise--tests.jar
 
       - name: Install Boost
         run: |
