@@ -77,11 +77,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+
+      - name: Read Hazelcast Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: hazelcast-config
+        with:
+          config: ${{ github.workspace }}/.github/hazelcast-config.yml
+          
       - name: Download hazelcast-enterprise-tests.jar
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.7-tests.jar
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ steps.hazelcast-config.outputs['hazelcast-version'] }}-tests.jar
 
       - name: Install SysInternals
         run: |

@@ -113,13 +113,19 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Hazelcast Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: hazelcast-config
+        with:
+          config: ${{ github.workspace }}/.github/hazelcast-config.yml
+
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
           sudo apt-get install -y net-tools libssl-dev gdb gcovr curl          
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ steps.hazelcast-config.outputs['hazelcast-version'] }}-tests.jar
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh ${{ env.boost_version }}
@@ -217,7 +223,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ steps.hazelcast-config.outputs['hazelcast-version'] }}-tests.jar
 
       - name: Install Boost
         run: |
@@ -295,9 +301,15 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Hazelcast Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: hazelcast-config
+        with:
+          config: ${{ github.workspace }}/.github/hazelcast-config.yml
+
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ steps.hazelcast-config.outputs['hazelcast-version'] }}-tests.jar
 
       - name: Install Boost
         run: |
@@ -372,11 +384,17 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Hazelcast Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: hazelcast-config
+        with:
+          config: ${{ github.workspace }}/.github/hazelcast-config.yml
+
       - name: Download hazelcast-enterprise-tests.jar
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.7-tests.jar
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ steps.hazelcast-config.outputs['hazelcast-version'] }}-tests.jar
       - name: Install SysInternals
         run: |
             Invoke-WebRequest `
@@ -499,13 +517,19 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Hazelcast Config
+        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d
+        id: hazelcast-config
+        with:
+          config: ${{ github.workspace }}/.github/hazelcast-config.yml
+
       - name: Install Dependencies
         run: |
           brew install openssl@1.1 thrift curl
           ./scripts/install-boost.sh ${{env.boost_version}}
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.7-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ steps.hazelcast-config.outputs['hazelcast-version'] }}-tests.jar
 
       - name: Build & Install
         env:
