@@ -45,13 +45,11 @@ public:
         auto element_type = static_cast<contains_nullable_list_type>(type);
         switch (element_type) {
             case contains_nullable_list_type::NULL_ONLY:
-                for (std::size_t i = 0; i < count; ++i) {
-                    res[i] = boost::none;
-                }
+                std::fill(res.begin(), res.end(), boost::none);
                 break;
             case contains_nullable_list_type::NOT_NULL_ONLY:
-                for (std::size_t i = 0; i < count; ++i) {
-                    res[i] = msg.get<T>();
+                for (auto& elem : res) {
+                    elem = msg.get<T>();
                 }
                 break;
             default:

@@ -40,14 +40,15 @@ public:
 private:
     template<typename T>
     static std::vector<boost::any> to_vector_of_any(
-      std::vector<boost::optional<T>> values)
+      const std::vector<boost::optional<T>>& values)
     {
-        auto size = values.size();
-        std::vector<boost::any> vector_of_any(size);
-        for (std::size_t i = 0; i < size; ++i) {
-            auto& value = values[i];
+        std::vector<boost::any> vector_of_any;
+        vector_of_any.reserve(values.size());
+        for (const auto& value : values) {
             if (value) {
-                vector_of_any[i] = std::move(*value);
+                vector_of_any.emplace_back(*value);
+            } else {
+                vector_of_any.emplace_back();
             }
         }
         return vector_of_any;

@@ -31,7 +31,10 @@ class ClientMessageBuilder
 public:
     ClientMessageBuilder(MessageHandler& handler)
       : message_handler_(handler)
-    {}
+      , is_final_frame_(false)
+      , remaining_frame_bytes_(0)
+    {
+    }
 
     virtual ~ClientMessageBuilder() = default;
 
@@ -40,53 +43,67 @@ public:
      */
     bool on_data(util::ByteBuffer& buffer)
     {
-        bool isCompleted = false;
-
         if (!message_) {
-            message_.reset(new ClientMessage());
-            is_final_frame_ = false;
-            remaining_frame_bytes_ = 0;
+            initialize_new_message();
         }
 
-        if (message_) {
-            message_->fill_message_from(
-              buffer, is_final_frame_, remaining_frame_bytes_);
-            isCompleted = is_final_frame_ && remaining_frame_bytes_ == 0;
-            if (isCompleted) {
-                // MESSAGE IS COMPLETE HERE
-                message_->wrap_for_read();
-                isCompleted = true;
-
-                if (message_->is_flag_set(
-                      ClientMessage::UNFRAGMENTED_MESSAGE)) {
-                    // MESSAGE IS COMPLETE HERE
-                    message_handler_.handle_client_message(std::move(message_));
-                } else {
-                    message_->rd_ptr(ClientMessage::FRAGMENTATION_ID_OFFSET);
-                    auto fragmentation_id = message_->get<int64_t>();
-                    auto flags = message_->get_header_flags();
-                    message_->drop_fragmentation_frame();
-                    if (ClientMessage::is_flag_set(
-                          flags, ClientMessage::BEGIN_FRAGMENT_FLAG)) {
-                        // put the message into the partial messages list
-                        add_to_partial_messages(fragmentation_id, message_);
-                    } else {
-                        // This is the intermediate frame. Append at the
-                        // previous message buffer
-                        append_existing_partial_message(
-                          fragmentation_id,
-                          message_,
-                          ClientMessage::is_flag_set(
-                            flags, ClientMessage::END_FRAGMENT_FLAG));
-                    }
-                }
-            }
+        if (message_ && process_message(buffer)) {
+            finalize_message();
+            return true;
         }
 
-        return isCompleted;
+        return false;
     }
 
 private:
+    void initialize_new_message()
+    {
+        message_.reset(new ClientMessage());
+        is_final_frame_ = false;
+        remaining_frame_bytes_ = 0;
+    }
+
+    /**
+     * @returns true if message is processed, false otherwise
+     */
+    bool process_message(util::ByteBuffer& buffer)
+    {
+        message_->fill_message_from(
+          buffer, is_final_frame_, remaining_frame_bytes_);
+        return is_final_frame_ && remaining_frame_bytes_ == 0;
+    }
+
+    void finalize_message()
+    {
+        message_->wrap_for_read();
+        if (message_->is_flag_set(ClientMessage::UNFRAGMENTED_MESSAGE)) {
+            message_handler_.handle_client_message(std::move(message_));
+        } else {
+            handle_fragmented_message();
+        }
+    }
+
+    void handle_fragmented_message()
+    {
+        message_->rd_ptr(ClientMessage::FRAGMENTATION_ID_OFFSET);
+        auto fragmentation_id = message_->get<int64_t>();
+        auto flags = message_->get_header_flags();
+        message_->drop_fragmentation_frame();
+        if (ClientMessage::is_flag_set(flags,
+                                       ClientMessage::BEGIN_FRAGMENT_FLAG)) {
+            // put the message into the partial messages list
+            add_to_partial_messages(fragmentation_id, message_);
+        } else {
+            // This is the intermediate frame. Append at the
+            // previous message buffer
+            append_existing_partial_message(
+              fragmentation_id,
+              message_,
+              ClientMessage::is_flag_set(flags,
+                                         ClientMessage::END_FRAGMENT_FLAG));
+        }
+    }
+
     void add_to_partial_messages(int64_t fragmentation_id,
                                  std::unique_ptr<ClientMessage>& message)
     {
