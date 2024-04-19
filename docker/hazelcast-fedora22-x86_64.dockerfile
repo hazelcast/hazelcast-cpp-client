@@ -1,7 +1,7 @@
 FROM fedora:22
 
 RUN dnf groups install -y "Development Tools"
-RUN dnf install -y gcc-c++ openssl-devel cmake tar wget bzip2 java-1.8.0-openjdk
+RUN dnf install -y gcc-c++ openssl-devel cmake tar wget bzip2 java-17-openjdk
 
 # install boost
 RUN wget --quiet https://boostorg.jfrog.io/artifactory/main/release/1.72.0/source/boost_1_72_0.tar.bz2 && tar xjf boost_1_72_0.tar.bz2 && rm boost_1_72_0.tar.bz2 && cd boost_1_72_0 && ./bootstrap.sh && ./b2 address-model=64 --with-thread --with-chrono install && cd .. && rm -rf boost_1_72_0
