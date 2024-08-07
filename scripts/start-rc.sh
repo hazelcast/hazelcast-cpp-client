@@ -10,8 +10,7 @@ function downloadFromMaven()
   remoteRepository=$1
   artifact=$2
   echo "Downloading ${artifact} from remote repository: ${remoteRepository}"
-  mvn -q dependency:get -Dtransitive=false -DremoteRepositories=${remoteRepository} -Dartifact=${artifact}
-  mvn -q dependency:copy -Dartifact=${artifact} -DoutputDirectory=.
+  mvn -q dependency:2.10:get -Dtransitive=false -DremoteRepositories=${remoteRepository} -Dartifact=${artifact} -Ddest=.
   if [ $? -ne 0 ]; then
     echo "Failed download to download ${artifact} from remote repository: ${remoteRepository}"
     exit 1
@@ -35,7 +34,7 @@ set +x
 
 trap cleanup EXIT
 
-HZ_VERSION=${HZ_VERSION:-5.3.0-SNAPSHOT}
+HZ_VERSION=${HZ_VERSION:-5.5.0}
 HAZELCAST_TEST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION=0.8-SNAPSHOT
@@ -77,14 +76,14 @@ if [[ ${INCLUDE_SQL} -eq "1" ]]; then
     if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
         echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
     else
-        downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
+        downloadFromMaven ${REPO} "com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
     fi
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
 echo "hazelcast-enterprise.jar already exists, not downloading from maven."
 else
-    downloadFromMaven ${ENTERPRISE_REPO} "com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar"
+    downloadFromMaven ${ENTERPRISE_REPO} "com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar" ]; then

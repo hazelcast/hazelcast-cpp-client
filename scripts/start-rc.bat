@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 if "%HZ_VERSION%"=="" (
-    set HZ_VERSION=5.3.0-SNAPSHOT
+    set HZ_VERSION=5.3.7
 )
 set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
@@ -26,7 +26,7 @@ if exist "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar" (
     echo "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar already exist, not downloading from maven."
 ) else (
     echo "Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION%"
-    call mvn -q dependency:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION% -Ddest=hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:%MAVEN_DEPENDENCY_PLUGIN_VERSION%:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION% -Ddest=hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar || (
         echo "Failed download remote-controller jar com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION%" 
         exit /b 1
     )
