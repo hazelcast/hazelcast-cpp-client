@@ -27,3 +27,5 @@ runs:
         else
           echo "is-member=false" >> $GITHUB_OUTPUT
         fi
+      with:
+        GH_TOKEN: ${{ github.token }}
