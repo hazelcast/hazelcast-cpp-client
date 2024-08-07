@@ -22,7 +22,7 @@ runs:
     - id: test-membership
       shell: bash
       run: |
-        if [[ gh api --silent "orgs/${{ inputs.organization-name }}/members/${{ inputs.member-name }}" ]] ; then
+        if gh api --silent "orgs/${{ inputs.organization-name }}/members/${{ inputs.member-name }}"; then
           echo "is-member=true" >> $GITHUB_OUTPUT
         else
           echo "is-member=false" >> $GITHUB_OUTPUT
