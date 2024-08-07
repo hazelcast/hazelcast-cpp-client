@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 if "%HZ_VERSION%"=="" (
-    set HZ_VERSION=5.3.0-SNAPSHOT
+    set HZ_VERSION=5.3.7
 )
 set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
