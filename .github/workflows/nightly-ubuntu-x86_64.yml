@@ -57,6 +57,8 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Install Boost
         run: |

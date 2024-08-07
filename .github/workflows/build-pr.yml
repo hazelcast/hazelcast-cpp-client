@@ -123,6 +123,9 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh ${{ env.boost_version }}
@@ -229,6 +232,8 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Install Boost
         run: |
@@ -311,6 +316,8 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Install Boost
         run: |
@@ -391,6 +398,9 @@ jobs:
         shell: pwsh
         run: |
           gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Install SysInternals
         run: |
             Invoke-WebRequest `
@@ -522,6 +532,8 @@ jobs:
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Build & Install
         env:
