@@ -78,14 +78,14 @@ if [[ ${INCLUDE_SQL} -eq "1" ]]; then
     if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
         echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
     else
-        downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
+        downloadFromMaven ${REPO} "com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
     fi
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
 echo "hazelcast-enterprise.jar already exists, not downloading from maven."
 else
-    downloadFromMaven ${ENTERPRISE_REPO} "com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}:jar"
+    downloadFromMaven ${ENTERPRISE_REPO} "com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
 fi
 
 if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}-tests.jar" ]; then
