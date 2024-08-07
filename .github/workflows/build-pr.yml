@@ -57,6 +57,7 @@ jobs:
         with:
           organization-name: hazelcast
           member-name: ${{ github.actor }}
+        env:
           GH_TOKEN: ${{ github.token }}
           
   # ensure we are an Hazelcast organization member OR manually running
