@@ -10,8 +10,9 @@ function downloadFromMaven()
   remoteRepository=$1
   artifact=$2
   echo "Downloading ${artifact} from remote repository: ${remoteRepository}"
-  mvn -q dependency:get -Dtransitive=false -DremoteRepositories=${remoteRepository} -Dartifact=${artifact}
-  mvn -q dependency:copy -Dartifact=${artifact} -DoutputDirectory=.
+  local MAVEN_DEPENDENCY_PLUGIN_VERSION=3.6.0
+  mvn -q org.apache.maven.plugins:maven-dependency-plugin:"${MAVEN_DEPENDENCY_PLUGIN_VERSION}":get -Dtransitive=false -DremoteRepositories=${remoteRepository} -Dartifact=${artifact}
+  mvn -q org.apache.maven.plugins:maven-dependency-plugin:"${MAVEN_DEPENDENCY_PLUGIN_VERSION}":copy -Dartifact=${artifact} -DoutputDirectory=.
   if [ $? -ne 0 ]; then
     echo "Failed download to download ${artifact} from remote repository: ${remoteRepository}"
     exit 1

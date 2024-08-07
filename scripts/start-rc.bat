@@ -11,6 +11,7 @@ set SNAPSHOT_REPO=https://oss.sonatype.org/content/repositories/snapshots
 set RELEASE_REPO=http://repo1.maven.apache.org/maven2
 set ENTERPRISE_RELEASE_REPO=https://repository.hazelcast.com/release/
 set ENTERPRISE_SNAPSHOT_REPO=https://repository.hazelcast.com/snapshot/
+set MAVEN_DEPENDENCY_PLUGIN_VERSION=3.6.0
 
 if not "x%HZ_VERSION:SNAPSHOT=%"=="x%HZ_VERSION%" (
     set REPO=%SNAPSHOT_REPO%
@@ -26,7 +27,7 @@ if exist "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar" (
     echo "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar already exist, not downloading from maven."
 ) else (
     echo "Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION%"
-    call mvn -q dependency:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION% -Ddest=hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:%MAVEN_DEPENDENCY_PLUGIN_VERSION%:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION% -Ddest=hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar || (
         echo "Failed download remote-controller jar com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION%" 
         exit /b 1
     )
@@ -36,7 +37,7 @@ if exist  "hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar" (
     echo "hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast test jar com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests"
-    call mvn -q dependency:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:%MAVEN_DEPENDENCY_PLUGIN_VERSION%:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar || (
         echo "Failed download hazelcast test jar com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests"
         exit /b 1
     )
@@ -46,7 +47,7 @@ if exist  "hazelcast-sql-%HZ_VERSION%.jar" (
     echo "hazelcast-sql-%HZ_VERSION%.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast-sql-%HZ_VERSION%.jar com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar"
-    call mvn -q dependency:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar -Ddest=hazelcast-sql-%HZ_VERSION%.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:%MAVEN_DEPENDENCY_PLUGIN_VERSION%:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar -Ddest=hazelcast-sql-%HZ_VERSION%.jar || (
         echo "Failed download hazelcast test jar com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar"
         exit /b 1
     )
@@ -56,7 +57,7 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar" (
     echo "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%"
-    call mvn -q dependency:get -Dtransitive=false -DremoteRepositories=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION% -Ddest=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:%MAVEN_DEPENDENCY_PLUGIN_VERSION%:get -Dtransitive=false -DremoteRepositories=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION% -Ddest=hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar || (
         echo "Failed download hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:%HAZELCAST_ENTERPRISE_VERSION%"
         exit /b 1
     )
