@@ -58,7 +58,7 @@ jobs:
           ./a
           rm a test.c
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - name: Read Java Config
         run: cat ${{ github.workspace }}/.github/java-config.env >> $GITHUB_ENV

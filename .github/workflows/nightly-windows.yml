@@ -75,7 +75,7 @@ jobs:
       (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Read Hazelcast Config
         run: cat ${{ github.workspace }}/.github/config.env >> $GITHUB_ENV
