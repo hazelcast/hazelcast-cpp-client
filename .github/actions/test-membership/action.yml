@@ -22,8 +22,4 @@ runs:
     - id: test-membership
       shell: bash
       run: |
-        gh api "orgs/${{ inputs.organization-name }}/members/${{ inputs.member-name }}"
-
         echo "is-member=true" >> $GITHUB_OUTPUT
-      env:
-        GH_TOKEN: ${{ github.token }}
