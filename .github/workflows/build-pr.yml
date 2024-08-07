@@ -122,7 +122,7 @@ jobs:
           sudo apt-get install -y net-tools libssl-dev gdb gcovr curl          
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://github.com/hazelcast/private-test-artifacts/raw/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+          gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh ${{ env.boost_version }}
@@ -229,7 +229,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://github.com/hazelcast/private-test-artifacts/raw/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+          gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
       - name: Install Boost
         run: |
@@ -312,7 +312,7 @@ jobs:
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://github.com/hazelcast/private-test-artifacts/raw/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+          gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
       - name: Install Boost
         run: |
@@ -526,7 +526,7 @@ jobs:
           ./scripts/install-boost.sh ${{env.boost_version}}
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://github.com/hazelcast/private-test-artifacts/raw/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+          gh api --header "Accept: application/vnd.github.v3.raw" "repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
       - name: Build & Install
         env:
