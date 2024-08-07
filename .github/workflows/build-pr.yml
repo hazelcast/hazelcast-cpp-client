@@ -49,7 +49,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
           submodules: false
 
       - name: Test
@@ -58,7 +57,6 @@ jobs:
         with:
           organization-name: hazelcast
           member-name: ${{ github.actor }}
-          token: ${{ secrets.GH_TOKEN }}
           
   # ensure we are an Hazelcast organization member OR manually running
   ensure-membership:
@@ -112,7 +110,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Read Hazelcast Config
         run: cat ${{ github.workspace }}/.github/config.env >> $GITHUB_ENV
@@ -217,7 +214,6 @@ jobs:
         uses: actions/checkout@v1
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Read Hazelcast Config
         run: cat ${{ github.workspace }}/.github/config.env >> $GITHUB_ENV
@@ -306,7 +302,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Read Hazelcast Config
         run: cat ${{ github.workspace }}/.github/config.env >> $GITHUB_ENV
@@ -386,7 +381,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Read Hazelcast Config
         run: cat ${{ github.workspace }}/.github/config.env >> $GITHUB_ENV
@@ -515,7 +509,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Read Hazelcast Config
         run: cat ${{ github.workspace }}/.github/config.env >> $GITHUB_ENV
