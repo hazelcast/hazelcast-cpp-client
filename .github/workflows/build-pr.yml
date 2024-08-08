@@ -228,6 +228,15 @@ jobs:
       - name: Read Config
         run: cat .github/config.env >> $GITHUB_ENV
   
+      # Can't use `setup-java` as the runner is too old to support the node runtime
+      # https://github.com/actions/setup-node/issues/922
+      #- name: Setup JDK
+      #  uses: actions/setup-java@v4
+      #  with:
+      #    java-version: ${{ env.JAVA_VERSION }}
+      #    distribution: ${{ env.JAVA_DISTRIBUTION }}
+      #    architecture: 'x86'
+
       # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
       - name: Install Maven
         run: |
@@ -247,9 +256,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
           architecture: 'x86'
-
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
