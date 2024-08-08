@@ -240,11 +240,17 @@ jobs:
       # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
       - name: Install Maven
         run: |
+          # Downnload
           mvn_version=3.9.8
           install_dir="/opt/maven"
           mkdir ${install_dir}
-          curl -fsSL https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.8/apache-maven-3.9.8-bin.tar.gz | tar zx --strip-components=1 -C ${install_dir}
-          PATH=$PATH:${install_dir}/bin:$PATH
+          curl --fail --silent --show-error --location https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${mvn_version}/apache-maven-${mvn_version}-bin.tar.gz | tar --extract --gzip --strip-components=1 -C ${install_dir}
+
+          # Add to `PATH`, reload
+          echo 'export PATH=${install_dir}/bin:$PATH' | tee --append ~/.profile
+          . ~/.profile
+
+          # Test
           mvn --version
 
       - name: Download hazelcast-enterprise-tests.jar
