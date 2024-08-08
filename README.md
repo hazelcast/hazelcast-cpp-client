@@ -5,7 +5,6 @@
     <h2 align="center">Hazelcast C++ Client</h2>
 </p>
 
-
 <p align="center">
     <a href="https://hazelcastcommunity.slack.com/channels/cpp-client">
         <img src="https://img.shields.io/badge/slack-chat-green.svg" alt="Chat on Slack">
