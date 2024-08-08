@@ -243,10 +243,10 @@ jobs:
           # Add to `PATH`, reload
           # echo 'export PATH=${install_dir}/bin:$PATH' | tee --append ~/.profile
           echo "${install_dir}/bin" >> $GITHUB_PATH
-          . ~/.profile
-
-          # Test
+      - name: Test Maven
+        run: |
           mvn --version
+
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
