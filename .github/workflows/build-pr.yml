@@ -207,7 +207,7 @@ jobs:
     name: ubuntu-i386-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
-      # Install Java via apt, can't use `setup-java` as the runner image is too old to support a compatible
+      # Install Java via apt, can't use `setup-java` as the runner image is too old to support a compatible Node installation
       # Newest available is Node 8, but Node 20 is required
       # https://github.com/actions/setup-node/issues/922
       - name: Install Necessary Packages
