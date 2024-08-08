@@ -245,7 +245,7 @@ jobs:
           mkdir ${install_dir}
           curl --fail --silent --show-error --location https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${mvn_version}/apache-maven-${mvn_version}-bin.tar.gz | tar --extract --gzip --strip-components=1 -C ${install_dir}
 
-          echo 'export PATH=${install_dir}/bin:$PATH' | sudo tee --append ~/.profile >
+          echo 'export PATH=${install_dir}/bin:$PATH' | tee --append ~/.profile
           source ~/.profile
 
           mvn --version
