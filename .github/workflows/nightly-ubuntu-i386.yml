@@ -64,7 +64,7 @@ jobs:
         run: cat .github/java-config.env >> $GITHUB_ENV
   
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v2
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
