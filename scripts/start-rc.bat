@@ -78,6 +78,9 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar" (
 )
 
 
+REM necessary arguments for Java 9+
+SET JAVA_OPTS=%JAVA_OPTS%%=%--add-exports java.base/jdk.internal.ref=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED
+
 set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-sql-%HZ_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%-tests.jar"
 echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 
