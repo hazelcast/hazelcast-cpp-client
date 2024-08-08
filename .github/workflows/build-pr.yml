@@ -200,7 +200,7 @@ jobs:
       - name: Install Necessary Packages
         run: |
           apt-get update
-          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-11-jre-headless gdb curl
+          apt-get install -y build-essential cmake curl git libssl-dev net-tools gdb curl
 
       - name: Make sure the target architecture is 32 bit
         run: |
@@ -214,6 +214,15 @@ jobs:
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
+
+      - name: Read Java Config
+        run: cat .github/java-config.env >> $GITHUB_ENV
+  
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
