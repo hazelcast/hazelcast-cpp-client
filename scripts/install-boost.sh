@@ -16,5 +16,5 @@ curl --silent -Lo $TARBALL_NAME.tar.gz https://boostorg.jfrog.io/artifactory/mai
 tar xzf $TARBALL_NAME.tar.gz
 cd $TARBALL_NAME
 ./bootstrap.sh
-sudo ./b2 --with-thread --with-chrono install
+./b2 --with-thread --with-chrono install
 cd ..
