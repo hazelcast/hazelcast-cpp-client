@@ -223,6 +223,7 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
+          architecture: 'x86'
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
