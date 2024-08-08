@@ -241,7 +241,8 @@ jobs:
           curl --fail --silent --show-error --location https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${mvn_version}/apache-maven-${mvn_version}-bin.tar.gz | tar --extract --gzip --strip-components=1 -C ${install_dir}
 
           # Add to `PATH`, reload
-          echo 'export PATH=${install_dir}/bin:$PATH' | tee --append ~/.profile
+          # echo 'export PATH=${install_dir}/bin:$PATH' | tee --append ~/.profile
+          echo "${install_dir}/bin" >> $GITHUB_PATH
           . ~/.profile
 
           # Test
