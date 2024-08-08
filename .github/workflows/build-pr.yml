@@ -253,14 +253,6 @@ jobs:
           # Test
           mvn --version
 
-      # Can't use `setup-java` as the runner is too old to support the node runtime
-      # https://github.com/actions/setup-node/issues/922
-      - name: Setup JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          architecture: 'x86'
-
       - name: Download hazelcast-enterprise-tests.jar
         run: |
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
