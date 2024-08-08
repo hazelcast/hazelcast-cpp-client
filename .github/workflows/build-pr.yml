@@ -402,6 +402,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Read Config
+        shell: bash
         run: cat .github/config.env >> $GITHUB_ENV
 
       - name: Download hazelcast-enterprise-tests.jar
