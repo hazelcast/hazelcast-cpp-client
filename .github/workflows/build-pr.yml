@@ -210,7 +210,7 @@ jobs:
       - name: Install Necessary Packages
         run: |
           apt-get update
-          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-17-jre-headless gdb curl nodejs
+          apt-get install -y build-essential cmake curl git libssl-dev net-tools openjdk-17-jre-headless gdb curl
 
       - name: Make sure the target architecture is 32 bit
         run: |
@@ -228,12 +228,24 @@ jobs:
       - name: Read Config
         run: cat .github/config.env >> $GITHUB_ENV
   
+      # Can't use `setup-java` as the runner is too old to support the node runtime
+      # https://github.com/actions/setup-node/issues/922
       #- name: Setup JDK
       #  uses: actions/setup-java@v4
       #  with:
       #    java-version: ${{ env.JAVA_VERSION }}
       #    distribution: ${{ env.JAVA_DISTRIBUTION }}
       #    architecture: 'x86'
+
+      # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
+      - name: Install Maven
+        run: |
+          mvn_version=3.9.8
+          install_dir="/opt/maven"
+          mkdir ${install_dir}
+          curl -fsSL https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.8/apache-maven-3.9.8-bin.tar.gz | tar zx --strip-components=1 -C ${install_dir}
+          PATH=$PATH:${install_dir}/bin:$PATH
+          mvn --version
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |
