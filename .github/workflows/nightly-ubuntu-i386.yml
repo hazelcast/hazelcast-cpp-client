@@ -46,6 +46,9 @@ jobs:
       (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{matrix.boost.version}},${{ matrix.with_openssl.name }})
 
     steps:
+      # Install Java via apt, can't use `setup-java` as the runner image is too old to support a compatible
+      # Newest available is Node 8, but Node 20 is required
+      # https://github.com/actions/setup-node/issues/922
       - name: Install Necessary Packages
         run: |
           apt-get update
@@ -62,13 +65,6 @@ jobs:
 
       - name: Read Config
         run: cat .github/config.env >> $GITHUB_ENV
-  
-      #- name: Setup JDK
-      #  uses: actions/setup-java@v4
-      #  with:
-      #    java-version: ${{ env.JAVA_VERSION }}
-      #    distribution: ${{ env.JAVA_DISTRIBUTION }}
-      #    architecture: 'x86'
 
       - name: Download hazelcast-enterprise-tests.jar
         run: |

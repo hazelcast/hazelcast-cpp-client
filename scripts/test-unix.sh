@@ -7,8 +7,6 @@
 # - BUILD_DIR : build directory
 #
 
-set -x
-
 function cleanup {
     echo "cleanup is being performed."
     if [ "x${rcPid}" != "x" ]
