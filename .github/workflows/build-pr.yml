@@ -206,7 +206,7 @@ jobs:
 
     name: ubuntu-i386-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
-    step:
+    steps:
       - name: Checkout Code
         uses: actions/checkout@v1
         with:
