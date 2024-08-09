@@ -72,7 +72,17 @@ jobs:
           mvn_version=3.9.8
           install_dir="/opt/maven"
           mkdir ${install_dir}
-          curl --fail --silent --show-error --location https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${mvn_version}/apache-maven-${mvn_version}-bin.tar.gz | tar --extract --gzip --strip-components=1 --directory ${install_dir}
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${mvn_version}/apache-maven-${mvn_version}-bin.tar.gz | 
+          tar \
+            --extract \
+            --gzip \
+            --strip-components=1 \
+            --directory ${install_dir}
           echo "${install_dir}/bin" >> $GITHUB_PATH
 
       - name: Test Maven
