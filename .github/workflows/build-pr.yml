@@ -243,7 +243,7 @@ jobs:
       # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
       - name: Install Maven
         run: |
-          mvn_version=3.9.8
+          mvn_version=3.9.9
           install_dir="/opt/maven"
           mkdir ${install_dir}
           curl \
