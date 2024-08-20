@@ -51,8 +51,9 @@ jobs:
       - name: Read Config
         run: cat .github/config.env >> $GITHUB_ENV
 
-      # Install Java via apt, can't use `setup-java` as the runner image is too old to support a compatible Node installation
-      # Newest available is Node 8, but Node 20 is required
+      # Install Java via `apt`, can't use the `setup-java` action on this image
+      # `setup-java` is written in TypeScript and requires a compatible Node installation
+      # Newest available version for this image is Node 8, which is too old for any version to run against
       # https://github.com/actions/setup-node/issues/922
       - name: Install Necessary Packages
         run: |
