@@ -1390,7 +1390,7 @@ invocation_might_contain_compact_data::invocation_might_contain_compact_data(
   std::string source,
   const spi::impl::ClientInvocation& invocation)
   : hazelcast_{
-      move(source),
+      std::move(source),
       boost::str(
         boost::format(
           "The invocation %1% might contain Compact serialized "
