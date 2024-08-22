@@ -544,7 +544,7 @@ protected:
     void for_each_row(std::shared_ptr<sql::sql_result> result, Fns&&... fn)
     {
         for_each_row_until(std::numeric_limits<int64_t>::max(),
-                           move(result),
+                           std::move(result),
                            std::forward<Fns>(fn)...);
     }
 
