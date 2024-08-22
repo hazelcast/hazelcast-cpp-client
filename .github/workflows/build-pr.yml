@@ -251,7 +251,7 @@ jobs:
             --silent \
             --show-error \
             --location \
-            https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apa${{ env.MAVEN_VERSION }}n_version}-bin.tar.gz | 
+            https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | 
           tar \
             --extract \
             --gzip \
