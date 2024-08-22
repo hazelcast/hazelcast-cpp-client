@@ -1191,7 +1191,7 @@ data::data()
 data::data(std::vector<byte> buffer, schemas_t s)
   : data_(std::move(buffer))
   , cached_hash_value_(-1)
-  , schemas_will_be_replicated_{ move(s) }
+  , schemas_will_be_replicated_{ std::move(s) }
 {
     size_t size = data_.size();
     if (size > 0 && size < data::DATA_OVERHEAD) {

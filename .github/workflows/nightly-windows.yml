@@ -77,11 +77,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Read Config
+        run: cat .github/config.env >> $GITHUB_ENV
+
       - name: Download hazelcast-enterprise-tests.jar
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
       - name: Install SysInternals
         run: |

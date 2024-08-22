@@ -1520,7 +1520,7 @@ private:
             pimpl::schema_writer& writer =
               boost::get<pimpl::schema_writer>(writer_or_schema_);
 
-            writer.add_field(move(field_name), kind);
+            writer.add_field(std::move(field_name), kind);
         }
 
         return *this;
