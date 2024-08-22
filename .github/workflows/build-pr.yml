@@ -113,19 +113,29 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Config
+        run: cat .github/config.env >> $GITHUB_ENV
+
       - name: Install Necessary Packages
         run: |
           sudo apt-get update
           sudo apt-get install -y net-tools libssl-dev gdb gcovr curl          
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
       - name: Install Boost
         run: |
           sudo ./scripts/install-boost.sh ${{ env.boost_version }}
       - name: Install Thrift
         run: |
           sudo ./scripts/install-thrift.sh ${{ env.thrift_version }}
+  
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
       - name: Build
         env:
           BUILD_DIR: build
@@ -197,10 +207,23 @@ jobs:
     name: ubuntu-i386-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+        with:
+          ref: ${{ needs.get-refs.outputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Read Config
+        run: cat .github/config.env >> $GITHUB_ENV
+
+      # Install Java via `apt`, can't use the `setup-java` action on this image
+      # `setup-java` is written in TypeScript and requires a compatible Node installation
+      # Newest available version for this image is Node 8, which is too old for any version to run against
+      # https://github.com/actions/setup-node/issues/922
       - name: Install Necessary Packages
         run: |
           apt-get update
-          apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-11-jre-headless gdb curl
+          apt-get install -y build-essential cmake curl git libssl-dev net-tools openjdk-${{ env.JAVA_VERSION }}-jre-headless gdb curl
 
       - name: Make sure the target architecture is 32 bit
         run: |
@@ -215,9 +238,34 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Config
+        run: cat .github/config.env >> $GITHUB_ENV
+
+      # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
+      - name: Install Maven
+        run: |
+          install_dir="/opt/maven"
+          mkdir ${install_dir}
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | 
+          tar \
+            --extract \
+            --gzip \
+            --strip-components=1 \
+            --directory ${install_dir}
+          echo "${install_dir}/bin" >> $GITHUB_PATH
+
+      - name: Test Maven
+        run: |
+          mvn --version
+
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
       - name: Install Boost
         run: |
@@ -295,9 +343,12 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Config
+        run: cat .github/config.env >> $GITHUB_ENV
+
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
       - name: Install Boost
         run: |
@@ -306,6 +357,12 @@ jobs:
       - name: Install Thrift
         run: |
           sudo ./scripts/install-thrift.sh ${{env.thrift_version}}
+  
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Build & Install
         env:
@@ -372,11 +429,15 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Config
+        shell: bash
+        run: cat .github/config.env >> $GITHUB_ENV
+
       - name: Download hazelcast-enterprise-tests.jar
         shell: pwsh
         run: |
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
       - name: Install SysInternals
         run: |
             Invoke-WebRequest `
@@ -427,6 +488,13 @@ jobs:
           mkdir C:\Thrift\bin
           cd ../..
           Remove-Item thrift-0.13.0 -Recurse -Force
+  
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
       - name: Build & Install
         env:
           BUILD_DIR: build
@@ -489,7 +557,7 @@ jobs:
 
     runs-on: macos-latest
 
-    name: macOS-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }} ,${{ matrix.with_openssl.name }})
+    name: macOS-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     env:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
@@ -499,13 +567,23 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Read Config
+        run: cat .github/config.env >> $GITHUB_ENV
+
       - name: Install Dependencies
         run: |
           brew install openssl@1.1 thrift curl
-          ./scripts/install-boost.sh ${{env.boost_version}}
+          sudo ./scripts/install-boost.sh ${{env.boost_version}}
+  
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+    
       - name: Download hazelcast-enterprise-tests.jar
         run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-5.3.0-SNAPSHOT-tests.jar
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
       - name: Build & Install
         env:
