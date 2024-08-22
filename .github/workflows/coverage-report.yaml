@@ -33,6 +33,12 @@ jobs:
       - name: Install Thrift
         run: |
           sudo ./scripts/install-thrift.sh 0.13.0
+  
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Build
         env:
