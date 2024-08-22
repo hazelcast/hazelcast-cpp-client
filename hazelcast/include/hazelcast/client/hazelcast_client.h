@@ -71,7 +71,7 @@ namespace client {
  * Our C++ client is completely open source and the source code is freely
  * available at https://github.com/hazelcast/hazelcast-cpp-client . Please feel
  * free to contribute. You can join our community at
- * https://groups.google.com/forum/#!forum/hazelcast where you can find answers
+ * https://hazelcastcommunity.slack.com/channels/cpp-client where you can find answers
  * to your questions.
  */
 class HAZELCAST_API hazelcast_client
