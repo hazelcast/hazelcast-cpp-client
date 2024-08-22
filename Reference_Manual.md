@@ -3843,8 +3843,6 @@ You can use the following channels for your questions and development/usage issu
 
 * This repository by opening an issue.
 * [Hazelcast Community Slack - C++ Client Channel](https://hazelcastcommunity.slack.com/channels/cpp-client)
-* Google Groups: https://groups.google.com/forum/#!forum/hazelcast
-* Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
 
 # 10. Contributing
 
