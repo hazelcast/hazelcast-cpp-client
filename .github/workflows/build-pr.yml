@@ -169,7 +169,7 @@ jobs:
           # generate HTML views
           genhtml coverage.info --output-directory=coverage-html-reports
       - name: Upload HTML views as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: |
@@ -524,7 +524,7 @@ jobs:
           $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
           .\scripts\test-windows.bat
           $dump | wait-process
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: dump-${{ env.JOB_NAME }}
