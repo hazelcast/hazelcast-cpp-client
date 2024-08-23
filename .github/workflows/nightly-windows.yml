@@ -95,7 +95,7 @@ jobs:
             Expand-Archive sys-internals.zip -DestinationPath sys-internals
             ls sys-internals
 
-      - uses: nick-fields/retry@v2
+      - uses: nick-fields/retry@v3
         name: Install OpenSSL
         if: matrix.with_openssl.toggle == 'ON'
         with:
