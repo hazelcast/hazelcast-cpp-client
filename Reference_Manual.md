@@ -2831,7 +2831,7 @@ Now you need to configure the `hazelcast.xml` to add your factory as shown below
 </hazelcast>
 ```
 
-The code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.com/hazelcast/latest/computing/entry-processor.html) in the Hazelcast Reference Manual.
+The code that runs on the entries is implemented in Java on the server side. The client side entry processor is used to specify which entry processor should be called. For more details about the Java implementation of the entry processor, see the [Entry Processor section](https://docs.hazelcast.com/hazelcast/latest/data-structures/entry-processor) in the Hazelcast Reference Manual.
 
 After the above implementations and configuration are done and you start the server where your library is added to its `CLASSPATH`, you can use the entry processor in the `imap` functions. See the following example.
 
@@ -3843,8 +3843,6 @@ You can use the following channels for your questions and development/usage issu
 
 * This repository by opening an issue.
 * [Hazelcast Community Slack - C++ Client Channel](https://hazelcastcommunity.slack.com/channels/cpp-client)
-* Google Groups: https://groups.google.com/forum/#!forum/hazelcast
-* Stack Overflow: https://stackoverflow.com/questions/tagged/hazelcast
 
 # 10. Contributing
 
