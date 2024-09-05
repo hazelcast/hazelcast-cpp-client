@@ -39,6 +39,7 @@ runs:
     - name: Install Dependencies
       shell: ${{ env.shell }}
       run: |
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
         brew install openssl@1.1 thrift curl
 
     - name: Setup JDK

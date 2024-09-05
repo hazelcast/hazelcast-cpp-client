@@ -50,6 +50,11 @@ runs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
 
+    - name: Install Boost
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+
     - name: Install Thrift
       shell: ${{ env.shell }}
       run: |

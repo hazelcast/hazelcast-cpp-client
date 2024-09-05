@@ -80,6 +80,11 @@ runs:
       run: |
         mvn --version
 
+    - name: Install Boost
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+
     - name: Install Thrift
       shell: ${{ env.shell }}
       run: |
