@@ -16,6 +16,7 @@ jobs:
 
       - uses: ./.github/actions/coverage-report
         with:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: 1.78.0
           THRIFT_VERSION: 0.13.0
           RUN_TESTS: true

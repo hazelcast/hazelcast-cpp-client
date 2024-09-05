@@ -44,56 +44,22 @@ jobs:
       (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{matrix.boost.version}}, ${{ matrix.with_openssl.name }})
 
     steps:
-      - name: Install Necessary Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb curl
-
       - uses: actions/checkout@v2
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Install Boost
-        run: |
-          sudo ./scripts/install-boost.sh ${{matrix.boost.version}}
-
-      - name: Install Thrift
-        run: |
-          sudo ./scripts/install-thrift.sh 0.13.0
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          INSTALL: ON
+      - uses: ./.github/actions/ubuntu-x86_64
+        with:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ matrix.boost.version }}
+          THRIFT_VERSION: 0.13.0
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-        run: |
-          ./scripts/build-unix.sh                                          \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}             \
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination   \
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}         \
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}             \
-              -DBUILD_TESTS=ON                                             \
-              -DBUILD_EXAMPLES=OFF
-
-      - name: Test
-        if: ${{ inputs.run_tests || github.event_name == 'schedule' }}
-        env:
-          BUILD_DIR: build
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          RUN_TESTS: ${{ inputs.run_tests || github.event_name == 'schedule' }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ulimit -c unlimited
-          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
-          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
-
-          ./scripts/test-unix.sh
 
       - name: Verify Installation
         env:
