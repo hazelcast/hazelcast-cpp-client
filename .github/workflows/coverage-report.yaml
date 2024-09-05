@@ -7,74 +7,22 @@ on:
 
 jobs:
   coverage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     name: Create and upload coverage
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Install Necessary Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl
-
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Install Boost
-        run: |
-          sudo ./scripts/install-boost.sh 1.78.0
-
-      - name: Install Thrift
-        run: |
-          sudo ./scripts/install-thrift.sh 0.13.0
-
-      - name: Build
-        env:
-          BUILD_DIR: build
-          COVERAGE: ON
-        run: |
-          ./scripts/build-unix.sh                                          \
-              -DCMAKE_BUILD_TYPE=Debug                                     \
-              -DBUILD_SHARED_LIBS=ON                                       \
-              -DWITH_OPENSSL=ON                                            \
-              -DBUILD_TESTS=ON                                             \
-              -DBUILD_EXAMPLES=OFF
-
-      - name: Test
-        env:
-          BUILD_DIR: build
+      - uses: ./.github/actions/coverage-report
+        with:
+          BOOST_VERSION: 1.78.0
+          THRIFT_VERSION: 0.13.0
+          RUN_TESTS: true
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ulimit -c unlimited
-          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
-          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
-          ./scripts/test-unix.sh
-
-      - name: Collect coverage info
-        run: |
-          # collect and list coverage info
-          lcov --capture --directory . --no-external -o coverage.info \
-               --include "`pwd`/hazelcast/*" --exclude "`pwd`/hazelcast/test/*"
-          lcov --list coverage.info
-          # generate HTML views
-          genhtml coverage.info --output-directory=coverage-html-reports
-
-      - name: Upload HTML views as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage-report
-          path: |
-            coverage.info
-            coverage-html-reports
 
       - name: Publish on Codecov
         uses: codecov/codecov-action@v2
