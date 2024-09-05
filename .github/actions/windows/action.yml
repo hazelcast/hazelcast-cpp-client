@@ -84,7 +84,7 @@ runs:
               "https://curl.se/ca/cacert.pem" `
               -OutFile "C:\cacert.pem"
 
-    - if: ${{ inputs.INSTALL_BOOST != 'true' }}
+    - if: ${{ inputs.INSTALL_BOOST != 'false' }}
       name: Install Boost
       shell: ${{ env.shell }}
       run: |
@@ -100,7 +100,7 @@ runs:
         cd ..
         Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
 
-    - if: ${{ inputs.INSTALL_THRIFT != 'true' }}
+    - if: ${{ inputs.INSTALL_THRIFT != 'false' }}
       name: Install Thrift
       shell: ${{ env.shell }}
       run: |

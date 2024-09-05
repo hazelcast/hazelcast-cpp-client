@@ -40,7 +40,6 @@ runs:
       shell: ${{ env.shell }}
       run: |
         brew install openssl@1.1 thrift curl
-        ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
 
     - name: Setup JDK
       uses: actions/setup-java@v4
@@ -48,34 +47,17 @@ runs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-    - name: Download hazelcast-enterprise-tests.jar
-      shell: ${{ env.shell }}
-      run: |
-        curl -H "Authorization: token ${{ inputs.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-    - name: Build & Install
-      env:
-        BUILD_DIR: build
-        INSTALL: ON
-        WARN_AS_ERR: ${{ inputs.WARN_AS_ERR}}
-      shell: ${{ env.shell }}
-      run: |
-        ./scripts/build-unix.sh                                         \
-            -DCMAKE_BUILD_TYPE=${{ inputs.BUILD_TYPE }}                 \
-            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
-            -DBUILD_SHARED_LIBS=${{ inputs.SHARED_LIBS_TOGGLE }}        \
-            -DWITH_OPENSSL=${{ inputs.OPENSSL_TOGGLE }}                 \
-            -DBUILD_TESTS=ON                                            \
-            -DBUILD_EXAMPLES=OFF
-
-    - name: Test
-      if: ${{ inputs.run_tests }}
-      env:
-        BUILD_DIR: build
+    - uses: ./.github/actions/unix
+      with:
+        GH_TOKEN: ${{ inputs.GH_TOKEN }}
+        BOOST_VERSION: ${{ inputs.BOOST_VERSION }}
+        THRIFT_VERSION: ${{ inputs.THRIFT_VERSION }}
+        WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
+        BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
+        SHARED_LIBS_TOGGLE: ${{ inputs.SHARED_LIBS_TOGGLE }}
+        OPENSSL_TOGGLE: ${{ inputs.OPENSSL_TOGGLE }}
+        RUN_TESTS: ${{ inputs.RUN_TESTS }}
         HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}
         AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
         HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-      shell: ${{ env.shell }}
-      run: |
-        ./scripts/test-unix.sh
