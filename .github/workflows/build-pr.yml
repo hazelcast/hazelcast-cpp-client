@@ -261,109 +261,29 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Read Config
-        shell: bash
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Download hazelcast-enterprise-tests.jar
-        shell: pwsh
-        run: |
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-      - name: Install SysInternals
-        run: |
-            Invoke-WebRequest `
-                "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
-                -OutFile "sys-internals.zip" `
-                -UserAgent "''"
-            Expand-Archive sys-internals.zip -DestinationPath sys-internals
-            ls sys-internals
-      - uses: nick-fields/retry@v2
-        name: Install OpenSSL
-        if: matrix.with_openssl.toggle == 'ON'
+      - uses: ./.github/actions/windows-x86_64
         with:
-          timeout_minutes: 10
-          max_attempts : 4
-          retry_on: error
-          command: |
-            choco install openssl ${{ matrix.arch.choco_options }}
-            Invoke-WebRequest `
-                "https://curl.se/ca/cacert.pem" `
-                -OutFile "C:\cacert.pem"
-      - name: Install Boost
-        run: |
-          Invoke-WebRequest `
-              "${{ env.boost_url }}" `
-              -OutFile "${{ env.boost_archive_name }}" `
-              -UserAgent "''"
-          tar xzf ${{ env.boost_archive_name }}
-          rm ${{ env.boost_archive_name }}
-          cd ${{ env.boost_folder_name }}
-          .\bootstrap.bat
-          .\b2 address-model=${{ matrix.arch.address_model }} --with-atomic --with-thread --with-chrono install
-          cd ..
-          Remove-Item ${{ env.boost_folder_name }} -Recurse -Force
-      - name: Install Thrift
-        run: |
-          Invoke-WebRequest `
-              "https://archive.apache.org/dist/thrift/0.13.0/thrift-0.13.0.tar.gz" `
-              -OutFile "thrift-0.13.0.tar.gz"
-          tar xzf thrift-0.13.0.tar.gz
-          rm thrift-0.13.0.tar.gz
-          cd thrift-0.13.0\build
-          cmake .. -A ${{ matrix.arch.cmake }} `
-                   -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
-                   -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
-                   -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
-                   -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=${{ env.boost_include_folder }} -DCMAKE_INSTALL_PREFIX=C:\Thrift
-          cmake --build . --target install --config ${{ matrix.build_type }}
-          mkdir C:\Thrift\bin
-          cd ../..
-          Remove-Item thrift-0.13.0 -Recurse -Force
-  
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
-          BIT_VERSION: ${{ matrix.arch.address_model }}
-          INSTALL: ON
-          CXXFLAGS: '/I C:\Thrift\include\'
-        run: |
-          .\scripts\build-windows.bat `
-              -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
-              -DBUILD_TESTS=ON `
-              -DBUILD_EXAMPLES=OFF
-      - name: Test
-        if: ${{ env.run_tests }}
-        env:
-          BUILD_DIR: build
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ env.boost_version }}
+          THRIFT_VERSION: ${{ env.thrift_version }}
+          BUILD_TYPE: ${{ matrix.build_type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
+          ARCH_ADDRESS_MODEL: ${{ matrix.arch.address_model }}
+          ARCH_CMAKE: ${{ matrix.arch.cmake }}
+          INSTALL_BOOST: true
+          BOOST_URL: ${{ env.boost_url }}
+          BOOST_ARCHIVE_NAME: ${{ env.boost_archive_name }}
+          BOOST_FOLDER_NAME: ${{ env.boost_folder_name }}
+          BOOST_INCLUDE_FOLDER: ${{ env.boost_include_folder }}
+          INSTALL_THRIFT: true
+          RUN_TESTS: ${{ env.run_tests }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-          SSL_CERT_FILE: 'C:\cacert.pem'
-        run: |
-          $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
-          .\scripts\test-windows.bat
-          $dump | wait-process
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: dump-${{ env.JOB_NAME }}
-          path: |
-            **/*.pdb
-            *.dmp
-            
+
   macOS-x86_64:
     needs: get-refs
     strategy:
@@ -399,7 +319,7 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - uses: ./.github/actions/ubuntu-x86_64
+      - uses: ./.github/actions/macos-x86_64
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}

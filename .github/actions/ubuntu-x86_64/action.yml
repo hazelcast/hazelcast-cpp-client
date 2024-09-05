@@ -52,12 +52,12 @@ runs:
     - name: Install Boost
       shell: ${{ env.shell }}
       run: |
-        sudo ./scripts/install-boost.sh ${{env.boost_version}}
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
 
     - name: Install Thrift
       shell: ${{ env.shell }}
       run: |
-        sudo ./scripts/install-thrift.sh ${{env.thrift_version}}
+        sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
 
     - name: Setup JDK
       uses: actions/setup-java@v4
@@ -81,7 +81,7 @@ runs:
             -DBUILD_EXAMPLES=OFF
 
     - name: Test
-      if: ${{ env.run_tests }}
+      if: ${{ inputs.run_tests }}
       env:
         BUILD_DIR: build
         HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}

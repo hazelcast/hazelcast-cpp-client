@@ -77,37 +77,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Download hazelcast-enterprise-tests.jar
-        shell: pwsh
-        run: |
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Install SysInternals
-        run: |
-            Invoke-WebRequest `
-                "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
-                -OutFile "sys-internals.zip" `
-                -UserAgent "''"
-            Expand-Archive sys-internals.zip -DestinationPath sys-internals
-            ls sys-internals
-
-      - uses: nick-fields/retry@v2
-        name: Install OpenSSL
-        if: matrix.with_openssl.toggle == 'ON'
-        with:
-          timeout_minutes: 10
-          max_attempts : 4
-          retry_on: error
-          command: |
-            choco install openssl ${{ matrix.arch.choco_options }}
-            Invoke-WebRequest `
-                "https://curl.se/ca/cacert.pem" `
-                -OutFile "C:\cacert.pem"
-
       - name: Cache Boost Version
         id: cache-boost
         uses: actions/cache@v3
@@ -116,21 +85,6 @@ jobs:
           key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
           restore-keys: |
             ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
-            
-      - if: ${{ steps.cache-boost.outputs.cache-hit != 'true' }}
-        name: Install Boost
-        run: |
-          Invoke-WebRequest `
-              "${{ matrix.vc_boost.boost_url }}" `
-              -OutFile "${{ matrix.vc_boost.boost_archive_name }}" `
-              -UserAgent "''"
-          tar xzf ${{ matrix.vc_boost.boost_archive_name }}
-          rm ${{ matrix.vc_boost.boost_archive_name }}
-          cd ${{ matrix.vc_boost.boost_folder_name }}
-          .\bootstrap.bat
-          .\b2 address-model=${{ matrix.arch.address_model }} --with-atomic --with-thread --with-chrono install
-          cd ..
-          Remove-Item ${{ matrix.vc_boost.boost_folder_name }} -Recurse -Force
 
       - name: Cache Thrift Version
         id: cache-thrift
@@ -140,64 +94,29 @@ jobs:
           key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
           restore-keys: |
             ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
-            
-      - if: ${{ steps.cache-thrift.outputs.cache-hit != 'true' }}
-        name: Install Thrift
-        run: |
-          Invoke-WebRequest `
-              "https://archive.apache.org/dist/thrift/0.13.0/thrift-0.13.0.tar.gz" `
-              -OutFile "thrift-0.13.0.tar.gz"
-          tar xzf thrift-0.13.0.tar.gz
-          rm thrift-0.13.0.tar.gz
-          cd thrift-0.13.0\build
-          cmake .. -A ${{ matrix.arch.cmake }} `
-                   -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
-                   -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
-                   -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
-                   -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=${{ matrix.vc_boost.boost_include_folder }} -DCMAKE_INSTALL_PREFIX=C:\Thrift
-          cmake --build . --target install --config ${{ matrix.build_type }}
-          mkdir C:\Thrift\bin
-          cd ../..
-          Remove-Item thrift-0.13.0 -Recurse -Force
 
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
-          BIT_VERSION: ${{ matrix.arch.address_model }}
-          INSTALL: ON
-          CXXFLAGS: '/I C:\Thrift\include\'
-        run: |
-          .\scripts\build-windows.bat `
-              -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
-              -DBUILD_TESTS=ON `
-              -DBUILD_EXAMPLES=OFF
-
-      - name: Test
-        if: ${{ inputs.run_tests || github.event_name == 'schedule' }}
-        env:
-          BUILD_DIR: build
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+      - uses: ./.github/actions/windows-x86_64
+        with:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ matrix.boost.version }}
+          THRIFT_VERSION: 0.13.0
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
+          ARCH_ADDRESS_MODEL: ${{ matrix.arch.address_model }}
+          ARCH_CMAKE: ${{ matrix.arch.cmake }}
+          INSTALL_BOOST: ${{ steps.cache-boost.outputs.cache-hit != 'true' }}
+          BOOST_URL: ${{ matrix.vc_boost.boost_url }}
+          BOOST_ARCHIVE_NAME: ${{ matrix.vc_boost.boost_archive_name }}
+          BOOST_FOLDER_NAME: ${{ matrix.vc_boost.boost_folder_name }}
+          BOOST_INCLUDE_FOLDER: ${{ matrix.vc_boost.boost_include_folder }}
+          INSTALL_THRIFT: ${{ steps.cache-thrift.outputs.cache-hit != 'true' }}
+          RUN_TESTS: ${{ inputs.run_tests || github.event_name == 'schedule' }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-          SSL_CERT_FILE: 'C:\cacert.pem'
-        run: |
-          $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
-          .\scripts\test-windows.bat
-          $dump | wait-process
-
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: dump-${{ env.JOB_NAME }}
-          path: |
-            **/*.pdb
-            *.dmp
 
       - name: Verify Installation
         run: |

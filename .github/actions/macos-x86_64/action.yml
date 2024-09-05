@@ -61,7 +61,7 @@ runs:
             -DBUILD_EXAMPLES=OFF
 
     - name: Test
-      if: ${{ env.run_tests }}
+      if: ${{ inputs.run_tests }}
       env:
         BUILD_DIR: build
         HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}

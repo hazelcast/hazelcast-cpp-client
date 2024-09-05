@@ -1,0 +1,168 @@
+name: Windows
+
+inputs:
+  GH_TOKEN:
+    required: true
+  BOOST_VERSION:
+    required: true
+  THRIFT_VERSION:
+    required: true
+  BUILD_TYPE:
+    required: true
+  SHARED_LIBS_TOGGLE:
+    required: true
+  OPENSSL_TOGGLE:
+    required: true
+  ARCH_CHOCO_OPTIONS:
+    required: true
+  ARCH_ADDRESS_MODEL:
+    required: true
+  ARCH_CMAKE:
+    required: true
+  INSTALL_BOOST:
+    required: true
+  INSTALL_THRIFT:
+    required: true
+  BOOST_URL:
+    required: true
+  BOOST_ARCHIVE_NAME:
+    required: true
+  BOOST_FOLDER_NAME:
+    required: true
+  BOOST_INCLUDE_FOLDER:
+    required: true
+  RUN_TESTS:
+    required: true
+  HAZELCAST_ENTERPRISE_KEY:
+    required: true
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
+    required: true
+
+env:
+  # Not possible to set this as a default
+  # https://github.com/orgs/community/discussions/46670
+  shell: pwsh
+
+runs:
+  using: composite
+  steps:
+    - name: Read Config
+      shell: bash
+      run: cat .github/config.env >> $GITHUB_ENV
+
+    - name: Download hazelcast-enterprise-tests.jar
+      shell: ${{ env.shell }}
+      run: |
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ inputs.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+
+    - name: Install SysInternals
+      shell: ${{ env.shell }}
+      run: |
+          Invoke-WebRequest `
+              "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
+              -OutFile "sys-internals.zip" `
+              -UserAgent "''"
+          Expand-Archive sys-internals.zip -DestinationPath sys-internals
+          ls sys-internals
+
+    - uses: nick-fields/retry@v2
+      name: Install OpenSSL
+      if: inputs.OPENSSL_TOGGLE == 'ON'
+      with:
+        timeout_minutes: 10
+        max_attempts : 4
+        retry_on: error
+        shell: ${{ env.shell }}
+        command: |
+          choco install openssl ${{ inputs.ARCH_CHOCO_OPTIONS }}
+          Invoke-WebRequest `
+              "https://curl.se/ca/cacert.pem" `
+              -OutFile "C:\cacert.pem"
+
+    - if: ${{ inputs.INSTALL_BOOST != 'true' }}
+      name: Install Boost
+      shell: ${{ env.shell }}
+      run: |
+        Invoke-WebRequest `
+            "${{ inputs.BOOST_URL }}" `
+            -OutFile "${{ inputs.BOOST_ARCHIVE_NAME }}" `
+            -UserAgent "''"
+        tar xzf ${{ inputs.BOOST_ARCHIVE_NAME }}
+        rm ${{ inputs.BOOST_ARCHIVE_NAME }}
+        cd ${{ inputs.BOOST_FOLDER_NAME }}
+        .\bootstrap.bat
+        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-atomic --with-thread --with-chrono install
+        cd ..
+        Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
+
+    - if: ${{ inputs.INSTALL_THRIFT != 'true' }}
+      name: Install Thrift
+      shell: ${{ env.shell }}
+      run: |
+        Invoke-WebRequest `
+            "https://archive.apache.org/dist/thrift/${{ inputs.THRIFT_VERSION }}/thrift-${{ inputs.THRIFT_VERSION }}.tar.gz" `
+            -OutFile "thrift-${{ inputs.THRIFT_VERSION }}.tar.gz"
+        tar xzf thrift-${{ inputs.THRIFT_VERSION }}.tar.gz
+        rm thrift-${{ inputs.THRIFT_VERSION }}.tar.gz
+        cd thrift-${{ inputs.THRIFT_VERSION }}\build
+        cmake .. -A ${{ inputs.ARCH_CMAKE }} `
+                  -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
+                  -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
+                  -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
+                  -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=${{ inputs.BOOST_INCLUDE_FOLDER }} -DCMAKE_INSTALL_PREFIX=C:\Thrift
+        cmake --build . --target install --config ${{ inputs.BUILD_TYPE }}
+        mkdir C:\Thrift\bin
+        cd ../..
+        Remove-Item thrift-${{ inputs.THRIFT_VERSION }} -Recurse -Force
+
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+    - name: Build & Install
+      env:
+        BUILD_DIR: build
+        BUILD_CONFIGURATION: ${{ inputs.BUILD_TYPE }}
+        BIT_VERSION: ${{ inputs.ARCH_ADDRESS_MODEL }}
+        INSTALL: ON
+        CXXFLAGS: '/I C:\Thrift\include\'
+      shell: ${{ env.shell }}
+      run: |
+        .\scripts\build-windows.bat `
+            -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
+            -DBUILD_SHARED_LIBS=${{ inputs.SHARED_LIBS_TOGGLE }} `
+            -DWITH_OPENSSL=${{ inputs.OPENSSL_TOGGLE }} `
+            -DBUILD_TESTS=ON `
+            -DBUILD_EXAMPLES=OFF
+
+    - name: Test
+      if: ${{ inputs.run_tests }}
+      env:
+        BUILD_DIR: build
+        BUILD_CONFIGURATION: ${{ inputs.BUILD_TYPE }}
+        HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        SSL_CERT_FILE: 'C:\cacert.pem'
+      shell: ${{ env.shell }}
+      run: |
+        $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
+        .\scripts\test-windows.bat
+        $dump | wait-process
+
+    - uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: dump-${{ env.JOB_NAME }}
+        path: |
+          **/*.pdb
+          *.dmp
