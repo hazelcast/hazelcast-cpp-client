@@ -65,7 +65,14 @@ runs:
       shell: ${{ env.shell }}
       run: |
         ulimit -c unlimited
-        sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
-        sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+
+        # i386 doesn't include Sudo
+        if command -v sudo; then
+            sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+            sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+        else
+            sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+            sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+        fi
 
         ./scripts/test-unix.sh

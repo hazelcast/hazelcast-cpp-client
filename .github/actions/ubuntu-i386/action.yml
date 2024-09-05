@@ -67,7 +67,7 @@ runs:
           --silent \
           --show-error \
           --location \
-          https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apa${{ env.MAVEN_VERSION }}n_version}-bin.tar.gz | 
+          https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | 
         tar \
           --extract \
           --gzip \
@@ -83,12 +83,12 @@ runs:
     - name: Install Boost
       shell: ${{ env.shell }}
       run: |
-        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+        ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
 
     - name: Install Thrift
       shell: ${{ env.shell }}
       run: |
-        sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
+        ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
 
     - uses: ./.github/actions/unix
       with:
