@@ -8,7 +8,9 @@ name: Build&Test PR
 on: 
 
   # automatic on every pull request
-  pull_request_target:
+  # TODO REVERT
+  # pull_request_target:
+  pull_request:
 
   # manual (for community PRs that we want to force-run here)  
   workflow_dispatch:

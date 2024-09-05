@@ -44,6 +44,12 @@ runs:
       shell: ${{ env.shell }}
       run: cat .github/config.env >> $GITHUB_ENV
 
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+
     - name: Download hazelcast-enterprise-tests.jar
       shell: ${{ env.shell }}
       run: |
@@ -58,12 +64,6 @@ runs:
       shell: ${{ env.shell }}
       run: |
         sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
-
-    - name: Setup JDK
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: ${{ env.JAVA_DISTRIBUTION }}
 
     - name: Build & Install
       env:
