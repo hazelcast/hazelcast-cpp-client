@@ -160,96 +160,20 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      # Install Java via `apt`, can't use the `setup-java` action on this image
-      # `setup-java` is written in TypeScript and requires a compatible Node installation
-      # Newest available version for this image is Node 8, which is too old for any version to run against
-      # https://github.com/actions/setup-node/issues/922
-      - name: Install Necessary Packages
-        run: |
-          apt-get update
-          apt-get install -y build-essential cmake curl git libssl-dev net-tools openjdk-${{ env.JAVA_VERSION }}-jre-headless gdb curl
-
-      - name: Make sure the target architecture is 32 bit
-        run: |
-          echo 'int main() { return sizeof(void*) != 4; }' > test.c
-          gcc test.c -oa
-          ./a
-          rm a test.c
-
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - uses: ./.github/actions/ubuntu-x86_64
         with:
-          ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
-
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
-      - name: Install Maven
-        run: |
-          install_dir="/opt/maven"
-          mkdir ${install_dir}
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            --location \
-            https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | 
-          tar \
-            --extract \
-            --gzip \
-            --strip-components=1 \
-            --directory ${install_dir}
-          echo "${install_dir}/bin" >> $GITHUB_PATH
-
-      - name: Test Maven
-        run: |
-          mvn --version
-
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Install Boost
-        run: |
-          ./scripts/install-boost.sh ${{ env.boost_version }}
-
-      - name: Install Thrift
-        run: |
-          ./scripts/install-thrift.sh ${{ env.thrift_version }}
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          INSTALL: ON
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ env.boost_version }}
+          THRIFT_VERSION: ${{ env.thrift_version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-        run: |
-          ./scripts/build-unix.sh                                         \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}            \
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}        \
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}            \
-              -DBUILD_TESTS=ON                                            \
-              -DBUILD_EXAMPLES=OFF
-
-      - name: Test
-        if: ${{ env.run_tests }}
-        env:
-          BUILD_DIR: build
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          RUN_TESTS: ${{ env.run_tests }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ulimit -c unlimited
-          echo 'core' > /proc/sys/kernel/core_pattern
-          echo '1' > /proc/sys/kernel/core_uses_pid
-
-          ./scripts/test-unix.sh
 
 
   Ubuntu-x86_64:

@@ -1,0 +1,127 @@
+name: Ubuntu-i386
+
+inputs:
+  GH_TOKEN:
+    required: true
+  BOOST_VERSION:
+    required: true
+  THRIFT_VERSION:
+    required: true
+  WARN_AS_ERR:
+    required: true
+  BUILD_TYPE:
+    required: true
+  SHARED_LIBS_TOGGLE:
+    required: true
+  OPENSSL_TOGGLE:
+    required: true
+  RUN_TESTS:
+    required: true
+  HAZELCAST_ENTERPRISE_KEY:
+    required: true
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
+    required: true
+
+env:
+  # Not possible to set this as a default
+  # https://github.com/orgs/community/discussions/46670
+  shell: bash
+
+runs:
+  using: composite
+  steps:
+    - name: Read Config
+      shell: ${{ env.shell }}
+      run: cat .github/config.env >> $GITHUB_ENV
+
+    # Install Java via `apt`, can't use the `setup-java` action on this image
+    # `setup-java` is written in TypeScript and requires a compatible Node installation
+    # Newest available version for this image is Node 8, which is too old for any version to run against
+    # https://github.com/actions/setup-node/issues/922
+    - name: Install Necessary Packages
+      shell: ${{ env.shell }}
+      run: |
+        apt-get update
+        apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-${{ env.JAVA_VERSION }}-jre-headless gdb curl
+
+    - name: Make sure the target architecture is 32 bit
+      shell: ${{ env.shell }}
+      run: |
+        echo 'int main() { return sizeof(void*) != 4; }' > test.c
+        gcc test.c -oa
+        ./a
+        rm a test.c
+
+    # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
+    - name: Install Maven
+      shell: ${{ env.shell }}
+      run: |
+        install_dir="/opt/maven"
+        mkdir ${install_dir}
+        curl \
+          --fail \
+          --silent \
+          --show-error \
+          --location \
+          https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apa${{ env.MAVEN_VERSION }}n_version}-bin.tar.gz | 
+        tar \
+          --extract \
+          --gzip \
+          --strip-components=1 \
+          --directory ${install_dir}
+        echo "${install_dir}/bin" >> $GITHUB_PATH
+
+    - name: Test Maven
+      shell: ${{ env.shell }}
+      run: |
+        mvn --version
+
+    - name: Download hazelcast-enterprise-tests.jar
+      shell: ${{ env.shell }}
+      run: |
+        curl -H "Authorization: token ${{ inputs.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+
+    - name: Install Boost
+      shell: ${{ env.shell }}
+      run: |
+        ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+
+    - name: Install Thrift
+      shell: ${{ env.shell }}
+      run: |
+        ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
+
+    - name: Build & Install
+      env:
+        BUILD_DIR: build
+        INSTALL: ON
+        WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
+      shell: ${{ env.shell }}
+      run: |
+        ./scripts/build-unix.sh                                         \
+            -DCMAKE_BUILD_TYPE=${{ inputs.BUILD_TYPE }}                 \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
+            -DBUILD_SHARED_LIBS=${{ inputs.SHARED_LIBS_TOGGLE }}        \
+            -DWITH_OPENSSL=${{ inputs.OPENSSL_TOGGLE }}                 \
+            -DBUILD_TESTS=ON                                            \
+            -DBUILD_EXAMPLES=OFF
+
+    - name: Test
+      if: ${{ env.run_tests }}
+      env:
+        BUILD_DIR: build
+        HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+      shell: ${{ env.shell }}
+      run: |
+        ulimit -c unlimited
+        echo 'core' > /proc/sys/kernel/core_pattern
+        echo '1' > /proc/sys/kernel/core_uses_pid
+
+        ./scripts/test-unix.sh
