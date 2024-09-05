@@ -162,7 +162,7 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - uses: ./.github/actions/ubuntu-x86_64
+      - uses: ./.github/actions/ubuntu-i386
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
@@ -263,7 +263,7 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - uses: ./.github/actions/windows-x86_64
+      - uses: ./.github/actions/windows
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}

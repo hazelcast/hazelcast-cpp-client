@@ -5,6 +5,14 @@ inputs:
     required: true
   BOOST_VERSION:
     required: true
+  WARN_AS_ERR:
+    required: true
+  BUILD_TYPE:
+    required: true
+  SHARED_LIBS_TOGGLE:
+    required: true
+  OPENSSL_TOGGLE:
+    required: true
   RUN_TESTS:
     required: true
   HAZELCAST_ENTERPRISE_KEY:
@@ -33,12 +41,12 @@ runs:
       run: |
         brew install openssl@1.1 thrift curl
         ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
-  
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
 
     - name: Download hazelcast-enterprise-tests.jar
       shell: ${{ env.shell }}
