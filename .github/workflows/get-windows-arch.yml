@@ -1,0 +1,15 @@
+name: Get Windows arch
+
+on:
+  workflow_call:
+    outputs:
+      arch:
+        value: ${{ jobs.get-windows-arch.outputs.arch }}
+
+jobs:
+  get-windows-arch:
+    runs-on: ubuntu-latest
+    outputs:
+      arch: "[{ cmake: Win32, choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y', address_model: 32}, { cmake: x64, choco_options: '', address_model: 64}]"
+    steps:
+      - run: exit 0

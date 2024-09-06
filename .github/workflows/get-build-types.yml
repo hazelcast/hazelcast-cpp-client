@@ -1,0 +1,15 @@
+name: Get build types
+
+on:
+  workflow_call:
+    outputs:
+      build-types:
+        value: ${{ jobs.get-build-types.outputs.build-types }}
+
+jobs:
+  get-build-types:
+    runs-on: ubuntu-latest
+    outputs:
+      build-types: "[{ type: Debug, warn_as_err: ON}, { type: Release, warn_as_err: OFF}]"
+    steps:
+      - run: exit 0

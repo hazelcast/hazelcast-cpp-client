@@ -11,7 +11,24 @@ on:
     - cron: '0 2 * * *'
 
 jobs:
+  build-types:
+    uses: ./.github/workflows/get-build-types.yml
+
+  shared-libs:
+    uses: ./.github/workflows/get-shared-libs.yml
+
+  with-openssl:
+    uses: ./.github/workflows/get-with-openssl.yml
+
+  windows-arch:
+    uses: ./.github/workflows/get-windows-arch.yml
+
   nightly-Windows:
+    needs:
+      - build-types
+      - shared-libs
+      - with-openssl
+      - windows-arch
     strategy:
       fail-fast: false
       matrix:
@@ -46,33 +63,17 @@ jobs:
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
             boost_include_folder: 'C:\Boost\include\boost-1_80'
-        arch:
-          - cmake: Win32
-            choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
-            address_model: 32
-          - cmake: x64
-            choco_options: ''
-            address_model: 64
-        build_type:
-          - Debug
-          - Release
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        arch: ${{ fromJSON(needs.windows-arch.outputs.arch) }}
+        build_types: ${{ fromJSON(needs.build-types.outputs.build-types) }}
+        shared_libs: ${{ fromJSON(needs.shared-libs.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.with-openssl.outputs.with-openssl) }}
 
     runs-on: ${{ matrix.vc_boost.image }}
     env:
-      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.arch.address_model }},${{ matrix.build_type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.arch.address_model }},${{ matrix.build_type.type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     name: >-
       Windows
-      (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
       - uses: actions/checkout@v2
@@ -82,18 +83,18 @@ jobs:
         uses: actions/cache@v3
         with:          
           path: C:\Boost
-          key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type.type }}
           restore-keys: |
-            ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type.type }}
 
       - name: Cache Thrift Version
         id: cache-thrift
         uses: actions/cache@v3
         with:          
           path: C:\Thrift
-          key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type.type }}
           restore-keys: |
-            ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type.type }}
 
       - uses: ./.github/actions/build-test/windows
         with:
@@ -122,7 +123,7 @@ jobs:
         run: |
           cmake -S .\examples -B build-examples `
                 -A ${{ matrix.arch.cmake }} `
-                -DCMAKE_CONFIGURATION_TYPES=${{ matrix.build_type }} `
+                -DCMAKE_CONFIGURATION_TYPES=${{ matrix.build_type.type }} `
                 -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
                 -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}
 
@@ -136,6 +137,6 @@ jobs:
             $_.Name.Replace('.vcxproj', '') 
           } |
           ForEach-Object {
-            cmake --build . --config ${{ matrix.build_type }} --target $_ 
-            cmake --build . --config ${{ matrix.build_type }} --target clean 
+            cmake --build . --config ${{ matrix.build_type.type }} --target $_ 
+            cmake --build . --config ${{ matrix.build_type.type }} --target clean 
           }

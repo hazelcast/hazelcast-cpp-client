@@ -11,7 +11,16 @@ on:
     - cron: '0 20 * * *'
 
 jobs:
+  build-types:
+    uses: ./.github/workflows/get-build-types.yml
+
+  shared-libs:
+    uses: ./.github/workflows/get-shared-libs.yml
+
   nightly-Ubuntu-x86_64:
+    needs:
+      - build-types
+      - shared-libs
     strategy:
       fail-fast: false
       matrix:
@@ -19,17 +28,8 @@ jobs:
           - version: 1.73.0
           - version: 1.76.0
 
-        build_type:
-          - type: Debug
-            warn_as_err: ON
-          - type: Release
-            warn_as_err: OFF
-
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
+        build_type: ${{ fromJSON(needs.build-types.outputs.build-types) }}
+        shared_libs: ${{ fromJSON(needs.shared-libs.outputs.shared-libs) }}
 
         with_openssl:
           - toggle: OFF
