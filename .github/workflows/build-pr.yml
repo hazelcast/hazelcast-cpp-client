@@ -101,19 +101,7 @@ jobs:
             echo "ref=refs/pull/${{ github.event.pull_request.number }}/merge" >> $GITHUB_OUTPUT
             echo "merged-ref=''" >> $GITHUB_OUTPUT
           fi
-  
-  build-types:
-    uses: ./.github/workflows/get-build-types.yml
-
-  shared-libs:
-    uses: ./.github/workflows/get-shared-libs.yml
-
-  with-openssl:
-    uses: ./.github/workflows/get-with-openssl.yml
-
-  windows-arch:
-    uses: ./.github/workflows/get-windows-arch.yml
-
+          
   # run for code-coverage and upload the result as an artifact.
   code-coverage:
     runs-on: ubuntu-latest
@@ -138,17 +126,27 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   Ubuntu-i386:
-    needs:
-      - get-refs
-      - build-types
-      - shared-libs
-      - with-openssl
+    needs: get-refs
     strategy:
       fail-fast: false
       matrix:
-        build_type: ${{ fromJSON(needs.build-types.outputs.build-types) }}
-        shared_libs: ${{ fromJSON(needs.shared-libs.outputs.shared-libs) }}
-        with_openssl: ${{ fromJSON(needs.with-openssl.outputs.with-openssl) }}
+        build_type:
+          - type: Debug
+            warn_as_err: ON
+          - type: Release
+            warn_as_err: OFF
+            
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
 
     runs-on: ubuntu-latest
     container:
@@ -181,15 +179,22 @@ jobs:
 
 
   Ubuntu-x86_64:
-    needs:
-      - get-refs
-      - build-types
-      - shared-libs
+    needs: get-refs
     strategy:
       fail-fast: false
       matrix:
-        build_type: ${{ fromJSON(needs.build-types.outputs.build-types) }}
-        shared_libs: ${{ fromJSON(needs.shared-libs.outputs.shared-libs) }}
+
+        build_type:
+          - type: Debug
+            warn_as_err: ON
+          - type: Release
+            warn_as_err: OFF
+
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
 
         with_openssl:
           - toggle: OFF
@@ -223,23 +228,34 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   Windows:
-    needs:
-      - get-refs
-      - build-types
-      - shared-libs
-      - with-openssl
-      - windows-arch
+    needs: get-refs
     strategy:
       fail-fast: false
       matrix:
-        arch: ${{ fromJSON(needs.windows-arch.outputs.arch) }}
-        build_type: ${{ fromJSON(needs.build-types.outputs.build-types) }}
-        shared_libs: ${{ fromJSON(needs.shared-libs.outputs.shared-libs) }}
-        with_openssl: ${{ fromJSON(needs.with-openssl.outputs.with-openssl) }}
+        arch:
+          - cmake: Win32
+            choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
+            address_model: 32
+          - cmake: x64
+            choco_options: ''
+            address_model: 64
+        build_type:
+          - Debug
+          - Release
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
 
     runs-on: 'windows-latest'
     env:
-      JOB_NAME: win_${{ matrix.arch.address_model }}_${{ matrix.build_type.type }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
+      JOB_NAME: win_${{ matrix.arch.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     name: win-${{ matrix.arch.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     steps:
       - uses: actions/checkout@v3
@@ -252,7 +268,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
           THRIFT_VERSION: ${{ env.thrift_version }}
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
@@ -271,17 +287,27 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   macOS-x86_64:
-    needs:
-      - get-refs
-      - build-types
-      - shared-libs
-      - with-openssl
+    needs: get-refs
     strategy:
       fail-fast: false
       matrix:
-        build_type: ${{ fromJSON(needs.build-types.outputs.build-types) }}
-        shared_libs: ${{ fromJSON(needs.shared-libs.outputs.shared-libs) }}
-        with_openssl: ${{ fromJSON(needs.with-openssl.outputs.with-openssl) }}
+        build_type:
+          - type: Debug
+            warn_as_err: ON
+          - type: Release
+            warn_as_err: OFF
+
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+
+        with_openssl:
+          - toggle: OFF
+            name: 'noSSL'
+          - toggle: ON
+            name: 'SSL'
 
     runs-on: macos-latest
 
