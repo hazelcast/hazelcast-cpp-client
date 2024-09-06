@@ -1,4 +1,4 @@
-name: Unix
+name: Test - Unix
 
 inputs:
   GH_TOKEN:

@@ -1,4 +1,4 @@
-name: macOS-x86_64
+name: Build & Test - macOS - x86-64
 
 inputs:
   GH_TOKEN:
@@ -48,7 +48,7 @@ runs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-    - uses: ./.github/actions/unix
+    - uses: ./.github/actions/test/unix
       with:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
         BOOST_VERSION: ${{ inputs.BOOST_VERSION }}

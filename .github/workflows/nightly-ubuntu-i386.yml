@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - uses: ./.github/actions/ubuntu-x86_64
+      - uses: ./.github/actions/build-test/ubuntu-x86_64
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ matrix.boost.version }}

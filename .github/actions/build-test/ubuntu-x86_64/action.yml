@@ -1,4 +1,4 @@
-name: Ubuntu-x86_64
+name: Build & Test - Ubuntu - x86-64
 
 inputs:
   GH_TOKEN:
@@ -69,7 +69,7 @@ runs:
         sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
         sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
 
-    - uses: ./.github/actions/unix
+    - uses: ./.github/actions/test/unix
       with:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
         BOOST_VERSION: ${{ inputs.BOOST_VERSION }}

@@ -26,7 +26,7 @@ env:
 runs:
   using: composite
   steps:
-    - uses: ./.github/actions/ubuntu-x86_64
+    - uses: ./.github/actions/build-test/ubuntu-x86_64
       with:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
         BOOST_VERSION: ${{ inputs.BOOST_VERSION }}
