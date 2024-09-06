@@ -90,6 +90,15 @@ runs:
       run: |
         ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
 
+    - name: Configure Resources
+      if: ${{ inputs.run_tests }}
+      shell: ${{ env.shell }}
+      run: |
+        ulimit -c unlimited
+
+        sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+        sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+
     - uses: ./.github/actions/unix
       with:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
