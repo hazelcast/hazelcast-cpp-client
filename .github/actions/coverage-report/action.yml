@@ -57,7 +57,7 @@ runs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-    - name: Build & Install
+    - name: Build
       env:
         BUILD_DIR: build
         COVERAGE: ON
