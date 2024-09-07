@@ -123,7 +123,6 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          # TODO Copy to nightly as well if works
           sudo apt-get install -y net-tools libssl-dev gdb gcovr curl lcov
   
       - name: Download hazelcast-enterprise-tests.jar
