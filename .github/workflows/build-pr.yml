@@ -104,8 +104,7 @@ jobs:
           
   # run for code-coverage and upload the result as an artifact.
   code-coverage:
-    # Workaround "lcov: command not found"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: get-refs
     
     name: Code Coverage
@@ -124,7 +123,8 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl
+          # TODO Copy to nightly as well if works
+          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl lcov
   
       - name: Download hazelcast-enterprise-tests.jar
         shell: bash
