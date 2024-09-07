@@ -104,7 +104,8 @@ jobs:
           
   # run for code-coverage and upload the result as an artifact.
   code-coverage:
-    runs-on: ubuntu-latest
+    # Workaround "lcov: command not found"
+    runs-on: ubuntu-20.04
     needs: get-refs
     
     name: Code Coverage
