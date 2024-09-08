@@ -36,20 +36,20 @@ runs:
         sudo apt-get update
         sudo apt-get install -y net-tools libssl-dev gdb gcovr lcov curl
 
-#    - name: Download hazelcast-enterprise-tests.jar
-#      shell: ${{ env.shell }}
-#      run: |
-#        curl -H "Authorization: token ${{ inputs.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-#
-#    - name: Install Boost
-#      shell: ${{ env.shell }}
-#      run: |
-#        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
-#
-#    - name: Install Thrift
-#      shell: ${{ env.shell }}
-#      run: |
-#        sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
+    - name: Download hazelcast-enterprise-tests.jar
+      shell: ${{ env.shell }}
+      run: |
+        curl -H "Authorization: token ${{ inputs.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+
+    - name: Install Boost
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+
+    - name: Install Thrift
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
 
     - name: Setup JDK
       uses: actions/setup-java@v4
