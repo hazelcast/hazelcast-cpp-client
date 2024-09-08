@@ -115,6 +115,11 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Download hazelcast-enterprise-tests.jar
+        shell: bash
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+
       - uses: ./.github/actions/coverage-report
         with:
           BOOST_VERSION: ${{ env.boost_version }}
