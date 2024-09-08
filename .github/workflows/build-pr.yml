@@ -120,6 +120,16 @@ jobs:
         run: |
           curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
+      - name: Install Boost
+        shell: bash
+        run: |
+          sudo ./scripts/install-boost.sh ${{ env.boost_version }}
+
+      - name: Install Thrift
+        shell: bash
+        run: |
+          sudo ./scripts/install-thrift.sh ${{ env.thrift_version }}
+
       - uses: ./.github/actions/coverage-report
         with:
           BOOST_VERSION: ${{ env.boost_version }}
