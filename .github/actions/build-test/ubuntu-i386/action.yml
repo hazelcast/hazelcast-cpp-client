@@ -75,11 +75,6 @@ runs:
           --directory ${install_dir}
         echo "${install_dir}/bin" >> $GITHUB_PATH
 
-    - name: Test Maven
-      shell: ${{ env.shell }}
-      run: |
-        mvn --version
-
     - name: Install Boost
       shell: ${{ env.shell }}
       run: |
