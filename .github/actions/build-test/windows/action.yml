@@ -58,7 +58,10 @@ runs:
       shell: ${{ env.shell }}
       run: |
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ inputs.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        Invoke-WebRequest `
+              https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar `
+              -Headers @{"Authorization"="token ${{ inputs.GH_TOKEN }}"} `
+              -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
 
     - name: Install SysInternals
       shell: ${{ env.shell }}
