@@ -63,11 +63,11 @@ runs:
         COVERAGE: ON
       shell: ${{ env.shell }}
       run: |
-        ./scripts/build-unix.sh                                          \
-            -DCMAKE_BUILD_TYPE=Debug                                     \
-            -DBUILD_SHARED_LIBS=ON                                       \
-            -DWITH_OPENSSL=ON                                            \
-            -DBUILD_TESTS=ON                                             \
+        ./scripts/build-unix.sh        \
+            -DCMAKE_BUILD_TYPE=Debug   \
+            -DBUILD_SHARED_LIBS=ON     \
+            -DWITH_OPENSSL=ON          \
+            -DBUILD_TESTS=ON           \
             -DBUILD_EXAMPLES=OFF
 
     - name: Test
