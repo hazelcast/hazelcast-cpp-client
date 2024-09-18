@@ -46,7 +46,7 @@ jobs:
       (${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{matrix.boost.version}},${{ matrix.with_openssl.name }})
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
 
       - uses: ./.github/actions/build-test/ubuntu-x86_64
         with:
