@@ -1,0 +1,85 @@
+name: Build & Test - Ubuntu - x86-64
+
+inputs:
+  GH_TOKEN:
+    required: true
+  BOOST_VERSION:
+    required: true
+  THRIFT_VERSION:
+    required: true
+  WARN_AS_ERR:
+    required: true
+  BUILD_TYPE:
+    required: true
+  SHARED_LIBS_TOGGLE:
+    required: true
+  OPENSSL_TOGGLE:
+    required: true
+  RUN_TESTS:
+    required: true
+  HAZELCAST_ENTERPRISE_KEY:
+    required: true
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
+    required: true
+
+env:
+  # Not possible to set this as a default
+  # https://github.com/orgs/community/discussions/46670
+  shell: bash
+
+runs:
+  using: composite
+  steps:
+    - name: Install Necessary Packages
+      shell: ${{ env.shell }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y net-tools libssl-dev gdb curl
+
+    - name: Read Config
+      shell: ${{ env.shell }}
+      run: cat .github/config.env >> $GITHUB_ENV
+
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+    - name: Install Boost
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+
+    - name: Install Thrift
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
+
+    - name: Configure Resources
+      if: ${{ inputs.run_tests }}
+      shell: ${{ env.shell }}
+      run: |
+        ulimit -c unlimited
+
+        sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+        sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+
+    - uses: ./.github/actions/build-test/unix
+      with:
+        GH_TOKEN: ${{ inputs.GH_TOKEN }}
+        BOOST_VERSION: ${{ inputs.BOOST_VERSION }}
+        THRIFT_VERSION: ${{ inputs.THRIFT_VERSION }}
+        WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
+        BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
+        SHARED_LIBS_TOGGLE: ${{ inputs.SHARED_LIBS_TOGGLE }}
+        OPENSSL_TOGGLE: ${{ inputs.OPENSSL_TOGGLE }}
+        RUN_TESTS: ${{ inputs.RUN_TESTS }}
+        HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}

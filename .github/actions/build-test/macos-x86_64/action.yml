@@ -1,0 +1,64 @@
+name: Build & Test - macOS - x86-64
+
+inputs:
+  GH_TOKEN:
+    required: true
+  BOOST_VERSION:
+    required: true
+  WARN_AS_ERR:
+    required: true
+  BUILD_TYPE:
+    required: true
+  SHARED_LIBS_TOGGLE:
+    required: true
+  OPENSSL_TOGGLE:
+    required: true
+  RUN_TESTS:
+    required: true
+  HAZELCAST_ENTERPRISE_KEY:
+    required: true
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
+    required: true
+
+env:
+  # Not possible to set this as a default
+  # https://github.com/orgs/community/discussions/46670
+  shell: bash
+
+runs:
+  using: composite
+  steps:
+    - name: Read Config
+      shell: ${{ env.shell }}
+      run: cat .github/config.env >> $GITHUB_ENV
+
+    - name: Install Dependencies
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+        brew install openssl@1.1 thrift curl
+
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+    - uses: ./.github/actions/build-test/unix
+      with:
+        GH_TOKEN: ${{ inputs.GH_TOKEN }}
+        BOOST_VERSION: ${{ inputs.BOOST_VERSION }}
+        THRIFT_VERSION: ${{ inputs.THRIFT_VERSION }}
+        WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
+        BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
+        SHARED_LIBS_TOGGLE: ${{ inputs.SHARED_LIBS_TOGGLE }}
+        OPENSSL_TOGGLE: ${{ inputs.OPENSSL_TOGGLE }}
+        RUN_TESTS: ${{ inputs.RUN_TESTS }}
+        HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}

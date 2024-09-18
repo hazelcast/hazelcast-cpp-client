@@ -102,7 +102,7 @@ jobs:
           
   # run for code-coverage and upload the result as an artifact.
   code-coverage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: get-refs
     
     name: Code Coverage
@@ -113,68 +113,16 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Install Necessary Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb gcovr curl          
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-      - name: Install Boost
-        run: |
-          sudo ./scripts/install-boost.sh ${{ env.boost_version }}
-      - name: Install Thrift
-        run: |
-          sudo ./scripts/install-thrift.sh ${{ env.thrift_version }}
-  
-      - name: Setup JDK
-        uses: actions/setup-java@v4
+      - uses: ./.github/actions/coverage-report
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - name: Build
-        env:
-          BUILD_DIR: build
-          COVERAGE: ON
-        run: |
-          ./scripts/build-unix.sh                                          \
-              -DCMAKE_BUILD_TYPE=Debug                                     \
-              -DBUILD_SHARED_LIBS=ON                                       \
-              -DWITH_OPENSSL=ON                                            \
-              -DBUILD_TESTS=ON                                             \
-              -DBUILD_EXAMPLES=OFF
-      - name: Test
-        if: ${{ env.run_tests }}
-        env:
-          BUILD_DIR: build
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ env.boost_version }}
+          THRIFT_VERSION: ${{ env.thrift_version }}
+          RUN_TESTS: ${{ env.run_tests }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ulimit -c unlimited
-          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
-          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
-          ./scripts/test-unix.sh
-      - name: Collect coverage info
-        run: |
-          # collect and list coverage info
-          lcov --capture --directory . --no-external -o coverage.info \
-               --include "`pwd`/hazelcast/*" --exclude "`pwd`/hazelcast/test/*"
-          lcov --list coverage.info
-          # generate HTML views
-          genhtml coverage.info --output-directory=coverage-html-reports
-      - name: Upload HTML views as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage-report
-          path: |
-            coverage.info
-            coverage-html-reports 
 
   Ubuntu-i386:
     needs: get-refs
@@ -213,96 +161,20 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      # Install Java via `apt`, can't use the `setup-java` action on this image
-      # `setup-java` is written in TypeScript and requires a compatible Node installation
-      # Newest available version for this image is Node 8, which is too old for any version to run against
-      # https://github.com/actions/setup-node/issues/922
-      - name: Install Necessary Packages
-        run: |
-          apt-get update
-          apt-get install -y build-essential cmake curl git libssl-dev net-tools openjdk-${{ env.JAVA_VERSION }}-jre-headless gdb curl
-
-      - name: Make sure the target architecture is 32 bit
-        run: |
-          echo 'int main() { return sizeof(void*) != 4; }' > test.c
-          gcc test.c -oa
-          ./a
-          rm a test.c
-
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - uses: ./.github/actions/build-test/ubuntu-i386
         with:
-          ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
-
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      # `apt-get` brings in `3.6` which is too old to be compatible with Java 17
-      - name: Install Maven
-        run: |
-          install_dir="/opt/maven"
-          mkdir ${install_dir}
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            --location \
-            https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${{ env.MAVEN_VERSION }}/apache-maven-${{ env.MAVEN_VERSION }}-bin.tar.gz | 
-          tar \
-            --extract \
-            --gzip \
-            --strip-components=1 \
-            --directory ${install_dir}
-          echo "${install_dir}/bin" >> $GITHUB_PATH
-
-      - name: Test Maven
-        run: |
-          mvn --version
-
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Install Boost
-        run: |
-          ./scripts/install-boost.sh ${{ env.boost_version }}
-
-      - name: Install Thrift
-        run: |
-          ./scripts/install-thrift.sh ${{ env.thrift_version }}
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          INSTALL: ON
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ env.boost_version }}
+          THRIFT_VERSION: ${{ env.thrift_version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-        run: |
-          ./scripts/build-unix.sh                                         \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}            \
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}        \
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}            \
-              -DBUILD_TESTS=ON                                            \
-              -DBUILD_EXAMPLES=OFF
-
-      - name: Test
-        if: ${{ env.run_tests }}
-        env:
-          BUILD_DIR: build
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          RUN_TESTS: ${{ env.run_tests }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ulimit -c unlimited
-          echo 'core' > /proc/sys/kernel/core_pattern
-          echo '1' > /proc/sys/kernel/core_uses_pid
-
-          ./scripts/test-unix.sh
 
 
   Ubuntu-x86_64:
@@ -333,65 +205,26 @@ jobs:
 
     name: ubuntu-x64-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
-      - name: Install Necessary Packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y net-tools libssl-dev gdb curl
 
       - uses: actions/checkout@v3
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Install Boost
-        run: |
-          sudo ./scripts/install-boost.sh ${{env.boost_version}}
-
-      - name: Install Thrift
-        run: |
-          sudo ./scripts/install-thrift.sh ${{env.thrift_version}}
-  
-      - name: Setup JDK
-        uses: actions/setup-java@v4
+      - uses: ./.github/actions/build-test/ubuntu-x86_64
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          INSTALL: ON
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ env.boost_version }}
+          THRIFT_VERSION: ${{ env.thrift_version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-        run: |
-          ./scripts/build-unix.sh                                          \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}             \
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination   \
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}         \
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}             \
-              -DBUILD_TESTS=ON                                             \
-              -DBUILD_EXAMPLES=OFF
-
-      - name: Test
-        if: ${{ env.run_tests }}
-        env:
-          BUILD_DIR: build
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          RUN_TESTS: ${{ env.run_tests }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ulimit -c unlimited
-          sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
-          sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
-
-          ./scripts/test-unix.sh
 
   Windows:
     needs: get-refs
@@ -429,109 +262,29 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Read Config
-        shell: bash
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Download hazelcast-enterprise-tests.jar
-        shell: pwsh
-        run: |
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar -Headers @{"Authorization"="token ${{ secrets.GH_TOKEN }}"} -OutFile hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-      - name: Install SysInternals
-        run: |
-            Invoke-WebRequest `
-                "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
-                -OutFile "sys-internals.zip" `
-                -UserAgent "''"
-            Expand-Archive sys-internals.zip -DestinationPath sys-internals
-            ls sys-internals
-      - uses: nick-fields/retry@v2
-        name: Install OpenSSL
-        if: matrix.with_openssl.toggle == 'ON'
+      - uses: ./.github/actions/build-test/windows
         with:
-          timeout_minutes: 10
-          max_attempts : 4
-          retry_on: error
-          command: |
-            choco install openssl ${{ matrix.arch.choco_options }}
-            Invoke-WebRequest `
-                "https://curl.se/ca/cacert.pem" `
-                -OutFile "C:\cacert.pem"
-      - name: Install Boost
-        run: |
-          Invoke-WebRequest `
-              "${{ env.boost_url }}" `
-              -OutFile "${{ env.boost_archive_name }}" `
-              -UserAgent "''"
-          tar xzf ${{ env.boost_archive_name }}
-          rm ${{ env.boost_archive_name }}
-          cd ${{ env.boost_folder_name }}
-          .\bootstrap.bat
-          .\b2 address-model=${{ matrix.arch.address_model }} --with-atomic --with-thread --with-chrono install
-          cd ..
-          Remove-Item ${{ env.boost_folder_name }} -Recurse -Force
-      - name: Install Thrift
-        run: |
-          Invoke-WebRequest `
-              "https://archive.apache.org/dist/thrift/0.13.0/thrift-0.13.0.tar.gz" `
-              -OutFile "thrift-0.13.0.tar.gz"
-          tar xzf thrift-0.13.0.tar.gz
-          rm thrift-0.13.0.tar.gz
-          cd thrift-0.13.0\build
-          cmake .. -A ${{ matrix.arch.cmake }} `
-                   -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON `
-                   -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF `
-                   -DBUILD_HASKELL=OFF -DWITH_OPENSSL=OFF -DWITH_LIBEVENT=OFF -DWITH_ZLIB=OFF `
-                   -DWITH_QT5=OFF -DBoost_INCLUDE_DIR=${{ env.boost_include_folder }} -DCMAKE_INSTALL_PREFIX=C:\Thrift
-          cmake --build . --target install --config ${{ matrix.build_type }}
-          mkdir C:\Thrift\bin
-          cd ../..
-          Remove-Item thrift-0.13.0 -Recurse -Force
-  
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
-          BIT_VERSION: ${{ matrix.arch.address_model }}
-          INSTALL: ON
-          CXXFLAGS: '/I C:\Thrift\include\'
-        run: |
-          .\scripts\build-windows.bat `
-              -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\destination `
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }} `
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }} `
-              -DBUILD_TESTS=ON `
-              -DBUILD_EXAMPLES=OFF
-      - name: Test
-        if: ${{ env.run_tests }}
-        env:
-          BUILD_DIR: build
-          BUILD_CONFIGURATION: ${{ matrix.build_type }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ env.boost_version }}
+          THRIFT_VERSION: ${{ env.thrift_version }}
+          BUILD_TYPE: ${{ matrix.build_type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
+          ARCH_ADDRESS_MODEL: ${{ matrix.arch.address_model }}
+          ARCH_CMAKE: ${{ matrix.arch.cmake }}
+          INSTALL_BOOST: true
+          BOOST_URL: ${{ env.boost_url }}
+          BOOST_ARCHIVE_NAME: ${{ env.boost_archive_name }}
+          BOOST_FOLDER_NAME: ${{ env.boost_folder_name }}
+          BOOST_INCLUDE_FOLDER: ${{ env.boost_include_folder }}
+          INSTALL_THRIFT: true
+          RUN_TESTS: ${{ env.run_tests }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-          SSL_CERT_FILE: 'C:\cacert.pem'
-        run: |
-          $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
-          .\scripts\test-windows.bat
-          $dump | wait-process
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: dump-${{ env.JOB_NAME }}
-          path: |
-            **/*.pdb
-            *.dmp
-            
+
   macOS-x86_64:
     needs: get-refs
     strategy:
@@ -567,44 +320,16 @@ jobs:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Install Dependencies
-        run: |
-          brew install openssl@1.1 thrift curl
-          sudo ./scripts/install-boost.sh ${{env.boost_version}}
-  
-      - name: Setup JDK
-        uses: actions/setup-java@v4
+      - uses: ./.github/actions/build-test/macos-x86_64
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-    
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          INSTALL: ON
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ env.boost_version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-        run: |
-          ./scripts/build-unix.sh                                         \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}            \
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}        \
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}            \
-              -DBUILD_TESTS=ON                                            \
-              -DBUILD_EXAMPLES=OFF
-      - name: Test
-        if: ${{ env.run_tests }}
-        env:
-          BUILD_DIR: build
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          RUN_TESTS: ${{ env.run_tests }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ./scripts/test-unix.sh

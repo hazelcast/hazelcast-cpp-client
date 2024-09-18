@@ -1,0 +1,104 @@
+name: Coverage Report
+
+inputs:
+  GH_TOKEN:
+    required: true
+  BOOST_VERSION:
+    required: true
+  THRIFT_VERSION:
+    required: true
+  RUN_TESTS:
+    required: true
+  HAZELCAST_ENTERPRISE_KEY:
+    required: true
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
+    required: true
+
+env:
+  # Not possible to set this as a default
+  # https://github.com/orgs/community/discussions/46670
+  shell: bash
+
+runs:
+  using: composite
+  steps:
+    - name: Read Config
+      shell: ${{ env.shell }}
+      run: cat .github/config.env >> $GITHUB_ENV
+
+    - name: Install Necessary Packages
+      shell: ${{ env.shell }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y net-tools libssl-dev gdb gcovr lcov curl
+
+    - name: Download hazelcast-enterprise-tests.jar
+      shell: ${{ env.shell }}
+      run: |
+        curl -H "Authorization: token ${{ inputs.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+
+    - name: Install Boost
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
+
+    - name: Install Thrift
+      shell: ${{ env.shell }}
+      run: |
+        sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
+
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+    - name: Build
+      env:
+        BUILD_DIR: build
+        COVERAGE: ON
+      shell: ${{ env.shell }}
+      run: |
+        ./scripts/build-unix.sh        \
+            -DCMAKE_BUILD_TYPE=Debug   \
+            -DBUILD_SHARED_LIBS=ON     \
+            -DWITH_OPENSSL=ON          \
+            -DBUILD_TESTS=ON           \
+            -DBUILD_EXAMPLES=OFF
+
+    - name: Test
+      if: ${{ inputs.run_tests }}
+      env:
+        BUILD_DIR: build
+        HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+      shell: ${{ env.shell }}
+      run: |
+        ulimit -c unlimited
+        sudo sh -c "echo 'core' > /proc/sys/kernel/core_pattern"
+        sudo sh -c "echo '1' > /proc/sys/kernel/core_uses_pid"
+        ./scripts/test-unix.sh
+
+    - name: Collect coverage info
+      shell: ${{ env.shell }}
+      run: |
+        # collect and list coverage info
+        lcov --capture --directory . --no-external -o coverage.info \
+              --include "`pwd`/hazelcast/*" --exclude "`pwd`/hazelcast/test/*"
+        lcov --list coverage.info
+        # generate HTML views
+        genhtml coverage.info --output-directory=coverage-html-reports
+
+    - name: Upload HTML views as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: |
+          coverage.info
+          coverage-html-reports

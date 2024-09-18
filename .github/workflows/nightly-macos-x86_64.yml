@@ -49,42 +49,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Read Config
-        run: cat .github/config.env >> $GITHUB_ENV
-
-      - name: Install Dependencies
-        run: |
-          brew install openssl@1.1 thrift curl
-          ./scripts/install-boost.sh ${{matrix.boost.version}}
-
-      - name: Download hazelcast-enterprise-tests.jar
-        run: |
-          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
-
-      - name: Build & Install
-        env:
-          BUILD_DIR: build
-          INSTALL: ON
+      - uses: ./.github/actions/build-test/macos-x86_64
+        with:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          BOOST_VERSION: ${{ matrix.boost.version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-        run: |
-          ./scripts/build-unix.sh                                         \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type.type }}            \
-              -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination  \
-              -DBUILD_SHARED_LIBS=${{ matrix.shared_libs.toggle }}        \
-              -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}            \
-              -DBUILD_TESTS=ON                                            \
-              -DBUILD_EXAMPLES=OFF
-
-      - name: Test
-        if: ${{ inputs.run_tests || github.event_name == 'schedule' }}
-        env:
-          BUILD_DIR: build
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
+          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
+          RUN_TESTS: ${{ inputs.run_tests || github.event_name == 'schedule' }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-        run: |
-          ./scripts/test-unix.sh
 
       - name: Verify Installation
         env:
