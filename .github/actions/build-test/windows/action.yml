@@ -68,7 +68,6 @@ runs:
               -OutFile "sys-internals.zip" `
               -UserAgent "''"
           Expand-Archive sys-internals.zip -DestinationPath sys-internals
-          ls sys-internals
 
     - uses: nick-fields/retry@v2
       name: Install OpenSSL
