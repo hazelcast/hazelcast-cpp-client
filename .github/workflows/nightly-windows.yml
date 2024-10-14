@@ -75,7 +75,7 @@ jobs:
       (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Cache Boost Version
         id: cache-boost
@@ -88,7 +88,7 @@ jobs:
 
       - name: Cache Thrift Version
         id: cache-thrift
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:          
           path: C:\Thrift
           key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
