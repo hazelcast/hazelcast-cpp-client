@@ -161,7 +161,7 @@ runs:
         .\scripts\test-windows.bat
         $dump | wait-process
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: dump-${{ env.JOB_NAME }}
