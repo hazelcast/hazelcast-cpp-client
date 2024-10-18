@@ -182,11 +182,11 @@ public:
     {
         check_available(util::Bits::UUID_SIZE_IN_BYTES);
         boost::uuids::uuid u;
-        std::memcpy(&u.data, &buffer_[pos_], util::Bits::UUID_SIZE_IN_BYTES);
+        std::memcpy(&u.data[0], &buffer_[pos_], util::Bits::UUID_SIZE_IN_BYTES);
         pos_ += util::Bits::UUID_SIZE_IN_BYTES;
         if (byte_order_ == boost::endian::order::little) {
             boost::endian::endian_reverse_inplace<int64_t>(
-              *reinterpret_cast<int64_t*>(u.data));
+              *reinterpret_cast<int64_t*>(&u.data[0]));
             boost::endian::endian_reverse_inplace<int64_t>(
               *reinterpret_cast<int64_t*>(
                 &u.data[util::Bits::LONG_SIZE_IN_BYTES]));

@@ -731,12 +731,12 @@ data_output::write(boost::uuids::uuid v)
     }
     if (byte_order_ == boost::endian::order::little) {
         boost::endian::endian_reverse_inplace<int64_t>(
-          *reinterpret_cast<int64_t*>(v.data));
+          *reinterpret_cast<int64_t*>(&v.data[0]));
         boost::endian::endian_reverse_inplace<int64_t>(
           *reinterpret_cast<int64_t*>(&v.data[util::Bits::LONG_SIZE_IN_BYTES]));
     }
     output_stream_.insert(
-      output_stream_.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
+      output_stream_.end(), &v.data[0], &v.data[util::Bits::LONG_SIZE_IN_BYTES]);
 }
 
 template<>
