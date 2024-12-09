@@ -79,7 +79,7 @@ jobs:
 
       - name: Cache Boost Version
         id: cache-boost
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:          
           path: C:\Boost
           key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
