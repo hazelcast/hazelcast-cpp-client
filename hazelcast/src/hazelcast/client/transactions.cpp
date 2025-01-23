@@ -324,6 +324,9 @@ client_transaction_util::transaction_exception_factory::rethrow(
 } // namespace txn
 
 namespace proxy {
+
+const std::chrono::milliseconds proxy::TransactionalMapImpl::UNSET{ -1 };
+
 TransactionalMapImpl::TransactionalMapImpl(
   const std::string& name,
   txn::TransactionProxy& transaction_proxy)
@@ -369,7 +372,8 @@ TransactionalMapImpl::is_empty()
 
 boost::future<boost::optional<serialization::pimpl::data>>
 TransactionalMapImpl::put_data(const serialization::pimpl::data& key,
-                               const serialization::pimpl::data& value)
+                               const serialization::pimpl::data& value,
+                               std::chrono::milliseconds ttl)
 {
 
     auto request = protocol::codec::transactionalmap_put_encode(
@@ -378,8 +382,7 @@ TransactionalMapImpl::put_data(const serialization::pimpl::data& key,
       util::get_current_thread_id(),
       key,
       value,
-      std::chrono::duration_cast<std::chrono::milliseconds>(get_timeout())
-        .count());
+      std::chrono::duration_cast<std::chrono::milliseconds>(ttl).count());
 
     return invoke_and_get_future<boost::optional<serialization::pimpl::data>>(
       request);
