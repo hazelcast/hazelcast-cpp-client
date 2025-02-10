@@ -1,8 +1,6 @@
 name: Code coverage report to Codecov
 
 on:
-  # TODO REMOVE
-  pull_request:
   push:
     branches:
       - master
