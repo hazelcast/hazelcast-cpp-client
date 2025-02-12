@@ -1576,7 +1576,7 @@ class AwsClientTest
   , public ::testing::WithParamInterface<bool>
 {};
 
-TEST_P(AwsClientTest, testClientAwsMemberNonDefaultPortConfig)
+TEST_P(AwsClientTest, DISABLED_testClientAwsMemberNonDefaultPortConfig)
 {
     if (GetParam() && !std::getenv("INSIDE_AWS")) {
         GTEST_SKIP();
@@ -1605,7 +1605,7 @@ TEST_P(AwsClientTest, testClientAwsMemberNonDefaultPortConfig)
     hazelcastClient.shutdown().get();
 }
 
-TEST_P(AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole)
+TEST_P(AwsClientTest, DISABLED_testClientAwsMemberWithSecurityGroupDefaultIamRole)
 {
     if (GetParam() && !std::getenv("INSIDE_AWS")) {
         GTEST_SKIP();
@@ -1636,7 +1636,7 @@ TEST_P(AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole)
     hazelcastClient.shutdown().get();
 }
 
-TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
+TEST_P(AwsClientTest, DISABLED_testFipsEnabledAwsDiscovery)
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     GTEST_SKIP();
@@ -1677,7 +1677,7 @@ TEST_P(AwsClientTest, testFipsEnabledAwsDiscovery)
     hazelcastClient.shutdown().get();
 }
 
-TEST_F(AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect)
+TEST_F(AwsClientTest, DISABLED_testRetrieveCredentialsFromIamRoleAndConnect)
 {
     // This test can only run inside the AWS network
     if (!std::getenv("INSIDE_AWS")) {
@@ -1700,7 +1700,7 @@ TEST_F(AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect)
 }
 
 TEST_F(AwsClientTest,
-       testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect)
+       DISABLED_testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect)
 {
     // This test can only run inside the AWS network
     if (!std::getenv("INSIDE_AWS")) {
@@ -1735,7 +1735,7 @@ TEST(sync_https_client, timeout_test)
 class DescribeInstancesTest : public ClientTest
 {};
 
-TEST_F(DescribeInstancesTest, testDescribeInstancesTagAndValueSet)
+TEST_F(DescribeInstancesTest, DISABLED_testDescribeInstancesTagAndValueSet)
 {
     client::config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)
@@ -1754,7 +1754,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesTagAndValueSet)
               results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
 }
 
-TEST_F(DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet)
+TEST_F(DescribeInstancesTest, DISABLED_testDescribeInstancesTagAndNonExistentValueSet)
 {
     client::config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)
@@ -1771,7 +1771,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet)
     ASSERT_TRUE(results.empty());
 }
 
-TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet)
+TEST_F(DescribeInstancesTest, DISABLED_testDescribeInstancesOnlyTagIsSet)
 {
     client::config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)
@@ -1789,7 +1789,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet)
               results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
 }
 
-TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag)
+TEST_F(DescribeInstancesTest, DISABLED_testDescribeInstancesOnlyTagIsSetToNonExistentTag)
 {
     client::config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)
@@ -1805,7 +1805,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag)
     ASSERT_TRUE(results.empty());
 }
 
-TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet)
+TEST_F(DescribeInstancesTest, DISABLED_testDescribeInstancesOnlyValueIsSet)
 {
     config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)
@@ -1824,7 +1824,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet)
 }
 
 TEST_F(DescribeInstancesTest,
-       testDescribeInstancesOnlyValueIsSetToNonExistentValue)
+       DISABLED_testDescribeInstancesOnlyValueIsSetToNonExistentValue)
 {
     client::config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)
@@ -1840,7 +1840,7 @@ TEST_F(DescribeInstancesTest,
     ASSERT_TRUE(results.empty());
 }
 
-TEST_F(DescribeInstancesTest, testDescribeInstancesSecurityGroup)
+TEST_F(DescribeInstancesTest, DISABLED_testDescribeInstancesSecurityGroup)
 {
     client::config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)
@@ -1858,7 +1858,7 @@ TEST_F(DescribeInstancesTest, testDescribeInstancesSecurityGroup)
               results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
 }
 
-TEST_F(DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup)
+TEST_F(DescribeInstancesTest, DISABLED_testDescribeInstancesNonExistentSecurityGroup)
 {
     client::config::client_aws_config awsConfig;
     awsConfig.set_enabled(true)

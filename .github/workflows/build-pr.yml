@@ -39,21 +39,12 @@ jobs:
     name: Test Hazelcast Membership
     runs-on: ubuntu-latest
     outputs:
-      is-hazelcast: ${{ steps.test-membership.outputs.is-member }}
+      is-hazelcast: ${{ steps.test-membership.outputs.check-result }}
 
     steps:
-      # checkout the hazelcast/hazelcast-cpp-client repository
-      # bare minimum - just to use actions
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
-          submodules: false
-
       - name: Test
         id: test-membership
-        uses: ./.github/actions/test-membership
+        uses: hazelcast/hazelcast-tpm/membership@main
         with:
           organization-name: hazelcast
           member-name: ${{ github.actor }}
@@ -156,7 +147,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
