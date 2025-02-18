@@ -146,6 +146,7 @@ jobs:
     name: ubuntu-i386-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
+        # Deliberately uses an old version because i386 is stuck on an outdated version of Javascript
       - name: Checkout Code
         uses: actions/checkout@v1
         with:
