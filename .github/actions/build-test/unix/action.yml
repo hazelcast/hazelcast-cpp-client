@@ -36,8 +36,9 @@ runs:
   steps:
     - name: Download hazelcast-enterprise-tests.jar
       shell: ${{ env.shell }}
-      run: |
-        curl -H "Authorization: token ${{ inputs.GH_TOKEN }}" https://raw.githubusercontent.com/hazelcast/private-test-artifacts/data/certs.jar > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+        gh api "/repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" -H "Accept: application/vnd.github.raw" > hazelcast-enterprise-${{ env.HAZELCAST_VERSION }}-tests.jar
+      env:
+        GH_TOKEN: ${{ inputs.GH_TOKEN }}
 
     - name: Build & Install
       env:
