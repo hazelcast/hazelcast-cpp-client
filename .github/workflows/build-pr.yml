@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Report
         shell: bash
-        run: echo "User ${{ github.event.pull_request.head.repo.owner.login }} is a member of the Hazelcast organization"          
+        run: echo "User ${{ github.actor }} is a member of the Hazelcast organization"          
 
 
   # get
