@@ -56,6 +56,11 @@
 namespace hazelcast {
 namespace util {
 class ByteBuffer;
+
+template<class T>
+struct is_trivial_or_uuid : std::is_trivial<T> {};
+template<>
+struct is_trivial_or_uuid<boost::uuids::uuid> : std::true_type {};
 }
 
 namespace cp {
@@ -524,7 +529,7 @@ public:
     template<typename T>
     typename std::enable_if<
       std::is_same<T, std::vector<typename T::value_type>>::value &&
-        !std::is_trivial<typename T::value_type>::value &&
+        !hazelcast::util::is_trivial_or_uuid<typename T::value_type>::value &&
         !is_trivial_entry_vector<T>::value,
       T>::type
     get()
@@ -569,7 +574,7 @@ public:
     template<typename T>
     typename std::enable_if<
       std::is_same<T, std::vector<typename T::value_type>>::value &&
-        std::is_trivial<typename T::value_type>::value,
+        hazelcast::util::is_trivial_or_uuid<typename T::value_type>::value,
       T>::type
     get()
     {
@@ -594,8 +599,8 @@ public:
         std::is_same<std::pair<typename T::value_type::first_type,
                                typename T::value_type::second_type>,
                      typename T::value_type>::value &&
-        std::is_trivial<typename T::value_type::first_type>::value &&
-        std::is_trivial<typename T::value_type::second_type>::value,
+        hazelcast::util::is_trivial_or_uuid<typename T::value_type::first_type>::value &&
+        hazelcast::util::is_trivial_or_uuid<typename T::value_type::second_type>::value,
       T>::type
     get()
     {
@@ -625,8 +630,8 @@ public:
         std::is_same<std::pair<typename T::value_type::first_type,
                                typename T::value_type::second_type>,
                      typename T::value_type>::value &&
-        std::is_trivial<typename T::value_type::first_type>::value &&
-        !std::is_trivial<typename T::value_type::second_type>::value,
+        hazelcast::util::is_trivial_or_uuid<typename T::value_type::first_type>::value &&
+        !hazelcast::util::is_trivial_or_uuid<typename T::value_type::second_type>::value,
       T>::type
     get()
     {
@@ -1246,12 +1251,11 @@ public:
         set(nil);
         if (!nil) {
             boost::endian::endian_reverse_inplace<int64_t>(
-              *reinterpret_cast<int64_t*>(uuid.data));
+              *reinterpret_cast<int64_t*>(&uuid.data[0]));
             boost::endian::endian_reverse_inplace<int64_t>(
-              *reinterpret_cast<int64_t*>(uuid.data +
-                                          util::Bits::LONG_SIZE_IN_BYTES));
+              *reinterpret_cast<int64_t*>(&uuid.data[util::Bits::LONG_SIZE_IN_BYTES]));
             std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
-                        uuid.data,
+                        &uuid.data[0],
                         sizeof(boost::uuids::uuid));
         } else {
             wr_ptr(sizeof(boost::uuids::uuid));
@@ -1525,13 +1529,13 @@ private:
     boost::uuids::uuid get_uuid()
     {
         boost::uuids::uuid u;
-        memcpy(&u.data,
+        memcpy(&u.data[0],
                rd_ptr(sizeof(boost::uuids::uuid)),
                sizeof(boost::uuids::uuid));
         boost::endian::endian_reverse_inplace<int64_t>(
-          *reinterpret_cast<int64_t*>(u.data));
+          *reinterpret_cast<int64_t*>(&u.data[0]));
         boost::endian::endian_reverse_inplace<int64_t>(
-          *reinterpret_cast<int64_t*>(u.data + util::Bits::LONG_SIZE_IN_BYTES));
+          *reinterpret_cast<int64_t*>(&u.data[util::Bits::LONG_SIZE_IN_BYTES]));
         return u;
     }
 
