@@ -18,31 +18,31 @@ jobs:
         vc_boost:
           - name: msvc-2019_boost_1730
             image: 'windows-2019'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.73.0/source/boost_1_73_0.tar.gz'
+            boost_url: 'https://archives.boost.io/release/1.73.0/source/boost_1_73_0.tar.gz'
             boost_archive_name: 'boost_1_73_0.tar.gz'
             boost_folder_name: 'boost_1_73_0'
             boost_include_folder: 'C:\Boost\include\boost-1_73'
           - name: msvc-2019_boost_1800
             image: 'windows-2019'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
+            boost_url: 'https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz'
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
             boost_include_folder: 'C:\Boost\include\boost-1_80'
           - name: msvc-2022_boost_1780
             image: 'windows-2022'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
+            boost_url: 'https://archives.boost.io/release/1.78.0/source/boost_1_78_0.tar.gz'
             boost_archive_name: 'boost_1_78_0.tar.gz'
             boost_folder_name: 'boost_1_78_0'
             boost_include_folder: 'C:\Boost\include\boost-1_78'
           - name: msvc-2022_boost_1800
             image: 'windows-2022'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
+            boost_url: 'https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz'
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
             boost_include_folder: 'C:\Boost\include\boost-1_80'
           - name: msvc-latest_boost_1800
             image: 'windows-latest'
-            boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz'
+            boost_url: 'https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz'
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
             boost_include_folder: 'C:\Boost\include\boost-1_80'
@@ -100,7 +100,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ matrix.boost.version }}
           THRIFT_VERSION: 0.13.0
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
