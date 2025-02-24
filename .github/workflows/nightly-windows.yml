@@ -100,7 +100,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ matrix.boost.version }}
           THRIFT_VERSION: 0.13.0
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
