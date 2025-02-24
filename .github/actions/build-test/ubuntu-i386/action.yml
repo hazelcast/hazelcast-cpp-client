@@ -88,7 +88,6 @@ runs:
           && apt update \
           && apt install gh -y
 
-
     - name: Install Boost
       shell: ${{ env.shell }}
       run: |
