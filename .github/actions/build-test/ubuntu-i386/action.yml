@@ -48,6 +48,9 @@ runs:
         apt-get update
         apt-get install -y build-essential cmake curl git libssl-dev maven net-tools openjdk-${{ env.JAVA_VERSION }}-jre-headless gdb curl
 
+      # v1.0.2 - https://github.com/actions4gh/setup-gh/releases/tag/v1.0.2
+    - uses: actions4gh/setup-gh@44a12005484c53be5bf51bebe8c985b4be8ba8de
+
     - name: Make sure the target architecture is 32 bit
       shell: ${{ env.shell }}
       run: |
