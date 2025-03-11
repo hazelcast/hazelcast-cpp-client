@@ -19,7 +19,7 @@ set -e
 
 # add compiler flags necessary for test coverage
 if [ "$COVERAGE" = "ON" ]; then
-  CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage -fPIC -O0"
+  CXXFLAGS="$CXXFLAGS -fprofile-arcs -fprofile-update=atomic -ftest-coverage -fPIC -O0"
 fi
 
 # set -m32 or -m64 if a BIT_VERSION is given
