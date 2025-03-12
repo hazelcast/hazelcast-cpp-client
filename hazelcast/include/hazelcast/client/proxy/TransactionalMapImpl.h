@@ -47,7 +47,8 @@ protected:
 
     boost::future<boost::optional<serialization::pimpl::data>> put_data(
       const serialization::pimpl::data& key,
-      const serialization::pimpl::data& value);
+      const serialization::pimpl::data& value,
+      std::chrono::milliseconds ttl);
 
     boost::future<void> set_data(const serialization::pimpl::data& key,
                                  const serialization::pimpl::data& value);
@@ -86,6 +87,8 @@ protected:
 
     TransactionalMapImpl(const std::string& name,
                          txn::TransactionProxy& transaction_proxy);
+
+    static const std::chrono::milliseconds UNSET;
 };
 } // namespace proxy
 } // namespace client
