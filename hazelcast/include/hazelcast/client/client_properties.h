@@ -264,7 +264,7 @@ public:
      */
     static constexpr const char* CLOUD_URL_BASE = "hazelcast.client.cloud.url";
     static constexpr const char* CLOUD_URL_BASE_DEFAULT =
-      "api.viridian.hazelcast.com";
+      "api.cloud.hazelcast.com";
 
     /**
      * Parametrized SQL queries touching only a single partition benefit from
