@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://hazelcast.com">
-        <img class="center" width=10% src="https://hazelcast.com/wp-content/themes/hazelcast/img/logo_login.svg" alt="logo">
+        <img class="center" src="https://docs.hazelcast.com/_/img/hazelcast-logo.svg" alt="logo">
     </a>
     <h2 align="center">Hazelcast C++ Client</h2>
 </p>
