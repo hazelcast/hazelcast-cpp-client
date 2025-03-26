@@ -62,7 +62,23 @@ public:
     template<typename K, typename V, typename R = V>
     boost::future<boost::optional<R>> put(const K& key, const V& value)
     {
-        return to_object<R>(put_data(to_data(key), to_data(value)));
+        return to_object<R>(put_data(to_data(key), to_data(value), UNSET));
+    }
+
+    /**
+     * Transactional implementation of imap#put(key, value, ttl).
+     *
+     * The object to be put will be accessible only in the current transaction
+     * context till transaction is committed.
+     *
+     * @see imap#put(key, value, ttl)
+     */
+    template<typename K, typename V, typename R = V>
+    boost::future<boost::optional<R>> put(const K& key,
+                                          const V& value,
+                                          std::chrono::milliseconds ttl)
+    {
+        return to_object<R>(put_data(to_data(key), to_data(value), ttl));
     }
 
     /**
