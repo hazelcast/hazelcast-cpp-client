@@ -63,7 +63,7 @@ This command fetches the latest Hazelcast version. You can find all available ta
 [here](https://hub.docker.com/r/hazelcast/hazelcast/tags).
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.com/open-source-projects/downloads/)
-as described [here](Reference_Manual.md#12-starting-hazelcast-cluster).
+as described [here](Reference_Manual.md#12-starting-a-hazelcast-cluster).
 
 ### Client
 
@@ -103,7 +103,7 @@ You can also install the hazelcast-cpp-client with [conan](https://conan.io/) an
 
 ### Usage
 
-There is an example project in [sample_project](https://github.com/akeles85/hazelcast-cpp-client/tree/readme_update/sample_project) directory. You can run the example as below:
+There is an example project in the [sample_project](https://github.com/akeles85/hazelcast-cpp-client/tree/readme_update/sample_project) directory. You can run the example as below:
 
 If you use Linux or Mac:
 
@@ -152,7 +152,7 @@ int main() {
 * Distributed concurrency primitives from CP Subsystem such as [FencedLock](examples/cp/fenced_lock.cpp), [Semaphore](examples/cp/counting_semphore.cpp), [AtomicLong](examples/cp/atomic_long.cpp)
 * Integration with [Viridian](https://viridian.hazelcast.com/) (Hazelcast Cloud)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
-* Ability to listen client lifecycle, cluster state and distributed data structure events
+* Ability to listen to client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.com/clients/cplusplus/#client-features).
 
 ## Documentation
