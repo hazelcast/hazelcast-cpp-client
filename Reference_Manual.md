@@ -6,7 +6,7 @@
    * [Release Notes](#release-notes)
    * [1. Getting Started](#1-getting-started)
       * [1.1. Installing](#11-installing)
-         * [1.1.1. Vcpkg Users (Recommended)](#111-vcpkg-users-recommended)
+         * [1.1.1. Vcpkg Users](#111-vcpkg-users)
          * [1.1.2. Conan Users](#112-conan-users)
          * [1.1.3. Install From Source Code Using CMake](#113-install-from-source-code-using-cmake)
             * [1.1.3.1. Requirements](#1131-requirements)
@@ -184,7 +184,7 @@ This chapter provides information on how to get started with your Hazelcast C++ 
 
 ## 1.1. Installing
 
-### 1.1.1. Vcpkg Users (Recommended)
+### 1.1.1. Vcpkg Users
 Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The package name is `hazelcast-cpp-client`.
 
 Please see [getting started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
