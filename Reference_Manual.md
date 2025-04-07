@@ -1084,7 +1084,7 @@ Refer to the general [documentation](https://docs.hazelcast.com/hazelcast/latest
 
 ## 4.4. Custom Serialization
 
-Hazelcast lets you plug a custom serializer to be used for serialization of objects. It allows you also an integration point for any external serialization frameworks such as protobuf, flatbuffers, etc. 
+Hazelcast lets you plug a custom serializer to be used for serialization of objects. It also allows you an integration point for any external serialization frameworks such as protobuf, flatbuffers, etc. 
 
 A sample custom_serializer implementation of a `Person` class looks like the following:
 
