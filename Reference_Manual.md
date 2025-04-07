@@ -1177,7 +1177,7 @@ public:
 };
 ```
 
-As you see from the sample, the global serializer class should implement the `hazelcast::client::serialization::global_serializer` interface.
+As you can see from the sample, the global serializer class should implement the `hazelcast::client::serialization::global_serializer` interface.
 
 You should register the global serializer in the configuration.
 
