@@ -1983,7 +1983,7 @@ void listen_with_config() {
   client.shutdown().get();
 }
 ```
-The above examples compose a reliable topic listener that listens to the new messages and increments the received message count atomically. The listener also prints a debug message for each callback function available in the listener. The `on_store_sequence_id` callback function is used to store the last received message's sequence ID. The `terminate_on_exception` function allows you to evaluate the exception and continue or terminate the listener. The `on_cancel` callback function notifies you before the listener is canceled for any reason so that you can take the necessary action. The first example uses a default configuration for the reliable topic, and the second one uses a custom configuration.
+The above examples compose a reliable topic listener that listens to the new messages and increments the received message count atomically. The listener also prints a debug message for each callback function available in the listener. The `on_store_sequence_id` callback function is used to store the last received message's sequence ID. The `terminate_on_exception` function allows you to evaluate the exception and continue or terminate the listener. The `on_cancel` callback function notifies you before the listener is cancelled for any reason so that you can take the necessary action. The first example uses a default configuration for the reliable topic, and the second one uses a custom configuration.
 
 ### 7.4.9 Using pn_counter
 
@@ -2650,7 +2650,7 @@ A task in the code that you execute in a cluster might take longer than expected
 To cancel a task, you can use the `executor_promise<T>::cancel()` API. This API lets you to code and design for cancellations, a highly ignored part of software development. Please keep in mind that if the execution is already started or finished, the API may not be able to cancel the task. 
 
 #### 7.6.1.5.1 Example Task to Cancel
-The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `timeout` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being canceled.
+The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `timeout` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
 
 ```
 auto service = client->get_executor_service(get_test_name()).get();
