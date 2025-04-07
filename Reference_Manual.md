@@ -1243,7 +1243,7 @@ clientConfig.set_redo_operation(true);
 Its default value is `false` (disabled).
 
 ## 5.4. Setting Cluster Connection Timeout
-Cluster connection timeout is the timeout value for which the client tries to connect to the cluster. If the client cannot connect to the cluster during this timeout duration, the client shuts down itself and it can not be re-used (you need to obtain a new client).
+Cluster connection timeout is the timeout value for which the client tries to connect to the cluster. If the client cannot connect to the cluster during this timeout duration, the client shuts down itself and it cannot be re-used (you need to obtain a new client).
  
 The following example shows how you can set the cluster connection timeout to 30 seconds.
 
