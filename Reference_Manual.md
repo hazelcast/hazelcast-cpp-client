@@ -16,7 +16,7 @@
             * [1.1.3.5. Advanced Installation](#1135-advanced-installation)
                * [1.1.3.5.1. Custom Install Location](#11351-custom-install-location)
                * [1.1.3.5.2. CMake Configuration](#11352-cmake-configuration)
-      * [1.2. Starting Hazelcast Cluster](#12-starting-hazelcast-cluster)
+      * [1.2. Starting a Hazelcast Cluster](#12-starting-a-hazelcast-cluster)
          * [1.2.1. Starting Hazelcast Server](#121-starting-hazelcast-server)
             * [1.2.1.1. Starting Server Using Hazelcast Docker Images](#1211-starting-server-using-hazelcast-docker-images)
             * [1.2.1.2. Starting Server Using Hazelcast Distribution](#1212-starting-server-using-hazelcast-distribution)
@@ -69,7 +69,7 @@
             * [6.1.2.1. Enabling Validation Of Server Certificate](#6121-enabling-validation-of-server-certificate)
             * [6.1.2.2. Mutual Authentication (Two Way Authentication)](#6122-mutual-authentication-two-way-authentication)
             * [6.1.2.3. Constraining The Used Cipher List](#6123-constraining-the-used-cipher-list)
-   * [7. Using C++ Client with Hazelcast](#7-using-c-client-with-hazelcast)
+   * [7. Using the Hazelcast C++ Client](#7-using-the-hazelcast-c-client)
       * [7.1. C++ Client API Overview](#71-c-client-api-overview)
       * [7.2. C++ Client Operation Modes](#72-c-client-operation-modes)
          * [7.2.1. Smart Client](#721-smart-client)
@@ -148,8 +148,8 @@
          * [7.11.7 Error Handling](#7117-error-handling)
          * [7.11.8 Iterators](#7118-iterators)
             * [7.11.8.1 page_iterator](#71181-page_iterator)
-            * [7.11.8.2 page_iterator_sync](#71182-page_iterator)
-            * [7.11.8.3 row_iterator_sync](#71182-row_iterator)
+            * [7.11.8.2 page_iterator_sync](#71182-page_iterator_sync)
+            * [7.11.8.3 row_iterator_sync](#71183-row_iterator_sync)
    * [8. Development and Testing](#8-development-and-testing)
       * [8.1. Testing](#81-testing)
    * [9. Getting Help](#9-getting-help)
@@ -180,11 +180,11 @@ See the [Releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) p
 
 # 1. Getting Started
 
-This chapter provides information on how to get started with your Hazelcast C++ client. It outlines the requirements, installation and configuration of the client, setting up a cluster, and provides a simple application that uses a distributed map in C++ client.
+This chapter provides information on how to get started with your Hazelcast C++ client. It outlines the requirements, installation and configuration of the client, setting up a cluster, and provides a simple application that uses a distributed map with the C++ client.
 
 ## 1.1. Installing
 
-### 1.1.1. Vcpkg Users (Recommended)
+### 1.1.1. Vcpkg Users
 Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The package name is `hazelcast-cpp-client`.
 
 Please see [getting started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
@@ -212,7 +212,7 @@ cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/b
 cmake --build [build directory]
 ```
 
-### 1.2.1. Conan Users
+### 1.1.2. Conan Users
 Hazelcast C++ client package is indexed at [Conan Center Index](https://conan.io/center/hazelcast-cpp-client). You can use [Conan package manager](https://conan.io/) to install Hazelcast C++ client. The package name is `hazelcast-cpp-client`.
 
 Please see [example instructions](https://docs.conan.io/en/latest/getting_started.html#an-md5-hash-calculator-using-the-poco-libraries) on how to use conan package manager with your application. In summary,
@@ -282,7 +282,7 @@ cmake --build .
 sudo cmake --build . --target install
 ```
 
-You could speed up the build process with paralel threads like 'cmake --build . -j 4'
+You could speed up the build process with parallel threads like 'cmake --build . -j 4'
 
 See [this section](#11351-custom-install-location) for information on how to use a different installation location.
 
@@ -481,7 +481,7 @@ See the [Hazelcast Reference Manual](https://docs.hazelcast.com/hazelcast/latest
 
 ### 1.4.1. Configuring Hazelcast Server
 
-Hazelcast aims to run out-of-the-box for most common scenarios. However, if you have limitations on your network such as multicast being disabled, you may have to configure your Hazelcast members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
+Hazelcast aims to run out-of-the-box for most common scenarios. However, if you have limitations on your network such as multicast being disabled, you may have to configure your Hazelcast members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics of network configuration here.
 
 You can use the following options to configure Hazelcast:
 
@@ -606,7 +606,7 @@ See the [complete list of system properties](https://github.com/hazelcast/hazelc
 
 ## 1.5. Basic Usage
 
-Now that we have a working cluster and we know how to configure both our cluster and client, we can run a simple program to use a distributed map in C++ client.
+Now that we have a working cluster and we know how to configure both our cluster and client, we can run a simple program to use a distributed map with the C++ client.
 
 The following example first creates a programmatic configuration object. Then, it starts a client.
 
@@ -849,7 +849,7 @@ Vector of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`,
 
 If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`identified_data_serializer` serialization](#41-identified_data_serializer-serialization) and [`portable_serializer` serialization](#42-portable_serializer-serialization).
 
-On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#43-custom-serialization).
+On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#44-custom-serialization).
 
 Hazelcast serialization is mostly performed at compile time by implementing the specialization of template struct `hz_serializer<>`. The specialized struct should be defined at the `hazelcast::client::serialization` namespace. The serializer should be derived from one of the following marker classes:
 
@@ -918,7 +918,7 @@ If you want to support versioning of the objects, then you can use the portable 
 - Fetch individual fields without having to rely on the reflection.
 - Querying and indexing support without deserialization and/or reflection.
 
-In order to support these features, a serialized `Portable` object contains meta information like the version and concrete location of the each field in the binary data. This way Hazelcast is able to navigate in the binary data and deserialize only the required field without actually deserializing the whole object which improves the query performance.
+In order to support these features, a serialized `Portable` object contains meta information like the version and concrete location of each of the fields in the binary data. This way Hazelcast is able to navigate in the binary data and deserialize only the required field without actually deserializing the whole object which improves the query performance.
 
 With multiversion support, you can have two members where each of them having different versions of the same object, and Hazelcast will store both meta information and use the correct one to serialize and deserialize portable objects depending on the member. This is very helpful when you are doing a rolling upgrade without shutting down the cluster.
 
@@ -1084,7 +1084,7 @@ Refer to the general [documentation](https://docs.hazelcast.com/hazelcast/latest
 
 ## 4.4. Custom Serialization
 
-Hazelcast lets you plug a custom serializer to be used for serialization of objects. It allows you alsoan integration point for any external serialization frameworks such as protobuf, flatbuffers, etc. 
+Hazelcast lets you plug a custom serializer to be used for serialization of objects. It also allows you an integration point for any external serialization frameworks such as protobuf, flatbuffers, etc. 
 
 A sample custom_serializer implementation of a `Person` class looks like the following:
 
@@ -1177,7 +1177,7 @@ public:
 };
 ```
 
-As you see fromn the sample, the global serializer class should implement the `hazelcast::client::serialization::global_serializer` interface.
+As you can see from the sample, the global serializer class should implement the `hazelcast::client::serialization::global_serializer` interface.
 
 You should register the global serializer in the configuration.
 
@@ -1243,7 +1243,7 @@ clientConfig.set_redo_operation(true);
 Its default value is `false` (disabled).
 
 ## 5.4. Setting Cluster Connection Timeout
-Cluster connection timeout is the timeout value for which the client tries to connect to the cluster. If the client can not connect to cluster during this timeout duration, the client shuts down itself and it can not be re-used (you need to obtain a new client).
+Cluster connection timeout is the timeout value for which the client tries to connect to the cluster. If the client cannot connect to the cluster during this timeout duration, the client shuts down itself and it cannot be re-used (you need to obtain a new client).
  
 The following example shows how you can set the cluster connection timeout to 30 seconds.
 
@@ -1256,7 +1256,7 @@ client_config().get_connection_strategy_config().get_retry_config().set_cluster_
 When client is disconnected from the cluster, it searches for new connections to reconnect. You can configure the frequency of the reconnection attempts and client shutdown behavior using `connection_retry_config`.
 The following is an example configuration.
 
-Below is an example configuration. It configures a total timeout of 30 seconds to connect to a cluster, by initial backoff time being 100 milliseconds and doubling the time before every try with a jitter of 0.8  up to a maximum of 3 seconds backoff between each try..
+Below is an example configuration. It configures a total timeout of 30 seconds to connect to a cluster, by initial backoff time being 100 milliseconds and doubling the time before every try with a jitter of 0.8 up to a maximum of 3 seconds backoff between each try..
 
 ```c++
 client_config().get_connection_strategy_config().get_retry_config().set_cluster_connect_timeout(
@@ -1319,7 +1319,7 @@ That is all the configuration you will need. The client will query the hazelcast
 Please check the code sample at `examples/cloud-discovery/connect-cloud.cpp` for a full featured cloud discovery example.
 
 ## 5.8.1. Cloud Discovery With SSL Enabled
-You can create a Hazelcast cluster in the cloud with "[Enable Encryption](https://docs.hazelcast.com/cloud/encryption.html#setting-up-encryption)" option. When this option is selected the cluster requires the clients to connect using the SSL connection and the client should be configured to do [mutual authentication](#6122-mutual-authentication-two-way-authentication). The required certificate authority file, client certificate, client key file and key file PEM pass phrase are located at the Hazelcast cloud web site cluster configuration `Configure Clients` page. Download the keystore file and unzip it (it will be folder such as `hzcloud_xxx_keys` where `xxx` is the cluster number), this zip includes all the required files. Also, copy the `Keystore and truststore password` which is the client key PEM file pass phrase. Once, you have all this information in hand, you can configure the client as in the following code snippet:
+You can create a Hazelcast cluster in the cloud with "[Enable Encryption](https://docs.hazelcast.com/cloud/encryption.html#setting-up-encryption)" option. When this option is selected the cluster requires the clients to connect using the SSL connection and the client should be configured to do [mutual authentication](#6122-mutual-authentication-two-way-authentication). The required certificate authority file, client certificate, client key file and key file PEM pass phrase are located at the Hazelcast cloud web site cluster configuration `Configure Clients` page. Download the keystore file and unzip it (it will be in a folder such as `hzcloud_xxx_keys` where `xxx` is the cluster number), this zip includes all the required files. Also, copy the `Keystore and truststore password` which is the client key PEM file pass phrase. Once, you have all this information in hand, you can configure the client as in the following code snippet:
 ```c++
     std::string cluster_name = "my_cluster";
     std::string cloud_token = "my cloud token for the cluster";
@@ -1380,7 +1380,7 @@ at least one member in the configuration:
 ```
 
 This solution works everywhere without further configuration (Kubernetes, AWS, GCP, Azure, etc.) as long as the 
-corresponding plugin is enabled in Hazelcast server configuration.
+corresponding plugin is enabled in the Hazelcast server configuration.
 
 ## 5.10. Authentication
 
@@ -1524,7 +1524,7 @@ Hazelcast allows you to encrypt socket level communication between Hazelcast mem
 
 The Hazelcast C++ client uses [Boost Asio](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio.html) library for networking and secure communication. 
 
-To use TLS/SSL with your Hazelcast C++ client, you should build the library with OpenSSL feature turned on. By default, this feature is turned off. Here are the different ways to install the library with SSL support:
+To use TLS/SSL with your Hazelcast C++ client, you should build the library with the OpenSSL feature turned on. By default, this feature is turned off. Here are the different ways to install the library with SSL support:
 
 * CMake Users: Provide flag `-DWITH_OPENSSL=ON` flag when configuring. Please note that the CMake `find_package` should be able to locate the OpenSSL installation, otherwise the cmake config will fail. The rest is as usual with the [installation with cmake](#131-cmake-users).
 * Conan Users: Use option `with_openssl` while installing the conan project. An example command you can use in the build folder of your project with conan: `conan install -o hazelcast-cpp-client:with_openssl=True .. --build=hazelcast-cpp-client`. This command will install the `hazelcast-cpp-client` with the OpenSSL support.
@@ -1580,7 +1580,7 @@ As you can see in this code snippet, we add the server public certificate using 
 
 You can check `BasicTLSClient.cpp` example for a full featured example.
 
-#### 6.1.2.2. Mutual Authentication (Two Way Authentication) 
+#### 6.1.2.2. Mutual Authentication (Two Way Authentication)
 [Mutual Authentication](https://en.wikipedia.org/wiki/Mutual_authentication) is the process where the client verifies the identity of the server via server's certificate (either self-signed or signed by a CA authority) and the server verifies the client identity via the client provided certificate (either self-signed or signed by a CA authority). If the Hazelcast server is configured for [mutual authentication](https://docs.hazelcast.com/hazelcast/latest/security/tls-ssl.html#tlsssl-for-hazelcast-members) as **REQUIRED**, then we can use the [ssl::context::use_xxx](https://www.boost.org/doc/libs/1_76_0/doc/html/boost_asio/reference/ssl__context.html) methods to add the client's public and private certificates and use them during its authentication to the server. An example configuration is as follows:
 ```c++
     hazelcast::client::client_config config;
@@ -1616,7 +1616,7 @@ Cipher list string format and the details can be found at the official [OpenSSL 
 
 # 7. Using the Hazelcast C++ Client
 
-This chapter provides information on how you can use Hazelcast data structures in the C++ client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
+This chapter provides information on how you can use Hazelcast data structures in the C++ client, after giving some basic information including an overview of the client API, operation modes of the client and how it handles the failures.
 
 ## 7.1. C++ Client API Overview
 
@@ -1729,7 +1729,7 @@ To prevent the system from crashing, Hazelcast provides back pressure. Back pres
 - limiting the number of concurrent operation invocations,
 - periodically making an async backup sync.
 
-Sometimes, e.g., when your servers are overloaded, you may want to slow down the client operations to the cluster. Then the client can be configured to wait until number of outstanding invocations whose responses are not received to become less than a certain number. This is called Client Back Pressure. By default, the backpressure is disabled. There are a few properties which control the back pressure. The following are these client configuration properties:
+Sometimes, e.g., when your servers are overloaded, you may want to slow down the client operations to the cluster. Then the client can be configured to wait until the number of outstanding invocations whose responses are not received to become less than a certain number. This is called Client Back Pressure. By default, the backpressure is disabled. There are a few properties which control the back pressure. The following are these client configuration properties:
 
 - `hazelcast.client.max.concurrent.invocations`: The maximum number of concurrent invocations allowed. To prevent the system from overloading, you can apply a constraint on the number of concurrent invocations. If the maximum number of concurrent invocations has been exceeded and a new invocation comes in, then Hazelcast will throw `hazelcast_overload`. By default this property is configured as INT32_MAX.
 - `hazelcast.client.invocation.backoff.timeout.millis`: Controls the maximum timeout in milliseconds to wait for an invocation space to be available. If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done to give the system time to deal with the backlog of invocations. This property controls how long an invocation is allowed to wait before getting `hazelcast_overload`. When set to -1 then `hazelcast_overload` is thrown immediately without any waiting. This is the default value.
@@ -1744,7 +1744,7 @@ Hazelcast client-cluster connection and reconnection strategy can be configured.
 client_config::get_connection_strategy_config().set_async_start(bool);
 ```
 
-When this configuration is set to true, the client creation won't wait to connect to cluster. The client instance will throw an exception for any request, until it connects to the cluster and become ready.
+When this configuration is set to true, the client creation won't wait to connect to the cluster. The client instance will throw an exception for any request, until it connects to the cluster and become ready.
 
 If it is set to false (the default case), `hazelcast_client(const client_config)` will block until a cluster connection is established and it's ready to use the client instance.
 
@@ -2062,7 +2062,7 @@ atomic_long implementation does not offer exactly-once / effectively-once execut
 
 #### 7.4.11.2. Using fenced_lock
 
-Hazelcast `fenced_lock` is the distributed implementation of a linearizable lock. It offers multiple  operations for acquiring the lock. This data structure is a part of CP Subsystem.
+Hazelcast `fenced_lock` is the distributed implementation of a linearizable lock. It offers multiple operations for acquiring the lock. This data structure is a part of CP Subsystem.
 
 A basic Lock usage example is shown below.
 
@@ -2084,7 +2084,7 @@ fenced_lock works on top of CP sessions. It keeps a CP session open while the lo
 
 Distributed locks are unfortunately *not equivalent* to single-node mutexes because of the complexities in distributed systems, such as uncertain communication patterns, and independent and partial failures. In an asynchronous network, no lock service can guarantee mutual exclusion, because there is no way to distinguish between a slow and a crashed process. Consider the following scenario, where a Hazelcast client acquires a fenced_lock, then hits a long GC pause. Since it will not be able to commit session heartbeats while paused, its CP session will be eventually closed. After this moment, another Hazelcast client can acquire this lock. If the first client wakes up again, it may not immediately notice that it has lost ownership of the lock. In this case, multiple clients think they hold the lock. If they attempt to perform an operation on a shared resource, they can break the system. To prevent such situations, you can choose to use an infinite session timeout, but this time probably you are going to deal with liveliness issues. For the scenario above, even if the first client actually crashes, requests sent by 2 clients can be re-ordered in the network and hit the external resource in reverse order.
 
-There is a simple solution for this problem. Lock holders are ordered by a monotonic fencing token, which increments each time the lock is assigned to a new owner. This fencing token can be passed to external services or resources to ensure sequential execution of the side effects performed by the lock holders.
+There is a simple solution to this problem. Lock holders are ordered by a monotonic fencing token, which increments each time the lock is assigned to a new owner. This fencing token can be passed to external services or resources to ensure sequential execution of the side effects performed by the lock holders.
 
 You can read more about the fencing token idea in Martin Kleppmann's "How to do distributed locking" blog post and Google's Chubby paper.
 
@@ -2759,7 +2759,7 @@ namespace hazelcast {
 }
 ```
 
-Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1214-adding-user-java-library-to-java-classpath).
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1213-adding-user-java-library-to-java-classpath).
 
 The following is the Java equivalent of the entry processor in C++ client given above:
 
@@ -2926,7 +2926,7 @@ namespace hazelcast {
 Note that `person` is being serialized with portable_serializer`. As portable types are not deserialized on the server side for querying, you don't need to implement its Java equivalent on the server side for querying.
 
 For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. 
-In this case before starting the server, you need to compile the `person` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#1214-adding-user-java-library-to-java-classpath).
+In this case before starting the server, you need to compile the `person` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#1213-adding-user-java-library-to-java-classpath).
 
 > **NOTE: Querying with `portable_serializer` is faster as compared to `identified_data_serializer` .**
 
@@ -3137,7 +3137,7 @@ values = map->values(pagingPredicate).get();
 //...
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements the `query::entry_comparator` interface. Also, this comparator object should be Hazelcast serializable. After implementing After implementing this object in C++, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the C++ side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1214-adding-user-java-library-to-java-classpath). 
+If you want to sort the result before paging, you need to specify a comparator object that implements the `query::entry_comparator` interface. Also, this comparator object should be Hazelcast serializable. After implementing After implementing this object in C++, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the C++ side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1213-adding-user-java-library-to-java-classpath). 
 
 Also, you can access a specific page more easily with the help of the `set_page` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `next_page` function.
 
@@ -3403,7 +3403,7 @@ You can set a callback function to be called on each log message via `logger_con
 ```
 Setting a log handler will disable the default log handling behavior. 
 
-The handler takes instance name of the client object that emitted the message, cluster name that the client is connected, name of the source code and the line number where the log was produced, the severity level of the log message, and the log message itself. Here is the exact signature for a log handler function:
+The handler takes the instance name of the client object that emitted the message, cluster name that the client is connected, name of the source code and the line number where the log was produced, the severity level of the log message, and the log message itself. Here is the exact signature for a log handler function:
 
 ```c++
 void my_log_handler(
@@ -3461,7 +3461,7 @@ If you are using the CLI, Docker image, or distributions to start Hazelcast memb
 
 However, if you are using Hazelcast members in the embedded mode, or receiving errors saying that The Jet engine is disabled or `Cannot execute SQL query because "hazelcast-sql" module is not in the classpath.` while executing queries, enable the Jet engine following one of the instructions pointed out in the error message, or add the `hazelcast-sql` module to your member's classpath as it is stated [here](https://docs.hazelcast.com/hazelcast/latest/sql/sql-overview#before-you-begin).
 ### 7.11.1 Overview
-All the sql related types and functionalities accomodate in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module.
+All the sql related types and functionalities accommodate in `hazelcast::client::sql` namespace. It is possible to execute queries on `imap`, `Kafka` and `Files` by using this module.
 
 `sql_service` is the main controller of this module. Queries can be executed via `sql_service` class. It also supports to specify query parameters. After executing any query `boost::future<std::shared_ptr<sql_result>>` is returned.
 
@@ -3494,7 +3494,7 @@ auto result = sql.execute(R"(
                     )").get();
 ```
 ### 7.11.3 Read SELECT Results
-`SELECT` results are fetched page by page. A page can accomodate zero or more rows.
+`SELECT` results are fetched page by page. A page can accommodate zero or more rows.
 
 `sql_service::execute` executes the query and returns a `boost::future<std::shared_ptr<sql_result>>`. Via `sql_result::iterator()` method, `sql_result::page_iterator` is acquired and pages can be iterated.
 ``` C++
@@ -3713,7 +3713,7 @@ It contains several useful methods which represents the error better.
 
 Those methods are stated at below :
 - `sql::hazelcast_sql_exception::code()` returns an internal error code. It might be useful to express an error more detailed.
-- `sql::hazelcast_sql_exception::suggestion()` returns an suggestion message to fix the problem. It can be null.
+- `sql::hazelcast_sql_exception::suggestion()` returns a suggestion message to fix the problem. It can be null.
 - `sql::hazelcast_sql_exception::originating_member_id()` returns an `boost:uuids::uuid` which is ID of the member that caused or initiated an error condition.
 
 Exceptions which can be thrown by SQL API are stated at below:
