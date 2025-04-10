@@ -75,7 +75,7 @@ Please see [getting started](https://github.com/microsoft/vcpkg#getting-started)
 If you use Linux or Mac:
 
 ```sh
-git clone https://github.com/microsoft/vcpkg
+git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
 ./vcpkg/bootstrap-vcpkg.sh
 ./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
 ``` 
@@ -83,7 +83,7 @@ git clone https://github.com/microsoft/vcpkg
 If you use Windows:
 
 ```bat
-git clone https://github.com/microsoft/vcpkg
+git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
 .\vcpkg\bootstrap-vcpkg.bat
 .\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
 ``` 
