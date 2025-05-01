@@ -176,7 +176,7 @@ See the following for more information on Hazelcast:
 
 # Release Notes
 
-See the [Releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page of this repository.
+See the [Releases](releases) page of this repository.
 
 # 1. Getting Started
 
@@ -241,7 +241,7 @@ This generates the `conanbuildinfo.cmake` file to be included in your CMakeLists
 5. [OpenSSL](https://www.openssl.org) (optional)
 
 #### 1.1.3.2. Downloading Source Code
-Go to the [releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page to download the source code for the latest Hazelcast C++ client.
+Go to the [releases](releases) page to download the source code for the latest Hazelcast C++ client.
 
 The releases page has both `tar.gz` and `zip` archives available. Choose the one which suits your system the best.
 
@@ -288,7 +288,7 @@ See [this section](#11351-custom-install-location) for information on how to use
 
 #### 1.1.3.4. Windows Users
 Download and extract the release archive from the 
-[releases](https://github.com/hazelcast/hazelcast-cpp-client/releases) page.
+[releases](releases) page.
 
 Open a `cmd` window and change into the folder where you extracted the contents of the release archive. Then create and change into a new directory:
 ```bat
@@ -602,7 +602,7 @@ export hazelcast.client.invocation.timeout.seconds=2
 
 If you set a property both programmatically and via an environment variable, the programmatically set value will be used.
 
-See the [complete list of system properties](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/hazelcast/include/hazelcast/client/client_properties.h), along with their descriptions, which can be used to configure your Hazelcast C++ client.
+See the [complete list of system properties](hazelcast/include/hazelcast/client/client_properties.h), along with their descriptions, which can be used to configure your Hazelcast C++ client.
 
 ## 1.5. Basic Usage
 
@@ -757,7 +757,7 @@ You will see this time we add only the sales employees but we get the list all k
 
 ## 1.6. Code Samples
 
-See the Hazelcast C++ [code samples](https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples) for more examples.
+See the Hazelcast C++ [code samples](examples) for more examples.
 
 # 2. Features
 
@@ -1298,8 +1298,8 @@ clientConfig.get_network_config().get_aws_config()
 
 You need to enable the discovery by calling the `set_enabled(true)`. You can set your access key and secret in the configuration as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances will be retrieved from, the default region is `us-east-1`.
 
-See [client_aws_config.h](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/hazelcast/include/hazelcast/client/config/client_aws_config.h)
-and [the AWS examples directory](https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples/aws)
+See [client_aws_config.h](hazelcast/include/hazelcast/client/config/client_aws_config.h)
+and [the AWS examples directory](examples/aws)
 for more details.
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
@@ -3850,7 +3850,7 @@ Besides your development contributions as explained in the [Development and Test
 
 # 11. License
 
-[Apache 2 License](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/LICENSE).
+[Apache 2 License](LICENSE).
 
 # 12. Copyright
 
