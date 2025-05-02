@@ -38,7 +38,7 @@ runs:
       shell: ${{ env.shell }}
       working-directory: hazelcast-repo
       run: |
-        ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout
+        ./mvnw install -Pquick --batch-mode --no-transfer-progress
         echo "HAZELCAST_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ${GITHUB_ENV}
         echo "HZ_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ${GITHUB_ENV}
 
