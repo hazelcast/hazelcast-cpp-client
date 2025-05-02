@@ -70,7 +70,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: 'hazelcast/hazelcast-mono'
-          ref: '9ef2025fbbd8bbeb5c8271a2dd0788659a377fd9'
+          ref: 'c2d2246a63d3c95c4a1489e92416272f637750da'
           path: 'hazelcast-repo'
           token: ${{ secrets.GH_TOKEN }}
 
