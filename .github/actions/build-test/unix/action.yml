@@ -34,6 +34,14 @@ env:
 runs:
   using: composite
   steps:
+    - name: Local build
+      shell: ${{ env.shell }}
+      working-directory: hazelcast-repo
+      run: |
+        ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout
+        echo "HAZELCAST_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ${GITHUB_ENV}
+        echo "HZ_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ${GITHUB_ENV}
+
     - name: Download hazelcast-enterprise-tests.jar
       shell: ${{ env.shell }}
       run: |
