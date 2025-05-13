@@ -2990,6 +2990,7 @@ cluster_view_listener::try_register(
 
     auto handler =
       std::make_shared<event_handler>(connection->get_connection_id(), *this);
+    handler->set_logger(&client_context_.get_logger());
     invocation->set_event_handler(handler);
     handler->before_listener_register();
 
