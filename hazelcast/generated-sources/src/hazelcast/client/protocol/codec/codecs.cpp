@@ -116,13 +116,20 @@ client_addclusterviewlistener_encode()
     return msg;
 }
 
+client_addclusterviewlistener_handler::client_addclusterviewlistener_handler(
+  logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 client_addclusterviewlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 770) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto version = msg.get<int32_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
@@ -132,8 +139,9 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
         return;
     }
     if (messageType == 771) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto version = msg.get<int32_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
@@ -143,7 +151,7 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[client_addclusterviewlistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
@@ -239,13 +247,20 @@ client_localbackuplistener_encode()
     return msg;
 }
 
+client_localbackuplistener_handler::client_localbackuplistener_handler(
+  logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 client_localbackuplistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 3842) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto source_invocation_correlation_id = msg.get<int64_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
 
@@ -253,7 +268,7 @@ client_localbackuplistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[client_localbackuplistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
@@ -793,13 +808,20 @@ map_addentrylistenerwithpredicate_encode(
     return msg;
 }
 
+map_addentrylistenerwithpredicate_handler::
+  map_addentrylistenerwithpredicate_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 map_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 71426) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -819,7 +841,7 @@ map_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[map_addentrylistenerwithpredicate_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
@@ -854,13 +876,19 @@ map_addentrylistenertokey_encode(const std::string& name,
     return msg;
 }
 
+map_addentrylistenertokey_handler::map_addentrylistenertokey_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 map_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 71682) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -879,7 +907,7 @@ map_addentrylistenertokey_handler::handle(ClientMessage& msg)
                      number_of_affected_entries);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format("[map_addentrylistenertokey_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
@@ -911,13 +939,19 @@ map_addentrylistener_encode(const std::string& name,
     return msg;
 }
 
+map_addentrylistener_handler::map_addentrylistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 map_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 71938) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -936,7 +970,7 @@ map_addentrylistener_handler::handle(ClientMessage& msg)
                      number_of_affected_entries);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format("[map_addentrylistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
@@ -1475,13 +1509,20 @@ map_addnearcacheinvalidationlistener_encode(const std::string& name,
     return msg;
 }
 
+map_addnearcacheinvalidationlistener_handler::
+  map_addnearcacheinvalidationlistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 map_addnearcacheinvalidationlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 81666) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto source_uuid = msg.get<boost::uuids::uuid>();
         auto partition_uuid = msg.get<boost::uuids::uuid>();
         auto sequence = msg.get<int64_t>();
@@ -1504,7 +1545,7 @@ map_addnearcacheinvalidationlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[map_addnearcacheinvalidationlistener_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
@@ -1793,13 +1834,20 @@ multimap_addentrylistenertokey_encode(const std::string& name,
     return msg;
 }
 
+multimap_addentrylistenertokey_handler::multimap_addentrylistenertokey_handler(
+  logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 multimap_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 134402) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -1819,7 +1867,7 @@ multimap_addentrylistenertokey_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[multimap_addentrylistenertokey_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
@@ -1849,13 +1897,19 @@ multimap_addentrylistener_encode(const std::string& name,
     return msg;
 }
 
+multimap_addentrylistener_handler::multimap_addentrylistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 multimap_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 134658) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -1874,7 +1928,7 @@ multimap_addentrylistener_handler::handle(ClientMessage& msg)
                      number_of_affected_entries);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format("[multimap_addentrylistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
@@ -2361,13 +2415,19 @@ queue_addlistener_encode(const std::string& name,
     return msg;
 }
 
+queue_addlistener_handler::queue_addlistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 queue_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 200962) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto uuid = msg.get<boost::uuids::uuid>();
         auto event_type = msg.get<int32_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
@@ -2376,7 +2436,7 @@ queue_addlistener_handler::handle(ClientMessage& msg)
         handle_item(item, uuid, event_type);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format("[queue_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
@@ -2472,13 +2532,19 @@ topic_addmessagelistener_encode(const std::string& name, bool local_only)
     return msg;
 }
 
+topic_addmessagelistener_handler::topic_addmessagelistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 topic_addmessagelistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 262658) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto publish_time = msg.get<int64_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
@@ -2487,7 +2553,7 @@ topic_addmessagelistener_handler::handle(ClientMessage& msg)
         handle_topic(item, publish_time, uuid);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format("[topic_addmessagelistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
@@ -2719,13 +2785,19 @@ list_addlistener_encode(const std::string& name,
     return msg;
 }
 
+list_addlistener_handler::list_addlistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 list_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 330498) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto uuid = msg.get<boost::uuids::uuid>();
         auto event_type = msg.get<int32_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
@@ -2734,7 +2806,7 @@ list_addlistener_handler::handle(ClientMessage& msg)
         handle_item(item, uuid, event_type);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format("[list_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
@@ -3142,13 +3214,19 @@ set_addlistener_encode(const std::string& name,
     return msg;
 }
 
+set_addlistener_handler::set_addlistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 set_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 396034) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto uuid = msg.get<boost::uuids::uuid>();
         auto event_type = msg.get<int32_t>();
         msg.seek(static_cast<int32_t>(initial_frame->frame_len));
@@ -3157,7 +3235,7 @@ set_addlistener_handler::handle(ClientMessage& msg)
         handle_item(item, uuid, event_type);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format("[set_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
@@ -4181,14 +4259,21 @@ replicatedmap_addentrylistenertokeywithpredicate_encode(
     return msg;
 }
 
+replicatedmap_addentrylistenertokeywithpredicate_handler::
+  replicatedmap_addentrylistenertokeywithpredicate_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 replicatedmap_addentrylistenertokeywithpredicate_handler::handle(
   ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 854530) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -4207,7 +4292,7 @@ replicatedmap_addentrylistenertokeywithpredicate_handler::handle(
                      number_of_affected_entries);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format(
               "[replicatedmap_addentrylistenertokeywithpredicate_handler::"
@@ -4239,13 +4324,20 @@ replicatedmap_addentrylistenerwithpredicate_encode(
     return msg;
 }
 
+replicatedmap_addentrylistenerwithpredicate_handler::
+  replicatedmap_addentrylistenerwithpredicate_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 replicatedmap_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 854786) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -4264,7 +4356,7 @@ replicatedmap_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
                      number_of_affected_entries);
         return;
     }
-    HZ_LOG(*get_logger(),
+    HZ_LOG(get_logger(),
            warning,
            (boost::format(
               "[replicatedmap_addentrylistenerwithpredicate_handler::handle] "
@@ -4296,13 +4388,20 @@ replicatedmap_addentrylistenertokey_encode(
     return msg;
 }
 
+replicatedmap_addentrylistenertokey_handler::
+  replicatedmap_addentrylistenertokey_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 replicatedmap_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 855042) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -4322,7 +4421,7 @@ replicatedmap_addentrylistenertokey_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[replicatedmap_addentrylistenertokey_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
@@ -4348,13 +4447,20 @@ replicatedmap_addentrylistener_encode(const std::string& name, bool local_only)
     return msg;
 }
 
+replicatedmap_addentrylistener_handler::replicatedmap_addentrylistener_handler(
+  logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 replicatedmap_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 855298) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -4374,7 +4480,7 @@ replicatedmap_addentrylistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[replicatedmap_addentrylistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
@@ -4471,13 +4577,20 @@ replicatedmap_addnearcacheentrylistener_encode(const std::string& name,
     return msg;
 }
 
+replicatedmap_addnearcacheentrylistener_handler::
+  replicatedmap_addnearcacheentrylistener_handler(logger& l)
+  : impl::BaseEventHandler(l)
+{
+}
+
 void
 replicatedmap_addnearcacheentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
     if (messageType == 856578) {
-        auto* initial_frame = reinterpret_cast<ClientMessage::frame_header_type*>(
-          msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
         auto event_type = msg.get<int32_t>();
         auto uuid = msg.get<boost::uuids::uuid>();
         auto number_of_affected_entries = msg.get<int32_t>();
@@ -4497,7 +4610,7 @@ replicatedmap_addnearcacheentrylistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(
-      *get_logger(),
+      get_logger(),
       warning,
       (boost::format("[replicatedmap_addnearcacheentrylistener_handler::handle]"
                      " Unknown message type (%1%) received on event handler.") %

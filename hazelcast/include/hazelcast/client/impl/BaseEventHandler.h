@@ -38,7 +38,7 @@ class HAZELCAST_API BaseEventHandler
   : public spi::EventHandler<protocol::ClientMessage>
 {
 public:
-    BaseEventHandler();
+    BaseEventHandler(logger &logger);
 
     ~BaseEventHandler() override;
 
@@ -61,12 +61,10 @@ public:
      */
     void on_listener_register() override {}
 
-    void set_logger(logger* lg);
-
-    logger* get_logger() const;
+    logger &get_logger() const;
 
 protected:
-    logger* logger_;
+    logger &logger_;
 };
 } // namespace impl
 } // namespace client

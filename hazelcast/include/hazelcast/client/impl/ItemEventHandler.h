@@ -31,11 +31,13 @@ class item_event_handler : public BaseType
 public:
     item_event_handler(
       std::string instance_name,
+      logger &logger,
       spi::impl::ClientClusterServiceImpl& cluster_service,
       serialization::pimpl::SerializationService& serialization_service,
       item_listener&& listener,
       bool include_value)
-      : instance_name_(std::move(instance_name))
+      : BaseType(logger)
+      , instance_name_(std::move(instance_name))
       , cluster_service_(cluster_service)
       , serialization_service_(serialization_service)
       , listener_(std::move(listener))

@@ -48,7 +48,7 @@ private:
         int connection_id;
         cluster_view_listener& view_listener;
 
-        event_handler(int connectionId, cluster_view_listener& viewListener);
+        event_handler(int connectionId, cluster_view_listener& viewListener, logger &logger);
 
         virtual void before_listener_register();
 
