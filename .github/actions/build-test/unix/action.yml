@@ -54,6 +54,7 @@ runs:
             -DBUILD_SHARED_LIBS=${{ inputs.SHARED_LIBS_TOGGLE }}         \
             -DWITH_OPENSSL=${{ inputs.OPENSSL_TOGGLE }}                  \
             -DBUILD_TESTS=ON                                             \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer"\
             -DBUILD_EXAMPLES=OFF
 
     - name: Test
