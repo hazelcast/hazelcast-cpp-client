@@ -520,17 +520,11 @@ hazelcast_client_instance_impl::check_discovery_configuration_consistency(
 
 BaseEventHandler::~BaseEventHandler() = default;
 
-BaseEventHandler::BaseEventHandler()
-  : logger_(nullptr)
+BaseEventHandler::BaseEventHandler(logger &logger)
+  : logger_(logger)
 {}
 
-void
-BaseEventHandler::set_logger(logger* lg)
-{
-    BaseEventHandler::logger_ = lg;
-}
-
-logger*
+logger &
 BaseEventHandler::get_logger() const
 {
     return logger_;

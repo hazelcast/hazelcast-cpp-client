@@ -94,6 +94,7 @@ private:
       : public protocol::codec::client_localbackuplistener_handler
     {
     public:
+        explicit noop_backup_event_handler(logger& l);
         void handle_backup(int64_t source_invocation_correlation_id) override;
     };
 

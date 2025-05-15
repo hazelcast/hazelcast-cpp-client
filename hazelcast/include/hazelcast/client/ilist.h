@@ -53,6 +53,7 @@ public:
           itemEventHandler(new impl::item_event_handler<
                            protocol::codec::list_addlistener_handler>(
             get_name(),
+            get_context().get_logger(),
             get_context().get_client_cluster_service(),
             get_context().get_serialization_service(),
             std::move(listener),
