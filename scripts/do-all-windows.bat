@@ -9,7 +9,6 @@
 
 set BUILD_DIR=build
 set INSTALL=ON
-set BUILD_CONFIGURATION=%BUILD_TYPE%
 
 set DESTINATION=%cd%\destination
 

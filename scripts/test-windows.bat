@@ -3,7 +3,7 @@
 @REM
 @REM This environment variables are the parameters to this script:
 @REM - BUILD_DIR : build directory
-@REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
+@REM - BUILD_TYPE : config to use when building (Release, Debug, etc.)
 @REM
 
 call scripts/start-rc.bat || (
@@ -14,7 +14,7 @@ call scripts/start-rc.bat || (
 set RC_START_TIMEOUT_IN_SECS=300
 set RC_PORT=9701
 
-set TEST_EXECUTABLE=%BUILD_DIR%\hazelcast\test\src\%BUILD_CONFIGURATION%\client_test.exe
+set TEST_EXECUTABLE=%BUILD_DIR%\hazelcast\test\src\%BUILD_TYPE%\client_test.exe
 
 
 set timeout=%RC_START_TIMEOUT_IN_SECS%
@@ -48,7 +48,7 @@ exit /b 1
 
 echo "Starting the client test now."
 
-set PATH=%BUILD_DIR%\%BUILD_CONFIGURATION%;%BUILD_DIR%\bin\%BUILD_CONFIGURATION%;%PATH%
+set PATH=%BUILD_DIR%\%BUILD_TYPE%;%BUILD_DIR%\bin\%BUILD_TYPE%;%PATH%
 
 echo %TEST_EXECUTABLE%
 %TEST_EXECUTABLE% --gtest_output="xml:CPP_Client_Test_Report.xml"

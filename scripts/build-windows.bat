@@ -4,7 +4,7 @@
 @REM - BUILD_DIR : build directory
 @REM - BIT_VERSION : target platform architecture (32 or 64)
 @REM - INSTALL : install after the build finishes (set to ON)
-@REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
+@REM - BUILD_TYPE : config to use when building (Release, Debug, etc.)
 @REM - CXXFLAGS : additional compiler flags
 @REM
 @REM Command line arguments are forwarded to CMake.
@@ -16,6 +16,14 @@ REM print variables for debugging
 @echo SOLUTION_TYPE = %SOLUTION_TYPE%
 @echo PLATFORM      = %PLATFORM%
 @echo BUILD_DIR     = %BUILD_DIR%
+@echo BUILD_TYPE    = %BUILD_TYPE%
+
+if /I "%BUILD_TYPE%"=="debug" (
+    REM Treat compiler warnings as errors when the build type is Debug
+    set "CXXFLAGS=%CXXFLAGS% -Werror"
+    REM Enable address sanitizer to provide meaningful stack traces
+    set "CXXFLAGS=%CXXFLAGS% -fsanitize=address -fno-omit-frame-pointer"
+)
 
 REM remove the given build directory if already exists
 @rd /s /q %BUILD_DIR%
@@ -24,17 +32,17 @@ REM remove the given build directory if already exists
 @echo Configuring...
 cmake -S . -B %BUILD_DIR% ^
       -A %PLATFORM% ^
-      -DCMAKE_CONFIGURATION_TYPES=%BUILD_CONFIGURATION%  ^
+      -DCMAKE_CONFIGURATION_TYPES=%BUILD_TYPE%  ^
       %* ^
       || exit /b 1 
 
 @echo Building...
-cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_CONFIGURATION% || exit /b 1
+cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_TYPE% || exit /b 1
 
 
 if "%INSTALL%" == "ON" (
     @echo Installing...
-    cmake --install %BUILD_DIR% --config %BUILD_CONFIGURATION% || exit /b 1
+    cmake --install %BUILD_DIR% --config %BUILD_TYPE% || exit /b 1
 )
 
 
