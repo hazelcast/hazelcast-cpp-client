@@ -8,8 +8,8 @@
 # - BIT_VERSION : target platform architecture (32 or 64)
 # - COVERAGE : add compiler flags necessary for test coverage (set to ON)
 # - INSTALL : install after the build finishes (set to ON)
-# - WARN_AS_ERR : treat compiler warnings as errors (set to ON)
 # - CXXFLAGS : additional compiler flags
+# - BUILD_TYPE : config to use when building (Release, Debug, etc.)
 #
 # Command line arguments are forwarded to CMake.
 #
@@ -30,7 +30,8 @@ fi
 # enable all compiler warnings
 CXXFLAGS="$CXXFLAGS -Wall"
 
-if [ "$WARN_AS_ERR" = "ON" ]; then
+if [ "${BUILD_TYPE}" = "Debug" ]; then
+  # treat compiler warnings as errors when the build type is Debug
   CXXFLAGS="$CXXFLAGS -Werror"
 fi
 
@@ -46,6 +47,7 @@ echo "BIT_VERSION     = $BIT_VERSION"
 echo "COVERAGE        = $COVERAGE"
 echo "INSTALL         = $INSTALL"
 echo "CXXFLAGS        = $CXXFLAGS"
+echo "BUILD_TYPE      = $BUILD_TYPE"
 echo "CMake arguments = $@"
 
 # export flags variable to be used by CMake
@@ -57,7 +59,7 @@ mkdir $BUILD_DIR
 cd $BUILD_DIR
 
 echo "Configuring..."
-cmake $SOURCE_DIR "$@"
+cmake $SOURCE_DIR -DCMAKE_BUILD_TYPE=${BUILD_TYPE} "$@"
 
 echo "Building..."
 VERBOSE=1 cmake --build .
