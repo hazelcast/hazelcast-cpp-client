@@ -54,8 +54,10 @@ jobs:
             choco_options: ''
             address_model: 64
         build_type:
-          - Debug
-          - Release
+          - type: Debug
+            cxx_flags: '-fsanitize=address -fno-omit-frame-pointer'
+          - type: Release
+            cxx_flags: ''
         shared_libs:
           - toggle: OFF
             name: Static
@@ -69,10 +71,10 @@ jobs:
 
     runs-on: ${{ matrix.vc_boost.image }}
     env:
-      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.arch.address_model }},${{ matrix.build_type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.arch.address_model }},${{ matrix.build_type.type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     name: >-
       Windows
-      (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
       - uses: actions/checkout@v4
@@ -82,25 +84,26 @@ jobs:
         uses: actions/cache@v4
         with:          
           path: C:\Boost
-          key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type.type }}
           restore-keys: |
-            ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type.type }}
 
       - name: Cache Thrift Version
         id: cache-thrift
         uses: actions/cache@v4
         with:          
           path: C:\Thrift
-          key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type.type }}
           restore-keys: |
-            ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type.type }}
 
       - uses: ./.github/actions/build-test/windows
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ matrix.boost.version }}
           THRIFT_VERSION: 0.13.0
-          BUILD_TYPE: ${{ matrix.build_type }}
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          CXX_FLAGS: ${{ matrix.build_type.cxx_flags }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}

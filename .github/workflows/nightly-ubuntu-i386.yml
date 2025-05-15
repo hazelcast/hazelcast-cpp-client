@@ -21,8 +21,10 @@ jobs:
         build_type:
           - type: Debug
             warn_as_err: ON
+            cxx_flags: '-fsanitize=address -fno-omit-frame-pointer'
           - type: Release
             warn_as_err: OFF
+            cxx_flags: ''
 
         shared_libs:
           - toggle: OFF
@@ -56,6 +58,7 @@ jobs:
           THRIFT_VERSION: 0.13.0
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
           BUILD_TYPE: ${{ matrix.build_type.type }}
+          CXX_FLAGS: ${{ matrix.build_type.cxx_flags }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ inputs.run_tests || github.event_name == 'schedule' }}

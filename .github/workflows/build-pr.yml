@@ -123,8 +123,10 @@ jobs:
         build_type:
           - type: Debug
             warn_as_err: ON
+            cxx_flags: '-fsanitize=address -fno-omit-frame-pointer'
           - type: Release
             warn_as_err: OFF
+            cxx_flags: ''
             
         shared_libs:
           - toggle: OFF
@@ -160,6 +162,7 @@ jobs:
           THRIFT_VERSION: ${{ env.thrift_version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
           BUILD_TYPE: ${{ matrix.build_type.type }}
+          CXX_FLAGS: ${{ matrix.build_type.cxx_flags }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
@@ -178,8 +181,10 @@ jobs:
         build_type:
           - type: Debug
             warn_as_err: ON
+            cxx_flags: '-fsanitize=address -fno-omit-frame-pointer'
           - type: Release
             warn_as_err: OFF
+            cxx_flags: ''
 
         shared_libs:
           - toggle: OFF
@@ -210,6 +215,7 @@ jobs:
           THRIFT_VERSION: ${{ env.thrift_version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
           BUILD_TYPE: ${{ matrix.build_type.type }}
+          CXX_FLAGS: ${{ matrix.build_type.cxx_flags }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
@@ -231,8 +237,10 @@ jobs:
             choco_options: ''
             address_model: 64
         build_type:
-          - Debug
-          - Release
+          - type: Debug
+            cxx_flags: '-fsanitize=address -fno-omit-frame-pointer'
+          - type: Release
+            cxx_flags: ''
         shared_libs:
           - toggle: OFF
             name: Static
@@ -246,7 +254,7 @@ jobs:
 
     runs-on: 'windows-latest'
     env:
-      JOB_NAME: win_${{ matrix.arch.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
+      JOB_NAME: win_${{ matrix.arch.address_model }}_${{ matrix.build_type.type }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     name: win-${{ matrix.arch.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     steps:
       - uses: actions/checkout@v4
@@ -259,7 +267,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
           THRIFT_VERSION: ${{ env.thrift_version }}
-          BUILD_TYPE: ${{ matrix.build_type }}
+          BUILD_TYPE: ${{ matrix.build_type.type }}
+          CXX_FLAGS: ${{ matrix.build_type.cxx_flags }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
@@ -285,8 +294,10 @@ jobs:
         build_type:
           - type: Debug
             warn_as_err: ON
+            cxx_flags: '-fsanitize=address -fno-omit-frame-pointer'
           - type: Release
             warn_as_err: OFF
+            cxx_flags: ''
 
         shared_libs:
           - toggle: OFF
@@ -318,6 +329,7 @@ jobs:
           BOOST_VERSION: ${{ env.boost_version }}
           WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
           BUILD_TYPE: ${{ matrix.build_type.type }}
+          CXX_FLAGS: ${{ matrix.build_type.cxx_flags }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}

@@ -9,6 +9,8 @@ inputs:
     required: true
   BUILD_TYPE:
     required: true
+  CXX_FLAGS:
+    required: true
   SHARED_LIBS_TOGGLE:
     required: true
   OPENSSL_TOGGLE:
@@ -132,7 +134,7 @@ runs:
         BUILD_CONFIGURATION: ${{ inputs.BUILD_TYPE }}
         BIT_VERSION: ${{ inputs.ARCH_ADDRESS_MODEL }}
         INSTALL: ON
-        CXXFLAGS: '/I C:\Thrift\include\'
+        CXXFLAGS: '/I C:\Thrift\include\ ${{ inputs.CXX_FLAGS}}'
       shell: ${{ env.shell }}
       run: |
         .\scripts\build-windows.bat `

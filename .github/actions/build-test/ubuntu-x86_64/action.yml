@@ -11,6 +11,8 @@ inputs:
     required: true
   BUILD_TYPE:
     required: true
+  CXX_FLAGS:
+    required: true
   SHARED_LIBS_TOGGLE:
     required: true
   OPENSSL_TOGGLE:
@@ -76,6 +78,7 @@ runs:
         THRIFT_VERSION: ${{ inputs.THRIFT_VERSION }}
         WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
         BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
+        CXX_FLAGS: ${{ inputs.CXX_FLAGS }}
         SHARED_LIBS_TOGGLE: ${{ inputs.SHARED_LIBS_TOGGLE }}
         OPENSSL_TOGGLE: ${{ inputs.OPENSSL_TOGGLE }}
         RUN_TESTS: ${{ inputs.RUN_TESTS }}

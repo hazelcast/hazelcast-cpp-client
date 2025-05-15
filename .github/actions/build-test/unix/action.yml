@@ -11,6 +11,8 @@ inputs:
     required: true
   BUILD_TYPE:
     required: true
+  CXX_FLAGS:
+    required: true
   SHARED_LIBS_TOGGLE:
     required: true
   OPENSSL_TOGGLE:
@@ -45,6 +47,7 @@ runs:
       env:
         BUILD_DIR: build
         INSTALL: ON
+        CXXFLAGS: '${{ inputs.CXX_FLAGS}}'
         WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
       shell: ${{ env.shell }}
       run: |
