@@ -62,6 +62,8 @@ client_addclusterviewlistener_encode();
 struct HAZELCAST_API client_addclusterviewlistener_handler
   : public impl::BaseEventHandler
 {
+    client_addclusterviewlistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param version Incremental member list version
@@ -289,6 +291,8 @@ client_localbackuplistener_encode();
 struct HAZELCAST_API client_localbackuplistener_handler
   : public impl::BaseEventHandler
 {
+    client_localbackuplistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param source_invocation_correlation_id correlation id of the invocation
@@ -548,6 +552,8 @@ map_addentrylistenerwithpredicate_encode(
 struct HAZELCAST_API map_addentrylistenerwithpredicate_handler
   : public impl::BaseEventHandler
 {
+    map_addentrylistenerwithpredicate_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -593,6 +599,8 @@ map_addentrylistenertokey_encode(const std::string& name,
 struct HAZELCAST_API map_addentrylistenertokey_handler
   : public impl::BaseEventHandler
 {
+    map_addentrylistenertokey_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -637,6 +645,8 @@ map_addentrylistener_encode(const std::string& name,
 struct HAZELCAST_API map_addentrylistener_handler
   : public impl::BaseEventHandler
 {
+    map_addentrylistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -952,6 +962,8 @@ map_addnearcacheinvalidationlistener_encode(const std::string& name,
 struct HAZELCAST_API map_addnearcacheinvalidationlistener_handler
   : public impl::BaseEventHandler
 {
+    map_addnearcacheinvalidationlistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key The key of the invalidated entry.
@@ -1097,6 +1109,8 @@ multimap_addentrylistenertokey_encode(const std::string& name,
 struct HAZELCAST_API multimap_addentrylistenertokey_handler
   : public impl::BaseEventHandler
 {
+    multimap_addentrylistenertokey_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -1140,6 +1154,8 @@ multimap_addentrylistener_encode(const std::string& name,
 struct HAZELCAST_API multimap_addentrylistener_handler
   : public impl::BaseEventHandler
 {
+    multimap_addentrylistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -1402,6 +1418,8 @@ queue_addlistener_encode(const std::string& name,
 
 struct HAZELCAST_API queue_addlistener_handler : public impl::BaseEventHandler
 {
+    queue_addlistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param item Item that the event is fired for.
@@ -1457,6 +1475,8 @@ topic_addmessagelistener_encode(const std::string& name, bool local_only);
 struct HAZELCAST_API topic_addmessagelistener_handler
   : public impl::BaseEventHandler
 {
+    topic_addmessagelistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param item Item that the event is fired for.
@@ -1575,6 +1595,8 @@ list_addlistener_encode(const std::string& name,
 
 struct HAZELCAST_API list_addlistener_handler : public impl::BaseEventHandler
 {
+    list_addlistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param item Item that the event is fired for.
@@ -1791,6 +1813,8 @@ set_addlistener_encode(const std::string& name,
 
 struct HAZELCAST_API set_addlistener_handler : public impl::BaseEventHandler
 {
+    set_addlistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param item Item that the event is fired for.
@@ -2259,6 +2283,8 @@ replicatedmap_addentrylistenertokeywithpredicate_encode(
 struct HAZELCAST_API replicatedmap_addentrylistenertokeywithpredicate_handler
   : public impl::BaseEventHandler
 {
+    replicatedmap_addentrylistenertokeywithpredicate_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -2303,6 +2329,8 @@ replicatedmap_addentrylistenerwithpredicate_encode(
 struct HAZELCAST_API replicatedmap_addentrylistenerwithpredicate_handler
   : public impl::BaseEventHandler
 {
+    replicatedmap_addentrylistenerwithpredicate_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -2347,6 +2375,8 @@ replicatedmap_addentrylistenertokey_encode(
 struct HAZELCAST_API replicatedmap_addentrylistenertokey_handler
   : public impl::BaseEventHandler
 {
+    replicatedmap_addentrylistenertokey_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -2388,6 +2418,8 @@ replicatedmap_addentrylistener_encode(const std::string& name, bool local_only);
 struct HAZELCAST_API replicatedmap_addentrylistener_handler
   : public impl::BaseEventHandler
 {
+    replicatedmap_addentrylistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
@@ -2466,6 +2498,8 @@ replicatedmap_addnearcacheentrylistener_encode(const std::string& name,
 struct HAZELCAST_API replicatedmap_addnearcacheentrylistener_handler
   : public impl::BaseEventHandler
 {
+    replicatedmap_addnearcacheentrylistener_handler(logger& l);
+
     void handle(ClientMessage& msg);
     /**
      * @param key Key of the entry event.
