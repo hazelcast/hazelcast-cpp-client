@@ -20,9 +20,9 @@ REM print variables for debugging
 
 if "%BUILD_TYPE%"=="Debug" (
     REM Treat compiler warnings as errors when the build type is Debug
-    set "CXXFLAGS=%CXXFLAGS% -Werror"
+    set CXXFLAGS="%CXXFLAGS% -Werror"
     REM Enable address sanitizer to provide meaningful stack traces
-    set "CXXFLAGS=%CXXFLAGS% -fsanitize=address -fno-omit-frame-pointer"
+    set CXXFLAGS="%CXXFLAGS% -fsanitize=address -fno-omit-frame-pointer"
 )
 
 REM remove the given build directory if already exists
