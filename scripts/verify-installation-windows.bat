@@ -4,7 +4,7 @@
 @REM This environment variables are the parameters to this script:
 @REM - BUILD_DIR : build directory
 @REM - BIT_VERSION : target platform architecture (32 or 64)
-@REM - BUILD_TYPE : config to use when building (Release, Debug, etc.)
+@REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
 @REM
 @REM Command line arguments are forwarded to CMake.
 @REM
@@ -18,10 +18,10 @@ REM remove the given build directory if already exists
 echo "Configuring..."
 cmake -S .\examples -B %BUILD_DIR% ^
       -A %PLATFORM% ^
-      -DCMAKE_CONFIGURATION_TYPES=%BUILD_TYPE%  ^
+      -DCMAKE_CONFIGURATION_TYPES=%BUILD_CONFIGURATION%  ^
       -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake ^
       %* ^
       || exit /b 1
 
 echo "Building..."
-cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_TYPE% || exit /b 1
+cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_CONFIGURATION% || exit /b 1

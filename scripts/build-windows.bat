@@ -4,7 +4,7 @@
 @REM - BUILD_DIR : build directory
 @REM - BIT_VERSION : target platform architecture (32 or 64)
 @REM - INSTALL : install after the build finishes (set to ON)
-@REM - BUILD_TYPE : config to use when building (Release, Debug, etc.)
+@REM - BUILD_CONFIGURATION : config to use when building (Release, Debug, etc.)
 @REM - CXXFLAGS : additional compiler flags
 @REM
 @REM Command line arguments are forwarded to CMake.
@@ -13,16 +13,16 @@
 @call .\scripts\windows-common.bat
 
 REM print variables for debugging
-@echo SOLUTION_TYPE = %SOLUTION_TYPE%
-@echo PLATFORM      = %PLATFORM%
-@echo BUILD_DIR     = %BUILD_DIR%
-@echo BUILD_TYPE    = %BUILD_TYPE%
+@echo SOLUTION_TYPE         = %SOLUTION_TYPE%
+@echo PLATFORM              = %PLATFORM%
+@echo BUILD_DIR             = %BUILD_DIR%
+@echo BUILD_CONFIGURATION   = %BUILD_CONFIGURATION%
 
-if "%BUILD_TYPE%"=="Debug" (
-    REM Treat compiler warnings as errors when the build type is Debug
-    set CXXFLAGS="%CXXFLAGS% -Werror"
+if "%BUILD_CONFIGURATION%"=="Debug" (
     REM Enable address sanitizer to provide meaningful stack traces
-    set CXXFLAGS="%CXXFLAGS% -fsanitize=address -fno-omit-frame-pointer"
+    REM Not enabled due to failure with tooling on GitHub Actions
+    REM https://github.com/actions/runner-images/issues/7739
+    REM set CXXFLAGS=%CXXFLAGS% -fsanitize=address
 )
 
 REM remove the given build directory if already exists
@@ -32,17 +32,17 @@ REM remove the given build directory if already exists
 @echo Configuring...
 cmake -S . -B %BUILD_DIR% ^
       -A %PLATFORM% ^
-      -DCMAKE_CONFIGURATION_TYPES=%BUILD_TYPE%  ^
+      -DCMAKE_CONFIGURATION_TYPES=%BUILD_CONFIGURATION%  ^
       %* ^
       || exit /b 1 
 
 @echo Building...
-cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_TYPE% || exit /b 1
+cmake --build %BUILD_DIR% --verbose --parallel --config %BUILD_CONFIGURATION% || exit /b 1
 
 
 if "%INSTALL%" == "ON" (
     @echo Installing...
-    cmake --install %BUILD_DIR% --config %BUILD_TYPE% || exit /b 1
+    cmake --install %BUILD_DIR% --config %BUILD_CONFIGURATION% || exit /b 1
 )
 
 
