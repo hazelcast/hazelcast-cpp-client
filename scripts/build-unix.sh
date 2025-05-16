@@ -61,7 +61,7 @@ mkdir $BUILD_DIR
 cd $BUILD_DIR
 
 echo "Configuring..."
-cmake $SOURCE_DIR ${BUILD_TYPE:+-DCMAKE_BUILD_TYPE=${BUILD_TYPE}} "$@"
+cmake $SOURCE_DIR -DCMAKE_BUILD_TYPE=${BUILD_TYPE} "$@"
 
 echo "Building..."
 VERBOSE=1 cmake --build .
