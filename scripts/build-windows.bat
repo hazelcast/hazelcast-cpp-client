@@ -18,7 +18,7 @@ REM print variables for debugging
 @echo BUILD_DIR     = %BUILD_DIR%
 @echo BUILD_TYPE    = %BUILD_TYPE%
 
-if /I "%BUILD_TYPE%"=="debug" (
+if "%BUILD_TYPE%"=="Debug" (
     REM Treat compiler warnings as errors when the build type is Debug
     set "CXXFLAGS=%CXXFLAGS% -Werror"
     REM Enable address sanitizer to provide meaningful stack traces
