@@ -19,8 +19,8 @@ jobs:
           - version: 1.71.0
           - version: 1.76.0
         build_type:
-          - type: Debug
-          - type: Release
+          - Debug
+          - Release
 
         shared_libs:
           - toggle: OFF
