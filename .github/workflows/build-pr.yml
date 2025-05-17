@@ -115,35 +115,26 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
+  shared-matrix:
+    uses: ./.github/workflows/get-shared-matrix.yml
+
   Ubuntu-i386:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-        build_type:
-          - type: Debug
-            warn_as_err: ON
-          - type: Release
-            warn_as_err: OFF
-            
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ubuntu-latest
     container:
       image: i386/ubuntu
       options: --privileged
 
-    name: ubuntu-i386-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+    name: ubuntu-i386-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
         # Deliberately uses an old version because i386 is stuck on an outdated version of Javascript
@@ -158,8 +149,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
           THRIFT_VERSION: ${{ env.thrift_version }}
-          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
@@ -170,32 +160,19 @@ jobs:
 
 
   Ubuntu-x86_64:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-
-        build_type:
-          - type: Debug
-            warn_as_err: ON
-          - type: Release
-            warn_as_err: OFF
-
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-
-        with_openssl:
-          - toggle: OFF
-            name: noSSL
-          - toggle: ON
-            name: SSL
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ubuntu-latest
 
-    name: ubuntu-x64-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+    name: ubuntu-x64-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
 
       - uses: actions/checkout@v4
@@ -208,8 +185,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
           THRIFT_VERSION: ${{ env.thrift_version }}
-          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
@@ -219,30 +195,16 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   Windows:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - cmake: Win32
-            choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
-            address_model: 32
-          - cmake: x64
-            choco_options: ''
-            address_model: 64
-        build_type:
-          - Debug
-          - Release
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        arch: ${{ fromJSON(needs.shared-matrix.outputs.windows-arch) }}
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: 'windows-latest'
     env:
@@ -278,31 +240,19 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   macOS-x86_64:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-        build_type:
-          - type: Debug
-            warn_as_err: ON
-          - type: Release
-            warn_as_err: OFF
-
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: macos-latest
 
-    name: macOS-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+    name: macOS-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     env:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
@@ -316,8 +266,7 @@ jobs:
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
-          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
