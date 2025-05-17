@@ -63,10 +63,10 @@ runs:
       env:
         BUILD_DIR: build
         COVERAGE: ON
+        BUILD_TYPE: Debug
       shell: ${{ env.shell }}
       run: |
         ./scripts/build-unix.sh        \
-            -DCMAKE_BUILD_TYPE=Debug   \
             -DBUILD_SHARED_LIBS=ON     \
             -DWITH_OPENSSL=ON          \
             -DBUILD_TESTS=ON           \

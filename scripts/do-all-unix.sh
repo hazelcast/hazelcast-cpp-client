@@ -17,11 +17,6 @@ set -e
 export BUILD_DIR=build
 export INSTALL=ON
 
-# treat compiler warnings as errors when the build type is Debug
-if [ "$BUILD_TYPE" == "Debug" ]; then
-  export WARN_AS_ERR=ON
-fi
-
 DESTINATION=$(pwd)/destination
 
 # set BUILD_SHARED_LIBS depending on LIBRARY_TYPE
@@ -31,7 +26,6 @@ if [ "$LIBRARY_TYPE" == "STATIC" ]; then
 fi
 
 ./scripts/build-unix.sh                      \
-    -DCMAKE_BUILD_TYPE=$BUILD_TYPE           \
     -DCMAKE_INSTALL_PREFIX=$DESTINATION      \
     -DBUILD_SHARED_LIBS=$BUILD_SHARED_LIBS   \
     -DWITH_OPENSSL=$WITH_OPENSSL             \

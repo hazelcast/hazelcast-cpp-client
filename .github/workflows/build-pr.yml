@@ -121,10 +121,8 @@ jobs:
       fail-fast: false
       matrix:
         build_type:
-          - type: Debug
-            warn_as_err: ON
-          - type: Release
-            warn_as_err: OFF
+          - Debug
+          - Release
             
         shared_libs:
           - toggle: OFF
@@ -143,7 +141,7 @@ jobs:
       image: i386/ubuntu
       options: --privileged
 
-    name: ubuntu-i386-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+    name: ubuntu-i386-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
         # Deliberately uses an old version because i386 is stuck on an outdated version of Javascript
@@ -158,8 +156,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
           THRIFT_VERSION: ${{ env.thrift_version }}
-          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
@@ -176,10 +173,8 @@ jobs:
       matrix:
 
         build_type:
-          - type: Debug
-            warn_as_err: ON
-          - type: Release
-            warn_as_err: OFF
+          - Debug
+          - Release
 
         shared_libs:
           - toggle: OFF
@@ -195,7 +190,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    name: ubuntu-x64-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+    name: ubuntu-x64-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
 
       - uses: actions/checkout@v4
@@ -208,8 +203,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
           THRIFT_VERSION: ${{ env.thrift_version }}
-          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
@@ -283,10 +277,8 @@ jobs:
       fail-fast: false
       matrix:
         build_type:
-          - type: Debug
-            warn_as_err: ON
-          - type: Release
-            warn_as_err: OFF
+          - Debug
+          - Release
 
         shared_libs:
           - toggle: OFF
@@ -302,7 +294,7 @@ jobs:
 
     runs-on: macos-latest
 
-    name: macOS-(${{ matrix.build_type.type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+    name: macOS-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     env:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
@@ -316,8 +308,7 @@ jobs:
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
-          WARN_AS_ERR: ${{ matrix.build_type.warn_as_err }}
-          BUILD_TYPE: ${{ matrix.build_type.type }}
+          BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.run_tests }}
