@@ -22,6 +22,7 @@ env:
   # Not possible to set this as a default
   # https://github.com/orgs/community/discussions/46670
   shell: bash
+  BUILD_TYPE: Debug
 
 runs:
   using: composite
@@ -63,7 +64,6 @@ runs:
       env:
         BUILD_DIR: build
         COVERAGE: ON
-        BUILD_TYPE: Debug
       shell: ${{ env.shell }}
       run: |
         ./scripts/build-unix.sh        \

@@ -54,6 +54,13 @@ else
   echo "Server started in $((RC_START_TIMEOUT_IN_SECS - timeout)) seconds"
 fi
 
+if [ "${BUILD_TYPE}" = "Debug" ]; then
+  # disable leak detection
+  # need to address outstanding issues before we can aggressively block new ones
+  # https://github.com/hazelcast/hazelcast-cpp-client/issues/1282
+  export ASAN_OPTIONS=detect_leaks=0
+fi
+
 echo "Starting the client test now."
 ${TEST_EXECUTABLE} --gtest_output="xml:CPP_Client_Test_Report.xml" &
 testPid=$!
