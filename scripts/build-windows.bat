@@ -12,17 +12,17 @@
 
 @call .\scripts\windows-common.bat
 
-REM print variables for debugging
+@REM print variables for debugging
 @echo SOLUTION_TYPE         = %SOLUTION_TYPE%
 @echo PLATFORM              = %PLATFORM%
 @echo BUILD_DIR             = %BUILD_DIR%
 @echo BUILD_CONFIGURATION   = %BUILD_CONFIGURATION%
 
 if "%BUILD_CONFIGURATION%"=="Debug" (
-    REM Enable address sanitizer to provide meaningful stack traces
-    REM Not enabled due to failure with tooling on GitHub Actions
-    REM https://github.com/actions/runner-images/issues/7739
-    REM set CXXFLAGS=%CXXFLAGS% -fsanitize=address
+    @REM Enable address sanitizer to provide meaningful stack traces
+    @REM Not enabled due to failure with tooling on GitHub Actions
+    @REM https://github.com/actions/runner-images/issues/7739
+    @REM set CXXFLAGS=%CXXFLAGS% -fsanitize=address
 )
 
 REM remove the given build directory if already exists
