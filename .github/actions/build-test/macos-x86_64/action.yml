@@ -5,8 +5,6 @@ inputs:
     required: true
   BOOST_VERSION:
     required: true
-  WARN_AS_ERR:
-    required: true
   BUILD_TYPE:
     required: true
   SHARED_LIBS_TOGGLE:
@@ -53,7 +51,6 @@ runs:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
         BOOST_VERSION: ${{ inputs.BOOST_VERSION }}
         THRIFT_VERSION: ${{ inputs.THRIFT_VERSION }}
-        WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
         BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
         SHARED_LIBS_TOGGLE: ${{ inputs.SHARED_LIBS_TOGGLE }}
         OPENSSL_TOGGLE: ${{ inputs.OPENSSL_TOGGLE }}

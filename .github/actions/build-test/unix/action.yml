@@ -7,8 +7,6 @@ inputs:
     required: true
   THRIFT_VERSION:
     required: true
-  WARN_AS_ERR:
-    required: true
   BUILD_TYPE:
     required: true
   SHARED_LIBS_TOGGLE:
@@ -45,11 +43,10 @@ runs:
       env:
         BUILD_DIR: build
         INSTALL: ON
-        WARN_AS_ERR: ${{ inputs.WARN_AS_ERR }}
+        BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
       shell: ${{ env.shell }}
       run: |
         ./scripts/build-unix.sh                                          \
-            -DCMAKE_BUILD_TYPE=${{ inputs.BUILD_TYPE }}                  \
             -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination   \
             -DBUILD_SHARED_LIBS=${{ inputs.SHARED_LIBS_TOGGLE }}         \
             -DWITH_OPENSSL=${{ inputs.OPENSSL_TOGGLE }}                  \
