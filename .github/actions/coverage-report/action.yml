@@ -64,6 +64,7 @@ runs:
       env:
         BUILD_DIR: build
         COVERAGE: ON
+        BUILD_TYPE: Debug
       shell: ${{ env.shell }}
       run: |
         ./scripts/build-unix.sh        \
