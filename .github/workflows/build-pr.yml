@@ -8,8 +8,6 @@ name: Build&Test PR
 on: 
 
   # automatic on every pull request
-  # todo revert
-  pull_request:
 
   # manual (for community PRs that we want to force-run here)  
   workflow_dispatch:
