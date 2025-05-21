@@ -470,8 +470,9 @@ private:
           const std::shared_ptr<
             internal::nearcache::NearCache<serialization::pimpl::data,
                                            serialization::pimpl::data>>&
-            near_cache)
-          : near_cache_(near_cache)
+            near_cache, logger &logger)
+          : protocol::codec::replicatedmap_addnearcacheentrylistener_handler(logger),
+          near_cache_(near_cache)
         {}
 
         void before_listener_register() override { near_cache_->clear(); }
@@ -565,7 +566,8 @@ private:
               register_listener(
                 create_near_cache_invalidation_listener_codec(),
                 std::shared_ptr<impl::BaseEventHandler>(
-                  new ReplicatedMapAddNearCacheEventHandler(near_cache_)))
+                  new ReplicatedMapAddNearCacheEventHandler(near_cache_,
+                                                            get_context().get_logger())))
                 .get();
         } catch (exception::iexception& e) {
             HZ_LOG(get_context().get_logger(),

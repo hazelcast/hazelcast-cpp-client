@@ -94,7 +94,7 @@ protected:
         invalidate_on_change_ = near_cache_->is_invalidated_on_change();
         if (invalidate_on_change_) {
             std::shared_ptr<client::impl::BaseEventHandler> invalidationHandler(
-              new ClientMapAddNearCacheEventHandler(near_cache_));
+              new ClientMapAddNearCacheEventHandler(logger_, near_cache_));
             add_near_cache_invalidate_listener(invalidationHandler);
         }
 
@@ -506,10 +506,12 @@ private:
     public:
         // TODO: implement RepairingTask as in Java client
         ClientMapAddNearCacheEventHandler(
+          logger &logger,
           const std::shared_ptr<
             internal::nearcache::NearCache<serialization::pimpl::data, V>>&
             cache)
-          : near_cache_(cache)
+          : protocol::codec::map_addnearcacheinvalidationlistener_handler(logger)
+          , near_cache_(cache)
         {}
 
         void before_listener_register() override { near_cache_->clear(); }

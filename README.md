@@ -63,7 +63,7 @@ This command fetches the latest Hazelcast version. You can find all available ta
 [here](https://hub.docker.com/r/hazelcast/hazelcast/tags).
 
 You can also use our ZIP or TAR [distributions](https://hazelcast.com/open-source-projects/downloads/)
-as described [here](Reference_Manual.md#12-starting-hazelcast-cluster).
+as described [here](Reference_Manual.md#12-starting-a-hazelcast-cluster).
 
 ### Client
 
@@ -75,7 +75,7 @@ Please see [getting started](https://github.com/microsoft/vcpkg#getting-started)
 If you use Linux or Mac:
 
 ```sh
-git clone https://github.com/microsoft/vcpkg
+git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
 ./vcpkg/bootstrap-vcpkg.sh
 ./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
 ``` 
@@ -83,7 +83,7 @@ git clone https://github.com/microsoft/vcpkg
 If you use Windows:
 
 ```bat
-git clone https://github.com/microsoft/vcpkg
+git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
 .\vcpkg\bootstrap-vcpkg.bat
 .\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
 ``` 
@@ -97,13 +97,13 @@ cmake --build [build directory]
 
 ##### Other Methods
 
-You can also install the hazelcast-cpp-client with [conan](https://conan.io/) and from source code. You can more information from [Reference Manual](https://github.com/akeles85/hazelcast-cpp-client/blob/readme_update/Reference_Manual.md#11-installing).
+You can also install the hazelcast-cpp-client with [conan](https://conan.io/) and from source code. You can more information from [Reference Manual](Reference_Manual.md#11-installing).
 
 ## Overview
 
 ### Usage
 
-There is an example project in [sample_project](https://github.com/akeles85/hazelcast-cpp-client/tree/readme_update/sample_project) directory. You can run the example as below:
+There is an example project in the [sample_project](sample_project) directory. You can run the example as below:
 
 If you use Linux or Mac:
 
@@ -146,13 +146,13 @@ int main() {
 
 * Distributed, partitioned and queryable in-memory key-value store implementation, called [Map](examples/distributed-map/basic/FillMap.cpp)
 * Eventually consistent cache implementation to store a subset of the Map data locally in the memory of the client, called [Near Cache](examples/distributed-map/near-cache)
-* Additional data structures and simple messaging constructs such as [Set](examples/distributed-collections/set), [MultiMap](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/examples/distributed-map/multimap/MultimapPut.cpp), [Queue](examples/distributed-collections/blockingqueue), [Topic](examples/distributed-topic)
-* Cluster-wide unique ID generator, called [FlakeIdGenerator](https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples/learning-basics/unique-names)
+* Additional data structures and simple messaging constructs such as [Set](examples/distributed-collections/set), [MultiMap](examples/distributed-map/multimap/MultimapPut.cpp), [Queue](examples/distributed-collections/blockingqueue), [Topic](examples/distributed-topic)
+* Cluster-wide unique ID generator, called [FlakeIdGenerator](examples/learning-basics/unique-names)
 * Distributed, CRDT based counter, called [PNCounter](examples/distributed-primitives/crdt-pncounter)
 * Distributed concurrency primitives from CP Subsystem such as [FencedLock](examples/cp/fenced_lock.cpp), [Semaphore](examples/cp/counting_semphore.cpp), [AtomicLong](examples/cp/atomic_long.cpp)
 * Integration with [Viridian](https://viridian.hazelcast.com/) (Hazelcast Cloud)
 * Support for serverless and traditional web service architectures with **Unisocket** and **Smart** operation modes
-* Ability to listen client lifecycle, cluster state and distributed data structure events
+* Ability to listen to client lifecycle, cluster state and distributed data structure events
 * and [many more](https://hazelcast.com/clients/cplusplus/#client-features).
 
 ## Documentation

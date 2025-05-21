@@ -34,7 +34,7 @@ set +x
 
 trap cleanup EXIT
 
-HZ_VERSION=${HZ_VERSION:-5.4.0}
+HZ_VERSION=${HZ_VERSION:-5.5.5}
 HAZELCAST_TEST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION=0.8-SNAPSHOT
@@ -59,9 +59,9 @@ else
 fi
 
 if [ -f "hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar" ]; then
-    echo "hazelcast-test.jar already exists, not downloading from maven."
+    echo "hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar already exists, not downloading from maven."
 else
-    downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests"
+    downloadFromMaven ${ENTERPRISE_REPO} "com.hazelcast:hazelcast:${HAZELCAST_TEST_VERSION}:jar:tests"
 fi
 
 version_greater_equal ${HZ_VERSION} 4.2.0
@@ -76,7 +76,7 @@ if [[ ${INCLUDE_SQL} -eq "1" ]]; then
     if [ -f "hazelcast-sql-${HZ_VERSION}.jar" ]; then
         echo "hazelcast-sql-${HZ_VERSION}.jar already exists, not downloading from maven."
     else
-        downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
+        downloadFromMaven ${ENTERPRISE_REPO} "com.hazelcast:hazelcast-sql:${HZ_VERSION}:jar"
     fi
 fi
 

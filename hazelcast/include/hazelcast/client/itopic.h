@@ -79,6 +79,7 @@ public:
           std::shared_ptr<impl::BaseEventHandler>(
             new topic::impl::TopicEventHandlerImpl(
               get_name(),
+              get_context().get_logger(),
               get_context().get_client_cluster_service(),
               get_context().get_serialization_service(),
               std::move(listener))));

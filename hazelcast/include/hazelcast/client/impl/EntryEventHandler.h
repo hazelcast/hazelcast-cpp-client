@@ -45,7 +45,8 @@ public:
       entry_listener&& listener,
       bool include_value,
       logger& lg)
-      : instance_name_(std::move(instance_name))
+      : BaseType(lg)
+      , instance_name_(std::move(instance_name))
       , cluster_service_(cluster_service)
       , serialization_service_(serialization_service)
       , listener_(std::move(listener))

@@ -663,7 +663,6 @@ ClientProxy::register_listener(
   std::shared_ptr<impl::ListenerMessageCodec> listener_message_codec,
   std::shared_ptr<client::impl::BaseEventHandler> handler)
 {
-    handler->set_logger(&get_context().get_logger());
     return get_context().get_client_listener_service().register_listener(
       listener_message_codec, handler);
 }
@@ -720,7 +719,7 @@ ClientInvocationServiceImpl::add_backup_listener()
         auto& listener_service = this->client_.get_client_listener_service();
         listener_service
           .register_listener(std::make_shared<BackupListenerMessageCodec>(),
-                             std::make_shared<noop_backup_event_handler>())
+                             std::make_shared<noop_backup_event_handler>(logger_))
           .get();
     }
 }
@@ -2988,8 +2987,8 @@ cluster_view_listener::try_register(
       "",
       connection);
 
-    auto handler =
-      std::make_shared<event_handler>(connection->get_connection_id(), *this);
+    auto handler = std::make_shared<event_handler>(
+      connection->get_connection_id(), *this, client_context_.get_logger());
     invocation->set_event_handler(handler);
     handler->before_listener_register();
 
@@ -3088,8 +3087,10 @@ cluster_view_listener::event_handler::on_listener_register()
 
 cluster_view_listener::event_handler::event_handler(
   int connectionId,
-  cluster_view_listener& viewListener)
-  : connection_id(connectionId)
+  cluster_view_listener& viewListener,
+  logger &logger)
+  : protocol::codec::client_addclusterviewlistener_handler(logger)
+  , connection_id(connectionId)
   , view_listener(viewListener)
 {}
 } // namespace listener
@@ -3114,6 +3115,11 @@ ClientInvocationServiceImpl::noop_backup_event_handler::handle_backup(
   int64_t /* source_invocation_correlation_id */)
 {
     assert(0);
+}
+ClientInvocationServiceImpl::noop_backup_event_handler::
+  noop_backup_event_handler(logger& l)
+  : client_localbackuplistener_handler(l)
+{
 }
 
 namespace discovery {
