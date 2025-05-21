@@ -23,9 +23,21 @@ jobs:
           - version: 1.73.0
           - version: 1.76.0
 
-        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
-        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
-        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
+        build_type:
+          - Debug
+          - Release
+
+        shared_libs:
+          - toggle: OFF
+            name: Static
+          - toggle: ON
+            name: Shared
+
+        with_openssl:
+          - toggle: OFF
+            name: noSSL
+          - toggle: ON
+            name: SSL
 
     runs-on: ubuntu-latest
 
