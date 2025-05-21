@@ -47,10 +47,12 @@ exit /b 1
 :server_started
 
 if "%BUILD_CONFIGURATION%"=="Debug" (
-  @REM disable leak detection
-  @REM need to address outstanding issues before we can aggressively block new ones
-  @REM https://github.com/hazelcast/hazelcast-cpp-client/issues/1282
-  set ASAN_OPTIONS=detect_leaks=0
+  if "%ASAN_OPTIONS%"=="" (
+    @REM disable leak detection
+    @REM need to address outstanding issues before we can aggressively block new ones
+    @REM https://github.com/hazelcast/hazelcast-cpp-client/issues/1282
+    set ASAN_OPTIONS=detect_leaks=0
+  )
 )
 
 echo "Starting the client test now."

@@ -54,7 +54,7 @@ else
   echo "Server started in $((RC_START_TIMEOUT_IN_SECS - timeout)) seconds"
 fi
 
-if [ "${BUILD_TYPE}" = "Debug" ]; then
+if [ "${BUILD_TYPE}" = "Debug" ] && [ -z "${ASAN_OPTIONS}" ]; then
   # disable leak detection
   # need to address outstanding issues before we can aggressively block new ones
   # https://github.com/hazelcast/hazelcast-cpp-client/issues/1282
