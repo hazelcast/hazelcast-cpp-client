@@ -64,7 +64,7 @@ runs:
       env:
         BUILD_DIR: build
         COVERAGE: ON
-        BUILD_TYPE: Debug
+        BUILD_TYPE: ${{ env.BUILD_TYPE }}
       shell: ${{ env.shell }}
       run: |
         ./scripts/build-unix.sh        \
@@ -81,6 +81,7 @@ runs:
         AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
         HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+        BUILD_TYPE: ${{ env.BUILD_TYPE }}
       shell: ${{ env.shell }}
       run: |
         ulimit -c unlimited
