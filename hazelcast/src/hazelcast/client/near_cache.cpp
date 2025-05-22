@@ -48,9 +48,9 @@ NearCacheManager::clear_all_near_caches()
 {
     std::vector<std::shared_ptr<BaseNearCache>> caches =
       near_cache_map_.values();
-    for (std::vector<std::shared_ptr<BaseNearCache>>::iterator it =
-           caches.begin();
-         it != caches.end();
+    for (std::vector<std::shared_ptr<BaseNearCache>>::const_iterator it =
+           caches.cbegin();
+         it != caches.cend();
          ++it) {
         (*it)->clear();
     }
@@ -71,9 +71,9 @@ NearCacheManager::destroy_all_near_caches()
 {
     std::vector<std::shared_ptr<BaseNearCache>> caches =
       near_cache_map_.values();
-    for (std::vector<std::shared_ptr<BaseNearCache>>::iterator it =
-           caches.begin();
-         it != caches.end();
+    for (std::vector<std::shared_ptr<BaseNearCache>>::const_iterator it =
+           caches.cbegin();
+         it != caches.cend();
          ++it) {
         (*it)->destroy();
     }

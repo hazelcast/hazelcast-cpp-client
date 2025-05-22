@@ -216,12 +216,12 @@ const std::vector<byte>& data_output::to_byte_array() const
 
 void data_output::append_bytes(const std::vector<byte>& bytes)
 {
-    output_stream_.insert(output_stream_.end(), bytes.begin(), bytes.end());
+    output_stream_.insert(output_stream_.cend(), bytes.cbegin(), bytes.cend());
 }
 
 void data_output::write_zero_bytes(size_t number_of_bytes)
 {
-    output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
+    output_stream_.insert(output_stream_.cend(), number_of_bytes, 0);
 }
 
 size_t data_output::position() const

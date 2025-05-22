@@ -127,8 +127,8 @@ public:
         }
         int actualEvictedCount = 0;
         for (typename std::vector<std::shared_ptr<C>>::const_iterator it =
-               eviction_candidates->begin();
-             it != eviction_candidates->end();
+               eviction_candidates->cbegin();
+             it != eviction_candidates->cend();
              ++it) {
             const std::shared_ptr<C>& evictionCandidate = *it;
             if (util::SynchronizedMap<std::shared_ptr<KS>, R>::remove(

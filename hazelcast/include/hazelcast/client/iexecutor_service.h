@@ -208,8 +208,8 @@ public:
     void execute_on_members(const HazelcastSerializable& command,
                             const std::vector<member>& members)
     {
-        for (std::vector<member>::const_iterator it = members.begin();
-             it != members.end();
+        for (std::vector<member>::const_iterator it = members.cbegin();
+             it != members.cend();
              ++it) {
             submit_to_member<HazelcastSerializable, executor_marker>(command,
                                                                      *it);
@@ -241,8 +241,8 @@ public:
     {
         std::vector<member> memberList =
           get_context().get_client_cluster_service().get_member_list();
-        for (std::vector<member>::const_iterator it = memberList.begin();
-             it != memberList.end();
+        for (std::vector<member>::const_iterator it = memberList.cbegin();
+             it != memberList.cend();
              ++it) {
             submit_to_member<HazelcastSerializable, executor_marker>(command,
                                                                      *it);
