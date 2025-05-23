@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 if "%HZ_VERSION%"=="" (
-    set HZ_VERSION=5.4.0
+    set HZ_VERSION=5.5.5
 )
 set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
@@ -36,7 +36,7 @@ if exist  "hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar" (
     echo "hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast test jar com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests"
-    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -DremoteRepositories=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests -Ddest=hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar || (
         echo "Failed download hazelcast test jar com.hazelcast:hazelcast:%HAZELCAST_TEST_VERSION%:jar:tests"
         exit /b 1
     )
@@ -46,7 +46,7 @@ if exist  "hazelcast-sql-%HZ_VERSION%.jar" (
     echo "hazelcast-sql-%HZ_VERSION%.jar already exists, not downloading from maven."
 ) else (
     echo "Downloading: hazelcast-sql-%HZ_VERSION%.jar com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar"
-    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar -Ddest=hazelcast-sql-%HZ_VERSION%.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -DremoteRepositories=%ENTERPRISE_REPO% -Dartifact=com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar -Ddest=hazelcast-sql-%HZ_VERSION%.jar || (
         echo "Failed download hazelcast test jar com.hazelcast:hazelcast-sql:%HZ_VERSION%:jar"
         exit /b 1
     )

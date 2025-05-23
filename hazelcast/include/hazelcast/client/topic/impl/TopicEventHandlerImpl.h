@@ -35,10 +35,12 @@ class TopicEventHandlerImpl
 public:
     TopicEventHandlerImpl(
       const std::string& instance_name,
+      logger &logger,
       spi::impl::ClientClusterServiceImpl& cluster_service,
       serialization::pimpl::SerializationService& serialization_service,
       listener&& message_listener)
-      : instance_name_(instance_name)
+      : protocol::codec::topic_addmessagelistener_handler(logger)
+      , instance_name_(instance_name)
       , cluster_service_(cluster_service)
       , serialization_service_(serialization_service)
       , listener_(std::move(message_listener))

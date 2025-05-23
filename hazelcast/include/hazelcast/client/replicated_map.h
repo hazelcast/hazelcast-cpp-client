@@ -319,7 +319,8 @@ private:
           serialization::pimpl::SerializationService& serialization_service,
           entry_listener&& listener,
           logger& lg)
-          : instance_name_(instance_name)
+          : HANDLER(lg)
+          , instance_name_(instance_name)
           , cluster_service_(cluster_service)
           , serialization_service_(serialization_service)
           , listener_(std::move(listener))
