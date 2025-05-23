@@ -520,17 +520,11 @@ hazelcast_client_instance_impl::check_discovery_configuration_consistency(
 
 BaseEventHandler::~BaseEventHandler() = default;
 
-BaseEventHandler::BaseEventHandler()
-  : logger_(nullptr)
+BaseEventHandler::BaseEventHandler(logger &logger)
+  : logger_(logger)
 {}
 
-void
-BaseEventHandler::set_logger(logger* lg)
-{
-    BaseEventHandler::logger_ = lg;
-}
-
-logger*
+logger &
 BaseEventHandler::get_logger() const
 {
     return logger_;
@@ -1390,7 +1384,7 @@ invocation_might_contain_compact_data::invocation_might_contain_compact_data(
   std::string source,
   const spi::impl::ClientInvocation& invocation)
   : hazelcast_{
-      move(source),
+      std::move(source),
       boost::str(
         boost::format(
           "The invocation %1% might contain Compact serialized "

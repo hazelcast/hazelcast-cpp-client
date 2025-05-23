@@ -84,7 +84,7 @@ generic_record_builder::set_string(std::string field_name, const char* cstr)
 generic_record_builder::generic_record_builder(std::string type_name)
   : strategy_{ strategy::default_builder }
   , already_built_{ false }
-  , writer_or_schema_{ pimpl::schema_writer{ move(type_name) } }
+  , writer_or_schema_{ pimpl::schema_writer{ std::move(type_name) } }
 {
 }
 
@@ -153,99 +153,99 @@ generic_record_builder::build()
         }
 
         already_built_ = true;
-        return generic_record{ move(schema), std::move(objects_) };
+        return generic_record{ std::move(schema), std::move(objects_) };
     }
 }
 
 generic_record_builder&
 generic_record_builder::set_boolean(std::string field_name, bool value)
 {
-    return write(move(field_name), value, field_kind::BOOLEAN);
+    return write(std::move(field_name), value, field_kind::BOOLEAN);
 }
 
 generic_record_builder&
 generic_record_builder::set_int8(std::string field_name, int8_t value)
 {
-    return write(move(field_name), value, field_kind::INT8);
+    return write(std::move(field_name), value, field_kind::INT8);
 }
 
 generic_record_builder&
 generic_record_builder::set_int16(std::string field_name, int16_t value)
 {
-    return write(move(field_name), value, field_kind::INT16);
+    return write(std::move(field_name), value, field_kind::INT16);
 }
 
 generic_record_builder&
 generic_record_builder::set_int32(std::string field_name, int32_t value)
 {
-    return write(move(field_name), value, field_kind::INT32);
+    return write(std::move(field_name), value, field_kind::INT32);
 }
 
 generic_record_builder&
 generic_record_builder::set_int64(std::string field_name, int64_t value)
 {
-    return write(move(field_name), value, field_kind::INT64);
+    return write(std::move(field_name), value, field_kind::INT64);
 }
 
 generic_record_builder&
 generic_record_builder::set_float32(std::string field_name, float value)
 {
-    return write(move(field_name), value, field_kind::FLOAT32);
+    return write(std::move(field_name), value, field_kind::FLOAT32);
 }
 
 generic_record_builder&
 generic_record_builder::set_float64(std::string field_name, double value)
 {
-    return write(move(field_name), value, field_kind::FLOAT64);
+    return write(std::move(field_name), value, field_kind::FLOAT64);
 }
 
 generic_record_builder&
 generic_record_builder::set_nullable_boolean(std::string field_name,
                                              boost::optional<bool> value)
 {
-    return write(move(field_name), value, field_kind::NULLABLE_BOOLEAN);
+    return write(std::move(field_name), value, field_kind::NULLABLE_BOOLEAN);
 }
 
 generic_record_builder&
 generic_record_builder::set_nullable_int8(std::string field_name,
                                           boost::optional<int8_t> value)
 {
-    return write(move(field_name), value, field_kind::NULLABLE_INT8);
+    return write(std::move(field_name), value, field_kind::NULLABLE_INT8);
 }
 
 generic_record_builder&
 generic_record_builder::set_nullable_int16(std::string field_name,
                                            boost::optional<int16_t> value)
 {
-    return write(move(field_name), value, field_kind::NULLABLE_INT16);
+    return write(std::move(field_name), value, field_kind::NULLABLE_INT16);
 }
 
 generic_record_builder&
 generic_record_builder::set_nullable_int32(std::string field_name,
                                            boost::optional<int32_t> value)
 {
-    return write(move(field_name), value, field_kind::NULLABLE_INT32);
+    return write(std::move(field_name), value, field_kind::NULLABLE_INT32);
 }
 
 generic_record_builder&
 generic_record_builder::set_nullable_int64(std::string field_name,
                                            boost::optional<int64_t> value)
 {
-    return write(move(field_name), value, field_kind::NULLABLE_INT64);
+    return write(std::move(field_name), value, field_kind::NULLABLE_INT64);
 }
 
 generic_record_builder&
 generic_record_builder::set_nullable_float32(std::string field_name,
                                              boost::optional<float> value)
 {
-    return write(move(field_name), value, field_kind::NULLABLE_FLOAT32);
+    return write(std::move(field_name), value, field_kind::NULLABLE_FLOAT32);
 }
 
 generic_record_builder&
 generic_record_builder::set_nullable_float64(std::string field_name,
                                              boost::optional<double> value)
 {
-    return write(move(field_name), value, field_kind::NULLABLE_FLOAT64);
+    return write(std::move(field_name), value, field_kind::NULLABLE_FLOAT64);
 }
 
 generic_record_builder&
@@ -253,35 +253,35 @@ generic_record_builder::set_generic_record(
   std::string field_name,
   boost::optional<generic_record> value)
 {
-    return write(move(field_name), std::move(value), field_kind::COMPACT);
+    return write(std::move(field_name), std::move(value), field_kind::COMPACT);
 }
 
 generic_record_builder&
 generic_record_builder::set_decimal(std::string field_name,
                                     boost::optional<big_decimal> value)
 {
-    return write(move(field_name), value, field_kind::DECIMAL);
+    return write(std::move(field_name), value, field_kind::DECIMAL);
 }
 
 generic_record_builder&
 generic_record_builder::set_time(std::string field_name,
                                  boost::optional<local_time> value)
 {
-    return write(move(field_name), value, field_kind::TIME);
+    return write(std::move(field_name), value, field_kind::TIME);
 }
 
 generic_record_builder&
 generic_record_builder::set_date(std::string field_name,
                                  boost::optional<local_date> value)
 {
-    return write(move(field_name), value, field_kind::DATE);
+    return write(std::move(field_name), value, field_kind::DATE);
 }
 
 generic_record_builder&
 generic_record_builder::set_timestamp(std::string field_name,
                                       boost::optional<local_date_time> value)
 {
-    return write(move(field_name), value, field_kind::TIMESTAMP);
+    return write(std::move(field_name), value, field_kind::TIMESTAMP);
 }
 
 generic_record_builder&
@@ -289,14 +289,14 @@ generic_record_builder::set_timestamp_with_timezone(
   std::string field_name,
   boost::optional<offset_date_time> value)
 {
-    return write(move(field_name), value, field_kind::TIMESTAMP_WITH_TIMEZONE);
+    return write(std::move(field_name), value, field_kind::TIMESTAMP_WITH_TIMEZONE);
 }
 
 generic_record_builder&
 generic_record_builder::set_string(std::string field_name,
                                    boost::optional<std::string> value)
 {
-    return write(move(field_name), std::move(value), field_kind::STRING);
+    return write(std::move(field_name), std::move(value), field_kind::STRING);
 }
 
 generic_record_builder&
@@ -305,7 +305,7 @@ generic_record_builder::set_array_of_boolean(
   boost::optional<std::vector<bool>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_BOOLEAN);
+      std::move(field_name), std::move(value), field_kind::ARRAY_OF_BOOLEAN);
 }
 
 generic_record_builder&
@@ -313,7 +313,7 @@ generic_record_builder::set_array_of_boolean(std::string field_name,
                                              std::vector<bool> value)
 {
     return set_array_of_boolean(
-      move(field_name), boost::optional<std::vector<bool>>(move(value)));
+      std::move(field_name), boost::optional<std::vector<bool>>(std::move(value)));
 }
 
 generic_record_builder&
@@ -321,7 +321,7 @@ generic_record_builder::set_array_of_boolean(std::string field_name,
 	std::initializer_list<bool> value)
 {
 	return set_array_of_boolean(
-		move(field_name), std::vector<bool>(value));
+      std::move(field_name), std::vector<bool>(value));
 }
 
 generic_record_builder&
@@ -329,22 +329,22 @@ generic_record_builder::set_array_of_int8(
   std::string field_name,
   boost::optional<std::vector<int8_t>> value)
 {
-    return write(move(field_name), std::move(value), field_kind::ARRAY_OF_INT8);
+    return write(std::move(field_name), std::move(value), field_kind::ARRAY_OF_INT8);
 }
 
 generic_record_builder&
 generic_record_builder::set_array_of_int8(std::string field_name,
                                           std::vector<int8_t> value)
 {
-    return set_array_of_int8(move(field_name),
-                             boost::optional<std::vector<int8_t>>(move(value)));
+    return set_array_of_int8(std::move(field_name),
+                             boost::optional<std::vector<int8_t>>(std::move(value)));
 }
 
 generic_record_builder&
 generic_record_builder::set_array_of_int8(std::string field_name,
 	std::initializer_list<int8_t> value)
 {
-	return set_array_of_int8(move(field_name),
+	return set_array_of_int8(std::move(field_name),
 		std::vector<int8_t>(value));
 }
 
@@ -354,7 +354,7 @@ generic_record_builder::set_array_of_int16(
   boost::optional<std::vector<int16_t>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_INT16);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_INT16);
 }
 
 generic_record_builder&
@@ -362,7 +362,7 @@ generic_record_builder::set_array_of_int16(std::string field_name,
                                            std::vector<int16_t> value)
 {
     return set_array_of_int16(
-      move(field_name), boost::optional<std::vector<int16_t>>(move(value)));
+      std::move(field_name), boost::optional<std::vector<int16_t>>(std::move(value)));
 }
 
 generic_record_builder&
@@ -370,7 +370,7 @@ generic_record_builder::set_array_of_int16(std::string field_name,
 	std::initializer_list<int16_t> value)
 {
 	return set_array_of_int16(
-		move(field_name), std::vector<int16_t>(value));
+      std::move(field_name), std::vector<int16_t>(value));
 }
 
 generic_record_builder&
@@ -379,7 +379,7 @@ generic_record_builder::set_array_of_int32(
   boost::optional<std::vector<int32_t>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_INT32);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_INT32);
 }
 
 generic_record_builder&
@@ -387,7 +387,7 @@ generic_record_builder::set_array_of_int32(std::string field_name,
                                            std::vector<int32_t> value)
 {
     return set_array_of_int32(
-      move(field_name), boost::optional<std::vector<int32_t>>(move(value)));
+      std::move(field_name), boost::optional<std::vector<int32_t>>(std::move(value)));
 }
 
 generic_record_builder&
@@ -395,7 +395,7 @@ generic_record_builder::set_array_of_int32(std::string field_name,
 	std::initializer_list<int32_t> value)
 {
 	return set_array_of_int32(
-		move(field_name), std::vector<int32_t>(value));
+      std::move(field_name), std::vector<int32_t>(value));
 }
 
 generic_record_builder&
@@ -404,7 +404,7 @@ generic_record_builder::set_array_of_int64(
   boost::optional<std::vector<int64_t>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_INT64);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_INT64);
 }
 
 generic_record_builder&
@@ -412,7 +412,7 @@ generic_record_builder::set_array_of_int64(std::string field_name,
                                            std::vector<int64_t> value)
 {
     return set_array_of_int64(
-      move(field_name), boost::optional<std::vector<int64_t>>(move(value)));
+      std::move(field_name), boost::optional<std::vector<int64_t>>(std::move(value)));
 }
 
 generic_record_builder&
@@ -420,7 +420,7 @@ generic_record_builder::set_array_of_int64(std::string field_name,
 	std::initializer_list<int64_t> value)
 {
 	return set_array_of_int64(
-		move(field_name), std::vector<int64_t>(value));
+      std::move(field_name), std::vector<int64_t>(value));
 }
 
 generic_record_builder&
@@ -429,7 +429,7 @@ generic_record_builder::set_array_of_float32(
   boost::optional<std::vector<float>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_FLOAT32);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_FLOAT32);
 }
 
 generic_record_builder&
@@ -437,7 +437,7 @@ generic_record_builder::set_array_of_float32(std::string field_name,
                                              std::vector<float> value)
 {
     return set_array_of_float32(
-      move(field_name), boost::optional<std::vector<float>>(move(value)));
+      std::move(field_name), boost::optional<std::vector<float>>(std::move(value)));
 }
 
 generic_record_builder&
@@ -445,7 +445,7 @@ generic_record_builder::set_array_of_float32(std::string field_name,
 	std::initializer_list<float> value)
 {
 	return set_array_of_float32(
-		move(field_name), std::vector<float>(value));
+      std::move(field_name), std::vector<float>(value));
 }
 
 generic_record_builder&
@@ -454,7 +454,7 @@ generic_record_builder::set_array_of_float64(
   boost::optional<std::vector<double>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_FLOAT64);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_FLOAT64);
 }
 
 generic_record_builder&
@@ -462,7 +462,7 @@ generic_record_builder::set_array_of_float64(std::string field_name,
                                              std::vector<double> value)
 {
     return set_array_of_float64(
-      move(field_name), boost::optional<std::vector<double>>(move(value)));
+      std::move(field_name), boost::optional<std::vector<double>>(std::move(value)));
 }
 
 generic_record_builder&
@@ -470,7 +470,7 @@ generic_record_builder::set_array_of_float64(std::string field_name,
 	std::initializer_list<double> value)
 {
 	return set_array_of_float64(
-		move(field_name), std::vector<double>(value));
+      std::move(field_name), std::vector<double>(value));
 }
 
 template<typename T>
@@ -493,7 +493,7 @@ generic_record_builder::set_array_of_nullable_boolean(
   std::string field_name,
   boost::optional<std::vector<boost::optional<bool>>> value)
 {
-    return write(move(field_name),
+    return write(std::move(field_name),
                  std::move(value),
                  field_kind::ARRAY_OF_NULLABLE_BOOLEAN);
 }
@@ -502,7 +502,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_boolean(std::string field_name,
                                                       std::vector<bool> value)
 {
-    return set_array_of_nullable_boolean(move(field_name),
+    return set_array_of_nullable_boolean(std::move(field_name),
                                          to_nullable(std::move(value)));
 }
 
@@ -510,7 +510,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_boolean(std::string field_name,
 	std::initializer_list<bool> value)
 {
-	return set_array_of_nullable_boolean(move(field_name),
+	return set_array_of_nullable_boolean(std::move(field_name),
 		std::vector<bool>(value));
 }
 
@@ -520,14 +520,14 @@ generic_record_builder::set_array_of_nullable_int8(
   boost::optional<std::vector<boost::optional<int8_t>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT8);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT8);
 }
 
 generic_record_builder&
 generic_record_builder::set_array_of_nullable_int8(std::string field_name,
                                                    std::vector<int8_t> value)
 {
-    return set_array_of_nullable_int8(move(field_name),
+    return set_array_of_nullable_int8(std::move(field_name),
                                       to_nullable(std::move(value)));
 }
 
@@ -535,7 +535,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_int8(std::string field_name,
 	std::initializer_list<int8_t> value)
 {
-	return set_array_of_nullable_int8(move(field_name),
+	return set_array_of_nullable_int8(std::move(field_name),
 		std::vector<int8_t>(value));
 }
 
@@ -545,14 +545,14 @@ generic_record_builder::set_array_of_nullable_int16(
   boost::optional<std::vector<boost::optional<int16_t>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT16);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT16);
 }
 
 generic_record_builder&
 generic_record_builder::set_array_of_nullable_int16(std::string field_name,
                                                     std::vector<int16_t> value)
 {
-    return set_array_of_nullable_int16(move(field_name),
+    return set_array_of_nullable_int16(std::move(field_name),
                                        to_nullable(std::move(value)));
 }
 
@@ -560,7 +560,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_int16(std::string field_name,
 	std::initializer_list<int16_t> value)
 {
-	return set_array_of_nullable_int16(move(field_name),
+	return set_array_of_nullable_int16(std::move(field_name),
 		std::vector<int16_t>(value));
 }
 
@@ -570,14 +570,14 @@ generic_record_builder::set_array_of_nullable_int32(
   boost::optional<std::vector<boost::optional<int32_t>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT32);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT32);
 }
 
 generic_record_builder&
 generic_record_builder::set_array_of_nullable_int32(std::string field_name,
                                                     std::vector<int32_t> value)
 {
-    return set_array_of_nullable_int32(move(field_name),
+    return set_array_of_nullable_int32(std::move(field_name),
                                        to_nullable(std::move(value)));
 }
 
@@ -585,7 +585,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_int32(std::string field_name,
 	std::initializer_list<int32_t> value)
 {
-	return set_array_of_nullable_int32(move(field_name),
+	return set_array_of_nullable_int32(std::move(field_name),
 		std::vector<int32_t>(value));
 }
 
@@ -595,14 +595,14 @@ generic_record_builder::set_array_of_nullable_int64(
   boost::optional<std::vector<boost::optional<int64_t>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT64);
+          std::move(field_name), std::move(value), field_kind::ARRAY_OF_NULLABLE_INT64);
 }
 
 generic_record_builder&
 generic_record_builder::set_array_of_nullable_int64(std::string field_name,
                                                     std::vector<int64_t> value)
 {
-    return set_array_of_nullable_int64(move(field_name),
+    return set_array_of_nullable_int64(std::move(field_name),
                                        to_nullable(std::move(value)));
 }
 
@@ -610,7 +610,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_int64(std::string field_name,
 	std::initializer_list<int64_t> value)
 {
-	return set_array_of_nullable_int64(move(field_name),
+	return set_array_of_nullable_int64(std::move(field_name),
 		std::vector<int64_t>(value));
 }
 
@@ -619,7 +619,7 @@ generic_record_builder::set_array_of_nullable_float32(
   std::string field_name,
   boost::optional<std::vector<boost::optional<float>>> value)
 {
-    return write(move(field_name),
+    return write(std::move(field_name),
                  std::move(value),
                  field_kind::ARRAY_OF_NULLABLE_FLOAT32);
 }
@@ -628,7 +628,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_float32(std::string field_name,
                                                       std::vector<float> value)
 {
-    return set_array_of_nullable_float32(move(field_name),
+    return set_array_of_nullable_float32(std::move(field_name),
                                          to_nullable(std::move(value)));
 }
 
@@ -636,7 +636,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_float32(std::string field_name,
 	std::initializer_list<float> value)
 {
-	return set_array_of_nullable_float32(move(field_name),
+	return set_array_of_nullable_float32(std::move(field_name),
 		std::vector<float>(value));
 }
 
@@ -645,7 +645,7 @@ generic_record_builder::set_array_of_nullable_float64(
   std::string field_name,
   boost::optional<std::vector<boost::optional<double>>> value)
 {
-    return write(move(field_name),
+    return write(std::move(field_name),
                  std::move(value),
                  field_kind::ARRAY_OF_NULLABLE_FLOAT64);
 }
@@ -654,7 +654,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_float64(std::string field_name,
                                                       std::vector<double> value)
 {
-    return set_array_of_nullable_float64(move(field_name),
+    return set_array_of_nullable_float64(std::move(field_name),
                                          to_nullable(std::move(value)));
 }
 
@@ -662,7 +662,7 @@ generic_record_builder&
 generic_record_builder::set_array_of_nullable_float64(std::string field_name,
 	std::initializer_list<double> value)
 {
-	return set_array_of_nullable_float64(move(field_name),
+	return set_array_of_nullable_float64(std::move(field_name),
 		std::vector<double>(value));
 }
 
@@ -672,7 +672,7 @@ generic_record_builder::set_array_of_string(
   boost::optional<std::vector<boost::optional<std::string>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_STRING);
+      std::move(field_name), std::move(value), field_kind::ARRAY_OF_STRING);
 }
 
 generic_record_builder&
@@ -681,7 +681,7 @@ generic_record_builder::set_array_of_decimal(
   boost::optional<std::vector<boost::optional<big_decimal>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_DECIMAL);
+      std::move(field_name), std::move(value), field_kind::ARRAY_OF_DECIMAL);
 }
 
 generic_record_builder&
@@ -689,7 +689,7 @@ generic_record_builder::set_array_of_time(
   std::string field_name,
   boost::optional<std::vector<boost::optional<local_time>>> value)
 {
-    return write(move(field_name), std::move(value), field_kind::ARRAY_OF_TIME);
+    return write(std::move(field_name), std::move(value), field_kind::ARRAY_OF_TIME);
 }
 
 generic_record_builder&
@@ -697,7 +697,7 @@ generic_record_builder::set_array_of_date(
   std::string field_name,
   boost::optional<std::vector<boost::optional<local_date>>> value)
 {
-    return write(move(field_name), std::move(value), field_kind::ARRAY_OF_DATE);
+    return write(std::move(field_name), std::move(value), field_kind::ARRAY_OF_DATE);
 }
 
 generic_record_builder&
@@ -706,7 +706,7 @@ generic_record_builder::set_array_of_timestamp(
   boost::optional<std::vector<boost::optional<local_date_time>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_TIMESTAMP);
+      std::move(field_name), std::move(value), field_kind::ARRAY_OF_TIMESTAMP);
 }
 
 generic_record_builder&
@@ -714,7 +714,7 @@ generic_record_builder::set_array_of_timestamp_with_timezone(
   std::string field_name,
   boost::optional<std::vector<boost::optional<offset_date_time>>> value)
 {
-    return write(move(field_name),
+    return write(std::move(field_name),
                  std::move(value),
                  field_kind::ARRAY_OF_TIMESTAMP_WITH_TIMEZONE);
 }
@@ -725,7 +725,7 @@ generic_record_builder::set_array_of_generic_record(
   boost::optional<std::vector<boost::optional<generic_record>>> value)
 {
     return write(
-      move(field_name), std::move(value), field_kind::ARRAY_OF_COMPACT);
+      std::move(field_name), std::move(value), field_kind::ARRAY_OF_COMPACT);
 }
 
 generic_record::generic_record(
@@ -3559,7 +3559,7 @@ schema_writer::add_field(std::string field_name, enum field_kind kind)
           "Field with the name '" + field_name + "' already exists." });
     }
 
-    field_definition_map_.emplace(move(field_name), field_descriptor{ kind });
+    field_definition_map_.emplace(std::move(field_name), field_descriptor{ kind });
 }
 
 schema

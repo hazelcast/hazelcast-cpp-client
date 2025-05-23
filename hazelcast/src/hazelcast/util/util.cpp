@@ -299,7 +299,7 @@ SyncHttpsClient::connect_and_get_response()
             boost::replace_all(message, secret_removal_, "<SECRET_REMOVAL>");
 
         throw client::exception::io("SyncHttpsClient::openConnection",
-                                    move(message));
+                                    std::move(message));
     }
     return response_stream_;
 }

@@ -952,7 +952,7 @@ public:
 
         fast_forward_to_end_frame();
 
-        return schema{ type_name, move(fields) };
+        return schema{ type_name, std::move(fields) };
     }
 
     /**

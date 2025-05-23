@@ -973,8 +973,8 @@ sql_result::page_iterator::page_iterator(std::shared_ptr<sql_result> result,
   , last_{ std::make_shared<std::atomic<bool>>(false) }
   , row_metadata_{ result->row_metadata_ }
   , serialization_(&result->client_context_->get_serialization_service())
-  , result_{ move(result) }
-  , first_page_(move(first_page))
+  , result_{ std::move(result) }
+  , first_page_(std::move(first_page))
 {
 }
 
@@ -984,7 +984,7 @@ sql_result::page_iterator::next()
     result_->check_closed();
 
     if (first_page_) {
-        auto page = move(first_page_);
+        auto page = std::move(first_page_);
 
         page->serialization_service(serialization_);
         page->row_metadata(row_metadata_);
@@ -1025,7 +1025,7 @@ sql_result::page_iterator::next()
 
               result->check_closed();
               page->serialization_service(serialization_service);
-              page->row_metadata(move(row_metadata));
+              page->row_metadata(std::move(row_metadata));
 
               auto last = last_w.lock();
 

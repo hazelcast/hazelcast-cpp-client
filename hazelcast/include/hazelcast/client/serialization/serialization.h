@@ -1858,7 +1858,7 @@ public:
         output.write_object<T>(object);
 
         return { std::move(output).to_byte_array(),
-                 move(output.schemas_will_be_replicated_) };
+                 std::move(output.schemas_will_be_replicated_) };
     }
 
     template<typename T>
@@ -1876,7 +1876,7 @@ public:
         output.write_object<T>(object);
 
         return { std::move(output).to_byte_array(),
-                 move(output.schemas_will_be_replicated_) };
+                 std::move(output.schemas_will_be_replicated_) };
     }
 
     template<typename T>
