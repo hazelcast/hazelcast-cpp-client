@@ -16,8 +16,12 @@
 
 cmake_minimum_required (VERSION 3.10)
 
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/.github/config.env" ENV_FILE_CONTENTS)
+string(REGEX REPLACE ".*PROJECT_VERSION=([^\n\r]*).*" "\\1" PROJECT_VERSION "${ENV_FILE_CONTENTS}")
+message(STATUS "PROJECT_VERSION = ${PROJECT_VERSION}")
+
 project (hazelcast-cpp-client-examples
-         VERSION 5.3
+         VERSION ${PROJECT_VERSION}
          DESCRIPTION "Hazelcast C++ Client Code Examples"
          LANGUAGES CXX)
 
