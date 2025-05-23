@@ -161,6 +161,6 @@ You can find the detailed documentation at the [documentation site](https://haze
 
 ## Copyright
 
-Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+Copyright (c) 2008-2025, Hazelcast, Inc. All Rights Reserved.
 
 Visit [www.hazelcast.com](http://www.hazelcast.com) for more information.
