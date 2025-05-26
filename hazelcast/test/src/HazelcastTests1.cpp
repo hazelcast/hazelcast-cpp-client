@@ -1333,8 +1333,8 @@ TEST_F(ClientConnectionTest, testExcludedCipher)
     auto newCiphers = get_ciphers(std::move(config));
 
     for (std::vector<hazelcast::client::internal::socket::SSLSocket::
-                       CipherInfo>::const_iterator it = newCiphers.begin();
-         it != newCiphers.end();
+                       CipherInfo>::const_iterator it = newCiphers.cbegin();
+         it != newCiphers.cend();
          ++it) {
         ASSERT_NE(unsupportedCipher, it->name)
           << ", expected ciphers list lis:" << supportedCiphers.size()
@@ -1975,7 +1975,7 @@ TEST_F(PnCounterFunctionalityTest, testParallelism)
         }));
     }
 
-    boost::wait_for_all(futures.begin(), futures.end());
+    boost::wait_for_all(futures.cbegin(), futures.cend());
 
     int64_t finalExpectedValue = 3 * (int64_t)loopsPerThread * parallelism;
     ASSERT_EQ_EVENTUALLY(finalExpectedValue, counter1->get().get());
@@ -2399,7 +2399,7 @@ TEST_F(FlakeIdGeneratorApiTest, testSmoke)
     std::unordered_set<int64_t> allIds;
     for (auto& f : futures) {
         auto ids = f.get();
-        allIds.insert(ids.begin(), ids.end());
+        allIds.insert(ids.cbegin(), ids.cend());
     }
 
     // if there were duplicate IDs generated, there will be less items in the
@@ -3361,7 +3361,7 @@ TEST_F(ClientTxnMultiMapTest, testPutGetRemove)
         });
     }
 
-    boost::wait_for_all(futures.begin(), futures.end());
+    boost::wait_for_all(futures.cbegin(), futures.cend());
 }
 
 TEST_F(ClientTxnMultiMapTest, testServiceNameAndDestroy)
@@ -3582,7 +3582,7 @@ TEST_F(DataInputTest, testReadByteArray)
 {
     std::vector<byte> bytes{ 0x00, 0x00, 0x00, 0x02 };
     std::vector<byte> actualDataBytes{ 0x12, 0x34 };
-    bytes.insert(bytes.end(), actualDataBytes.begin(), actualDataBytes.end());
+    bytes.insert(bytes.cend(), actualDataBytes.cbegin(), actualDataBytes.cend());
     serialization::pimpl::data_input<std::vector<byte>> dataInput(
       boost::endian::order::big, bytes);
     auto readBytes = dataInput.read<std::vector<byte>>();
@@ -3837,7 +3837,7 @@ TEST_F(DataOutputTest, testWriteByteArray)
 {
     std::vector<byte> bytes{ 0x00, 0x00, 0x00, 0x02 };
     std::vector<byte> actualDataBytes{ 0x12, 0x34 };
-    bytes.insert(bytes.end(), actualDataBytes.begin(), actualDataBytes.end());
+    bytes.insert(bytes.cend(), actualDataBytes.cbegin(), actualDataBytes.cend());
     serialization::pimpl::data_output dataOutput(boost::endian::order::big);
     dataOutput.write(&actualDataBytes);
     ASSERT_EQ(bytes, dataOutput.to_byte_array());

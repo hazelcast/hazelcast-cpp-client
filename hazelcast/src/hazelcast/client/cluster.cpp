@@ -129,7 +129,7 @@ member::get_attribute(const std::string& key) const
 {
     std::unordered_map<std::string, std::string>::const_iterator it =
       attributes_.find(key);
-    if (attributes_.end() != it) {
+    if (attributes_.cend() != it) {
         return &(it->second);
     } else {
         return NULL;
@@ -145,7 +145,7 @@ member::get_version() const
 bool
 member::lookup_attribute(const std::string& key) const
 {
-    return attributes_.find(key) != attributes_.end();
+    return attributes_.find(key) != attributes_.cend();
 }
 
 bool

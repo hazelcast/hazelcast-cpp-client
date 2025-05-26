@@ -3569,9 +3569,9 @@ TEST_P(ClientMapTest, testExecuteOnKeys)
         .get();
 
     ASSERT_EQ(3, (int)result.size());
-    ASSERT_NE(result.end(), result.find(3));
-    ASSERT_NE(result.end(), result.find(5));
-    ASSERT_NE(result.end(), result.find(999));
+    ASSERT_NE(result.cend(), result.find(3));
+    ASSERT_NE(result.cend(), result.find(5));
+    ASSERT_NE(result.cend(), result.find(999));
     ASSERT_EQ(3 * processor.get_multiplier(), result[3].value());
     ASSERT_EQ(5 * processor.get_multiplier(), result[5].value());
     ASSERT_EQ(-1, result[999].value());
@@ -3594,9 +3594,9 @@ TEST_P(ClientMapTest, testExecuteOnEntries)
         .get();
 
     ASSERT_EQ(3, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
     ASSERT_EQ(3 * processor.get_multiplier(), result[3].value());
     ASSERT_EQ(4 * processor.get_multiplier(), result[4].value());
     ASSERT_EQ(5 * processor.get_multiplier(), result[5].value());
@@ -3621,9 +3621,9 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithtrue_predicate)
         .get();
 
     ASSERT_EQ(3, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
     ASSERT_EQ(3 * processor.get_multiplier(), result[3].value());
     ASSERT_EQ(4 * processor.get_multiplier(), result[4].value());
     ASSERT_EQ(5 * processor.get_multiplier(), result[5].value());
@@ -3674,7 +3674,7 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithand_predicate)
         .get();
 
     ASSERT_EQ(1, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
     ASSERT_EQ(5 * processor.get_multiplier(), result[5].value());
 }
 
@@ -3702,8 +3702,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithor_predicate)
         .get();
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
     ASSERT_EQ(3 * processor.get_multiplier(), result[3].value());
     ASSERT_EQ(4 * processor.get_multiplier(), result[4].value());
 }
@@ -3727,8 +3727,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithbetween_predicate)
         .get();
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
     ASSERT_EQ(3 * processor.get_multiplier(), result[3].value());
     ASSERT_EQ(5 * processor.get_multiplier(), result[5].value());
 }
@@ -3752,7 +3752,7 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithequal_predicate)
         .get();
 
     ASSERT_EQ(1, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
 
     result = employees_
                ->execute_on_entries<int, int, EntryMultiplier>(
@@ -3781,8 +3781,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithnot_equal_predicate)
         .get();
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
 }
 
 TEST_P(ClientMapTest, testExecuteOnEntriesWithgreater_less_predicate)
@@ -3805,7 +3805,7 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithgreater_less_predicate)
         .get(); // <25 matching
 
     ASSERT_EQ(1, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
 
     result = employees_
                ->execute_on_entries<int, int, EntryMultiplier>(
@@ -3814,8 +3814,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithgreater_less_predicate)
                .get(); // <=25 matching
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(4)));
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
 
     result = employees_
                ->execute_on_entries<int, int, EntryMultiplier>(
@@ -3824,7 +3824,7 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithgreater_less_predicate)
                .get(); // >25 matching
 
     ASSERT_EQ(1, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
 
     result = employees_
                ->execute_on_entries<int, int, EntryMultiplier>(
@@ -3833,8 +3833,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithgreater_less_predicate)
                .get(); // >=25 matching
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
 }
 
 TEST_P(ClientMapTest, testExecuteOnEntriesWithlike_predicate)
@@ -3856,7 +3856,7 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithlike_predicate)
         .get();
 
     ASSERT_EQ(1, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
 }
 
 TEST_P(ClientMapTest, testExecuteOnEntriesWithilike_predicate)
@@ -3878,7 +3878,7 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithilike_predicate)
         .get();
 
     ASSERT_EQ(1, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
 }
 
 TEST_P(ClientMapTest, testExecuteOnEntriesWithin_predicate)
@@ -3900,8 +3900,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithin_predicate)
         .get();
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
 }
 
 TEST_P(ClientMapTest, testExecuteOnEntriesWithinstance_of_predicate)
@@ -3924,9 +3924,9 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithinstance_of_predicate)
         .get();
 
     ASSERT_EQ(3, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
 }
 
 TEST_P(ClientMapTest, testExecuteOnEntriesWithnot_predicate)
@@ -3948,8 +3948,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithnot_predicate)
         .get();
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
 
     query::not_predicate notfalse_predicate(client_,
                                             query::false_predicate(client_));
@@ -3959,9 +3959,9 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithnot_predicate)
                .get();
 
     ASSERT_EQ(3, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
-    ASSERT_TRUE((result.end() != result.find(5)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(5)));
 
     query::not_predicate notbetween_predicate(
       client_, query::between_predicate(client_, "a", 25, 35));
@@ -3971,7 +3971,7 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithnot_predicate)
                .get();
 
     ASSERT_EQ(1, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
 }
 
 TEST_P(ClientMapTest, testExecuteOnEntriesWithregex_predicate)
@@ -3993,8 +3993,8 @@ TEST_P(ClientMapTest, testExecuteOnEntriesWithregex_predicate)
         .get();
 
     ASSERT_EQ(2, (int)result.size());
-    ASSERT_TRUE((result.end() != result.find(3)));
-    ASSERT_TRUE((result.end() != result.find(4)));
+    ASSERT_TRUE((result.cend() != result.find(3)));
+    ASSERT_TRUE((result.cend() != result.find(4)));
 }
 
 TEST_P(ClientMapTest, testAddInterceptor)

@@ -116,10 +116,10 @@ ec2_request_signer::get_canonicalized_query_string(
   const std::vector<std::string>& list) const
 {
     std::ostringstream result;
-    std::vector<std::string>::const_iterator it = list.begin();
+    std::vector<std::string>::const_iterator it = list.cbegin();
     result << (*it);
     ++it;
-    for (; it != list.end(); ++it) {
+    for (; it != list.cend(); ++it) {
         result << "&" << *it;
     }
     return result.str();
@@ -557,7 +557,7 @@ DescribeInstances::add_filters()
     filter.add_filter("instance-state-name", "running");
     const std::unordered_map<std::string, std::string>& filters =
       filter.get_filters();
-    attributes_.insert(filters.begin(), filters.end());
+    attributes_.insert(filters.cbegin(), filters.cend());
 }
 
 } // namespace impl
@@ -578,7 +578,7 @@ aws_url_encoder::escape_encode(const std::string& value)
     escaped.fill('0');
     escaped << std::hex;
 
-    for (std::string::const_iterator i = value.begin(), n = value.end(); i != n;
+    for (std::string::const_iterator i = value.cbegin(), n = value.cend(); i != n;
          ++i) {
         std::string::value_type c = (*i);
 

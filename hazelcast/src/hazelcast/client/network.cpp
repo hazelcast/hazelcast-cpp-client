@@ -546,8 +546,8 @@ ClientConnectionManagerImpl::do_connect_to_cluster()
                 return;
             }
         }
-        tried_addresses.insert(tried_addresses_per_attempt.begin(),
-                               tried_addresses_per_attempt.end());
+        tried_addresses.insert(tried_addresses_per_attempt.cbegin(),
+                               tried_addresses_per_attempt.cend());
         // If the address provider loads no addresses, then the above loop is
         // not entered and the lifecycle check is missing, hence we need to
         // repeat the same check at this point.
@@ -586,7 +586,7 @@ ClientConnectionManagerImpl::get_possible_member_addresses()
     }
 
     addresses.insert(
-      addresses.end(), provided_addresses.begin(), provided_addresses.end());
+      addresses.cend(), provided_addresses.cbegin(), provided_addresses.cend());
 
     return addresses;
 }
@@ -1040,7 +1040,7 @@ ClientConnectionManagerImpl::notify_backup(int64_t call_id)
     }
     boost::asio::post(connection->get_socket().get_executor(), [=]() {
         auto invocation_it = connection->invocations.find(call_id);
-        if (invocation_it != connection->invocations.end()) {
+        if (invocation_it != connection->invocations.cend()) {
             invocation_it->second->notify_backup();
         }
     });
@@ -1074,7 +1074,7 @@ ClientConnectionManagerImpl::translate(const member& m)
 {
     if (use_public_address_) {
         auto public_addr_it = m.address_map().find(PUBLIC_ENDPOINT_QUALIFIER);
-        if (public_addr_it != m.address_map().end()) {
+        if (public_addr_it != m.address_map().cend()) {
             return public_addr_it->second;
         }
         return m.get_address();
@@ -1330,7 +1330,7 @@ Connection::handle_client_message(
 {
     auto correlationId = message->get_correlation_id();
     auto invocationIterator = invocations.find(correlationId);
-    if (invocationIterator == invocations.end()) {
+    if (invocationIterator == invocations.cend()) {
         HZ_LOG(logger_,
                warning,
                boost::str(boost::format("No invocation for callId:  %1%. "
