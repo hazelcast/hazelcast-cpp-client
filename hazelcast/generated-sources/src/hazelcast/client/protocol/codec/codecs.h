@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2025, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,9 @@ client_authentication_encode(const std::string& cluster_name,
                              byte serialization_version,
                              const std::string& client_hazelcast_version,
                              const std::string& client_name,
-                             const std::vector<std::string>& labels);
+                             const std::vector<std::string>& labels,
+                             byte routing_mode,
+                             bool cp_direct_to_leader_routing);
 
 /**
  * Makes an authentication request to the cluster using custom credentials.
@@ -51,7 +53,9 @@ client_authenticationcustom_encode(const std::string& cluster_name,
                                    byte serialization_version,
                                    const std::string& client_hazelcast_version,
                                    const std::string& client_name,
-                                   const std::vector<std::string>& labels);
+                                   const std::vector<std::string>& labels,
+                                   byte routing_mode,
+                                   bool cp_direct_to_leader_routing);
 
 /**
  * Adds a cluster view listener to a connection.
@@ -83,6 +87,20 @@ struct HAZELCAST_API client_addclusterviewlistener_handler
       int32_t version,
       std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> const&
         partitions) = 0;
+
+    /**
+     * @param version Holds the state of member-groups and member-list-version
+     * @param member_groups Grouped members by their UUID. Grouping is done
+     * based on RoutingStrategy.
+     */
+    virtual void handle_membergroupsview(
+      int32_t version,
+      std::vector<std::vector<boost::uuids::uuid>> const& member_groups) = 0;
+
+    /**
+     * @param version The cluster version.
+     */
+    virtual void handle_clusterversion(version const& version) = 0;
 };
 
 /**
@@ -300,6 +318,25 @@ struct HAZELCAST_API client_localbackuplistener_handler
      */
     virtual void handle_backup(int64_t source_invocation_correlation_id) = 0;
 };
+
+/**
+ * Sends a schema to cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendschema_encode(const serialization::pimpl::schema& schema);
+
+/**
+ * Fetches a schema from the cluster with the given schemaId
+ */
+ClientMessage HAZELCAST_API
+client_fetchschema_encode(int64_t schema_id);
+
+/**
+ * Sends all the schemas to the cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendallschemas_encode(
+  const std::vector<serialization::pimpl::schema>& schemas);
 
 /**
  * Puts an entry into this map with a given ttl (time to live) value.Entry will
@@ -3112,25 +3149,6 @@ sql_execute_encode(const std::string& sql,
 ClientMessage HAZELCAST_API
 sql_fetch_encode(const sql::impl::query_id& query_id,
                  int32_t cursor_buffer_size);
-
-/**
- * Replicates schema on cluster
- */
-ClientMessage HAZELCAST_API
-client_sendschema_encode(const serialization::pimpl::schema& schema);
-
-/**
- * Sends all the schemas to the cluster
- */
-ClientMessage HAZELCAST_API
-client_sendallschemas_encode(
-  const std::vector<serialization::pimpl::schema>& schemas);
-
-/**
- * Fetches a schema from the cluster with the given schemaId
- */
-ClientMessage HAZELCAST_API
-client_fetchschema_encode(int64_t schema_id);
 
 } // namespace codec
 } // namespace protocol

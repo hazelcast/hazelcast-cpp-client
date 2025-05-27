@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2025, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 #include <boost/uuid/uuid.hpp>
 #include "hazelcast/client/member.h"
-#include "hazelcast/client/serialization/pimpl/compact/schema.h"
 #include "hazelcast/logger.h"
 
 #include "codecs.h"
@@ -34,11 +33,14 @@ client_authentication_encode(const std::string& cluster_name,
                              byte serialization_version,
                              const std::string& client_hazelcast_version,
                              const std::string& client_name,
-                             const std::vector<std::string>& labels)
+                             const std::vector<std::string>& labels,
+                             byte routing_mode,
+                             bool cp_direct_to_leader_routing)
 {
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN +
-                                ClientMessage::UUID_SIZE +
-                                ClientMessage::UINT8_SIZE;
+    size_t initial_frame_size =
+      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE +
+      ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE +
+      ClientMessage::UINT8_SIZE;
     ClientMessage msg(initial_frame_size);
     msg.set_retryable(true);
     msg.set_operation_name("client.authentication");
@@ -48,6 +50,8 @@ client_authentication_encode(const std::string& cluster_name,
 
     msg.set(uuid);
     msg.set(serialization_version);
+    msg.set(routing_mode);
+    msg.set(cp_direct_to_leader_routing);
     msg.set(cluster_name);
 
     msg.set_nullable(username);
@@ -73,11 +77,14 @@ client_authenticationcustom_encode(const std::string& cluster_name,
                                    byte serialization_version,
                                    const std::string& client_hazelcast_version,
                                    const std::string& client_name,
-                                   const std::vector<std::string>& labels)
+                                   const std::vector<std::string>& labels,
+                                   byte routing_mode,
+                                   bool cp_direct_to_leader_routing)
 {
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN +
-                                ClientMessage::UUID_SIZE +
-                                ClientMessage::UINT8_SIZE;
+    size_t initial_frame_size =
+      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE +
+      ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE +
+      ClientMessage::UINT8_SIZE;
     ClientMessage msg(initial_frame_size);
     msg.set_retryable(true);
     msg.set_operation_name("client.authenticationcustom");
@@ -87,6 +94,8 @@ client_authenticationcustom_encode(const std::string& cluster_name,
 
     msg.set(uuid);
     msg.set(serialization_version);
+    msg.set(routing_mode);
+    msg.set(cp_direct_to_leader_routing);
     msg.set(cluster_name);
 
     msg.set(credentials);
@@ -150,9 +159,29 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
         handle_partitionsview(version, partitions);
         return;
     }
+    if (messageType == 772) {
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto version = msg.get<int32_t>();
+        msg.seek(static_cast<int32_t>(initial_frame->frame_len));
+
+        auto member_groups =
+          msg.get<std::vector<std::vector<boost::uuids::uuid>>>();
+
+        handle_membergroupsview(version, member_groups);
+        return;
+    }
+    if (messageType == 773) {
+        msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN);
+
+        auto version = msg.get<version>();
+        handle_clusterversion(version);
+        return;
+    }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[client_addclusterviewlistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
@@ -269,11 +298,60 @@ client_localbackuplistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[client_localbackuplistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
         .str());
+}
+
+ClientMessage
+client_sendschema_encode(const serialization::pimpl::schema& schema)
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.sendschema");
+
+    msg.set_message_type(static_cast<int32_t>(4864));
+    msg.set_partition_id(-1);
+
+    msg.set(schema, true);
+
+    return msg;
+}
+
+ClientMessage
+client_fetchschema_encode(int64_t schema_id)
+{
+    size_t initial_frame_size =
+      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
+    ClientMessage msg(initial_frame_size, true);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.fetchschema");
+
+    msg.set_message_type(static_cast<int32_t>(5120));
+    msg.set_partition_id(-1);
+
+    msg.set(schema_id);
+    return msg;
+}
+
+ClientMessage
+client_sendallschemas_encode(
+  const std::vector<serialization::pimpl::schema>& schemas)
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.sendallschemas");
+
+    msg.set_message_type(static_cast<int32_t>(5376));
+    msg.set_partition_id(-1);
+
+    msg.set(schemas, true);
+
+    return msg;
 }
 
 ClientMessage
@@ -842,7 +920,7 @@ map_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[map_addentrylistenerwithpredicate_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
        messageType)
@@ -908,7 +986,7 @@ map_addentrylistenertokey_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[map_addentrylistenertokey_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -971,7 +1049,7 @@ map_addentrylistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[map_addentrylistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -1546,7 +1624,7 @@ map_addnearcacheinvalidationlistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[map_addnearcacheinvalidationlistener_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
        messageType)
@@ -1868,7 +1946,7 @@ multimap_addentrylistenertokey_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[multimap_addentrylistenertokey_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
@@ -1929,7 +2007,7 @@ multimap_addentrylistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[multimap_addentrylistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -2437,7 +2515,7 @@ queue_addlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[queue_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
             messageType)
@@ -2554,7 +2632,7 @@ topic_addmessagelistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[topic_addmessagelistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -2807,7 +2885,7 @@ list_addlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[list_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
             messageType)
@@ -3236,7 +3314,7 @@ set_addlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[set_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
             messageType)
@@ -4293,7 +4371,7 @@ replicatedmap_addentrylistenertokeywithpredicate_handler::handle(
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format(
               "[replicatedmap_addentrylistenertokeywithpredicate_handler::"
               "handle] Unknown message type (%1%) received on event handler.") %
@@ -4357,7 +4435,7 @@ replicatedmap_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format(
               "[replicatedmap_addentrylistenerwithpredicate_handler::handle] "
               "Unknown message type (%1%) received on event handler.") %
@@ -4422,7 +4500,7 @@ replicatedmap_addentrylistenertokey_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[replicatedmap_addentrylistenertokey_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
        messageType)
@@ -4481,7 +4559,7 @@ replicatedmap_addentrylistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[replicatedmap_addentrylistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
@@ -4611,7 +4689,7 @@ replicatedmap_addnearcacheentrylistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[replicatedmap_addnearcacheentrylistener_handler::handle]"
                      " Unknown message type (%1%) received on event handler.") %
        messageType)
@@ -5873,7 +5951,7 @@ sql_execute_encode(const std::string& sql,
     msg.set(skip_update_statistics);
     msg.set(sql);
 
-    msg.set(parameters);
+    msg.set_contains_nullable(parameters);
 
     msg.set_nullable(schema);
 
@@ -5898,55 +5976,6 @@ sql_fetch_encode(const sql::impl::query_id& query_id,
     msg.set(cursor_buffer_size);
     msg.set(query_id, true);
 
-    return msg;
-}
-
-ClientMessage
-client_sendschema_encode(const serialization::pimpl::schema& schema)
-{
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
-    ClientMessage msg(initial_frame_size);
-    msg.set_retryable(true);
-    msg.set_operation_name("client.sendschema");
-
-    msg.set_message_type(static_cast<int32_t>(4864));
-    msg.set_partition_id(-1);
-
-    msg.set(schema, true);
-
-    return msg;
-}
-
-ClientMessage
-client_sendallschemas_encode(
-  const std::vector<serialization::pimpl::schema>& schemas)
-{
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
-    ClientMessage msg(initial_frame_size);
-    msg.set_retryable(true);
-    msg.set_operation_name("client.sendallschemas");
-
-    msg.set_message_type(static_cast<int32_t>(5376));
-    msg.set_partition_id(-1);
-
-    msg.set(schemas, true);
-
-    return msg;
-}
-
-ClientMessage
-client_fetchschema_encode(int64_t schema_id)
-{
-    size_t initial_frame_size =
-      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
-    ClientMessage msg(initial_frame_size, true);
-    msg.set_retryable(true);
-    msg.set_operation_name("client.fetchschema");
-
-    msg.set_message_type(static_cast<int32_t>(5120));
-    msg.set_partition_id(-1);
-
-    msg.set(schema_id);
     return msg;
 }
 
