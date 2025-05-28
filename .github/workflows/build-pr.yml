@@ -115,26 +115,19 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
+  shared-matrix:
+    uses: ./.github/workflows/get-shared-matrix.yml
+
   Ubuntu-i386:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-        build_type:
-          - Debug
-          - Release
-            
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ubuntu-latest
     container:
@@ -167,26 +160,15 @@ jobs:
 
 
   Ubuntu-x86_64:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-
-        build_type:
-          - Debug
-          - Release
-
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-
-        with_openssl:
-          - toggle: OFF
-            name: noSSL
-          - toggle: ON
-            name: SSL
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ubuntu-latest
 
@@ -213,30 +195,16 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   Windows:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - cmake: Win32
-            choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
-            address_model: 32
-          - cmake: x64
-            choco_options: ''
-            address_model: 64
-        build_type:
-          - Debug
-          - Release
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        arch: ${{ fromJSON(needs.shared-matrix.outputs.windows-arch) }}
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: 'windows-latest'
     env:
@@ -272,25 +240,15 @@ jobs:
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   macOS-x86_64:
-    needs: get-refs
+    needs:
+      - get-refs
+      - shared-matrix
     strategy:
       fail-fast: false
       matrix:
-        build_type:
-          - Debug
-          - Release
-
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: macos-latest
 

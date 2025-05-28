@@ -1,0 +1,24 @@
+name: Get common matrix configuration
+
+on:
+  workflow_call:
+    outputs:
+      build-type:
+        value: ${{ jobs.get-configurations.outputs.build-type }}
+      shared-libs:
+        value: ${{ jobs.get-configurations.outputs.shared-libs }}
+      openssl:
+        value: ${{ jobs.get-configurations.outputs.openssl }}
+      windows-arch:
+        value: ${{ jobs.get-configurations.outputs.windows-arch }}
+
+jobs:
+  get-configurations:
+    runs-on: ubuntu-latest
+    outputs:
+      build-type: "['Debug', 'Release']"
+      shared-libs: "[{'toggle': 'OFF', 'name': 'Static'}, {'toggle': 'ON', 'name': 'Shared'}]"
+      openssl: "[{'toggle': 'OFF', 'name': 'noSSL'}, {'toggle': 'ON', 'name': 'SSL'}]"
+      windows-arch: "[{'cmake': 'Win32', 'choco_options': '--forceX86 --x86 --version 1.1.1.2100 -y', 'address_model': '32'}, {'cmake': 'x64', 'choco_options': '', 'address_model': '64'}]"
+    steps:
+      - run: exit 0

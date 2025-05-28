@@ -11,7 +11,11 @@ on:
     - cron: '0 2 * * *'
 
 jobs:
+  shared-matrix:
+    uses: ./.github/workflows/get-shared-matrix.yml
+
   nightly-Windows:
+    needs: shared-matrix
     strategy:
       fail-fast: false
       matrix:
@@ -46,26 +50,10 @@ jobs:
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
             boost_include_folder: 'C:\Boost\include\boost-1_80'
-        arch:
-          - cmake: Win32
-            choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
-            address_model: 32
-          - cmake: x64
-            choco_options: ''
-            address_model: 64
-        build_type:
-          - Debug
-          - Release
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        arch: ${{ fromJSON(needs.shared-matrix.outputs.windows-arch) }}
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ${{ matrix.vc_boost.image }}
     env:
