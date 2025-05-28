@@ -2095,6 +2095,22 @@ TEST_F(IssueTest,TestIssue1005){
 
     c.shutdown().get();
 }
+
+TEST_F(IssueTest, TestIssue1196){
+    client_config conf;
+    hazelcast::client::config::near_cache_config n1;
+    hazelcast::client::config::near_cache_config n2;
+
+    n1.set_name("no-name");
+    n2.set_name("pat*");
+    n2.set_max_idle_seconds(11);
+
+    conf.add_near_cache_config(n1);
+    conf.add_near_cache_config(n2);
+
+    ASSERT_NE(conf.get_near_cache_config("pattern"), nullptr);
+    EXPECT_EQ(conf.get_near_cache_config("pattern")->get_max_idle_seconds(), 11);
+}
 } // namespace test
 } // namespace client
 } // namespace hazelcast
