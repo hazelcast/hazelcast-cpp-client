@@ -42,6 +42,7 @@
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/map/data_entry_view.h"
 #include "hazelcast/client/member.h"
+#include "hazelcast/client/version.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/query/paging_predicate.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
@@ -1040,6 +1041,24 @@ public:
                                      std::move(message),
                                      originating_member_id,
                                      std::move(suggestion) };
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, version>::value,
+                            T>::type
+    get()
+    {
+        // begin frame
+        skip_frame();
+
+        const auto header = read_frame_header();
+
+        auto major = get<byte>();
+        auto minor = get<byte>();
+
+        fast_forward_to_end_frame();
+
+        return version{major, minor};
     }
 
     template<typename T>
