@@ -373,7 +373,7 @@ protected:
     }
 
     template<typename T>
-    typename std::enable_if<std::is_trivial<T>::value, boost::future<T>>::
+    typename std::enable_if<hazelcast::util::is_trivial_or_uuid<T>::value, boost::future<T>>::
       type static decode(boost::future<protocol::ClientMessage> f)
     {
         return f.then(boost::launch::sync,
@@ -384,7 +384,7 @@ protected:
     }
 
     template<typename T>
-    typename std::enable_if<!std::is_trivial<T>::value, boost::future<T>>::
+    typename std::enable_if<!hazelcast::util::is_trivial_or_uuid<T>::value, boost::future<T>>::
       type static decode(boost::future<protocol::ClientMessage> f)
     {
         return f.then(boost::launch::sync,
