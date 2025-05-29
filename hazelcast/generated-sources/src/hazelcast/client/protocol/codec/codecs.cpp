@@ -152,7 +152,7 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[client_addclusterviewlistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
@@ -269,7 +269,7 @@ client_localbackuplistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[client_localbackuplistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
@@ -842,7 +842,7 @@ map_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[map_addentrylistenerwithpredicate_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
        messageType)
@@ -908,7 +908,7 @@ map_addentrylistenertokey_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[map_addentrylistenertokey_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -971,7 +971,7 @@ map_addentrylistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[map_addentrylistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -1546,7 +1546,7 @@ map_addnearcacheinvalidationlistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[map_addnearcacheinvalidationlistener_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
        messageType)
@@ -1868,7 +1868,7 @@ multimap_addentrylistenertokey_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[multimap_addentrylistenertokey_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
@@ -1929,7 +1929,7 @@ multimap_addentrylistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[multimap_addentrylistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -2437,7 +2437,7 @@ queue_addlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[queue_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
             messageType)
@@ -2554,7 +2554,7 @@ topic_addmessagelistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[topic_addmessagelistener_handler::handle] Unknown "
                           "message type (%1%) received on event handler.") %
             messageType)
@@ -2807,7 +2807,7 @@ list_addlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[list_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
             messageType)
@@ -3236,7 +3236,7 @@ set_addlistener_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format("[set_addlistener_handler::handle] Unknown message "
                           "type (%1%) received on event handler.") %
             messageType)
@@ -4293,7 +4293,7 @@ replicatedmap_addentrylistenertokeywithpredicate_handler::handle(
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format(
               "[replicatedmap_addentrylistenertokeywithpredicate_handler::"
               "handle] Unknown message type (%1%) received on event handler.") %
@@ -4357,7 +4357,7 @@ replicatedmap_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
         return;
     }
     HZ_LOG(get_logger(),
-           warning,
+           finest,
            (boost::format(
               "[replicatedmap_addentrylistenerwithpredicate_handler::handle] "
               "Unknown message type (%1%) received on event handler.") %
@@ -4422,7 +4422,7 @@ replicatedmap_addentrylistenertokey_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[replicatedmap_addentrylistenertokey_handler::handle] "
                      "Unknown message type (%1%) received on event handler.") %
        messageType)
@@ -4481,7 +4481,7 @@ replicatedmap_addentrylistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[replicatedmap_addentrylistener_handler::handle] Unknown "
                      "message type (%1%) received on event handler.") %
        messageType)
@@ -4611,7 +4611,7 @@ replicatedmap_addnearcacheentrylistener_handler::handle(ClientMessage& msg)
     }
     HZ_LOG(
       get_logger(),
-      warning,
+      finest,
       (boost::format("[replicatedmap_addnearcacheentrylistener_handler::handle]"
                      " Unknown message type (%1%) received on event handler.") %
        messageType)
