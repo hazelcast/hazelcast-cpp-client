@@ -39,6 +39,13 @@ jobs:
             boost_url: 'https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz'
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_80'
+          - name: msvc-latest_boost_1800
+            image: 'windows-latest'
+            boost_url: 'https://archives.boost.io/release/1.80.0/source/boost_1_80_0.tar.gz'
+            boost_archive_name: 'boost_1_80_0.tar.gz'
+            boost_folder_name: 'boost_1_80_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_80'
         arch:
           - cmake: Win32
             choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
