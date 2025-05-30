@@ -166,4 +166,4 @@ runs:
         path: |
           **/*.pdb
           *.dmp
-          *.log
+          **/*.log
