@@ -79,7 +79,7 @@ runs:
         retry_on: error
         shell: ${{ env.shell }}
         command: |
-          choco install openssl ${{ inputs.ARCH_CHOCO_OPTIONS }}
+          choco install openssl --no-progress ${{ inputs.ARCH_CHOCO_OPTIONS }}
           Invoke-WebRequest `
               "https://curl.se/ca/cacert.pem" `
               -OutFile "C:\cacert.pem"
