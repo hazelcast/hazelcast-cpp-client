@@ -11,7 +11,11 @@ on:
     - cron: '0 20 * * *'
 
 jobs:
+  shared-matrix:
+    uses: ./.github/workflows/get-shared-matrix.yml
+
   nightly-Ubuntu-x86_64:
+    needs: shared-matrix
     strategy:
       fail-fast: false
       matrix:
