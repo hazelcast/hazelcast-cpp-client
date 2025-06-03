@@ -9,8 +9,8 @@ on:
         value: ${{ jobs.get-configurations.outputs.shared-libs }}
       openssl:
         value: ${{ jobs.get-configurations.outputs.openssl }}
-      windows-arch:
-        value: ${{ jobs.get-configurations.outputs.windows-arch }}
+      windows-options:
+        value: ${{ jobs.get-configurations.outputs.windows-options }}
 
 jobs:
   get-configurations:
@@ -19,6 +19,6 @@ jobs:
       build-type: "['Debug', 'Release']"
       shared-libs: "[{'toggle': 'OFF', 'name': 'Static'}, {'toggle': 'ON', 'name': 'Shared'}]"
       openssl: "[{'toggle': 'OFF', 'name': 'noSSL'}, {'toggle': 'ON', 'name': 'SSL'}]"
-      windows-arch: "[{'cmake': 'Win32', 'choco_options': '--forceX86 --x86 --version 1.1.1.2100 -y', 'address_model': '32'}, {'cmake': 'x64', 'choco_options': '', 'address_model': '64'}]"
+      windows-options: "[{'cmake': 'Win32', 'choco_options': '--forceX86 --x86 --version 1.1.1.2100 -y', 'address_model': '32'}, {'cmake': 'x64', 'choco_options': '', 'address_model': '64'}]"
     steps:
       - run: exit 0

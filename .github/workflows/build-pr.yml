@@ -201,15 +201,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: ${{ fromJSON(needs.shared-matrix.outputs.windows-arch) }}
+        options: ${{ fromJSON(needs.shared-matrix.outputs.windows-options) }}
         build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
         shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: 'windows-latest'
     env:
-      JOB_NAME: win_${{ matrix.arch.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
-    name: win-${{ matrix.arch.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
+      JOB_NAME: win_${{ matrix.options.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
+    name: win-${{ matrix.options.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -224,9 +224,9 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
-          ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
-          ARCH_ADDRESS_MODEL: ${{ matrix.arch.address_model }}
-          ARCH_CMAKE: ${{ matrix.arch.cmake }}
+          ARCH_CHOCO_OPTIONS: ${{ matrix.options.choco_options }}
+          ARCH_ADDRESS_MODEL: ${{ matrix.options.address_model }}
+          ARCH_CMAKE: ${{ matrix.options.cmake }}
           INSTALL_BOOST: true
           BOOST_URL: ${{ env.boost_url }}
           BOOST_ARCHIVE_NAME: ${{ env.boost_archive_name }}
