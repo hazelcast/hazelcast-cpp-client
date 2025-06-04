@@ -1,5 +1,5 @@
-<!-- THIS FILE IS AUTO GENERATED FILE. DO NOT HAND MODIFY.
-MODIFY Reference_Manual.md.in TO MAKE CHANGES. -->
+<!-- THIS FILE IS AUTO GENERATED FILE.
+     MODIFY Reference_Manual.md.in TO MAKE CHANGES.        -->
 
 # Hazelcast C++ Client Library
 <!--ts-->

@@ -26,17 +26,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Generate the file in the build directory
-configure_file(Reference_Manual.md.in "${CMAKE_CURRENT_BINARY_DIR}/Reference_Manual.md" @ONLY)
-
-# Define a custom command to copy the file to the source directory
-add_custom_command(
-    OUTPUT "${CMAKE_SOURCE_DIR}/Reference_Manual.md"
-    COMMAND ${CMAKE_COMMAND} -E copy
-            "${CMAKE_CURRENT_BINARY_DIR}/Reference_Manual.md"
-            "${CMAKE_SOURCE_DIR}/Reference_Manual.md"
-    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Reference_Manual.md"
-    COMMENT "Copying Reference_Manual.md to the source directory"
-)
+configure_file(Reference_Manual.md.in "${CMAKE_SOURCE_DIR}/Reference_Manual.md" @ONLY)
 
 # Add a custom target to execute the copy command
 add_custom_target(copy_reference_manual ALL
