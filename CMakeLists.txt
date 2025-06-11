@@ -25,6 +25,15 @@ project(hazelcast-cpp-client
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Generate the Reference_Manual.md file using the latest project version.
+# If the project version changes, the generated Reference_Manual.md file needs to be
+# committed to the repository after generation.
+configure_file(Reference_Manual.md.in "${CMAKE_SOURCE_DIR}/Reference_Manual.md" @ONLY)
+
+# Add a custom target to execute the copy command
+add_custom_target(copy_reference_manual ALL
+    DEPENDS "${CMAKE_SOURCE_DIR}/Reference_Manual.md"
+)
 # Set the default build type for single-config generators if not given
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if ((NOT is_multi_config) AND (NOT CMAKE_BUILD_TYPE))
