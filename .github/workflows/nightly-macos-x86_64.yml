@@ -11,29 +11,20 @@ on:
     - cron: '0 0 * * *'
 
 jobs:
+  shared-matrix:
+    uses: ./.github/workflows/get-shared-matrix.yml
+
   nightly-macOS-x86_64:
+    needs: shared-matrix
     strategy:
       fail-fast: false
       matrix:
         boost:
             - version: 1.71.0
             - version: 1.76.0
-
-        build_type:
-          - Debug
-          - Release
-
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: macos-latest
 
