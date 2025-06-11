@@ -97,7 +97,7 @@ protected:
     inline boost::future<std::unordered_map<K, V>> to_object_map(
       std::vector<boost::future<EntryVector>>& futures)
     {
-        return boost::when_all(futures.begin(), futures.end())
+        return boost::when_all(futures.cbegin(), futures.cend())
           .then(boost::launch::sync,
                 [this](
                   boost::future<boost::csbl::vector<boost::future<EntryVector>>>

@@ -208,9 +208,9 @@ ClassDefinitionBuilder::build()
     std::shared_ptr<ClassDefinition> cd(
       new ClassDefinition(factory_id_, class_id_, version_));
 
-    std::vector<FieldDefinition>::iterator fdIt;
-    for (fdIt = field_definitions_.begin(); fdIt != field_definitions_.end();
-         fdIt++) {
+    std::vector<FieldDefinition>::const_iterator fdIt;
+    for (fdIt = field_definitions_.cbegin(); fdIt != field_definitions_.cend();
+         ++fdIt) {
         cd->add_field_def(*fdIt);
     }
     return cd;
@@ -449,7 +449,7 @@ ClassDefinition::ClassDefinition(int factory_id, int class_id, int version)
 {}
 
 void
-ClassDefinition::add_field_def(FieldDefinition& fd)
+ClassDefinition::add_field_def(const FieldDefinition& fd)
 {
     field_definitions_map_[fd.get_name()] = fd;
 }
@@ -458,7 +458,7 @@ const FieldDefinition&
 ClassDefinition::get_field(const std::string& name) const
 {
     auto it = field_definitions_map_.find(name);
-    if (it != field_definitions_map_.end()) {
+    if (it != field_definitions_map_.cend()) {
         return it->second;
     }
     BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
@@ -473,7 +473,7 @@ bool
 ClassDefinition::has_field(const std::string& field_name) const
 {
     return field_definitions_map_.find(field_name) !=
-           field_definitions_map_.end();
+           field_definitions_map_.cend();
 }
 
 field_type
@@ -645,7 +645,7 @@ data_output::write(int16_t value)
     } else {
         boost::endian::native_to_little_inplace(value);
     }
-    output_stream_.insert(output_stream_.end(),
+    output_stream_.insert(output_stream_.cend(),
                           (byte*)&value,
                           (byte*)&value + util::Bits::SHORT_SIZE_IN_BYTES);
 }
@@ -661,7 +661,7 @@ data_output::write(int32_t value, boost::endian::order byte_order)
     } else {
         boost::endian::native_to_little_inplace(value);
     }
-    output_stream_.insert(output_stream_.end(),
+    output_stream_.insert(output_stream_.cend(),
                           (byte*)&value,
                           (byte*)&value + util::Bits::INT_SIZE_IN_BYTES);
 }
@@ -685,7 +685,7 @@ data_output::write(int64_t value)
     } else {
         boost::endian::native_to_little_inplace(value);
     }
-    output_stream_.insert(output_stream_.end(),
+    output_stream_.insert(output_stream_.cend(),
                           (byte*)&value,
                           (byte*)&value + util::Bits::LONG_SIZE_IN_BYTES);
 }
@@ -736,7 +736,7 @@ data_output::write(boost::uuids::uuid v)
           *reinterpret_cast<int64_t*>(&v.data[util::Bits::LONG_SIZE_IN_BYTES]));
     }
     output_stream_.insert(
-      output_stream_.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
+      output_stream_.cend(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
 }
 
 template<>
@@ -768,7 +768,7 @@ data_output::write(const std::string& str)
     }
 
     write<int32_t>(str.size());
-    output_stream_.insert(output_stream_.end(), str.begin(), str.end());
+    output_stream_.insert(output_stream_.cend(), str.cbegin(), str.cend());
 }
 
 template<>
@@ -1014,7 +1014,7 @@ DefaultPortableWriter::set_position(const std::string& field_name,
     try {
         FieldDefinition const& fd = cd_->get_field(field_name);
 
-        if (written_fields_.find(field_name) != written_fields_.end()) {
+        if (written_fields_.find(field_name) != written_fields_.cend()) {
             BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
               "PortableWriter::setPosition",
               "Field '" + std::string(field_name) +

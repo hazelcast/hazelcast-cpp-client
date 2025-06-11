@@ -62,7 +62,7 @@ public:
     bool contains_key(const K& key) const
     {
         std::lock_guard<std::mutex> guard(map_lock_);
-        return internal_map_.find(key) != internal_map_.end();
+        return internal_map_.find(key) != internal_map_.cend();
     }
 
     /**
@@ -91,7 +91,7 @@ public:
         std::lock_guard<std::mutex> lg(map_lock_);
         std::shared_ptr<V> returnValue;
         auto foundIter = internal_map_.find(key);
-        if (foundIter != internal_map_.end()) {
+        if (foundIter != internal_map_.cend()) {
             returnValue = foundIter->second;
         }
         internal_map_[key] = value;
@@ -107,7 +107,7 @@ public:
     {
         std::lock_guard<std::mutex> lg(map_lock_);
         auto foundIter = internal_map_.find(key);
-        if (foundIter != internal_map_.end()) {
+        if (foundIter != internal_map_.cend()) {
             return foundIter->second;
         }
 
@@ -124,7 +124,7 @@ public:
     {
         std::lock_guard<std::mutex> lg(map_lock_);
         auto foundIter = internal_map_.find(key);
-        if (foundIter != internal_map_.end()) {
+        if (foundIter != internal_map_.cend()) {
             std::shared_ptr<V> v = foundIter->second;
             internal_map_.erase(foundIter);
             return v;
@@ -137,7 +137,7 @@ public:
     {
         std::lock_guard<std::mutex> lg(map_lock_);
         auto foundIter = internal_map_.find(key);
-        if (foundIter != internal_map_.end()) {
+        if (foundIter != internal_map_.cend()) {
             auto& foundValue = foundIter->second;
             if (!value || !foundValue) {
                 if (value == foundValue) {
@@ -228,7 +228,7 @@ public:
         if (index >= internal_map_.size()) {
             return std::unique_ptr<std::pair<K, std::shared_ptr<V>>>();
         }
-        auto it = internal_map_.begin();
+        auto it = internal_map_.cbegin();
         for (size_t i = 0; i < index; ++i) {
             ++it;
         }
@@ -251,7 +251,7 @@ public:
     {
         std::lock_guard<std::mutex> lg(map_lock_);
 
-        for (auto iter = internal_map_.begin(); iter != internal_map_.end();) {
+        for (auto iter = internal_map_.cbegin(); iter != internal_map_.cend();) {
             if (iter->second != nullptr && comp(*(iter->second))) {
                 iter = internal_map_.erase(iter);
             } else {
