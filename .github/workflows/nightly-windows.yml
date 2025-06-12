@@ -50,7 +50,7 @@ jobs:
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
             boost_include_folder: 'C:\Boost\include\boost-1_80'
-        arch: ${{ fromJSON(needs.shared-matrix.outputs.windows-options) }}
+        options: ${{ fromJSON(needs.shared-matrix.outputs.windows-options) }}
         build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
         shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
