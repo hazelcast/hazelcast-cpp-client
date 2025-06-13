@@ -33,6 +33,8 @@ CXXFLAGS="$CXXFLAGS -Wall"
 if [ "${BUILD_TYPE}" = "Debug" ]; then
   # treat compiler warnings as errors when the build type is Debug
   CXXFLAGS="$CXXFLAGS -Werror"
+  # enable address sanitizer to provide meaningful stack traces
+  CXXFLAGS="$CXXFLAGS -fsanitize=address -fno-omit-frame-pointer"
 fi
 
 # remove the given build directory if already exists
