@@ -33,8 +33,7 @@ runs:
     - name: Install Necessary Packages
       shell: ${{ env.shell }}
       run: |
-        sudo apt-get update
-        sudo apt-get install -y net-tools libssl-dev gdb gcovr lcov curl
+        apt-get update && apt-get install -y sudo net-tools libssl-dev gdb gcovr lcov curl
 
     - name: Download hazelcast-enterprise-tests.jar
       shell: ${{ env.shell }}
@@ -92,7 +91,7 @@ runs:
       run: |
         # collect and list coverage info
         lcov --capture --directory . --no-external -o coverage.info \
-              --include "`pwd`/hazelcast/*" --exclude "`pwd`/hazelcast/test/*"
+              --include "hazelcast/*" --exclude "hazelcast/test/*"
         lcov --list coverage.info
         # generate HTML views
         genhtml coverage.info --output-directory=coverage-html-reports
