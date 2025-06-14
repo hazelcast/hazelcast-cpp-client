@@ -33,7 +33,8 @@ runs:
     - name: Install Necessary Packages
       shell: ${{ env.shell }}
       run: |
-        apt-get update && apt-get install -y sudo net-tools libssl-dev gdb gcovr lcov curl
+        sudo apt-get update
+        sudo apt-get install -y net-tools libssl-dev gdb gcovr lcov curl
 
     - name: Download hazelcast-enterprise-tests.jar
       shell: ${{ env.shell }}
