@@ -91,7 +91,8 @@ runs:
       shell: ${{ env.shell }}
       run: |
         # collect and list coverage info
-        lcov --capture --directory . --no-external -o coverage.info \
+        ls
+        lcov --capture --directory hazelcast --no-external -o coverage.info \
               --include "**/hazelcast/*" --exclude "**/hazelcast/test/*"
         lcov --list coverage.info
         # generate HTML views
