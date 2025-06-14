@@ -92,7 +92,7 @@ runs:
       run: |
         # collect and list coverage info
         lcov --capture --directory . --no-external -o coverage.info \
-              --include "hazelcast/*" --exclude "hazelcast/test/*"
+              --include "*/hazelcast/*" --exclude "*/hazelcast/test/*"
         lcov --list coverage.info
         # generate HTML views
         genhtml coverage.info --output-directory=coverage-html-reports
