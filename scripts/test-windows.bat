@@ -47,7 +47,7 @@ exit /b 1
 :server_started
 
 if "%BUILD_CONFIGURATION%"=="Debug" (
-  if "%ASAN_OPTIONS%"=="" (
+  if "x%ASAN_OPTIONS%"=="x" (
     @REM disable leak detection
     @REM need to address outstanding issues before we can aggressively block new ones
     @REM https://github.com/hazelcast/hazelcast-cpp-client/issues/1282
