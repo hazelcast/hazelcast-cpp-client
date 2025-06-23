@@ -11,7 +11,11 @@ on:
     - cron: '0 2 * * *'
 
 jobs:
+  shared-matrix:
+    uses: ./.github/workflows/get-shared-matrix.yml
+
   nightly-Windows:
+    needs: shared-matrix
     strategy:
       fail-fast: false
       matrix:
@@ -46,33 +50,17 @@ jobs:
             boost_archive_name: 'boost_1_80_0.tar.gz'
             boost_folder_name: 'boost_1_80_0'
             boost_include_folder: 'C:\Boost\include\boost-1_80'
-        arch:
-          - cmake: Win32
-            choco_options: '--forceX86 --x86 --version 1.1.1.2100 -y'
-            address_model: 32
-          - cmake: x64
-            choco_options: ''
-            address_model: 64
-        build_type:
-          - Debug
-          - Release
-        shared_libs:
-          - toggle: OFF
-            name: Static
-          - toggle: ON
-            name: Shared
-        with_openssl:
-          - toggle: OFF
-            name: 'noSSL'
-          - toggle: ON
-            name: 'SSL'
+        options: ${{ fromJSON(needs.shared-matrix.outputs.windows-options) }}
+        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
+        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
+        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ${{ matrix.vc_boost.image }}
     env:
-      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.arch.address_model }},${{ matrix.build_type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.options.address_model }},${{ matrix.build_type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     name: >-
       Windows
-      (${{ matrix.vc_boost.name }}, ${{ matrix.arch.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
+      (${{ matrix.vc_boost.name }}, ${{ matrix.options.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
       - uses: actions/checkout@v4
@@ -82,18 +70,18 @@ jobs:
         uses: actions/cache@v4
         with:          
           path: C:\Boost
-          key: ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.name }}-${{ matrix.options.address_model }}-${{ matrix.build_type }}
           restore-keys: |
-            ${{ matrix.vc_boost.name }}-${{ matrix.arch.address_model }}-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.name }}-${{ matrix.options.address_model }}-${{ matrix.build_type }}
 
       - name: Cache Thrift Version
         id: cache-thrift
         uses: actions/cache@v4
         with:          
           path: C:\Thrift
-          key: ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
+          key: ${{ matrix.vc_boost.image }}-${{ matrix.options.address_model }}-thrift-0.13-${{ matrix.build_type }}
           restore-keys: |
-            ${{ matrix.vc_boost.image }}-${{ matrix.arch.address_model }}-thrift-0.13-${{ matrix.build_type }}
+            ${{ matrix.vc_boost.image }}-${{ matrix.options.address_model }}-thrift-0.13-${{ matrix.build_type }}
 
       - uses: ./.github/actions/build-test/windows
         with:
@@ -103,9 +91,9 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
-          ARCH_CHOCO_OPTIONS: ${{ matrix.arch.choco_options }}
-          ARCH_ADDRESS_MODEL: ${{ matrix.arch.address_model }}
-          ARCH_CMAKE: ${{ matrix.arch.cmake }}
+          ARCH_CHOCO_OPTIONS: ${{ matrix.options.choco_options }}
+          ARCH_ADDRESS_MODEL: ${{ matrix.options.address_model }}
+          ARCH_CMAKE: ${{ matrix.options.cmake }}
           INSTALL_BOOST: ${{ steps.cache-boost.outputs.cache-hit != 'true' }}
           BOOST_URL: ${{ matrix.vc_boost.boost_url }}
           BOOST_ARCHIVE_NAME: ${{ matrix.vc_boost.boost_archive_name }}
@@ -121,7 +109,7 @@ jobs:
       - name: Verify Installation
         run: |
           cmake -S .\examples -B build-examples `
-                -A ${{ matrix.arch.cmake }} `
+                -A ${{ matrix.options.cmake }} `
                 -DCMAKE_CONFIGURATION_TYPES=${{ matrix.build_type }} `
                 -DCMAKE_PREFIX_PATH="C:\Boost;${{ github.workspace }}\destination" `
                 -DWITH_OPENSSL=${{ matrix.with_openssl.toggle }}

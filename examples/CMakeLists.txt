@@ -1,5 +1,5 @@
 ﻿#
-# Copyright (c) 2008-2023, Hazelcast, Inc. All Rights Reserved.
+# Copyright (c) 2008-2025, Hazelcast, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 cmake_minimum_required (VERSION 3.10)
 
 project (hazelcast-cpp-client-examples
-         VERSION 5.3
+         VERSION 5.5.0
          DESCRIPTION "Hazelcast C++ Client Code Examples"
          LANGUAGES CXX)
 
