@@ -24,22 +24,17 @@ inputs:
   HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
     required: true
 
-env:
-  # Not possible to set this as a default
-  # https://github.com/orgs/community/discussions/46670
-  shell: bash
-
 runs:
   using: composite
   steps:
     - name: Install Necessary Packages
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y net-tools libssl-dev gdb curl
 
     - name: Read Config
-      shell: ${{ env.shell }}
+      shell: bash
       run: cat .github/config.env >> $GITHUB_ENV
 
     - name: Setup JDK
@@ -49,18 +44,18 @@ runs:
         distribution: ${{ env.JAVA_DISTRIBUTION }}
 
     - name: Install Boost
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         sudo ./scripts/install-boost.sh ${{ inputs.BOOST_VERSION }}
 
     - name: Install Thrift
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
 
     - name: Configure Resources
       if: ${{ inputs.run_tests }}
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         ulimit -c unlimited
 

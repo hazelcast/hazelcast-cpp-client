@@ -24,16 +24,11 @@ inputs:
   HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
     required: true
 
-env:
-  # Not possible to set this as a default
-  # https://github.com/orgs/community/discussions/46670
-  shell: bash
-
 runs:
   using: composite
   steps:
     - name: Download hazelcast-enterprise-tests.jar
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         gh api "/repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" -H "Accept: application/vnd.github.raw" > hazelcast-enterprise-${{ env.HZ_VERSION }}-tests.jar
       env:
@@ -44,7 +39,7 @@ runs:
         BUILD_DIR: build
         INSTALL: ON
         BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         ./scripts/build-unix.sh                                          \
             -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/destination   \
@@ -62,6 +57,6 @@ runs:
         AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
         HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
         BUILD_TYPE: ${{ inputs.BUILD_TYPE }}
-      shell: ${{ env.shell }}
+      shell: bash
       run: |
         ./scripts/test-unix.sh

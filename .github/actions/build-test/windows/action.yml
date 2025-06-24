@@ -42,11 +42,6 @@ inputs:
   HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
     required: true
 
-env:
-  # Not possible to set this as a default
-  # https://github.com/orgs/community/discussions/46670
-  shell: pwsh
-
 runs:
   using: composite
   steps:
@@ -55,14 +50,14 @@ runs:
       run: cat .github/config.env >> $GITHUB_ENV
 
     - name: Download hazelcast-enterprise-tests.jar
-      shell: ${{ env.shell }}
+      shell: pwsh
       run: |
         gh api "/repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" -H "Accept: application/vnd.github.raw" > hazelcast-enterprise-${{ env.HZ_VERSION }}-tests.jar
       env:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
 
     - name: Install SysInternals
-      shell: ${{ env.shell }}
+      shell: pwsh
       run: |
           Invoke-WebRequest `
               "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
@@ -77,7 +72,7 @@ runs:
         timeout_minutes: 10
         max_attempts : 4
         retry_on: error
-        shell: ${{ env.shell }}
+        shell: pwsh
         command: |
           choco install openssl ${{ inputs.ARCH_CHOCO_OPTIONS }}
           Invoke-WebRequest `
@@ -86,7 +81,7 @@ runs:
 
     - if: ${{ inputs.INSTALL_BOOST != 'false' }}
       name: Install Boost
-      shell: ${{ env.shell }}
+      shell: pwsh
       run: |
         Invoke-WebRequest `
             "${{ inputs.BOOST_URL }}" `
@@ -102,7 +97,7 @@ runs:
 
     - if: ${{ inputs.INSTALL_THRIFT != 'false' }}
       name: Install Thrift
-      shell: ${{ env.shell }}
+      shell: pwsh
       run: |
         Invoke-WebRequest `
             "https://archive.apache.org/dist/thrift/${{ inputs.THRIFT_VERSION }}/thrift-${{ inputs.THRIFT_VERSION }}.tar.gz" `
@@ -133,7 +128,7 @@ runs:
         BIT_VERSION: ${{ inputs.ARCH_ADDRESS_MODEL }}
         INSTALL: ON
         CXXFLAGS: '/I C:\Thrift\include\'
-      shell: ${{ env.shell }}
+      shell: pwsh
       run: |
         .\scripts\build-windows.bat `
             -DCMAKE_PREFIX_PATH="C:\Boost;C:\Thrift" `
@@ -153,7 +148,7 @@ runs:
         AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
         HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
         SSL_CERT_FILE: 'C:\cacert.pem'
-      shell: ${{ env.shell }}
+      shell: pwsh
       run: |
         $dump = start-process -NoNewWindow sys-internals\procdump.exe {-accepteula -e -ma -w client_test.exe crash.dmp}
         .\scripts\test-windows.bat
