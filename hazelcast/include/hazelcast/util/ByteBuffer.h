@@ -61,7 +61,7 @@ public:
     {
         size_t numBytesToCopy = std::min<size_t>(lim_ - pos_, len);
         target.insert(
-          target.end(), buffer_ + pos_, buffer_ + pos_ + numBytesToCopy);
+          target.cend(), buffer_ + pos_, buffer_ + pos_ + numBytesToCopy);
         pos_ += numBytesToCopy;
         return numBytesToCopy;
     }
