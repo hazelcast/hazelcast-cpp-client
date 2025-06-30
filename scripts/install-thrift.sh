@@ -10,7 +10,7 @@ if [[ "$#" -ne 1 ]]; then
     exit 1
 fi
 
-curl --fail --silent --show-error --location https://www.apache.org/dyn/closer.lua/thrift/$1/thrift-$1.tar.gz?action=download  | tar xzf -
+curl --fail --silent --show-error --location "https://www.apache.org/dyn/closer.lua/thrift/$1/thrift-$1.tar.gz?action=download" | tar xzf -
 pushd thrift-$1/build
 cmake .. -DBUILD_COMPILER=OFF -DBUILD_TESTING=OFF -DBUILD_TUTORIALS=OFF -DBUILD_LIBRARIES=ON \
          -DBUILD_CPP=ON -DBUILD_AS3=OFF -DBUILD_C_GLIB=OFF -DBUILD_JAVA=OFF -DBUILD_PYTHON=OFF \
