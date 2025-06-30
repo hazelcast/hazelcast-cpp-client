@@ -100,7 +100,7 @@ runs:
       shell: pwsh
       run: |
         Invoke-WebRequest `
-            "https://archive.apache.org/dist/thrift/${{ inputs.THRIFT_VERSION }}/thrift-${{ inputs.THRIFT_VERSION }}.tar.gz" `
+            "https://www.apache.org/dyn/closer.lua/thrift/${{ inputs.THRIFT_VERSION }}/thrift-${{ inputs.THRIFT_VERSION }}.tar.gz?action=download" `
             -OutFile "thrift-${{ inputs.THRIFT_VERSION }}.tar.gz"
         tar xzf thrift-${{ inputs.THRIFT_VERSION }}.tar.gz
         rm thrift-${{ inputs.THRIFT_VERSION }}.tar.gz
