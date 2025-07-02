@@ -32,115 +32,15 @@ A cluster of Hazelcast nodes share both the data storage and computational load 
 When you add new nodes to the cluster, the data is automatically rebalanced across the cluster, and currently running
 computational tasks (known as jobs) snapshot their state and scale with processing guarantees.
 
-For more info, check out Hazelcast [repository](https://github.com/hazelcast/hazelcast).
+For more information, see the Hazelcast [repository](https://github.com/hazelcast/hazelcast).
 
 
 # Hazelcast C++ Client
 
+For an introduction to the C++ client for Hazelcast, and information on how to install and get started with the client, see the [Hazelcast documentation](https://docs.hazelcast.com/hazelcast/latest/clients/cplusplus).
+
 hazelcast-cpp-client is the official C++ library API for using the Hazelcast in-memory database platform. It requires C++11 support.  
 
-
-## Installation
-### Hazelcast
-Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles the storage and
-manipulation of the user data.
-
-A Hazelcast cluster consists of one or more cluster members. These members generally run on multiple virtual or
-physical machines and are connected to each other via the network. Any data put on the cluster is partitioned to
-multiple members transparent to the user. It is therefore very easy to scale the system by adding new members as
-the data grows. Hazelcast cluster also offers resilience. Should any hardware or software problem causes a crash
-to any member, the data on that member is recovered from backups and the cluster continues to operate without any
-downtime.
-
-The quickest way to start a single member cluster for development purposes is to use our
-[Docker images](https://hub.docker.com/r/hazelcast/hazelcast/).
-
-```bash
-docker run -p 5701:5701 hazelcast/hazelcast
-```
-
-This command fetches the latest Hazelcast version. You can find all available tags
-[here](https://hub.docker.com/r/hazelcast/hazelcast/tags).
-
-You can also use our ZIP or TAR [distributions](https://hazelcast.com/open-source-projects/downloads/)
-as described [here](Reference_Manual.md#12-starting-a-hazelcast-cluster).
-
-### Client
-
-#### Vcpkg Users
-Hazelcast C++ client package is available for [Vcpkg](https://github.com/microsoft/vcpkg) users. The package name is `hazelcast-cpp-client`.
-
-Please see [getting started](https://github.com/microsoft/vcpkg#getting-started) on how to use Vcpkg package manager with your application. In summary,
-
-If you use Linux or Mac:
-
-```sh
-git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
-./vcpkg/bootstrap-vcpkg.sh
-./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
-``` 
-
-If you use Windows:
-
-```bat
-git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
-.\vcpkg\bootstrap-vcpkg.bat
-.\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
-``` 
-The above code snippet will install `hazelcast-cpp-client` with its `boost` and `openssl` dependencies.
-
-After the installation, the library is available for usage. For example, if you are using CMake for your builds, you can use the following cmake build command with the `CMAKE_TOOLCHAIN_FILE` cmake option to be the `vcpkg.cmake`.
-```bat
-cmake -B [build directory] -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
-cmake --build [build directory]
-```
-
-##### Other Methods
-
-You can also install the hazelcast-cpp-client with [conan](https://conan.io/) and from source code. You can more information from [Reference Manual](Reference_Manual.md#11-installing).
-
-## Overview
-
-### Usage
-
-There is an example project in the [sample_project](sample_project) directory. You can run the example as below:
-
-If you use Linux or Mac:
-
-```sh
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
-cmake --build build
-./build/client
-```
-
-If you use Windows:
-
-```bat
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]\scripts\buildsystems\vcpkg.cmake && ^ 
-cmake --build build && ^
-.\build\Debug\client
-```
-
-The sample code creates a client, the client automatically connects to the cluster.
-It creates a map named `personnel_map` and puts the records inside it.
-It then gets all the entries from the cluster and prints them.
-```c++
-#include <hazelcast/client/hazelcast_client.h>
-int main() {
-    auto hz = hazelcast::new_client().get(); // Connects to the cluster
-
-    auto personnel = hz.get_map("personnel_map").get();
-    personnel->put<std::string, std::string>("Alice", "IT").get();
-    personnel->put<std::string, std::string>("Bob", "IT").get();
-    personnel->put<std::string, std::string>("Clark", "IT").get();
-    std::cout << "Added IT personnel. Logging all known personnel" << std::endl;
-    for (const auto &entry : personnel->entry_set<std::string, std::string>().get()) {
-        std::cout << entry.first << " is in " << entry.second << " department." << std::endl;
-    }
-    
-    return 0;
-}
-```
 
 ## Features
 
@@ -157,7 +57,12 @@ int main() {
 
 ## Documentation
 
-You can find the detailed documentation at the [documentation site](https://hazelcast.github.io/hazelcast-cpp-client/doc-index.html) and the [API reference](https://hazelcast.github.io/hazelcast-cpp-client/api-index.html).
+For information about:
+
+* how to install and get started with the client, see the [Hazelcast documentation](https://docs.hazelcast.com/hazelcast/latest/clients/cplusplus)
+* how to configure and use the C++ client, see the Reference Manual in this repo
+* the API, see the [API reference](https://hazelcast.github.io/hazelcast-cpp-client/api-index.html)
+
 
 ## Copyright
 
