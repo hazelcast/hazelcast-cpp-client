@@ -103,7 +103,7 @@ runs:
         # https://www.apache.org/dyn/closer.lua/thrift/$1/thrift-$1.tar.gz?action=download
         # But this has intermittent failures in GitHub Actions
         Invoke-WebRequest `
-            "http://deb.debian.org/debian/pool/main/t/thrift/thrift_${{ inputs.THRIFT_VERSION }}.orig.tar.gz" `
+            "https://deb.debian.org/debian/pool/main/t/thrift/thrift_${{ inputs.THRIFT_VERSION }}.orig.tar.gz" `
             -OutFile "thrift-${{ inputs.THRIFT_VERSION }}.tar.gz"
         tar xzf thrift-${{ inputs.THRIFT_VERSION }}.tar.gz
         rm thrift-${{ inputs.THRIFT_VERSION }}.tar.gz
