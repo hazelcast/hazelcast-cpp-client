@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "hazelcast-cpp-client",
+  "version": "5.5.0",
+  "dependencies": [
+    "boost-any",
+    "boost-asio",
+    "boost-chrono",
+    "boost-format",
+    "boost-optional",
+    "boost-property-tree",
+    "boost-system",
+    "boost-thread",
+    "boost-uuid"
+  ]
+}
