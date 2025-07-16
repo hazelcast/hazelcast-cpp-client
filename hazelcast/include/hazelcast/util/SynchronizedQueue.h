@@ -63,8 +63,8 @@ public:
         std::lock_guard<std::mutex> lg(m);
         std::vector<std::shared_ptr<T>> values;
         for (typename std::deque<std::shared_ptr<T>>::const_iterator it =
-               internalQueue.begin();
-             it != internalQueue.end();
+               internalQueue.cbegin();
+             it != internalQueue.cend();
              ++it) {
             values.push_back(*it);
         }

@@ -599,7 +599,7 @@ public:
      * Internal API
      * @param fieldDefinition to be added
      */
-    void add_field_def(FieldDefinition& field_definition);
+    void add_field_def(const FieldDefinition& field_definition);
 
     /**
      * @param fieldName field name
