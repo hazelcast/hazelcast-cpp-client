@@ -347,6 +347,27 @@ For example:
 g++ -DHZ_BUILD_WITH_SSL -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_VERSION=5 -I/var/git/hazelcast-cpp-client/build/include -std=gnu++11 -c main.cpp
 ```
 
+##### 1.1.3.5.2. Building the hazelcast-cpp-client library with vcpkg toolchain
+If you want to build the `hazelcast-cpp-client` library with vcpkg toolchain, you can use the following command:
+```sh
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=<path to vcpkg folder>/scripts/buildsystems/vcpkg.cmake
+cmake --build build --config Release
+```
+
+if you want to build the project with tests and examples enabled, then you can use the following command:
+```sh
+cmake -b build \
+-DBUILD_TESTS=ON \
+-DBUILD_EXAMPLES=ON \
+-DWITH_OPENSSL=ON \
+-DCMAKE_VERBOSE_MAKEFILE=ON \
+-DCMAKE_TOOLCHAIN_FILE=<path to vcpkg folder>/scripts/buildsystems/vcpkg.cmake \
+-DVCPKG_MANIFEST_FEATURES='build-tests' \
+
+cmake --build build
+```
+
+
 ## 1.2. Starting a Hazelcast Cluster
 
 The Hazelcast C++ client requires a working Hazelcast cluster to run. This cluster handles storage and manipulation of the user data. Clients are a way to connect to the Hazelcast cluster and access such data.

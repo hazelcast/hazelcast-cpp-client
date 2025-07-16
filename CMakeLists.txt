@@ -21,8 +21,6 @@ project(hazelcast-cpp-client
         DESCRIPTION "Hazelcast C++ Client"
         LANGUAGES CXX)
 
-# Set the C++ standard
-set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Generate the Reference_Manual.md file using the latest project version.
@@ -89,15 +87,27 @@ find_package(Threads REQUIRED)
 
 # find Boost
 if (WIN32)
-	find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
+	find_package(Boost 1.73 CONFIG REQUIRED COMPONENTS thread chrono)
 else()
-	find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
+	find_package(Boost 1.71 CONFIG REQUIRED COMPONENTS thread chrono)
 endif()
 
 if (Boost_FOUND)
     message(STATUS "Boost version: ${Boost_VERSION}")
     message(STATUS "Boost include directory: ${Boost_INCLUDE_DIRS}")
     message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
+
+    # Check Boost version and set C++ standard accordingly
+    # Our library can not use a lower C++ standard than the one required by Boost.
+    if (Boost_VERSION VERSION_LESS 1.70)
+        set(CMAKE_CXX_STANDARD 11)
+    elseif (Boost_VERSION VERSION_LESS 1.77)
+        set(CMAKE_CXX_STANDARD 14)
+    else()
+        set(CMAKE_CXX_STANDARD 17)  # Boost.JSON, Boost.Process, etc.
+    endif()
+
+    message(STATUS "Required C++ standard: ${CMAKE_CXX_STANDARD}")
 else()
     message(FATAL_ERROR "Boost not found!")
 endif()
@@ -263,8 +273,12 @@ install(
 )
 
 if (BUILD_TESTS)
+    message(STATUS "BUILD_TESTS is enabled. Ensure the 'build-tests' feature is enabled in vcpkg.json.")
+    find_package(GTest REQUIRED)
     add_subdirectory(hazelcast/test)
-endif ()
+else()
+    message(STATUS "BUILD_TESTS is disabled.")
+endif()
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)

@@ -11,6 +11,15 @@
     "boost-property-tree",
     "boost-system",
     "boost-thread",
-    "boost-uuid"
-  ]
+    "boost-uuid",
+    "boost-multiprecision"
+  ],
+  "features": {
+    "build-tests": {
+      "description": "Enable GTest for building tests",
+      "dependencies": [
+        "gtest"
+      ]
+    }
+  }
 }

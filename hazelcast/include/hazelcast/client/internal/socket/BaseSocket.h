@@ -76,7 +76,7 @@ public:
       const std::shared_ptr<connection::Connection> connection) override
     {
         boost::asio::steady_timer connectTimer(io_);
-        connectTimer.expires_from_now(connect_timeout_);
+        connectTimer.expires_after(connect_timeout_);
         connectTimer.async_wait([=](const boost::system::error_code& ec) {
             if (ec == boost::asio::error::operation_aborted) {
                 return;
@@ -117,7 +117,7 @@ public:
     {
         check_connection(connection, invocation);
         auto message = invocation->get_client_message();
-        socket_strand_.post([connection, invocation, message, this]() mutable {
+        boost::asio::post(socket_strand_, [connection, invocation, message, this]() mutable {
             if (!check_connection(connection, invocation)) {
                 return;
             }

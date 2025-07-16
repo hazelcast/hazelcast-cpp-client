@@ -7,11 +7,18 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-maybe-uninitialized")
 endif ()
 
-find_package(GTest 1.10)
+find_package(GTest)
 
 if (GTest_FOUND)
+    message(STATUS "GTest package found!")
+    get_target_property(GTEST_INCLUDES GTest::gtest INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "GTest include directory: ${GTEST_INCLUDES}")
+    message(STATUS "GTest libraries: ${GTEST_LIBRARIES}")
+
     set(GTEST_TARGETS GTest::gtest GTest::gtest_main)
 else()
+    message(STATUS "GTest package not found!")
+
     message(STATUS "Downloading googletest from Github")
 
     configure_file(CMakeLists.googletest.in googletest-download/CMakeLists.txt)

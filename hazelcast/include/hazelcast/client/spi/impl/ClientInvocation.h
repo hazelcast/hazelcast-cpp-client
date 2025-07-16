@@ -210,22 +210,7 @@ private:
       const std::string& name,
       int partition = UNASSIGNED_PARTITION,
       const std::shared_ptr<connection::Connection>& conn = nullptr,
-      boost::uuids::uuid uuid = { 0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0,
-                                  0x0 });
+      boost::uuids::uuid uuid = {});
 
     void invoke_on_selection();
 
