@@ -7,6 +7,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-maybe-uninitialized")
 endif ()
 
+message(STATUS "BUILD_TESTS is enabled. Ensure the 'build-tests' feature is enabled in vcpkg.json.")
 find_package(GTest)
 
 if (GTest_FOUND)

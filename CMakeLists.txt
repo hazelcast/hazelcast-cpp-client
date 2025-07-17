@@ -273,8 +273,6 @@ install(
 )
 
 if (BUILD_TESTS)
-    message(STATUS "BUILD_TESTS is enabled. Ensure the 'build-tests' feature is enabled in vcpkg.json.")
-    find_package(GTest REQUIRED)
     add_subdirectory(hazelcast/test)
 else()
     message(STATUS "BUILD_TESTS is disabled.")
