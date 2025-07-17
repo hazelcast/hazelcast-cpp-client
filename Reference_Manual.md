@@ -199,7 +199,7 @@ Please see [getting started](https://github.com/microsoft/vcpkg#getting-started)
 If you use Linux or Mac:
 
 ```sh
-git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
+git clone https://github.com/microsoft/vcpkg
 ./vcpkg/bootstrap-vcpkg.sh
 ./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
 ``` 
@@ -207,7 +207,7 @@ git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
 If you use Windows:
 
 ```bat
-git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
+git clone https://github.com/microsoft/vcpkg
 .\vcpkg\bootstrap-vcpkg.bat
 .\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
 ``` 
@@ -242,7 +242,7 @@ This generates the `conanbuildinfo.cmake` file to be included in your CMakeLists
 ### 1.1.3. Install From Source Code Using CMake
 #### 1.1.3.1. Requirements
 1. Linux, macOS or Windows
-2. A compiler that supports C++11
+2. A compiler that supports C++11 or above: The project detects the minimum C++ standard supported by the Boost library and uses the same language level for compilation.
 3. [CMake](https://cmake.org) 3.10 or above
 4. [Boost](https://www.boost.org) 1.71 or above. Minimum boost version is upgraded to 1.73 for Windows due to [this](https://github.com/chriskohlhoff/asio/issues/431) bug.
 5. [OpenSSL](https://www.openssl.org) (optional)
