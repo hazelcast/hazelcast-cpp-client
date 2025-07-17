@@ -39,7 +39,7 @@ public:
 private:
     std::string server_;
     std::string uri_path_;
-    boost::asio::io_service io_service_;
+    boost::asio::io_context io_service_;
     boost::asio::ip::tcp::socket socket_;
     boost::asio::streambuf response_;
     std::istream response_stream_;
