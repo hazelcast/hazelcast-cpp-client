@@ -244,7 +244,7 @@ This generates the `conanbuildinfo.cmake` file to be included in your CMakeLists
 1. Linux, macOS or Windows
 2. A compiler that supports C++11 or above: The project detects the minimum C++ standard supported by the Boost library and uses the same language level for compilation.
 3. [CMake](https://cmake.org) 3.10 or above
-4. [Boost](https://www.boost.org) 1.71 or above. Minimum boost version is upgraded to 1.73 for Windows due to [this](https://github.com/chriskohlhoff/asio/issues/431) bug.
+4. [Boost](https://www.boost.org) 1.73 or above.
 5. [OpenSSL](https://www.openssl.org) (optional)
 
 #### 1.1.3.2. Downloading Source Code
