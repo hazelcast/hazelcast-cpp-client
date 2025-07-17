@@ -3,14 +3,57 @@
   "name": "hazelcast-cpp-client",
   "version": "5.5.0",
   "dependencies": [
-    "boost-any",
-    "boost-asio",
-    "boost-chrono",
-    "boost-format",
-    "boost-optional",
-    "boost-property-tree",
-    "boost-system",
-    "boost-thread",
-    "boost-uuid"
-  ]
+    {
+      "name": "boost-any",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-asio",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-chrono",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-any",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-format",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-optional",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-property-tree",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-system",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-thread",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-uuid",
+      "version>=": "1.73.0"
+    },
+    {
+      "name": "boost-multiprecision",
+      "version>=": "1.73.0"
+    }
+  ],
+  "features": {
+    "build-tests": {
+      "description": "Enable GTest for building tests",
+      "dependencies": [
+        "gtest"
+      ]
+    }
+  }
 }
