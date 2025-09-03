@@ -63,7 +63,7 @@ jobs:
       (${{ matrix.vc_boost.name }}, ${{ matrix.options.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Cache Boost Version
         id: cache-boost
