@@ -124,8 +124,7 @@ public:
     {
         expiration_cancelled_.store(true);
         if (expiration_timer_) {
-            boost::system::error_code ignored;
-            expiration_timer_->cancel(ignored);
+            expiration_timer_->cancel();
         }
         near_cache_record_store_->destroy();
     }

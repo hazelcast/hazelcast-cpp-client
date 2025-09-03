@@ -119,7 +119,10 @@ ClientConnectionManagerImpl::start()
       new boost::asio::ip::tcp::resolver(io_context_->get_executor()));
     socket_factory_.reset(new internal::socket::SocketFactory(
       client_, *io_context_, *io_resolver_));
-    io_guard_.reset(new boost::asio::io_context::work(*io_context_));
+    auto guard = boost::asio::make_work_guard(*io_context_);
+    io_guard_ = std::make_unique<
+      boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
+      std::move(guard));
 
     if (!socket_factory_->start()) {
         return false;
@@ -153,7 +156,7 @@ ClientConnectionManagerImpl::schedule_connect_to_all_members()
         return;
     }
 
-    connect_to_members_timer_->expires_from_now(
+    connect_to_members_timer_->expires_after(
       boost::asio::chrono::seconds(1));
     connect_to_members_timer_->async_wait([=](boost::system::error_code ec) {
         if (ec == boost::asio::error::operation_aborted) {
@@ -1234,7 +1237,7 @@ Connection::schedule_periodic_backup_cleanup(
         return;
     }
 
-    backup_timer_->expires_from_now(backup_timeout);
+    backup_timer_->expires_after(backup_timeout);
     backup_timer_->async_wait(
       socket_->get_executor().wrap([=](boost::system::error_code ec) {
           if (ec) {
@@ -1273,8 +1276,7 @@ Connection::close(const std::string& reason, std::exception_ptr cause)
         std::chrono::steady_clock::now().time_since_epoch()));
 
     if (backup_timer_) {
-        boost::system::error_code ignored;
-        backup_timer_->cancel(ignored);
+        backup_timer_->cancel();
     }
 
     close_cause_ = cause;
@@ -1631,8 +1633,7 @@ void
 HeartbeatManager::shutdown()
 {
     if (timer_) {
-        boost::system::error_code ignored;
-        timer_->cancel(ignored);
+        timer_->cancel();
     }
 }
 
