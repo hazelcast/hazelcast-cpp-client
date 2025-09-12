@@ -94,6 +94,14 @@ else()
 	find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
 endif()
 
+if (Boost_FOUND)
+    message(STATUS "Boost version: ${Boost_VERSION}")
+    message(STATUS "Boost include directory: ${Boost_INCLUDE_DIRS}")
+    message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
+else()
+    message(FATAL_ERROR "Boost not found!")
+endif()
+
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)
     if (APPLE)
@@ -104,6 +112,14 @@ if (WITH_OPENSSL)
     endif ()
 
     find_package(OpenSSL REQUIRED)
+
+    if (OpenSSL_FOUND)
+        message(STATUS "OpenSSL version: ${OpenSSL_VERSION}")
+        message(STATUS "OpenSSL include directory: ${OPENSSL_INCLUDE_DIR}")
+        message(STATUS "OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+    else()
+        message(FATAL_ERROR "OpenSSL not found!")
+    endif()
 endif ()
 
 # add the library target
