@@ -99,7 +99,7 @@ jobs:
     name: Code Coverage
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -175,7 +175,7 @@ jobs:
     name: ubuntu-x64-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -211,7 +211,7 @@ jobs:
       JOB_NAME: win_${{ matrix.options.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     name: win-${{ matrix.options.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -257,7 +257,7 @@ jobs:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
