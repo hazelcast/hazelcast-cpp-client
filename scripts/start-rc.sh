@@ -39,7 +39,7 @@ HAZELCAST_TEST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION=0.8-SNAPSHOT
 SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
-RELEASE_REPO="http://repo1.maven.apache.org/maven2"
+RELEASE_REPO="https://repo.maven.apache.org/maven2"
 ENTERPRISE_RELEASE_REPO="https://repository.hazelcast.com/release/"
 ENTERPRISE_SNAPSHOT_REPO="https://repository.hazelcast.com/snapshot/"
 
@@ -55,7 +55,7 @@ fi
 if [ -f "hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar" ]; then
     echo "remote controller already exist, not downloading from maven."
 else
-    downloadFromMaven ${SNAPSHOT_REPO} "com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}"
+    downloadFromMaven ${ENTERPRISE_SNAPSHOT_REPO} "com.hazelcast:hazelcast-remote-controller:${HAZELCAST_RC_VERSION}"
 fi
 
 if [ -f "hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar" ]; then
