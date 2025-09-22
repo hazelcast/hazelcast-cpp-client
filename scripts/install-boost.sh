@@ -15,5 +15,5 @@ TARBALL_NAME=boost_$(echo "$1" | tr . _)
 curl --fail --silent --show-error --location "https://archives.boost.io/release/${1}/source/${TARBALL_NAME}.tar.gz" | tar xzf -
 pushd "${TARBALL_NAME}"
 ./bootstrap.sh
-./b2 --with-thread --with-chrono install
+./b2 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread --with-chrono install
 popd
