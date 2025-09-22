@@ -87,9 +87,9 @@ find_package(Threads REQUIRED)
 
 # find Boost
 if (WIN32)
-	find_package(Boost 1.73 CONFIG REQUIRED COMPONENTS thread chrono)
+	find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
 else()
-	find_package(Boost 1.71 CONFIG REQUIRED COMPONENTS thread chrono)
+	find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
 endif()
 
 if (Boost_FOUND)
@@ -99,12 +99,12 @@ if (Boost_FOUND)
 
     # Check Boost version and set C++ standard accordingly
     # Our library can not use a lower C++ standard than the one required by Boost.
-    if (Boost_VERSION VERSION_LESS 1.70)
+    if (Boost_VERSION VERSION_LESS 108200)  # Boost 1.82.0
+        message(STATUS "Boost version ${Boost_VERSION} < 1.82.0, setting C++ standard to 11")
         set(CMAKE_CXX_STANDARD 11)
-    elseif (Boost_VERSION VERSION_LESS 1.77)
-        set(CMAKE_CXX_STANDARD 14)
     else()
-        set(CMAKE_CXX_STANDARD 17)  # Boost.JSON, Boost.Process, etc.
+        message(STATUS "Boost version ${Boost_VERSION} >= 1.82.0, setting C++ standard to 14")
+        set(CMAKE_CXX_STANDARD 14)  # Boost.Math requires 14
     endif()
 
     message(STATUS "Required C++ standard: ${CMAKE_CXX_STANDARD}")
