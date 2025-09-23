@@ -176,10 +176,17 @@ if (WITH_OPENSSL)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
 endif()
 
+message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
+
 # MSVC-specific compiler flags
-if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
-endif ()
+target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+)
+
+# AppleClang-specific compiler flags
+target_compile_options(${PROJECT_NAME} PRIVATE
+        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-enum-constexpr-conversion>
+)
 
 # windows-specific compile flags
 if (WIN32)
