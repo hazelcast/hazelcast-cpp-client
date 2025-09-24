@@ -185,7 +185,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 # AppleClang-specific compiler flags
 target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-enum-constexpr-conversion>
+        $<$<CXX_COMPILER_ID:AppleClang>:-Wno-enum-constexpr-conversion -Wno-deprecated-declarations>
 )
 
 # windows-specific compile flags
@@ -289,6 +289,11 @@ if (BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()
 
+# Read CXXFLAGS from the environment and add to CMAKE_CXX_FLAGS
+if(DEFINED ENV{CXXFLAGS})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS}")
+endif()
+
 message(STATUS "Configuration summary:")
 if (NOT is_multi_config)
     message(STATUS "  CMAKE_BUILD_TYPE =      ${CMAKE_BUILD_TYPE}")
@@ -299,3 +304,4 @@ message(STATUS "  DISABLE_LOGGING =       ${DISABLE_LOGGING}")
 message(STATUS "  CMAKE_INSTALL_PREFIX =  ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  BUILD_TESTS =           ${BUILD_TESTS}")
 message(STATUS "  BUILD_EXAMPLES =        ${BUILD_EXAMPLES}")
+message(STATUS "  CMAKE_CXX_FLAGS =       ${CMAKE_CXX_FLAGS}")
