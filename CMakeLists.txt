@@ -175,7 +175,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 # AppleClang-specific compiler flags
 target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CXX_COMPILER_ID:AppleClang>:-Wno-enum-constexpr-conversion -Wno-deprecated-declarations>
+        $<$<CXX_COMPILER_ID:AppleClang>:-Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable>
 )
 
 # windows-specific compile flags
