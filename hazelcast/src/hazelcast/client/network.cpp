@@ -120,9 +120,10 @@ ClientConnectionManagerImpl::start()
     socket_factory_.reset(new internal::socket::SocketFactory(
       client_, *io_context_, *io_resolver_));
     auto guard = boost::asio::make_work_guard(*io_context_);
-    io_guard_ = std::make_unique<
+    io_guard_ = std::unique_ptr<
       boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
-      std::move(guard));
+      new boost::asio::executor_work_guard<
+        boost::asio::io_context::executor_type>(std::move(guard)));
 
     if (!socket_factory_->start()) {
         return false;

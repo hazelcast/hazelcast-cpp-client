@@ -86,11 +86,7 @@ option(BUILD_EXAMPLES
 find_package(Threads REQUIRED)
 
 # find Boost
-if (WIN32)
-	find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
-else()
-	find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
-endif()
+find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
 
 if (Boost_FOUND)
     message(STATUS "Boost version: ${Boost_VERSION}")
@@ -99,15 +95,15 @@ if (Boost_FOUND)
 
     # Check Boost version and set C++ standard accordingly
     # Our library can not use a lower C++ standard than the one required by Boost.
-    if (Boost_VERSION VERSION_LESS 108200)  # Boost 1.82.0
-        message(STATUS "Boost version ${Boost_VERSION} < 1.82.0, setting C++ standard to 11")
+    if (Boost_VERSION VERSION_LESS 1.82.0)
         set(CMAKE_CXX_STANDARD 11)
+        message(STATUS "Boost version ${Boost_VERSION} < 1.82.0, setting C++ standard to 11.")
     else()
-        message(STATUS "Boost version ${Boost_VERSION} >= 1.82.0, setting C++ standard to 14")
-        set(CMAKE_CXX_STANDARD 14)  # Boost.Math requires 14
+        set(CMAKE_CXX_STANDARD 14)
+        message(STATUS "Boost version ${Boost_VERSION} >= 1.82.0, setting C++ standard to 14. "
+                "Boost.Math library requires minimum C++14 compiler.")
     endif()
 
-    message(STATUS "Required C++ standard: ${CMAKE_CXX_STANDARD}")
 else()
     message(FATAL_ERROR "Boost not found!")
 endif()
@@ -146,12 +142,6 @@ set_target_properties(
         SOVERSION ${PROJECT_VERSION}
 )
 
-# library requires c++11
-target_compile_features(
-        ${PROJECT_NAME}
-        PUBLIC cxx_std_11
-)
-
 # links the library against the system's thread library
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads)
 
@@ -179,14 +169,14 @@ endif()
 message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 
 # MSVC-specific compiler flags
-target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-)
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+endif ()
 
-# AppleClang-specific compiler flags
-target_compile_options(${PROJECT_NAME} PRIVATE
-        $<$<CXX_COMPILER_ID:AppleClang>:-Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable>
-)
+# AppleClang-specific compiler flags, we set for all targets since we want these flags also for tests and examples
+if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable")
+endif ()
 
 # windows-specific compile flags
 if (WIN32)
@@ -280,8 +270,6 @@ install(
 )
 
 if (BUILD_TESTS)
-    message(STATUS "BUILD_TESTS is enabled. Ensure the 'build-tests' feature is enabled in vcpkg.json.")
-    find_package(GTest REQUIRED)
     add_subdirectory(hazelcast/test)
 else()
     message(STATUS "BUILD_TESTS is disabled.")
@@ -290,11 +278,6 @@ endif()
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()
-
-# Read CXXFLAGS from the environment and add to CMAKE_CXX_FLAGS
-if(DEFINED ENV{CXXFLAGS})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} $ENV{CXXFLAGS}")
-endif()
 
 message(STATUS "Configuration summary:")
 if (NOT is_multi_config)
