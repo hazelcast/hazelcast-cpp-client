@@ -24,7 +24,7 @@ on:
         description: Enter guest PR verified HEAD commit SHA.
         required: true
 env:
-  boost_version: 1.78.0
+  boost_version: 1.89.0
   boost_archive_name: 'boost_1_89_0.tar.gz'
   boost_folder_name: 'boost_1_89_0'
   boost_include_folder: 'C:\Boost\include\boost-1_89'
