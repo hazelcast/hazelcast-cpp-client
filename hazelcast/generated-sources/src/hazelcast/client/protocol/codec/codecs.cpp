@@ -160,6 +160,20 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
 }
 
 ClientMessage
+client_triggerpartitionassignment_encode()
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size, true);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.triggerpartitionassignment");
+
+    msg.set_message_type(static_cast<int32_t>(4096));
+    msg.set_partition_id(-1);
+
+    return msg;
+}
+
+ClientMessage
 client_createproxy_encode(const std::string& name,
                           const std::string& service_name)
 {

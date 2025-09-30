@@ -56,11 +56,6 @@
 namespace hazelcast {
 namespace util {
 class ByteBuffer;
-
-template<class T>
-struct is_trivial_or_uuid : std::is_trivial<T> {};
-template<>
-struct is_trivial_or_uuid<boost::uuids::uuid> : std::true_type {};
 }
 
 namespace cp {
@@ -102,6 +97,12 @@ struct HAZELCAST_API paging_predicate_holder
 };
 } // namespace holder
 } // namespace codec
+
+template<class T>
+struct is_trivial_or_uuid : std::is_trivial<T> {};
+
+template<>
+struct is_trivial_or_uuid<boost::uuids::uuid> : std::true_type {};
 
 template<typename>
 struct HAZELCAST_API is_trivial_entry_vector : std::false_type
@@ -529,7 +530,7 @@ public:
     template<typename T>
     typename std::enable_if<
       std::is_same<T, std::vector<typename T::value_type>>::value &&
-        !std::is_trivial<typename T::value_type>::value &&
+        !is_trivial_or_uuid<typename T::value_type>::value &&
         !is_trivial_entry_vector<T>::value,
       T>::type
     get()
@@ -574,7 +575,7 @@ public:
     template<typename T>
     typename std::enable_if<
       std::is_same<T, std::vector<typename T::value_type>>::value &&
-        std::is_trivial<typename T::value_type>::value,
+        is_trivial_or_uuid<typename T::value_type>::value,
       T>::type
     get()
     {
@@ -599,8 +600,8 @@ public:
         std::is_same<std::pair<typename T::value_type::first_type,
                                typename T::value_type::second_type>,
                      typename T::value_type>::value &&
-        hazelcast::util::is_trivial_or_uuid<typename T::value_type::first_type>::value &&
-        hazelcast::util::is_trivial_or_uuid<typename T::value_type::second_type>::value,
+        is_trivial_or_uuid<typename T::value_type::first_type>::value &&
+        is_trivial_or_uuid<typename T::value_type::second_type>::value,
       T>::type
     get()
     {
@@ -630,8 +631,8 @@ public:
         std::is_same<std::pair<typename T::value_type::first_type,
                                typename T::value_type::second_type>,
                      typename T::value_type>::value &&
-        hazelcast::util::is_trivial_or_uuid<typename T::value_type::first_type>::value &&
-        !hazelcast::util::is_trivial_or_uuid<typename T::value_type::second_type>::value,
+        is_trivial_or_uuid<typename T::value_type::first_type>::value &&
+        !is_trivial_or_uuid<typename T::value_type::second_type>::value,
       T>::type
     get()
     {
@@ -1568,7 +1569,7 @@ private:
     typename std::enable_if<std::is_same<boost::uuids::uuid, T>::value,
                             size_t>::type static constexpr get_sizeof()
     {
-        return 17;
+        return UUID_SIZE;
     }
 
     bool retryable_;
