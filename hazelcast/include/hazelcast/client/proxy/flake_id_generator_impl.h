@@ -105,13 +105,14 @@ private:
             IdIterator& operator++();
             bool operator==(const IdIterator& rhs) const;
             bool operator!=(const IdIterator& rhs) const;
-            const int64_t& operator*() { return base2_; }
+            const int64_t& operator*() const;
 
         private:
             int64_t base2_;
             const int64_t increment_;
             int32_t remaining_;
         };
+
         IdIterator iterator();
 
         static IdIterator& end();

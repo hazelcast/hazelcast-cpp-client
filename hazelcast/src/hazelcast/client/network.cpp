@@ -261,7 +261,7 @@ ClientConnectionManagerImpl::authenticate_on_cluster(
         response.rd_ptr(static_cast<int32_t>(initial_frame->frame_len) -
                         protocol::ClientMessage::RESPONSE_HEADER_LEN -
                         2 * protocol::ClientMessage::UINT8_SIZE -
-                        2 * (sizeof(boost::uuids::uuid) +
+                        2 * (util::Bits::UUID_SIZE_IN_BYTES +
                              protocol::ClientMessage::UINT8_SIZE) -
                         protocol::ClientMessage::INT32_SIZE);
 

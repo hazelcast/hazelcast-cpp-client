@@ -736,7 +736,7 @@ data_output::write(boost::uuids::uuid v)
           *reinterpret_cast<int64_t*>(&v.data[util::Bits::LONG_SIZE_IN_BYTES]));
     }
     output_stream_.insert(
-      output_stream_.end(), &v.data[0], &v.data[util::Bits::LONG_SIZE_IN_BYTES]);
+      output_stream_.end(), &v.data[0], &v.data[util::Bits::UUID_SIZE_IN_BYTES]);
 }
 
 template<>

@@ -600,7 +600,7 @@ public:
                                typename T::value_type::second_type>,
                      typename T::value_type>::value &&
         hazelcast::util::is_trivial_or_uuid<typename T::value_type::first_type>::value &&
-        std::is_trivial<typename T::value_type::second_type>::value,
+        hazelcast::util::is_trivial_or_uuid<typename T::value_type::second_type>::value,
       T>::type
     get()
     {
@@ -631,7 +631,7 @@ public:
                                typename T::value_type::second_type>,
                      typename T::value_type>::value &&
         hazelcast::util::is_trivial_or_uuid<typename T::value_type::first_type>::value &&
-        !std::is_trivial<typename T::value_type::second_type>::value,
+        !hazelcast::util::is_trivial_or_uuid<typename T::value_type::second_type>::value,
       T>::type
     get()
     {
@@ -763,7 +763,7 @@ public:
     {
         if (get<bool>()) {
             // skip the next 16 bytes
-            rd_ptr(sizeof(boost::uuids::uuid));
+            rd_ptr(util::Bits::UUID_SIZE_IN_BYTES);
             return boost::uuids::nil_uuid();
         }
         return get_uuid();
@@ -1254,11 +1254,11 @@ public:
               *reinterpret_cast<int64_t*>(&uuid.data[0]));
             boost::endian::endian_reverse_inplace<int64_t>(
               *reinterpret_cast<int64_t*>(&uuid.data[util::Bits::LONG_SIZE_IN_BYTES]));
-            std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
+            std::memcpy(wr_ptr(util::Bits::UUID_SIZE_IN_BYTES),
                         &uuid.data[0],
-                        sizeof(boost::uuids::uuid));
+                        util::Bits::UUID_SIZE_IN_BYTES);
         } else {
-            wr_ptr(sizeof(boost::uuids::uuid));
+            wr_ptr(util::Bits::UUID_SIZE_IN_BYTES);
         }
     }
 
@@ -1353,16 +1353,16 @@ public:
         add_begin_frame();
 
         set(frame_header_type{ SIZE_OF_FRAME_LENGTH_AND_FLAGS +
-                              2 * sizeof(boost::uuids::uuid),
+                              2 * util::Bits::UUID_SIZE_IN_BYTES,
                             DEFAULT_FLAGS });
 
-        std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
+        std::memcpy(wr_ptr(util::Bits::UUID_SIZE_IN_BYTES),
                     query_id.member_id.data,
-                    sizeof(boost::uuids::uuid));
+                    util::Bits::UUID_SIZE_IN_BYTES);
 
-        std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)),
+        std::memcpy(wr_ptr(util::Bits::UUID_SIZE_IN_BYTES),
                     query_id.local_id.data,
-                    sizeof(boost::uuids::uuid));
+                    util::Bits::UUID_SIZE_IN_BYTES);
 
         add_end_frame(is_final);
     }
@@ -1530,8 +1530,8 @@ private:
     {
         boost::uuids::uuid u;
         memcpy(&u.data[0],
-               rd_ptr(sizeof(boost::uuids::uuid)),
-               sizeof(boost::uuids::uuid));
+               rd_ptr(util::Bits::UUID_SIZE_IN_BYTES),
+               util::Bits::UUID_SIZE_IN_BYTES);
         boost::endian::endian_reverse_inplace<int64_t>(
           *reinterpret_cast<int64_t*>(&u.data[0]));
         boost::endian::endian_reverse_inplace<int64_t>(

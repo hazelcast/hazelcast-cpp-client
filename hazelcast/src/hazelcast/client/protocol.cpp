@@ -376,6 +376,7 @@ operator<<(std::ostream& os, const ClientMessage& msg)
 void
 ClientMessage::set(unsigned char* /* memory */, boost::uuids::uuid uuid)
 {
+    assert(uuid.size() == util::Bits::UUID_SIZE_IN_BYTES);
     std::memcpy(wr_ptr(uuid.size()), &uuid.data[0], uuid.size());
 }
 
