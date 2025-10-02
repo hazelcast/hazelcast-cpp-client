@@ -19,6 +19,6 @@ jobs:
       build-type: "['Debug', 'Release']"
       shared-libs: "[{'toggle': 'OFF', 'name': 'Static'}, {'toggle': 'ON', 'name': 'Shared'}]"
       openssl: "[{'toggle': 'OFF', 'name': 'noSSL'}, {'toggle': 'ON', 'name': 'SSL'}]"
-      windows-options: "[{'cmake': 'Win32', 'choco_options': '--forceX86 --x86 --version 1.1.1.2100 -y', 'address_model': '32'}, {'cmake': 'x64', 'choco_options': '', 'address_model': '64'}]"
+      windows-options: "[{'cmake': 'Win32', 'choco_options': '--forceX86 --x86 --version 1.1.1.2100 -y --no-progress', 'address_model': '32'}, {'cmake': 'x64', 'choco_options': '--no-progress -y', 'address_model': '64'}]"
     steps:
       - run: exit 0
