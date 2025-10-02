@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 #include <atomic>
-#include <cerrno>
 #include <cmath>
 #include <cstdlib>
-#include <ctime>
 #include <fstream>
-#include <iostream>
 #include <ostream>
 #include <string>
 #include <vector>
 
-#include <boost/asio.hpp>
 #include <boost/thread/barrier.hpp>
 #include <gtest/gtest.h>
 
@@ -35,7 +31,6 @@
 #include <hazelcast/client/lifecycle_event.h>
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/client/exception/protocol_exceptions.h>
 #include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/hazelcast_json_value.h>
@@ -45,7 +40,6 @@
 #include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/internal/socket/SSLSocket.h>
 #include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/pipelining.h>
 #include <hazelcast/client/serialization_config.h>

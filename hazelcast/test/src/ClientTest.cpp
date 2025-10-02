@@ -20,8 +20,6 @@
 #include <thread>
 
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/hazelcast_client.h>
