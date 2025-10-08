@@ -80,6 +80,10 @@ option(BUILD_EXAMPLES
        "Build examples."
        OFF)
 
+if (WIN32)
+    set(WITH_OPENSSL ON CACHE BOOL "We force build with OpenSSL on Windows due to an unresolved issue." FORCE)
+endif ()
+
 # find dependencies
 
 # find Threads
