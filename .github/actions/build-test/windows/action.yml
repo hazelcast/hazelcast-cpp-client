@@ -41,10 +41,17 @@ inputs:
     required: true
   HZ_TEST_AWS_INSTANCE_PRIVATE_IP:
     required: true
+  PARENT_JOB_NAME:
+    requird: true
 
 runs:
   using: composite
   steps:
+    - name: DEBUG parent job name
+      shell: bash
+      run: |
+        echo "PARENT_JOB_NAME=${{ inputs.PARENT_JOB_NAME }}"
+
     - name: Read Config
       shell: bash
       run: cat .github/config.env >> $GITHUB_ENV
@@ -157,24 +164,10 @@ runs:
         .\scripts\test-windows.bat
         $dump | wait-process
 
-    - name: Get parent job name
-      id: get-parent-job-name
-      # if: failure()
-      shell: bash
-      run: |
-        echo "PARENT_JOB_NAME=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} --jq '.name')" >> $GITHUB_OUTPUT
-      env:
-        GH_TOKEN: ${{ inputs.GH_TOKEN }}
-
-    - name: DEBUG parent job name
-      shell: bash
-      run: |
-        echo "PARENT_JOB_NAME=${{ steps.get-parent-job-name.outputs.PARENT_JOB_NAME }}"
-
     - uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: dump-${{ steps.get-parent-job-name.outputs.PARENT_JOB_NAME }}
+        name: dump-${{ inputs.PARENT_JOB_NAME }}
         path: |
           **/*.pdb
           *.dmp
