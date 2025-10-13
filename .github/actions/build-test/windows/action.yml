@@ -49,7 +49,8 @@ runs:
   steps:
     - name: DEBUG parent job name
       shell: bash
-      run: |
+      run: |      
+        echo "$GITHUB_CONTEXT"
         echo "PARENT_JOB_NAME=${{ inputs.PARENT_JOB_NAME }}"
 
     - name: Read Config
