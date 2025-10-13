@@ -174,7 +174,7 @@ if (MSVC)
 endif ()
 
 # AppleClang-specific compiler flags, we set for all targets since we want these flags also for tests and examples
-if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+if (CMAKE_CXX_STANDARD EQUAL 11 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable")
 endif ()
 
@@ -290,3 +290,5 @@ message(STATUS "  CMAKE_INSTALL_PREFIX =  ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  BUILD_TESTS =           ${BUILD_TESTS}")
 message(STATUS "  BUILD_EXAMPLES =        ${BUILD_EXAMPLES}")
 message(STATUS "  CMAKE_CXX_FLAGS =       ${CMAKE_CXX_FLAGS}")
+message(STATUS "  CMAKE_CXX_FLAGS_DEBUG =       ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "  CMAKE_CXX_FLAGS_RELEASE =       ${CMAKE_CXX_FLAGS_RELEASE}")
