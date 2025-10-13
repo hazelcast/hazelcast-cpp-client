@@ -47,11 +47,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: DEBUG parent job name
-      shell: bash
-      run: |      
-        echo "$GITHUB_CONTEXT"
-        echo "PARENT_JOB_NAME=${{ inputs.PARENT_JOB_NAME }}"
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJSON(github) }}
+      run: echo "$GITHUB_CONTEXT"
 
     - name: Read Config
       shell: bash
