@@ -160,14 +160,14 @@ runs:
     - name: Get parent job name
       id: get-parent-job-name
       # if: failure()
-      shell: pwsh
+      shell: bash
       run: |
         echo "PARENT_JOB_NAME=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} --jq '.name')" >> $GITHUB_OUTPUT
       env:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
 
     - name: DEBUG parent job name
-      shell: pwsh
+      shell: bash
       run: |
         echo "PARENT_JOB_NAME=${{ steps.get-parent-job-name.outputs.PARENT_JOB_NAME }}"
 
