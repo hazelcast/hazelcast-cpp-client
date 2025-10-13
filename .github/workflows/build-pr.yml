@@ -209,10 +209,11 @@ jobs:
     runs-on: 'windows-latest'
     name: win-${{ matrix.options.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     steps:
-      - name: DEBUG parent job name
+      - name: Dump GitHub context
         shell: bash
-        run: |      
-          echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
 
       - uses: actions/checkout@v5
         with:
