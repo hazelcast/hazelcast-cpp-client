@@ -209,6 +209,11 @@ jobs:
     runs-on: 'windows-latest'
     name: win-${{ matrix.options.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
     steps:
+      - name: DEBUG parent job name
+        shell: bash
+        run: |      
+          echo "$GITHUB_CONTEXT"
+
       - uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
@@ -236,6 +241,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+          PARENT_JOB_NAME: ${{ github.jobs[github.job].name }}
 
   macOS-x86_64:
     needs:
