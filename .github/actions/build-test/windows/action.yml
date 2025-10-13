@@ -157,10 +157,24 @@ runs:
         .\scripts\test-windows.bat
         $dump | wait-process
 
+    - name: Get parent job name
+      id: get-parent-job-name
+      # if: failure()
+      shell: pwsh
+      run: |
+        echo "PARENT_JOB_NAME=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} --jq '.name')" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+
+    - name: DEBUG parent job name
+      shell: pwsh
+      run: |
+        echo "PARENT_JOB_NAME=${{ steps.get-parent-job-name.outputs.PARENT_JOB_NAME }}"
+
     - uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: dump-${{ env.JOB_NAME }}
+        name: dump-${{ steps.get-parent-job-name.outputs.PARENT_JOB_NAME }}
         path: |
           **/*.pdb
           *.dmp

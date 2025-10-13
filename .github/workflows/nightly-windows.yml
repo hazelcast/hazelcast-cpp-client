@@ -56,8 +56,6 @@ jobs:
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ${{ matrix.vc_boost.image }}
-    env:
-      JOB_NAME: Windows_(${{ matrix.vc_boost.name }},${{ matrix.options.address_model }},${{ matrix.build_type }},${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     name: >-
       Windows
       (${{ matrix.vc_boost.name }}, ${{ matrix.options.address_model }}, ${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
