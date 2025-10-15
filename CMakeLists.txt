@@ -161,6 +161,11 @@ if (WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32_LEAN_AND_MEAN)
 endif ()
 
+# AppleClang-specific compiler flags, we set for all targets since we want these flags also for tests and examples
+if (CMAKE_CXX_STANDARD EQUAL 11 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable")
+endif ()
+
 # add include directories
 target_include_directories(
         ${PROJECT_NAME}

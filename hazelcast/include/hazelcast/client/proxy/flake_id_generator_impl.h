@@ -91,20 +91,21 @@ private:
         int32_t get_batch_size() const;
 
         class IdIterator
-          : public std::iterator<std::input_iterator_tag, int64_t>
         {
         public:
-            IdIterator();
+            using iterator_category = std::input_iterator_tag;
+            using value_type = int64_t;
+            using difference_type = std::ptrdiff_t;
+            using pointer = int64_t*;
+            using reference = int64_t&;
 
+            IdIterator();
             IdIterator(int64_t base2, int64_t increment, int32_t remaining);
 
             IdIterator& operator++();
-
             bool operator==(const IdIterator& rhs) const;
-
             bool operator!=(const IdIterator& rhs) const;
-
-            const int64_t& operator*() { return base2_; }
+            const int64_t& operator*() const;
 
         private:
             int64_t base2_;
