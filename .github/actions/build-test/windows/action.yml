@@ -91,7 +91,7 @@ runs:
         rm ${{ inputs.BOOST_ARCHIVE_NAME }}
         cd ${{ inputs.BOOST_FOLDER_NAME }}
         .\bootstrap.bat
-        # Include:
+        # Build the libs for:
         # - Atomic - https://www.boost.org/libs/atomic/
         # - Thread - https://www.boost.org/libs/thread/
         # - Chrono - https://www.boost.org/libs/chrono/
