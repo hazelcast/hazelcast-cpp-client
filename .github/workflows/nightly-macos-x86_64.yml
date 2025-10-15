@@ -36,7 +36,7 @@ jobs:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ./.github/actions/build-test/macos-x86_64
         with:
