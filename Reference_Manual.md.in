@@ -361,7 +361,8 @@ g++ -DHZ_BUILD_WITH_SSL -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_TH
 ```
 
 ##### 1.1.3.5.2. Building the hazelcast-cpp-client library with vcpkg toolchain
-If you want to build the `hazelcast-cpp-client` library with vcpkg toolchain, you can use the following command:
+If you want to build the `hazelcast-cpp-client` library with vcpkg toolchain, you can use the following command
+(For windows, please use `cmake.exe` instead of `cmake`):
 ```sh
 cmake -B build -DCMAKE_TOOLCHAIN_FILE=<path to vcpkg folder>/scripts/buildsystems/vcpkg.cmake
 cmake --build build --config Release

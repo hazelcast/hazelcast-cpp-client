@@ -380,8 +380,6 @@ cmake -b build \
 cmake --build build
 ```
 
-For windows builds, only the cmake executable name should be changed to `cmake.exe` and the rest of the commands 
-remain the same.
 
 ## 1.2. Starting a Hazelcast Cluster
 
