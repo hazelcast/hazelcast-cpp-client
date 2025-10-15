@@ -91,6 +91,10 @@ runs:
         rm ${{ inputs.BOOST_ARCHIVE_NAME }}
         cd ${{ inputs.BOOST_FOLDER_NAME }}
         .\bootstrap.bat
+        # Include:
+        # - Atomic - https://www.boost.org/libs/atomic/
+        # - Thread - https://www.boost.org/libs/thread/
+        # - Chrono - https://www.boost.org/libs/chrono/
         .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-atomic --with-thread --with-chrono install
         cd ..
         Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
