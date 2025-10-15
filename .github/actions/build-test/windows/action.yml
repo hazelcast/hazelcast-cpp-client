@@ -91,7 +91,7 @@ runs:
         rm ${{ inputs.BOOST_ARCHIVE_NAME }}
         cd ${{ inputs.BOOST_FOLDER_NAME }}
         .\bootstrap.bat
-        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-atomic --with-thread --with-chrono install
+        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-thread --with-chrono install
         cd ..
         Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
 
