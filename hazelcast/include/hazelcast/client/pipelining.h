@@ -117,7 +117,7 @@ public:
     {
         std::vector<boost::optional<E>> result;
         result.reserve(futures_.size());
-        auto result_futures = when_all(futures_.begin(), futures_.end());
+        auto result_futures = when_all(futures_.cbegin(), futures_.cend());
         for (auto& f : result_futures.get()) {
             result.emplace_back(f.get());
         }
@@ -163,8 +163,8 @@ private:
             }
 
             if (!outStandingFutures.empty()) {
-                boost::when_any(outStandingFutures.begin(),
-                                outStandingFutures.end())
+                boost::when_any(outStandingFutures.cbegin(),
+                                outStandingFutures.cend())
                   .get();
             }
         }

@@ -37,7 +37,7 @@ public:
       const std::string& item_name)
     {
         auto candidate = config_patterns.find(item_name);
-        if (candidate != config_patterns.end()) {
+        if (candidate != config_patterns.cend()) {
             return &candidate->second;
         }
         auto size = config_patterns.size();
@@ -50,7 +50,7 @@ public:
           config_pattern_matcher.matches(keys, item_name);
         if (configPatternKey) {
             candidate = config_patterns.find(*configPatternKey);
-            if (candidate != config_patterns.end()) {
+            if (candidate != config_patterns.cend()) {
                 return &candidate->second;
             }
         }

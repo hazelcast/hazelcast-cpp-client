@@ -669,7 +669,7 @@ protected:
             auto field_type = column_types[i];
 
             auto it = row_metadata.find_column(field);
-            ASSERT_NE(row_metadata.end(), it);
+            ASSERT_NE(row_metadata.cend(), it);
 
             auto const& column_meta_data = row_metadata.column(it->second);
             ASSERT_EQ(field, column_meta_data.name);
@@ -688,7 +688,7 @@ protected:
                          const std::string& column_name)
     {
         auto column_index = row.row_metadata().find_column(column_name);
-        ASSERT_NE(row.row_metadata().end(), column_index);
+        ASSERT_NE(row.row_metadata().cend(), column_index);
 
         ASSERT_EQ(expected_type,
                   row.row_metadata().column(column_index->second).type);
@@ -1224,8 +1224,8 @@ TEST_P(SqlTest, test_execute_statement_with_params)
           .str()
     };
 
-    auto height_param = expecteds.begin()->second.height;
-    auto age_param = (++expecteds.begin())->second.age;
+    auto height_param = expecteds.cbegin()->second.height;
+    auto age_param = (++expecteds.cbegin())->second.age;
 
     statement.set_parameters(height_param, age_param);
 
@@ -1271,8 +1271,8 @@ TEST_F(SqlTest, test_execute_statement_with_params_after_clear_parameters)
           .str()
     };
 
-    auto height_param = expecteds.begin()->second.height;
-    auto age_param = (++expecteds.begin())->second.age;
+    auto height_param = expecteds.cbegin()->second.height;
+    auto age_param = (++expecteds.cbegin())->second.age;
 
     statement.set_parameters(height_param);
     statement.clear_parameters();
@@ -2333,7 +2333,7 @@ TEST_F(sql_encode_test, execute)
 
     std::vector<unsigned char> actual_bytes = {};
     for (auto buf : msg.get_buffer()) {
-        actual_bytes.insert(actual_bytes.end(), buf.begin(), buf.end());
+        actual_bytes.insert(actual_bytes.cend(), buf.cbegin(), buf.cend());
     }
 
     for (auto b : actual_bytes) {
@@ -2354,7 +2354,7 @@ TEST_F(sql_encode_test, fetch)
 
     std::vector<unsigned char> actual_bytes = {};
     for (auto buf : msg.get_buffer()) {
-        actual_bytes.insert(actual_bytes.end(), buf.begin(), buf.end());
+        actual_bytes.insert(actual_bytes.cend(), buf.cbegin(), buf.cend());
     }
 
     std::vector<unsigned char> expected_bytes = {
@@ -2381,7 +2381,7 @@ TEST_F(sql_encode_test, close)
 
     std::vector<unsigned char> actual_bytes = {};
     for (auto buf : msg.get_buffer()) {
-        actual_bytes.insert(actual_bytes.end(), buf.begin(), buf.end());
+        actual_bytes.insert(actual_bytes.cend(), buf.cbegin(), buf.cend());
     }
 
     std::vector<unsigned char>

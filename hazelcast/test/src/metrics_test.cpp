@@ -72,7 +72,7 @@ TEST(metrics_dictionary_test, test_begin_end)
 
     using item = std::pair<std::string, int>;
 
-    auto actual_items = std::vector<item>{ dict.begin(), dict.end() };
+    auto actual_items = std::vector<item>{ dict.cbegin(), dict.cend() };
     auto expected_items = std::vector<item>{ { "bar", 1 }, { "foo", 0 } };
 
     ASSERT_EQ(expected_items, actual_items);

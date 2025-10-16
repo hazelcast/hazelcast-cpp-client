@@ -77,8 +77,8 @@ public:
           entries = ANCRS::records_->entry_set();
         for (typename std::vector<std::pair<std::shared_ptr<KS>,
                                             std::shared_ptr<R>>>::const_iterator
-               it = entries.begin();
-             it != entries.end();
+               it = entries.cbegin();
+             it != entries.cend();
              ++it) {
             const std::pair<std::shared_ptr<KS>, std::shared_ptr<R>>& entry =
               (*it);

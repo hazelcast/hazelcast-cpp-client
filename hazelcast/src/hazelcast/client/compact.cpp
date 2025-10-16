@@ -2416,7 +2416,7 @@ compact_reader::is_field_exists(const std::string& field_name,
 {
     const auto& fields = schema.fields();
     const auto& field_descriptor = fields.find(field_name);
-    if (field_descriptor == fields.end()) {
+    if (field_descriptor == fields.cend()) {
         return false;
     }
     return field_descriptor->second.kind == kind;
@@ -2427,7 +2427,7 @@ compact_reader::get_field_descriptor(const std::string& field_name) const
 {
     const auto& fields = schema.fields();
     const auto& field_descriptor = fields.find(field_name);
-    if (field_descriptor == fields.end()) {
+    if (field_descriptor == fields.cend()) {
         BOOST_THROW_EXCEPTION(unknown_field(field_name));
     }
     return field_descriptor->second;
@@ -3249,7 +3249,7 @@ default_compact_writer::check_field_definition(const std::string& field_name,
                                                field_kind kind) const
 {
     auto iterator = schema_.fields().find(field_name);
-    if (iterator == schema_.fields().end()) {
+    if (iterator == schema_.fields().cend()) {
         BOOST_THROW_EXCEPTION(exception::hazelcast_serialization(
           "default_compact_writer",
           (boost::format("Invalid field name %1% for %2%") % field_name %
@@ -3391,7 +3391,7 @@ schema::schema(
     std::vector<field_descriptor*> variable_size_fields;
 
     std::map<std::string, field_descriptor> sorted_fields(
-      field_definition_map_.begin(), field_definition_map_.end());
+      field_definition_map_.cbegin(), field_definition_map_.cend());
     for (auto& item : sorted_fields) {
         field_descriptor& descriptor = item.second;
         field_kind kind = descriptor.kind;

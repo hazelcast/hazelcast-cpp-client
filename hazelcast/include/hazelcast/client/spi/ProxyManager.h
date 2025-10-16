@@ -55,7 +55,7 @@ public:
 
         std::lock_guard<std::recursive_mutex> guard(lock_);
         auto it = proxies_.find(ns);
-        if (it != proxies_.end()) {
+        if (it != proxies_.cend()) {
             auto proxy_future = it->second;
             return convert_to_concrete_proxy_future<T>(proxy_future);
         }
