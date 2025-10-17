@@ -21,7 +21,7 @@ jobs:
       matrix:
         boost:
           - version: 1.73.0
-          - version: 1.76.0
+          - version: 1.89.0
 
         build_type:
           - Debug
