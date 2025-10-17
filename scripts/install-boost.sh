@@ -17,6 +17,5 @@ pushd "${TARBALL_NAME}"
 ./bootstrap.sh
 # Build the libs for:
 # - Thread - https://www.boost.org/libs/thread/
-# - Atomic - https://www.boost.org/libs/atomic/
-./b2 --with-thread --with-chrono install
+./b2 --with-thread  install
 popd
