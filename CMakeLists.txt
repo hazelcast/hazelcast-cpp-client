@@ -119,13 +119,9 @@ if (WITH_OPENSSL)
 
     find_package(OpenSSL REQUIRED)
 
-    if (OpenSSL_FOUND)
-        message(STATUS "OpenSSL version: ${OpenSSL_VERSION}")
-        message(STATUS "OpenSSL include directory: ${OPENSSL_INCLUDE_DIR}")
-        message(STATUS "OpenSSL libraries: ${OPENSSL_LIBRARIES}")
-    else()
-        message(FATAL_ERROR "OpenSSL not found!")
-    endif()
+    message(STATUS "OpenSSL version: ${OpenSSL_VERSION}")
+    message(STATUS "OpenSSL include directory: ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 endif ()
 
 # add the library target
