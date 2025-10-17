@@ -86,6 +86,12 @@ struct HAZELCAST_API client_addclusterviewlistener_handler
 };
 
 /**
+                 * Triggers partition assignment manually on the cluster.
+                 * Note that Partition based operations triggers this automatically
+ */
+ClientMessage HAZELCAST_API client_triggerpartitionassignment_encode();
+
+/**
  * Creates a cluster-wide proxy with the given name and service.
  */
 ClientMessage HAZELCAST_API

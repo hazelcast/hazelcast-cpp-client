@@ -1090,6 +1090,11 @@ flake_id_generator_impl::IdBatch::IdIterator::operator!=(
 {
     return !(rhs == *this);
 }
+const int64_t&
+flake_id_generator_impl::IdBatch::IdIterator::operator*() const
+{
+    return base2_;
+}
 
 flake_id_generator_impl::IdBatch::IdIterator::IdIterator()
   : base2_(-1)

@@ -21,8 +21,6 @@ project(hazelcast-cpp-client
         DESCRIPTION "Hazelcast C++ Client"
         LANGUAGES CXX)
 
-# Set the C++ standard
-set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Generate the Reference_Manual.md file using the latest project version.
@@ -88,10 +86,26 @@ option(BUILD_EXAMPLES
 find_package(Threads REQUIRED)
 
 # find Boost
-if (WIN32)
-	find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
+find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
+
+if (Boost_FOUND)
+    message(STATUS "Boost version: ${Boost_VERSION}")
+    message(STATUS "Boost include directory: ${Boost_INCLUDE_DIRS}")
+    message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
+
+    # Check Boost version and set C++ standard accordingly
+    # Our library can not use a lower C++ standard than the one required by Boost.
+    if (Boost_VERSION VERSION_LESS 1.82.0)
+        set(CMAKE_CXX_STANDARD 11)
+        message(STATUS "Boost version ${Boost_VERSION} < 1.82.0, setting C++ standard to 11.")
+    else()
+        set(CMAKE_CXX_STANDARD 14)
+        message(STATUS "Boost version ${Boost_VERSION} >= 1.82.0, setting C++ standard to 14. "
+                "Boost.Math library requires minimum C++14 compiler.")
+    endif()
+
 else()
-	find_package(Boost 1.71 REQUIRED COMPONENTS thread chrono)
+    message(FATAL_ERROR "Boost not found!")
 endif()
 
 # find OpenSSL if building WITH_OPENSSL
@@ -104,6 +118,10 @@ if (WITH_OPENSSL)
     endif ()
 
     find_package(OpenSSL REQUIRED)
+
+    message(STATUS "OpenSSL version: ${OpenSSL_VERSION}")
+    message(STATUS "OpenSSL include directory: ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 endif ()
 
 # add the library target
@@ -118,12 +136,6 @@ set_target_properties(
         PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION}
-)
-
-# library requires c++11
-target_compile_features(
-        ${PROJECT_NAME}
-        PUBLIC cxx_std_11
 )
 
 # links the library against the system's thread library
@@ -150,9 +162,16 @@ if (WITH_OPENSSL)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenSSL::SSL OpenSSL::Crypto)
 endif()
 
+message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
+
 # MSVC-specific compiler flags
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+endif ()
+
+# AppleClang-specific compiler flags, we set for all targets since we want these flags also for tests and examples
+if (CMAKE_CXX_STANDARD EQUAL 11 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable")
 endif ()
 
 # windows-specific compile flags
@@ -248,7 +267,9 @@ install(
 
 if (BUILD_TESTS)
     add_subdirectory(hazelcast/test)
-endif ()
+else()
+    message(STATUS "BUILD_TESTS is disabled.")
+endif()
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
@@ -264,3 +285,6 @@ message(STATUS "  DISABLE_LOGGING =       ${DISABLE_LOGGING}")
 message(STATUS "  CMAKE_INSTALL_PREFIX =  ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "  BUILD_TESTS =           ${BUILD_TESTS}")
 message(STATUS "  BUILD_EXAMPLES =        ${BUILD_EXAMPLES}")
+message(STATUS "  CMAKE_CXX_FLAGS =       ${CMAKE_CXX_FLAGS}")
+message(STATUS "  CMAKE_CXX_FLAGS_DEBUG =       ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "  CMAKE_CXX_FLAGS_RELEASE =       ${CMAKE_CXX_FLAGS_RELEASE}")
