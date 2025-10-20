@@ -346,7 +346,9 @@ ClientConnectionManagerImpl::encode_authentication_request(
           serializationVersion,
           HAZELCAST_VERSION,
           client_.get_name(),
-          labels_);
+          labels_,
+          1, // default routing to ALL_MEMBERS
+          false);
     }
 
     switch (credential->type()) {
@@ -363,7 +365,9 @@ ClientConnectionManagerImpl::encode_authentication_request(
               serializationVersion,
               HAZELCAST_VERSION,
               client_.get_name(),
-              labels_);
+              labels_,
+              1, // default routing to ALL_MEMBERS,
+              false);
         }
         case security::credentials::credential_type::token: {
             auto cr =
@@ -376,7 +380,9 @@ ClientConnectionManagerImpl::encode_authentication_request(
               serializationVersion,
               HAZELCAST_VERSION,
               client_.get_name(),
-              labels_);
+              labels_,
+              1, // default routing to ALL_MEMBERS
+              false);
         }
     }
     assert(0);

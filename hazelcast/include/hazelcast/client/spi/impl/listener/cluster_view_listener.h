@@ -50,18 +50,25 @@ private:
 
         event_handler(int connectionId, cluster_view_listener& viewListener, logger &logger);
 
-        virtual void before_listener_register();
+        virtual void before_listener_register() override;
 
-        virtual void on_listener_register();
+        virtual void on_listener_register() override;
 
         virtual void handle_membersview(
           int32_t version,
-          const std::vector<member>& member_infos);
+          const std::vector<member>& member_infos) override;
 
         virtual void handle_partitionsview(
           int32_t version,
           const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>>&
-            partitions);
+            partitions) override;
+
+        void handle_membergroupsview(
+          int32_t version,
+          const std::vector<std::vector<boost::uuids::uuid>>& member_groups)
+          override;
+
+        void handle_clusterversion(const internal::version& version) override;
     };
 
     void try_register(std::shared_ptr<connection::Connection> connection);
