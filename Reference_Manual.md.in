@@ -199,7 +199,7 @@ Please see [getting started](https://github.com/microsoft/vcpkg#getting-started)
 If you use Linux or Mac:
 
 ```sh
-git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
+git clone https://github.com/microsoft/vcpkg
 ./vcpkg/bootstrap-vcpkg.sh
 ./vcpkg/vcpkg install "hazelcast-cpp-client[openssl]" --recurse
 ``` 
@@ -207,7 +207,7 @@ git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
 If you use Windows:
 
 ```bat
-git clone https://github.com/microsoft/vcpkg --branch 2025.02.14
+git clone https://github.com/microsoft/vcpkg
 .\vcpkg\bootstrap-vcpkg.bat
 .\vcpkg\vcpkg install "hazelcast-cpp-client[openssl]:x64-windows" --recurse
 ``` 
@@ -242,9 +242,22 @@ This generates the `conanbuildinfo.cmake` file to be included in your CMakeLists
 ### 1.1.3. Install From Source Code Using CMake
 #### 1.1.3.1. Requirements
 1. Linux, macOS or Windows
-2. A compiler that supports C++11
+2. A compiler that supports C++11 or above: The project detects the minimum C++ standard supported by the Boost library
+and uses the same language level for compilation. If you are using Boost 1.82.0 or higher version, the project requires
+C++14 or above since Boost.Math requires this language level as minimum starting 1.82.0 version.
+For lower Boost versions, C++11 or above support is sufficient.
 3. [CMake](https://cmake.org) 3.10 or above
-4. [Boost](https://www.boost.org) 1.71 or above. Minimum boost version is upgraded to 1.73 for Windows due to [this](https://github.com/chriskohlhoff/asio/issues/431) bug.
+4. [Boost](https://www.boost.org) 1.73 or above.
+   - The Boost libraries we use are:
+      - boost-thread
+      - boost-asio
+      - boost-chrono
+      - boost-format
+      - boost-optional
+      - boost-property-tree
+      - boost-system
+      - boost-uuid
+      - boost-multiprecision
 5. [OpenSSL](https://www.openssl.org) (optional)
 
 #### 1.1.3.2. Downloading Source Code
@@ -346,6 +359,28 @@ For example:
 ```sh
 g++ -DHZ_BUILD_WITH_SSL -DBOOST_CHRONO_DYN_LINK -DBOOST_CHRONO_NO_LIB -DBOOST_THREAD_DYN_LINK -DBOOST_THREAD_NO_LIB -DBOOST_THREAD_VERSION=5 -I/var/git/hazelcast-cpp-client/build/include -std=gnu++11 -c main.cpp
 ```
+
+##### 1.1.3.5.2. Building the hazelcast-cpp-client library with vcpkg toolchain
+If you want to build the `hazelcast-cpp-client` library with vcpkg toolchain, you can use the following command
+(For windows, please use `cmake.exe` instead of `cmake`):
+```sh
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=<path to vcpkg folder>/scripts/buildsystems/vcpkg.cmake
+cmake --build build --config Release
+```
+
+if you want to build the project with tests and examples enabled, then you can use the following command:
+```sh
+cmake -b build \
+-DBUILD_TESTS=ON \
+-DBUILD_EXAMPLES=ON \
+-DWITH_OPENSSL=ON \
+-DCMAKE_VERBOSE_MAKEFILE=ON \
+-DCMAKE_TOOLCHAIN_FILE=<path to vcpkg folder>/scripts/buildsystems/vcpkg.cmake \
+-DVCPKG_MANIFEST_FEATURES='build-tests' \
+
+cmake --build build
+```
+
 
 ## 1.2. Starting a Hazelcast Cluster
 
@@ -3839,10 +3874,12 @@ In order to test Hazelcast C++ client locally, you will need the following:
 * Boost
 * thrift
 
-You need to enable the examples in the build with the cmake flag `-DBUILD_EXAMPLES=ON`. When you build, the result will
-produce the executable `client_test` on Linux/macOS and `client_test.exe` on Windows. You need to start the remote
-controller first before running this executable by executing `scripts/start-rc.sh` on Linux/macOS
-or `scripts/start-rc.bat` on Windows. Then you can run the test executable.
+When you compile with cmake, you need to use the flag `-DBUILD_TESTS=ON` to enable building the tests.
+When you build, the result will produce the executable `client_test` on Linux/macOS and `client_test.exe` on Windows.
+You need to start the remote controller first before running this executable by executing `scripts/start-rc.sh` on
+Linux/macOS or `scripts/start-rc.bat` on Windows. Then you can run the test executable.
+
+If you want to build the examples, you need to use the cmake flag `-DBUILD_EXAMPLES=ON`.
 
 # 9. Getting Help
 

@@ -18,5 +18,6 @@ pushd "${TARBALL_NAME}"
 # Build the libs for:
 # - Thread - https://www.boost.org/libs/thread/
 # - Atomic - https://www.boost.org/libs/atomic/
-./b2 --with-thread --with-chrono install
+# Used the c++11 language level intentionally to support old boost versions.
+./b2 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread --with-chrono install
 popd
