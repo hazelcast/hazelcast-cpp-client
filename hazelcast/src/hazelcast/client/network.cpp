@@ -347,7 +347,7 @@ ClientConnectionManagerImpl::encode_authentication_request(
           HAZELCAST_VERSION,
           client_.get_name(),
           labels_,
-          1, // default routing to ALL_MEMBERS
+          ALL_MEMBERS_ROUTING, // default routing to ALL_MEMBERS
           false);
     }
 
@@ -366,7 +366,7 @@ ClientConnectionManagerImpl::encode_authentication_request(
               HAZELCAST_VERSION,
               client_.get_name(),
               labels_,
-              1, // default routing to ALL_MEMBERS,
+              ALL_MEMBERS_ROUTING, // default routing to ALL_MEMBERS,
               false);
         }
         case security::credentials::credential_type::token: {
@@ -381,7 +381,7 @@ ClientConnectionManagerImpl::encode_authentication_request(
               HAZELCAST_VERSION,
               client_.get_name(),
               labels_,
-              1, // default routing to ALL_MEMBERS
+              ALL_MEMBERS_ROUTING, // default routing to ALL_MEMBERS
               false);
         }
     }

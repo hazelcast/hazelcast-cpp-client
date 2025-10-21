@@ -199,6 +199,7 @@ private:
     static constexpr int32_t CLIENT = 1;
     static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
     static constexpr int SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
+    static constexpr byte ALL_MEMBERS_ROUTING = 1;
 
     struct auth_response
     {
