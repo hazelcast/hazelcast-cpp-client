@@ -93,8 +93,7 @@ runs:
         .\bootstrap.bat
         # Build the libs for:
         # - Thread - https://www.boost.org/libs/thread/
-        # - Chrono - https://www.boost.org/libs/chrono/
-        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-thread --with-chrono install
+        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-thread install
         cd ..
         Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
 

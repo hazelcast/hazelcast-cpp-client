@@ -17,7 +17,6 @@ pushd "${TARBALL_NAME}"
 ./bootstrap.sh
 # Build the libs for:
 # - Thread - https://www.boost.org/libs/thread/
-# - Atomic - https://www.boost.org/libs/atomic/
 # Used the c++11 language level intentionally to support old boost versions.
-./b2 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread --with-chrono install
+./b2 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread install
 popd
