@@ -17,5 +17,6 @@ pushd "${TARBALL_NAME}"
 ./bootstrap.sh
 # Build the libs for:
 # - Thread - https://www.boost.org/libs/thread/
-./b2 --with-thread install
+# Used the c++11 language level intentionally to support old boost versions.
+./b2 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread install
 popd

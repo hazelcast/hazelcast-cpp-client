@@ -295,7 +295,9 @@ private:
     std::unique_ptr<internal::socket::SocketFactory> socket_factory_;
     HeartbeatManager heartbeat_;
     std::thread io_thread_;
-    std::unique_ptr<boost::asio::io_context::work> io_guard_;
+    std::unique_ptr<
+      boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>
+      io_guard_;
     const bool async_start_;
     const config::client_connection_strategy_config::reconnect_mode
       reconnect_mode_;

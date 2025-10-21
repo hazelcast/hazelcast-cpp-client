@@ -48,7 +48,7 @@ private:
     std::chrono::steady_clock::duration timeout_;
     std::string secret_removal_;
 
-    boost::asio::io_service io_service_;
+    boost::asio::io_context io_service_;
     boost::asio::ip::tcp::resolver resolver_;
 
     boost::asio::ssl::context ssl_context_;

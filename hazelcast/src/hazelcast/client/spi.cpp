@@ -2418,10 +2418,19 @@ boost::optional<member>
 ClientPartitionServiceImpl::PartitionImpl::get_owner() const
 {
     auto owner = partition_service_.get_partition_owner(partition_id_);
-    if (!owner.is_nil()) {
-        return client_.get_client_cluster_service().get_member(owner);
+    if (owner.is_nil()) {
+        auto message =
+          protocol::codec::client_triggerpartitionassignment_encode();
+        auto invocation = ClientInvocation::create(
+          client_,
+          std::make_shared<protocol::ClientMessage>(std::move(message)),
+          "");
+        invocation->invoke();
+
+        return boost::none;
     }
-    return boost::none;
+
+    return client_.get_client_cluster_service().get_member(owner);
 }
 
 ClientPartitionServiceImpl::PartitionImpl::PartitionImpl(
