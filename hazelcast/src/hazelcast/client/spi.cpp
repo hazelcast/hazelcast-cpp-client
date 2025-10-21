@@ -3094,6 +3094,21 @@ cluster_view_listener::event_handler::on_listener_register()
              connection_id));
 }
 
+void
+cluster_view_listener::event_handler::handle_membergroupsview(
+  int32_t version,
+  const std::vector<std::vector<boost::uuids::uuid>>& member_groups)
+{
+    // TODO: implement member groups handling is implemented
+}
+
+void
+cluster_view_listener::event_handler::handle_clusterversion(
+  const internal::version& version)
+{
+    // TODO: implement cluster version handling is implemented
+}
+
 cluster_view_listener::event_handler::event_handler(
   int connectionId,
   cluster_view_listener& viewListener,

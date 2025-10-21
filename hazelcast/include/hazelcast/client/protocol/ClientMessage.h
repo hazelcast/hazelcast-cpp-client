@@ -52,6 +52,7 @@
 #include "hazelcast/client/protocol/codec/builtin/custom_type_factory.h"
 #include "hazelcast/client/serialization/pimpl/compact/schema.h"
 #include "hazelcast/client/serialization/pimpl/compact/field_descriptor.h"
+#include "hazelcast/client/internal/version.h"
 
 namespace hazelcast {
 namespace util {
@@ -690,6 +691,22 @@ public:
         fast_forward_to_end_frame();
 
         return address(host, port);
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, internal::version>::value,
+                            T>::type inline get()
+    {
+        // skip begin frame
+        rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+        rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        auto major = get<byte>();
+        auto minor = get<byte>();
+
+        fast_forward_to_end_frame();
+
+        return internal::version{ major, minor };
     }
 
     template<typename T>
@@ -1340,6 +1357,13 @@ public:
             h->flags |= IS_FINAL_FLAG;
         }
     }
+
+    template<typename T>
+    void set_contains_nullable(const std::vector<T>& values, bool is_final = false)
+    {
+        set(values, is_final);
+    }
+
 
     void set(const frame_header_type& header)
     {
