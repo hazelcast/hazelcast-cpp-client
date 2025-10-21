@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         boost:
-            - version: 1.73.0
+            - version: 1.88.0 # MacOS issue (https://github.com/boostorg/thread/issues/402) fixed at 1.88.0
             - version: 1.89.0
         build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
         shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
