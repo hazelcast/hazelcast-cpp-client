@@ -19,6 +19,14 @@ if [ -n "$BIT_VERSION" ]; then
   CXXFLAGS="$CXXFLAGS -m$BIT_VERSION"
 fi
 
+# enable all compiler warnings
+CXXFLAGS="$CXXFLAGS -Wall"
+
+# treat compiler warnings as errors when the build type is Debug
+CXXFLAGS="$CXXFLAGS -Werror"
+# enable address sanitizer to provide meaningful stack traces
+CXXFLAGS="$CXXFLAGS -fsanitize=address -fno-omit-frame-pointer"
+
 # export flags variable to be used by CMake
 export CXXFLAGS
 
@@ -30,10 +38,17 @@ fi
 
 SOURCE_DIR=$(pwd)/examples
 
+# print variables for debugging
+echo "BUILD_DIR       = $BUILD_DIR"
+echo "$SOURCE_DIR     = $SOURCE_DIR"
+echo "BIT_VERSION     = $BIT_VERSION"
+echo "CXXFLAGS        = $CXXFLAGS"
+echo "CMake arguments = $@"
+
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 
-echo "Configuring..."
+echo "Configuring... with cmake parameters: cmake $SOURCE_DIR $@"
 cmake $SOURCE_DIR "$@"
 
 echo "Building..."
