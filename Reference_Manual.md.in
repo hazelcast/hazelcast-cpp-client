@@ -1345,7 +1345,7 @@ and [the AWS examples directory](examples/aws)
 for more details.
 
 ## 5.8. Enabling Hazelcast Cloud Discovery
-If you are using [Hazelcast Viridian](https://viridian.hazelcast.com/) and you want to write an application that will utilize the Hazelcast cloud database service, you can use the C++ client. The configuration is very simple, you just need to set the cluster name, discovery token and enable the cloud discovery on network settings. Here is an example configuration:
+If you are using [Hazelcast Cloud](https://cloud.hazelcast.com/) and you want to write an application that will utilize the Hazelcast cloud database service, you can use the C++ client. The configuration is very simple, you just need to set the cluster name, discovery token and enable the cloud discovery on network settings. Here is an example configuration:
 
 ```c++
     hazelcast::client::client_config config;
