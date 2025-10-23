@@ -47,7 +47,7 @@ For an introduction to the C++ client for Hazelcast, and information on how to i
 For information about:
 
 * how to install and get started with the client, see the [Hazelcast documentation](https://docs.hazelcast.com/hazelcast/latest/clients/cplusplus)
-* how to configure and use the C++ client, see the Reference Manual in this repo
+* how to configure and use the C++ client, see the [Reference Manual](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/Reference_Manual.md)
 * the API, see the [API reference](https://hazelcast.github.io/hazelcast-cpp-client/api-index.html)
 
 
