@@ -31,7 +31,8 @@ class ClientMessageBuilder
 public:
     ClientMessageBuilder(MessageHandler& handler)
       : message_handler_(handler)
-    {}
+    {
+    }
 
     virtual ~ClientMessageBuilder() = default;
 

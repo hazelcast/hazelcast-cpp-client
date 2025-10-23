@@ -52,7 +52,8 @@ public:
       , listener_(std::move(listener))
       , include_value_(include_value)
       , logger_(lg)
-    {}
+    {
+    }
 
     void handle_entry(
       const boost::optional<serialization::pimpl::data>& key,

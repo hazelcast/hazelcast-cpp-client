@@ -100,10 +100,12 @@ struct HAZELCAST_API paging_predicate_holder
 } // namespace codec
 
 template<class T>
-struct is_trivial_or_uuid : std::is_trivial<T> {};
+struct is_trivial_or_uuid : std::is_trivial<T>
+{};
 
 template<>
-struct is_trivial_or_uuid<boost::uuids::uuid> : std::true_type {};
+struct is_trivial_or_uuid<boost::uuids::uuid> : std::true_type
+{};
 
 template<typename>
 struct HAZELCAST_API is_trivial_entry_vector : std::false_type
@@ -995,9 +997,7 @@ public:
     /**
      * skips the header bytes of the frame
      */
-    void skip_frame_header_bytes() {
-        rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
-    }
+    void skip_frame_header_bytes() { rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS); }
 
     template<typename T>
     typename std::enable_if<std::is_same<T, sql::sql_column_metadata>::value,
@@ -1178,8 +1178,8 @@ public:
     {
         bool isNull = (nullptr == value);
         if (isNull) {
-            auto* h =
-              reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
+            auto* h = reinterpret_cast<frame_header_type*>(
+              wr_ptr(sizeof(frame_header_type)));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -1195,8 +1195,8 @@ public:
 
     inline void set(const std::string& value, bool is_final = false)
     {
-        auto h =
-          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
+        auto h = reinterpret_cast<frame_header_type*>(
+          wr_ptr(sizeof(frame_header_type)));
         auto len = value.length();
         h->frame_len = sizeof(frame_header_type) + len;
         if (is_final) {
@@ -1271,7 +1271,8 @@ public:
             boost::endian::endian_reverse_inplace<int64_t>(
               *reinterpret_cast<int64_t*>(&uuid.data[0]));
             boost::endian::endian_reverse_inplace<int64_t>(
-              *reinterpret_cast<int64_t*>(&uuid.data[util::Bits::LONG_SIZE_IN_BYTES]));
+              *reinterpret_cast<int64_t*>(
+                &uuid.data[util::Bits::LONG_SIZE_IN_BYTES]));
             std::memcpy(wr_ptr(util::Bits::UUID_SIZE_IN_BYTES),
                         &uuid.data[0],
                         util::Bits::UUID_SIZE_IN_BYTES);
@@ -1284,8 +1285,8 @@ public:
                     bool is_final = false)
     {
         if (value.data_size() == 0) {
-            auto* h =
-              reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
+            auto* h = reinterpret_cast<frame_header_type*>(
+              wr_ptr(sizeof(frame_header_type)));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -1343,15 +1344,16 @@ public:
     template<typename T>
     void set(const std::vector<T>& values, bool is_final = false)
     {
-        auto* h =
-          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
+        auto* h = reinterpret_cast<frame_header_type*>(
+          wr_ptr(sizeof(frame_header_type)));
         *h = begin_frame();
 
         for (auto& item : values) {
             set(item);
         }
 
-        h = reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
+        h = reinterpret_cast<frame_header_type*>(
+          wr_ptr(sizeof(frame_header_type)));
         *h = end_frame();
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
@@ -1359,11 +1361,11 @@ public:
     }
 
     template<typename T>
-    void set_contains_nullable(const std::vector<T>& values, bool is_final = false)
+    void set_contains_nullable(const std::vector<T>& values,
+                               bool is_final = false)
     {
         set(values, is_final);
     }
-
 
     void set(const frame_header_type& header)
     {
@@ -1378,8 +1380,8 @@ public:
         add_begin_frame();
 
         set(frame_header_type{ SIZE_OF_FRAME_LENGTH_AND_FLAGS +
-                              2 * util::Bits::UUID_SIZE_IN_BYTES,
-                            DEFAULT_FLAGS });
+                                 2 * util::Bits::UUID_SIZE_IN_BYTES,
+                               DEFAULT_FLAGS });
 
         std::memcpy(wr_ptr(util::Bits::UUID_SIZE_IN_BYTES),
                     query_id.member_id.data,
@@ -1566,15 +1568,15 @@ private:
 
     void add_begin_frame()
     {
-        auto* f =
-          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
+        auto* f = reinterpret_cast<frame_header_type*>(
+          wr_ptr(sizeof(frame_header_type)));
         *f = begin_frame();
     }
 
     void add_end_frame(bool is_final)
     {
-        auto ef =
-          reinterpret_cast<frame_header_type*>(wr_ptr(sizeof(frame_header_type)));
+        auto ef = reinterpret_cast<frame_header_type*>(
+          wr_ptr(sizeof(frame_header_type)));
         *ef = end_frame();
         if (is_final) {
             ef->flags |= IS_FINAL_FLAG;

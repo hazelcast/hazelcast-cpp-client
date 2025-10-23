@@ -57,7 +57,8 @@ const ClientMessage::frame_header_type ClientMessage::END_FRAME{
 ClientMessage::ClientMessage()
   : retryable_(false)
   , contains_serialized_data_in_request_(false)
-{}
+{
+}
 
 ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame)
   : retryable_(false)
@@ -111,8 +112,8 @@ ClientMessage::set(
   const std::vector<std::pair<boost::uuids::uuid, int64_t>>& values,
   bool is_final)
 {
-    auto* f =
-      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+    auto* f = reinterpret_cast<frame_header_type*>(
+      wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len =
       values.size() * (UUID_SIZE + INT64_SIZE) + SIZE_OF_FRAME_LENGTH_AND_FLAGS;
     f->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
@@ -126,8 +127,8 @@ template<>
 void
 ClientMessage::set(const std::vector<boost::uuids::uuid>& values, bool is_final)
 {
-    auto* h =
-      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+    auto* h = reinterpret_cast<frame_header_type*>(
+      wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     h->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * UUID_SIZE;
     h->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
     for (auto& v : values) {
@@ -171,8 +172,8 @@ ClientMessage::set(const codec::holder::paging_predicate_holder& p,
 {
     add_begin_frame();
 
-    auto f =
-      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+    auto f = reinterpret_cast<frame_header_type*>(
+      wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT32_SIZE + INT8_SIZE;
     f->flags = DEFAULT_FLAGS;
     set(p.page_size);
@@ -376,7 +377,8 @@ operator<<(std::ostream& os, const ClientMessage& msg)
 void
 ClientMessage::set(unsigned char* /* memory */, boost::uuids::uuid uuid)
 {
-    static_assert(uuid.size() == util::Bits::UUID_SIZE_IN_BYTES, "uuid size must be 16");
+    static_assert(uuid.size() == util::Bits::UUID_SIZE_IN_BYTES,
+                  "uuid size must be 16");
     std::memcpy(wr_ptr(uuid.size()), &uuid.data[0], uuid.size());
 }
 
@@ -387,8 +389,8 @@ ClientMessage::fast_forward_to_end_frame()
     // in the beginning of the decode method
     int number_expected_frames = 1;
     while (number_expected_frames) {
-        auto* f =
-          reinterpret_cast<frame_header_type*>(rd_ptr(sizeof(frame_header_type)));
+        auto* f = reinterpret_cast<frame_header_type*>(
+          rd_ptr(sizeof(frame_header_type)));
 
         int16_t flags = f->flags;
         if (is_flag_set(flags, END_DATA_STRUCTURE_FLAG)) {
@@ -445,8 +447,8 @@ ClientMessage::set(const cp::raft_group_id& o, bool is_final)
 {
     add_begin_frame();
 
-    auto f =
-      reinterpret_cast<frame_header_type*>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+    auto f = reinterpret_cast<frame_header_type*>(
+      wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT64_SIZE;
     f->flags = DEFAULT_FLAGS;
     set(o.seed);
@@ -465,8 +467,8 @@ ClientMessage::get()
     rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
 
     // skip header of the frame
-    auto f =
-      reinterpret_cast<frame_header_type*>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+    auto f = reinterpret_cast<frame_header_type*>(
+      rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
     auto seed = get<int64_t>();
     auto id = get<int64_t>();
     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS -
@@ -765,7 +767,8 @@ UsernamePasswordCredentials::UsernamePasswordCredentials(
   const std::string& password)
   : name_(principal)
   , password_(password)
-{}
+{
+}
 
 const std::string&
 UsernamePasswordCredentials::get_name() const
@@ -829,12 +832,14 @@ custom_type_factory::create_sql_column_metadata(std::string name,
     }
 
     if (is_nullable_exists) {
-        return sql_column_metadata{
-          std::move(name), static_cast<sql_column_type>(type), nullability};
+        return sql_column_metadata{ std::move(name),
+                                    static_cast<sql_column_type>(type),
+                                    nullability };
     }
 
-    return sql_column_metadata{
-      std::move(name), static_cast<sql_column_type>(type), true};
+    return sql_column_metadata{ std::move(name),
+                                static_cast<sql_column_type>(type),
+                                true };
 }
 
 std::shared_ptr<sql::sql_page>
@@ -844,9 +849,8 @@ sql_page_codec::decode(ClientMessage& msg,
     // begin frame
     msg.skip_frame();
 
-    bool last =
-      msg.peek(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS +
-               1)[ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS] == 1;
+    bool last = msg.peek(ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS +
+                         1)[ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS] == 1;
 
     msg.skip_frame();
 
@@ -905,46 +909,38 @@ sql_page_codec::decode_column_values(ClientMessage& msg,
               builtin::list_cn_fixed_size_codec::decode<double>(msg));
         case sql::sql_column_type::date:
             return to_vector_of_any(
-              builtin::list_cn_fixed_size_codec::decode<local_date>(
-                msg));
+              builtin::list_cn_fixed_size_codec::decode<local_date>(msg));
         case sql::sql_column_type::time:
             return to_vector_of_any(
-              builtin::list_cn_fixed_size_codec::decode<local_time>(
-                msg));
+              builtin::list_cn_fixed_size_codec::decode<local_time>(msg));
         case sql::sql_column_type::timestamp:
             return to_vector_of_any(
-              builtin::list_cn_fixed_size_codec::decode<
-                local_date_time>(msg));
+              builtin::list_cn_fixed_size_codec::decode<local_date_time>(msg));
         case sql::sql_column_type::timestamp_with_timezone:
             return to_vector_of_any(
-              builtin::list_cn_fixed_size_codec::decode<
-                offset_date_time>(msg));
+              builtin::list_cn_fixed_size_codec::decode<offset_date_time>(msg));
         case sql::sql_column_type::decimal:
             return to_vector_of_any(
-              builtin::list_cn_fixed_size_codec::decode<big_decimal>(
-                msg));
+              builtin::list_cn_fixed_size_codec::decode<big_decimal>(msg));
         case sql::sql_column_type::null: {
             msg.skip_frame_header_bytes();
 
             auto size = msg.get<int32_t>();
-            return
-              std::vector<boost::any>(static_cast<size_t>(size));
+            return std::vector<boost::any>(static_cast<size_t>(size));
         }
         case sql::sql_column_type::object:
             return to_vector_of_any(
-              msg.get<std::vector<
-                boost::optional<serialization::pimpl::data>>>());
+              msg.get<
+                std::vector<boost::optional<serialization::pimpl::data>>>());
         case sql::sql_column_type::json:
             return to_vector_of_any(
               msg.get<std::vector<boost::optional<hazelcast_json_value>>>());
         default:
-            throw exception::illegal_state(
-              "ClientMessage::get<sql::sql_page>",
-              (boost::format("Unknown type %1%") %
-               static_cast<int32_t>(column_type))
-                .str());
+            throw exception::illegal_state("ClientMessage::get<sql::sql_page>",
+                                           (boost::format("Unknown type %1%") %
+                                            static_cast<int32_t>(column_type))
+                                             .str());
     }
-
 }
 
 } // namespace builtin

@@ -166,7 +166,8 @@ public:
 protected:
     RingbufferImpl(const std::string& object_name, spi::ClientContext* context)
       : PartitionSpecificClientProxy(SERVICE_NAME, object_name, context)
-    {}
+    {
+    }
 
     boost::future<int64_t> add_data(serialization::pimpl::data&& item_data)
     {

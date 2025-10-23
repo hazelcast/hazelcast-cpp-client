@@ -56,7 +56,8 @@ public:
       , expiration_time_(expiry_time)
       , access_time_(NearCacheRecord<V>::TIME_NOT_SET)
       , access_hit_(0)
-    {}
+    {
+    }
 
     std::shared_ptr<V> get_value() const override { return value_; }
 

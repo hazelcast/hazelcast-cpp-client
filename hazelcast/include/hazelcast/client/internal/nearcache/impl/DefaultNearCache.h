@@ -56,7 +56,8 @@ public:
       , execution_service_(es)
       , serialization_service_(ss)
       , logger_(lg)
-    {}
+    {
+    }
 
     ~DefaultNearCache() override = default;
 

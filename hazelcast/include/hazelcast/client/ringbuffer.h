@@ -293,7 +293,8 @@ public:
 private:
     ringbuffer(const std::string& object_name, spi::ClientContext* context)
       : RingbufferImpl(object_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

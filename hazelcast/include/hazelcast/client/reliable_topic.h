@@ -184,56 +184,59 @@ private:
             }
 
             auto runner = this->shared_from_this();
-            auto execution_service = this->execution_service_;            
+            auto execution_service = this->execution_service_;
             ringbuffer_->read_many(sequence_, 1, batch_size_)
-              .then(executor_, [runner,execution_service](boost::future<rb::read_result_set> f) {
-                  if (runner->cancelled_) {
-                      return;
-                  }
+              .then(executor_,
+                    [runner,
+                     execution_service](boost::future<rb::read_result_set> f) {
+                        if (runner->cancelled_) {
+                            return;
+                        }
 
-                  try {
-                      auto result = f.get();
+                        try {
+                            auto result = f.get();
 
-                      // we process all messages in batch. So we don't release
-                      // the thread and reschedule ourselves; but we'll process
-                      // whatever was received in 1 go.
-                      auto lost_count =
-                        result.get_next_sequence_to_read_from() -
-                        result.read_count() - runner->sequence_;
-                      if (lost_count != 0 &&
-                          !runner->listener_.loss_tolerant_) {
-                          runner->cancel();
-                          return;
-                      }
+                            // we process all messages in batch. So we don't
+                            // release the thread and reschedule ourselves; but
+                            // we'll process whatever was received in 1 go.
+                            auto lost_count =
+                              result.get_next_sequence_to_read_from() -
+                              result.read_count() - runner->sequence_;
+                            if (lost_count != 0 &&
+                                !runner->listener_.loss_tolerant_) {
+                                runner->cancel();
+                                return;
+                            }
 
-                      auto const& items = result.get_items();
-                      for (size_t i = 0; i < items.size(); i++) {
-                          auto const& message = items[i];
-                          try {
-                              runner->listener_.store_sequence_id_(
-                                result.get_sequence(static_cast<int>(i)));
-                              auto rel_msg = message.get<
-                                topic::impl::reliable::ReliableTopicMessage>();
-                              runner->process(*rel_msg);
-                          } catch (exception::iexception& e) {
-                              if (runner->terminate(e)) {
-                                  runner->cancel();
-                                  return;
-                              }
-                          }
-                      }
+                            auto const& items = result.get_items();
+                            for (size_t i = 0; i < items.size(); i++) {
+                                auto const& message = items[i];
+                                try {
+                                    runner->listener_.store_sequence_id_(
+                                      result.get_sequence(static_cast<int>(i)));
+                                    auto rel_msg =
+                                      message.get<topic::impl::reliable::
+                                                    ReliableTopicMessage>();
+                                    runner->process(*rel_msg);
+                                } catch (exception::iexception& e) {
+                                    if (runner->terminate(e)) {
+                                        runner->cancel();
+                                        return;
+                                    }
+                                }
+                            }
 
-                      runner->sequence_ =
-                        result.get_next_sequence_to_read_from();
-                      runner->next();
-                  } catch (exception::iexception& ie) {
-                      if (runner->handle_internal_exception(ie)) {
-                          runner->next();
-                      } else {
-                          runner->cancel();
-                      }
-                  }
-              });
+                            runner->sequence_ =
+                              result.get_next_sequence_to_read_from();
+                            runner->next();
+                        } catch (exception::iexception& ie) {
+                            if (runner->handle_internal_exception(ie)) {
+                                runner->next();
+                            } else {
+                                runner->cancel();
+                            }
+                        }
+                    });
         }
 
         bool handle_operation_timeout_exception()
@@ -417,7 +420,7 @@ private:
         logger& logger_;
         const std::string& name_;
         std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
-          execution_service_;        
+          execution_service_;
         util::hz_thread_pool& executor_;
         serialization::pimpl::SerializationService& serialization_service_;
         int batch_size_;
