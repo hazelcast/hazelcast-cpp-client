@@ -21,7 +21,7 @@ jobs:
       matrix:
         boost:
           - version: 1.73.0
-          - version: 1.76.0
+          - version: 1.89.0
 
         build_type:
           - Debug
@@ -46,7 +46,7 @@ jobs:
       (${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{matrix.boost.version}}, ${{ matrix.with_openssl.name }})
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ./.github/actions/build-test/ubuntu-x86_64
         with:

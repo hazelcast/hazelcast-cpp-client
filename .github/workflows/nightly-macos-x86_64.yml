@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         boost:
-            - version: 1.71.0
-            - version: 1.76.0
+            - version: 1.88.0 # MacOS issue (https://github.com/boostorg/thread/issues/402) fixed at 1.88.0
+            - version: 1.89.0
         build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
         shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
@@ -36,7 +36,7 @@ jobs:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ./.github/actions/build-test/macos-x86_64
         with:

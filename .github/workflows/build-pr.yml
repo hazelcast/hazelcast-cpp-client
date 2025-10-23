@@ -24,11 +24,11 @@ on:
         description: Enter guest PR verified HEAD commit SHA.
         required: true
 env:
-  boost_version: 1.78.0
-  boost_archive_name: 'boost_1_78_0.tar.gz'
-  boost_folder_name: 'boost_1_78_0'
-  boost_include_folder: 'C:\Boost\include\boost-1_78'
-  boost_url: 'https://archives.boost.io/release/1.78.0/source/boost_1_78_0.tar.gz'
+  boost_version: 1.89.0
+  boost_archive_name: 'boost_1_89_0.tar.gz'
+  boost_folder_name: 'boost_1_89_0'
+  boost_include_folder: 'C:\Boost\include\boost-1_89'
+  boost_url: 'https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.gz'
   thrift_version: 0.13.0
   run_tests: false
   
@@ -99,7 +99,7 @@ jobs:
     name: Code Coverage
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -175,7 +175,7 @@ jobs:
     name: ubuntu-x64-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -207,16 +207,16 @@ jobs:
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: 'windows-latest'
-    env:
-      JOB_NAME: win_${{ matrix.options.address_model }}_${{ matrix.build_type.short }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
-    name: win-${{ matrix.options.address_model }}_${{ matrix.shared_libs.name }}_${{ matrix.with_openssl.name }}
+    name: windows-${{ matrix.options.address_model }}-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        if: ${{ matrix.with_openssl.toggle != 'OFF' }}
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
 
       - uses: ./.github/actions/build-test/windows
+        if: ${{ matrix.with_openssl.toggle == 'ON' }}
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
@@ -257,7 +257,7 @@ jobs:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}

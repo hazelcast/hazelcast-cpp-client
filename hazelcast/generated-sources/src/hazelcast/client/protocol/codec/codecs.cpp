@@ -15,9 +15,9 @@
  */
 
 #include <boost/uuid/uuid.hpp>
-#include "hazelcast/client/member.h"
-#include "hazelcast/client/serialization/pimpl/compact/schema.h"
+
 #include "hazelcast/logger.h"
+#include "hazelcast/client/member.h"
 
 #include "codecs.h"
 
@@ -34,11 +34,14 @@ client_authentication_encode(const std::string& cluster_name,
                              byte serialization_version,
                              const std::string& client_hazelcast_version,
                              const std::string& client_name,
-                             const std::vector<std::string>& labels)
+                             const std::vector<std::string>& labels,
+                             byte routing_mode,
+                             bool cp_direct_to_leader_routing)
 {
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN +
-                                ClientMessage::UUID_SIZE +
-                                ClientMessage::UINT8_SIZE;
+    size_t initial_frame_size =
+      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE +
+      ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE +
+      ClientMessage::UINT8_SIZE;
     ClientMessage msg(initial_frame_size);
     msg.set_retryable(true);
     msg.set_operation_name("client.authentication");
@@ -48,6 +51,8 @@ client_authentication_encode(const std::string& cluster_name,
 
     msg.set(uuid);
     msg.set(serialization_version);
+    msg.set(routing_mode);
+    msg.set(cp_direct_to_leader_routing);
     msg.set(cluster_name);
 
     msg.set_nullable(username);
@@ -73,11 +78,14 @@ client_authenticationcustom_encode(const std::string& cluster_name,
                                    byte serialization_version,
                                    const std::string& client_hazelcast_version,
                                    const std::string& client_name,
-                                   const std::vector<std::string>& labels)
+                                   const std::vector<std::string>& labels,
+                                   byte routing_mode,
+                                   bool cp_direct_to_leader_routing)
 {
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN +
-                                ClientMessage::UUID_SIZE +
-                                ClientMessage::UINT8_SIZE;
+    size_t initial_frame_size =
+      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::UUID_SIZE +
+      ClientMessage::UINT8_SIZE + ClientMessage::UINT8_SIZE +
+      ClientMessage::UINT8_SIZE;
     ClientMessage msg(initial_frame_size);
     msg.set_retryable(true);
     msg.set_operation_name("client.authenticationcustom");
@@ -87,6 +95,8 @@ client_authenticationcustom_encode(const std::string& cluster_name,
 
     msg.set(uuid);
     msg.set(serialization_version);
+    msg.set(routing_mode);
+    msg.set(cp_direct_to_leader_routing);
     msg.set(cluster_name);
 
     msg.set(credentials);
@@ -126,7 +136,7 @@ void
 client_addclusterviewlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 770) {
+    if (messageType == EVENT_MEMBERS_VIEW) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -138,7 +148,7 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
         handle_membersview(version, member_infos);
         return;
     }
-    if (messageType == 771) {
+    if (messageType == EVENT_PARTITIONS_VIEW) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -148,6 +158,26 @@ client_addclusterviewlistener_handler::handle(ClientMessage& msg)
         auto partitions = msg.get<
           std::vector<std::pair<boost::uuids::uuid, std::vector<int>>>>();
         handle_partitionsview(version, partitions);
+        return;
+    }
+    if (messageType == EVENT_MEMBER_GROUPS_VIEW) {
+        auto* initial_frame =
+          reinterpret_cast<ClientMessage::frame_header_type*>(
+            msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
+        auto version = msg.get<int32_t>();
+        msg.seek(static_cast<int32_t>(initial_frame->frame_len));
+
+        auto member_groups =
+          msg.get<std::vector<std::vector<boost::uuids::uuid>>>();
+
+        handle_membergroupsview(version, member_groups);
+        return;
+    }
+    if (messageType == EVENT_CLUSTER_VERSION) {
+        msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN);
+
+        auto version = msg.get<internal::version>();
+        handle_clusterversion(version);
         return;
     }
     HZ_LOG(
@@ -257,7 +287,7 @@ void
 client_localbackuplistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 3842) {
+    if (messageType == EVENT_BACKUP) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -274,6 +304,69 @@ client_localbackuplistener_handler::handle(ClientMessage& msg)
                      "message type (%1%) received on event handler.") %
        messageType)
         .str());
+}
+
+ClientMessage
+client_triggerpartitionassignment_encode()
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size, true);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.triggerpartitionassignment");
+
+    msg.set_message_type(static_cast<int32_t>(4096));
+    msg.set_partition_id(-1);
+
+    return msg;
+}
+
+ClientMessage
+client_sendschema_encode(const serialization::pimpl::schema& schema)
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.sendschema");
+
+    msg.set_message_type(static_cast<int32_t>(4864));
+    msg.set_partition_id(-1);
+
+    msg.set(schema, true);
+
+    return msg;
+}
+
+ClientMessage
+client_fetchschema_encode(int64_t schema_id)
+{
+    size_t initial_frame_size =
+      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
+    ClientMessage msg(initial_frame_size, true);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.fetchschema");
+
+    msg.set_message_type(static_cast<int32_t>(5120));
+    msg.set_partition_id(-1);
+
+    msg.set(schema_id);
+    return msg;
+}
+
+ClientMessage
+client_sendallschemas_encode(
+  const std::vector<serialization::pimpl::schema>& schemas)
+{
+    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
+    ClientMessage msg(initial_frame_size);
+    msg.set_retryable(true);
+    msg.set_operation_name("client.sendallschemas");
+
+    msg.set_message_type(static_cast<int32_t>(5376));
+    msg.set_partition_id(-1);
+
+    msg.set(schemas, true);
+
+    return msg;
 }
 
 ClientMessage
@@ -818,7 +911,7 @@ void
 map_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 71426) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -885,7 +978,7 @@ void
 map_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 71682) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -948,7 +1041,7 @@ void
 map_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 71938) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -1519,7 +1612,7 @@ void
 map_addnearcacheinvalidationlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 81666) {
+    if (messageType == EVENT_I_MAP_INVALIDATION) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -1532,7 +1625,7 @@ map_addnearcacheinvalidationlistener_handler::handle(ClientMessage& msg)
         handle_imapinvalidation(key, source_uuid, partition_uuid, sequence);
         return;
     }
-    if (messageType == 81667) {
+    if (messageType == EVENT_I_MAP_BATCH_INVALIDATION) {
         msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN);
 
         auto keys = msg.get<std::vector<serialization::pimpl::data>>();
@@ -1844,7 +1937,7 @@ void
 multimap_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 134402) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -1906,7 +1999,7 @@ void
 multimap_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 134658) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -2424,7 +2517,7 @@ void
 queue_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 200962) {
+    if (messageType == EVENT_ITEM) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -2541,7 +2634,7 @@ void
 topic_addmessagelistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 262658) {
+    if (messageType == EVENT_TOPIC) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -2794,7 +2887,7 @@ void
 list_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 330498) {
+    if (messageType == EVENT_ITEM) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -3223,7 +3316,7 @@ void
 set_addlistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 396034) {
+    if (messageType == EVENT_ITEM) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -4270,7 +4363,7 @@ replicatedmap_addentrylistenertokeywithpredicate_handler::handle(
   ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 854530) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -4334,7 +4427,7 @@ void
 replicatedmap_addentrylistenerwithpredicate_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 854786) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -4398,7 +4491,7 @@ void
 replicatedmap_addentrylistenertokey_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 855042) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -4457,7 +4550,7 @@ void
 replicatedmap_addentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 855298) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -4587,7 +4680,7 @@ void
 replicatedmap_addnearcacheentrylistener_handler::handle(ClientMessage& msg)
 {
     auto messageType = msg.get_message_type();
-    if (messageType == 856578) {
+    if (messageType == EVENT_ENTRY) {
         auto* initial_frame =
           reinterpret_cast<ClientMessage::frame_header_type*>(
             msg.rd_ptr(ClientMessage::EVENT_HEADER_LEN));
@@ -5873,7 +5966,7 @@ sql_execute_encode(const std::string& sql,
     msg.set(skip_update_statistics);
     msg.set(sql);
 
-    msg.set(parameters);
+    msg.set_contains_nullable(parameters);
 
     msg.set_nullable(schema);
 
@@ -5898,55 +5991,6 @@ sql_fetch_encode(const sql::impl::query_id& query_id,
     msg.set(cursor_buffer_size);
     msg.set(query_id, true);
 
-    return msg;
-}
-
-ClientMessage
-client_sendschema_encode(const serialization::pimpl::schema& schema)
-{
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
-    ClientMessage msg(initial_frame_size);
-    msg.set_retryable(true);
-    msg.set_operation_name("client.sendschema");
-
-    msg.set_message_type(static_cast<int32_t>(4864));
-    msg.set_partition_id(-1);
-
-    msg.set(schema, true);
-
-    return msg;
-}
-
-ClientMessage
-client_sendallschemas_encode(
-  const std::vector<serialization::pimpl::schema>& schemas)
-{
-    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN;
-    ClientMessage msg(initial_frame_size);
-    msg.set_retryable(true);
-    msg.set_operation_name("client.sendallschemas");
-
-    msg.set_message_type(static_cast<int32_t>(5376));
-    msg.set_partition_id(-1);
-
-    msg.set(schemas, true);
-
-    return msg;
-}
-
-ClientMessage
-client_fetchschema_encode(int64_t schema_id)
-{
-    size_t initial_frame_size =
-      ClientMessage::REQUEST_HEADER_LEN + ClientMessage::INT64_SIZE;
-    ClientMessage msg(initial_frame_size, true);
-    msg.set_retryable(true);
-    msg.set_operation_name("client.fetchschema");
-
-    msg.set_message_type(static_cast<int32_t>(5120));
-    msg.set_partition_id(-1);
-
-    msg.set(schema_id);
     return msg;
 }
 
