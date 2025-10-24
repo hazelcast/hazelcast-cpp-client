@@ -6,4 +6,9 @@
 
 find hazelcast/generated-sources hazelcast/include hazelcast/src hazelcast/test/src examples \
   | grep -E '\.(cpp|h)$'   \
-  | xargs clang-format -i
+  | while read -r file; do {
+      clang-format -i "${file}"
+    } &
+    done
+
+wait
