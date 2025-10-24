@@ -33,7 +33,8 @@ public:
 
     Sync(const T& v)
       : v_(v)
-    {}
+    {
+    }
 
     virtual ~Sync() = default;
 

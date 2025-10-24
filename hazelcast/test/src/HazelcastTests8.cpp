@@ -1144,7 +1144,8 @@ protected:
           , latch_for_termination(latch_count)
           , latch_for_cancel(latch_count)
           , start_sequence(start_sequence)
-        {}
+        {
+        }
 
         boost::latch latch1;
         boost::latch latch_for_seq_id;
@@ -1180,8 +1181,7 @@ protected:
             return true;
         };
 
-        auto cancel_handler =
-          [state]() -> bool {
+        auto cancel_handler = [state]() -> bool {
             state->latch_for_cancel.count_down();
             return true;
         };
@@ -1622,13 +1622,15 @@ protected:
           : get_count(0)
           , put_count(0)
           , remove_count(0)
-        {}
+        {
+        }
 
         Stats(const Stats& rhs)
           : get_count(const_cast<Stats&>(rhs).get_count.load())
           , put_count(const_cast<Stats&>(rhs).put_count.load())
           , remove_count(const_cast<Stats&>(rhs).remove_count.load())
-        {}
+        {
+        }
 
         Stats get_and_reset()
         {
@@ -1661,7 +1663,8 @@ protected:
     public:
         explicit StatsPrinterTask(Stats& stats)
           : stats_(stats)
-        {}
+        {
+        }
 
         void run()
         {
@@ -1693,7 +1696,8 @@ protected:
           : stats_(stats)
           , map_(map)
           , logger_(std::move(lg))
-        {}
+        {
+        }
 
         void run()
         {
@@ -2096,7 +2100,8 @@ TEST_F(
 
     hz.shutdown().get();
 }
-TEST_F(IssueTest,TestIssue1005){
+TEST_F(IssueTest, TestIssue1005)
+{
     HazelcastServerFactory fac("hazelcast/test/resources/lock-expiration.xml");
     HazelcastServer serv1(fac);
     HazelcastServer serv2(fac);
@@ -2114,7 +2119,8 @@ TEST_F(IssueTest,TestIssue1005){
     c.shutdown().get();
 }
 
-TEST_F(IssueTest, TestIssue1196){
+TEST_F(IssueTest, TestIssue1196)
+{
     client_config conf;
     hazelcast::client::config::near_cache_config n1;
     hazelcast::client::config::near_cache_config n2;
@@ -2127,7 +2133,8 @@ TEST_F(IssueTest, TestIssue1196){
     conf.add_near_cache_config(n2);
 
     ASSERT_NE(conf.get_near_cache_config("pattern"), nullptr);
-    EXPECT_EQ(conf.get_near_cache_config("pattern")->get_max_idle_seconds(), 11);
+    EXPECT_EQ(conf.get_near_cache_config("pattern")->get_max_idle_seconds(),
+              11);
 }
 } // namespace test
 } // namespace client
@@ -2360,11 +2367,11 @@ TEST(ClientMessageTest, test_encode_sql_query_id)
     protocol::ClientMessage msg;
 
     boost::uuids::uuid server_uuid = boost::uuids::uuid{
-        { 1, 2,  3,  4,  5,  6,  7,  8,
-          9, 10, 11, 12, 13, 14, 15, 16 }};
+        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }
+    };
     boost::uuids::uuid client_uuid = boost::uuids::uuid{
-        { 21, 22, 23, 24, 25, 26, 27, 28,
-          29, 30, 31, 32, 33, 34, 35, 36 }};
+        { 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 }
+    };
 
     msg.set(sql::impl::query_id{ server_uuid, client_uuid });
 
@@ -2420,13 +2427,13 @@ TEST(ClientMessageTest, test_decode_sql_page)
     msg.wrap_for_read();
 
     std::vector<sql::sql_column_metadata> columns_metadata{
-        {"foo", sql::sql_column_type::varchar, true},
-        {"test", sql::sql_column_type::varchar, true},
+        { "foo", sql::sql_column_type::varchar, true },
+        { "test", sql::sql_column_type::varchar, true },
     };
     auto row_metadata =
       std::make_shared<sql::sql_row_metadata>(std::move(columns_metadata));
-    auto page = protocol::codec::builtin::sql_page_codec::decode(msg,
-                                                                 row_metadata);
+    auto page =
+      protocol::codec::builtin::sql_page_codec::decode(msg, row_metadata);
 
     EXPECT_EQ(true, page->last());
     EXPECT_EQ((std::vector<sql::sql_column_type>{
@@ -2662,7 +2669,7 @@ TEST_F(ClientStateOutput, test_output)
 {
     using client_state = connection::ClientConnectionManagerImpl::client_state;
 
-    auto to_string = [](client_state st){
+    auto to_string = [](client_state st) {
         std::stringstream ss;
 
         ss << st;
@@ -2670,10 +2677,13 @@ TEST_F(ClientStateOutput, test_output)
         return ss.str();
     };
 
-    EXPECT_EQ(to_string(client_state::CONNECTED_TO_CLUSTER), "CONNECTED_TO_CLUSTER");
-    EXPECT_EQ(to_string(client_state::DISCONNECTED_FROM_CLUSTER), "DISCONNECTED_FROM_CLUSTER");
+    EXPECT_EQ(to_string(client_state::CONNECTED_TO_CLUSTER),
+              "CONNECTED_TO_CLUSTER");
+    EXPECT_EQ(to_string(client_state::DISCONNECTED_FROM_CLUSTER),
+              "DISCONNECTED_FROM_CLUSTER");
     EXPECT_EQ(to_string(client_state::INITIAL), "INITIAL");
-    EXPECT_EQ(to_string(client_state::INITIALIZED_ON_CLUSTER), "INITIALIZED_ON_CLUSTER");
+    EXPECT_EQ(to_string(client_state::INITIALIZED_ON_CLUSTER),
+              "INITIALIZED_ON_CLUSTER");
 }
 } // namespace test
 } // namespace client
@@ -2754,7 +2764,7 @@ TEST_P(ThreadPoolTest, testEqualThreadAndJobs)
           });
     }
     ASSERT_OPEN_EVENTUALLY(state->latch1);
-    ASSERT_EQ( expected_thread_num, state->thread_ids.size());
+    ASSERT_EQ(expected_thread_num, state->thread_ids.size());
 }
 
 INSTANTIATE_TEST_SUITE_P(ThreadPoolTestSuite,

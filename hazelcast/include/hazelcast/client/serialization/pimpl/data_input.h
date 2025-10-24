@@ -49,7 +49,8 @@ public:
       : byte_order_(byte_order)
       , buffer_(buf)
       , pos_(0)
-    {}
+    {
+    }
 
     data_input(boost::endian::order byte_order,
                const Container& buf,
@@ -57,7 +58,8 @@ public:
       : byte_order_(byte_order)
       , buffer_(buf)
       , pos_(offset)
-    {}
+    {
+    }
 
     inline void read_fully(std::vector<byte>& bytes)
     {

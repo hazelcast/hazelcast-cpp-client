@@ -262,7 +262,8 @@ public:
 private:
     iqueue(const std::string& instance_name, spi::ClientContext* context)
       : proxy::IQueueImpl(instance_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

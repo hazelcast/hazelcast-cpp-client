@@ -63,7 +63,8 @@ logger::logger(std::string instance_name,
   , cluster_name_{ std::move(cluster_name) }
   , level_{ level }
   , handler_{ std::move(handler) }
-{}
+{
+}
 
 bool
 logger::enabled(level lvl) noexcept

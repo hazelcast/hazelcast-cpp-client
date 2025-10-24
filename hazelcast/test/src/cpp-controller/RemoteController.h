@@ -76,7 +76,8 @@ public:
     RemoteControllerIfSingletonFactory(
       const ::std::shared_ptr<RemoteControllerIf>& iface)
       : iface_(iface)
-    {}
+    {
+    }
     virtual ~RemoteControllerIfSingletonFactory() {}
 
     virtual RemoteControllerIf* getHandler(
@@ -215,7 +216,8 @@ typedef struct _RemoteController_ping_result__isset
 {
     _RemoteController_ping_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_ping_result__isset;
 
@@ -227,7 +229,8 @@ public:
       const RemoteController_ping_result&);
     RemoteController_ping_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_ping_result() noexcept;
     bool success;
@@ -257,7 +260,8 @@ typedef struct _RemoteController_ping_presult__isset
 {
     _RemoteController_ping_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_ping_presult__isset;
 
@@ -308,7 +312,8 @@ typedef struct _RemoteController_clean_result__isset
 {
     _RemoteController_clean_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_clean_result__isset;
 
@@ -320,7 +325,8 @@ public:
       const RemoteController_clean_result&);
     RemoteController_clean_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_clean_result() noexcept;
     bool success;
@@ -350,7 +356,8 @@ typedef struct _RemoteController_clean_presult__isset
 {
     _RemoteController_clean_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_clean_presult__isset;
 
@@ -401,7 +408,8 @@ typedef struct _RemoteController_exit_result__isset
 {
     _RemoteController_exit_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_exit_result__isset;
 
@@ -413,7 +421,8 @@ public:
       const RemoteController_exit_result&);
     RemoteController_exit_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_exit_result() noexcept;
     bool success;
@@ -443,7 +452,8 @@ typedef struct _RemoteController_exit_presult__isset
 {
     _RemoteController_exit_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_exit_presult__isset;
 
@@ -463,7 +473,8 @@ typedef struct _RemoteController_createCluster_args__isset
     _RemoteController_createCluster_args__isset()
       : hzVersion(false)
       , xmlconfig(false)
-    {}
+    {
+    }
     bool hzVersion : 1;
     bool xmlconfig : 1;
 } _RemoteController_createCluster_args__isset;
@@ -478,7 +489,8 @@ public:
     RemoteController_createCluster_args()
       : hzVersion()
       , xmlconfig()
-    {}
+    {
+    }
 
     virtual ~RemoteController_createCluster_args() noexcept;
     std::string hzVersion;
@@ -524,7 +536,8 @@ typedef struct _RemoteController_createCluster_result__isset
     _RemoteController_createCluster_result__isset()
       : success(false)
       , serverException(false)
-    {}
+    {
+    }
     bool success : 1;
     bool serverException : 1;
 } _RemoteController_createCluster_result__isset;
@@ -572,7 +585,8 @@ typedef struct _RemoteController_createCluster_presult__isset
     _RemoteController_createCluster_presult__isset()
       : success(false)
       , serverException(false)
-    {}
+    {
+    }
     bool success : 1;
     bool serverException : 1;
 } _RemoteController_createCluster_presult__isset;
@@ -594,7 +608,8 @@ typedef struct _RemoteController_createClusterKeepClusterName_args__isset
     _RemoteController_createClusterKeepClusterName_args__isset()
       : hzVersion(false)
       , xmlconfig(false)
-    {}
+    {
+    }
     bool hzVersion : 1;
     bool xmlconfig : 1;
 } _RemoteController_createClusterKeepClusterName_args__isset;
@@ -609,7 +624,8 @@ public:
     RemoteController_createClusterKeepClusterName_args()
       : hzVersion()
       , xmlconfig()
-    {}
+    {
+    }
 
     virtual ~RemoteController_createClusterKeepClusterName_args() noexcept;
     std::string hzVersion;
@@ -658,7 +674,8 @@ typedef struct _RemoteController_createClusterKeepClusterName_result__isset
     _RemoteController_createClusterKeepClusterName_result__isset()
       : success(false)
       , serverException(false)
-    {}
+    {
+    }
     bool success : 1;
     bool serverException : 1;
 } _RemoteController_createClusterKeepClusterName_result__isset;
@@ -709,7 +726,8 @@ typedef struct _RemoteController_createClusterKeepClusterName_presult__isset
     _RemoteController_createClusterKeepClusterName_presult__isset()
       : success(false)
       , serverException(false)
-    {}
+    {
+    }
     bool success : 1;
     bool serverException : 1;
 } _RemoteController_createClusterKeepClusterName_presult__isset;
@@ -730,7 +748,8 @@ typedef struct _RemoteController_startMember_args__isset
 {
     _RemoteController_startMember_args__isset()
       : clusterId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
 } _RemoteController_startMember_args__isset;
 
@@ -742,7 +761,8 @@ public:
       const RemoteController_startMember_args&);
     RemoteController_startMember_args()
       : clusterId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_startMember_args() noexcept;
     std::string clusterId;
@@ -782,7 +802,8 @@ typedef struct _RemoteController_startMember_result__isset
     _RemoteController_startMember_result__isset()
       : success(false)
       , serverException(false)
-    {}
+    {
+    }
     bool success : 1;
     bool serverException : 1;
 } _RemoteController_startMember_result__isset;
@@ -830,7 +851,8 @@ typedef struct _RemoteController_startMember_presult__isset
     _RemoteController_startMember_presult__isset()
       : success(false)
       , serverException(false)
-    {}
+    {
+    }
     bool success : 1;
     bool serverException : 1;
 } _RemoteController_startMember_presult__isset;
@@ -852,7 +874,8 @@ typedef struct _RemoteController_shutdownMember_args__isset
     _RemoteController_shutdownMember_args__isset()
       : clusterId(false)
       , memberId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
     bool memberId : 1;
 } _RemoteController_shutdownMember_args__isset;
@@ -867,7 +890,8 @@ public:
     RemoteController_shutdownMember_args()
       : clusterId()
       , memberId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_shutdownMember_args() noexcept;
     std::string clusterId;
@@ -912,7 +936,8 @@ typedef struct _RemoteController_shutdownMember_result__isset
 {
     _RemoteController_shutdownMember_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_shutdownMember_result__isset;
 
@@ -925,7 +950,8 @@ public:
       const RemoteController_shutdownMember_result&);
     RemoteController_shutdownMember_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_shutdownMember_result() noexcept;
     bool success;
@@ -955,7 +981,8 @@ typedef struct _RemoteController_shutdownMember_presult__isset
 {
     _RemoteController_shutdownMember_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_shutdownMember_presult__isset;
 
@@ -975,7 +1002,8 @@ typedef struct _RemoteController_terminateMember_args__isset
     _RemoteController_terminateMember_args__isset()
       : clusterId(false)
       , memberId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
     bool memberId : 1;
 } _RemoteController_terminateMember_args__isset;
@@ -990,7 +1018,8 @@ public:
     RemoteController_terminateMember_args()
       : clusterId()
       , memberId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_terminateMember_args() noexcept;
     std::string clusterId;
@@ -1035,7 +1064,8 @@ typedef struct _RemoteController_terminateMember_result__isset
 {
     _RemoteController_terminateMember_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_terminateMember_result__isset;
 
@@ -1048,7 +1078,8 @@ public:
       const RemoteController_terminateMember_result&);
     RemoteController_terminateMember_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_terminateMember_result() noexcept;
     bool success;
@@ -1078,7 +1109,8 @@ typedef struct _RemoteController_terminateMember_presult__isset
 {
     _RemoteController_terminateMember_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_terminateMember_presult__isset;
 
@@ -1098,7 +1130,8 @@ typedef struct _RemoteController_suspendMember_args__isset
     _RemoteController_suspendMember_args__isset()
       : clusterId(false)
       , memberId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
     bool memberId : 1;
 } _RemoteController_suspendMember_args__isset;
@@ -1113,7 +1146,8 @@ public:
     RemoteController_suspendMember_args()
       : clusterId()
       , memberId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_suspendMember_args() noexcept;
     std::string clusterId;
@@ -1158,7 +1192,8 @@ typedef struct _RemoteController_suspendMember_result__isset
 {
     _RemoteController_suspendMember_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_suspendMember_result__isset;
 
@@ -1171,7 +1206,8 @@ public:
       const RemoteController_suspendMember_result&);
     RemoteController_suspendMember_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_suspendMember_result() noexcept;
     bool success;
@@ -1201,7 +1237,8 @@ typedef struct _RemoteController_suspendMember_presult__isset
 {
     _RemoteController_suspendMember_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_suspendMember_presult__isset;
 
@@ -1221,7 +1258,8 @@ typedef struct _RemoteController_resumeMember_args__isset
     _RemoteController_resumeMember_args__isset()
       : clusterId(false)
       , memberId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
     bool memberId : 1;
 } _RemoteController_resumeMember_args__isset;
@@ -1236,7 +1274,8 @@ public:
     RemoteController_resumeMember_args()
       : clusterId()
       , memberId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_resumeMember_args() noexcept;
     std::string clusterId;
@@ -1281,7 +1320,8 @@ typedef struct _RemoteController_resumeMember_result__isset
 {
     _RemoteController_resumeMember_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_resumeMember_result__isset;
 
@@ -1294,7 +1334,8 @@ public:
       const RemoteController_resumeMember_result&);
     RemoteController_resumeMember_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_resumeMember_result() noexcept;
     bool success;
@@ -1324,7 +1365,8 @@ typedef struct _RemoteController_resumeMember_presult__isset
 {
     _RemoteController_resumeMember_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_resumeMember_presult__isset;
 
@@ -1343,7 +1385,8 @@ typedef struct _RemoteController_shutdownCluster_args__isset
 {
     _RemoteController_shutdownCluster_args__isset()
       : clusterId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
 } _RemoteController_shutdownCluster_args__isset;
 
@@ -1356,7 +1399,8 @@ public:
       const RemoteController_shutdownCluster_args&);
     RemoteController_shutdownCluster_args()
       : clusterId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_shutdownCluster_args() noexcept;
     std::string clusterId;
@@ -1395,7 +1439,8 @@ typedef struct _RemoteController_shutdownCluster_result__isset
 {
     _RemoteController_shutdownCluster_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_shutdownCluster_result__isset;
 
@@ -1408,7 +1453,8 @@ public:
       const RemoteController_shutdownCluster_result&);
     RemoteController_shutdownCluster_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_shutdownCluster_result() noexcept;
     bool success;
@@ -1438,7 +1484,8 @@ typedef struct _RemoteController_shutdownCluster_presult__isset
 {
     _RemoteController_shutdownCluster_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_shutdownCluster_presult__isset;
 
@@ -1457,7 +1504,8 @@ typedef struct _RemoteController_terminateCluster_args__isset
 {
     _RemoteController_terminateCluster_args__isset()
       : clusterId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
 } _RemoteController_terminateCluster_args__isset;
 
@@ -1470,7 +1518,8 @@ public:
       const RemoteController_terminateCluster_args&);
     RemoteController_terminateCluster_args()
       : clusterId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_terminateCluster_args() noexcept;
     std::string clusterId;
@@ -1509,7 +1558,8 @@ typedef struct _RemoteController_terminateCluster_result__isset
 {
     _RemoteController_terminateCluster_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_terminateCluster_result__isset;
 
@@ -1522,7 +1572,8 @@ public:
       const RemoteController_terminateCluster_result&);
     RemoteController_terminateCluster_result()
       : success(0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_terminateCluster_result() noexcept;
     bool success;
@@ -1552,7 +1603,8 @@ typedef struct _RemoteController_terminateCluster_presult__isset
 {
     _RemoteController_terminateCluster_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_terminateCluster_presult__isset;
 
@@ -1571,7 +1623,8 @@ typedef struct _RemoteController_splitMemberFromCluster_args__isset
 {
     _RemoteController_splitMemberFromCluster_args__isset()
       : memberId(false)
-    {}
+    {
+    }
     bool memberId : 1;
 } _RemoteController_splitMemberFromCluster_args__isset;
 
@@ -1584,7 +1637,8 @@ public:
       const RemoteController_splitMemberFromCluster_args&);
     RemoteController_splitMemberFromCluster_args()
       : memberId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_splitMemberFromCluster_args() noexcept;
     std::string memberId;
@@ -1625,7 +1679,8 @@ typedef struct _RemoteController_splitMemberFromCluster_result__isset
 {
     _RemoteController_splitMemberFromCluster_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_splitMemberFromCluster_result__isset;
 
@@ -1668,7 +1723,8 @@ typedef struct _RemoteController_splitMemberFromCluster_presult__isset
 {
     _RemoteController_splitMemberFromCluster_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_splitMemberFromCluster_presult__isset;
 
@@ -1688,7 +1744,8 @@ typedef struct _RemoteController_mergeMemberToCluster_args__isset
     _RemoteController_mergeMemberToCluster_args__isset()
       : clusterId(false)
       , memberId(false)
-    {}
+    {
+    }
     bool clusterId : 1;
     bool memberId : 1;
 } _RemoteController_mergeMemberToCluster_args__isset;
@@ -1703,7 +1760,8 @@ public:
     RemoteController_mergeMemberToCluster_args()
       : clusterId()
       , memberId()
-    {}
+    {
+    }
 
     virtual ~RemoteController_mergeMemberToCluster_args() noexcept;
     std::string clusterId;
@@ -1748,7 +1806,8 @@ typedef struct _RemoteController_mergeMemberToCluster_result__isset
 {
     _RemoteController_mergeMemberToCluster_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_mergeMemberToCluster_result__isset;
 
@@ -1791,7 +1850,8 @@ typedef struct _RemoteController_mergeMemberToCluster_presult__isset
 {
     _RemoteController_mergeMemberToCluster_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_mergeMemberToCluster_presult__isset;
 
@@ -1812,7 +1872,8 @@ typedef struct _RemoteController_executeOnController_args__isset
       : clusterId(false)
       , script(false)
       , lang(false)
-    {}
+    {
+    }
     bool clusterId : 1;
     bool script : 1;
     bool lang : 1;
@@ -1829,7 +1890,8 @@ public:
       : clusterId()
       , script()
       , lang((Lang::type)0)
-    {}
+    {
+    }
 
     virtual ~RemoteController_executeOnController_args() noexcept;
     std::string clusterId;
@@ -1880,7 +1942,8 @@ typedef struct _RemoteController_executeOnController_result__isset
 {
     _RemoteController_executeOnController_result__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_executeOnController_result__isset;
 
@@ -1923,7 +1986,8 @@ typedef struct _RemoteController_executeOnController_presult__isset
 {
     _RemoteController_executeOnController_presult__isset()
       : success(false)
-    {}
+    {
+    }
     bool success : 1;
 } _RemoteController_executeOnController_presult__isset;
 
@@ -2179,7 +2243,8 @@ public:
     RemoteControllerProcessorFactory(
       const ::std::shared_ptr<RemoteControllerIfFactory>& handlerFactory)
       : handlerFactory_(handlerFactory)
-    {}
+    {
+    }
 
     ::std::shared_ptr<::apache::thrift::TProcessor> getProcessor(
       const ::apache::thrift::TConnectionInfo& connInfo);
@@ -2194,7 +2259,8 @@ public:
     RemoteControllerMultiface(
       std::vector<std::shared_ptr<RemoteControllerIf>>& ifaces)
       : ifaces_(ifaces)
-    {}
+    {
+    }
     virtual ~RemoteControllerMultiface() {}
 
 protected:

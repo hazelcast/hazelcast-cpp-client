@@ -54,7 +54,8 @@ typedef struct _Cluster__isset
 {
     _Cluster__isset()
       : id(false)
-    {}
+    {
+    }
     bool id : 1;
 } _Cluster__isset;
 
@@ -65,7 +66,8 @@ public:
     Cluster& operator=(const Cluster&);
     Cluster()
       : id()
-    {}
+    {
+    }
 
     virtual ~Cluster() noexcept;
     std::string id;
@@ -102,7 +104,8 @@ typedef struct _Member__isset
       : uuid(false)
       , host(false)
       , port(false)
-    {}
+    {
+    }
     bool uuid : 1;
     bool host : 1;
     bool port : 1;
@@ -117,7 +120,8 @@ public:
       : uuid()
       , host()
       , port(0)
-    {}
+    {
+    }
 
     virtual ~Member() noexcept;
     std::string uuid;
@@ -164,7 +168,8 @@ typedef struct _Response__isset
       : success(false)
       , message(false)
       , result(false)
-    {}
+    {
+    }
     bool success : 1;
     bool message : 1;
     bool result : 1;
@@ -179,7 +184,8 @@ public:
       : success(0)
       , message()
       , result()
-    {}
+    {
+    }
 
     virtual ~Response() noexcept;
     bool success;
@@ -224,7 +230,8 @@ typedef struct _ServerException__isset
 {
     _ServerException__isset()
       : message(false)
-    {}
+    {
+    }
     bool message : 1;
 } _ServerException__isset;
 
@@ -235,7 +242,8 @@ public:
     ServerException& operator=(const ServerException&);
     ServerException()
       : message()
-    {}
+    {
+    }
 
     virtual ~ServerException() noexcept;
     std::string message;

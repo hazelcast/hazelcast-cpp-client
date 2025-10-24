@@ -102,7 +102,8 @@ public:
      * @param now                 current time in milliseconds
      * @return {@code true} if exceeds max idle seconds, otherwise {@code false}
      */
-    virtual bool is_idle_at(int64_t /* max_idle_milli_seconds */, int64_t /* now */) = 0;
+    virtual bool is_idle_at(int64_t /* max_idle_milli_seconds */,
+                            int64_t /* now */) = 0;
 
     /**
      * @return last known invalidation sequence at time of this records'

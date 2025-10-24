@@ -79,7 +79,8 @@ private:
     transactional_queue(const std::string& name,
                         txn::TransactionProxy& transaction_proxy)
       : proxy::TransactionalQueueImpl(name, transaction_proxy)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

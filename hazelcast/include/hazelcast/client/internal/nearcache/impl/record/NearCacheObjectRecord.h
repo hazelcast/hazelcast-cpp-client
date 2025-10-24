@@ -45,7 +45,8 @@ public:
                           int64_t creation_time,
                           int64_t expiry_time)
       : AbstractNearCacheRecord<V>(value, creation_time, expiry_time)
-    {}
+    {
+    }
 };
 } // namespace record
 } // namespace impl

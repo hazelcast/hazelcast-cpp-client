@@ -46,7 +46,7 @@ namespace serialization {
 namespace pimpl {
 class SerializationService;
 class default_schema_service;
-}
+} // namespace pimpl
 } // namespace serialization
 
 namespace impl {

@@ -43,7 +43,8 @@ public:
                     std::chrono::milliseconds(publish_time))
                     .count()),
                 std::move(member))
-    {}
+    {
+    }
 
     message(std::string topic_name,
             typed_data&& msg,
@@ -53,7 +54,8 @@ public:
       , publish_time_(publish_time)
       , publishing_member_(member)
       , name_(std::move(topic_name))
-    {}
+    {
+    }
 
     const typed_data& get_message_object() const { return message_object_; }
 

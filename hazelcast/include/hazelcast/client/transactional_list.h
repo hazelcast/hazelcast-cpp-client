@@ -53,7 +53,8 @@ private:
     transactional_list(const std::string& instance_name,
                        txn::TransactionProxy& context)
       : proxy::TransactionalListImpl(instance_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

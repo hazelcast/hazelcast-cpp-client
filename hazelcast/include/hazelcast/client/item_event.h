@@ -84,7 +84,8 @@ public:
                const member& member)
       : item_event_base(name, member, event_type)
       , item_(item)
-    {}
+    {
+    }
 
     /**
      * @returns the item.

@@ -157,7 +157,8 @@ public:
 private:
     iset(const std::string& instance_name, spi::ClientContext* context)
       : proxy::ISetImpl(instance_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

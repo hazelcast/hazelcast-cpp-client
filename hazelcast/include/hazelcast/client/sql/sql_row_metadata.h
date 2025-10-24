@@ -79,7 +79,7 @@ public:
     const_iterator end() const;
 
     friend bool HAZELCAST_API operator==(const sql_row_metadata& lhs,
-                           const sql_row_metadata& rhs);
+                                         const sql_row_metadata& rhs);
 
 private:
     std::vector<sql_column_metadata> columns_;

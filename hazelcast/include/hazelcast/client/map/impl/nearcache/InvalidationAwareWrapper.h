@@ -55,7 +55,8 @@ public:
       : near_cache_(cache)
       , key_state_marker_(
           new internal::nearcache::impl::KeyStateMarkerImpl(partition_count))
-    {}
+    {
+    }
 
     ~InvalidationAwareWrapper() override = default;
 
