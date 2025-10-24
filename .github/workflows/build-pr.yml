@@ -216,7 +216,6 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
       - uses: ./.github/actions/build-test/windows
-        if: ${{ matrix.with_openssl.toggle == 'ON' }}
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BOOST_VERSION: ${{ env.boost_version }}
