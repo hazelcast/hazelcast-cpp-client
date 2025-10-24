@@ -8,7 +8,7 @@ name: Build&Test PR
 on: 
 
   # automatic on every pull request
-  pull_request_target:
+  pull_request:
 
   # manual (for community PRs that we want to force-run here)  
   workflow_dispatch:
@@ -274,3 +274,16 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
+
+  enforce-code-formatting:
+    runs-on: ubuntu-latest
+    needs: get-refs
+    
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.get-refs.outputs.ref }}
+          token: ${{ secrets.GH_TOKEN }}
+
+        # https://github.com/jidicula/clang-format-action/releases/tag/v4.15.0
+      - uses: jidicula/clang-format-action@4726374d1aa3c6aecf132e5197e498979588ebc8
