@@ -90,12 +90,13 @@ runs:
         tar xzf ${{ inputs.BOOST_ARCHIVE_NAME }}
         rm ${{ inputs.BOOST_ARCHIVE_NAME }}
         cd ${{ inputs.BOOST_FOLDER_NAME }}
-        .\bootstrap.bat
+        cmd /c "`"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat`" x64 && .\bootstrap.bat msvc"
         # Build the libs for:
         # - Thread - https://www.boost.org/libs/thread/
         # - Chrono - https://www.boost.org/libs/chrono/
         # - Atomic - https://www.boost.org/libs/atomic/
-        .\b2.exe address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-thread --with-chrono --with-atomic install
+        cmd /c "`"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat`" x64 && .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-thread --with-chrono --with-atomic install"        
+        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-thread --with-chrono --with-atomic install
         cd ..
         Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
 
