@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "ClientTest.h"
-
 #include <chrono>
 #include <thread>
 
@@ -28,6 +25,8 @@
 #include "HazelcastServerFactory.h"
 #include "remote_controller_client.h"
 #include "TestHelperFunctions.h"
+
+#include "ClientTest.h"
 
 namespace hazelcast {
 namespace client {
