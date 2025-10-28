@@ -50,7 +50,8 @@ public:
                            int32_t initial_capacity)
       : util::SampleableConcurrentHashMap<K, V, KS, R>(initial_capacity)
       , serialization_service_(ss)
-    {}
+    {
+    }
 
     ~HeapNearCacheRecordMap() override = default;
 
@@ -66,7 +67,8 @@ public:
           : util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry(key,
                                                                           value)
           , serialization_service_(ss)
-        {}
+        {
+        }
 
         ~NearCacheEvictableSamplingEntry() override = default;
 
@@ -187,7 +189,8 @@ public:
                 typename util::SampleableConcurrentHashMap<K, V, KS, R>::E>&
                 adapted_iterator)
               : it_(adapted_iterator)
-            {}
+            {
+            }
 
             bool has_next() override { return it_.has_next(); }
 

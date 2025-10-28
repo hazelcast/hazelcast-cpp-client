@@ -146,7 +146,8 @@ metric_descriptor::metric_descriptor(std::string prefix,
   , discriminator_{ std::move(discriminator) }
   , discriminator_value_{ std::move(discriminator_value) }
   , unit_{ unit }
-{}
+{
+}
 
 metric_descriptor::metric_descriptor(std::string prefix,
                                      std::string metric,
@@ -156,7 +157,8 @@ metric_descriptor::metric_descriptor(std::string prefix,
   , discriminator_{}
   , discriminator_value_{}
   , unit_{ unit }
-{}
+{
+}
 
 const std::string&
 metric_descriptor::prefix() const

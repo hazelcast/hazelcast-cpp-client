@@ -76,11 +76,12 @@ template<typename EXCEPTION>
 class ExceptionFactoryImpl : public ExceptionFactory
 {
 public:
-    std::exception_ptr create_exception(const ClientExceptionFactory& /* factory */,
-                                        const std::string& source,
-                                        const std::string& message,
-                                        const std::string& details,
-                                        std::exception_ptr cause) const override
+    std::exception_ptr create_exception(
+      const ClientExceptionFactory& /* factory */,
+      const std::string& source,
+      const std::string& message,
+      const std::string& details,
+      std::exception_ptr cause) const override
     {
         try {
             BOOST_THROW_EXCEPTION(EXCEPTION(source, message, details, cause));

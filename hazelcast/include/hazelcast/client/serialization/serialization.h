@@ -347,8 +347,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<hazelcast_json_value>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<hazelcast_json_value> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -359,8 +359,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<byte>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<byte>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -370,8 +370,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<bool>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<bool>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -381,8 +381,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<char>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<char>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -392,8 +392,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<int16_t>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<int16_t>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -403,8 +403,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<int32_t>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<int32_t>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -414,8 +414,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<int64_t>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<int64_t>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -425,8 +425,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<float>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<float>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -436,8 +436,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<double>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<double>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -447,8 +447,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<std::vector<std::string>>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<std::vector<std::string>> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()
@@ -458,8 +458,8 @@ public:
 };
 
 template<>
-struct HAZELCAST_API hz_serializer<boost::uuids::uuid>
-  : public builtin_serializer
+struct HAZELCAST_API
+  hz_serializer<boost::uuids::uuid> : public builtin_serializer
 {
 public:
     static inline pimpl::serialization_constants get_type_id()

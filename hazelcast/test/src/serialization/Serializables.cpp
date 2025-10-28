@@ -347,7 +347,8 @@ void
 hz_serializer<test::EmployeeEntryComparator>::write_data(
   const test::EmployeeEntryComparator& object,
   object_data_output& writer)
-{}
+{
+}
 
 test::EmployeeEntryComparator
 hz_serializer<test::EmployeeEntryComparator>::read_data(
@@ -373,7 +374,8 @@ void
 hz_serializer<test::EmployeeEntryKeyComparator>::write_data(
   const test::EmployeeEntryKeyComparator&,
   object_data_output&)
-{}
+{
+}
 
 test::EmployeeEntryKeyComparator
 hz_serializer<test::EmployeeEntryKeyComparator>::read_data(object_data_input&)

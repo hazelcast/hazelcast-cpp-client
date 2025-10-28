@@ -1684,7 +1684,8 @@ ClientTopicTest::ClientTopicTest()
   : instance_(default_server_factory())
   , client_(get_new_client())
   , topic_(client_.get_topic("ClientTopicTest").get())
-{}
+{
+}
 
 TEST_F(ClientTopicTest, testTopicListeners)
 {

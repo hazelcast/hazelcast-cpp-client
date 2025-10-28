@@ -292,7 +292,8 @@ public:
                  const std::string& attribute_name,
                  const Args&... values)
       : multi_predicate(attribute_name, client, values...)
-    {}
+    {
+    }
 
     /**
      * The type of Args should be able to be serialized.
@@ -304,7 +305,8 @@ public:
                  const std::string& attribute_name,
                  const std::vector<T>& values)
       : multi_predicate(attribute_name, client, values)
-    {}
+    {
+    }
 };
 
 class and_predicate : public multi_predicate
@@ -313,7 +315,8 @@ public:
     template<typename... Args>
     and_predicate(hazelcast_client& client, const Args&... values)
       : multi_predicate(client, values...)
-    {}
+    {
+    }
 };
 
 class or_predicate : public multi_predicate
@@ -322,7 +325,8 @@ public:
     template<typename... PredicateTypes>
     or_predicate(hazelcast_client& client, const PredicateTypes&... values)
       : multi_predicate(client, values...)
-    {}
+    {
+    }
 };
 
 class not_predicate : public base_predicate

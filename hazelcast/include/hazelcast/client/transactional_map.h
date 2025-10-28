@@ -218,7 +218,8 @@ private:
     transactional_map(const std::string& name,
                       txn::TransactionProxy& transaction_proxy)
       : proxy::TransactionalMapImpl(name, transaction_proxy)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

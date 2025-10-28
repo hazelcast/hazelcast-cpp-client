@@ -1041,7 +1041,8 @@ private:
     friend bool HAZELCAST_API operator!=(const generic_record&,
                                          const generic_record&);
 
-    generic_record(std::shared_ptr<pimpl::schema>, std::unordered_map<std::string, boost::any>);
+    generic_record(std::shared_ptr<pimpl::schema>,
+                   std::unordered_map<std::string, boost::any>);
 
     const pimpl::schema& get_schema() const;
     friend boost::property_tree::ptree write_generic_record(

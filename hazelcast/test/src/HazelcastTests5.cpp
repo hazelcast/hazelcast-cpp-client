@@ -141,7 +141,8 @@ protected:
           boost::latch& next_called_latch)
           : sequence_(sequence)
           , next_called_latch_(next_called_latch)
-        {}
+        {
+        }
 
         virtual const std::string get_name() const
         {
@@ -400,7 +401,8 @@ public:
     public:
         UnknownObject(int value)
           : value_(value)
-        {}
+        {
+        }
 
         int get_value() const { return value_; }
 
@@ -718,12 +720,14 @@ public:
     PartitionAwareInt()
       : partition_key_(0)
       , actual_key_(0)
-    {}
+    {
+    }
 
     PartitionAwareInt(int partition_key, int actual_key)
       : partition_key_(partition_key)
       , actual_key_(actual_key)
-    {}
+    {
+    }
 
     const int* get_partition_key() const override { return &partition_key_; }
 
@@ -787,7 +791,8 @@ public:
       , imap_(client_.get_map(imapName).get())
       , int_map_(client_.get_map(intMapName).get())
       , employees_(client_.get_map(employeesMapName).get())
-    {}
+    {
+    }
 
     ~ClientMapTest() { client_.shutdown().get(); }
 
@@ -813,7 +818,8 @@ public:
     public:
         MapGetInterceptor(const std::string& prefix)
           : prefix_(prefix)
-        {}
+        {
+        }
 
     private:
         std::string prefix_;
@@ -824,7 +830,8 @@ public:
     public:
         EntryMultiplier(int multiplier)
           : multiplier_(multiplier)
-        {}
+        {
+        }
 
         int get_multiplier() const { return multiplier_; }
 

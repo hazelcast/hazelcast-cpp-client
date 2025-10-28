@@ -520,11 +520,12 @@ hazelcast_client_instance_impl::check_discovery_configuration_consistency(
 
 BaseEventHandler::~BaseEventHandler() = default;
 
-BaseEventHandler::BaseEventHandler(logger &logger)
+BaseEventHandler::BaseEventHandler(logger& logger)
   : logger_(logger)
-{}
+{
+}
 
-logger &
+logger&
 BaseEventHandler::get_logger() const
 {
     return logger_;
@@ -537,21 +538,24 @@ address::address()
   : host_("localhost")
   , type_(IPV4)
   , scope_id_(0)
-{}
+{
+}
 
 address::address(std::string url, int port)
   : host_(std::move(url))
   , port_(port)
   , type_(IPV4)
   , scope_id_(0)
-{}
+{
+}
 
 address::address(std::string hostname, int port, unsigned long scope_id)
   : host_(std::move(hostname))
   , port_(port)
   , type_(IPV6)
   , scope_id_(scope_id)
-{}
+{
+}
 
 bool
 address::operator==(const address& rhs) const
@@ -837,7 +841,8 @@ iexecutor_service::iexecutor_service(const std::string& name,
   : ProxyImpl(SERVICE_NAME, name, context)
   , consecutive_submits_(0)
   , last_submit_time_(0)
-{}
+{
+}
 
 std::vector<member>
 iexecutor_service::select_members(const member_selector& member_selector)
@@ -1010,7 +1015,8 @@ client_property::client_property(const std::string& name,
                                  const std::string& default_value)
   : name_(name)
   , default_value_(default_value)
-{}
+{
+}
 
 const std::string&
 client_property::get_name() const
@@ -1071,7 +1077,8 @@ client_properties::client_properties(
   , partition_arg_cache_size_(PARTITION_ARGUMENT_CACHE_SIZE,
                               PARTITION_ARGUMENT_CACHE_SIZE_DEFAULT)
   , properties_map_(properties)
-{}
+{
+}
 
 const client_property&
 client_properties::get_heartbeat_timeout() const
@@ -1223,7 +1230,8 @@ iexception::iexception(std::string exception_name,
   , report_((boost::format("%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") %
              exception_name % msg_ % error_code_ % details_ % src_)
               .str())
-{}
+{
+}
 
 iexception::~iexception() noexcept = default;
 
@@ -1290,7 +1298,8 @@ retryable_hazelcast::retryable_hazelcast(std::string source,
                         std::move(cause),
                         true,
                         true)
-{}
+{
+}
 
 retryable_hazelcast::retryable_hazelcast(std::string error_name,
                                          int32_t error_code,
@@ -1308,7 +1317,8 @@ retryable_hazelcast::retryable_hazelcast(std::string error_name,
                std::move(cause),
                runtime,
                retryable)
-{}
+{
+}
 
 member_left::member_left(std::string source,
                          std::string message,
@@ -1322,7 +1332,8 @@ member_left::member_left(std::string source,
               std::move(cause),
               false,
               true)
-{}
+{
+}
 
 consistency_lost::consistency_lost(std::string source,
                                    std::string message,
@@ -1336,7 +1347,8 @@ consistency_lost::consistency_lost(std::string source,
                std::move(cause),
                true,
                false)
-{}
+{
+}
 
 query::query(std::string source,
              std::string message,

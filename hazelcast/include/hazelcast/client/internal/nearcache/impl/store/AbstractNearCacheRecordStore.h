@@ -93,7 +93,8 @@ public:
     */
 
     // public for tests.
-    virtual const std::shared_ptr<R> get_record(const std::shared_ptr<KS>& /* key */)
+    virtual const std::shared_ptr<R> get_record(
+      const std::shared_ptr<KS>& /* key */)
     {
         assert(0);
         return std::shared_ptr<R>();
@@ -234,9 +235,8 @@ public:
 
 protected:
     virtual std::unique_ptr<eviction::MaxSizeChecker>
-    create_near_cache_max_size_checker(
-      const client::config::eviction_config&,
-      const client::config::near_cache_config&)
+    create_near_cache_max_size_checker(const client::config::eviction_config&,
+                                       const client::config::near_cache_config&)
     {
         assert(0);
         return std::unique_ptr<eviction::MaxSizeChecker>();
@@ -259,7 +259,8 @@ protected:
                get_record_storage_memory_cost(record);
     }
 
-    virtual std::unique_ptr<R> value_to_record(const std::shared_ptr<V>& /* value */)
+    virtual std::unique_ptr<R> value_to_record(
+      const std::shared_ptr<V>& /* value */)
     {
         assert(0);
         return std::unique_ptr<R>();
@@ -279,8 +280,9 @@ protected:
         return std::shared_ptr<V>();
     }
 
-    virtual std::shared_ptr<R> put_record(const std::shared_ptr<KS>& /* key */,
-                                          const std::shared_ptr<R>& /* record */)
+    virtual std::shared_ptr<R> put_record(
+      const std::shared_ptr<KS>& /* key */,
+      const std::shared_ptr<R>& /* record */)
     {
         assert(0);
         return std::shared_ptr<R>();
@@ -292,7 +294,8 @@ protected:
         assert(0);
     }
 
-    virtual std::shared_ptr<R> remove_record(const std::shared_ptr<KS>& /* key */)
+    virtual std::shared_ptr<R> remove_record(
+      const std::shared_ptr<KS>& /* key */)
     {
         assert(0);
         return std::shared_ptr<R>();
@@ -425,7 +428,7 @@ protected:
         }
     }
 
-    void on_record_create(const std::shared_ptr<KS>&/* key */,
+    void on_record_create(const std::shared_ptr<KS>& /* key */,
                           const std::shared_ptr<R>& record)
     {
         record->set_creation_time(util::current_time_millis());
@@ -440,19 +443,22 @@ protected:
     void on_get(const std::shared_ptr<KS>& /* key */,
                 const std::shared_ptr<V>& /* value */,
                 const std::shared_ptr<R>& /* record */)
-    {}
+    {
+    }
 
     void on_get_error(const std::shared_ptr<KS>& /* key */,
                       const std::shared_ptr<V>& /* value */,
                       const std::shared_ptr<R>& /* record */,
                       const exception::iexception& /* error */)
-    {}
+    {
+    }
 
     void on_put(const std::shared_ptr<KS>& /* key */,
                 const std::shared_ptr<V>& /* value */,
                 const std::shared_ptr<R>& /* record */,
                 const std::shared_ptr<R>& /* old_record */)
-    {}
+    {
+    }
 
     /*
                                 void onPut(const std::shared_ptr<KS> &key,
@@ -467,7 +473,8 @@ protected:
                       const std::shared_ptr<R>& /* record */,
                       const std::shared_ptr<R>& /* old_record */,
                       const exception::iexception& /* error */)
-    {}
+    {
+    }
 
     /*
                                 void onPutError(const std::shared_ptr<KS> &key,
@@ -481,13 +488,15 @@ protected:
     void on_remove(const std::shared_ptr<KS>& /* key */,
                    const std::shared_ptr<R>& /* record */,
                    bool /* removed */)
-    {}
+    {
+    }
 
     void on_remove_error(const std::shared_ptr<KS>& /* key */,
                          const std::shared_ptr<R>& /* record */,
                          bool /* removed */,
                          const exception::iexception& /* error */)
-    {}
+    {
+    }
 
     void on_expire(const std::shared_ptr<KS>& /* key */,
                    const std::shared_ptr<R>& /* record */)
@@ -536,7 +545,8 @@ private:
     public:
         MaxSizeEvictionChecker(const eviction::MaxSizeChecker* max_size_checker)
           : max_size_checker_(max_size_checker)
-        {}
+        {
+        }
 
         bool is_eviction_required() const override
         {

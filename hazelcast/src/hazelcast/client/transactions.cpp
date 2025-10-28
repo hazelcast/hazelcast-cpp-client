@@ -48,7 +48,8 @@ TransactionProxy::TransactionProxy(
   , connection_(connection)
   , thread_id_(util::get_current_thread_id())
   , state_(TxnState::NO_TXN)
-{}
+{
+}
 
 TransactionProxy::TransactionProxy(const TransactionProxy& rhs)
   : options_(rhs.options_)
@@ -252,7 +253,8 @@ TxnState::TxnState(state value)
     values[8] = ROLLED_BACK;
 }
 
-TxnState::operator int() const
+TxnState::
+operator int() const
 {
     return value;
 }
@@ -328,7 +330,8 @@ TransactionalMapImpl::TransactionalMapImpl(
   const std::string& name,
   txn::TransactionProxy& transaction_proxy)
   : TransactionalObject(imap::SERVICE_NAME, name, transaction_proxy)
-{}
+{
+}
 
 boost::future<bool>
 TransactionalMapImpl::contains_key_data(const serialization::pimpl::data& key)
@@ -529,7 +532,8 @@ TransactionalMultiMapImpl::TransactionalMultiMapImpl(
   const std::string& name,
   txn::TransactionProxy& transaction_proxy)
   : TransactionalObject(multi_map::SERVICE_NAME, name, transaction_proxy)
-{}
+{
+}
 
 boost::future<bool>
 TransactionalMultiMapImpl::put_data(const serialization::pimpl::data& key,
@@ -600,7 +604,8 @@ TransactionalMultiMapImpl::size()
 TransactionalListImpl::TransactionalListImpl(const std::string& object_name,
                                              txn::TransactionProxy& context)
   : TransactionalObject(ilist::SERVICE_NAME, object_name, context)
-{}
+{
+}
 
 boost::future<bool>
 TransactionalListImpl::add(const serialization::pimpl::data& e)
@@ -633,7 +638,8 @@ TransactionalSetImpl::TransactionalSetImpl(
   const std::string& name,
   txn::TransactionProxy& transaction_proxy)
   : TransactionalObject(iset::SERVICE_NAME, name, transaction_proxy)
-{}
+{
+}
 
 boost::future<bool>
 TransactionalSetImpl::add_data(const serialization::pimpl::data& e)
@@ -669,7 +675,8 @@ TransactionalObject::TransactionalObject(const std::string& service_name,
   , service_name_(service_name)
   , name_(object_name)
   , context_(context)
-{}
+{
+}
 
 TransactionalObject::~TransactionalObject() = default;
 
@@ -697,7 +704,8 @@ TransactionalObject::destroy()
 
 void
 TransactionalObject::on_destroy()
-{}
+{
+}
 
 boost::uuids::uuid
 TransactionalObject::get_transaction_id() const
@@ -718,7 +726,8 @@ transaction_context::transaction_context(
   : options_(txn_options)
   , txn_connection_(transaction_manager.connect())
   , transaction_(options_, transaction_manager.get_client(), txn_connection_)
-{}
+{
+}
 
 boost::uuids::uuid
 transaction_context::get_txn_id() const
@@ -748,7 +757,8 @@ transaction_options::transaction_options()
   : timeout_(std::chrono::minutes(2))
   , durability_(1)
   , transaction_type_(transaction_type::TWO_PHASE)
-{}
+{
+}
 
 transaction_options::transaction_type
 transaction_options::get_transaction_type() const

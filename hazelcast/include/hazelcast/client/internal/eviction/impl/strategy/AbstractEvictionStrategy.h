@@ -99,7 +99,7 @@ public:
 protected:
     virtual int evict_internal(S* /* evictable_store */,
                                EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E>*
-                                 /* eviction_policy_evaluator */,
+                               /* eviction_policy_evaluator */,
                                EvictionListener<A, E>* /* eviction_listener */)
     {
         assert(0);

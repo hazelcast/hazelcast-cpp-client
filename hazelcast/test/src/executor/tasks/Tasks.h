@@ -66,7 +66,8 @@ struct MapPutPartitionAwareCallable : public partition_aware<T>
     MapPutPartitionAwareCallable(const std::string& map_name, T partition_key)
       : map_name(map_name)
       , partition_key(partition_key)
-    {}
+    {
+    }
 
     std::string map_name;
     T partition_key;

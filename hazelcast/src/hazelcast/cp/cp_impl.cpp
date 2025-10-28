@@ -35,7 +35,8 @@ constexpr int64_t proxy_session_manager::SHUTDOWN_TIMEOUT_SECONDS;
 proxy_session_manager::proxy_session_manager(
   hazelcast::client::spi::ClientContext& client)
   : client_(client)
-{}
+{
+}
 
 int64_t
 proxy_session_manager::acquire_session(const raft_group_id& group_id)
@@ -80,11 +81,11 @@ proxy_session_manager::create_new_session(const raft_group_id& group_id)
 {
     // the lock_ is already acquired as write lock
     auto response = request_new_session(group_id);
-    session_state state { response.id , response.ttl_millis };
+    session_state state{ response.id, response.ttl_millis };
 
-    auto result = sessions_.emplace( group_id, state );
+    auto result = sessions_.emplace(group_id, state);
 
-    if(!result.second)
+    if (!result.second)
         result.first->second = state;
 
     schedule_heartbeat_task(response.heartbeat_millis);
@@ -318,24 +319,26 @@ proxy_session_manager::session_state::session_state(int64_t id,
   : id(id)
   , ttl(ttl_millis)
   , creation_time(std::chrono::steady_clock::now())
-{}
+{
+}
 
 proxy_session_manager::session_state::session_state(const session_state& rhs)
   : id(rhs.id)
   , ttl(rhs.ttl)
   , creation_time(rhs.creation_time)
   , acquire_count(rhs.acquire_count.load())
-{}
+{
+}
 
 proxy_session_manager::session_state&
 proxy_session_manager::session_state::operator=(const session_state& rhs)
 {
-  id  = rhs.id;
-  ttl = rhs.ttl;
-  creation_time = rhs.creation_time;
-  acquire_count = rhs.acquire_count.load();
+    id = rhs.id;
+    ttl = rhs.ttl;
+    creation_time = rhs.creation_time;
+    acquire_count = rhs.acquire_count.load();
 
-  return *this;
+    return *this;
 }
 
 int64_t
