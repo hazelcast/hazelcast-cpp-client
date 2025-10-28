@@ -210,7 +210,6 @@ jobs:
     name: windows-${{ matrix.options.address_model }}-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
       - uses: actions/checkout@v5
-        if: ${{ matrix.with_openssl.toggle != 'OFF' }}
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
