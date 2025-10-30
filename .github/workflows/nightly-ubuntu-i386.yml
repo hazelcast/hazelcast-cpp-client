@@ -7,6 +7,10 @@ on:
         type: boolean
         description: Enable/Disable test stage
         default: true
+      ref:
+        description: The branch, tag or SHA to checkout.
+        required: false
+        default: "master"
   schedule:
     - cron: '0 22 * * *'
 
@@ -38,6 +42,8 @@ jobs:
     steps:
         # Deliberately uses an old version because i386 is stuck on an outdated version of Javascript
       - uses: actions/checkout@v1
+        with:
+          ref: ${{ inputs.ref }}
 
       - uses: ./.github/actions/build-test/ubuntu-i386
         with:
