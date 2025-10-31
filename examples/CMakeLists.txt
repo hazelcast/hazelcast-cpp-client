@@ -27,8 +27,7 @@ if (NOT TARGET hazelcast-cpp-client)
     link_libraries(hazelcast-cpp-client::hazelcast-cpp-client) # TODO find a better way to do this
 
     # Required for 32-bit builds on Linux
-    find_package(Threads REQUIRED)
-    link_libraries(Threads::Threads)
+    link_libraries(pthread)
 else()
     link_libraries(hazelcast-cpp-client) # TODO find a better way to do this
 endif()
