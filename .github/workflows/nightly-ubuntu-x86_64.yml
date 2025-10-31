@@ -7,10 +7,6 @@ on:
         type: boolean
         description: Enable/Disable test stage
         default: true
-      ref:
-        description: The branch, tag or SHA to checkout.
-        required: false
-        default: "master"
   schedule:
     - cron: '0 20 * * *'
 
@@ -51,8 +47,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          ref: ${{ inputs.ref }}
 
       - uses: ./.github/actions/build-test/ubuntu-x86_64
         with:
