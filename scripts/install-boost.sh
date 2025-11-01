@@ -20,5 +20,6 @@ pushd "${TARBALL_NAME}"
 # - Chrono - https://www.boost.org/libs/chrono/
 # - Atomic - https://www.boost.org/libs/atomic/
 # Used the c++11 language level intentionally to support old boost versions.
-./b2 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread --with-chrono --with-atomic install
+# -d0 turns off info logging but only prints warnings and errors.
+./b2 -d0 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread --with-chrono --with-atomic install
 popd

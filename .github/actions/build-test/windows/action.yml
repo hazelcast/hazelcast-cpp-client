@@ -98,7 +98,8 @@ runs:
         # - Thread - https://www.boost.org/libs/thread/
         # - Chrono - https://www.boost.org/libs/chrono/
         # - Atomic - https://www.boost.org/libs/atomic/
-        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} toolset=msvc --with-thread --with-chrono --with-atomic install        
+        # d0 turns off info logging but only prints warnings and errors.
+        .\b2 -d0 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} toolset=msvc --with-thread --with-chrono --with-atomic install        
         cd ..
         Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
 
