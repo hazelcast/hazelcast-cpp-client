@@ -115,6 +115,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
+        # Tagged onto another build to avoid re-running the entire build to check separately
+      - name: Check Reference Manual generated correctly
+        run: |
+          if ! git diff --quiet ${OUTPUT_REFERENCE_MANUAL_FILE}; then
+            echo "::error file=${OUTPUT_REFERENCE_MANUAL_FILE}::File does not match generated version from template"
+            exit 1
+          fi
+        env:
+          OUTPUT_REFERENCE_MANUAL_FILE: Reference_Manual.md
+
   shared-matrix:
     uses: ./.github/workflows/get-shared-matrix.yml
 
