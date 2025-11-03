@@ -36,9 +36,9 @@
 #include <boost/algorithm/string/classification.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/basic_resolver.hpp>
-#include <boost/asio/ssl/rfc2818_verification.hpp>
+#include <boost/asio/ssl/host_name_verification.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/system_error.hpp>
 #endif // HZ_BUILD_WITH_SSL
@@ -126,12 +126,19 @@ boost::asio::ip::address
 AddressUtil::get_by_name(const std::string& host, const std::string& service)
 {
     try {
-        boost::asio::io_service ioService;
+        boost::asio::io_context ioService;
         boost::asio::ip::tcp::resolver res(ioService);
-        boost::asio::ip::tcp::resolver::query query(host, service);
-        boost::asio::ip::basic_resolver<boost::asio::ip::tcp>::iterator
-          iterator = res.resolve(query);
-        return iterator->endpoint().address();
+
+        auto endpoints = res.resolve(host, service);
+
+        // Get the first endpoint's address
+        auto endpoint = endpoints.begin();
+        if (endpoint == endpoints.end()) {
+            throw client::exception::unknown_host("AddressUtil::getByName",
+                                                  "No endpoints found");
+        }
+
+        return endpoint->endpoint().address();
     } catch (boost::system::system_error& e) {
         std::ostringstream out;
         out << "Address " << host << " ip number is not available. "
@@ -168,7 +175,7 @@ SyncHttpsClient::SyncHttpsClient(const std::string& server_ip,
 
     ssl_context_.set_verify_mode(boost::asio::ssl::verify_peer);
     ssl_context_.set_verify_callback(
-      boost::asio::ssl::rfc2818_verification(server_));
+      boost::asio::ssl::host_name_verification(server_));
     socket_ =
       std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
         new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(
@@ -544,11 +551,9 @@ SyncHttpClient::open_connection()
     try {
         // Get a list of endpoints corresponding to the server name.
         boost::asio::ip::tcp::resolver resolver(io_service_);
-        boost::asio::ip::tcp::resolver::query query(server_, "http");
-        boost::asio::ip::tcp::resolver::iterator endpoint_iterator =
-          resolver.resolve(query);
+        auto endpoints = resolver.resolve(server_, "http");
 
-        boost::asio::connect(socket_, endpoint_iterator);
+        boost::asio::connect(socket_, endpoints);
 
         socket_.lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
 

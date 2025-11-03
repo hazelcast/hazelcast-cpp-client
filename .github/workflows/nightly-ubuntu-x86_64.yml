@@ -21,7 +21,7 @@ jobs:
       matrix:
         boost:
           - version: 1.73.0
-          - version: 1.76.0
+          - version: 1.89.0
 
         build_type:
           - Debug
@@ -65,6 +65,7 @@ jobs:
       - name: Verify Installation
         env:
           BUILD_DIR: build-examples
+          BUILD_TYPE: ${{ matrix.build_type }}
         run: |
           ./scripts/verify-installation-unix.sh                          \
               -DCMAKE_PREFIX_PATH=${{ github.workspace }}/destination    \

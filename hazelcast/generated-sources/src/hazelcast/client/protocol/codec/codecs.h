@@ -24,6 +24,13 @@
 
 namespace hazelcast {
 namespace client {
+
+namespace serialization {
+namespace pimpl {
+class schema;
+} // namespace pimpl
+} // namespace serialization
+
 namespace protocol {
 namespace codec {
 /**
@@ -38,7 +45,9 @@ client_authentication_encode(const std::string& cluster_name,
                              byte serialization_version,
                              const std::string& client_hazelcast_version,
                              const std::string& client_name,
-                             const std::vector<std::string>& labels);
+                             const std::vector<std::string>& labels,
+                             byte routing_mode,
+                             bool cp_direct_to_leader_routing);
 
 /**
  * Makes an authentication request to the cluster using custom credentials.
@@ -51,7 +60,9 @@ client_authenticationcustom_encode(const std::string& cluster_name,
                                    byte serialization_version,
                                    const std::string& client_hazelcast_version,
                                    const std::string& client_name,
-                                   const std::vector<std::string>& labels);
+                                   const std::vector<std::string>& labels,
+                                   byte routing_mode,
+                                   bool cp_direct_to_leader_routing);
 
 /**
  * Adds a cluster view listener to a connection.
@@ -62,6 +73,15 @@ client_addclusterviewlistener_encode();
 struct HAZELCAST_API client_addclusterviewlistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_MEMBERS_VIEW = 770,
+        EVENT_PARTITIONS_VIEW = 771,
+        EVENT_MEMBER_GROUPS_VIEW = 772,
+        EVENT_CLUSTER_VERSION = 773,
+    };
+
     client_addclusterviewlistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -83,6 +103,20 @@ struct HAZELCAST_API client_addclusterviewlistener_handler
       int32_t version,
       std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> const&
         partitions) = 0;
+
+    /**
+     * @param version Holds the state of member-groups and member-list-version
+     * @param member_groups Grouped members by their UUID. Grouping is done
+     * based on RoutingStrategy.
+     */
+    virtual void handle_membergroupsview(
+      int32_t version,
+      std::vector<std::vector<boost::uuids::uuid>> const& member_groups) = 0;
+
+    /**
+     * @param version The cluster version.
+     */
+    virtual void handle_clusterversion(internal::version const& version) = 0;
 };
 
 /**
@@ -291,6 +325,12 @@ client_localbackuplistener_encode();
 struct HAZELCAST_API client_localbackuplistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_BACKUP = 3842,
+    };
+
     client_localbackuplistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -300,6 +340,32 @@ struct HAZELCAST_API client_localbackuplistener_handler
      */
     virtual void handle_backup(int64_t source_invocation_correlation_id) = 0;
 };
+
+/**
+ * Triggers partition assignment manually on the cluster.
+ * Note that Partition based operations triggers this automatically
+ */
+ClientMessage HAZELCAST_API
+client_triggerpartitionassignment_encode();
+
+/**
+ * Sends a schema to cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendschema_encode(const serialization::pimpl::schema& schema);
+
+/**
+ * Fetches a schema from the cluster with the given schemaId
+ */
+ClientMessage HAZELCAST_API
+client_fetchschema_encode(int64_t schema_id);
+
+/**
+ * Sends all the schemas to the cluster
+ */
+ClientMessage HAZELCAST_API
+client_sendallschemas_encode(
+  const std::vector<serialization::pimpl::schema>& schemas);
 
 /**
  * Puts an entry into this map with a given ttl (time to live) value.Entry will
@@ -552,6 +618,12 @@ map_addentrylistenerwithpredicate_encode(
 struct HAZELCAST_API map_addentrylistenerwithpredicate_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 71426,
+    };
+
     map_addentrylistenerwithpredicate_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -599,6 +671,12 @@ map_addentrylistenertokey_encode(const std::string& name,
 struct HAZELCAST_API map_addentrylistenertokey_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 71682,
+    };
+
     map_addentrylistenertokey_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -645,6 +723,12 @@ map_addentrylistener_encode(const std::string& name,
 struct HAZELCAST_API map_addentrylistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 71938,
+    };
+
     map_addentrylistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -962,6 +1046,13 @@ map_addnearcacheinvalidationlistener_encode(const std::string& name,
 struct HAZELCAST_API map_addnearcacheinvalidationlistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_I_MAP_INVALIDATION = 81666,
+        EVENT_I_MAP_BATCH_INVALIDATION = 81667,
+    };
+
     map_addnearcacheinvalidationlistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -1109,6 +1200,12 @@ multimap_addentrylistenertokey_encode(const std::string& name,
 struct HAZELCAST_API multimap_addentrylistenertokey_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 134402,
+    };
+
     multimap_addentrylistenertokey_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -1154,6 +1251,12 @@ multimap_addentrylistener_encode(const std::string& name,
 struct HAZELCAST_API multimap_addentrylistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 134658,
+    };
+
     multimap_addentrylistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -1418,6 +1521,12 @@ queue_addlistener_encode(const std::string& name,
 
 struct HAZELCAST_API queue_addlistener_handler : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ITEM = 200962,
+    };
+
     queue_addlistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -1475,6 +1584,12 @@ topic_addmessagelistener_encode(const std::string& name, bool local_only);
 struct HAZELCAST_API topic_addmessagelistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_TOPIC = 262658,
+    };
+
     topic_addmessagelistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -1595,6 +1710,12 @@ list_addlistener_encode(const std::string& name,
 
 struct HAZELCAST_API list_addlistener_handler : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ITEM = 330498,
+    };
+
     list_addlistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -1813,6 +1934,12 @@ set_addlistener_encode(const std::string& name,
 
 struct HAZELCAST_API set_addlistener_handler : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ITEM = 396034,
+    };
+
     set_addlistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -2283,6 +2410,12 @@ replicatedmap_addentrylistenertokeywithpredicate_encode(
 struct HAZELCAST_API replicatedmap_addentrylistenertokeywithpredicate_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 854530,
+    };
+
     replicatedmap_addentrylistenertokeywithpredicate_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -2329,6 +2462,12 @@ replicatedmap_addentrylistenerwithpredicate_encode(
 struct HAZELCAST_API replicatedmap_addentrylistenerwithpredicate_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 854786,
+    };
+
     replicatedmap_addentrylistenerwithpredicate_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -2375,6 +2514,12 @@ replicatedmap_addentrylistenertokey_encode(
 struct HAZELCAST_API replicatedmap_addentrylistenertokey_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 855042,
+    };
+
     replicatedmap_addentrylistenertokey_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -2418,6 +2563,12 @@ replicatedmap_addentrylistener_encode(const std::string& name, bool local_only);
 struct HAZELCAST_API replicatedmap_addentrylistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 855298,
+    };
+
     replicatedmap_addentrylistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -2498,6 +2649,12 @@ replicatedmap_addnearcacheentrylistener_encode(const std::string& name,
 struct HAZELCAST_API replicatedmap_addnearcacheentrylistener_handler
   : public impl::BaseEventHandler
 {
+    // Define event constants
+    enum event_message_type
+    {
+        EVENT_ENTRY = 856578,
+    };
+
     replicatedmap_addnearcacheentrylistener_handler(logger& l);
 
     void handle(ClientMessage& msg);
@@ -3112,25 +3269,6 @@ sql_execute_encode(const std::string& sql,
 ClientMessage HAZELCAST_API
 sql_fetch_encode(const sql::impl::query_id& query_id,
                  int32_t cursor_buffer_size);
-
-/**
- * Replicates schema on cluster
- */
-ClientMessage HAZELCAST_API
-client_sendschema_encode(const serialization::pimpl::schema& schema);
-
-/**
- * Sends all the schemas to the cluster
- */
-ClientMessage HAZELCAST_API
-client_sendallschemas_encode(
-  const std::vector<serialization::pimpl::schema>& schemas);
-
-/**
- * Fetches a schema from the cluster with the given schemaId
- */
-ClientMessage HAZELCAST_API
-client_fetchschema_encode(int64_t schema_id);
 
 } // namespace codec
 } // namespace protocol

@@ -21,13 +21,13 @@ project (hazelcast-cpp-client-examples
          DESCRIPTION "Hazelcast C++ Client Code Examples"
          LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 if (NOT TARGET hazelcast-cpp-client)
     message(STATUS "hazelcast-cpp-client is not a valid target, using find_package to find it.")
     find_package(hazelcast-cpp-client REQUIRED)
     link_libraries(hazelcast-cpp-client::hazelcast-cpp-client) # TODO find a better way to do this
+
+    # Required for 32-bit builds on Linux
+    link_libraries(pthread)
 else()
     link_libraries(hazelcast-cpp-client) # TODO find a better way to do this
 endif()

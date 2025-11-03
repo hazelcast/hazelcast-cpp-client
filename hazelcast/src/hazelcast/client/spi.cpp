@@ -2418,10 +2418,19 @@ boost::optional<member>
 ClientPartitionServiceImpl::PartitionImpl::get_owner() const
 {
     auto owner = partition_service_.get_partition_owner(partition_id_);
-    if (!owner.is_nil()) {
-        return client_.get_client_cluster_service().get_member(owner);
+    if (owner.is_nil()) {
+        auto message =
+          protocol::codec::client_triggerpartitionassignment_encode();
+        auto invocation = ClientInvocation::create(
+          client_,
+          std::make_shared<protocol::ClientMessage>(std::move(message)),
+          "");
+        invocation->invoke();
+
+        return boost::none;
     }
-    return boost::none;
+
+    return client_.get_client_cluster_service().get_member(owner);
 }
 
 ClientPartitionServiceImpl::PartitionImpl::PartitionImpl(
@@ -3083,6 +3092,21 @@ cluster_view_listener::event_handler::on_listener_register()
              boost::format("Registered cluster_view_listener::event_handler to "
                            "connection with id %1%") %
              connection_id));
+}
+
+void
+cluster_view_listener::event_handler::handle_membergroupsview(
+  int32_t version,
+  const std::vector<std::vector<boost::uuids::uuid>>& member_groups)
+{
+    // TODO: implement member groups handling is implemented
+}
+
+void
+cluster_view_listener::event_handler::handle_clusterversion(
+  const internal::version& version)
+{
+    // TODO: implement cluster version handling is implemented
 }
 
 cluster_view_listener::event_handler::event_handler(

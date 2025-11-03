@@ -96,8 +96,7 @@ void
 Statistics::shutdown()
 {
     if (send_task_timer_) {
-        boost::system::error_code ignored;
-        send_task_timer_->cancel(ignored);
+        send_task_timer_->cancel();
     }
 }
 

@@ -2269,10 +2269,10 @@ public:
 protected:
     query_id get_query_id() const
     {
-        boost::uuids::uuid server_uuid{ 1, 2,  3,  4,  5,  6,  7,  8,
-                                        9, 10, 11, 12, 13, 14, 15, 16 };
-        boost::uuids::uuid client_uuid{ 21, 22, 23, 24, 25, 26, 27, 28,
-                                        29, 30, 31, 32, 33, 34, 35, 36 };
+        boost::uuids::uuid server_uuid{ {1, 2,  3,  4,  5,  6,  7,  8,
+                                        9, 10, 11, 12, 13, 14, 15, 16} };
+        boost::uuids::uuid client_uuid{ {21, 22, 23, 24, 25, 26, 27, 28,
+                                        29, 30, 31, 32, 33, 34, 35, 36} };
         return { server_uuid, client_uuid };
     }
 };

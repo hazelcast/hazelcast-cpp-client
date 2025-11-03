@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "ClientTest.h"
-
 #include <chrono>
 #include <thread>
 
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/hazelcast_client.h>
@@ -30,6 +25,8 @@
 #include "HazelcastServerFactory.h"
 #include "remote_controller_client.h"
 #include "TestHelperFunctions.h"
+
+#include "ClientTest.h"
 
 namespace hazelcast {
 namespace client {
@@ -123,6 +120,11 @@ ClientTest::generate_key_owned_by(spi::ClientContext& context,
         std::shared_ptr<impl::Partition> partition =
           partitionService.get_partition(partitionId);
         auto owner = partition->get_owner();
+        if (!owner) {
+                // give some time for the partition table to be populated
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
         if (owner && *owner == member) {
             return id;
         }

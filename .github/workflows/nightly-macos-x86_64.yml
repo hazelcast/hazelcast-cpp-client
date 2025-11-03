@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         boost:
-            - version: 1.71.0
-            - version: 1.76.0
+            - version: 1.88.0 # MacOS issue (https://github.com/boostorg/thread/issues/402) fixed at 1.88.0
+            - version: 1.89.0
         build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
         shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
@@ -54,6 +54,7 @@ jobs:
       - name: Verify Installation
         env:
           BUILD_DIR: build-examples
+          BUILD_TYPE: ${{ matrix.build_type }}
         run: |
           ./scripts/verify-installation-unix.sh                          \
               -DCMAKE_PREFIX_PATH=${{ github.workspace }}/destination    \

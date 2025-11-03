@@ -15,5 +15,11 @@ TARBALL_NAME=boost_$(echo "$1" | tr . _)
 curl --fail --silent --show-error --location "https://archives.boost.io/release/${1}/source/${TARBALL_NAME}.tar.gz" | tar xzf -
 pushd "${TARBALL_NAME}"
 ./bootstrap.sh
-./b2 --with-thread --with-chrono install
+# Build the libs for:
+# - Thread - https://www.boost.org/libs/thread/
+# - Chrono - https://www.boost.org/libs/chrono/
+# - Atomic - https://www.boost.org/libs/atomic/
+# Used the c++11 language level intentionally to support old boost versions.
+# -d0 turns off info logging but only prints warnings and errors.
+./b2 -d0 cxxflags="-std=c++11 -Wno-enum-constexpr-conversion" --with-thread --with-chrono --with-atomic install
 popd

@@ -2,13 +2,13 @@
 setlocal EnableDelayedExpansion
 
 if "%HZ_VERSION%"=="" (
-    set HZ_VERSION=5.5.5
+    set HZ_VERSION=5.6.0
 )
 set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
 set HAZELCAST_RC_VERSION=0.8-SNAPSHOT
 set SNAPSHOT_REPO=https://oss.sonatype.org/content/repositories/snapshots
-set RELEASE_REPO=http://repo1.maven.apache.org/maven2
+set RELEASE_REPO=https://repo.maven.apache.org/maven2
 set ENTERPRISE_RELEASE_REPO=https://repository.hazelcast.com/release/
 set ENTERPRISE_SNAPSHOT_REPO=https://repository.hazelcast.com/snapshot/
 
@@ -26,7 +26,7 @@ if exist "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar" (
     echo "hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar already exist, not downloading from maven."
 ) else (
     echo "Downloading: remote-controller jar com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION%"
-    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -DremoteRepositories=%SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION% -Ddest=hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar || (
+    call mvn -q org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -DremoteRepositories=%ENTERPRISE_SNAPSHOT_REPO% -Dartifact=com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION% -Ddest=hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar || (
         echo "Failed download remote-controller jar com.hazelcast:hazelcast-remote-controller:%HAZELCAST_RC_VERSION%" 
         exit /b 1
     )

@@ -96,9 +96,9 @@ private:
       std::shared_ptr<boost::asio::steady_timer> timer)
     {
         if (delay.count() > 0) {
-            timer->expires_from_now(delay);
+            timer->expires_after(delay);
         } else {
-            timer->expires_from_now(period);
+            timer->expires_after(period);
         }
 
         timer->async_wait([=](boost::system::error_code ec) {
