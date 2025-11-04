@@ -54,7 +54,7 @@ runs:
         sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
 
     - name: Configure Resources
-      if: ${{ inputs.run_tests }}
+      if: ${{ inputs.run_tests == 'true' }}
       shell: bash
       run: |
         ulimit -c unlimited
