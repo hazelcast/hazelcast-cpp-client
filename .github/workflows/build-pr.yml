@@ -50,7 +50,7 @@ jobs:
           member-name: ${{ github.actor }}
           token: ${{ secrets.GH_TOKEN }}
           
-  # ensure we are an Hazelcast organization member OR manually running
+  # ensure PR is trusted
   ensure-membership:
     name: Ensure Membership
     runs-on: ubuntu-latest
@@ -58,11 +58,11 @@ jobs:
     strategy:
       fail-fast: false    
       
-    if: needs.test-membership.outputs.is-hazelcast == 'true' || github.event_name == 'workflow_dispatch'
+    if: ${{ needs.test-membership.outputs.is-hazelcast == 'true' || github.event_name == 'workflow_dispatch' || github.actor == 'dependabot[bot]' }}
     steps:
       - name: Report
         shell: bash
-        run: echo "User ${{ github.actor }} is a member of the Hazelcast organization"          
+        run: echo "User ${{ github.actor }} is trusted for PR execution"          
 
 
   # get
