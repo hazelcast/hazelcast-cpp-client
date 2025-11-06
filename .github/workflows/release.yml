@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      BRANCH_NAME:
+        description: The branch to work with, if not implicit
+        required: false
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    outputs:
+      branch_name: ${{ inputs.BRANCH_NAME || github.ref_name }}
+      tag_name: v${{ inputs.BRANCH_NAME || github.ref_name }}
+    steps:
+      - run: exit 0
+
+  tag:
+    name: Tag and delete branch
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Tag `${{ needs.prepare.outputs.branch_name }}` as `${{ needs.prepare.outputs.tag_name }}`
+        run: |
+          git tag ${{ needs.prepare.outputs.tag_name }} origin/${{ needs.prepare.outputs.branch_name }}
+          git push origin ${{ needs.prepare.outputs.tag_name }}
+
+      - name: Delete `${{ needs.prepare.outputs.branch_name }}`
+        run: |
+          git push origin --delete ${{ needs.prepare.outputs.branch_name }}
+
+  pages:
+    name: Publish docs
+    runs-on: ubuntu-latest
+    needs:
+      - tag
+      - prepare
+    env:
+        GH_PAGES_BRANCH: gh-pages
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: repo
+          ref: ${{ needs.prepare.outputs.tag_name }}
+
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.GH_PAGES_BRANCH}}
+          path: ${{ env.GH_PAGES_BRANCH}}
+
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen
+
+      - name: Generate Doxygen documentation
+        run: |
+          doxygen repo/Doxyfile
+
+      - name: Post-process docs
+        run: |
+          mv docs/html ${GH_PAGES_BRANCH}/${{ needs.prepare.outputs.branch_name }}
+
+          # doc-index.html
+          sed -i \
+            "/Development Branch/a\<li><a href=\"https://github.com/${GITHUB_REPOSITORY}/blob/${{ needs.prepare.outputs.tag_name }}/Reference_Manual.md\">${{ needs.prepare.outputs.branch_name }}</a></li>" \
+            "${GH_PAGES_BRANCH}/doc-index.html"
+
+          # api-index.html
+          sed -i \
+            "/<ul>/a\  <li><a href=\"${{ needs.prepare.outputs.branch_name }}/index.html\">${{ needs.prepare.outputs.branch_name }}</a></li>" \
+            "${GH_PAGES_BRANCH}/api-index.html"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: ${{ needs.prepare.outputs.tag_name }}_doc_update_run_${{ github.run_id }}
+          title: Add the new C++ client release (`${{ needs.prepare.outputs.tag_name }}`) documentation
+          body: ""
+          path: ${{ env.GH_PAGES_BRANCH}}
