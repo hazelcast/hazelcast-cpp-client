@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "hazelcast-cpp-client",
-  "version": "5.5.0",
+  "version": "5.6.0",
   "builtin-baseline": "50c0cb48a0cf2f6fc5c7b2c0d2bafbe26d0a7ca2",
   "dependencies": [
     {
