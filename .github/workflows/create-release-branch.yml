@@ -4,30 +4,20 @@ on:
   workflow_dispatch:
     inputs:
       BRANCH_NAME:
-        description: The source branch to work with, if not implicit
-        required: false
+        description: The source branch to work with
+        required: true
       NEW_VERSION:
         description: New version to set in the source branch (e.g. 5.6.0)
         required: true
 
 jobs:
-  prepare:
-    name: Prepare
-    runs-on: ubuntu-latest
-    outputs:
-      branch_name: ${{ inputs.BRANCH_NAME || github.ref_name }}
-    steps:
-      - run: exit 0
-
   make-branch:
     name: Make branch
     runs-on: ubuntu-latest
-    needs:
-      - prepare
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ needs.prepare.outputs.branch_name }}
+          ref: ${{ inputs.BRANCH_NAME }}
 
       - name: Determine project version
         id: project_version
@@ -40,16 +30,14 @@ jobs:
           git push origin ${{ steps.project_version.outputs.version }}
 
   update-version:
-    name: Update version in `${{ needs.prepare.outputs.branch_name }}` to `${{ inputs.NEW_VERSION }}`
+    name: Update version in `${{ inputs.BRANCH_NAME }}` to `${{ inputs.NEW_VERSION }}`
     runs-on: ubuntu-latest
-    needs:
-      - prepare
     env:
         NEW_VERSION: ${{ inputs.NEW_VERSION }}
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ needs.prepare.outputs.branch_name }}
+          ref: ${{ inputs.BRANCH_NAME }}
 
       - name: Update `vcpkg.json`
         run: |
