@@ -60,12 +60,13 @@ jobs:
           sudo apt-get install -y doxygen
 
       - name: Generate Doxygen documentation
+        working-directory: repo
         run: |
-          doxygen repo/Doxyfile
+          doxygen
 
       - name: Post-process docs
         run: |
-          mv docs/html ${GH_PAGES_BRANCH}/${{ inputs.BRANCH_NAME }}
+          mv repo/docs/html ${GH_PAGES_BRANCH}/${{ inputs.BRANCH_NAME }}
 
           # doc-index.html
           sed -i \
