@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://hazelcast.com">
-        <img class="center" src="https://docs.hazelcast.com/_/img/hazelcast-logo.svg" alt="logo">
+        <img class="center" src="https://hazelcast.com/files/brand-images/logo/hazelcast-logo.svg" alt="logo">
     </a>
     <h2 align="center">Hazelcast C++ Client</h2>
 </p>
@@ -15,7 +15,7 @@
         <img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter">
     </a>
     <a href="LICENSE">
-        <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="Chat on Slack">
+        <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="Apache 2.0 license badge">
     </a>    
 </p>
 
