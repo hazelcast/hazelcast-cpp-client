@@ -4,16 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       BRANCH_NAME:
-        description: The branch to work with, if not implicit
-        required: false
+        description: The branch to work with
+        required: true
 
 jobs:
   prepare:
     name: Prepare
     runs-on: ubuntu-latest
     outputs:
-      branch_name: ${{ inputs.BRANCH_NAME || github.ref_name }}
-      tag_name: v${{ inputs.BRANCH_NAME || github.ref_name }}
+      tag_name: v${{ inputs.BRANCH_NAME }}
     steps:
       - run: exit 0
 
@@ -24,17 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ needs.prepare.outputs.branch_name }}
+          ref: ${{ inputs.BRANCH_NAME }}
           fetch-depth: 0
 
-      - name: Tag `${{ needs.prepare.outputs.branch_name }}` as `${{ needs.prepare.outputs.tag_name }}`
+      - name: Tag `${{ inputs.BRANCH_NAME }}` as `${{ needs.prepare.outputs.tag_name }}`
         run: |
-          git tag ${{ needs.prepare.outputs.tag_name }} origin/${{ needs.prepare.outputs.branch_name }}
+          git tag ${{ needs.prepare.outputs.tag_name }} origin/${{ inputs.BRANCH_NAME }}
           git push origin ${{ needs.prepare.outputs.tag_name }}
 
-      - name: Delete `${{ needs.prepare.outputs.branch_name }}`
+      - name: Delete `${{ inputs.BRANCH_NAME }}`
         run: |
-          git push origin --delete ${{ needs.prepare.outputs.branch_name }}
+          git push origin --delete ${{ inputs.BRANCH_NAME }}
 
   pages:
     name: Publish docs
@@ -66,16 +65,16 @@ jobs:
 
       - name: Post-process docs
         run: |
-          mv docs/html ${GH_PAGES_BRANCH}/${{ needs.prepare.outputs.branch_name }}
+          mv docs/html ${GH_PAGES_BRANCH}/${{ inputs.BRANCH_NAME }}
 
           # doc-index.html
           sed -i \
-            "/Development Branch/a\<li><a href=\"https://github.com/${GITHUB_REPOSITORY}/blob/${{ needs.prepare.outputs.tag_name }}/Reference_Manual.md\">${{ needs.prepare.outputs.branch_name }}</a></li>" \
+            "/Development Branch/a\<li><a href=\"https://github.com/${GITHUB_REPOSITORY}/blob/${{ needs.prepare.outputs.tag_name }}/Reference_Manual.md\">${{ inputs.BRANCH_NAME }}</a></li>" \
             "${GH_PAGES_BRANCH}/doc-index.html"
 
           # api-index.html
           sed -i \
-            "/<ul>/a\  <li><a href=\"${{ needs.prepare.outputs.branch_name }}/index.html\">${{ needs.prepare.outputs.branch_name }}</a></li>" \
+            "/<ul>/a\  <li><a href=\"${{ inputs.BRANCH_NAME }}/index.html\">${{ inputs.BRANCH_NAME }}</a></li>" \
             "${GH_PAGES_BRANCH}/api-index.html"
 
       - name: Create Pull Request
