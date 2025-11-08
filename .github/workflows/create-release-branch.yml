@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       BRANCH_NAME:
-        description: The source branch to work with
+        description: The source branch to create a release branch from
         required: true
       NEW_VERSION:
         description: New version to set in the source branch (e.g. 5.6.0)
