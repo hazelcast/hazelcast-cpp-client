@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://hazelcast.com">
-        <img class="center" src="https://hazelcast.com/files/brand-images/logo/hazelcast-logo.svg" alt="logo">
+        <img class="center" src="https://hazelcast.com/files/brand-images/logo/hazelcast-logo.svg" alt="Hazelcast logo">
     </a>
     <h2 align="center">Hazelcast C++ Client</h2>
 </p>
