@@ -3,41 +3,48 @@ name: Create release branch
 on:
   workflow_dispatch:
     inputs:
-      BRANCH_NAME:
+      SOURCE_BRANCH_NAME:
         description: The source branch to create a release branch from
         required: true
+      TARGET_BRANCH_NAME:
+        description: The target branch to create - optional, otherwise derived from the version in the source branch
+        required: false
       NEW_VERSION_TO_UPDATE_SOURCE_BRANCH_TO:
         description: New version to set in the source branch (e.g. 5.6.0)
         required: true
 
 jobs:
   make-branch:
-    name: Create release branch from `${{ inputs.BRANCH_NAME }}`
+    name: Create release branch from `${{ inputs.SOURCE_BRANCH_NAME }}`
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.BRANCH_NAME }}
+          ref: ${{ inputs.SOURCE_BRANCH_NAME }}
 
-      - name: Determine project version
-        id: project_version
+      - name: Derive target branch
+        id: derive_target_branch_name
         run: |
-          echo "version=$(jq --raw-output '.version' vcpkg.json)" >> ${GITHUB_OUTPUT}
+            if [[ -n "${{ inputs.TARGET_BRANCH_NAME }}" ]]; then
+              echo "name=${{ inputs.TARGET_BRANCH_NAME }}" >> "${GITHUB_OUTPUT}"
+            else
+              echo "name=$(jq --raw-output '.version' vcpkg.json)" >> "${GITHUB_OUTPUT}"
+            fi
 
-      - name: Create `${{ steps.project_version.outputs.version }}` branch
+      - name: Create `${{ steps.derive_target_branch_name.outputs.name }}` branch
         run: |
-          git checkout -b ${{ steps.project_version.outputs.version }}
-          git push origin ${{ steps.project_version.outputs.version }}
+          git checkout -b ${{ steps.derive_target_branch_name.outputs.name }}
+          git push origin ${{ steps.derive_target_branch_name.outputs.name }}
 
   update-version:
-    name: Update version in `${{ inputs.BRANCH_NAME }}` to `${{ inputs.NEW_VERSION_TO_UPDATE_SOURCE_BRANCH_TO }}`
+    name: Update version in `${{ inputs.SOURCE_BRANCH_NAME }}` to `${{ inputs.NEW_VERSION_TO_UPDATE_SOURCE_BRANCH_TO }}`
     runs-on: ubuntu-latest
     env:
         NEW_VERSION: ${{ inputs.NEW_VERSION_TO_UPDATE_SOURCE_BRANCH_TO }}
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.BRANCH_NAME }}
+          ref: ${{ inputs.SOURCE_BRANCH_NAME }}
 
       - name: Update `vcpkg.json`
         run: |
