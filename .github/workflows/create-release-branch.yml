@@ -30,7 +30,7 @@ jobs:
           git push origin ${{ steps.project_version.outputs.version }}
 
   update-version:
-    name: Update version in `${{ inputs.BRANCH_NAME }}` to `${{ inputs.NEXT_VERSION }}`
+    name: Update next version in `${{ inputs.BRANCH_NAME }}` to `${{ inputs.NEXT_VERSION }}`
     runs-on: ubuntu-latest
     env:
         NEW_VERSION: ${{ inputs.NEXT_VERSION }}
