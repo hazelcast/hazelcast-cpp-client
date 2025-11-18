@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: Report
         shell: bash
-        run: echo "User ${{ github.actor }} is trusted for PR execution"          
+        run: echo "User ${{ github.actor }} is trusted for test execution"          
 
 
   # get
