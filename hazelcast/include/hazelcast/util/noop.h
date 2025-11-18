@@ -27,6 +27,7 @@ namespace util {
 template<typename... Args>
 inline void
 noop(Args...)
-{}
+{
+}
 } // namespace util
 } // namespace hazelcast

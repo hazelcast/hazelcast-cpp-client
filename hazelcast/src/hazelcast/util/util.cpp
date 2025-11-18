@@ -543,7 +543,8 @@ SyncHttpClient::SyncHttpClient(const std::string& server_ip,
   , uri_path_(uri_path)
   , socket_(io_service_)
   , response_stream_(&response_)
-{}
+{
+}
 
 std::istream&
 SyncHttpClient::open_connection()
@@ -856,7 +857,8 @@ AddressHolder::AddressHolder(const std::string& address,
   : address_(address)
   , scope_id_(scope_id)
   , port_(port)
-{}
+{
+}
 
 std::ostream&
 operator<<(std::ostream& os, const AddressHolder& holder)
@@ -1126,7 +1128,8 @@ ByteBuffer::ByteBuffer(char* buffer, size_t capacity)
   , lim_(capacity)
   , capacity_(capacity)
   , buffer_(buffer)
-{}
+{
+}
 
 ByteBuffer&
 ByteBuffer::flip()
@@ -1236,11 +1239,13 @@ ByteBuffer::safe_increment_position(size_t t)
 
 hz_thread_pool::hz_thread_pool()
   : pool_(new boost::asio::thread_pool())
-{}
+{
+}
 
 hz_thread_pool::hz_thread_pool(size_t num_threads)
   : pool_(new boost::asio::thread_pool(num_threads))
-{}
+{
+}
 
 void
 hz_thread_pool::close()

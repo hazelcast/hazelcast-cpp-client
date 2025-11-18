@@ -60,19 +60,19 @@ public:
     /**
      *
      * @param number_of_bytes The zeros to be appended to the current buffer
-    */
+     */
     inline void write_zero_bytes(size_t number_of_bytes);
 
     /**
      *
      * @return Returns the current position
-    */
+     */
     inline size_t position() const;
 
     /**
      *
      * @param new_pos Sets the new position as specified
-    */
+     */
     inline void position(size_t new_pos);
 
     /**
@@ -209,27 +209,32 @@ protected:
     }
 };
 
-const std::vector<byte>& data_output::to_byte_array() const
+const std::vector<byte>&
+data_output::to_byte_array() const
 {
     return output_stream_;
 }
 
-void data_output::append_bytes(const std::vector<byte>& bytes)
+void
+data_output::append_bytes(const std::vector<byte>& bytes)
 {
     output_stream_.insert(output_stream_.end(), bytes.begin(), bytes.end());
 }
 
-void data_output::write_zero_bytes(size_t number_of_bytes)
+void
+data_output::write_zero_bytes(size_t number_of_bytes)
 {
     output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
 }
 
-size_t data_output::position() const
+size_t
+data_output::position() const
 {
     return output_stream_.size();
 }
 
-void data_output::position(size_t new_pos)
+void
+data_output::position(size_t new_pos)
 {
     if (is_no_write_) {
         return;

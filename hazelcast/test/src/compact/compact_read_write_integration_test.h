@@ -55,7 +55,8 @@ TEST_F(CompactReadWriteIntegrationTest, write_read_sql)
     sample_compact_type value{ 100 };
     auto map_name = random_string();
     auto key = random_string();
-    auto type_name = serialization::hz_serializer<sample_compact_type>::type_name();
+    auto type_name =
+      serialization::hz_serializer<sample_compact_type>::type_name();
 
     auto map = client->get_map(map_name).get();
 

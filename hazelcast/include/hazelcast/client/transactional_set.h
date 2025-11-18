@@ -53,7 +53,8 @@ private:
     transactional_set(const std::string& name,
                       txn::TransactionProxy& transaction_proxy)
       : TransactionalSetImpl(name, transaction_proxy)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

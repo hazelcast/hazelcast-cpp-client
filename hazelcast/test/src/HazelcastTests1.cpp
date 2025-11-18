@@ -543,7 +543,8 @@ namespace test {
 namespace rb {
 StartsWithStringFilter::StartsWithStringFilter(const std::string& start_string)
   : start_string_(start_string)
-{}
+{
+}
 } // namespace rb
 } // namespace test
 
@@ -1359,7 +1360,8 @@ class ClusterTest
 public:
     ClusterTest()
       : ssl_factory_(get_ssl_file_path())
-    {}
+    {
+    }
 
 protected:
     lifecycle_listener make_all_states_listener(boost::latch& starting,
@@ -2461,7 +2463,8 @@ protected:
 ClientTxnMapTest::ClientTxnMapTest()
   : instance_(default_server_factory())
   , client_(get_new_client())
-{}
+{
+}
 
 ClientTxnMapTest::~ClientTxnMapTest()
 {
@@ -2887,7 +2890,8 @@ protected:
 ClientTxnSetTest::ClientTxnSetTest()
   : instance_(default_server_factory())
   , client_(get_new_client())
-{}
+{
+}
 
 ClientTxnSetTest::~ClientTxnSetTest()
 {
@@ -3231,7 +3235,8 @@ protected:
 ClientTxnListTest::ClientTxnListTest()
   : instance_(default_server_factory())
   , client_(get_new_client())
-{}
+{
+}
 
 ClientTxnListTest::~ClientTxnListTest()
 {
@@ -3290,7 +3295,8 @@ protected:
 ClientTxnMultiMapTest::ClientTxnMultiMapTest()
   : instance_(default_server_factory())
   , client_(get_new_client())
-{}
+{
+}
 
 ClientTxnMultiMapTest::~ClientTxnMultiMapTest()
 {
@@ -3397,7 +3403,8 @@ protected:
 ClientTxnQueueTest::ClientTxnQueueTest()
   : instance_(default_server_factory())
   , client_(get_new_client())
-{}
+{
+}
 
 ClientTxnQueueTest::~ClientTxnQueueTest()
 {

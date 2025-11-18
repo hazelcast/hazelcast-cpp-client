@@ -31,7 +31,8 @@ namespace hazelcast {
 namespace client {
 hazelcast_json_value::hazelcast_json_value(std::string json_string)
   : json_string_(std::move(json_string))
-{}
+{
+}
 
 hazelcast_json_value::~hazelcast_json_value() = default;
 
@@ -68,14 +69,16 @@ operator<<(std::ostream& os, const hazelcast_json_value& value)
 
 typed_data::typed_data()
   : ss_(nullptr)
-{}
+{
+}
 
 typed_data::typed_data(
   serialization::pimpl::data d,
   serialization::pimpl::SerializationService& serialization_service)
   : data_(std::move(d))
   , ss_(&serialization_service)
-{}
+{
+}
 
 serialization::pimpl::object_type
 typed_data::get_type() const
@@ -104,14 +107,16 @@ portable_writer::portable_writer(
   : default_portable_writer_(default_portable_writer)
   , class_definition_writer_(nullptr)
   , is_default_writer_(true)
-{}
+{
+}
 
 portable_writer::portable_writer(
   pimpl::ClassDefinitionWriter* class_definition_writer)
   : default_portable_writer_(nullptr)
   , class_definition_writer_(class_definition_writer)
   , is_default_writer_(false)
-{}
+{
+}
 
 void
 portable_writer::end()
@@ -137,7 +142,8 @@ ClassDefinitionBuilder::ClassDefinitionBuilder(int factory_id,
   , version_(version)
   , index_(0)
   , done_(false)
-{}
+{
+}
 
 ClassDefinitionBuilder&
 ClassDefinitionBuilder::add_portable_field(const std::string& field_name,
@@ -259,7 +265,8 @@ FieldDefinition::FieldDefinition()
   , class_id_(0)
   , factory_id_(0)
   , version_(-1)
-{}
+{
+}
 
 FieldDefinition::FieldDefinition(int index,
                                  const std::string& field_name,
@@ -271,7 +278,8 @@ FieldDefinition::FieldDefinition(int index,
   , class_id_(0)
   , factory_id_(0)
   , version_(version)
-{}
+{
+}
 
 FieldDefinition::FieldDefinition(int index,
                                  const std::string& field_name,
@@ -285,7 +293,8 @@ FieldDefinition::FieldDefinition(int index,
   , class_id_(class_id)
   , factory_id_(factory_id)
   , version_(version)
-{}
+{
+}
 
 const field_type&
 FieldDefinition::get_type() const
@@ -377,7 +386,8 @@ object_data_input::object_data_input(
   , compact_serializer_(compact_ser)
   , data_serializer_(data_ser)
   , global_serializer_(std::move(global_serializer))
-{}
+{
+}
 
 object_data_output::object_data_output(
   boost::endian::order byte_order,
@@ -389,7 +399,8 @@ object_data_output::object_data_output(
   , portable_serializer_(portable_ser)
   , compact_serializer_(compact_ser)
   , global_serializer_(std::move(global_serializer))
-{}
+{
+}
 
 portable_reader::portable_reader(pimpl::PortableSerializer& portable_ser,
                                  object_data_input& input,
@@ -439,14 +450,16 @@ ClassDefinition::ClassDefinition()
   , class_id_(0)
   , version_(-1)
   , binary_(new std::vector<byte>)
-{}
+{
+}
 
 ClassDefinition::ClassDefinition(int factory_id, int class_id, int version)
   : factory_id_(factory_id)
   , class_id_(class_id)
   , version_(version)
   , binary_(new std::vector<byte>)
-{}
+{
+}
 
 void
 ClassDefinition::add_field_def(FieldDefinition& fd)
@@ -578,7 +591,8 @@ ClassDefinitionWriter::ClassDefinitionWriter(PortableContext& portable_context,
   , empty_data_output_(
       portable_context.get_serialization_config().get_byte_order(),
       true)
-{}
+{
+}
 
 std::shared_ptr<ClassDefinition>
 ClassDefinitionWriter::register_and_get()
@@ -595,7 +609,8 @@ ClassDefinitionWriter::get_raw_data_output()
 
 void
 ClassDefinitionWriter::end()
-{}
+{
+}
 
 data_output::data_output(boost::endian::order byte_order, bool dont_write)
   : byte_order_(byte_order)
@@ -735,8 +750,9 @@ data_output::write(boost::uuids::uuid v)
         boost::endian::endian_reverse_inplace<int64_t>(
           *reinterpret_cast<int64_t*>(&v.data[util::Bits::LONG_SIZE_IN_BYTES]));
     }
-    output_stream_.insert(
-      output_stream_.end(), &v.data[0], &v.data[util::Bits::UUID_SIZE_IN_BYTES]);
+    output_stream_.insert(output_stream_.end(),
+                          &v.data[0],
+                          &v.data[util::Bits::UUID_SIZE_IN_BYTES]);
 }
 
 template<>
@@ -821,7 +837,8 @@ object_type::object_type()
   : type_id(serialization_constants::CONSTANT_TYPE_NULL)
   , factory_id(-1)
   , class_id(-1)
-{}
+{
+}
 
 std::ostream&
 operator<<(std::ostream& os, const object_type& type)
@@ -839,7 +856,8 @@ DataSerializer::read_int(object_data_input& in) const
 
 PortableContext::PortableContext(const serialization_config& serialization_conf)
   : serialization_config_(serialization_conf)
-{}
+{
+}
 
 int
 PortableContext::get_class_version(int factory_id, int class_id)
@@ -977,7 +995,8 @@ SerializationService::SerializationService(
   , portable_context_(serialization_config_)
   , portable_serializer_(portable_context_)
   , compact_serializer_(schema_service)
-{}
+{
+}
 
 DefaultPortableWriter::DefaultPortableWriter(
   PortableSerializer& portable_ser,
@@ -1132,7 +1151,8 @@ SerializationService::get_object_type(const data* data)
 
 void
 SerializationService::dispose()
-{}
+{
+}
 
 PortableSerializer&
 SerializationService::get_portable_serializer()
@@ -1186,7 +1206,8 @@ unsigned int data::DATA_OVERHEAD = data::DATA_OFFSET;
 
 data::data()
   : cached_hash_value_(-1)
-{}
+{
+}
 
 data::data(std::vector<byte> buffer, schemas_t s)
   : data_(std::move(buffer))
@@ -1298,7 +1319,8 @@ ClassDefinitionContext::ClassDefinitionContext(
   PortableContext* portable_context)
   : factory_id_(factory_id)
   , portable_context_(portable_context)
-{}
+{
+}
 
 int
 ClassDefinitionContext::get_class_version(int class_id)
@@ -1373,7 +1395,8 @@ DefaultPortableReader::DefaultPortableReader(
   object_data_input& input,
   std::shared_ptr<ClassDefinition> cd)
   : PortableReaderBase(portable_ser, input, cd)
-{}
+{
+}
 
 PortableReaderBase::PortableReaderBase(PortableSerializer& portable_ser,
                                        object_data_input& input,
@@ -1491,11 +1514,13 @@ MorphingPortableReader::MorphingPortableReader(
   object_data_input& input,
   std::shared_ptr<ClassDefinition> cd)
   : PortableReaderBase(portable_ser, input, cd)
-{}
+{
+}
 
 PortableSerializer::PortableSerializer(PortableContext& portable_context)
   : context_(portable_context)
-{}
+{
+}
 
 portable_reader
 PortableSerializer::create_reader(object_data_input& input,

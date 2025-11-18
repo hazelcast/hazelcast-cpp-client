@@ -104,7 +104,8 @@ class exception_builder
 public:
     explicit exception_builder(const std::string& source)
       : source_(source)
-    {}
+    {
+    }
 
     template<typename T>
     exception_builder& operator<<(const T& message)

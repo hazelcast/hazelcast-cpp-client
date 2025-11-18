@@ -60,7 +60,8 @@ struct hz_serializer<employee_raise_entry_processor>
     static void write_data(
       const employee_raise_entry_processor& object,
       hazelcast::client::serialization::object_data_output& out)
-    {}
+    {
+    }
 
     employee_raise_entry_processor read_data(
       hazelcast::client::serialization::object_data_input& in)

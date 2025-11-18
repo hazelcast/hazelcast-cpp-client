@@ -52,7 +52,8 @@ public:
       , last_stored_time(lastStoredTime)
       , last_update_time(lastUpdateTime)
       , version(version)
-    {}
+    {
+    }
 
     /**
      * key

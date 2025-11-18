@@ -82,7 +82,8 @@ public:
 private:
     pn_counter(const std::string& object_name, spi::ClientContext* context)
       : PNCounterImpl(SERVICE_NAME, object_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

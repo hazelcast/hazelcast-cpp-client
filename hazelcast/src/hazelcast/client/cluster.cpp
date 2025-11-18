@@ -33,7 +33,8 @@ namespace hazelcast {
 namespace client {
 cluster::cluster(spi::impl::ClientClusterServiceImpl& cluster_service)
   : cluster_service_(cluster_service)
-{}
+{
+}
 
 std::vector<member>
 cluster::get_members()
@@ -56,7 +57,8 @@ cluster::remove_membership_listener(boost::uuids::uuid registration_id)
 member::member()
   : lite_member_(false)
   , version_{ 0, 0, 0 }
-{}
+{
+}
 
 member::member(address member_address,
                boost::uuids::uuid uuid,
@@ -70,19 +72,22 @@ member::member(address member_address,
   , attributes_(std::move(attr))
   , address_map_(std::move(address_map))
   , version_(v)
-{}
+{
+}
 
 member::member(address member_address)
   : address_(member_address)
   , lite_member_(false)
   , version_{ 0, 0, 0 }
-{}
+{
+}
 
 member::member(boost::uuids::uuid uuid)
   : uuid_(uuid)
   , lite_member_(false)
   , version_{ 0, 0, 0 }
-{}
+{
+}
 
 const address&
 member::get_address() const
@@ -170,7 +175,8 @@ endpoint::endpoint(boost::uuids::uuid uuid,
                    boost::optional<address> socket_address)
   : uuid_(uuid)
   , socket_address_(std::move(socket_address))
-{}
+{
+}
 
 boost::uuids::uuid
 endpoint::get_uuid() const
@@ -195,7 +201,8 @@ membership_event::membership_event(
   , member_(m)
   , event_type_(event_type)
   , members_(members_list)
-{}
+{
+}
 
 membership_event::~membership_event() = default;
 
@@ -230,7 +237,8 @@ local_endpoint::local_endpoint(boost::uuids::uuid uuid,
   : endpoint(uuid, std::move(socket_address))
   , name_(std::move(name))
   , labels_(std::move(labels))
-{}
+{
+}
 
 const std::string&
 local_endpoint::get_name() const

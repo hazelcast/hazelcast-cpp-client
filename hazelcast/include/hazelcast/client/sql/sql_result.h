@@ -67,10 +67,10 @@ class sql_service;
 class HAZELCAST_API sql_result : public std::enable_shared_from_this<sql_result>
 {
 public:
-
     /**
-     * Copy is allowed for convenience but it does shallow copy so it should be avoided.
-    */
+     * Copy is allowed for convenience but it does shallow copy so it should be
+     * avoided.
+     */
     class HAZELCAST_API page_iterator
     {
     public:
@@ -98,7 +98,6 @@ public:
         bool has_next() const;
 
     private:
-
         std::shared_ptr<std::atomic<bool>> in_progress_;
         std::shared_ptr<std::atomic<bool>> last_;
         std::shared_ptr<sql_row_metadata> row_metadata_;
@@ -108,8 +107,9 @@ public:
     };
 
     /**
-     * Copy is allowed for convenience but it does shallow copy so it should be avoided.
-    */
+     * Copy is allowed for convenience but it does shallow copy so it should be
+     * avoided.
+     */
     class HAZELCAST_API page_iterator_sync
     {
     public:
@@ -121,12 +121,12 @@ public:
 
         /**
          * Sets timeout for page fetch operation.
-        */
+         */
         void set_timeout(std::chrono::milliseconds);
 
         /**
          * Retrieves the timeout
-        */
+         */
         std::chrono::milliseconds timeout() const;
 
         friend HAZELCAST_API bool operator==(const page_iterator_sync&,
@@ -134,35 +134,35 @@ public:
         friend HAZELCAST_API bool operator!=(const page_iterator_sync&,
                                              const page_iterator_sync&);
 
-
         /**
          * Dereferences current page. It doesn't block.
          *
-         * @throws exception::no_such_element if the iterator points to the past-end
-        */
+         * @throws exception::no_such_element if the iterator points to the
+         * past-end
+         */
         std::shared_ptr<sql_page> operator*() const;
 
         /**
          * Dereferences current page.
          *
          * @throws no_such_element if the iterator points to the past-end
-        */
+         */
         std::shared_ptr<sql_page> operator->() const;
 
         /**
          * Post increment operator is deleted.
-        */
+         */
         page_iterator_sync operator++(int) = delete;
 
         /**
          * Fetches next page with blocking manner.
-         * 
-         * @throws exception::no_such_element if the iterator points to the past-end or operation is timedout.
-        */
+         *
+         * @throws exception::no_such_element if the iterator points to the
+         * past-end or operation is timedout.
+         */
         page_iterator_sync& operator++();
 
     private:
-
         friend class sql_result;
         page_iterator_sync(page_iterator&&, std::chrono::milliseconds timeout);
         page_iterator_sync() = default;
@@ -181,8 +181,9 @@ public:
     };
 
     /**
-     * Copy is allowed for convenience but it does shallow copy so it should be avoided.
-    */
+     * Copy is allowed for convenience but it does shallow copy so it should be
+     * avoided.
+     */
     class HAZELCAST_API row_iterator_sync
     {
     public:
@@ -194,12 +195,12 @@ public:
 
         /**
          * Sets timeout for page fetch operation.
-        */
+         */
         void set_timeout(std::chrono::milliseconds);
 
         /**
          * Retrieves the timeout
-        */
+         */
         std::chrono::milliseconds timeout() const;
 
         friend HAZELCAST_API bool operator==(const row_iterator_sync&,
@@ -208,34 +209,38 @@ public:
                                              const row_iterator_sync&);
 
         /**
-         * Returns current row. It might block in case of the current page is empty.
+         * Returns current row. It might block in case of the current page is
+         * empty.
          *
-         * @throws exception::no_such_element if the iterator points to the past-end
-        */
+         * @throws exception::no_such_element if the iterator points to the
+         * past-end
+         */
         const sql_page::sql_row& operator*() const;
 
-
         /**
-         * Returns current row. It might block in case of the current page is empty.
+         * Returns current row. It might block in case of the current page is
+         * empty.
          *
-         * @throws exception::no_such_element if the iterator points to the past-end
-        */
+         * @throws exception::no_such_element if the iterator points to the
+         * past-end
+         */
         const sql_page::sql_row* operator->() const;
 
         /**
          * Post increment operator is deleted because copy is discouraged.
-        */
+         */
         row_iterator_sync operator++(int) = delete;
 
         /**
-         * Fetches next row in blocking manner. If page is already fetched, it doesn't block, otherwise it blocks.
+         * Fetches next row in blocking manner. If page is already fetched, it
+         * doesn't block, otherwise it blocks.
          *
-         * @throws exception::no_such_element if the iterator points to the past-end or operation is timedout.
-        */
+         * @throws exception::no_such_element if the iterator points to the
+         * past-end or operation is timedout.
+         */
         row_iterator_sync& operator++();
 
     private:
-
         friend class sql_result;
         row_iterator_sync(page_iterator_sync&&);
         row_iterator_sync() = default;
@@ -336,15 +341,14 @@ private:
      * @param first_page The first page of the sql result
      * @param cursor_buffer_size The cursor buffer size of the sql result
      */
-    sql_result(
-      spi::ClientContext* client_context,
-      sql_service* service,
-      std::shared_ptr<connection::Connection> connection,
-      impl::query_id id,
-      int64_t update_count,
-      std::shared_ptr<sql_row_metadata> row_metadata,
-      std::shared_ptr<sql_page> first_page,
-      int32_t cursor_buffer_size);
+    sql_result(spi::ClientContext* client_context,
+               sql_service* service,
+               std::shared_ptr<connection::Connection> connection,
+               impl::query_id id,
+               int64_t update_count,
+               std::shared_ptr<sql_row_metadata> row_metadata,
+               std::shared_ptr<sql_page> first_page,
+               int32_t cursor_buffer_size);
 
 private:
     boost::future<std::shared_ptr<sql_page>> fetch_page();
