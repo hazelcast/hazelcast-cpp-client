@@ -1,10 +1,3 @@
-<!-- THIS FILE IS AUTO GENERATED FILE.
-     MODIFY Reference_Manual.md.in TO MAKE CHANGES.
-     If you make any changes in Reference_Manual.md.in file,
-     you need to build the project which will re-generate the Reference_Manual.md file
-     and commit this generated reference manual in the github repository.
--->
-
 # Hazelcast C++ Client Library
 <!--ts-->
    * [Hazelcast C++ Client Library](#hazelcast-c-client-library)
