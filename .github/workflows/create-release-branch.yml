@@ -29,28 +29,45 @@ jobs:
           git checkout -b ${{ steps.project_version.outputs.version }}
           git push origin ${{ steps.project_version.outputs.version }}
 
+      # https://github.com/madhead/semver-utils/releases/tag/v4.3.0
+      - uses: madhead/semver-utils@36d1e0ed361bd7b4b77665de8093092eaeabe6ba
+        id: parse-version
+        with:
+          version: ${{ steps.project_version.outputs.version }}
+
+      - name: Compute Z-Branch name
+        if: steps.parse-version.outputs.patch == '0'
+        id: compute-z-branch-name
+        run: |
+          echo "name=${{ steps.parse-version.outputs.major }}.${{ steps.parse-version.outputs.minor }}.z" >> ${GITHUB_OUTPUT}
+
+      - name: Create `${{ steps.compute-z-branch-name.outputs.name }}` branch
+        if: steps.parse-version.outputs.patch == '0'
+        run: |
+          git checkout -b ${{ steps.compute-z-branch-name.outputs.name }}
+          git push origin ${{ steps.compute-z-branch-name.outputs.name }}
+
+      - if: steps.parse-version.outputs.patch == '0'
+        uses: hazelcast/hazelcast-cpp-client/.github/actions/update-project-version@master
+        with:
+          NEXT_VERSION: ${{ steps.parse-version.outputs.inc-patch }}
+
   update-version:
     name: Update next version in `${{ inputs.BRANCH_NAME }}` to `${{ inputs.NEXT_VERSION }}`
     runs-on: ubuntu-latest
-    env:
-        NEW_VERSION: ${{ inputs.NEXT_VERSION }}
     steps:
       - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH_NAME }}
 
-      - name: Update `vcpkg.json`
-        run: |
-            cat <<< $(jq --arg ver "${NEW_VERSION}" '.version = $ver' vcpkg.json) > vcpkg.json
-
-      - name: Update `CMakeLists.txt`s
-        run: |
-            find . -name 'CMakeLists.txt' | \
-                xargs perl -0777 -i -pe 's/(project\s*\([^)]*?\bVERSION\s+)\S+/\1$ENV{NEW_VERSION}/s'
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+      - uses: hazelcast/hazelcast-cpp-client/.github/actions/update-project-version@master
         with:
-          branch: Update_version_to_${{ inputs.NEXT_VERSION }}_run_${{ github.run_id }}
-          title: Update development version to `${{ inputs.NEXT_VERSION }}`
-          body: ""
+          NEXT_VERSION: ${{ inputs.NEXT_VERSION }}
+
+      - name: Create milestone
+        run: |
+            gh api \
+              /repos/${GITHUB_REPOSITORY}/milestones \
+              --field title='${{ inputs.NEXT_VERSION }}'
+        env:
+            GH_TOKEN: ${{ github.token }}
