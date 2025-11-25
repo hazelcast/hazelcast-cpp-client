@@ -75,11 +75,13 @@ initial_membership_event::initial_membership_event(
   std::unordered_set<member> members)
   : cluster_(cluster)
   , members_(std::move(members))
-{}
+{
+}
 
 lifecycle_event::lifecycle_event(lifecycle_state state)
   : state_(state)
-{}
+{
+}
 
 lifecycle_event::lifecycle_state
 lifecycle_event::get_state() const
@@ -90,11 +92,13 @@ lifecycle_event::get_state() const
 namespace spi {
 ProxyManager::ProxyManager(ClientContext& context)
   : client_(context)
-{}
+{
+}
 
 void
 ProxyManager::init()
-{}
+{
+}
 
 void
 ProxyManager::destroy()
@@ -181,12 +185,14 @@ ProxyManager::destroy_proxy(ClientProxy& proxy)
 
 ClientContext::ClientContext(const client::hazelcast_client& hazelcast_client)
   : hazelcast_client_(*hazelcast_client.client_impl_)
-{}
+{
+}
 
 ClientContext::ClientContext(
   client::impl::hazelcast_client_instance_impl& hazelcast_client)
   : hazelcast_client_(hazelcast_client)
-{}
+{
+}
 
 serialization::pimpl::SerializationService&
 ClientContext::get_serialization_service()
@@ -546,7 +552,8 @@ DefaultObjectNamespace::DefaultObjectNamespace(const std::string& service,
                                                const std::string& object)
   : service_name_(service)
   , object_name_(object)
-{}
+{
+}
 
 const std::string&
 DefaultObjectNamespace::get_service_name() const
@@ -573,7 +580,8 @@ ClientProxy::ClientProxy(const std::string& name,
   : name_(name)
   , service_name_(service_name)
   , context_(context)
-{}
+{
+}
 
 ClientProxy::~ClientProxy() = default;
 
@@ -597,7 +605,8 @@ ClientProxy::get_context()
 
 void
 ClientProxy::on_destroy()
-{}
+{
+}
 
 boost::future<void>
 ClientProxy::destroy()
@@ -627,15 +636,18 @@ ClientProxy::pre_destroy()
 
 void
 ClientProxy::post_destroy()
-{}
+{
+}
 
 void
 ClientProxy::on_initialize()
-{}
+{
+}
 
 void
 ClientProxy::on_shutdown()
-{}
+{
+}
 
 serialization::pimpl::SerializationService&
 ClientProxy::get_serialization_service()
@@ -706,11 +718,13 @@ ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext& client)
   , backup_timeout_(
       std::chrono::milliseconds(client.get_client_properties().get_integer(
         client.get_client_properties().backup_timeout_millis())))
-{}
+{
+}
 
 void
 ClientInvocationServiceImpl::start()
-{}
+{
+}
 
 void
 ClientInvocationServiceImpl::add_backup_listener()
@@ -718,8 +732,9 @@ ClientInvocationServiceImpl::add_backup_listener()
     if (this->backup_acks_enabled_) {
         auto& listener_service = this->client_.get_client_listener_service();
         listener_service
-          .register_listener(std::make_shared<BackupListenerMessageCodec>(),
-                             std::make_shared<noop_backup_event_handler>(logger_))
+          .register_listener(
+            std::make_shared<BackupListenerMessageCodec>(),
+            std::make_shared<noop_backup_event_handler>(logger_))
           .get();
     }
 }
@@ -860,7 +875,8 @@ ClientInvocationServiceImpl::invoke(
 DefaultAddressProvider::DefaultAddressProvider(
   config::client_network_config& network_config)
   : network_config_(network_config)
-{}
+{
+}
 
 std::vector<address>
 DefaultAddressProvider::load_addresses()
@@ -903,7 +919,8 @@ ClientClusterServiceImpl::ClientClusterServiceImpl(
   , member_list_snapshot_(EMPTY_SNAPSHOT)
   , labels_(client.get_client_config().get_labels())
   , initial_list_fetched_latch_(1)
-{}
+{
+}
 
 boost::uuids::uuid
 ClientClusterServiceImpl::add_membership_listener_without_init(
@@ -2123,7 +2140,8 @@ impl::ClientTransactionManagerServiceImpl::get_client() const
 ClientTransactionManagerServiceImpl::ClientTransactionManagerServiceImpl(
   ClientContext& client)
   : client_(client)
-{}
+{
+}
 
 std::shared_ptr<connection::Connection>
 ClientTransactionManagerServiceImpl::connect()
@@ -2236,7 +2254,8 @@ ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext& client)
   , partition_count_(0)
   , partition_table_(
       boost::shared_ptr<partition_table>(new partition_table{ 0, -1 }))
-{}
+{
+}
 
 void
 ClientPartitionServiceImpl::handle_event(
@@ -2440,12 +2459,14 @@ ClientPartitionServiceImpl::PartitionImpl::PartitionImpl(
   : partition_id_(partition_id)
   , client_(client)
   , partition_service_(partition_service)
-{}
+{
+}
 
 namespace sequence {
 CallIdSequenceWithoutBackpressure::CallIdSequenceWithoutBackpressure()
   : head_(0)
-{}
+{
+}
 
 CallIdSequenceWithoutBackpressure::~CallIdSequenceWithoutBackpressure() =
   default;
@@ -2605,7 +2626,8 @@ CallIdSequenceWithBackpressure::handle_no_space_left()
 FailFastCallIdSequence::FailFastCallIdSequence(
   int32_t max_concurrent_invocations)
   : AbstractCallIdSequence(max_concurrent_invocations)
-{}
+{
+}
 
 void
 FailFastCallIdSequence::handle_no_space_left()
@@ -2976,7 +2998,8 @@ cluster_view_listener::connection_removed(
 
 cluster_view_listener::cluster_view_listener(ClientContext& client_context)
   : client_context_(client_context)
-{}
+{
+}
 
 void
 cluster_view_listener::try_register(
@@ -3112,11 +3135,12 @@ cluster_view_listener::event_handler::handle_clusterversion(
 cluster_view_listener::event_handler::event_handler(
   int connectionId,
   cluster_view_listener& viewListener,
-  logger &logger)
+  logger& logger)
   : protocol::codec::client_addclusterviewlistener_handler(logger)
   , connection_id(connectionId)
   , view_listener(viewListener)
-{}
+{
+}
 } // namespace listener
 
 protocol::ClientMessage
@@ -3152,7 +3176,8 @@ remote_address_provider::remote_address_provider(
   bool use_public)
   : refresh_address_map_(std::move(addr_map_method))
   , use_public_(use_public)
-{}
+{
+}
 
 std::vector<address>
 remote_address_provider::load_addresses()
@@ -3205,12 +3230,15 @@ cloud_discovery::cloud_discovery(config::cloud_config& config,
   : cloud_config_(config)
   , cloud_base_url_(cloud_base_url)
   , timeout_(timeout)
-{}
+{
+}
 #else
-cloud_discovery::cloud_discovery(config::cloud_config& /* config */,
-                                 std::string /* cloud_base_url */,
-                                 std::chrono::steady_clock::duration /* timeout */)
-{}
+cloud_discovery::cloud_discovery(
+  config::cloud_config& /* config */,
+  std::string /* cloud_base_url */,
+  std::chrono::steady_clock::duration /* timeout */)
+{
+}
 #endif // HZ_BUILD_WITH_SSL
 
 std::unordered_map<address, address>

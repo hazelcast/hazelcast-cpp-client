@@ -307,7 +307,8 @@ public:
 private:
     replicated_map(const std::string& object_name, spi::ClientContext* context)
       : proxy::ReplicatedMapImpl(SERVICE_NAME, object_name, context)
-    {}
+    {
+    }
 
     template<typename HANDLER>
     class EntryEventHandler : public HANDLER
@@ -325,7 +326,8 @@ private:
           , serialization_service_(serialization_service)
           , listener_(std::move(listener))
           , logger_(lg)
-        {}
+        {
+        }
 
         void handle_entry(
           const boost::optional<serialization::pimpl::data>& key,
@@ -362,7 +364,8 @@ private:
           const boost::optional<serialization::pimpl::data>& /* key */,
           const boost::optional<serialization::pimpl::data>& /* value */,
           const boost::optional<serialization::pimpl::data>& /* old_value */,
-          const boost::optional<serialization::pimpl::data>& /* merging_value */,
+          const boost::optional<
+            serialization::pimpl::data>& /* merging_value */,
           int32_t event_type,
           boost::uuids::uuid uuid,
           int32_t number_of_affected_entries)

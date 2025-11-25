@@ -31,7 +31,7 @@ struct HAZELCAST_API sql_column_metadata
     bool nullable;
 
     friend bool HAZELCAST_API operator==(const sql_column_metadata& lhs,
-                    const sql_column_metadata& rhs);
+                                         const sql_column_metadata& rhs);
 };
 
 } // namespace sql

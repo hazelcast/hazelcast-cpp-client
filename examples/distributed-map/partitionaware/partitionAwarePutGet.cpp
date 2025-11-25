@@ -21,7 +21,8 @@ struct PartitionAwareString
 {
     PartitionAwareString(const std::string& actual_key)
       : actual_key(actual_key)
-    {}
+    {
+    }
 
     const std::string* get_partition_key() const override
     {

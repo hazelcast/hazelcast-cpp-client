@@ -51,7 +51,8 @@ public:
                       const std::shared_ptr<VS> entry_value)
           : key_(entry_key)
           , value_(entry_value)
-        {}
+        {
+        }
 
         const std::shared_ptr<KS>& get_entry_key() const { return key_; }
 

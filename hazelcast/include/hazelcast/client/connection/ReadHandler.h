@@ -30,7 +30,8 @@
 namespace hazelcast {
 namespace client {
 
-namespace serialization {}
+namespace serialization {
+}
 namespace spi {
 class ClientContext;
 }

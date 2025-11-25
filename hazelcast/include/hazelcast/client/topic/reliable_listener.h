@@ -206,7 +206,7 @@ private:
     exception_handler_t terminal_{ [](const exception::iexception&) {
         return false;
     } };
-    on_cancel_handler_t on_cancel_{util::noop<>};
+    on_cancel_handler_t on_cancel_{ util::noop<> };
 };
 
 } // namespace topic

@@ -48,7 +48,8 @@ public:
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io)
-    {}
+    {
+    }
 
 #ifdef HZ_BUILD_WITH_SSL
 
@@ -69,7 +70,8 @@ public:
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io, context)
-    {}
+    {
+    }
 #endif // HZ_BUILD_WITH_SSL
 
     void connect(
@@ -117,31 +119,32 @@ public:
     {
         check_connection(connection, invocation);
         auto message = invocation->get_client_message();
-        boost::asio::post(socket_strand_, [connection, invocation, message, this]() mutable {
-            if (!check_connection(connection, invocation)) {
-                return;
-            }
+        boost::asio::post(
+          socket_strand_, [connection, invocation, message, this]() mutable {
+              if (!check_connection(connection, invocation)) {
+                  return;
+              }
 
-            add_invocation_to_map(connection, invocation, message);
+              add_invocation_to_map(connection, invocation, message);
 
-            auto& datas = message->get_buffer();
+              auto& datas = message->get_buffer();
 
-            entry outbox_entry;
-            outbox_entry.buffers.reserve(datas.size());
-            for (const auto& data : datas) {
-                outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
-            }
-            outbox_entry.message = std::move(message);
-            outbox_entry.invocation = std::move(invocation);
-            this->outbox_.push_back(std::move(outbox_entry));
+              entry outbox_entry;
+              outbox_entry.buffers.reserve(datas.size());
+              for (const auto& data : datas) {
+                  outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
+              }
+              outbox_entry.message = std::move(message);
+              outbox_entry.invocation = std::move(invocation);
+              this->outbox_.push_back(std::move(outbox_entry));
 
-            if (this->outbox_.size() > 1) {
-                // async write is in progress
-                return;
-            }
+              if (this->outbox_.size() > 1) {
+                  // async write is in progress
+                  return;
+              }
 
-            do_write(connection);
-        });
+              do_write(connection);
+          });
     }
 
     // always called from within the socket_strand_
@@ -248,28 +251,27 @@ protected:
 
     void do_write(const std::shared_ptr<connection::Connection> connection)
     {
-        auto handler =
-          [connection, this](const boost::system::error_code& ec,
-                             std::size_t /* bytes_written */) {
-              auto invocation = std::move(outbox_[0].invocation);
-              this->outbox_.pop_front();
+        auto handler = [connection, this](const boost::system::error_code& ec,
+                                          std::size_t /* bytes_written */) {
+            auto invocation = std::move(outbox_[0].invocation);
+            this->outbox_.pop_front();
 
-              if (ec) {
-                  auto message =
-                    (boost::format{ "Error %1% during invocation write for %2% "
-                                    "on connection %3%" } %
-                     ec % *invocation % *connection)
-                      .str();
-                  connection->close(message);
-              } else {
-                  // update the connection write time
-                  connection->last_write_time(std::chrono::steady_clock::now());
+            if (ec) {
+                auto message =
+                  (boost::format{ "Error %1% during invocation write for %2% "
+                                  "on connection %3%" } %
+                   ec % *invocation % *connection)
+                    .str();
+                connection->close(message);
+            } else {
+                // update the connection write time
+                connection->last_write_time(std::chrono::steady_clock::now());
 
-                  if (!this->outbox_.empty()) {
-                      do_write(connection);
-                  }
-              }
-          };
+                if (!this->outbox_.empty()) {
+                    do_write(connection);
+                }
+            }
+        };
 
         const auto& message = outbox_[0].buffers;
         boost::asio::async_write(

@@ -36,7 +36,8 @@ public:
       : client_(hazelcast::new_client().get())
       , map_(client_.get_map("map").get())
       , gen_(rd_())
-    {}
+    {
+    }
 
     void init()
     {

@@ -36,7 +36,8 @@ struct sample_compact_type
 namespace serialization {
 
 template<>
-struct hz_serializer<test::compact::sample_compact_type> : compact::compact_serializer
+struct hz_serializer<test::compact::sample_compact_type>
+  : compact::compact_serializer
 {
     static void write(const test::compact::sample_compact_type& object,
                       compact::compact_writer& writer)
@@ -46,7 +47,8 @@ struct hz_serializer<test::compact::sample_compact_type> : compact::compact_seri
                                                          object.nested);
     }
 
-    static test::compact::sample_compact_type read(compact::compact_reader& reader)
+    static test::compact::sample_compact_type read(
+      compact::compact_reader& reader)
     {
         test::compact::sample_compact_type object;
 

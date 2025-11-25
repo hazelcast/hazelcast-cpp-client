@@ -31,7 +31,8 @@ NearCacheManager::NearCacheManager(
   : execution_service_(es)
   , serialization_service_(ss)
   , logger_(lg)
-{}
+{
+}
 
 bool
 NearCacheManager::clear_near_cache(const std::string& name)
@@ -94,7 +95,8 @@ NearCacheDataRecord::NearCacheDataRecord(
   : AbstractNearCacheRecord<serialization::pimpl::data>(data_value,
                                                         create_time,
                                                         expiry_time)
-{}
+{
+}
 } // namespace record
 
 KeyStateMarkerImpl::KeyStateMarkerImpl(int count)
@@ -199,11 +201,13 @@ TrueMarkerImpl::try_remove(const serialization::pimpl::data& /* key */)
 
 void
 TrueMarkerImpl::force_unmark(const serialization::pimpl::data& /* key */)
-{}
+{
+}
 
 void
 TrueMarkerImpl::init()
-{}
+{
+}
 
 const std::unique_ptr<KeyStateMarker> KeyStateMarker::TRUE_MARKER =
   std::unique_ptr<KeyStateMarker>(new TrueMarkerImpl());

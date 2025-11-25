@@ -527,24 +527,25 @@ public:
     generic_record_builder& set_array_of_boolean(std::string field_name,
                                                  std::vector<bool> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice.
-	 *
-	 * @param field_name name of the field as it is defined in its schema
-	 * definition.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema definition or the type of the field does not match
-	 * the one in the schema definition or the same field is trying to be set
-	 * without using
-	 *                                            {@link
-	 *                                            generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_boolean(std::string field_name,
-		std::initializer_list<bool> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice.
+     *
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema definition or the type of the field does not match
+     * the one in the schema definition or the same field is trying to be set
+     * without using
+     *                                            {@link
+     *                                            generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_boolean(
+      std::string field_name,
+      std::initializer_list<bool> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -585,24 +586,25 @@ public:
     generic_record_builder& set_array_of_int8(std::string field_name,
                                               std::vector<int8_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice.
-	 *
-	 * @param field_name name of the field as it is defined in its schema
-	 * definition.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema definition or the type of the field does not match
-	 * the one in the schema definition or the same field is trying to be set
-	 * without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_int8(std::string field_name,
-		std::initializer_list<int8_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice.
+     *
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema definition or the type of the field does not match
+     * the one in the schema definition or the same field is trying to be set
+     * without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_int8(
+      std::string field_name,
+      std::initializer_list<int8_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -643,24 +645,25 @@ public:
     generic_record_builder& set_array_of_int16(std::string field_name,
                                                std::vector<int16_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice.
-	 *
-	 * @param field_name name of the field as it is defined in its schema
-	 * definition.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema definition or the type of the field does not match
-	 * the one in the schema definition or the same field is trying to be set
-	 * without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_int16(std::string field_name,
-		std::initializer_list<int16_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice.
+     *
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema definition or the type of the field does not match
+     * the one in the schema definition or the same field is trying to be set
+     * without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_int16(
+      std::string field_name,
+      std::initializer_list<int16_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -701,24 +704,25 @@ public:
     generic_record_builder& set_array_of_int32(std::string field_name,
                                                std::vector<int32_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice.
-	 *
-	 * @param field_name name of the field as it is defined in its schema
-	 * definition.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema definition or the type of the field does not match
-	 * the one in the schema definition or the same field is trying to be set
-	 * without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_int32(std::string field_name,
-		std::initializer_list<int32_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice.
+     *
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema definition or the type of the field does not match
+     * the one in the schema definition or the same field is trying to be set
+     * without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_int32(
+      std::string field_name,
+      std::initializer_list<int32_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -759,24 +763,25 @@ public:
     generic_record_builder& set_array_of_int64(std::string field_name,
                                                std::vector<int64_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice.
-	 *
-	 * @param field_name name of the field as it is defined in its schema
-	 * definition.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema definition or the type of the field does not match
-	 * the one in the schema definition or the same field is trying to be set
-	 * without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_int64(std::string field_name,
-		std::initializer_list<int64_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice.
+     *
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema definition or the type of the field does not match
+     * the one in the schema definition or the same field is trying to be set
+     * without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_int64(
+      std::string field_name,
+      std::initializer_list<int64_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -817,24 +822,25 @@ public:
     generic_record_builder& set_array_of_float32(std::string field_name,
                                                  std::vector<float> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice.
-	 *
-	 * @param field_name name of the field as it is defined in its schema
-	 * definition.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema definition or the type of the field does not match
-	 * the one in the schema definition or the same field is trying to be set
-	 * without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_float32(std::string field_name,
-		std::initializer_list<float> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice.
+     *
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema definition or the type of the field does not match
+     * the one in the schema definition or the same field is trying to be set
+     * without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_float32(
+      std::string field_name,
+      std::initializer_list<float> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -875,24 +881,25 @@ public:
     generic_record_builder& set_array_of_float64(std::string field_name,
                                                  std::vector<double> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice.
-	 *
-	 * @param field_name name of the field as it is defined in its schema
-	 * definition.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema definition or the type of the field does not match
-	 * the one in the schema definition or the same field is trying to be set
-	 * without using
-	 *                                         {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_float64(std::string field_name,
-		std::initializer_list<double> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice.
+     *
+     * @param field_name name of the field as it is defined in its schema
+     * definition.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema definition or the type of the field does not match
+     * the one in the schema definition or the same field is trying to be set
+     * without using
+     *                                         {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_float64(
+      std::string field_name,
+      std::initializer_list<double> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -933,25 +940,25 @@ public:
       std::string field_name,
       std::vector<bool> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice. <p> Supported only for Compact.
-	 * Note that, array will be copied to transform values.
-	 *
-	 * @param field_name name of the field as it is defined in its schema.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema or the type of the field does not match the one in
-	 *                                            the schema or the same field
-	 * is trying to be set without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_nullable_boolean(
-		std::string field_name,
-		std::initializer_list<bool> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice. <p> Supported only for Compact.
+     * Note that, array will be copied to transform values.
+     *
+     * @param field_name name of the field as it is defined in its schema.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema or the type of the field does not match the one in
+     *                                            the schema or the same field
+     * is trying to be set without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_nullable_boolean(
+      std::string field_name,
+      std::initializer_list<bool> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -992,25 +999,25 @@ public:
       std::string field_name,
       std::vector<int8_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice. <p> Supported only for Compact
-	 * Note that, array will be copied to transform values.
-	 *
-	 * @param field_name name of the field as it is defined in its schema.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema or the type of the field does not match the one in
-	 *                                            the schema or the same field
-	 * is trying to be set without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_nullable_int8(
-		std::string field_name,
-		std::initializer_list<int8_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice. <p> Supported only for Compact
+     * Note that, array will be copied to transform values.
+     *
+     * @param field_name name of the field as it is defined in its schema.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema or the type of the field does not match the one in
+     *                                            the schema or the same field
+     * is trying to be set without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_nullable_int8(
+      std::string field_name,
+      std::initializer_list<int8_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -1051,25 +1058,25 @@ public:
       std::string field_name,
       std::vector<int16_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice. <p> Supported only for Compact
-	 * Note that, array will be copied to transform values.
-	 *
-	 * @param field_name name of the field as it is defined in its schema.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema or the type of the field does not match the one in
-	 *                                            the schema or the same field
-	 * is trying to be set without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_nullable_int16(
-		std::string field_name,
-		std::initializer_list<int16_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice. <p> Supported only for Compact
+     * Note that, array will be copied to transform values.
+     *
+     * @param field_name name of the field as it is defined in its schema.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema or the type of the field does not match the one in
+     *                                            the schema or the same field
+     * is trying to be set without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_nullable_int16(
+      std::string field_name,
+      std::initializer_list<int16_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -1110,25 +1117,25 @@ public:
       std::string field_name,
       std::vector<int32_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice. <p> Supported only for Compact
-	 * Note that, array will be copied to transform values.
-	 *
-	 * @param field_name name of the field as it is defined in its schema.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema or the type of the field does not match the one in
-	 *                                            the schema or the same field
-	 * is trying to be set without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_nullable_int32(
-		std::string field_name,
-		std::initializer_list<int32_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice. <p> Supported only for Compact
+     * Note that, array will be copied to transform values.
+     *
+     * @param field_name name of the field as it is defined in its schema.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema or the type of the field does not match the one in
+     *                                            the schema or the same field
+     * is trying to be set without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_nullable_int32(
+      std::string field_name,
+      std::initializer_list<int32_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -1169,25 +1176,25 @@ public:
       std::string field_name,
       std::vector<int64_t> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice. <p> Supported only for Compact
-	 * Note that, array will be copied to transform values.
-	 *
-	 * @param field_name name of the field as it is defined in its schema.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema or the type of the field does not match the one in
-	 *                                            the schema or the same field
-	 * is trying to be set without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_nullable_int64(
-		std::string field_name,
-		std::initializer_list<int64_t> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice. <p> Supported only for Compact
+     * Note that, array will be copied to transform values.
+     *
+     * @param field_name name of the field as it is defined in its schema.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema or the type of the field does not match the one in
+     *                                            the schema or the same field
+     * is trying to be set without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_nullable_int64(
+      std::string field_name,
+      std::initializer_list<int64_t> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -1228,25 +1235,25 @@ public:
       std::string field_name,
       std::vector<float> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice. <p> Supported only for Compact
-	 * Note that, array will be copied to transform values.
-	 *
-	 * @param field_name name of the field as it is defined in its schema.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema or the type of the field does not match the one in
-	 *                                            the schema or the same field
-	 * is trying to be set without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_nullable_float32(
-		std::string field_name,
-		std::initializer_list<float> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice. <p> Supported only for Compact
+     * Note that, array will be copied to transform values.
+     *
+     * @param field_name name of the field as it is defined in its schema.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema or the type of the field does not match the one in
+     *                                            the schema or the same field
+     * is trying to be set without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_nullable_float32(
+      std::string field_name,
+      std::initializer_list<float> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -1287,25 +1294,25 @@ public:
       std::string field_name,
       std::vector<double> value);
 
-	/**
-	 * It is legal to set the field again only when Builder is created with
-	 * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
-	 * illegal to set to the same field twice. <p> Supported only for Compact
-	 * Note that, array will be copied to transform values.
-	 *
-	 * @param field_name name of the field as it is defined in its schema.
-	 * @param value     to set to generic_record
-	 * @return itself for chaining
-	 * @throws exception::hazelcast_serialization if the field name does not
-	 * exist in the schema or the type of the field does not match the one in
-	 *                                            the schema or the same field
-	 * is trying to be set without using
-	 *                                            {@link
-	 * generic_record::new_builder_with_clone()}.
-	 */
-	generic_record_builder& set_array_of_nullable_float64(
-		std::string field_name,
-		std::initializer_list<double> value);
+    /**
+     * It is legal to set the field again only when Builder is created with
+     * {@link generic_record::new_builder_with_clone()}. Otherwise, it is
+     * illegal to set to the same field twice. <p> Supported only for Compact
+     * Note that, array will be copied to transform values.
+     *
+     * @param field_name name of the field as it is defined in its schema.
+     * @param value     to set to generic_record
+     * @return itself for chaining
+     * @throws exception::hazelcast_serialization if the field name does not
+     * exist in the schema or the type of the field does not match the one in
+     *                                            the schema or the same field
+     * is trying to be set without using
+     *                                            {@link
+     * generic_record::new_builder_with_clone()}.
+     */
+    generic_record_builder& set_array_of_nullable_float64(
+      std::string field_name,
+      std::initializer_list<double> value);
 
     /**
      * It is legal to set the field again only when Builder is created with
@@ -1469,7 +1476,8 @@ private:
     friend class generic_record;
     friend class pimpl::compact_stream_serializer;
     generic_record_builder(
-      std::shared_ptr<pimpl::schema>); // DeserializedSchemaBoundGenericRecordBuilder
+      std::shared_ptr<
+        pimpl::schema>); // DeserializedSchemaBoundGenericRecordBuilder
     generic_record_builder(
       std::shared_ptr<pimpl::schema>,
       std::unordered_map<std::string,
@@ -1534,7 +1542,8 @@ private:
     bool already_built_;
     std::unordered_set<std::string> overwritten_fields_;
     std::unordered_map<std::string, boost::any> objects_;
-    boost::variant<pimpl::schema_writer, std::shared_ptr<pimpl::schema>> writer_or_schema_;
+    boost::variant<pimpl::schema_writer, std::shared_ptr<pimpl::schema>>
+      writer_or_schema_;
 };
 
 } // namespace generic_record
