@@ -30,7 +30,8 @@ class HAZELCAST_API finally
 public:
     finally(const std::function<void(void)>& functor)
       : functor(functor)
-    {}
+    {
+    }
     ~finally() { functor(); }
 };
 } // namespace util

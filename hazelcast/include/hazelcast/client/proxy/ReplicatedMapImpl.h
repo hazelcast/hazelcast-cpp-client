@@ -320,7 +320,8 @@ private:
     public:
         NearCacheInvalidationListenerMessageCodec(const std::string& name)
           : name_(name)
-        {}
+        {
+        }
 
         protocol::ClientMessage encode_add_request(
           bool local_only) const override
@@ -352,7 +353,8 @@ private:
           : name_(name)
           , key_data_(key_data)
           , predicate_data_(predicate_data)
-        {}
+        {
+        }
 
         protocol::ClientMessage encode_add_request(
           bool local_only) const override
@@ -384,7 +386,8 @@ private:
           serialization::pimpl::data&& key_data)
           : name_(name)
           , predicate_data_(key_data)
-        {}
+        {
+        }
 
         protocol::ClientMessage encode_add_request(
           bool local_only) const override
@@ -415,7 +418,8 @@ private:
           serialization::pimpl::data&& key_data)
           : name_(name)
           , key_data_(key_data)
-        {}
+        {
+        }
 
         protocol::ClientMessage encode_add_request(
           bool local_only) const override
@@ -442,7 +446,8 @@ private:
     public:
         ReplicatedMapListenerMessageCodec(const std::string& name)
           : name_(name)
-        {}
+        {
+        }
 
         protocol::ClientMessage encode_add_request(
           bool local_only) const override
@@ -467,13 +472,15 @@ private:
     {
     public:
         ReplicatedMapAddNearCacheEventHandler(
-          const std::shared_ptr<
-            internal::nearcache::NearCache<serialization::pimpl::data,
-                                           serialization::pimpl::data>>&
-            near_cache, logger &logger)
-          : protocol::codec::replicatedmap_addnearcacheentrylistener_handler(logger),
-          near_cache_(near_cache)
-        {}
+          const std::shared_ptr<internal::nearcache::NearCache<
+            serialization::pimpl::data,
+            serialization::pimpl::data>>& near_cache,
+          logger& logger)
+          : protocol::codec::replicatedmap_addnearcacheentrylistener_handler(
+              logger)
+          , near_cache_(near_cache)
+        {
+        }
 
         void before_listener_register() override { near_cache_->clear(); }
 
@@ -483,7 +490,8 @@ private:
           const boost::optional<serialization::pimpl::data>& key,
           const boost::optional<serialization::pimpl::data>& /* value */,
           const boost::optional<serialization::pimpl::data>& /* old_value */,
-          const boost::optional<serialization::pimpl::data>& /* merging_value */,
+          const boost::optional<
+            serialization::pimpl::data>& /* merging_value */,
           int32_t event_type,
           boost::uuids::uuid /* uuid */,
           int32_t /* number_of_affected_entries */) override
@@ -563,11 +571,10 @@ private:
     {
         try {
             invalidation_listener_id_ =
-              register_listener(
-                create_near_cache_invalidation_listener_codec(),
-                std::shared_ptr<impl::BaseEventHandler>(
-                  new ReplicatedMapAddNearCacheEventHandler(near_cache_,
-                                                            get_context().get_logger())))
+              register_listener(create_near_cache_invalidation_listener_codec(),
+                                std::shared_ptr<impl::BaseEventHandler>(
+                                  new ReplicatedMapAddNearCacheEventHandler(
+                                    near_cache_, get_context().get_logger())))
                 .get();
         } catch (exception::iexception& e) {
             HZ_LOG(get_context().get_logger(),

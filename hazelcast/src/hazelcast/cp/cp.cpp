@@ -33,7 +33,8 @@ using namespace hazelcast::util;
 
 raft_proxy_factory::raft_proxy_factory(client::spi::ClientContext& context)
   : context_(context)
-{}
+{
+}
 
 std::shared_ptr<fenced_lock>
 raft_proxy_factory::create_fenced_lock(raft_group_id&& group_id,
@@ -152,7 +153,8 @@ raft_proxy_factory::get_group_id(const std::string& proxy_name,
 cp_subsystem::cp_subsystem(client::spi::ClientContext& context)
   : context_(context)
   , proxy_factory_(context)
-{}
+{
+}
 
 boost::future<std::shared_ptr<atomic_long>>
 cp_subsystem::get_atomic_long(const std::string& name)
@@ -192,7 +194,8 @@ cp_proxy::cp_proxy(const std::string& service_name,
   : ProxyImpl(service_name, proxy_name, context)
   , group_id_(group_id)
   , object_name_(object_name)
-{}
+{
+}
 
 void
 cp_proxy::on_destroy()
@@ -213,7 +216,8 @@ atomic_long::atomic_long(const std::string& name,
                          const raft_group_id& group_id,
                          const std::string& object_name)
   : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name)
-{}
+{
+}
 
 boost::future<int64_t>
 atomic_long::add_and_get(int64_t delta)
@@ -307,7 +311,8 @@ atomic_reference::atomic_reference(const std::string& name,
                                    const raft_group_id& group_id,
                                    const std::string& object_name)
   : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name)
-{}
+{
+}
 
 boost::future<boost::optional<client::serialization::pimpl::data>>
 atomic_reference::get_data()
@@ -417,7 +422,8 @@ latch::latch(const std::string& name,
              const raft_group_id& group_id,
              const std::string& object_name)
   : cp_proxy(SERVICE_NAME, name, &context, group_id, object_name)
-{}
+{
+}
 
 boost::future<bool>
 latch::try_set_count(int32_t count)
@@ -521,7 +527,8 @@ fenced_lock::fenced_lock(const std::string& name,
                         group_id,
                         object_name,
                         context.get_proxy_session_manager())
-{}
+{
+}
 
 boost::future<void>
 fenced_lock::lock()
@@ -934,7 +941,8 @@ session_aware_proxy::session_aware_proxy(
   internal::session::proxy_session_manager& session_manager)
   : cp_proxy(service_name, proxy_name, context, group_id, object_name)
   , session_manager_(session_manager)
-{}
+{
+}
 
 void
 session_aware_proxy::release_session(int64_t session_id)
@@ -966,7 +974,8 @@ counting_semaphore::counting_semaphore(
                         group_id,
                         object_name,
                         session_manager)
-{}
+{
+}
 
 boost::future<bool>
 counting_semaphore::init(int32_t permits)
@@ -1058,7 +1067,8 @@ sessionless_semaphore::sessionless_semaphore(
                        group_id,
                        object_name,
                        session_manager)
-{}
+{
+}
 
 boost::future<void>
 sessionless_semaphore::acquire(int32_t permits)
@@ -1180,7 +1190,8 @@ session_semaphore::session_semaphore(
                        group_id,
                        object_name,
                        session_manager)
-{}
+{
+}
 
 boost::future<void>
 session_semaphore::acquire(int32_t permits)

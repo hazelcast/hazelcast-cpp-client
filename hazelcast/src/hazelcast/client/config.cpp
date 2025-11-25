@@ -40,7 +40,8 @@ namespace hazelcast {
 namespace client {
 serialization_config::serialization_config()
   : version_(0)
-{}
+{
+}
 
 int
 serialization_config::get_portable_version() const
@@ -88,7 +89,8 @@ ssl_config::ssl_config()
   : enabled_(false)
   , ssl_protocol_(tlsv12)
 #endif
-{}
+{
+}
 
 #ifdef HZ_BUILD_WITH_SSL
 ssl_config&
@@ -181,7 +183,8 @@ client_flake_id_generator_config::client_flake_id_generator_config(
   , prefetch_count_(client_flake_id_generator_config::DEFAULT_PREFETCH_COUNT)
   , prefetch_validity_duration_(
       client_flake_id_generator_config::DEFAULT_PREFETCH_VALIDITY_MILLIS)
-{}
+{
+}
 
 const std::string&
 client_flake_id_generator_config::get_name() const
@@ -319,7 +322,8 @@ connection_retry_config::set_jitter(double jitter)
 client_network_config::client_network_config()
   : connection_timeout_(5000)
   , smart_routing_(true)
-{}
+{
+}
 
 ssl_config&
 client_network_config::get_ssl_config()
@@ -431,7 +435,8 @@ client_network_config::use_public_address(bool should_use_public_address)
 client_connection_strategy_config::client_connection_strategy_config()
   : async_start_(false)
   , reconnect_mode_(ON)
-{}
+{
+}
 
 client_connection_strategy_config::reconnect_mode
 client_connection_strategy_config::get_reconnect_mode() const
@@ -483,7 +488,8 @@ reliable_topic_config::reliable_topic_config(std::string topic_name)
   ,
 
   name_(std::move(topic_name))
-{}
+{
+}
 
 const std::string&
 reliable_topic_config::get_name() const
@@ -517,7 +523,8 @@ socket_options::socket_options()
   , reuse_address_(true)
   , linger_seconds_(3)
   , buffer_size_(DEFAULT_BUFFER_SIZE_BYTE)
-{}
+{
+}
 
 bool
 socket_options::is_tcp_no_delay() const
@@ -589,7 +596,8 @@ client_aws_config::client_aws_config()
   , region_("us-east-1")
   , host_header_("ec2.amazonaws.com")
   , inside_aws_(false)
-{}
+{
+}
 
 const std::string&
 client_aws_config::get_access_key() const
@@ -806,24 +814,28 @@ const index_config::bitmap_index_options::unique_key_transformation
 index_config::bitmap_index_options::bitmap_index_options()
   : key(DEFAULT_KEY)
   , transformation(DEFAULT_TRANSFORMATION)
-{}
+{
+}
 
 const index_config::index_type index_config::DEFAULT_TYPE =
   index_config::index_type::SORTED;
 
 index_config::index_config(index_config::index_type type)
   : type(type)
-{}
+{
+}
 
 void
 index_config::add_attributes()
-{}
+{
+}
 
 eviction_config::eviction_config()
   : size_(DEFAULT_MAX_ENTRY_COUNT)
   , max_size_policy_(DEFAULT_MAX_SIZE_POLICY)
   , eviction_policy_(DEFAULT_EVICTION_POLICY)
-{}
+{
+}
 
 int32_t
 eviction_config::get_size() const
@@ -892,7 +904,8 @@ near_cache_config::near_cache_config()
   , local_update_policy_(INVALIDATE)
   , invalidate_on_change_(true)
   , cache_local_entries_(false)
-{}
+{
+}
 
 near_cache_config::near_cache_config(const std::string& cache_name)
   : near_cache_config()
@@ -1050,7 +1063,8 @@ client_config::client_config()
   , redo_operation_(false)
   , socket_interceptor_()
   , executor_pool_size_(-1)
-{}
+{
+}
 
 client_config::client_config(client_config&& rhs) = default;
 
@@ -1393,7 +1407,8 @@ username_password_credentials::username_password_credentials(
   const std::string& password)
   : credentials(name)
   , password_(password)
-{}
+{
+}
 
 const std::string&
 username_password_credentials::password() const
@@ -1422,7 +1437,8 @@ token_credentials::type() const
 token_credentials::token_credentials(const std::vector<byte>& token)
   : credentials(token.empty() ? "<empty>" : "<token>")
   , token_(token)
-{}
+{
+}
 
 credentials::~credentials() {}
 
@@ -1434,7 +1450,8 @@ credentials::name() const
 
 credentials::credentials(const std::string& name)
   : name_(name)
-{}
+{
+}
 } // namespace security
 } // namespace client
 } // namespace hazelcast

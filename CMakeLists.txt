@@ -17,21 +17,12 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(hazelcast-cpp-client
-        VERSION 5.5.0
+        VERSION 5.6.0
         DESCRIPTION "Hazelcast C++ Client"
         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Generate the Reference_Manual.md file using the latest project version.
-# If the project version changes, the generated Reference_Manual.md file needs to be
-# committed to the repository after generation.
-configure_file(Reference_Manual.md.in "${CMAKE_SOURCE_DIR}/Reference_Manual.md" @ONLY)
-
-# Add a custom target to execute the copy command
-add_custom_target(copy_reference_manual ALL
-    DEPENDS "${CMAKE_SOURCE_DIR}/Reference_Manual.md"
-)
 # Set the default build type for single-config generators if not given
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if ((NOT is_multi_config) AND (NOT CMAKE_BUILD_TYPE))
@@ -267,8 +258,6 @@ install(
 
 if (BUILD_TESTS)
     add_subdirectory(hazelcast/test)
-else()
-    message(STATUS "BUILD_TESTS is disabled.")
 endif()
 
 if (BUILD_EXAMPLES)
@@ -279,12 +268,12 @@ message(STATUS "Configuration summary:")
 if (NOT is_multi_config)
     message(STATUS "  CMAKE_BUILD_TYPE =      ${CMAKE_BUILD_TYPE}")
 endif()
-message(STATUS "  BUILD_SHARED_LIBS =     ${BUILD_SHARED_LIBS}")
-message(STATUS "  WITH_OPENSSL =          ${WITH_OPENSSL}")
-message(STATUS "  DISABLE_LOGGING =       ${DISABLE_LOGGING}")
-message(STATUS "  CMAKE_INSTALL_PREFIX =  ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "  BUILD_TESTS =           ${BUILD_TESTS}")
-message(STATUS "  BUILD_EXAMPLES =        ${BUILD_EXAMPLES}")
-message(STATUS "  CMAKE_CXX_FLAGS =       ${CMAKE_CXX_FLAGS}")
-message(STATUS "  CMAKE_CXX_FLAGS_DEBUG =       ${CMAKE_CXX_FLAGS_DEBUG}")
-message(STATUS "  CMAKE_CXX_FLAGS_RELEASE =       ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "  BUILD_SHARED_LIBS       = ${BUILD_SHARED_LIBS}")
+message(STATUS "  WITH_OPENSSL            = ${WITH_OPENSSL}")
+message(STATUS "  DISABLE_LOGGING         = ${DISABLE_LOGGING}")
+message(STATUS "  CMAKE_INSTALL_PREFIX    = ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "  BUILD_TESTS             = ${BUILD_TESTS}")
+message(STATUS "  BUILD_EXAMPLES          = ${BUILD_EXAMPLES}")
+message(STATUS "  CMAKE_CXX_FLAGS         = ${CMAKE_CXX_FLAGS}")
+message(STATUS "  CMAKE_CXX_FLAGS_DEBUG   = ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "  CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")

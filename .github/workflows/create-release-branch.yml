@@ -1,0 +1,56 @@
+name: Create release branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      BRANCH_NAME:
+        description: The source branch to create a release branch from
+        required: true
+      NEXT_VERSION:
+        description: New version to set in the source branch (e.g. 5.6.0)
+        required: true
+
+jobs:
+  make-branch:
+    name: Create release branch from `${{ inputs.BRANCH_NAME }}`
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.BRANCH_NAME }}
+
+      - name: Determine project version
+        id: project_version
+        run: |
+          echo "version=$(jq --raw-output '.version' vcpkg.json)" >> ${GITHUB_OUTPUT}
+
+      - name: Create `${{ steps.project_version.outputs.version }}` branch
+        run: |
+          git checkout -b ${{ steps.project_version.outputs.version }}
+          git push origin ${{ steps.project_version.outputs.version }}
+
+  update-version:
+    name: Update next version in `${{ inputs.BRANCH_NAME }}` to `${{ inputs.NEXT_VERSION }}`
+    runs-on: ubuntu-latest
+    env:
+        NEW_VERSION: ${{ inputs.NEXT_VERSION }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.BRANCH_NAME }}
+
+      - name: Update `vcpkg.json`
+        run: |
+            cat <<< $(jq --arg ver "${NEW_VERSION}" '.version = $ver' vcpkg.json) > vcpkg.json
+
+      - name: Update `CMakeLists.txt`s
+        run: |
+            find . -name 'CMakeLists.txt' | \
+                xargs perl -0777 -i -pe 's/(project\s*\([^)]*?\bVERSION\s+)\S+/\1$ENV{NEW_VERSION}/s'
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: Update_version_to_${{ inputs.NEXT_VERSION }}_run_${{ github.run_id }}
+          title: Update development version to `${{ inputs.NEXT_VERSION }}`
+          body: ""

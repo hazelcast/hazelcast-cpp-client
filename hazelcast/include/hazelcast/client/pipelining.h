@@ -144,7 +144,8 @@ private:
     pipelining(int depth)
       : permits_(
           util::Preconditions::check_positive(depth, "depth must be positive"))
-    {}
+    {
+    }
 
     void down()
     {

@@ -60,7 +60,8 @@ public:
     public:
         executor_promise(spi::ClientContext& context)
           : context_(context)
-        {}
+        {
+        }
 
         executor_promise(
           boost::future<boost::optional<T>>& future,
@@ -75,7 +76,8 @@ public:
           , member_uuid_(member)
           , context_(context)
           , invocation_(invocation)
-        {}
+        {
+        }
 
         bool cancel(bool may_interrupt_if_running)
         {

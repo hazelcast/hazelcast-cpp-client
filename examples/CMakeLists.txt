@@ -17,7 +17,7 @@
 cmake_minimum_required (VERSION 3.10)
 
 project (hazelcast-cpp-client-examples
-         VERSION 5.5.0
+         VERSION 5.6.0
          DESCRIPTION "Hazelcast C++ Client Code Examples"
          LANGUAGES CXX)
 
@@ -25,6 +25,9 @@ if (NOT TARGET hazelcast-cpp-client)
     message(STATUS "hazelcast-cpp-client is not a valid target, using find_package to find it.")
     find_package(hazelcast-cpp-client REQUIRED)
     link_libraries(hazelcast-cpp-client::hazelcast-cpp-client) # TODO find a better way to do this
+
+    # Required for 32-bit builds on Linux
+    link_libraries(pthread)
 else()
     link_libraries(hazelcast-cpp-client) # TODO find a better way to do this
 endif()

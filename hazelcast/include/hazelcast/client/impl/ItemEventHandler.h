@@ -31,7 +31,7 @@ class item_event_handler : public BaseType
 public:
     item_event_handler(
       std::string instance_name,
-      logger &logger,
+      logger& logger,
       spi::impl::ClientClusterServiceImpl& cluster_service,
       serialization::pimpl::SerializationService& serialization_service,
       item_listener&& listener,
@@ -41,7 +41,7 @@ public:
       , cluster_service_(cluster_service)
       , serialization_service_(serialization_service)
       , listener_(std::move(listener))
-      , include_value_(include_value){};
+      , include_value_(include_value) {};
 
     void handle_item(const boost::optional<serialization::pimpl::data>& item,
                      boost::uuids::uuid uuid,

@@ -88,7 +88,8 @@ public:
 private:
     itopic(const std::string& instance_name, spi::ClientContext* context)
       : proxy::ITopicImpl(instance_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

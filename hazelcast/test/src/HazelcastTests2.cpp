@@ -903,7 +903,8 @@ public:
 
         Child(std::string name)
           : name_(name)
-        {}
+        {
+        }
 
         const std::string& get_name() const { return name_; }
 
@@ -928,7 +929,8 @@ public:
 
         Parent(Child child)
           : child_(child)
-        {}
+        {
+        }
 
         const Child& get_child() const { return child_; }
 
@@ -1026,7 +1028,8 @@ public:
     public:
         SimplePartitionAwareObject()
           : test_key_(5)
-        {}
+        {
+        }
 
         const int* get_partition_key() const override { return &test_key_; }
 
@@ -1079,7 +1082,8 @@ struct hz_serializer<test::PartitionAwareTest::SimplePartitionAwareObject>
     static void write_data(
       const test::PartitionAwareTest::SimplePartitionAwareObject& object,
       object_data_output& out)
-    {}
+    {
+    }
 
     static test::PartitionAwareTest::SimplePartitionAwareObject read_data(
       object_data_input& in)
@@ -1099,7 +1103,8 @@ class JsonValueSerializationTest : public serialization_test_base
 public:
     JsonValueSerializationTest()
       : serialization_service_(config_, get_schema_service())
-    {}
+    {
+    }
 
 protected:
     serialization::pimpl::SerializationService serialization_service_;

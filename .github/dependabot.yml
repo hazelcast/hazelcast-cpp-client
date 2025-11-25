@@ -1,5 +1,13 @@
 version: 2
 updates:
+  - package-ecosystem: "vcpkg"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      boost:
+        patterns:
+          - "boost-*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

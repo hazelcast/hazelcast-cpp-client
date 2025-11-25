@@ -32,7 +32,8 @@ struct hz_serializer<MapInterceptor> : identified_data_serializer
     static void write_data(
       const MapInterceptor& object,
       hazelcast::client::serialization::object_data_output& out)
-    {}
+    {
+    }
 
     static MapInterceptor read_data(
       hazelcast::client::serialization::object_data_input& in)

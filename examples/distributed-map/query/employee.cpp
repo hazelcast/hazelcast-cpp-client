@@ -269,7 +269,8 @@ void
 hz_serializer<examples::employee_entry_comparator>::write_data(
   const examples::employee_entry_comparator& object,
   object_data_output& writer)
-{}
+{
+}
 
 examples::employee_entry_comparator
 hz_serializer<examples::employee_entry_comparator>::read_data(

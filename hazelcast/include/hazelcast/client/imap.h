@@ -68,7 +68,8 @@ public:
 
     imap(const std::string& instance_name, spi::ClientContext* context)
       : proxy::IMapImpl(instance_name, context)
-    {}
+    {
+    }
 
     /**
      * check if this map contains key.
