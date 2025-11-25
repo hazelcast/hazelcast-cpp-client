@@ -90,10 +90,16 @@ runs:
         tar xzf ${{ inputs.BOOST_ARCHIVE_NAME }}
         rm ${{ inputs.BOOST_ARCHIVE_NAME }}
         cd ${{ inputs.BOOST_FOLDER_NAME }}
-        .\bootstrap.bat
+        $vcvars = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" -ErrorAction SilentlyContinue
+        if (-not $vcvars) { $vcvars = Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -Recurse -Filter "vcvarsall.bat" | Select-Object -First 1 }
+        cmd /c "`"$($vcvars.FullName)`" x64 > nul 2>&1 && set" | ForEach-Object { if ($_ -match "^(.*?)=(.*)$") { [Environment]::SetEnvironmentVariable($matches[1], $matches[2]) } }
+        .\bootstrap.bat msvc
         # Build the libs for:
         # - Thread - https://www.boost.org/libs/thread/
-        .\b2 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} --with-thread install
+        # - Chrono - https://www.boost.org/libs/chrono/
+        # - Atomic - https://www.boost.org/libs/atomic/
+        # d0 turns off info logging but only prints warnings and errors.
+        .\b2 -d0 address-model=${{ inputs.ARCH_ADDRESS_MODEL }} toolset=msvc --with-thread --with-chrono --with-atomic install        
         cd ..
         Remove-Item ${{ inputs.BOOST_FOLDER_NAME }} -Recurse -Force
 
@@ -144,7 +150,7 @@ runs:
             -DBUILD_EXAMPLES=OFF
 
     - name: Test
-      if: ${{ inputs.run_tests }}
+      if: ${{ inputs.run_tests == 'true' }}
       env:
         BUILD_DIR: build
         BUILD_CONFIGURATION: ${{ inputs.BUILD_TYPE }}
