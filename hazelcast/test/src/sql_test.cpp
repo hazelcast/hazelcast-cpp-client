@@ -428,12 +428,9 @@ protected:
 
     std::shared_ptr<sql::sql_result> select_all(int cursor_size = 10)
     {
-        sql::sql_statement statement{ client,
-                                      (boost::format(
-                                         R"(
-                SELECT * FROM %1%
-            )") % map_name)
-                                        .str() };
+        sql::sql_statement statement{
+            client, (boost::format(R"(SELECT * FROM %1%)") % map_name).str()
+        };
 
         statement.cursor_buffer_size(cursor_size);
         return client.get_sql().execute(statement).get();
@@ -935,12 +932,9 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
     (void)populate_map(map, 100);
 
     auto handler = [this]() {
-        sql::sql_statement statement{ client,
-                                      (boost::format(
-                                         R"(
-                SELECT * FROM %1%
-            )") % map_name)
-                                        .str() };
+        sql::sql_statement statement{
+            client, (boost::format(R"(SELECT * FROM %1%)") % map_name).str()
+        };
 
         statement.cursor_buffer_size(10);
         auto result = client.get_sql().execute(statement).get();
@@ -971,12 +965,9 @@ TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
     create_mapping();
     (void)populate_map(map, 100);
 
-    sql::sql_statement statement{ client,
-                                  (boost::format(
-                                     R"(
-                    SELECT * FROM %1%
-                )") % map_name)
-                                    .str() };
+    sql::sql_statement statement{
+        client, (boost::format(R"(SELECT * FROM %1%)") % map_name).str()
+    };
 
     statement.cursor_buffer_size(10);
 
