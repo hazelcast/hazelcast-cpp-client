@@ -64,7 +64,7 @@ public:
      */
     virtual int evict(
       std::vector<std::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E>>>*
-        /* eviction_candidates */,
+      /* eviction_candidates */,
       EvictionListener<A, E>* /* eviction_listener */)
     {
         assert(0);

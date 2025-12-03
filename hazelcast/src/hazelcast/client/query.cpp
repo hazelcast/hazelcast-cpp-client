@@ -27,7 +27,8 @@ base_predicate::base_predicate(hazelcast_client& client)
   : out_stream(spi::ClientContext(client)
                  .get_serialization_service()
                  .new_output_stream())
-{}
+{
+}
 
 named_predicate::named_predicate(hazelcast_client& client,
                                  const std::string& attribute_name)
@@ -75,11 +76,13 @@ regex_predicate::regex_predicate(hazelcast_client& client,
 
 true_predicate::true_predicate(hazelcast_client& client)
   : base_predicate(client)
-{}
+{
+}
 
 false_predicate::false_predicate(hazelcast_client& client)
   : base_predicate(client)
-{}
+{
+}
 } // namespace query
 } // namespace client
 } // namespace hazelcast

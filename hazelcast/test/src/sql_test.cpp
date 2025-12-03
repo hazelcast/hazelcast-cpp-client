@@ -339,7 +339,6 @@ protected:
         }
     }
 
-
     void create_mapping(std::string value_format = "INTEGER",
                         boost::optional<std::string> par_map_name = boost::none)
     {
@@ -426,14 +425,12 @@ protected:
           serialization::hz_serializer<test::student>::PORTABLE_FACTORY_ID,
           serialization::hz_serializer<test::student>::PORTABLE_VALUE_CLASS_ID);
     }
-    
+
     std::shared_ptr<sql::sql_result> select_all(int cursor_size = 10)
     {
-        sql::sql_statement statement{ client,
-                        (boost::format(
-                                R"(
-                SELECT * FROM %1%
-            )") % map_name).str() };
+        sql::sql_statement statement{
+            client, (boost::format(R"(SELECT * FROM %1%)") % map_name).str()
+        };
 
         statement.cursor_buffer_size(cursor_size);
         return client.get_sql().execute(statement).get();
@@ -702,22 +699,24 @@ protected:
         ASSERT_EQ(expected_value, *value_by_name);
     }
 
-    int member_client_cursors(int member_number) {
+    int member_client_cursors(int member_number)
+    {
         auto script =
-          (boost::format("com.hazelcast.jet.sql.SqlTestSupport.sqlInternalService(instance_%1%).getClientStateRegistry().getCursorCount()") %member_number).str();
+          (boost::format(
+             "com.hazelcast.jet.sql.SqlTestSupport.sqlInternalService(instance_"
+             "%1%).getClientStateRegistry().getCursorCount()") %
+           member_number)
+            .str();
 
         Response response;
         remote_controller_client().executeOnController(
-          response,
-          server_factory_->get_cluster_id(),
-          script,
-          Lang::PYTHON);
+          response, server_factory_->get_cluster_id(), script, Lang::PYTHON);
         EXPECT_TRUE(response.success);
         return std::stoi(response.result);
-
     }
 
-    int total_member_client_cursors() {
+    int total_member_client_cursors()
+    {
         return member_client_cursors(0) + member_client_cursors(1);
     }
     template<typename... Params>
@@ -816,7 +815,6 @@ protected:
 
         ASSERT_EQ(expected_counts, actual_counts);
     }
-    
 };
 
 std::unique_ptr<HazelcastServerFactory> SqlTest::server_factory_;
@@ -833,7 +831,6 @@ struct generator<test::student>
                               float(rand() % 1000) * 2.0f };
     }
 };
-
 
 std::string
 printer(const testing::TestParamInfo<iterator_type>& type)
@@ -934,12 +931,10 @@ TEST_F(SqlTest, calling_iterator_next_consecutively)
     create_mapping();
     (void)populate_map(map, 100);
 
-    auto handler = [this](){
-        sql::sql_statement statement{ client,
-                        (boost::format(
-                                R"(
-                SELECT * FROM %1%
-            )") % map_name).str() };
+    auto handler = [this]() {
+        sql::sql_statement statement{
+            client, (boost::format(R"(SELECT * FROM %1%)") % map_name).str()
+        };
 
         statement.cursor_buffer_size(10);
         auto result = client.get_sql().execute(statement).get();
@@ -970,12 +965,9 @@ TEST_F(SqlTest, calling_next_after_last_page_is_retrieved)
     create_mapping();
     (void)populate_map(map, 100);
 
-    sql::sql_statement statement{ client,
-                                  (boost::format(
-                                     R"(
-                    SELECT * FROM %1%
-                )") % map_name)
-                                    .str() };
+    sql::sql_statement statement{
+        client, (boost::format(R"(SELECT * FROM %1%)") % map_name).str()
+    };
 
     statement.cursor_buffer_size(10);
 
@@ -999,7 +991,7 @@ TEST_F(SqlTest, simple)
         SELECT * FROM (VALUES ('foo', 'bar'), (NULL, 'hello')) AS X(col1, col2)
     )sql");
 
-    auto &service = client.get_sql();
+    auto& service = client.get_sql();
     auto result = service.execute(statement).get();
 
     ASSERT_TRUE(result->row_set());
@@ -1036,7 +1028,7 @@ TEST_F(SqlTest, rows_can_be_used_even_after_the_result_is_destroyed)
         SELECT * FROM (VALUES ('foo', 'bar'), (NULL, 'hello')) AS X(col1, col2)
     )sql");
 
-    auto &service = client.get_sql();
+    auto& service = client.get_sql();
 
     std::shared_ptr<sql::sql_page> page;
 
@@ -1072,8 +1064,8 @@ TEST_F(SqlTest, sql_result_public_apis_should_throw_after_close)
 
         ASSERT_TRUE(result->row_set());
 
-        it = std::make_shared<sql::sql_result::page_iterator>(
-          result->iterator());
+        it =
+          std::make_shared<sql::sql_result::page_iterator>(result->iterator());
 
         result->close().get();
     }
@@ -1096,7 +1088,7 @@ TEST_F(SqlTest, statement_with_params)
     if (cluster_version() < member::version{ 5, 0, 0 })
         GTEST_SKIP();
 
-    auto &service = client.get_sql();
+    auto& service = client.get_sql();
     auto result = service
                     .execute("SELECT CAST(? AS VARCHAR), CAST(? AS VARCHAR)",
                              123456,
@@ -1735,28 +1727,23 @@ TEST_F(SqlTest, find_with_page_sync_iterator)
     auto result = select_all();
 
     auto found_page_itr = std::find_if(
-        result->pbegin(),
-        result->pend(),
-        [searchee](std::shared_ptr<sql::sql_page> page){
-            return find_if(
-                begin(page->rows()),
-                end(page->rows()),
-                [searchee](const sql::sql_page::sql_row& row){
-                    return row.get_object<int>(1).value() == searchee;
-                }
-            ) != end(page->rows());
-        }
-    );
+      result->pbegin(),
+      result->pend(),
+      [searchee](std::shared_ptr<sql::sql_page> page) {
+          return find_if(begin(page->rows()),
+                         end(page->rows()),
+                         [searchee](const sql::sql_page::sql_row& row) {
+                             return row.get_object<int>(1).value() == searchee;
+                         }) != end(page->rows());
+      });
 
     ASSERT_NE(found_page_itr, result->pend());
 
-    bool exist = any_of(
-        begin(found_page_itr->rows()),
-        end(found_page_itr->rows()),
-        [searchee](const sql::sql_page::sql_row& row){
-            return row.get_object<int>(1).value() == searchee;
-        }
-    );
+    bool exist = any_of(begin(found_page_itr->rows()),
+                        end(found_page_itr->rows()),
+                        [searchee](const sql::sql_page::sql_row& row) {
+                            return row.get_object<int>(1).value() == searchee;
+                        });
 
     ASSERT_TRUE(exist);
 }
@@ -1769,13 +1756,12 @@ TEST_F(SqlTest, find_with_row_sync_iterator)
     auto searchee = numbers[numbers.size() / 2];
     auto result = select_all();
 
-    auto found_row_itr = std::find_if(
-        begin(*result),
-        end(*result),
-        [searchee](const sql::sql_page::sql_row& row){
-            return row.get_object<int>(1).value() == searchee;
-        }
-    );
+    auto found_row_itr =
+      std::find_if(begin(*result),
+                   end(*result),
+                   [searchee](const sql::sql_page::sql_row& row) {
+                       return row.get_object<int>(1).value() == searchee;
+                   });
 
     ASSERT_NE(found_row_itr, end(*result));
     ASSERT_EQ(found_row_itr->get_object<int>(1).value(), searchee);
@@ -1792,7 +1778,7 @@ TEST_F(SqlTest, timeout_for_page_iterator_sync)
     auto result =
       client.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
 
-    auto statement = [&result](){
+    auto statement = [&result]() {
         auto it = result->pbegin(std::chrono::milliseconds{ 1 });
         ++it;
         ++it;
@@ -1812,7 +1798,7 @@ TEST_F(SqlTest, timeout_for_row_iterator_sync)
     auto result =
       client.get_sql().execute("SELECT * FROM TABLE(generate_stream(1))").get();
 
-    auto statement = [&result](){
+    auto statement = [&result]() {
         auto it = result->begin(std::chrono::milliseconds{ 1 });
         ++it;
         ++it;
@@ -1932,22 +1918,23 @@ TEST_F(SqlTest, select)
 
     // If this request spawns multiple pages, then:
     // 1) Ensure that results are cleared when the whole result set is fetched
-    // 2) Ensure that results are cleared when the result set is closed in the middle.
-/*
-    ASSERT_EQ(0, total_member_client_cursors());
-
-    try {
-        auto res2 = query(map_name);
-
-        ASSERT_EQ(1, total_member_client_cursors());
-
-        ASSERT_NO_THROW(res2.close());
-
+    // 2) Ensure that results are cleared when the result set is closed in the
+    // middle.
+    /*
         ASSERT_EQ(0, total_member_client_cursors());
-    } catch (...) {
-        
-    }
-*/
+
+        try {
+            auto res2 = query(map_name);
+
+            ASSERT_EQ(1, total_member_client_cursors());
+
+            ASSERT_NO_THROW(res2.close());
+
+            ASSERT_EQ(0, total_member_client_cursors());
+        } catch (...) {
+
+        }
+    */
 }
 
 TEST_F(SqlTest, test_partition_based_routing_simple_type_test)
@@ -2269,10 +2256,12 @@ public:
 protected:
     query_id get_query_id() const
     {
-        boost::uuids::uuid server_uuid{ {1, 2,  3,  4,  5,  6,  7,  8,
-                                        9, 10, 11, 12, 13, 14, 15, 16} };
-        boost::uuids::uuid client_uuid{ {21, 22, 23, 24, 25, 26, 27, 28,
-                                        29, 30, 31, 32, 33, 34, 35, 36} };
+        boost::uuids::uuid server_uuid{
+            { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }
+        };
+        boost::uuids::uuid client_uuid{
+            { 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 }
+        };
         return { server_uuid, client_uuid };
     }
 };
@@ -2308,6 +2297,7 @@ TEST_F(sql_encode_test, execute)
       skip_update_statistics);
 
     std::vector<unsigned char> expected_bytes = {
+        // clang-format off
         // first frame
         36,  0,   0,   0,   0,   192, 0,
         4,   33,  0,   0,   0,   0,   0,
@@ -2329,6 +2319,7 @@ TEST_F(sql_encode_test, execute)
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,  // server uuid
         21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, // client uuid
         6,   0,   0,   0,   0,   40 // end frame for query_id
+        // clang-format on
     };
 
     std::vector<unsigned char> actual_bytes = {};
@@ -2358,6 +2349,7 @@ TEST_F(sql_encode_test, fetch)
     }
 
     std::vector<unsigned char> expected_bytes = {
+        // clang-format off
         // initial frame
         26,  0,   0,   0,  0,  192, 0,  5,   33,  0,   0,
         0,   0,   0,   0,  0,  0,   0,  255, 255, 255, 255,
@@ -2368,6 +2360,7 @@ TEST_F(sql_encode_test, fetch)
         21,  22,  23,  24, 25, 26,  27, 28,  29,  30,  31,
         32,  33,  34,  35, 36,    // client uuid
         6,   0,   0,   0,  0,  40 // end frame for query_id
+        // clang-format on
     };
 
     ASSERT_EQ(actual_bytes.size(), expected_bytes.size());
@@ -2384,8 +2377,8 @@ TEST_F(sql_encode_test, close)
         actual_bytes.insert(actual_bytes.end(), buf.begin(), buf.end());
     }
 
-    std::vector<unsigned char>
-      expected_bytes = {
+    std::vector<unsigned char> expected_bytes = {
+        // clang-format off
           // initial frame
           22, 0,  0,  0,   0,   192, 0,   3,  33, 0,  0,  0,  0,  0,  0,
           0,  0,  0,  255, 255, 255, 255, 6,  0,  0,  0,  0,  16, // begin frame
@@ -2396,7 +2389,8 @@ TEST_F(sql_encode_test, close)
           21, 22, 23, 24,  25,  26,  27,  28, 29, 30, 31, 32, 33, 34, 35,
           36,                      // client uuid
           6,  0,  0,  0,   0,   40 // end frame for query_id
-      };
+        // clang-format on
+    };
 
     ASSERT_EQ(actual_bytes.size(), expected_bytes.size());
     EXPECT_EQ(expected_bytes, actual_bytes);

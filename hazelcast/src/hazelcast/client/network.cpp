@@ -157,8 +157,7 @@ ClientConnectionManagerImpl::schedule_connect_to_all_members()
         return;
     }
 
-    connect_to_members_timer_->expires_after(
-      boost::asio::chrono::seconds(1));
+    connect_to_members_timer_->expires_after(boost::asio::chrono::seconds(1));
     connect_to_members_timer_->async_wait([=](boost::system::error_code ec) {
         if (ec == boost::asio::error::operation_aborted) {
             return;
@@ -1156,7 +1155,8 @@ ReadHandler::ReadHandler(Connection& connection, size_t buffer_size)
   , byte_buffer(buffer, buffer_size)
   , builder_(connection)
   , last_read_time_(std::chrono::steady_clock::now().time_since_epoch())
-{}
+{
+}
 
 ReadHandler::~ReadHandler()
 {
@@ -1703,8 +1703,9 @@ wait_strategy::sleep()
                                   current_backoff_millis_.count() * jitter_ *
                                   (2.0 * random_(random_generator_) - 1.0)));
 
-    actual_sleep_time = (std::min)(
-      actual_sleep_time, cluster_connect_timeout_millis_ - time_passed);
+    actual_sleep_time =
+      (std::min)(actual_sleep_time,
+                 cluster_connect_timeout_millis_ - time_passed);
 
     HZ_LOG(
       logger_,
@@ -1734,7 +1735,8 @@ SocketFactory::SocketFactory(spi::ClientContext& client_context,
   : client_context_(client_context)
   , io_(io)
   , io_resolver_(resolver)
-{}
+{
+}
 
 bool
 SocketFactory::start()
@@ -1847,7 +1849,8 @@ SSLSocket::SSLSocket(boost::asio::io_context& io_service,
       io_service,
       connect_timeout_in_millis,
       ssl_context)
-{}
+{
+}
 
 std::vector<SSLSocket::CipherInfo>
 SSLSocket::get_ciphers()
@@ -1897,7 +1900,8 @@ TcpSocket::TcpSocket(boost::asio::io_context& io,
                                              socket_options,
                                              io,
                                              connect_timeout_in_millis)
-{}
+{
+}
 
 } // namespace socket
 } // namespace internal

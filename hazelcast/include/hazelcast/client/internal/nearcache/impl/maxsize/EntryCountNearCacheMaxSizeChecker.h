@@ -47,7 +47,8 @@ public:
       const store::HeapNearCacheRecordMap<K, V, KS, R>& record_map)
       : near_cache_record_map_(record_map)
       , max_size_(size)
-    {}
+    {
+    }
 
     bool is_reached_to_max_size() const override
     {

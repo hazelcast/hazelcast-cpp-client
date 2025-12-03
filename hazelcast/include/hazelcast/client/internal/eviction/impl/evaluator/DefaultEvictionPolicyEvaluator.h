@@ -53,7 +53,8 @@ public:
       const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE>>&
         comparator)
       : eviction_policy_comparator_(comparator)
-    {}
+    {
+    }
 
     const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE>>
     get_eviction_policy_comparator() const override

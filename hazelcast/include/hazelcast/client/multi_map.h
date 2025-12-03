@@ -396,7 +396,8 @@ public:
 private:
     multi_map(const std::string& instance_name, spi::ClientContext* context)
       : proxy::MultiMapImpl(instance_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

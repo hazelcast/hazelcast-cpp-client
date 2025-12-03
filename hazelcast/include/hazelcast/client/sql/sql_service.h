@@ -109,7 +109,7 @@ public:
      */
     template<typename... Params>
     boost::future<std::shared_ptr<sql_result>> execute(const std::string& query,
-                                      const Params&... params)
+                                                       const Params&... params)
     {
         sql_statement s{ client_context_, query };
         int _[] = { 0, (s.add_parameter(params), 0)... };

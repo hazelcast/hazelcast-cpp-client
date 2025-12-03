@@ -44,7 +44,7 @@ reliable_topic::reliable_topic(const std::string& instance_name,
                                spi::ClientContext* context)
   : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context)
   , execution_service_(
-      context->get_client_execution_service().shared_from_this())  
+      context->get_client_execution_service().shared_from_this())
   , executor_(execution_service_->get_user_executor())
   , logger_(context->get_logger())
 {
@@ -104,13 +104,15 @@ reliable_listener::reliable_listener(bool loss_tolerant,
                                      int64_t initial_sequence_id)
   : loss_tolerant_(loss_tolerant)
   , initial_sequence_id_(initial_sequence_id)
-{}
+{
+}
 } // namespace topic
 
 namespace impl {
 ClientLockReferenceIdGenerator::ClientLockReferenceIdGenerator()
   : reference_id_counter_(0)
-{}
+{
+}
 
 int64_t
 ClientLockReferenceIdGenerator::get_next_reference_id()
@@ -373,7 +375,8 @@ MultiMapImpl::MultiMapEntryListenerMessageCodec::
   MultiMapEntryListenerMessageCodec(std::string name, bool include_value)
   : name_(std::move(name))
   , include_value_(include_value)
-{}
+{
+}
 
 protocol::ClientMessage
 MultiMapImpl::MultiMapEntryListenerMessageCodec::encode_add_request(
@@ -414,7 +417,8 @@ MultiMapImpl::MultiMapEntryListenerToKeyCodec::MultiMapEntryListenerToKeyCodec(
   : name_(std::move(name))
   , include_value_(include_value)
   , key_(std::move(key))
-{}
+{
+}
 
 const std::shared_ptr<std::unordered_set<member>>
   PNCounterImpl::EMPTY_ADDRESS_LIST(new std::unordered_set<member>());
@@ -427,7 +431,8 @@ PNCounterImpl::PNCounterImpl(const std::string& service_name,
   , observed_clock_(
       std::shared_ptr<impl::vector_clock>(new impl::vector_clock()))
   , logger_(context->get_logger())
-{}
+{
+}
 
 std::ostream&
 operator<<(std::ostream& os, const PNCounterImpl& proxy)
@@ -984,7 +989,8 @@ IListImpl::ListListenerMessageCodec::ListListenerMessageCodec(
   bool include_value)
   : name_(std::move(name))
   , include_value_(include_value)
-{}
+{
+}
 
 protocol::ClientMessage
 IListImpl::ListListenerMessageCodec::encode_add_request(bool local_only) const
@@ -1006,7 +1012,8 @@ flake_id_generator_impl::Block::Block(IdBatch&& id_batch,
   : id_batch_(id_batch)
   , invalid_since_(std::chrono::steady_clock::now() + validity)
   , num_returned_(0)
-{}
+{
+}
 
 int64_t
 flake_id_generator_impl::Block::next()
@@ -1052,7 +1059,8 @@ flake_id_generator_impl::IdBatch::IdBatch(int64_t base,
   : base_(base)
   , increment_(increment)
   , batch_size_(batch_size)
-{}
+{
+}
 
 flake_id_generator_impl::IdBatch::IdIterator&
 flake_id_generator_impl::IdBatch::end()
@@ -1074,7 +1082,8 @@ flake_id_generator_impl::IdBatch::IdIterator::IdIterator(
   : base2_(base2)
   , increment_(increment)
   , remaining_(remaining)
-{}
+{
+}
 
 bool
 flake_id_generator_impl::IdBatch::IdIterator::operator==(
@@ -1100,7 +1109,8 @@ flake_id_generator_impl::IdBatch::IdIterator::IdIterator()
   : base2_(-1)
   , increment_(-1)
   , remaining_(-1)
-{}
+{
+}
 
 flake_id_generator_impl::IdBatch::IdIterator&
 flake_id_generator_impl::IdBatch::IdIterator::operator++()
@@ -1355,7 +1365,8 @@ IQueueImpl::QueueListenerMessageCodec::QueueListenerMessageCodec(
   bool include_value)
   : name_(std::move(name))
   , include_value_(include_value)
-{}
+{
+}
 
 protocol::ClientMessage
 IQueueImpl::QueueListenerMessageCodec::encode_add_request(bool local_only) const
@@ -1377,7 +1388,8 @@ ProxyImpl::ProxyImpl(const std::string& service_name,
                      spi::ClientContext* context)
   : ClientProxy(object_name, service_name, *context)
   , SerializingProxy(*context, object_name)
-{}
+{
+}
 
 ProxyImpl::~ProxyImpl() = default;
 
@@ -1387,7 +1399,8 @@ SerializingProxy::SerializingProxy(spi::ClientContext& context,
   , partition_service_(context.get_partition_service())
   , object_name_(object_name)
   , client_context_(context)
-{}
+{
+}
 
 int
 SerializingProxy::get_partition_id(const serialization::pimpl::data& key)
@@ -1516,7 +1529,8 @@ PartitionSpecificClientProxy::PartitionSpecificClientProxy(
   spi::ClientContext* context)
   : ProxyImpl(service_name, object_name, context)
   , partition_id_(-1)
-{}
+{
+}
 
 void
 PartitionSpecificClientProxy::on_initialize()
@@ -1530,7 +1544,8 @@ PartitionSpecificClientProxy::on_initialize()
 IMapImpl::IMapImpl(const std::string& instance_name,
                    spi::ClientContext* context)
   : ProxyImpl("hz:impl:mapService", instance_name, context)
-{}
+{
+}
 
 boost::future<bool>
 IMapImpl::contains_key(const serialization::pimpl::data& key)
@@ -2089,7 +2104,8 @@ IMapImpl::MapEntryListenerMessageCodec::MapEntryListenerMessageCodec(
   : name_(std::move(name))
   , include_value_(include_value)
   , listener_flags_(listener_flags)
-{}
+{
+}
 
 protocol::ClientMessage
 IMapImpl::MapEntryListenerMessageCodec::encode_add_request(
@@ -2135,7 +2151,8 @@ IMapImpl::MapEntryListenerToKeyCodec::MapEntryListenerToKeyCodec(
   , include_value_(include_value)
   , listener_flags_(listener_flags)
   , key_(std::move(key))
-{}
+{
+}
 
 IMapImpl::MapEntryListenerWithPredicateMessageCodec::
   MapEntryListenerWithPredicateMessageCodec(
@@ -2147,7 +2164,8 @@ IMapImpl::MapEntryListenerWithPredicateMessageCodec::
   , include_value_(include_value)
   , listener_flags_(listener_flags)
   , predicate_(std::move(predicate))
-{}
+{
+}
 
 protocol::ClientMessage
 IMapImpl::MapEntryListenerWithPredicateMessageCodec::encode_add_request(
@@ -2173,7 +2191,8 @@ TransactionalQueueImpl::TransactionalQueueImpl(
   const std::string& name,
   txn::TransactionProxy& transaction_proxy)
   : TransactionalObject(iqueue::SERVICE_NAME, name, transaction_proxy)
-{}
+{
+}
 
 boost::future<bool>
 TransactionalQueueImpl::offer(const serialization::pimpl::data& e,
@@ -2320,7 +2339,8 @@ ISetImpl::SetListenerMessageCodec::SetListenerMessageCodec(std::string name,
                                                            bool include_value)
   : name_(std::move(name))
   , include_value_(include_value)
-{}
+{
+}
 
 protocol::ClientMessage
 ISetImpl::SetListenerMessageCodec::encode_add_request(bool local_only) const
@@ -2341,7 +2361,8 @@ ITopicImpl::ITopicImpl(const std::string& instance_name,
                        spi::ClientContext* context)
   : proxy::ProxyImpl("hz:impl:topicService", instance_name, context)
   , partition_id_(get_partition_id(to_data(instance_name)))
-{}
+{
+}
 
 boost::future<void>
 ITopicImpl::publish(const serialization::pimpl::data& data)
@@ -2375,7 +2396,8 @@ ITopicImpl::create_item_listener_codec()
 ITopicImpl::TopicListenerMessageCodec::TopicListenerMessageCodec(
   std::string name)
   : name_(std::move(name))
-{}
+{
+}
 
 protocol::ClientMessage
 ITopicImpl::TopicListenerMessageCodec::encode_add_request(bool local_only) const
@@ -2396,7 +2418,8 @@ ReplicatedMapImpl::ReplicatedMapImpl(const std::string& service_name,
                                      spi::ClientContext* context)
   : ProxyImpl(service_name, object_name, context)
   , target_partition_id_(-1)
-{}
+{
+}
 
 const int32_t RingbufferImpl::MAX_BATCH_SIZE{ 1000 };
 } // namespace proxy
@@ -2498,7 +2521,8 @@ data_entry_view::data_entry_view(serialization::pimpl::data&& key,
   , version_(version)
   , ttl_(ttl)
   , max_idle_(max_idle)
-{}
+{
+}
 } // namespace map
 
 namespace topic {
@@ -2506,7 +2530,8 @@ namespace impl {
 namespace reliable {
 ReliableTopicMessage::ReliableTopicMessage()
   : publish_time_(std::chrono::system_clock::now())
-{}
+{
+}
 
 ReliableTopicMessage::ReliableTopicMessage(
   hazelcast::client::serialization::pimpl::data&& payload_data,
@@ -2595,7 +2620,8 @@ entry_event::entry_event(const std::string& name,
   , value_(std::move(value))
   , old_value_(std::move(old_value))
   , merging_value_(std::move(merging_value))
-{}
+{
+}
 
 const typed_data&
 entry_event::get_key() const
@@ -2659,7 +2685,8 @@ map_event::map_event(member&& member,
   , event_type_(event_type)
   , name_(name)
   , number_of_entries_affected_(number_of_entries_affected)
-{}
+{
+}
 
 const member&
 map_event::get_member() const
@@ -2701,7 +2728,8 @@ item_event_base::item_event_base(const std::string& name,
   : name_(name)
   , member_(member)
   , event_type_(event_type)
-{}
+{
+}
 
 const member&
 item_event_base::get_member() const
@@ -2726,6 +2754,7 @@ item_event_base::~item_event_base() = default;
 flake_id_generator::flake_id_generator(const std::string& object_name,
                                        spi::ClientContext* context)
   : flake_id_generator_impl(SERVICE_NAME, object_name, context)
-{}
+{
+}
 } // namespace client
 } // namespace hazelcast

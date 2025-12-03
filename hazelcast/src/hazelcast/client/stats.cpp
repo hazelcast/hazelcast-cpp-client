@@ -356,7 +356,8 @@ Statistics::PeriodicStatistics::add_near_cache_metric(
 
 Statistics::PeriodicStatistics::PeriodicStatistics(Statistics& statistics)
   : statistics_(statistics)
-{}
+{
+}
 
 std::string
 Statistics::escape_special_characters(std::string& name)
@@ -398,7 +399,8 @@ LocalMapStatsImpl::LocalMapStatsImpl() = default;
 LocalMapStatsImpl::LocalMapStatsImpl(
   const std::shared_ptr<monitor::near_cache_stats>& s)
   : near_cache_stats_(s)
-{}
+{
+}
 
 std::shared_ptr<monitor::near_cache_stats>
 LocalMapStatsImpl::get_near_cache_stats() const
@@ -422,7 +424,8 @@ NearCacheStatsImpl::NearCacheStatsImpl()
   , last_persistence_written_bytes_(0)
   , last_persistence_key_count_(0)
   , last_persistence_failure_("")
-{}
+{
+}
 
 int64_t
 NearCacheStatsImpl::get_creation_time()

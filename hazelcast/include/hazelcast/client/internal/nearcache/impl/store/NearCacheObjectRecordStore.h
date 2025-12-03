@@ -55,7 +55,8 @@ public:
                                      record::NearCacheObjectRecord<V>>(name,
                                                                        config,
                                                                        ss)
-    {}
+    {
+    }
 
 protected:
     int64_t get_key_storage_memory_cost(KS* /* key */) const override

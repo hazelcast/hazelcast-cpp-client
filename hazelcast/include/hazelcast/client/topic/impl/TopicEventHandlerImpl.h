@@ -35,7 +35,7 @@ class TopicEventHandlerImpl
 public:
     TopicEventHandlerImpl(
       const std::string& instance_name,
-      logger &logger,
+      logger& logger,
       spi::impl::ClientClusterServiceImpl& cluster_service,
       serialization::pimpl::SerializationService& serialization_service,
       listener&& message_listener)
@@ -44,7 +44,8 @@ public:
       , cluster_service_(cluster_service)
       , serialization_service_(serialization_service)
       , listener_(std::move(message_listener))
-    {}
+    {
+    }
 
     void handle_topic(serialization::pimpl::data const& item,
                       int64_t publish_time,

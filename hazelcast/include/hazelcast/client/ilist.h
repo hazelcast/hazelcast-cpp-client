@@ -274,7 +274,8 @@ public:
 private:
     ilist(const std::string& instance_name, spi::ClientContext* context)
       : proxy::IListImpl(instance_name, context)
-    {}
+    {
+    }
 };
 } // namespace client
 } // namespace hazelcast

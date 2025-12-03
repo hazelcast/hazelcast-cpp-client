@@ -64,7 +64,8 @@ public:
       , near_cache_config_(
           *context->get_client_config().get_near_cache_config(instance_name))
       , logger_(context->get_logger())
-    {}
+    {
+    }
 
 protected:
     typedef std::unordered_map<std::shared_ptr<serialization::pimpl::data>,
@@ -506,13 +507,15 @@ private:
     public:
         // TODO: implement RepairingTask as in Java client
         ClientMapAddNearCacheEventHandler(
-          logger &logger,
+          logger& logger,
           const std::shared_ptr<
             internal::nearcache::NearCache<serialization::pimpl::data, V>>&
             cache)
-          : protocol::codec::map_addnearcacheinvalidationlistener_handler(logger)
+          : protocol::codec::map_addnearcacheinvalidationlistener_handler(
+              logger)
           , near_cache_(cache)
-        {}
+        {
+        }
 
         void before_listener_register() override { near_cache_->clear(); }
 
@@ -574,7 +577,8 @@ private:
                                            entry_event::type listener_flags)
           : name_(name)
           , listener_flags_(listener_flags)
-        {}
+        {
+        }
 
     private:
         const std::string& name_;

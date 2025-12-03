@@ -151,7 +151,8 @@ TEST_F(CompactSchemaFetchOnRead, sql_read)
                      "'valueFormat' = 'compact', "
                      "'valueCompactTypeName' = '%2%' "
                      ")") %
-       map_name_ % serialization::hz_serializer<sample_compact_type>::type_name())
+       map_name_ %
+       serialization::hz_serializer<sample_compact_type>::type_name())
         .str();
 
     (void)client->get_sql().execute(query).get();

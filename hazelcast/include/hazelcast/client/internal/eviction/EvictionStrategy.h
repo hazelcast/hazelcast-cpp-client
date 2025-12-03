@@ -72,7 +72,7 @@ public:
      */
     virtual int evict(S* /* evictable_store*/,
                       EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E>*
-                        /* eviction_policy_evaluator*/,
+                      /* eviction_policy_evaluator*/,
                       EvictionChecker* /* eviction_checker*/,
                       EvictionListener<A, E>* /* eviction_listener */)
     {
