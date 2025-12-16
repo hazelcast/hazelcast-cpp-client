@@ -9,7 +9,7 @@
 <p align="center">
     <a href="https://hazelcastcommunity.slack.com/channels/cpp-client">
         <img src="https://img.shields.io/badge/slack-chat-green.svg" alt="Chat on Slack">
-    </a>
+    </a>T
     <a href="https://twitter.com/Hazelcast">
         <!-- markdownlint-disable-next-line MD013 -->
         <img src="https://img.shields.io/twitter/follow/Hazelcast.svg?style=flat-square&colorA=1da1f2&colorB=&label=Follow%20on%20Twitter" alt="Follow on Twitter">
