@@ -30,7 +30,7 @@ env:
   BOOST_INCLUDE_FOLDER: 'C:\Boost\include\boost-1_89'
   BOOST_URL: 'https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.gz'
   THRIFT_VERSION: 0.13.0
-  RUN_TESTS: false
+  RUN_TESTS: true
   
 jobs:
 
