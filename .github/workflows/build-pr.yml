@@ -24,13 +24,13 @@ on:
         description: Enter guest PR verified HEAD commit SHA.
         required: true
 env:
-  boost_version: 1.89.0
-  boost_archive_name: 'boost_1_89_0.tar.gz'
-  boost_folder_name: 'boost_1_89_0'
-  boost_include_folder: 'C:\Boost\include\boost-1_89'
-  boost_url: 'https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.gz'
-  thrift_version: 0.13.0
-  run_tests: false
+  BOOST_VERSION: 1.89.0
+  BOOST_ARCHIVE_NAME: 'boost_1_89_0.tar.gz'
+  BOOST_FOLDER_NAME: 'boost_1_89_0'
+  BOOST_INCLUDE_FOLDER: 'C:\Boost\include\boost-1_89'
+  BOOST_URL: 'https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.gz'
+  THRIFT_VERSION: 0.13.0
+  RUN_TESTS: true
   
 jobs:
 
@@ -107,9 +107,9 @@ jobs:
       - uses: ./.github/actions/coverage-report
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          BOOST_VERSION: ${{ env.boost_version }}
-          THRIFT_VERSION: ${{ env.thrift_version }}
-          RUN_TESTS: ${{ env.run_tests }}
+          BOOST_VERSION: ${{ env.BOOST_VERSION }}
+          THRIFT_VERSION: ${{ env.THRIFT_VERSION }}
+          RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -147,12 +147,12 @@ jobs:
       - uses: ./.github/actions/build-test/ubuntu-i386
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          BOOST_VERSION: ${{ env.boost_version }}
-          THRIFT_VERSION: ${{ env.thrift_version }}
+          BOOST_VERSION: ${{ env.BOOST_VERSION }}
+          THRIFT_VERSION: ${{ env.THRIFT_VERSION }}
           BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
-          RUN_TESTS: ${{ env.run_tests }}
+          RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -183,12 +183,12 @@ jobs:
       - uses: ./.github/actions/build-test/ubuntu-x86_64
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          BOOST_VERSION: ${{ env.boost_version }}
-          THRIFT_VERSION: ${{ env.thrift_version }}
+          BOOST_VERSION: ${{ env.BOOST_VERSION }}
+          THRIFT_VERSION: ${{ env.THRIFT_VERSION }}
           BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
-          RUN_TESTS: ${{ env.run_tests }}
+          RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -217,8 +217,8 @@ jobs:
       - uses: ./.github/actions/build-test/windows
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          BOOST_VERSION: ${{ env.boost_version }}
-          THRIFT_VERSION: ${{ env.thrift_version }}
+          BOOST_VERSION: ${{ env.BOOST_VERSION }}
+          THRIFT_VERSION: ${{ env.THRIFT_VERSION }}
           BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
@@ -226,12 +226,12 @@ jobs:
           ARCH_ADDRESS_MODEL: ${{ matrix.options.address_model }}
           ARCH_CMAKE: ${{ matrix.options.cmake }}
           INSTALL_BOOST: true
-          BOOST_URL: ${{ env.boost_url }}
-          BOOST_ARCHIVE_NAME: ${{ env.boost_archive_name }}
-          BOOST_FOLDER_NAME: ${{ env.boost_folder_name }}
-          BOOST_INCLUDE_FOLDER: ${{ env.boost_include_folder }}
+          BOOST_URL: ${{ env.BOOST_URL }}
+          BOOST_ARCHIVE_NAME: ${{ env.BOOST_ARCHIVE_NAME }}
+          BOOST_FOLDER_NAME: ${{ env.BOOST_FOLDER_NAME }}
+          BOOST_INCLUDE_FOLDER: ${{ env.BOOST_INCLUDE_FOLDER }}
           INSTALL_THRIFT: true
-          RUN_TESTS: ${{ env.run_tests }}
+          RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -263,11 +263,11 @@ jobs:
       - uses: ./.github/actions/build-test/macos-x86_64
         with:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          BOOST_VERSION: ${{ env.boost_version }}
+          BOOST_VERSION: ${{ env.BOOST_VERSION }}
           BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
-          RUN_TESTS: ${{ env.run_tests }}
+          RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
