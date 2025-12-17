@@ -150,7 +150,7 @@ runs:
             -DBUILD_EXAMPLES=OFF
 
     - name: Test
-      if: ${{ inputs.run_tests == 'true' }}
+      if: ${{ inputs.RUN_TESTS == 'true' }}
       env:
         BUILD_DIR: build
         BUILD_CONFIGURATION: ${{ inputs.BUILD_TYPE }}
