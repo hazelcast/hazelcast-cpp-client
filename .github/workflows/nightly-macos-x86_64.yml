@@ -3,7 +3,7 @@ name: nightly-macOS-x86_64
 on:
   workflow_dispatch:
     inputs:
-      run_tests:
+      RUN_TESTS:
         type: boolean
         description: Enable/Disable test stage
         default: true
@@ -45,7 +45,7 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
-          RUN_TESTS: ${{ inputs.run_tests || github.event_name == 'schedule' }}
+          RUN_TESTS: ${{ inputs.RUN_TESTS || github.event_name == 'schedule' }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
