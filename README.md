@@ -16,7 +16,10 @@
     </a>
     <a href="LICENSE">
         <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="Apache 2.0 license badge">
-    </a>    
+    </a>
+    <a href="https://codecov.io/gh/hazelcast/hazelcast-cpp-client" >
+        <img src="https://codecov.io/gh/hazelcast/hazelcast-cpp-client/graph/badge.svg?token=gBxWdOCTlX"/>
+    </a>
 </p>
 
 ---
