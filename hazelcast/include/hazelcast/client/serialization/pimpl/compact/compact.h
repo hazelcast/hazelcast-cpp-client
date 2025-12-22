@@ -69,8 +69,7 @@ namespace compact {
  *      static void write(const T& object, compact_writer &out);
  *      static T read(compact_reader &in);
  *
- * @Beta
- * @since 5.1
+ * @since 5.6
  */
 class compact_serializer
 {};
@@ -84,8 +83,7 @@ class compact_serializer
  * return it. Providing default values might be especially useful if the class
  * might evolve in the future, either by adding or removing fields.
  *
- * @Beta
- * @since 5.1
+ * @since 5.6
  */
 class HAZELCAST_API compact_reader
 {
@@ -762,8 +760,7 @@ private:
 /**
  *  Provides means of writing compact serialized fields to the binary data.
  *
- * @Beta
- * @since 5.1
+ * @since 5.6
  */
 class HAZELCAST_API compact_writer
 {
