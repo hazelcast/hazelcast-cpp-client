@@ -388,7 +388,7 @@ The underlying format of the compact serialized objects is platform and language
 
 Refer to [documentation](https://docs.hazelcast.com/hazelcast/latest/compact-binary-specification) for more details about compact binary serialization.
 ### 4.3.1. Compact Serializer
-Another way to use compact serialization is to implement the `hz_serializer<T> : compact::compact_serializer` specialization for a `T`. A basic serializer could look like:
+You need to implement the `hz_serializer<T> : compact::compact_serializer` specialization for a `T` to use compact serialization for object type `T`. A basic serializer could look like:
 
 ``` C++
 class PersonDTO
