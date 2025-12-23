@@ -296,11 +296,14 @@ jobs:
 
       - name: Check formatting
         run: |
+          source /dev/stdin <<< "$(curl --silent https://raw.githubusercontent.com/hazelcast/github-actions-common-scripts/main/logging.functions.sh)"
+
           git-clang-format \
             ${{ needs.get-refs.outputs.base-sha }} \
             -- \
             hazelcast
 
           if ! git --no-pager diff; then
+            echoerr "Code not formatted as expected"
             exit 1
           fi
