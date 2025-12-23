@@ -301,6 +301,6 @@ jobs:
             -- \
             hazelcast
 
-          if ! git diff; then
+          if ! git --no-pager diff; then
             exit 1
           fi
