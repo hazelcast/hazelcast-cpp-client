@@ -1,6 +1,6 @@
 #
 # Workflow: Build&Test PR for Hazelcast organization members
-# This workflow builds multiple configurations for MacOS, Windows, Ubuntu i386 and Ubuntu x64
+# This workflow builds multiple configurations for MacOS, Windows, Ubuntu x64
 # If all the builds and tests are success, the PR can be merged.
 # It also runs code-coverage and upload the result as an artifact.
 
@@ -117,47 +117,6 @@ jobs:
 
   shared-matrix:
     uses: ./.github/workflows/get-shared-matrix.yml
-
-  Ubuntu-i386:
-    needs:
-      - get-refs
-      - shared-matrix
-    strategy:
-      fail-fast: false
-      matrix:
-        build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
-        shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
-        with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
-
-    runs-on: ubuntu-latest
-    container:
-      image: i386/ubuntu
-      options: --privileged
-
-    name: ubuntu-i386-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
-
-    steps:
-        # Deliberately uses an old version because i386 is stuck on an outdated version of Javascript
-      - name: Checkout Code
-        uses: actions/checkout@v1
-        with:
-          ref: ${{ needs.get-refs.outputs.ref }}
-          token: ${{ secrets.GH_TOKEN }}
-
-      - uses: ./.github/actions/build-test/ubuntu-i386
-        with:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          BOOST_VERSION: ${{ env.BOOST_VERSION }}
-          THRIFT_VERSION: ${{ env.THRIFT_VERSION }}
-          BUILD_TYPE: ${{ matrix.build_type }}
-          SHARED_LIBS_TOGGLE: ${{ matrix.shared_libs.toggle }}
-          OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
-          RUN_TESTS: ${{ env.RUN_TESTS }}
-          HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
-
 
   Ubuntu-x86_64:
     needs:
