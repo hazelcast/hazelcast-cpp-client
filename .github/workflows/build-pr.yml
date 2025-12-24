@@ -1,6 +1,6 @@
 #
 # Workflow: Build&Test PR for Hazelcast organization members
-# This workflow builds multiple configurations for MacOS, Windows, Ubuntu x64
+# This workflow builds multiple configurations for MacOS, Windows, Ubuntu
 # If all the builds and tests are success, the PR can be merged.
 # It also runs code-coverage and upload the result as an artifact.
 
