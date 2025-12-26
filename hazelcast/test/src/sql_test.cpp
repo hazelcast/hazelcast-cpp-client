@@ -491,11 +491,11 @@ protected:
         std::vector<int32_t> instance_mapping(members.size());
 
         for (size_t i = 0; i < members.size(); i++) {
-            std::string curr_uuid = get_uuid_of_instance(i);
+            std::string curr_uuid = get_uuid_of_instance((int32_t) i);
 
             for (size_t j = 0; j < members.size(); j++) {
                 if (curr_uuid == to_string(members[j].get_uuid())) {
-                    instance_mapping[j] = i;
+                    instance_mapping[j] = (int32_t) i;
                 }
             }
         }
@@ -775,7 +775,7 @@ protected:
 
         for (size_t i = 0; i < members.size(); i++) {
             if (members[i].get_uuid() == owner) {
-                return i;
+                return (int32_t) i;
             }
         }
 
@@ -788,7 +788,7 @@ protected:
 
         std::vector<int32_t> member_2_instance_mapping =
           prepare_member_to_instance_mapping();
-        int32_t members_size = client.get_cluster().get_members().size();
+        int32_t members_size = (int32_t) client.get_cluster().get_members().size();
         // warm up cache
         client.get_sql().execute(sql, 0).get();
 
@@ -1723,7 +1723,8 @@ TEST_F(SqlTest, find_with_page_sync_iterator)
     create_mapping();
     auto numbers = populate_map(map, 500);
 
-    auto searchee = numbers[numbers.size() / 2];
+    int index = (int) (numbers.size() / 2);
+    auto searchee = numbers[index];
     auto result = select_all();
 
     auto found_page_itr = std::find_if(
@@ -1753,7 +1754,8 @@ TEST_F(SqlTest, find_with_row_sync_iterator)
     create_mapping();
     auto numbers = populate_map(map, 500);
 
-    auto searchee = numbers[numbers.size() / 2];
+    int index =  (int) (numbers.size() / 2);
+    auto searchee = numbers[index];
     auto result = select_all();
 
     auto found_row_itr =
@@ -2167,7 +2169,7 @@ TEST_F(SqlTest, test_partition_based_routing_complex_type_test)
             .str(),
           boost::none,
           "value-1",
-          student{ 2, 1.72 });
+          student{ 2, 1.72f });
     } catch (exception::iexception& ie) {
         auto msg = ie.get_message();
         ASSERT_NE(
@@ -2186,19 +2188,19 @@ TEST_F(SqlTest, test_partition_based_routing_complex_key)
     check_partition_argument_index(
       (boost::format("SELECT * FROM %1% WHERE __key = ?") % map_name).str(),
       boost::make_optional<int32_t>(0),
-      student{ 2, 1.72 });
+      student{ 2, 1.72f });
 
     check_partition_argument_index(
       (boost::format("UPDATE %1% SET this = ? WHERE __key = ?") % map_name)
         .str(),
       boost::make_optional<int32_t>(1),
       "testVal",
-      student{ 2, 1.72 });
+      student{ 2, 1.72f });
 
     check_partition_argument_index(
       (boost::format("DELETE FROM %1% WHERE __key = ?") % map_name).str(),
       boost::make_optional<int32_t>(0),
-      student{ 2, 1.72 });
+      student{ 2, 1.72f });
 }
 
 TEST_F(SqlTest, test_routing_for_select)
@@ -2408,7 +2410,7 @@ public:
     {
     }
 
-    int32_t get_cache_size() { return this->cache_.size(); }
+    int32_t get_cache_size() { return (int32_t) this->cache_.size(); }
 
     V get_cache_value(K k) { return this->cache_.get(k)->value_; }
 };
@@ -2429,13 +2431,13 @@ TEST_F(read_optimized_lru_cache_test, construction_test)
     using cache_type = sql::impl::read_optimized_lru_cache<int32_t, int32_t>;
     std::shared_ptr<cache_type> lru_cache;
 
-    EXPECT_THROW(std::make_shared<cache_type>(0, 0),
+    EXPECT_THROW(lru_cache = std::make_shared<cache_type>(0, 0),
                  exception::illegal_argument);
 
-    EXPECT_THROW(std::make_shared<cache_type>(10, 5),
+    EXPECT_THROW(lru_cache = std::make_shared<cache_type>(10, 5),
                  exception::illegal_argument);
 
-    EXPECT_NO_THROW(std::make_shared<cache_type>(10, 15));
+    EXPECT_NO_THROW(lru_cache = std::make_shared<cache_type>(10, 15));
 }
 
 TEST_F(read_optimized_lru_cache_test, put_test)
