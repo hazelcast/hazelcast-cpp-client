@@ -1179,7 +1179,7 @@ public:
         bool isNull = (nullptr == value);
         if (isNull) {
             auto* h = reinterpret_cast<frame_header_type*>(
-              wr_ptr(sizeof(frame_header_type)));
+              wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -1196,9 +1196,9 @@ public:
     inline void set(const std::string& value, bool is_final = false)
     {
         auto h = reinterpret_cast<frame_header_type*>(
-          wr_ptr(sizeof(frame_header_type)));
+          wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         auto len = value.length();
-        h->frame_len = sizeof(frame_header_type) + len;
+        h->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + len;
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
         }
@@ -1286,7 +1286,7 @@ public:
     {
         if (value.data_size() == 0) {
             auto* h = reinterpret_cast<frame_header_type*>(
-              wr_ptr(sizeof(frame_header_type)));
+              wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
             *h = null_frame();
             if (is_final) {
                 h->flags |= IS_FINAL_FLAG;
@@ -1294,7 +1294,7 @@ public:
             return;
         }
         auto& bytes = value.to_byte_array();
-        auto frame_length = sizeof(frame_header_type) + bytes.size();
+        auto frame_length = SIZE_OF_FRAME_LENGTH_AND_FLAGS + bytes.size();
         auto fp = wr_ptr(frame_length);
         auto* header = reinterpret_cast<frame_header_type*>(fp);
         header->frame_len = frame_length;
@@ -1345,7 +1345,7 @@ public:
     void set(const std::vector<T>& values, bool is_final = false)
     {
         auto* h = reinterpret_cast<frame_header_type*>(
-          wr_ptr(sizeof(frame_header_type)));
+          wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         *h = begin_frame();
 
         for (auto& item : values) {
@@ -1353,7 +1353,7 @@ public:
         }
 
         h = reinterpret_cast<frame_header_type*>(
-          wr_ptr(sizeof(frame_header_type)));
+          wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         *h = end_frame();
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
@@ -1569,14 +1569,14 @@ private:
     void add_begin_frame()
     {
         auto* f = reinterpret_cast<frame_header_type*>(
-          wr_ptr(sizeof(frame_header_type)));
+          wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         *f = begin_frame();
     }
 
     void add_end_frame(bool is_final)
     {
         auto ef = reinterpret_cast<frame_header_type*>(
-          wr_ptr(sizeof(frame_header_type)));
+          wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
         *ef = end_frame();
         if (is_final) {
             ef->flags |= IS_FINAL_FLAG;
