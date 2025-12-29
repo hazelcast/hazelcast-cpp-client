@@ -118,7 +118,7 @@ TEST_F(default_log_handler_test, test_format)
     int day, mon, year, hr, mn, sec, ms;
     char lev[64], tid[64], msg[64], ins_grp[64], ver[64];
 
- #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable : 4996) // for dll export
 #endif   
