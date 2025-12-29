@@ -400,7 +400,8 @@ ClientMessage::fast_forward_to_end_frame()
         }
 
         // skip current frame
-        rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+        rd_ptr(static_cast<int32_t>(f->frame_len) -
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS);
     }
 }
 
