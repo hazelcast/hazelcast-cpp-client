@@ -39,11 +39,6 @@
 #include "hazelcast/client/local_date_time.h"
 #include "hazelcast/client/offset_date_time.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace client {
 class hazelcast_client;
@@ -2915,7 +2910,3 @@ typed_data::get() const
 } // namespace hazelcast
 
 #include "hazelcast/client/serialization/pimpl/compact/compact_impl.h"
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

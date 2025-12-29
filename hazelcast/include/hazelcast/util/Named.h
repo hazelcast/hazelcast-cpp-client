@@ -19,7 +19,6 @@
 #include <string>
 
 #include "hazelcast/util/export.h"
-
 namespace hazelcast {
 namespace util {
 class HAZELCAST_API Named

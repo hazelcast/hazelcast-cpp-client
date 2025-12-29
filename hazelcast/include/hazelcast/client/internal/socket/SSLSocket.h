@@ -67,8 +67,4 @@ operator<<(std::ostream& out, const SSLSocket::CipherInfo& info);
 } // namespace client
 } // namespace hazelcast
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
 #endif /* HZ_BUILD_WITH_SSL */

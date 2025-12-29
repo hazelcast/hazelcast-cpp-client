@@ -16,7 +16,6 @@
 #pragma once
 
 #include "hazelcast/util/export.h"
-
 #include <string>
 #include <boost/thread/future.hpp>
 
@@ -79,7 +78,3 @@ public:
 
 } // namespace client
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

@@ -22,7 +22,6 @@
 
 #include "hazelcast/util/byte.h"
 #include "hazelcast/util/export.h"
-
 namespace hazelcast {
 namespace client {
 namespace impl {

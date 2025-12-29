@@ -17,7 +17,6 @@
 
 #include <functional>
 #include "hazelcast/util/export.h"
-
 namespace hazelcast {
 namespace util {
 /**

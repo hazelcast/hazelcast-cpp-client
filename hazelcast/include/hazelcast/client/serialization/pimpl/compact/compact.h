@@ -29,11 +29,6 @@
 #include "hazelcast/client/serialization/pimpl/compact/default_schema_service.h"
 #include "hazelcast/client/serialization/pimpl/compact/schema_writer.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace client {
 namespace spi {

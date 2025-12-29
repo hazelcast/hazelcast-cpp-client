@@ -29,11 +29,6 @@
 #include "hazelcast/client/transactional_list.h"
 #include "hazelcast/client/transactional_set.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace std {
 template<>
 class HAZELCAST_API hash<std::pair<std::string, std::string>>
@@ -208,7 +203,3 @@ private:
 };
 } // namespace client
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
