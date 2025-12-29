@@ -120,7 +120,8 @@ TEST_F(default_log_handler_test, test_format)
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable : 4996) // for dll export
+#pragma warning(disable : 4996) // suppress unsecure std::sscanf warning.
+                                // Not a problem for our test.
 #endif   
     int read =
       std::sscanf(sstrm_.str().c_str(),
