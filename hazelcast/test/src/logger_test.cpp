@@ -4,7 +4,6 @@
 #include <thread>
 
 #include <gtest/gtest.h>
-#include <boost/format.hpp>
 
 #include <hazelcast/logger.h>
 
