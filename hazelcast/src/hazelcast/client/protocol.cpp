@@ -66,7 +66,7 @@ ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame)
 {
     auto* initial_frame =
       reinterpret_cast<frame_header_type*>(wr_ptr(REQUEST_HEADER_LEN));
-    initial_frame->frame_len = (int32_t) initial_frame_size;
+    initial_frame->frame_len = (int32_t)initial_frame_size;
     initial_frame->flags =
       is_fingle_frame
         ? static_cast<int16_t>(ClientMessage::UNFRAGMENTED_MESSAGE) |
@@ -114,8 +114,8 @@ ClientMessage::set(
 {
     auto* f = reinterpret_cast<frame_header_type*>(
       wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-    f->frame_len = (int32_t)
-      (values.size() * (UUID_SIZE + INT64_SIZE) + SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+    f->frame_len = (int32_t)(values.size() * (UUID_SIZE + INT64_SIZE) +
+                             SIZE_OF_FRAME_LENGTH_AND_FLAGS);
     f->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
     for (auto& p : values) {
         set(p.first);
@@ -129,7 +129,8 @@ ClientMessage::set(const std::vector<boost::uuids::uuid>& values, bool is_final)
 {
     auto* h = reinterpret_cast<frame_header_type*>(
       wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-    h->frame_len = (int32_t) (SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * UUID_SIZE);
+    h->frame_len =
+      (int32_t)(SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * UUID_SIZE);
     h->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
     for (auto& v : values) {
         set(v);

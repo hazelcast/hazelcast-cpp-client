@@ -122,7 +122,7 @@ TEST_F(default_log_handler_test, test_format)
 #pragma warning(push)
 #pragma warning(disable : 4996) // suppress unsecure std::sscanf warning.
                                 // Not a problem for our test.
-#endif   
+#endif
     int read =
       std::sscanf(sstrm_.str().c_str(),
                   "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s\n",

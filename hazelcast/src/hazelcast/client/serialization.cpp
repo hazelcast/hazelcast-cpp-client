@@ -534,7 +534,7 @@ ClassDefinition::write_data(pimpl::data_output& data_output)
     data_output.write<int32_t>(factory_id_);
     data_output.write<int32_t>(class_id_);
     data_output.write<int32_t>(version_);
-    data_output.write<int16_t>((int16_t) field_definitions_map_.size());
+    data_output.write<int16_t>((int16_t)field_definitions_map_.size());
     for (auto& entry : field_definitions_map_) {
         entry.second.write_data(data_output);
     }
@@ -783,7 +783,7 @@ data_output::write(const std::string& str)
         return;
     }
 
-    write<int32_t>((int32_t) str.size());
+    write<int32_t>((int32_t)str.size());
     output_stream_.insert(output_stream_.end(), str.begin(), str.end());
 }
 

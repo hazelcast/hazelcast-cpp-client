@@ -82,7 +82,7 @@ T inline compact_reader::read_primitive(
   const pimpl::field_descriptor& field_descriptor)
 {
     return object_data_input.read<T>(
-      (int) read_fixed_size_position(field_descriptor));
+      (int)read_fixed_size_position(field_descriptor));
 }
 
 template<>
@@ -481,7 +481,7 @@ default_compact_writer::write_array_of_variable_size(
     size_t data_length_offset = object_data_output_.position();
     object_data_output_.write_zero_bytes(util::Bits::INT_SIZE_IN_BYTES);
     const auto& v = value.value();
-    int item_count = (int) v.size();
+    int item_count = (int)v.size();
     object_data_output_.write<int32_t>(item_count);
     size_t offset = object_data_output_.position();
     std::vector<int32_t> offsets(item_count);
@@ -544,7 +544,7 @@ typename std::enable_if<std::is_same<std::vector<bool>, T>::value, void>::type
 default_compact_writer::write(const T& value)
 {
     auto len = value.size();
-    object_data_output_.write<int32_t>((int32_t) len);
+    object_data_output_.write<int32_t>((int32_t)len);
     size_t position = object_data_output_.position();
     if (len > 0) {
         int index = 0;

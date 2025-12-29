@@ -426,7 +426,7 @@ hz_snprintf(char* str, size_t len, const char* format, ...)
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     int result = vsnprintf_s(str, len, _TRUNCATE, format, args);
     if (result < 0) {
-        return len > 0 ? (int) (len - 1) : 0;
+        return len > 0 ? (int)(len - 1) : 0;
     }
     va_end(args);
     return result;

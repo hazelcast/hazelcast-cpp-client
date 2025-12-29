@@ -642,7 +642,7 @@ query_utils::throw_public_exception(std::exception_ptr exc,
 {
     try {
         std::rethrow_exception(exc);
-    } catch (hazelcast_sql_exception& ) {
+    } catch (hazelcast_sql_exception&) {
         throw;
     } catch (exception::query& e) {
         auto originating_member_id = e.originating_member_uuid();
@@ -720,7 +720,7 @@ query_utils::member_of_same_larger_version_group(
 
     // otherwise return a random member from the larger group
     static thread_local std::mt19937 generator;
-    std::uniform_int_distribution<int> distribution(0, (int) (count - 1));
+    std::uniform_int_distribution<int> distribution(0, (int)(count - 1));
     auto random_member_index = distribution(generator);
     for (const auto& m : members) {
         if (!m.is_lite_member() && m.get_version() == version) {

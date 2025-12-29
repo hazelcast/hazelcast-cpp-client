@@ -3041,7 +3041,7 @@ cluster_view_listener::try_register(
 
           try {
               f.get();
-          } catch (exception::hazelcast_client_not_active& ) {
+          } catch (exception::hazelcast_client_not_active&) {
               /**
                * If client is shutdown, we should not retry for another
                * connection
