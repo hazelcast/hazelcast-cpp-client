@@ -2548,7 +2548,7 @@ compact_reader::read_var_size_position(
 {
     int32_t index = field_descriptor.index;
     int32_t offset =
-      get_offset(object_data_input, (uint32_t) variable_offsets_position, index);
+      get_offset(object_data_input, (uint32_t)variable_offsets_position, index);
     return offset == pimpl::offset_reader::NULL_OFFSET
              ? pimpl::offset_reader::NULL_OFFSET
              : offset + data_start_position;

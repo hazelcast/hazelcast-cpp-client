@@ -491,11 +491,11 @@ protected:
         std::vector<int32_t> instance_mapping(members.size());
 
         for (size_t i = 0; i < members.size(); i++) {
-            std::string curr_uuid = get_uuid_of_instance((int32_t) i);
+            std::string curr_uuid = get_uuid_of_instance((int32_t)i);
 
             for (size_t j = 0; j < members.size(); j++) {
                 if (curr_uuid == to_string(members[j].get_uuid())) {
-                    instance_mapping[j] = (int32_t) i;
+                    instance_mapping[j] = (int32_t)i;
                 }
             }
         }
@@ -775,7 +775,7 @@ protected:
 
         for (size_t i = 0; i < members.size(); i++) {
             if (members[i].get_uuid() == owner) {
-                return (int32_t) i;
+                return (int32_t)i;
             }
         }
 
@@ -788,7 +788,8 @@ protected:
 
         std::vector<int32_t> member_2_instance_mapping =
           prepare_member_to_instance_mapping();
-        int32_t members_size = (int32_t) client.get_cluster().get_members().size();
+        int32_t members_size =
+          (int32_t)client.get_cluster().get_members().size();
         // warm up cache
         client.get_sql().execute(sql, 0).get();
 
@@ -1723,7 +1724,7 @@ TEST_F(SqlTest, find_with_page_sync_iterator)
     create_mapping();
     auto numbers = populate_map(map, 500);
 
-    int index = (int) (numbers.size() / 2);
+    int index = (int)(numbers.size() / 2);
     auto searchee = numbers[index];
     auto result = select_all();
 
@@ -1754,7 +1755,7 @@ TEST_F(SqlTest, find_with_row_sync_iterator)
     create_mapping();
     auto numbers = populate_map(map, 500);
 
-    int index =  (int) (numbers.size() / 2);
+    int index = (int)(numbers.size() / 2);
     auto searchee = numbers[index];
     auto result = select_all();
 
@@ -2410,7 +2411,7 @@ public:
     {
     }
 
-    int32_t get_cache_size() { return (int32_t) this->cache_.size(); }
+    int32_t get_cache_size() { return (int32_t)this->cache_.size(); }
 
     V get_cache_value(K k) { return this->cache_.get(k)->value_; }
 };

@@ -66,7 +66,7 @@ public:
         size_t length = bytes.size();
         check_available(length);
         memcpy(&(bytes[0]), &(buffer_[pos_]), length);
-        pos_ += (int) length;
+        pos_ += (int)length;
     }
 
     inline void read_fully(std::vector<int8_t>& bytes)
@@ -74,7 +74,7 @@ public:
         size_t length = bytes.size();
         check_available(length);
         memcpy(&(bytes[0]), &(buffer_[pos_]), length);
-        pos_ += (int32_t) length;
+        pos_ += (int32_t)length;
     }
 
     inline int skip_bytes(int i)
@@ -98,7 +98,7 @@ public:
       std::is_same<char, typename std::remove_cv<T>::type>::value,
       T>::type inline read()
     {
-        return (char) read<char16_t>();
+        return (char)read<char16_t>();
     }
 
     template<typename T>
@@ -287,7 +287,7 @@ private:
         check_available(byte_count);
         std::string value(reinterpret_cast<const char*>(&buffer_[pos_]),
                           byte_count);
-        pos_ += (int) byte_count;
+        pos_ += (int)byte_count;
         return value;
     }
 
