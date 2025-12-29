@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {

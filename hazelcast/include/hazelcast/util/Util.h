@@ -25,6 +25,7 @@
 #include <chrono>
 
 #include "hazelcast/util/export.h"
+
 #define HAZELCAST_STRINGIZE(STR) HAZELCAST_INTERNAL_STRINGIZE(STR)
 #define HAZELCAST_INTERNAL_STRINGIZE(STR) #STR
 

@@ -15,9 +15,6 @@
  */
 #pragma once
 
-#include <memory>
-
-#include "hazelcast/util/export.h"
 #include <mutex>
 #include <deque>
 #include <vector>

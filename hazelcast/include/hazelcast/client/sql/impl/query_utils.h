@@ -16,6 +16,7 @@
 #pragma once
 
 #include "hazelcast/util/export.h"
+
 namespace hazelcast {
 namespace client {
 namespace sql {

@@ -18,6 +18,7 @@
 #include <memory>
 
 #include "hazelcast/util/export.h"
+
 #ifdef HZ_BUILD_WITH_SSL
 
 #include <boost/asio.hpp>

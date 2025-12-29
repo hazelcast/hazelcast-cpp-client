@@ -159,7 +159,7 @@ message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
     # suppress warning about DLL-interface dll export, users do import but we export in library.
-    target_compile_options(${PROJECT_NAME} PRIVATE /wd4251)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4251 /wd4275)
 endif ()
 
 # AppleClang-specific compiler flags, we set for all targets since we want these flags also for tests and examples
