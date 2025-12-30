@@ -3346,7 +3346,8 @@ init_fp_table()
     for (int i = 0; i < 256; ++i) {
         uint64_t fp = i;
         for (int j = 0; j < 8; ++j) {
-            fp = (fp >> 1) ^ (rabin_finger_print::INIT & -(fp & 1L));
+            fp = (fp >> 1) ^ (rabin_finger_print::INIT &
+                              (static_cast<uint64_t>(-1) * (fp & 1L)));
         }
         FP_TABLE[i] = fp;
     }
