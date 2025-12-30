@@ -16,6 +16,7 @@
 #pragma once
 
 #include "hazelcast/util/export.h"
+
 #include <string>
 #include <boost/thread/future.hpp>
 
