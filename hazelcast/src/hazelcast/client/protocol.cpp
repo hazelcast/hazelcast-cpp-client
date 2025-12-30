@@ -390,7 +390,7 @@ ClientMessage::fast_forward_to_end_frame()
     int number_expected_frames = 1;
     while (number_expected_frames) {
         auto* f = reinterpret_cast<frame_header_type*>(
-          rd_ptr(sizeof(frame_header_type)));
+          rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
 
         int16_t flags = f->flags;
         if (is_flag_set(flags, END_DATA_STRUCTURE_FLAG)) {
@@ -400,7 +400,8 @@ ClientMessage::fast_forward_to_end_frame()
         }
 
         // skip current frame
-        rd_ptr(static_cast<int32_t>(f->frame_len) - sizeof(frame_header_type));
+        rd_ptr(static_cast<int32_t>(f->frame_len) -
+               SIZE_OF_FRAME_LENGTH_AND_FLAGS);
     }
 }
 
