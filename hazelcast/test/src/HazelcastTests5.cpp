@@ -1203,7 +1203,7 @@ TEST_P(ClientMapTest, testPutIfAbsentTtl)
 {
     ASSERT_FALSE((imap_
                     ->put_if_absent<std::string, std::string>(
-                      "key1", "value1", std::chrono::seconds(1))
+                      "key1", "value1", std::chrono::seconds(10))
                     .get()
                     .has_value()));
     ASSERT_EQ("value1",
@@ -1213,11 +1213,15 @@ TEST_P(ClientMapTest, testPutIfAbsentTtl)
                  .get()
                  .value()));
 
-    ASSERT_FALSE_EVENTUALLY((imap_
-                               ->put_if_absent<std::string, std::string>(
-                                 "key1", "value3", std::chrono::seconds(1))
-                               .get()
-                               .has_value()));
+    ASSERT_FALSE_EVENTUALLY(
+      (imap_->get<std::string, std::string>("key1").get().has_value()));
+
+    ASSERT_FALSE((imap_
+                    ->put_if_absent<std::string, std::string>(
+                      "key1", "value3", std::chrono::seconds(10))
+                    .get()
+                    .has_value()));
+
     ASSERT_EQ("value3",
               (imap_
                  ->put_if_absent<std::string, std::string>(
