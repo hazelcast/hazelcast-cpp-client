@@ -33,11 +33,6 @@
 #include "hazelcast/client/sql/sql_service.h"
 #include "hazelcast/client/serialization/pimpl/compact/compact.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 class logger;
 namespace client {
@@ -281,7 +276,3 @@ hazelcast_client_instance_impl::get_distributed_object(const std::string& name);
 } // namespace impl
 } // namespace client
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

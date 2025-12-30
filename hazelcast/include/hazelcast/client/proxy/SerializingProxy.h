@@ -22,11 +22,6 @@
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/entry_view.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace client {
 namespace connection {
@@ -479,7 +474,3 @@ SerializingProxy::invoke_and_get_future(protocol::ClientMessage& request,
 } // namespace proxy
 } // namespace client
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

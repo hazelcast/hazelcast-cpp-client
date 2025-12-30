@@ -18,11 +18,6 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/local_date_time.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace client {
 /**
@@ -72,7 +67,3 @@ struct HAZELCAST_API hash<hazelcast::client::offset_date_time>
     std::size_t operator()(const hazelcast::client::offset_date_time& f) const;
 };
 } // namespace std
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
