@@ -757,7 +757,7 @@ twos_complement(std::vector<int8_t>& a)
     }
     // add 1
     int8_t carry = 1;
-    for (int i = a.size() - 1; i >= 0; i--) {
+    for (auto i = a.size() - 1; i >= 0; i--) {
         a[i] = a[i] + carry;
         if (a[i] == 0) {
             carry = 1;
