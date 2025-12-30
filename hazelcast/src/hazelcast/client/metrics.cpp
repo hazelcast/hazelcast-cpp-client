@@ -103,9 +103,11 @@ zlib_compress(const std::vector<byte>& input)
         output.push_back(
           static_cast<byte>(is_final));         // BFINAL = is_final, BTYPE = 00
         output.push_back(block_size & 0xff);    // LEN - least significant
-        output.push_back(static_cast<byte>(block_size >> 8));      // LEN - most significant
+        output.push_back(
+          static_cast<byte>(block_size >> 8));  // LEN - most significant
         output.push_back((~block_size) & 0xff); // NLEN - least significant
-        output.push_back(static_cast<byte>((~block_size) >> 8));   // NLEN - most significant
+        output.push_back(
+          static_cast<byte>((~block_size) >> 8)); // NLEN - most significant
 
         // copy uncompressed bytes and accumulate checksum
         for (std::size_t i = block_start; i < block_end; i++) {
