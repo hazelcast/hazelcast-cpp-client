@@ -25,11 +25,6 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/pimpl/compact/schema.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace client {
 namespace serialization {
@@ -130,7 +125,3 @@ public:
       const noexcept;
 };
 } // namespace std
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

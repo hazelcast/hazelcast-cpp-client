@@ -6,12 +6,6 @@
 #include <mutex>
 
 #include "hazelcast/util/export.h"
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 #ifndef HZ_LOGGING_DISABLED
 #define HZ_LOG(lg, lvl, msg)                                                   \
     if ((lg).enabled(::hazelcast::logger::level::lvl)) {                       \
@@ -72,7 +66,3 @@ HAZELCAST_API std::ostream&
 operator<<(std::ostream&, logger::level level);
 
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

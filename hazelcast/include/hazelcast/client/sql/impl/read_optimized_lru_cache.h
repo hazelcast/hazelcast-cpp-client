@@ -18,7 +18,6 @@
 #include <queue>
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/export.h"
-
 namespace hazelcast {
 namespace client {
 namespace sql {
