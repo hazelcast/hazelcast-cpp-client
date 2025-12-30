@@ -1196,8 +1196,8 @@ public:
     inline void set(const std::string& value, bool is_final = false)
     {
         auto h = reinterpret_cast<frame_header_type*>(
-          wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-        int32_t len = (int32_t)value.length();
+            wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+        auto len = (int32_t)value.length();
         h->frame_len = (int32_t)SIZE_OF_FRAME_LENGTH_AND_FLAGS + len;
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
