@@ -24,7 +24,6 @@
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/serialization/pimpl/compact/field_descriptor.h"
 
-
 namespace hazelcast {
 namespace client {
 namespace serialization {
@@ -66,4 +65,3 @@ operator<<(std::ostream& os, const schema& schema);
 } // namespace serialization
 } // namespace client
 } // namespace hazelcast
-
