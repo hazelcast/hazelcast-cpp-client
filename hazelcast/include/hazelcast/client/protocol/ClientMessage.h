@@ -1192,8 +1192,8 @@ public:
     {
         auto h = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-        auto len = value.length();
-        h->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + len;
+        int32_t len = (int32_t)value.length();
+        h->frame_len = (int32_t)SIZE_OF_FRAME_LENGTH_AND_FLAGS + len;
         if (is_final) {
             h->flags |= IS_FINAL_FLAG;
         }
@@ -1212,7 +1212,7 @@ public:
 
         auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-        f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
+        f->frame_len = (int32_t)SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
         set(static_cast<int32_t>(a.get_port()));
 
@@ -1231,7 +1231,7 @@ public:
 
         auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-        f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
+        f->frame_len = (int32_t)SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
         set(static_cast<int32_t>(c.type));
 
@@ -1249,7 +1249,7 @@ public:
 
         auto f = reinterpret_cast<frame_header_type*>(
           wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
-        f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
+        f->frame_len = (int32_t)SIZE_OF_FRAME_LENGTH_AND_FLAGS + INT32_SIZE;
         f->flags = DEFAULT_FLAGS;
         set(static_cast<int32_t>(o.transformation));
 
@@ -1292,7 +1292,7 @@ public:
         auto frame_length = SIZE_OF_FRAME_LENGTH_AND_FLAGS + bytes.size();
         auto fp = wr_ptr(frame_length);
         auto* header = reinterpret_cast<frame_header_type*>(fp);
-        header->frame_len = frame_length;
+        header->frame_len = (int32_t)frame_length;
         header->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
         std::memcpy(
           fp + SIZE_OF_FRAME_LENGTH_AND_FLAGS, &bytes[0], bytes.size());
@@ -1515,7 +1515,7 @@ private:
                               bool is_final = false)
     {
         int32_t len =
-          SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * sizeof(T);
+          (int32_t)(SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * sizeof(T));
         auto memory = wr_ptr(len);
         auto* h = reinterpret_cast<frame_header_type*>(memory);
         h->frame_len = len;
