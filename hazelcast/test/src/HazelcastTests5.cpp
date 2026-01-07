@@ -1189,8 +1189,8 @@ TEST_P(ClientMapTest, testPutTtl)
 
 TEST_P(ClientMapTest, testPutConfigTtl)
 {
-    if (client_.get_client_config().get_near_cache_config(ONE_SECOND_MAP_NAME) !=
-        nullptr) {
+    if (client_.get_client_config().get_near_cache_config(
+          ONE_SECOND_MAP_NAME) != nullptr) {
         GTEST_SKIP_(
           "Server side expiry does not send near cache invalidations. "
           "See https://github.com/hazelcast/hazelcast/issues/10975");
@@ -1278,8 +1278,8 @@ TEST_P(ClientMapTest, testSetTtl)
 
 TEST_P(ClientMapTest, testSetConfigTtl)
 {
-    if (client_.get_client_config().get_near_cache_config(ONE_SECOND_MAP_NAME) !=
-        nullptr) {
+    if (client_.get_client_config().get_near_cache_config(
+          ONE_SECOND_MAP_NAME) != nullptr) {
         GTEST_SKIP_(
           "Server side expiry does not send near cache invalidations. "
           "See https://github.com/hazelcast/hazelcast/issues/10975");
