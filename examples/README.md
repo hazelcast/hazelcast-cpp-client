@@ -72,5 +72,5 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
 ## How to Build and Run the Examples
 
 See reference
-manual [Advanced Installation section](https://docs.hazelcast.com/hazelcast/5.6/clients/cplusplus#advanced-installation)
+manual [Advanced Installation section](https://docs.hazelcast.com/hazelcast/latest/clients/cplusplus#advanced-installation)
 to build and run the examples.
