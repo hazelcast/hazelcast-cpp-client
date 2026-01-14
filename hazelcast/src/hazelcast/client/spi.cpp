@@ -1792,9 +1792,20 @@ operator<<(std::ostream& os, const ClientInvocation& invocation)
     } else {
         target << "random";
     }
-    os << "ClientInvocation{"
-       << "requestMessage = " << *invocation.client_message_.load()->get()
-       << ", objectName = " << invocation.object_name_
+    auto client_message = invocation.client_message_.load();
+    os << "ClientInvocation{ ";
+    os << "requestMessage = ";
+    if (client_message) {
+        auto msg_ptr = *client_message;
+        if (msg_ptr) {
+            os << *msg_ptr;
+        } else {
+            os << "null message";
+        }
+    } else {
+        os << "nullptr";
+    }
+    os << ", objectName = " << invocation.object_name_
        << ", target = " << target.str() << ", sendConnection = ";
     auto sendConnection = invocation.get_send_connection();
     if (sendConnection) {
@@ -1900,7 +1911,11 @@ ClientInvocation::create(spi::ClientContext& client_context,
 std::shared_ptr<connection::Connection>
 ClientInvocation::get_send_connection() const
 {
-    return send_connection_.load()->lock();
+    auto sent_connection = send_connection_.load();
+    if (!sent_connection) {
+        return nullptr;
+    }
+    return sent_connection->lock();
 }
 
 void
