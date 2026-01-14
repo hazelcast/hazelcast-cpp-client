@@ -3,7 +3,7 @@
 - Start server:
 
 ```bash
-java -jar hazelcast-enterprise-<SERVER VERSION>.jar    
+java -jar hazelcast-<SERVER VERSION>.jar    
 ```
 
 - Run client test:
