@@ -20,11 +20,7 @@
 using namespace hazelcast::client;
 
 /**
- * Important note: Please make sure a cluster is running and management center
- * is enabled at the members and url's point to the management center url where
- * the management center is started. See the example configuration file
- * `hazelcast-management-center-enabled.xml` for member configuration.
- *
+ * This example demonstrates how to enable client statistics.
  */
 int
 main()
