@@ -99,6 +99,8 @@ jobs:
   # run for code-coverage and upload the result as an artifact.
   code-coverage:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     needs: get-refs
     
     name: Code Coverage
@@ -116,8 +118,7 @@ jobs:
           THRIFT_VERSION: ${{ env.THRIFT_VERSION }}
           RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   shared-matrix:
@@ -135,6 +136,8 @@ jobs:
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
 
     name: ubuntu-x64-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
@@ -154,8 +157,7 @@ jobs:
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   Windows:
@@ -171,6 +173,8 @@ jobs:
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: 'windows-latest'
+    permissions:
+      id-token: write
     name: windows-${{ matrix.options.address_model }}-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
       - uses: actions/checkout@v5
@@ -197,8 +201,7 @@ jobs:
           INSTALL_THRIFT: true
           RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   macOS-x86_64:
@@ -213,6 +216,8 @@ jobs:
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
     runs-on: macos-latest
+    permissions:
+      id-token: write
 
     name: macOS-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     env:
@@ -233,8 +238,7 @@ jobs:
           OPENSSL_TOGGLE: ${{ matrix.with_openssl.toggle }}
           RUN_TESTS: ${{ env.RUN_TESTS }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
   enforce-code-formatting:
