@@ -68,3 +68,9 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
 **tls** — Example for showing how to configure SSL/TLS encryption for cluster communication.
 
 **transactions** — Illustrates the usage of transactions in the cluster.
+
+## How to Build and Run the Examples
+
+See reference
+manual [Advanced Installation section](https://docs.hazelcast.com/hazelcast/latest/clients/cplusplus#advanced-installation)
+to build and run the examples.
