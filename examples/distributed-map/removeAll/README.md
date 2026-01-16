@@ -1,4 +1,4 @@
 # RemoveAll Example
 
-Write the java class corresponding to the `Person`, class and put the class or jar (`<my_factory>.jar`) into the
+Write the Java class corresponding to the `Person`, class and put the class or jar (`<my_factory>.jar`) into the
 classpath when starting the server and also add a server config for adding the serializer factory to the server.

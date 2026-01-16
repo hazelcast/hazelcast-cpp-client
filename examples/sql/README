@@ -8,6 +8,6 @@ hazelcast config xml file (or similarly with yaml or embedded server configurati
 A sample xml file is shared in this example folder.
 
 In order to run the portable example (`sql_query_with_portable`), you need to
-write the java class corresponding to the `Person` class, it's serializer class and put that class or
+Write the Java class corresponding to the `Person` class, it's serializer class and put that class or
 jar (`<my_factory>.jar`) into the classpath when starting the server and also add a server config for adding the
 serializer factory to the server.
