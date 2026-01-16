@@ -16,7 +16,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(hazelcast-cpp-client-benchmark
-        VERSION 5.6.0
+        VERSION 5.6.1
         DESCRIPTION "Hazelcast C++ Client Benchmark Project"
         LANGUAGES CXX)
 
