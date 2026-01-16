@@ -1,16 +1,6 @@
 # CP Subsystem Examples
 
-- Start server:
+This is an enterprise feature. Make sure you are running Hazelcast Enterprise Edition cluster to use these examples.
 
-```bash
-java -jar hazelcast-enterprise-<SERVER VERSION>.jar   
-```
-
-- Run client tests:
-
-```bash
-./build/examples/cp/atomic_long 
-./build/examples/cp/fenced_lock 
-./build/examples/cp/counting_semphore 
-./build/examples/cp/latch 
-```
+You can find the detailed information about Hazelcast CP Subsystem and how to quick start
+at [Quickstart](https://docs.hazelcast.com/hazelcast/latest/cp-subsystem/configuration#quickstart).

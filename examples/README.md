@@ -73,4 +73,27 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
 
 See reference
 manual [Advanced Installation section](https://docs.hazelcast.com/hazelcast/latest/clients/cplusplus#advanced-installation)
-to build and run the examples.
+to build the examples (Basically, you use the `-DBUILD_EXAMPLES=ON` flag for cmake).
+
+In order to run the examples, you need to have a Hazelcast cluster
+running. You can either use a local Hazelcast cluster or a Hazelcast
+Cloud cluster. For local Hazelcast cluster, you can follow the instructions
+in the [Start a Local Cluster in Docker](https://docs.hazelcast.com/hazelcast/latest/getting-started/get-started-docker)
+to set up a Hazelcast cluster on your local machine.
+
+Some examples may require Enterprise features. In that case, you need to have a Hazelcast
+Enterprise cluster running. For local Hazelcast Enterprise cluster,
+you can follow the instructions in
+the [Get started with Hazelcast Enterprise Edition](https://docs.hazelcast.com/hazelcast/latest/getting-started/get-started-enterprise)
+to set up a Hazelcast Enterprise cluster on your local machine.
+
+Some examples may require additional configuration on the server side. The server configuration xml files are provided
+in the respective example folders. You can use these configuration files when starting the Hazelcast server instances.
+
+Once you have a Hazelcast cluster running, you can run the examples which you already built as described above. The
+built example binaries are located in the `<BUILD_FOLDER_PATH>/examples/` folder. Navigate to the respective example
+folder and run the example binary. You can also see the example binary name in the CMakeLists.txt file located at
+the respective example folder.
+
+In order to run some of the examples, you may need to provide the additional jar files at the server classpath. The
+required jar files are mentioned in the respective example README files.
