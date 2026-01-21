@@ -70,12 +70,14 @@ jobs:
 
           # doc-index.html
           sed -i \
-            "/Development Branch/a\<li><a href=\"https://github.com/${GITHUB_REPOSITORY}/blob/${{ needs.prepare.outputs.tag_name }}/Reference_Manual.md\">${{ inputs.BRANCH_NAME }}</a></li>" \
+            "/Development Branch/a\\
+              <li><a href=\"https://github.com/${GITHUB_REPOSITORY}/blob/${{ needs.prepare.outputs.tag_name }}/Reference_Manual.md\">${{ inputs.BRANCH_NAME }}</a></li>" \
             "${GH_PAGES_BRANCH}/doc-index.html"
 
           # api-index.html
           sed -i \
-            "/<ul>/a\  <li><a href=\"${{ inputs.BRANCH_NAME }}/index.html\">${{ inputs.BRANCH_NAME }}</a></li>" \
+            "/<ul>/a\\
+              <li><a href=\"${{ inputs.BRANCH_NAME }}/index.html\">${{ inputs.BRANCH_NAME }}</a></li>" \
             "${GH_PAGES_BRANCH}/api-index.html"
 
       - name: Create Pull Request
