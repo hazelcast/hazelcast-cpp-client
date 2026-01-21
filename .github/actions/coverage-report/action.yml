@@ -69,12 +69,22 @@ runs:
             -DBUILD_TESTS=ON           \
             -DBUILD_EXAMPLES=OFF
 
+    - name: Configure AWS credentials
+      if: ${{ inputs.RUN_TESTS == 'true' }}
+      id: aws-credentials
+      uses: aws-actions/configure-aws-credentials@v5
+      with:
+        role-to-assume: ${{ inputs.AWS_ROLE_TO_ASSUME }}
+        aws-region: 'us-east-1'
+        output-credentials: true
+
     - name: Test
       if: ${{ inputs.RUN_TESTS == 'true' }}
       env:
         BUILD_DIR: build
         HAZELCAST_ENTERPRISE_KEY: ${{ inputs.HAZELCAST_ENTERPRISE_KEY }}
-        AWS_ROLE_TO_ASSUME: ${{ inputs.AWS_ROLE_TO_ASSUME }}
+        AWS_ACCESS_KEY_ID: ${{ steps.aws-credentials.outputs.aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ steps.aws-credentials.outputs.aws-secret-access-key }}
         HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ inputs.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
         BUILD_TYPE: ${{ env.BUILD_TYPE }}
       shell: bash
