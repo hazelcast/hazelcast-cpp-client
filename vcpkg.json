@@ -29,8 +29,12 @@
       "version>=": "1.89.0"
     },
     {
-      "name": "boost-property-tree",
-      "version>=": "1.88.0"
+      "name": "boost-unordered",
+      "version>=": "1.89.0"
+    },
+    {
+      "name": "boost-lockfree",
+      "version>=": "1.89.0"
     },
     {
       "name": "boost-system",
