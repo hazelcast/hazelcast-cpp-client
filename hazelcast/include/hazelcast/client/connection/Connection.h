@@ -100,6 +100,8 @@ public:
 
     int get_connection_id() const;
 
+    int64_t allocate_call_id();
+
     bool is_alive() const;
 
     std::chrono::steady_clock::time_point last_read_time() const;
@@ -156,6 +158,7 @@ private:
     std::atomic_bool alive_;
     std::unique_ptr<boost::asio::steady_timer> backup_timer_;
     std::atomic<std::chrono::steady_clock::duration> last_write_time_;
+    std::atomic<int32_t> call_id_counter_{ 0 };
 
     void schedule_periodic_backup_cleanup(
       std::chrono::milliseconds backup_timeout,

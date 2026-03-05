@@ -1419,6 +1419,25 @@ Connection::get_connection_id() const
     return connection_id_;
 }
 
+int64_t
+Connection::allocate_call_id()
+{
+    auto call_id = ++call_id_counter_;
+    struct correlation_id
+    {
+        int32_t connection_id;
+        int32_t call_id;
+    };
+    union
+    {
+        int64_t id;
+        correlation_id composed_id;
+    } c_id_union;
+
+    c_id_union.composed_id = { connection_id_, call_id };
+    return c_id_union.id;
+}
+
 bool
 Connection::is_alive() const
 {

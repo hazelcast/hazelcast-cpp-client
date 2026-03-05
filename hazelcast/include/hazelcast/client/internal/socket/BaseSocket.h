@@ -15,11 +15,13 @@
  */
 #pragma once
 
-#include <unordered_map>
+#include <atomic>
 #include <deque>
+#include <unordered_map>
 
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
+#include <boost/lockfree/queue.hpp>
 
 #include "hazelcast/client/socket.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -48,6 +50,7 @@ public:
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io)
+      , write_queue_(128)
     {
     }
 
@@ -70,6 +73,7 @@ public:
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io, context)
+      , write_queue_(128)
     {
     }
 #endif // HZ_BUILD_WITH_SSL
@@ -110,6 +114,7 @@ public:
         }
 
         socket_.lowest_layer().native_non_blocking(true);
+        connection_ = connection;
         do_read(std::move(connection));
     }
 
@@ -117,34 +122,22 @@ public:
       const std::shared_ptr<connection::Connection> connection,
       const std::shared_ptr<spi::impl::ClientInvocation> invocation) override
     {
-        check_connection(connection, invocation);
+        if (!check_connection(connection, invocation)) {
+            return;
+        }
+
         auto message = invocation->get_client_message();
-        boost::asio::post(
-          socket_strand_, [connection, invocation, message, this]() mutable {
-              if (!check_connection(connection, invocation)) {
-                  return;
-              }
 
-              add_invocation_to_map(connection, invocation, message);
+        // Heap-allocate entry for lock-free queue (requires raw pointers)
+        auto* e = new write_entry{ std::move(message) };
+        write_queue_.push(e);
 
-              auto& datas = message->get_buffer();
-
-              entry outbox_entry;
-              outbox_entry.buffers.reserve(datas.size());
-              for (const auto& data : datas) {
-                  outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
-              }
-              outbox_entry.message = std::move(message);
-              outbox_entry.invocation = std::move(invocation);
-              this->outbox_.push_back(std::move(outbox_entry));
-
-              if (this->outbox_.size() > 1) {
-                  // async write is in progress
-                  return;
-              }
-
-              do_write(connection);
-          });
+        // Schedule flush on strand if not already scheduled
+        if (!flush_scheduled_.exchange(true, std::memory_order_acq_rel)) {
+            boost::asio::post(socket_strand_, [this, connection]() {
+                flush_write_queue(connection);
+            });
+        }
     }
 
     // always called from within the socket_strand_
@@ -152,6 +145,12 @@ public:
     {
         boost::system::error_code ignored;
         socket_.lowest_layer().close(ignored);
+
+        // Drain write queue to prevent memory leaks
+        write_entry* e;
+        while (write_queue_.pop(e)) {
+            delete e;
+        }
     }
 
     address get_address() const override
@@ -249,33 +248,62 @@ protected:
             }));
     }
 
-    void do_write(const std::shared_ptr<connection::Connection> connection)
+    // Called on strand: drain lock-free queue, batch into scatter-gather
+    // buffers, single async_write syscall
+    void flush_write_queue(
+      const std::shared_ptr<connection::Connection>& connection)
     {
-        auto handler = [connection, this](const boost::system::error_code& ec,
-                                          std::size_t /* bytes_written */) {
-            auto invocation = std::move(outbox_[0].invocation);
-            this->outbox_.pop_front();
+        flush_scheduled_.store(false, std::memory_order_release);
 
-            if (ec) {
-                auto message =
-                  (boost::format{ "Error %1% during invocation write for %2% "
-                                  "on connection %3%" } %
-                   ec % *invocation % *connection)
-                    .str();
-                connection->close(message);
-            } else {
-                // update the connection write time
+        if (write_in_progress_) {
+            return; // completion handler will re-trigger flush
+        }
+
+        // Drain queue into batch
+        batch_buffers_.clear();
+        batch_messages_.clear();
+
+        write_entry* e;
+        while (write_queue_.pop(e)) {
+            auto& datas = e->message->get_buffer();
+            for (const auto& data : datas) {
+                batch_buffers_.emplace_back(boost::asio::buffer(data));
+            }
+            batch_messages_.push_back(std::move(e->message));
+            delete e;
+        }
+
+        if (batch_buffers_.empty()) {
+            return;
+        }
+
+        write_in_progress_ = true;
+        boost::asio::async_write(
+          socket_,
+          batch_buffers_,
+          socket_strand_.wrap(
+            [this, connection](const boost::system::error_code& ec,
+                               std::size_t /* bytes_written */) {
+                write_in_progress_ = false;
+                batch_buffers_.clear();
+                batch_messages_.clear();
+
+                if (ec) {
+                    connection->close(
+                      (boost::format(
+                         "Error %1% during batch write on connection %2%") %
+                       ec % *connection)
+                        .str());
+                    return;
+                }
+
                 connection->last_write_time(std::chrono::steady_clock::now());
 
-                if (!this->outbox_.empty()) {
-                    do_write(connection);
+                // Check for more entries that arrived during write
+                if (!write_queue_.empty()) {
+                    flush_write_queue(connection);
                 }
-            }
-        };
-
-        const auto& message = outbox_[0].buffers;
-        boost::asio::async_write(
-          socket_, message, socket_strand_.wrap(handler));
+            }));
     }
 
     virtual void post_connect() {}
@@ -298,40 +326,6 @@ protected:
         return true;
     }
 
-    inline int64_t generate_new_call_id(
-      const std::shared_ptr<connection::Connection>& connection)
-    {
-        auto call_id = ++call_id_counter_;
-        struct correlation_id
-        {
-            int32_t connnection_id;
-            int32_t call_id;
-        };
-        union
-        {
-            int64_t id;
-            correlation_id composed_id;
-        } c_id_union;
-
-        c_id_union.composed_id = { connection->get_connection_id(), call_id };
-        return c_id_union.id;
-    }
-
-    inline void add_invocation_to_map(
-      const std::shared_ptr<connection::Connection>& connection,
-      const std::shared_ptr<spi::impl::ClientInvocation>& invocation,
-      std::shared_ptr<protocol::ClientMessage> message)
-    {
-        int64_t message_call_id;
-        do {
-            message_call_id = generate_new_call_id(connection);
-        } while (
-          !connection->invocations.insert({ message_call_id, invocation })
-             .second);
-
-        message->set_correlation_id(message_call_id);
-    }
-
     client::config::socket_options& socket_options_;
     address remote_endpoint_;
     boost::asio::io_context& io_;
@@ -339,16 +333,24 @@ protected:
     std::chrono::milliseconds connect_timeout_;
     boost::asio::ip::tcp::resolver& resolver_;
     T socket_;
-    int32_t call_id_counter_{ 0 };
-    struct entry
+
+    // Connection reference, set during connect()
+    std::shared_ptr<connection::Connection> connection_;
+
+    // Lock-free MPSC write queue entry
+    struct write_entry
     {
-        std::vector<boost::asio::const_buffer> buffers;
-        std::shared_ptr<spi::impl::ClientInvocation> invocation;
         std::shared_ptr<protocol::ClientMessage> message;
     };
 
-    typedef std::deque<entry> Outbox;
-    Outbox outbox_;
+    // Lock-free MPSC write queue: user threads push, IO strand drains
+    boost::lockfree::queue<write_entry*> write_queue_;
+    std::atomic<bool> flush_scheduled_{ false };
+
+    // Strand-only state for batch writing
+    bool write_in_progress_{ false };
+    std::vector<boost::asio::const_buffer> batch_buffers_;
+    std::vector<std::shared_ptr<protocol::ClientMessage>> batch_messages_;
 };
 } // namespace socket
 } // namespace internal
