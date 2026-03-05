@@ -1252,7 +1252,7 @@ Connection::Connection(
   std::chrono::milliseconds& connect_timeout_in_millis,
   boost::asio::io_context& io,
   boost::asio::ip::tcp::resolver& resolver)
-  : read_handler(*this, 16 << 10)
+  : read_handler(*this, 128 << 10)
   , start_time_(std::chrono::system_clock::now())
   , closed_time_duration_()
   , client_context_(client_context)
