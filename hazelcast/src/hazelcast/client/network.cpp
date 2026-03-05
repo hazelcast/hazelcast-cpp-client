@@ -21,6 +21,7 @@
 #include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientResponseHandler.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
@@ -1385,16 +1386,6 @@ Connection::handle_client_message(
   const std::shared_ptr<protocol::ClientMessage>& message)
 {
     auto correlationId = message->get_correlation_id();
-    auto invocationIterator = invocations.find(correlationId);
-    if (invocationIterator == invocations.end()) {
-        HZ_LOG(logger_,
-               warning,
-               boost::str(boost::format("No invocation for callId:  %1%. "
-                                        "Dropping this message: %2%") %
-                          correlationId % *message));
-        return;
-    }
-    auto invocation = invocationIterator->second;
     auto flags = message->get_header_flags();
     if (message->is_flag_set(flags,
                              protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
@@ -1403,10 +1394,22 @@ Connection::handle_client_message(
         client_context_.get_connection_manager().notify_backup(correlationId);
     } else if (message->is_flag_set(flags,
                                     protocol::ClientMessage::IS_EVENT_FLAG)) {
+        auto invocationIterator = invocations.find(correlationId);
+        if (invocationIterator == invocations.end()) {
+            HZ_LOG(logger_,
+                   warning,
+                   boost::str(
+                     boost::format("No invocation for callId: %1%. "
+                                   "Dropping event message: %2%") %
+                     correlationId % *message));
+            return;
+        }
         client_context_.get_client_listener_service().handle_client_message(
-          invocation, message);
+          invocationIterator->second, message);
     } else {
-        invocation_service_.handle_client_message(invocation, message);
+        client_context_.get_invocation_service()
+          .get_response_handler()
+          .enqueue(correlationId, message);
     }
 }
 
