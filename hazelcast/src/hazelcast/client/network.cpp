@@ -1729,12 +1729,8 @@ wait_strategy::sleep()
 
 namespace internal {
 namespace socket {
-SocketFactory::SocketFactory(spi::ClientContext& client_context,
-                             boost::asio::io_context& io,
-                             boost::asio::ip::tcp::resolver& resolver)
+SocketFactory::SocketFactory(spi::ClientContext& client_context)
   : client_context_(client_context)
-  , io_(io)
-  , io_resolver_(resolver)
 {
 }
 
@@ -1801,37 +1797,38 @@ SocketFactory::start()
         }
     }
 #else
-    (void)client_context_;
 #endif
     return true;
 }
 
 std::unique_ptr<hazelcast::client::socket>
 SocketFactory::create(const address& address,
-                      std::chrono::milliseconds& connect_timeout_in_millis)
+                      std::chrono::milliseconds& connect_timeout_in_millis,
+                      boost::asio::io_context& io,
+                      boost::asio::ip::tcp::resolver& resolver)
 {
 #ifdef HZ_BUILD_WITH_SSL
     if (ssl_context_.get()) {
         return std::unique_ptr<hazelcast::client::socket>(
-          new internal::socket::SSLSocket(io_,
+          new internal::socket::SSLSocket(io,
                                           *ssl_context_,
                                           address,
                                           client_context_.get_client_config()
                                             .get_network_config()
                                             .get_socket_options(),
                                           connect_timeout_in_millis,
-                                          io_resolver_));
+                                          resolver));
     }
 #endif
 
     return std::unique_ptr<hazelcast::client::socket>(
-      new internal::socket::TcpSocket(io_,
+      new internal::socket::TcpSocket(io,
                                       address,
                                       client_context_.get_client_config()
                                         .get_network_config()
                                         .get_socket_options(),
                                       connect_timeout_in_millis,
-                                      io_resolver_));
+                                      resolver));
 }
 
 #ifdef HZ_BUILD_WITH_SSL
