@@ -80,6 +80,8 @@ public:
 
     const client_property& get_io_thread_count() const;
 
+    const client_property& get_response_thread_count() const;
+
     const client_property& get_shuffle_member_list() const;
 
     const client_property& get_max_concurrent_invocations() const;
@@ -194,6 +196,15 @@ public:
     static const std::string IO_THREAD_COUNT;
     static const std::string IO_THREAD_COUNT_DEFAULT;
 
+
+    /**
+     * Number of response threads for processing invocation completions.
+     * Response threads offload promise completion from IO threads,
+     * preventing IO thread blocking during future notification.
+     * This mirrors Java client's response thread architecture.
+     */
+    static const std::string RESPONSE_THREAD_COUNT;
+    static const std::string RESPONSE_THREAD_COUNT_DEFAULT;
 
     /**
      * Client shuffles the given member list to prevent all clients to connect
@@ -330,6 +341,7 @@ private:
     client_property event_thread_count_;
     client_property internal_executor_pool_size_;
     client_property io_thread_count_;
+    client_property response_thread_count_;
     client_property shuffle_member_list_;
     client_property max_concurrent_invocations_;
     client_property backpressure_backoff_timeout_millis_;
