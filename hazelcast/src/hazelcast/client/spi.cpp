@@ -802,6 +802,11 @@ ClientInvocationServiceImpl::send(
           protocol::ClientMessage::BACKUP_AWARE_FLAG);
     }
 
+    // Register in global map BEFORE writing (mirrors Java registerInvocation)
+    auto correlation_id =
+      invocation->get_client_message()->get_correlation_id();
+    register_invocation(correlation_id, invocation);
+
     write_to_connection(*connection, invocation);
     invocation->set_send_connection(connection);
     return true;
@@ -814,6 +819,35 @@ ClientInvocationServiceImpl::write_to_connection(
 {
     auto clientMessage = client_invocation->get_client_message();
     connection.write(client_invocation);
+}
+
+void
+ClientInvocationServiceImpl::register_invocation(
+  int64_t correlation_id,
+  const std::shared_ptr<ClientInvocation>& invocation)
+{
+    invocations_.insert_or_assign(correlation_id, invocation);
+}
+
+bool
+ClientInvocationServiceImpl::deregister_invocation(int64_t correlation_id)
+{
+    return invocations_.erase(correlation_id) > 0;
+}
+
+std::shared_ptr<ClientInvocation>
+ClientInvocationServiceImpl::get_invocation(int64_t correlation_id)
+{
+    std::shared_ptr<ClientInvocation> result;
+    invocations_.visit(correlation_id,
+                       [&result](const auto& pair) { result = pair.second; });
+    return result;
+}
+
+spi::ClientContext&
+ClientInvocationServiceImpl::get_client_context()
+{
+    return client_;
 }
 
 void

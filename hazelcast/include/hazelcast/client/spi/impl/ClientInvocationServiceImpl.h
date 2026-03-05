@@ -18,6 +18,9 @@
 
 #include <atomic>
 #include <chrono>
+#include <memory>
+
+#include <boost/unordered/concurrent_flat_map.hpp>
 
 #include "hazelcast/util/export.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
@@ -74,6 +77,16 @@ public:
 
     void add_backup_listener();
 
+    void register_invocation(
+      int64_t correlation_id,
+      const std::shared_ptr<ClientInvocation>& invocation);
+
+    bool deregister_invocation(int64_t correlation_id);
+
+    std::shared_ptr<ClientInvocation> get_invocation(int64_t correlation_id);
+
+    spi::ClientContext& get_client_context();
+
 private:
     class BackupListenerMessageCodec : public ListenerMessageCodec
     {
@@ -102,6 +115,8 @@ private:
     bool backup_acks_enabled_;
     bool fail_on_indeterminate_operation_state_;
     std::chrono::milliseconds backup_timeout_;
+    boost::concurrent_flat_map<int64_t, std::shared_ptr<ClientInvocation>>
+      invocations_;
 
     static void write_to_connection(
       connection::Connection& connection,
