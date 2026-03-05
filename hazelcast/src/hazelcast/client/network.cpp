@@ -114,16 +114,14 @@ ClientConnectionManagerImpl::start()
         return false;
     }
 
-    io_context_.reset(new boost::asio::io_context);
-    io_resolver_.reset(
-      new boost::asio::ip::tcp::resolver(io_context_->get_executor()));
-    socket_factory_.reset(new internal::socket::SocketFactory(
-      client_, *io_context_, *io_resolver_));
-    auto guard = boost::asio::make_work_guard(*io_context_);
-    io_guard_ = std::unique_ptr<
-      boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
-      new boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>(std::move(guard)));
+    auto& props = client_.get_client_properties();
+    int io_thread_count = props.get_integer(props.get_io_thread_count());
+    if (io_thread_count <= 0) {
+        io_thread_count = util::IOUtil::to_value<int>(
+            client_properties::IO_THREAD_COUNT_DEFAULT);
+    }
+
+    socket_factory_.reset(new internal::socket::SocketFactory(client_));
 
     if (!socket_factory_->start()) {
         return false;
@@ -131,7 +129,21 @@ ClientConnectionManagerImpl::start()
 
     socket_interceptor_ = client_.get_client_config().get_socket_interceptor();
 
-    io_thread_ = std::thread([=]() { io_context_->run(); });
+    for (int i = 0; i < io_thread_count; ++i) {
+        auto ctx = std::unique_ptr<boost::asio::io_context>(
+            new boost::asio::io_context);
+        io_guards_.push_back(
+            std::unique_ptr<boost::asio::executor_work_guard<
+                boost::asio::io_context::executor_type>>(
+            new boost::asio::executor_work_guard<
+                boost::asio::io_context::executor_type>(
+                    boost::asio::make_work_guard(*ctx))));
+        io_resolvers_.push_back(std::unique_ptr<boost::asio::ip::tcp::resolver>(
+            new boost::asio::ip::tcp::resolver(ctx->get_executor())));
+        auto raw_ctx = ctx.get();
+        io_contexts_.push_back(std::move(ctx));
+        io_threads_.emplace_back([raw_ctx]() { raw_ctx->run(); });
+    }
 
     executor_.reset(
       new hazelcast::util::hz_thread_pool(EXECUTOR_CORE_POOL_SIZE));
@@ -192,9 +204,18 @@ ClientConnectionManagerImpl::shutdown()
     spi::impl::ClientExecutionServiceImpl::shutdown_thread_pool(
       executor_.get());
 
-    // release the guard so that the io thread can stop gracefully
-    io_guard_.reset();
-    io_thread_.join();
+    // release the guards so that the io threads can stop gracefully
+    for (auto& guard : io_guards_) {
+        guard.reset();
+    }
+    for (auto& thread : io_threads_) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+    io_contexts_.clear();
+    io_guards_.clear();
+    io_resolvers_.clear();
 
     connection_listeners_.clear();
     active_connections_.clear();
@@ -1062,12 +1083,15 @@ ClientConnectionManagerImpl::connect(const address& addr)
            info,
            boost::str(boost::format("Trying to connect to %1%.") % addr));
 
+    auto idx = next_io_index_.fetch_add(1) % io_contexts_.size();
     auto connection = std::make_shared<Connection>(addr,
                                                    client_,
                                                    ++connection_id_gen_,
                                                    *socket_factory_,
                                                    *this,
-                                                   connection_timeout_millis_);
+                                                   connection_timeout_millis_,
+                                                   *io_contexts_[idx],
+                                                   *io_resolvers_[idx]);
     connection->connect();
 
     // call the interceptor from user thread
@@ -1204,7 +1228,9 @@ Connection::Connection(
   int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
   internal::socket::SocketFactory& socket_factory,
   ClientConnectionManagerImpl& client_connection_manager,
-  std::chrono::milliseconds& connect_timeout_in_millis)
+  std::chrono::milliseconds& connect_timeout_in_millis,
+  boost::asio::io_context& io,
+  boost::asio::ip::tcp::resolver& resolver)
   : read_handler(*this, 16 << 10)
   , start_time_(std::chrono::system_clock::now())
   , closed_time_duration_()
@@ -1217,7 +1243,7 @@ Connection::Connection(
   , last_write_time_(std::chrono::steady_clock::now().time_since_epoch())
 {
     (void)client_connection_manager;
-    socket_ = socket_factory.create(address, connect_timeout_in_millis);
+    socket_ = socket_factory.create(address, connect_timeout_in_millis, io, resolver);
 }
 
 Connection::~Connection() = default;

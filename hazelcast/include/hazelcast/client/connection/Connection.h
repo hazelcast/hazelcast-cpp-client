@@ -70,7 +70,9 @@ public:
                int32_t connection_id,
                internal::socket::SocketFactory& socket_factory,
                ClientConnectionManagerImpl& client_connection_manager,
-               std::chrono::milliseconds& connect_timeout_in_millis);
+               std::chrono::milliseconds& connect_timeout_in_millis,
+               boost::asio::io_context& io,
+               boost::asio::ip::tcp::resolver& resolver);
 
     ~Connection() override;
 
