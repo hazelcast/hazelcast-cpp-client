@@ -34,6 +34,7 @@
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientResponseHandler.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"

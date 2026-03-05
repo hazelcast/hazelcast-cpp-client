@@ -32,6 +32,7 @@ namespace client {
 namespace spi {
 class ClientContext;
 namespace impl {
+class ClientResponseHandler;
 class HAZELCAST_API ClientInvocationServiceImpl
   : public protocol::IMessageHandler
 {
@@ -87,6 +88,8 @@ public:
 
     spi::ClientContext& get_client_context();
 
+    ClientResponseHandler& get_response_handler();
+
 private:
     class BackupListenerMessageCodec : public ListenerMessageCodec
     {
@@ -117,6 +120,7 @@ private:
     std::chrono::milliseconds backup_timeout_;
     boost::concurrent_flat_map<int64_t, std::shared_ptr<ClientInvocation>>
       invocations_;
+    std::unique_ptr<ClientResponseHandler> response_handler_;
 
     static void write_to_connection(
       connection::Connection& connection,

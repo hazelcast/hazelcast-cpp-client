@@ -25,6 +25,7 @@
 #include <hazelcast/client/protocol/codec/ErrorCodec.h>
 #include <hazelcast/client/spi/impl/ListenerMessageCodec.h>
 #include <hazelcast/client/spi/impl/ClientClusterServiceImpl.h>
+#include <hazelcast/client/spi/impl/ClientResponseHandler.h>
 #include <hazelcast/client/spi/impl/listener/cluster_view_listener.h>
 #include <hazelcast/client/spi/impl/listener/listener_service_impl.h>
 #include <hazelcast/client/spi/impl/discovery/remote_address_provider.h>
@@ -724,6 +725,12 @@ ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext& client)
 void
 ClientInvocationServiceImpl::start()
 {
+    auto& props = client_.get_client_properties();
+    int response_thread_count =
+      props.get_integer(props.get_response_thread_count());
+    response_handler_ = std::make_unique<ClientResponseHandler>(
+      *this, logger_, response_thread_count);
+    response_handler_->start();
 }
 
 void
@@ -743,6 +750,9 @@ void
 ClientInvocationServiceImpl::shutdown()
 {
     is_shutdown_.store(true);
+    if (response_handler_) {
+        response_handler_->shutdown();
+    }
 }
 
 std::chrono::milliseconds
@@ -848,6 +858,12 @@ spi::ClientContext&
 ClientInvocationServiceImpl::get_client_context()
 {
     return client_;
+}
+
+ClientResponseHandler&
+ClientInvocationServiceImpl::get_response_handler()
+{
+    return *response_handler_;
 }
 
 void
