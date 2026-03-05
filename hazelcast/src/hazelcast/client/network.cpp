@@ -1852,6 +1852,7 @@ SocketFactory::start()
         }
     }
 #else
+    (void)client_context_;
 #endif
     return true;
 }

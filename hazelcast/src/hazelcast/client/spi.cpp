@@ -1374,20 +1374,11 @@ ClientExecutionServiceImpl::start()
     internal_executor_.reset(
       new hazelcast::util::hz_thread_pool(internalPoolSize));
 
-    if (user_pool_size_ > 0) {
-        // Explicit executor_pool_size from client_config takes precedence
+    if (user_pool_size_ <= 0) {
+        user_executor_.reset(new hazelcast::util::hz_thread_pool());
+    } else {
         user_executor_.reset(
           new hazelcast::util::hz_thread_pool(user_pool_size_));
-    } else {
-        // Use RESPONSE_THREAD_COUNT property (default: 2, matching Java)
-        int responseThreadCount = client_properties_.get_integer(
-            client_properties_.get_response_thread_count());
-        if (responseThreadCount <= 0) {
-            responseThreadCount = util::IOUtil::to_value<int>(
-                client_properties::RESPONSE_THREAD_COUNT_DEFAULT);
-        }
-        user_executor_.reset(
-          new hazelcast::util::hz_thread_pool(responseThreadCount));
     }
 
     schema_replication_executor_.reset(new hazelcast::util::hz_thread_pool());
