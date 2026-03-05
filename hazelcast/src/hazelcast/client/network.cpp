@@ -126,16 +126,15 @@ ClientConnectionManagerImpl::start()
     socket_interceptor_ = client_.get_client_config().get_socket_interceptor();
 
     for (int i = 0; i < io_thread_count; ++i) {
-        auto ctx = std::unique_ptr<boost::asio::io_context>(
-            new boost::asio::io_context);
-        io_guards_.push_back(
-            std::unique_ptr<boost::asio::executor_work_guard<
-                boost::asio::io_context::executor_type>>(
-            new boost::asio::executor_work_guard<
-                boost::asio::io_context::executor_type>(
-                    boost::asio::make_work_guard(*ctx))));
+        auto ctx =
+          std::unique_ptr<boost::asio::io_context>(new boost::asio::io_context);
+        io_guards_.push_back(std::unique_ptr<boost::asio::executor_work_guard<
+                               boost::asio::io_context::executor_type>>(
+          new boost::asio::executor_work_guard<
+            boost::asio::io_context::executor_type>(
+            boost::asio::make_work_guard(*ctx))));
         io_resolvers_.push_back(std::unique_ptr<boost::asio::ip::tcp::resolver>(
-            new boost::asio::ip::tcp::resolver(ctx->get_executor())));
+          new boost::asio::ip::tcp::resolver(ctx->get_executor())));
         auto raw_ctx = ctx.get();
         io_contexts_.push_back(std::move(ctx));
         io_threads_.emplace_back([raw_ctx]() { raw_ctx->run(); });
@@ -1239,7 +1238,8 @@ Connection::Connection(
   , last_write_time_(std::chrono::steady_clock::now().time_since_epoch())
 {
     (void)client_connection_manager;
-    socket_ = socket_factory.create(address, connect_timeout_in_millis, io, resolver);
+    socket_ =
+      socket_factory.create(address, connect_timeout_in_millis, io, resolver);
 }
 
 Connection::~Connection() = default;

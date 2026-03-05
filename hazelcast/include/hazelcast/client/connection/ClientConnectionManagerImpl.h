@@ -288,7 +288,7 @@ private:
     std::vector<std::unique_ptr<
       boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>>
       io_guards_;
-    std::atomic<size_t> next_io_index_{0};
+    std::atomic<size_t> next_io_index_{ 0 };
     socket_interceptor socket_interceptor_;
     util::SynchronizedMap<member, bool> connecting_members_;
     // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
