@@ -116,10 +116,6 @@ ClientConnectionManagerImpl::start()
 
     auto& props = client_.get_client_properties();
     int io_thread_count = props.get_integer(props.get_io_thread_count());
-    if (io_thread_count <= 0) {
-        io_thread_count = util::IOUtil::to_value<int>(
-            client_properties::IO_THREAD_COUNT_DEFAULT);
-    }
 
     socket_factory_.reset(new internal::socket::SocketFactory(client_));
 
@@ -1823,6 +1819,7 @@ SocketFactory::start()
         }
     }
 #else
+    (void)client_context_;
 #endif
     return true;
 }
