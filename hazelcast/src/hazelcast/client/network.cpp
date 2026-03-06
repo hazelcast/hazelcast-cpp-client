@@ -1074,8 +1074,7 @@ ClientConnectionManagerImpl::connect_to_all_cluster_members()
 void
 ClientConnectionManagerImpl::notify_backup(int64_t call_id)
 {
-    auto invocation =
-      client_.get_invocation_service().get_invocation(call_id);
+    auto invocation = client_.get_invocation_service().get_invocation(call_id);
     if (invocation) {
         invocation->notify_backup();
     }
@@ -1286,8 +1285,8 @@ Connection::schedule_periodic_backup_cleanup(
           if (ec) {
               return;
           }
-          client_context_.get_invocation_service()
-            .check_backup_timeouts(backup_timeout);
+          client_context_.get_invocation_service().check_backup_timeouts(
+            backup_timeout);
 
           schedule_periodic_backup_cleanup(backup_timeout, this_connection);
       }));
@@ -1350,9 +1349,9 @@ Connection::write(
 {
     auto message = client_invocation->get_client_message();
     auto correlation_id = message->get_correlation_id();
-    auto* entry = new internal::socket::OutboundEntry{
-        correlation_id, message, client_invocation
-    };
+    auto* entry = new internal::socket::OutboundEntry{ correlation_id,
+                                                       message,
+                                                       client_invocation };
     socket_->enqueue_write(shared_from_this(), entry);
 }
 
@@ -1387,18 +1386,16 @@ Connection::handle_client_message(
         if (!invocation) {
             HZ_LOG(logger_,
                    warning,
-                   boost::str(
-                     boost::format("No invocation for callId: %1%. "
-                                   "Dropping event message: %2%") %
-                     correlationId % *message));
+                   boost::str(boost::format("No invocation for callId: %1%. "
+                                            "Dropping event message: %2%") %
+                              correlationId % *message));
             return;
         }
         client_context_.get_client_listener_service().handle_client_message(
           invocation, message);
     } else {
-        client_context_.get_invocation_service()
-          .get_response_handler()
-          .enqueue(correlationId, message);
+        client_context_.get_invocation_service().get_response_handler().enqueue(
+          correlationId, message);
     }
 }
 
@@ -1744,9 +1741,8 @@ wait_strategy::sleep()
                                   current_backoff_millis_.count() * jitter_ *
                                   (2.0 * random_(random_generator_) - 1.0)));
 
-    actual_sleep_time =
-      (std::min)(actual_sleep_time,
-                 cluster_connect_timeout_millis_ - time_passed);
+    actual_sleep_time = (std::min)(
+      actual_sleep_time, cluster_connect_timeout_millis_ - time_passed);
 
     HZ_LOG(
       logger_,

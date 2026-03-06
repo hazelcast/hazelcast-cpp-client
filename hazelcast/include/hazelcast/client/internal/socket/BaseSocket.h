@@ -124,9 +124,8 @@ public:
         do_read(std::move(connection));
     }
 
-    void enqueue_write(
-      const std::shared_ptr<connection::Connection> connection,
-      OutboundEntry* entry) override
+    void enqueue_write(const std::shared_ptr<connection::Connection> connection,
+                       OutboundEntry* entry) override
     {
         write_queue_.push(entry);
         // Schedule flush on strand if not already scheduled

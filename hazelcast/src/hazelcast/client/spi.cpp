@@ -882,9 +882,9 @@ ClientInvocationServiceImpl::notify_connection_closed(
     });
     for (auto& p : to_fail) {
         deregister_invocation(p.first);
-        p.second->notify_exception(std::make_exception_ptr(
-          boost::enable_current_exception(exception::target_disconnected(
-            "Connection::close", reason))));
+        p.second->notify_exception(
+          std::make_exception_ptr(boost::enable_current_exception(
+            exception::target_disconnected("Connection::close", reason))));
     }
 }
 
@@ -1715,8 +1715,7 @@ ClientInvocation::set_exception(const std::exception& e,
 {
     invoked_or_exception_set_.store(true);
     try {
-        auto call_id =
-          client_message_.load()->get()->get_correlation_id();
+        auto call_id = client_message_.load()->get()->get_correlation_id();
         invocation_service_.deregister_invocation(call_id);
         invocation_promise_.set_exception(std::move(exception_ptr));
     } catch (boost::promise_already_satisfied& se) {

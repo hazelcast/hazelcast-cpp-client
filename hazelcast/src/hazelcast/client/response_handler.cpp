@@ -71,14 +71,12 @@ ClientResponseHandler::shutdown()
 }
 
 void
-ClientResponseHandler::enqueue(
-  int64_t correlation_id,
-  std::shared_ptr<protocol::ClientMessage> message)
+ClientResponseHandler::enqueue(int64_t correlation_id,
+                               std::shared_ptr<protocol::ClientMessage> message)
 {
-    auto index =
-      static_cast<size_t>(correlation_id >= 0 ? correlation_id
-                                              : -correlation_id) %
-      queues_.size();
+    auto index = static_cast<size_t>(correlation_id >= 0 ? correlation_id
+                                                         : -correlation_id) %
+                 queues_.size();
     auto& q = *queues_[index];
     {
         std::lock_guard<std::mutex> lock(q.mutex);
@@ -144,13 +142,12 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
 
         invocation_service_.deregister_invocation(entry.correlation_id);
     } catch (std::exception& e) {
-        HZ_LOG(
-          logger_,
-          severe,
-          boost::str(
-            boost::format(
-              "Failed to process response for correlationId %1%. %2%") %
-            entry.correlation_id % e.what()));
+        HZ_LOG(logger_,
+               severe,
+               boost::str(
+                 boost::format(
+                   "Failed to process response for correlationId %1%. %2%") %
+                 entry.correlation_id % e.what()));
     }
 }
 
