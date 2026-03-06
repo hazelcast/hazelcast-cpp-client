@@ -32,12 +32,6 @@ struct OutboundEntry;
 }
 } // namespace internal
 
-namespace spi {
-namespace impl {
-class ClientInvocation;
-}
-} // namespace spi
-
 class HAZELCAST_API socket
 {
 public:
@@ -45,10 +39,6 @@ public:
 
     virtual void connect(
       const std::shared_ptr<connection::Connection> connection) = 0;
-
-    virtual void async_write(
-      const std::shared_ptr<connection::Connection> connection,
-      const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
 
     virtual void enqueue_write(
       const std::shared_ptr<connection::Connection> connection,

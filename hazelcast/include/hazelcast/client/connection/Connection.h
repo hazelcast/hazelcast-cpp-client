@@ -124,10 +124,6 @@ public:
 
     void deregister_invocation(int64_t call_id);
 
-    void register_invocation(
-      int64_t correlation_id,
-      const std::shared_ptr<spi::impl::ClientInvocation>& invocation);
-
     void last_write_time(std::chrono::steady_clock::time_point tp);
 
     std::chrono::steady_clock::time_point last_write_time() const;

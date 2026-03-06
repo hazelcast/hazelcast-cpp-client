@@ -1588,15 +1588,6 @@ Connection::deregister_invocation(int64_t call_id)
     invocations.erase(call_id);
 }
 
-void
-Connection::register_invocation(
-  int64_t correlation_id,
-  const std::shared_ptr<spi::impl::ClientInvocation>& invocation)
-{
-    client_context_.get_invocation_service().register_invocation(
-      correlation_id, invocation);
-}
-
 boost::uuids::uuid
 Connection::get_remote_uuid() const
 {

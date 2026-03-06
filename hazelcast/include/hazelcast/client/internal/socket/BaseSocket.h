@@ -16,8 +16,6 @@
 #pragma once
 
 #include <atomic>
-#include <deque>
-#include <unordered_map>
 
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
@@ -124,40 +122,6 @@ public:
         socket_.lowest_layer().native_non_blocking(true);
         connection_ = connection;
         do_read(std::move(connection));
-    }
-
-    void async_write(
-      const std::shared_ptr<connection::Connection> connection,
-      const std::shared_ptr<spi::impl::ClientInvocation> invocation) override
-    {
-        check_connection(connection, invocation);
-        auto message = invocation->get_client_message();
-        boost::asio::post(
-          socket_strand_, [connection, invocation, message, this]() mutable {
-              if (!check_connection(connection, invocation)) {
-                  return;
-              }
-
-              add_invocation_to_map(connection, invocation, message);
-
-              auto& datas = message->get_buffer();
-
-              entry outbox_entry;
-              outbox_entry.buffers.reserve(datas.size());
-              for (const auto& data : datas) {
-                  outbox_entry.buffers.emplace_back(boost::asio::buffer(data));
-              }
-              outbox_entry.message = std::move(message);
-              outbox_entry.invocation = std::move(invocation);
-              this->outbox_.push_back(std::move(outbox_entry));
-
-              if (this->outbox_.size() > 1) {
-                  // async write is in progress
-                  return;
-              }
-
-              do_write(connection);
-          });
     }
 
     void enqueue_write(
@@ -281,35 +245,6 @@ protected:
             }));
     }
 
-    void do_write(const std::shared_ptr<connection::Connection> connection)
-    {
-        auto handler = [connection, this](const boost::system::error_code& ec,
-                                          std::size_t /* bytes_written */) {
-            auto invocation = std::move(outbox_[0].invocation);
-            this->outbox_.pop_front();
-
-            if (ec) {
-                auto message =
-                  (boost::format{ "Error %1% during invocation write for %2% "
-                                  "on connection %3%" } %
-                   ec % *invocation % *connection)
-                    .str();
-                connection->close(message);
-            } else {
-                // update the connection write time
-                connection->last_write_time(std::chrono::steady_clock::now());
-
-                if (!this->outbox_.empty()) {
-                    do_write(connection);
-                }
-            }
-        };
-
-        const auto& message = outbox_[0].buffers;
-        boost::asio::async_write(
-          socket_, message, socket_strand_.wrap(handler));
-    }
-
     // Called on strand: drain lock-free queue, batch into scatter-gather
     // buffers, single async_write syscall
     void flush_write_queue(
@@ -334,19 +269,9 @@ protected:
             return;
         }
 
-        // Generate correlation IDs and register invocations (on strand,
-        // using existing call ID mechanism)
-        for (auto* entry : drain_batch_) {
-            add_invocation_to_map(
-              connection, entry->invocation, entry->message);
-            entry->correlation_id =
-              entry->message->get_correlation_id();
-            // Also register in the global invocation map
-            connection->register_invocation(
-              entry->correlation_id, entry->invocation);
-        }
-
-        // Build scatter-gather buffers
+        // Correlation IDs already set and registered in global map by
+        // caller thread (in invoke() + send()), matching Java client pattern.
+        // Build scatter-gather buffers for batch write.
         for (auto* entry : drain_batch_) {
             auto& datas = entry->message->get_buffer();
             for (const auto& data : datas) {
@@ -404,58 +329,6 @@ protected:
 
     virtual void post_connect() {}
 
-    static bool check_connection(
-      const std::shared_ptr<connection::Connection>& connection,
-      const std::shared_ptr<spi::impl::ClientInvocation>& invocation)
-    {
-        if (!connection->is_alive()) {
-            invocation->notify_exception(std::make_exception_ptr(
-              boost::enable_current_exception(exception::io(
-                "Connection::write",
-                (boost::format{ "Socket closed. Invocation write for %1% on "
-                                "connection %2% failed" } %
-                 *invocation % *connection)
-                  .str()))));
-            return false;
-        }
-
-        return true;
-    }
-
-    inline int64_t generate_new_call_id(
-      const std::shared_ptr<connection::Connection>& connection)
-    {
-        auto call_id = ++call_id_counter_;
-        struct correlation_id
-        {
-            int32_t connnection_id;
-            int32_t call_id;
-        };
-        union
-        {
-            int64_t id;
-            correlation_id composed_id;
-        } c_id_union;
-
-        c_id_union.composed_id = { connection->get_connection_id(), call_id };
-        return c_id_union.id;
-    }
-
-    inline void add_invocation_to_map(
-      const std::shared_ptr<connection::Connection>& connection,
-      const std::shared_ptr<spi::impl::ClientInvocation>& invocation,
-      std::shared_ptr<protocol::ClientMessage> message)
-    {
-        int64_t message_call_id;
-        do {
-            message_call_id = generate_new_call_id(connection);
-        } while (
-          !connection->invocations.insert({ message_call_id, invocation })
-             .second);
-
-        message->set_correlation_id(message_call_id);
-    }
-
     client::config::socket_options& socket_options_;
     address remote_endpoint_;
     boost::asio::io_context& io_;
@@ -463,20 +336,9 @@ protected:
     std::chrono::milliseconds connect_timeout_;
     boost::asio::ip::tcp::resolver& resolver_;
     T socket_;
-    std::atomic<int32_t> call_id_counter_{ 0 };
 
     // Connection reference, set during connect()
     std::shared_ptr<connection::Connection> connection_;
-
-    // Old per-message write path (kept for event handler registrations)
-    struct entry
-    {
-        std::vector<boost::asio::const_buffer> buffers;
-        std::shared_ptr<spi::impl::ClientInvocation> invocation;
-        std::shared_ptr<protocol::ClientMessage> message;
-    };
-    typedef std::deque<entry> Outbox;
-    Outbox outbox_;
 
     // Lock-free MPSC write queue: user threads push, IO strand drains
     boost::lockfree::queue<OutboundEntry*> write_queue_;

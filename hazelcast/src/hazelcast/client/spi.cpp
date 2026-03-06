@@ -812,6 +812,13 @@ ClientInvocationServiceImpl::send(
           protocol::ClientMessage::BACKUP_AWARE_FLAG);
     }
 
+    // Register in global map BEFORE writing, using the correlation ID
+    // already set by invoke()/invoke_urgent() via CallIdSequence.
+    // Mirrors Java: registerInvocation(invocation, connection)
+    auto correlation_id =
+      invocation->get_client_message()->get_correlation_id();
+    register_invocation(correlation_id, invocation);
+
     write_to_connection(*connection, invocation);
     invocation->set_send_connection(connection);
     return true;
@@ -1501,8 +1508,9 @@ ClientInvocation::invoke()
     assert(client_message_.load());
 
     auto actual_work = [this]() {
-        // for back pressure
-        call_id_sequence_->next();
+        // Mirrors Java: clientMessage.setCorrelationId(callIdSequence.next())
+        auto correlation_id = call_id_sequence_->next();
+        client_message_.load()->get()->set_correlation_id(correlation_id);
         invoke_on_selection();
         if (!lifecycle_service_.is_running()) {
             return invocation_promise_.get_future().then(
@@ -1542,8 +1550,9 @@ ClientInvocation::invoke_urgent()
     assert(client_message_.load());
     urgent_ = true;
 
-    // for back pressure
-    call_id_sequence_->force_next();
+    // Mirrors Java: clientMessage.setCorrelationId(callIdSequence.forceNext())
+    auto correlation_id = call_id_sequence_->force_next();
+    client_message_.load()->get()->set_correlation_id(correlation_id);
     invoke_on_selection();
     if (!lifecycle_service_.is_running()) {
         return invocation_promise_.get_future().then(
