@@ -1353,11 +1353,14 @@ Connection::close(const std::string& reason, std::exception_ptr cause)
     client_context_.get_connection_manager().on_connection_close(
       thisConnection);
 
-    boost::asio::post(socket_->get_executor(), [=]() {
+    auto& inv_service = client_context_.get_invocation_service();
+    boost::asio::post(socket_->get_executor(), [=, &inv_service]() {
         for (auto& invocationEntry : thisConnection->invocations) {
             invocationEntry.second->notify_exception(std::make_exception_ptr(
               boost::enable_current_exception(exception::target_disconnected(
                 "Connection::close", thisConnection->get_close_reason()))));
+            // Also deregister from global invocation map
+            inv_service.deregister_invocation(invocationEntry.first);
         }
     });
 }

@@ -1692,6 +1692,7 @@ ClientInvocation::set_exception(const std::exception& e,
                 boost::asio::post(
                   connection->get_socket().get_executor(),
                   [=]() { connection->deregister_invocation(call_id); });
+                invocation_service_.deregister_invocation(call_id);
             }
         }
         invocation_promise_.set_exception(std::move(exception_ptr));
@@ -2809,6 +2810,7 @@ listener_service_impl::remove_event_handler(
     boost::asio::post(connection->get_socket().get_executor(),
                       std::packaged_task<void()>(
                         [=]() { connection->deregister_invocation(call_id); }));
+    client_context_.get_invocation_service().deregister_invocation(call_id);
 }
 
 void
