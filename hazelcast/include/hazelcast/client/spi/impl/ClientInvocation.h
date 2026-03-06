@@ -232,7 +232,7 @@ private:
 
     void complete(const std::shared_ptr<protocol::ClientMessage>& msg, bool erase = true);
 
-    void complete_with_pending_response();
+    void complete_with_pending_response(bool erase = true);
 };
 } // namespace impl
 } // namespace spi

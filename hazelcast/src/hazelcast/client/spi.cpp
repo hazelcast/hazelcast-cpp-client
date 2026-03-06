@@ -711,7 +711,8 @@ ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext& client)
         client.get_client_properties().get_invocation_retry_pause_millis())))
   , smart_routing_(
       client.get_client_config().get_network_config().is_smart_routing())
-  , backup_acks_enabled_(false) // TODO: Fix backup event handling with global invocation map
+  , backup_acks_enabled_(smart_routing_ &&
+                         client.get_client_config().backup_acks_enabled())
   , fail_on_indeterminate_operation_state_(
       client.get_client_properties().get_boolean(
         client.get_client_properties().fail_on_indeterminate_state()))
@@ -2220,14 +2221,14 @@ ClientInvocation::detect_and_handle_backup_timeout(
 
     // the backups have not yet completed, but we are going to release the
     // future anyway if a pendingResponse has been set
-    complete_with_pending_response();
+    complete_with_pending_response(false);
     return true;
 }
 
 void
-ClientInvocation::complete_with_pending_response()
+ClientInvocation::complete_with_pending_response(bool erase)
 {
-    complete(pending_response_, false);
+    complete(pending_response_, erase);
 }
 
 ClientContext&
