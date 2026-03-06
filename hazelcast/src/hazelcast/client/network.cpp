@@ -1365,8 +1365,27 @@ void
 Connection::handle_client_message(
   const std::shared_ptr<protocol::ClientMessage>& message)
 {
+    auto flags = message->get_header_flags();
+    if (message->is_flag_set(
+          flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
+        // Handle backup events directly on the IO thread to avoid
+        // routing through the response handler queue. The backup event's
+        // header correlation ID belongs to the backup listener (which may
+        // not be in the global map). The source invocation's correlation ID
+        // is in the payload.
+        message->rd_ptr(protocol::ClientMessage::EVENT_HEADER_LEN);
+        auto source_correlation_id = message->get<int64_t>();
+        auto& invocation_service =
+          client_context_.get_invocation_service();
+        auto source_invocation =
+          invocation_service.get_invocation(source_correlation_id);
+        if (source_invocation) {
+            source_invocation->notify_backup();
+        }
+        return;
+    }
     response_handler_.accept(message);
- }
+}
 
 int32_t
 Connection::get_connection_id() const
