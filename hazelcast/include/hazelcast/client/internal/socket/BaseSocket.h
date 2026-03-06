@@ -20,6 +20,9 @@
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
 #include <boost/lockfree/queue.hpp>
+#ifdef HZ_BUILD_WITH_SSL
+#include <boost/asio/ssl.hpp>
+#endif
 
 #include "hazelcast/client/socket.h"
 #include "hazelcast/client/connection/Connection.h"
