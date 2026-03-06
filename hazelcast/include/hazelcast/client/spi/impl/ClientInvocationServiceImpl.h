@@ -90,6 +90,12 @@ public:
 
     ClientResponseHandler& get_response_handler();
 
+    void notify_connection_closed(
+      const std::shared_ptr<connection::Connection>& connection,
+      const std::string& reason);
+
+    void check_backup_timeouts(std::chrono::milliseconds backup_timeout);
+
 private:
     class BackupListenerMessageCodec : public ListenerMessageCodec
     {

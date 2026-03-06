@@ -1074,28 +1074,11 @@ ClientConnectionManagerImpl::connect_to_all_cluster_members()
 void
 ClientConnectionManagerImpl::notify_backup(int64_t call_id)
 {
-    struct correlation_id
-    {
-        int32_t connnection_id;
-        int32_t call_id;
-    };
-    union
-    {
-        int64_t id;
-        correlation_id composed_id;
-    } c_id_union;
-    c_id_union.id = call_id;
-    auto connection_id = c_id_union.composed_id.connnection_id;
-    auto connection = active_connection_ids_.get(connection_id);
-    if (!connection) {
-        return;
+    auto invocation =
+      client_.get_invocation_service().get_invocation(call_id);
+    if (invocation) {
+        invocation->notify_backup();
     }
-    boost::asio::post(connection->get_socket().get_executor(), [=]() {
-        auto invocation_it = connection->invocations.find(call_id);
-        if (invocation_it != connection->invocations.end()) {
-            invocation_it->second->notify_backup();
-        }
-    });
 }
 
 std::shared_ptr<Connection>
@@ -1303,9 +1286,8 @@ Connection::schedule_periodic_backup_cleanup(
           if (ec) {
               return;
           }
-          for (const auto& it : this_connection->invocations) {
-              it.second->detect_and_handle_backup_timeout(backup_timeout);
-          }
+          client_context_.get_invocation_service()
+            .check_backup_timeouts(backup_timeout);
 
           schedule_periodic_backup_cleanup(backup_timeout, this_connection);
       }));
@@ -1358,16 +1340,8 @@ Connection::close(const std::string& reason, std::exception_ptr cause)
     client_context_.get_connection_manager().on_connection_close(
       thisConnection);
 
-    auto& inv_service = client_context_.get_invocation_service();
-    boost::asio::post(socket_->get_executor(), [=, &inv_service]() {
-        for (auto& invocationEntry : thisConnection->invocations) {
-            invocationEntry.second->notify_exception(std::make_exception_ptr(
-              boost::enable_current_exception(exception::target_disconnected(
-                "Connection::close", thisConnection->get_close_reason()))));
-            // Also deregister from global invocation map
-            inv_service.deregister_invocation(invocationEntry.first);
-        }
-    });
+    client_context_.get_invocation_service().notify_connection_closed(
+      thisConnection, close_reason_);
 }
 
 void
@@ -1407,8 +1381,10 @@ Connection::handle_client_message(
         client_context_.get_connection_manager().notify_backup(correlationId);
     } else if (message->is_flag_set(flags,
                                     protocol::ClientMessage::IS_EVENT_FLAG)) {
-        auto invocationIterator = invocations.find(correlationId);
-        if (invocationIterator == invocations.end()) {
+        auto invocation =
+          client_context_.get_invocation_service().get_invocation(
+            correlationId);
+        if (!invocation) {
             HZ_LOG(logger_,
                    warning,
                    boost::str(
@@ -1418,7 +1394,7 @@ Connection::handle_client_message(
             return;
         }
         client_context_.get_client_listener_service().handle_client_message(
-          invocationIterator->second, message);
+          invocation, message);
     } else {
         client_context_.get_invocation_service()
           .get_response_handler()
@@ -1580,12 +1556,6 @@ socket&
 Connection::get_socket()
 {
     return *socket_;
-}
-
-void
-Connection::deregister_invocation(int64_t call_id)
-{
-    invocations.erase(call_id);
 }
 
 boost::uuids::uuid

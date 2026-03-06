@@ -869,6 +869,35 @@ ClientInvocationServiceImpl::get_response_handler()
 }
 
 void
+ClientInvocationServiceImpl::notify_connection_closed(
+  const std::shared_ptr<connection::Connection>& connection,
+  const std::string& reason)
+{
+    std::vector<std::pair<int64_t, std::shared_ptr<ClientInvocation>>> to_fail;
+    invocations_.cvisit_all([&](const auto& entry) {
+        auto send_conn = entry.second->get_send_connection();
+        if (send_conn && send_conn.get() == connection.get()) {
+            to_fail.push_back(entry);
+        }
+    });
+    for (auto& p : to_fail) {
+        deregister_invocation(p.first);
+        p.second->notify_exception(std::make_exception_ptr(
+          boost::enable_current_exception(exception::target_disconnected(
+            "Connection::close", reason))));
+    }
+}
+
+void
+ClientInvocationServiceImpl::check_backup_timeouts(
+  std::chrono::milliseconds backup_timeout)
+{
+    invocations_.cvisit_all([&](const auto& entry) {
+        entry.second->detect_and_handle_backup_timeout(backup_timeout);
+    });
+}
+
+void
 ClientInvocationServiceImpl::check_invocation_allowed()
 {
     client_.get_connection_manager().check_invocation_allowed();
@@ -1686,18 +1715,9 @@ ClientInvocation::set_exception(const std::exception& e,
 {
     invoked_or_exception_set_.store(true);
     try {
-        auto send_conn = send_connection_.load();
-        if (send_conn) {
-            auto connection = send_conn->lock();
-            if (connection) {
-                auto call_id =
-                  client_message_.load()->get()->get_correlation_id();
-                boost::asio::post(
-                  connection->get_socket().get_executor(),
-                  [=]() { connection->deregister_invocation(call_id); });
-                invocation_service_.deregister_invocation(call_id);
-            }
-        }
+        auto call_id =
+          client_message_.load()->get()->get_correlation_id();
+        invocation_service_.deregister_invocation(call_id);
         invocation_promise_.set_exception(std::move(exception_ptr));
     } catch (boost::promise_already_satisfied& se) {
         if (!event_handler_) {
@@ -1801,16 +1821,8 @@ void
 ClientInvocation::erase_invocation() const
 {
     if (!this->event_handler_) {
-        auto sent_connection = get_send_connection();
-        if (sent_connection) {
-            auto this_invocation = shared_from_this();
-            boost::asio::post(sent_connection->get_socket().get_executor(),
-                              [=]() {
-                                  sent_connection->invocations.erase(
-                                    this_invocation->get_client_message()
-                                      ->get_correlation_id());
-                              });
-        }
+        auto call_id = get_client_message()->get_correlation_id();
+        invocation_service_.deregister_invocation(call_id);
     }
 }
 
@@ -2810,9 +2822,6 @@ listener_service_impl::remove_event_handler(
   int64_t call_id,
   const std::shared_ptr<connection::Connection>& connection)
 {
-    boost::asio::post(connection->get_socket().get_executor(),
-                      std::packaged_task<void()>(
-                        [=]() { connection->deregister_invocation(call_id); }));
     client_context_.get_invocation_service().deregister_invocation(call_id);
 }
 

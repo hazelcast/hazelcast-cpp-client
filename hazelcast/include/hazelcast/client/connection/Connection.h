@@ -19,7 +19,6 @@
 #include <iosfwd>
 #include <stdint.h>
 #include <atomic>
-#include <unordered_map>
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/socket.h"
@@ -122,8 +121,6 @@ public:
 
     socket& get_socket();
 
-    void deregister_invocation(int64_t call_id);
-
     void last_write_time(std::chrono::steady_clock::time_point tp);
 
     std::chrono::steady_clock::time_point last_write_time() const;
@@ -132,8 +129,6 @@ public:
                                     const Connection& connection);
 
     ReadHandler read_handler;
-    std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>>
-      invocations;
 
 private:
     void log_close();
