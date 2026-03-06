@@ -116,6 +116,25 @@ void
 ClientResponseHandler::process_response(const ResponseEntry& entry)
 {
     try {
+        auto flags = entry.message->get_header_flags();
+
+        // Handle backup events first — the header correlation ID belongs to
+        // the backup listener registration which may no longer be in the
+        // global invocation map.  The source invocation's correlation ID is
+        // in the payload.
+        if (entry.message->is_flag_set(
+              flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
+            entry.message->rd_ptr(
+              protocol::ClientMessage::EVENT_HEADER_LEN);
+            auto source_correlation_id = entry.message->get<int64_t>();
+            auto source_invocation =
+              invocation_service_.get_invocation(source_correlation_id);
+            if (source_invocation) {
+                source_invocation->notify_backup();
+            }
+            return;
+        }
+
         auto invocation =
           invocation_service_.get_invocation(entry.correlation_id);
         if (!invocation) {
@@ -129,22 +148,8 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
             return;
         }
 
-        auto flags = entry.message->get_header_flags();
         if (entry.message->is_flag_set(
-              flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
-            // Backup events carry the source invocation's correlation ID
-            // in the payload, not in the header. Read it from the payload.
-            entry.message->rd_ptr(
-              protocol::ClientMessage::EVENT_HEADER_LEN);
-            auto source_correlation_id = entry.message->get<int64_t>();
-            auto source_invocation =
-              invocation_service_.get_invocation(source_correlation_id);
-            if (source_invocation) {
-                source_invocation->notify_backup();
-            }
-            return;
-        } else if (entry.message->is_flag_set(
-                     flags, protocol::ClientMessage::IS_EVENT_FLAG)) {
+              flags, protocol::ClientMessage::IS_EVENT_FLAG)) {
             invocation_service_.get_client_context()
               .get_client_listener_service()
               .handle_client_message(invocation, entry.message);
@@ -162,8 +167,6 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
         } else {
             invocation->notify(entry.message);
         }
-
-        //invocation_service_.deregister_invocation(entry.correlation_id);
     } catch (std::exception& e) {
         HZ_LOG(logger_,
                severe,
