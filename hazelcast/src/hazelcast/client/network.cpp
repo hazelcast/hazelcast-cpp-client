@@ -22,6 +22,7 @@
 #include "hazelcast/client/connection/AddressProvider.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientResponseHandler.h"
+#include "hazelcast/client/internal/socket/BaseSocket.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
@@ -1252,7 +1253,11 @@ Connection::Connection(
   std::chrono::milliseconds& connect_timeout_in_millis,
   boost::asio::io_context& io,
   boost::asio::ip::tcp::resolver& resolver)
-  : read_handler(*this, 128 << 10)
+  : read_handler(*this,
+                 client_context.get_client_config()
+                   .get_network_config()
+                   .get_socket_options()
+                   .get_buffer_size_in_bytes())
   , start_time_(std::chrono::system_clock::now())
   , closed_time_duration_()
   , client_context_(client_context)
@@ -1369,7 +1374,12 @@ void
 Connection::write(
   const std::shared_ptr<spi::impl::ClientInvocation>& client_invocation)
 {
-    socket_->async_write(shared_from_this(), client_invocation);
+    auto message = client_invocation->get_client_message();
+    auto correlation_id = message->get_correlation_id();
+    auto* entry = new internal::socket::OutboundEntry{
+        correlation_id, message, client_invocation
+    };
+    socket_->enqueue_write(shared_from_this(), entry);
 }
 
 const boost::optional<address>&
@@ -1420,25 +1430,6 @@ int32_t
 Connection::get_connection_id() const
 {
     return connection_id_;
-}
-
-int64_t
-Connection::allocate_call_id()
-{
-    auto call_id = ++call_id_counter_;
-    struct correlation_id
-    {
-        int32_t connection_id;
-        int32_t call_id;
-    };
-    union
-    {
-        int64_t id;
-        correlation_id composed_id;
-    } c_id_union;
-
-    c_id_union.composed_id = { connection_id_, call_id };
-    return c_id_union.id;
 }
 
 bool
@@ -1595,6 +1586,15 @@ void
 Connection::deregister_invocation(int64_t call_id)
 {
     invocations.erase(call_id);
+}
+
+void
+Connection::register_invocation(
+  int64_t correlation_id,
+  const std::shared_ptr<spi::impl::ClientInvocation>& invocation)
+{
+    client_context_.get_invocation_service().register_invocation(
+      correlation_id, invocation);
 }
 
 boost::uuids::uuid

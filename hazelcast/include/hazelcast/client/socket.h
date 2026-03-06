@@ -26,6 +26,12 @@ namespace connection {
 class Connection;
 }
 
+namespace internal {
+namespace socket {
+struct OutboundEntry;
+}
+} // namespace internal
+
 namespace spi {
 namespace impl {
 class ClientInvocation;
@@ -43,6 +49,10 @@ public:
     virtual void async_write(
       const std::shared_ptr<connection::Connection> connection,
       const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
+
+    virtual void enqueue_write(
+      const std::shared_ptr<connection::Connection> connection,
+      internal::socket::OutboundEntry* entry) = 0;
 
     virtual void close() = 0;
 

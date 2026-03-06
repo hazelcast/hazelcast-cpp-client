@@ -812,12 +812,6 @@ ClientInvocationServiceImpl::send(
           protocol::ClientMessage::BACKUP_AWARE_FLAG);
     }
 
-    // Generate correlation ID and register in global map BEFORE writing
-    // (mirrors Java client's registerInvocation pattern)
-    auto correlation_id = connection->allocate_call_id();
-    invocation->get_client_message()->set_correlation_id(correlation_id);
-    register_invocation(correlation_id, invocation);
-
     write_to_connection(*connection, invocation);
     invocation->set_send_connection(connection);
     return true;
