@@ -711,8 +711,7 @@ ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext& client)
         client.get_client_properties().get_invocation_retry_pause_millis())))
   , smart_routing_(
       client.get_client_config().get_network_config().is_smart_routing())
-  , backup_acks_enabled_(smart_routing_ &&
-                         client.get_client_config().backup_acks_enabled())
+  , backup_acks_enabled_(false) // TODO: Fix backup event handling with global invocation map
   , fail_on_indeterminate_operation_state_(
       client.get_client_properties().get_boolean(
         client.get_client_properties().fail_on_indeterminate_state()))
