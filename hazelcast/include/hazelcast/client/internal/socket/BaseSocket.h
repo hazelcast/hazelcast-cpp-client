@@ -131,12 +131,12 @@ public:
                        OutboundEntry* entry) override
     {
         write_queue_.push(entry);
-        // Schedule flush on strand if not already scheduled
-        if (!flush_scheduled_.exchange(true, std::memory_order_acq_rel)) {
-            boost::asio::post(socket_strand_, [this, connection]() {
-                flush_write_queue(connection);
-            });
-        }
+        // Always post a flush to the strand. The strand serializes execution
+        // and flush_write_queue is cheap when the queue is empty or a write
+        // is already in progress.
+        boost::asio::post(socket_strand_, [this, connection]() {
+            flush_write_queue(connection);
+        });
     }
 
     // always called from within the socket_strand_
@@ -252,8 +252,6 @@ protected:
     void flush_write_queue(
       const std::shared_ptr<connection::Connection>& connection)
     {
-        flush_scheduled_.store(false, std::memory_order_release);
-
         if (write_in_progress_) {
             return; // completion handler will re-trigger flush
         }
@@ -344,7 +342,6 @@ protected:
 
     // Lock-free MPSC write queue: user threads push, IO strand drains
     boost::lockfree::queue<OutboundEntry*> write_queue_;
-    std::atomic<bool> flush_scheduled_{ false };
 
     // Strand-only state for batch writing
     bool write_in_progress_{ false };
