@@ -130,8 +130,18 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
         }
 
         auto flags = entry.message->get_header_flags();
-        if (entry.message->is_flag_set(flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
-            invocation->notify_backup();
+        if (entry.message->is_flag_set(
+              flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
+            // Backup events carry the source invocation's correlation ID
+            // in the payload, not in the header. Read it from the payload.
+            entry.message->rd_ptr(
+              protocol::ClientMessage::EVENT_HEADER_LEN);
+            auto source_correlation_id = entry.message->get<int64_t>();
+            auto source_invocation =
+              invocation_service_.get_invocation(source_correlation_id);
+            if (source_invocation) {
+                source_invocation->notify_backup();
+            }
             return;
         } else if (entry.message->is_flag_set(
                      flags, protocol::ClientMessage::IS_EVENT_FLAG)) {
