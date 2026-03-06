@@ -115,9 +115,9 @@ public:
 
     virtual const std::string get_name() const;
 
-    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message);
+    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message, bool erase = true);
 
-    void notify_exception(std::exception_ptr exception);
+    void notify_exception(std::exception_ptr exception, bool erase = true);
 
     void notify_backup();
 
@@ -142,7 +142,7 @@ public:
 
     boost::promise<protocol::ClientMessage>& get_promise();
 
-    void detect_and_handle_backup_timeout(
+    bool detect_and_handle_backup_timeout(
       const std::chrono::milliseconds& backup_timeout);
 
 private:
@@ -230,7 +230,7 @@ private:
 
     void erase_invocation() const;
 
-    void complete(const std::shared_ptr<protocol::ClientMessage>& msg);
+    void complete(const std::shared_ptr<protocol::ClientMessage>& msg, bool erase = true);
 
     void complete_with_pending_response();
 };

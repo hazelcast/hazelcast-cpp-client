@@ -1071,15 +1071,6 @@ ClientConnectionManagerImpl::connect_to_all_cluster_members()
     }
 }
 
-void
-ClientConnectionManagerImpl::notify_backup(int64_t call_id)
-{
-    auto invocation = client_.get_invocation_service().get_invocation(call_id);
-    if (invocation) {
-        invocation->notify_backup();
-    }
-}
-
 std::shared_ptr<Connection>
 ClientConnectionManagerImpl::connect(const address& addr)
 {
@@ -1093,6 +1084,7 @@ ClientConnectionManagerImpl::connect(const address& addr)
                                                    ++connection_id_gen_,
                                                    *socket_factory_,
                                                    *this,
+                                                   client_.get_invocation_service().get_response_handler(),
                                                    connection_timeout_millis_,
                                                    *io_contexts_[idx],
                                                    *io_resolvers_[idx]);
@@ -1232,6 +1224,7 @@ Connection::Connection(
   int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
   internal::socket::SocketFactory& socket_factory,
   ClientConnectionManagerImpl& client_connection_manager,
+  spi::impl::ClientResponseHandler& response_handler,
   std::chrono::milliseconds& connect_timeout_in_millis,
   boost::asio::io_context& io,
   boost::asio::ip::tcp::resolver& resolver)
@@ -1249,6 +1242,7 @@ Connection::Connection(
   , logger_(client_context.get_logger())
   , alive_(true)
   , last_write_time_(std::chrono::steady_clock::now().time_since_epoch())
+  , response_handler_(response_handler)
 {
     (void)client_connection_manager;
     socket_ =
@@ -1371,33 +1365,8 @@ void
 Connection::handle_client_message(
   const std::shared_ptr<protocol::ClientMessage>& message)
 {
-    auto correlationId = message->get_correlation_id();
-    auto flags = message->get_header_flags();
-    if (message->is_flag_set(flags,
-                             protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
-        message->rd_ptr(protocol::ClientMessage::EVENT_HEADER_LEN);
-        correlationId = message->get<int64_t>();
-        client_context_.get_connection_manager().notify_backup(correlationId);
-    } else if (message->is_flag_set(flags,
-                                    protocol::ClientMessage::IS_EVENT_FLAG)) {
-        auto invocation =
-          client_context_.get_invocation_service().get_invocation(
-            correlationId);
-        if (!invocation) {
-            HZ_LOG(logger_,
-                   warning,
-                   boost::str(boost::format("No invocation for callId: %1%. "
-                                            "Dropping event message: %2%") %
-                              correlationId % *message));
-            return;
-        }
-        client_context_.get_client_listener_service().handle_client_message(
-          invocation, message);
-    } else {
-        client_context_.get_invocation_service().get_response_handler().enqueue(
-          correlationId, message);
-    }
-}
+    response_handler_.accept(message);
+ }
 
 int32_t
 Connection::get_connection_id() const
@@ -1577,6 +1546,11 @@ std::chrono::steady_clock::time_point
 Connection::last_write_time() const
 {
     return std::chrono::steady_clock::time_point{ last_write_time_ };
+}
+spi::impl::ClientResponseHandler&
+Connection::get_response_handler() const
+{
+    return response_handler_;
 }
 
 HeartbeatManager::HeartbeatManager(

@@ -55,8 +55,7 @@ public:
 
     /// Called by IO thread to enqueue a response for async processing.
     /// Distributes across response threads by correlation_id % thread_count.
-    void enqueue(int64_t correlation_id,
-                 std::shared_ptr<protocol::ClientMessage> message);
+    void accept(std::shared_ptr<protocol::ClientMessage> message);
 
 private:
     struct ResponseQueue

@@ -22,6 +22,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
+#include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
 #include "hazelcast/logger.h"
 
 namespace hazelcast {
@@ -71,9 +72,9 @@ ClientResponseHandler::shutdown()
 }
 
 void
-ClientResponseHandler::enqueue(int64_t correlation_id,
-                               std::shared_ptr<protocol::ClientMessage> message)
+ClientResponseHandler::accept(std::shared_ptr<protocol::ClientMessage> message)
 {
+    auto correlation_id = message->get_correlation_id();
     auto index = static_cast<size_t>(correlation_id >= 0 ? correlation_id
                                                          : -correlation_id) %
                  queues_.size();
@@ -128,6 +129,18 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
             return;
         }
 
+        auto flags = entry.message->get_header_flags();
+        if (entry.message->is_flag_set(flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
+            invocation->notify_backup();
+            return;
+        } else if (entry.message->is_flag_set(
+                     flags, protocol::ClientMessage::IS_EVENT_FLAG)) {
+            invocation_service_.get_client_context()
+              .get_client_listener_service()
+              .handle_client_message(invocation, entry.message);
+            return;
+        }
+
         if (protocol::codec::ErrorCodec::EXCEPTION_MESSAGE_TYPE ==
             entry.message->get_message_type()) {
             auto error_holder =
@@ -140,7 +153,7 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
             invocation->notify(entry.message);
         }
 
-        invocation_service_.deregister_invocation(entry.correlation_id);
+        //invocation_service_.deregister_invocation(entry.correlation_id);
     } catch (std::exception& e) {
         HZ_LOG(logger_,
                severe,

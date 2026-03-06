@@ -892,8 +892,8 @@ void
 ClientInvocationServiceImpl::check_backup_timeouts(
   std::chrono::milliseconds backup_timeout)
 {
-    invocations_.cvisit_all([&](const auto& entry) {
-        entry.second->detect_and_handle_backup_timeout(backup_timeout);
+    invocations_.erase_if([&](auto& entry) {
+        return entry.second->detect_and_handle_backup_timeout(backup_timeout);
     });
 }
 
@@ -1536,6 +1536,8 @@ ClientInvocation::invoke()
 {
     assert(client_message_.load());
 
+    auto self = shared_from_this();
+
     auto actual_work = [this]() {
         // Mirrors Java: clientMessage.setCorrelationId(callIdSequence.next())
         auto correlation_id = call_id_sequence_->next();
@@ -1546,9 +1548,10 @@ ClientInvocation::invoke()
               [](boost::future<protocol::ClientMessage> f) { return f.get(); });
         }
         auto id_seq = call_id_sequence_;
+        auto self = shared_from_this();
         return invocation_promise_.get_future().then(
           execution_service_->get_user_executor(),
-          [=](boost::future<protocol::ClientMessage> f) {
+          [self, id_seq](boost::future<protocol::ClientMessage> f) {
               id_seq->complete();
               return f.get();
           });
@@ -1558,7 +1561,6 @@ ClientInvocation::invoke()
       (*(client_message_.load()))->schemas_will_be_replicated();
 
     if (!schemas.empty()) {
-        auto self = shared_from_this();
 
         return replicate_schemas(schemas)
           .then(boost::launch::sync,
@@ -1743,9 +1745,11 @@ ClientInvocation::set_exception(const std::exception& e,
 }
 
 void
-ClientInvocation::notify_exception(std::exception_ptr exception)
+ClientInvocation::notify_exception(std::exception_ptr exception, bool erase)
 {
-    erase_invocation();
+    if (erase) {
+        erase_invocation();
+    }
     try {
         std::rethrow_exception(exception);
     } catch (exception::iexception& iex) {
@@ -2015,7 +2019,7 @@ ClientInvocation::set_send_connection(
 }
 
 void
-ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg)
+ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg, bool erase)
 {
     if (!msg) {
         BOOST_THROW_EXCEPTION(
@@ -2053,11 +2057,11 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg)
     // completed
     // - we had a backup-aware operation that has completed, but also all its
     // backups have completed
-    complete(msg);
+    complete(msg, erase);
 }
 
 void
-ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage>& msg)
+ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage>& msg, bool erase)
 {
     try {
         // TODO: move msg content here?
@@ -2070,7 +2074,9 @@ ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage>& msg)
                             "Dropping the response. %1%, %2% Response: %3%") %
                           e.what() % *this % *msg));
     }
-    this->erase_invocation();
+    if (erase) {
+        erase_invocation();
+    }
 }
 
 std::shared_ptr<protocol::ClientMessage>
@@ -2177,7 +2183,7 @@ ClientInvocation::notify_backup()
     complete_with_pending_response();
 }
 
-void
+bool
 ClientInvocation::detect_and_handle_backup_timeout(
   const std::chrono::milliseconds& backup_timeout)
 {
@@ -2185,21 +2191,21 @@ ClientInvocation::detect_and_handle_backup_timeout(
     // backup-aware operations since the backupsAcksExpected will always be
     // equal to the backupsAcksReceived
     if (backup_acks_expected_ == backup_acks_received_) {
-        return;
+        return false;
     }
 
     // if no response has yet been received, we we are done; we are only going
     // to re-invoke an operation if the response of the primary has been
     // received, but the backups have not replied
     if (!pending_response_) {
-        return;
+        return false;
     }
 
     // if this has not yet expired (so has not been in the system for a too long
     // period) we ignore it
     if (pending_response_received_time_ + backup_timeout >=
         std::chrono::steady_clock::now()) {
-        return;
+        return false;
     }
 
     if (invocation_service_.fail_on_indeterminate_state()) {
@@ -2209,19 +2215,20 @@ ClientInvocation::detect_and_handle_backup_timeout(
              "ClientInvocation::detect_and_handle_backup_timeout")
            << *this << " failed because backup acks missed.")
             .build());
-        notify_exception(std::make_exception_ptr(exception));
-        return;
+        notify_exception(std::make_exception_ptr(exception), false);
+        return true;
     }
 
     // the backups have not yet completed, but we are going to release the
     // future anyway if a pendingResponse has been set
     complete_with_pending_response();
+    return true;
 }
 
 void
 ClientInvocation::complete_with_pending_response()
 {
-    complete(pending_response_);
+    complete(pending_response_, false);
 }
 
 ClientContext&
