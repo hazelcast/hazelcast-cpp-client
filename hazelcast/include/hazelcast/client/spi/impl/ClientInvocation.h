@@ -176,13 +176,13 @@ private:
     bool urgent_;
     bool smart_routing_;
 
-    int32_t backup_acks_received_ = 0;
+    std::atomic<int32_t> backup_acks_received_{0};
 
     /**
      * Number of expected backups. It is set correctly as soon as the pending
      * response is set.
      */
-    int8_t backup_acks_expected_ = -1;
+    std::atomic<int8_t> backup_acks_expected_{-1};
 
     /**
      * Contains the pending response from the primary. It is pending because it
@@ -190,12 +190,12 @@ private:
      * safety since these are only read/write from the same io thread for the
      * connection.
      */
-    std::shared_ptr<protocol::ClientMessage> pending_response_;
+    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>> pending_response_;
 
     /**
      * The time when the response of the primary has been received.
      */
-    std::chrono::steady_clock::time_point pending_response_received_time_;
+    std::atomic<std::chrono::steady_clock::time_point> pending_response_received_time_;
 
     std::shared_ptr<boost::asio::steady_timer> retry_timer_;
 
