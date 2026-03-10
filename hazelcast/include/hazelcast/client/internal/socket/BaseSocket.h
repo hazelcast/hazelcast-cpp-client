@@ -15,8 +15,6 @@
  */
 #pragma once
 
-#include <atomic>
-
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
 #include <boost/lockfree/queue.hpp>

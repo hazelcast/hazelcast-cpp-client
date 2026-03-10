@@ -819,8 +819,11 @@ ClientInvocationServiceImpl::send(
       invocation->get_client_message()->get_correlation_id();
     register_invocation(correlation_id, invocation);
 
-    write_to_connection(*connection, invocation);
+    //After this is set, a second thread can notify this invocation
+    //Connection could be closed. From this point on, we need to reacquire the permission to notify if needed.
     invocation->set_send_connection(connection);
+
+    write_to_connection(*connection, invocation);
     return true;
 }
 
@@ -829,7 +832,6 @@ ClientInvocationServiceImpl::write_to_connection(
   connection::Connection& connection,
   const std::shared_ptr<ClientInvocation>& client_invocation)
 {
-    auto clientMessage = client_invocation->get_client_message();
     connection.write(client_invocation);
 }
 
@@ -1896,11 +1898,12 @@ operator<<(std::ostream& os, const ClientInvocation& invocation)
         os << "nullptr";
     }
     os << ", backup_acks_expected_ = "
-       << static_cast<int>(invocation.backup_acks_expected_)
-       << ", backup_acks_received = " << invocation.backup_acks_received_;
+       << static_cast<int>(invocation.backup_acks_expected_.load())
+       << ", backup_acks_received = " << invocation.backup_acks_received_.load();
 
-    if (invocation.pending_response_) {
-        os << ", pending_response: " << *invocation.pending_response_;
+    auto pending_response = invocation.pending_response_.load();
+    if (pending_response) {
+        os << ", pending_response: " << *pending_response;
     }
 
     os << '}';
@@ -2031,7 +2034,7 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg, bo
     // if a regular response comes and there are backups, we need to wait for
     // the backups when the backups complete, the response will be send by the
     // last backup or backup-timeout-handle mechanism kicks on
-    if (expected_backups > backup_acks_received_) {
+    if (expected_backups > backup_acks_received_.load()) {
         // so the invocation has backups and since not all backups have
         // completed, we need to wait (it could be that backups arrive earlier
         // than the response)
@@ -2044,7 +2047,7 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg, bo
         // backupsAcksExpected is set, else the system can assume the invocation
         // is complete because there is a response and no backups need to
         // respond
-        pending_response_ = msg;
+        pending_response_.store(boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(msg));
 
         // we are done since not all backups have completed. Therefore we should
         // not notify the future
@@ -2163,7 +2166,7 @@ ClientInvocation::notify_backup()
 {
     ++backup_acks_received_;
 
-    if (!pending_response_) {
+    if (!pending_response_.load()) {
         // no pendingResponse has been set, so we are done since the invocation
         // on the primary needs to complete first
         return;
@@ -2171,7 +2174,7 @@ ClientInvocation::notify_backup()
 
     // if a pendingResponse is set, then the backupsAcksExpected has been set
     // (so we can now safely read backupsAcksExpected)
-    if (backup_acks_expected_ != backup_acks_received_) {
+    if (backup_acks_expected_.load() != backup_acks_received_.load()) {
         // we managed to complete a backup, but we were not the one completing
         // the last backup, so we are done
         return;
@@ -2190,21 +2193,21 @@ ClientInvocation::detect_and_handle_backup_timeout(
     // if the backups have completed, we are done; this also filters out all non
     // backup-aware operations since the backupsAcksExpected will always be
     // equal to the backupsAcksReceived
-    if (backup_acks_expected_ == backup_acks_received_) {
+    if (backup_acks_expected_.load() == backup_acks_received_.load()) {
         return false;
     }
 
     // if no response has yet been received, we we are done; we are only going
     // to re-invoke an operation if the response of the primary has been
     // received, but the backups have not replied
-    if (!pending_response_) {
+    if (!pending_response_.load()) {
         return false;
     }
 
     // if this has not yet expired (so has not been in the system for a too long
     // period) we ignore it
-    if (pending_response_received_time_ + backup_timeout >=
-        std::chrono::steady_clock::now()) {
+    auto pending_receive_time = pending_response_received_time_.load();
+    if (pending_receive_time + backup_timeout >= std::chrono::steady_clock::now()) {
         return false;
     }
 
@@ -2228,7 +2231,7 @@ ClientInvocation::detect_and_handle_backup_timeout(
 void
 ClientInvocation::complete_with_pending_response(bool erase)
 {
-    complete(pending_response_, erase);
+    complete(*pending_response_.load(), erase);
 }
 
 ClientContext&
