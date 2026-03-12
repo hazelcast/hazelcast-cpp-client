@@ -2072,9 +2072,15 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg, bo
         // respond
         pending_response_.store(boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(msg));
 
-        // we are done since not all backups have completed. Therefore we should
-        // not notify the future
-        return;
+        // Recheck after storing pending_response_ to close the race window
+        // where notify_backup() runs between our initial check and the store
+        // above, sees no pending_response_, and returns without completing.
+        // Mirrors Java BaseInvocation.notifyResponse double-check pattern.
+        if (backup_acks_received_.load() != expected_backups) {
+            // we are done since not all backups have completed. Therefore we
+            // should not notify the future
+            return;
+        }
     }
 
     // we are going to notify the future that a response is available; this can
