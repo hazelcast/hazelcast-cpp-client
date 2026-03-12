@@ -842,8 +842,9 @@ ClientInvocationServiceImpl::send(
       invocation->get_client_message()->get_correlation_id();
     register_invocation(correlation_id, invocation);
 
-    //After this is set, a second thread can notify this invocation
-    //Connection could be closed. From this point on, we need to reacquire the permission to notify if needed.
+    // After this is set, a second thread can notify this invocation
+    // Connection could be closed. From this point on, we need to reacquire the
+    // permission to notify if needed.
     invocation->set_send_connection(connection);
 
     write_to_connection(*connection, invocation);
@@ -1922,7 +1923,8 @@ operator<<(std::ostream& os, const ClientInvocation& invocation)
     }
     os << ", backup_acks_expected_ = "
        << static_cast<int>(invocation.backup_acks_expected_.load())
-       << ", backup_acks_received = " << invocation.backup_acks_received_.load();
+       << ", backup_acks_received = "
+       << invocation.backup_acks_received_.load();
 
     auto pending_response = invocation.pending_response_.load();
     if (pending_response) {
@@ -2045,7 +2047,8 @@ ClientInvocation::set_send_connection(
 }
 
 void
-ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg, bool erase)
+ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg,
+                         bool erase)
 {
     if (!msg) {
         BOOST_THROW_EXCEPTION(
@@ -2070,7 +2073,8 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg, bo
         // backupsAcksExpected is set, else the system can assume the invocation
         // is complete because there is a response and no backups need to
         // respond
-        pending_response_.store(boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(msg));
+        pending_response_.store(
+          boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(msg));
 
         // Recheck after storing pending_response_ to close the race window
         // where notify_backup() runs between our initial check and the store
@@ -2093,7 +2097,8 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg, bo
 }
 
 void
-ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage>& msg, bool erase)
+ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage>& msg,
+                           bool erase)
 {
     try {
         // TODO: move msg content here?
@@ -2236,7 +2241,8 @@ ClientInvocation::detect_and_handle_backup_timeout(
     // if this has not yet expired (so has not been in the system for a too long
     // period) we ignore it
     auto pending_receive_time = pending_response_received_time_.load();
-    if (pending_receive_time + backup_timeout >= std::chrono::steady_clock::now()) {
+    if (pending_receive_time + backup_timeout >=
+        std::chrono::steady_clock::now()) {
         return false;
     }
 

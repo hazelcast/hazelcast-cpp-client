@@ -124,8 +124,7 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
         // in the payload.
         if (entry.message->is_flag_set(
               flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
-            entry.message->rd_ptr(
-              protocol::ClientMessage::EVENT_HEADER_LEN);
+            entry.message->rd_ptr(protocol::ClientMessage::EVENT_HEADER_LEN);
             auto source_correlation_id = entry.message->get<int64_t>();
             auto source_invocation =
               invocation_service_.get_invocation(source_correlation_id);
