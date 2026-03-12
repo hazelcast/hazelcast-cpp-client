@@ -115,7 +115,8 @@ public:
 
     virtual const std::string get_name() const;
 
-    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message, bool erase = true);
+    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message,
+                bool erase = true);
 
     void notify_exception(std::exception_ptr exception, bool erase = true);
 
@@ -176,13 +177,13 @@ private:
     bool urgent_;
     bool smart_routing_;
 
-    std::atomic<int32_t> backup_acks_received_{0};
+    std::atomic<int32_t> backup_acks_received_{ 0 };
 
     /**
      * Number of expected backups. It is set correctly as soon as the pending
      * response is set.
      */
-    std::atomic<int8_t> backup_acks_expected_{-1};
+    std::atomic<int8_t> backup_acks_expected_{ -1 };
 
     /**
      * Contains the pending response from the primary. It is pending because it
@@ -190,12 +191,14 @@ private:
      * safety since these are only read/write from the same io thread for the
      * connection.
      */
-    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>> pending_response_;
+    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>>
+      pending_response_;
 
     /**
      * The time when the response of the primary has been received.
      */
-    std::atomic<std::chrono::steady_clock::time_point> pending_response_received_time_;
+    std::atomic<std::chrono::steady_clock::time_point>
+      pending_response_received_time_;
 
     std::shared_ptr<boost::asio::steady_timer> retry_timer_;
 
@@ -230,7 +233,8 @@ private:
 
     void erase_invocation() const;
 
-    void complete(const std::shared_ptr<protocol::ClientMessage>& msg, bool erase = true);
+    void complete(const std::shared_ptr<protocol::ClientMessage>& msg,
+                  bool erase = true);
 
     void complete_with_pending_response(bool erase = true);
 };

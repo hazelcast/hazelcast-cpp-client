@@ -1079,15 +1079,16 @@ ClientConnectionManagerImpl::connect(const address& addr)
            boost::str(boost::format("Trying to connect to %1%.") % addr));
 
     auto idx = next_io_index_.fetch_add(1) % io_contexts_.size();
-    auto connection = std::make_shared<Connection>(addr,
-                                                   client_,
-                                                   ++connection_id_gen_,
-                                                   *socket_factory_,
-                                                   *this,
-                                                   client_.get_invocation_service().get_response_handler(),
-                                                   connection_timeout_millis_,
-                                                   *io_contexts_[idx],
-                                                   *io_resolvers_[idx]);
+    auto connection = std::make_shared<Connection>(
+      addr,
+      client_,
+      ++connection_id_gen_,
+      *socket_factory_,
+      *this,
+      client_.get_invocation_service().get_response_handler(),
+      connection_timeout_millis_,
+      *io_contexts_[idx],
+      *io_resolvers_[idx]);
     connection->connect();
 
     // call the interceptor from user thread
@@ -1682,8 +1683,9 @@ wait_strategy::sleep()
                                   current_backoff_millis_.count() * jitter_ *
                                   (2.0 * random_(random_generator_) - 1.0)));
 
-    actual_sleep_time = (std::min)(
-      actual_sleep_time, cluster_connect_timeout_millis_ - time_passed);
+    actual_sleep_time =
+      (std::min)(actual_sleep_time,
+                 cluster_connect_timeout_millis_ - time_passed);
 
     HZ_LOG(
       logger_,
