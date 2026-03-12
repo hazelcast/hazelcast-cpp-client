@@ -1255,35 +1255,6 @@ void
 Connection::connect()
 {
     socket_->connect(shared_from_this());
-    backup_timer_.reset(
-      new boost::asio::steady_timer(socket_->get_executor().context()));
-    auto backupTimeout =
-      static_cast<spi::impl::ClientInvocationServiceImpl&>(invocation_service_)
-        .get_backup_timeout();
-    auto this_connection = shared_from_this();
-    schedule_periodic_backup_cleanup(backupTimeout, this_connection);
-}
-
-void
-Connection::schedule_periodic_backup_cleanup(
-  std::chrono::milliseconds backup_timeout,
-  std::shared_ptr<Connection> this_connection)
-{
-    if (!alive_) {
-        return;
-    }
-
-    backup_timer_->expires_after(backup_timeout);
-    backup_timer_->async_wait(
-      socket_->get_executor().wrap([=](boost::system::error_code ec) {
-          if (ec) {
-              return;
-          }
-          client_context_.get_invocation_service().check_backup_timeouts(
-            backup_timeout);
-
-          schedule_periodic_backup_cleanup(backup_timeout, this_connection);
-      }));
 }
 
 void
@@ -1309,10 +1280,6 @@ Connection::close(const std::string& reason, std::exception_ptr cause)
     closed_time_duration_.store(
       std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now().time_since_epoch()));
-
-    if (backup_timer_) {
-        backup_timer_->cancel();
-    }
 
     close_cause_ = cause;
     close_reason_ = reason;
