@@ -1233,6 +1233,17 @@ client_properties::partition_arg_cache_size() const
 {
     return partition_arg_cache_size_;
 }
+std::chrono::milliseconds
+client_properties::get_positive_millis_or_defult(
+  const client_property& property)
+{
+    int64_t value = get_long(property);
+    if (value < 0) {
+        return std::chrono::milliseconds(
+          util::IOUtil::to_value<int64_t>(property.get_default_value()));
+    }
+    return std::chrono::milliseconds(value);
+}
 
 namespace exception {
 iexception::iexception(std::string exception_name,

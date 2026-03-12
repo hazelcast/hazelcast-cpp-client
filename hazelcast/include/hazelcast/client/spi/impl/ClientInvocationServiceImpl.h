@@ -41,6 +41,8 @@ public:
 
     void start();
 
+    void start_response_handler();
+
     void shutdown();
 
     bool invoke_on_partition_owner(
@@ -97,6 +99,11 @@ public:
     void check_backup_timeouts(std::chrono::milliseconds backup_timeout);
 
 private:
+    static constexpr const char* CLEAN_RESOURCES_MILLIS =
+      "hazelcast.client.internal.clean.resources.millis";
+    static constexpr const char* CLEAN_RESOURCES_MILLIS_DEFAULT = "100";
+    static const client_property clean_resources_millis_property_;
+
     class BackupListenerMessageCodec : public ListenerMessageCodec
     {
     public:

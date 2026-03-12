@@ -700,6 +700,12 @@ ListenerMessageCodec::decode_remove_response(protocol::ClientMessage& msg) const
     return msg.get_first_fixed_sized_field<bool>();
 }
 
+const client_property
+  ClientInvocationServiceImpl::clean_resources_millis_property_{
+      CLEAN_RESOURCES_MILLIS,
+      CLEAN_RESOURCES_MILLIS_DEFAULT
+  };
+
 ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext& client)
   : client_(client)
   , logger_(client.get_logger())
@@ -723,7 +729,7 @@ ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext& client)
 }
 
 void
-ClientInvocationServiceImpl::start()
+ClientInvocationServiceImpl::start_response_handler()
 {
     auto& props = client_.get_client_properties();
     int response_thread_count =
@@ -731,6 +737,23 @@ ClientInvocationServiceImpl::start()
     response_handler_ = std::make_unique<ClientResponseHandler>(
       *this, logger_, response_thread_count);
     response_handler_->start();
+}
+
+void
+ClientInvocationServiceImpl::start()
+{
+    start_response_handler();
+
+    if (backup_acks_enabled_) {
+        std::chrono::milliseconds clean_resources_millis =
+          client_.get_client_properties().get_positive_millis_or_defult(
+            clean_resources_millis_property_);
+
+        client_.get_client_execution_service().schedule_with_repetition(
+          [this]() { check_backup_timeouts(get_backup_timeout()); },
+          clean_resources_millis,
+          clean_resources_millis);
+    }
 }
 
 void

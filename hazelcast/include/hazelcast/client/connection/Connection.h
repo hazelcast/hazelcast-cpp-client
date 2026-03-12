@@ -153,13 +153,8 @@ private:
     boost::uuids::uuid remote_uuid_;
     logger& logger_;
     std::atomic_bool alive_;
-    std::unique_ptr<boost::asio::steady_timer> backup_timer_;
     std::atomic<std::chrono::steady_clock::duration> last_write_time_;
     spi::impl::ClientResponseHandler& response_handler_;
-
-    void schedule_periodic_backup_cleanup(
-      std::chrono::milliseconds backup_timeout,
-      std::shared_ptr<Connection> this_connection);
 };
 } // namespace connection
 } // namespace client

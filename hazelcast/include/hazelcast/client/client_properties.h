@@ -101,6 +101,17 @@ public:
     const client_property& partition_arg_cache_size() const;
 
     /**
+     * Returns the configured value of a hazelcast_property converted to
+     * milliseconds if it is positive, otherwise returns its default value.
+     *
+     * @param property the hazelcast_property to get the value from
+     * @return the value in milliseconds if it is positive, otherwise its
+     * default value.
+     */
+    std::chrono::milliseconds get_positive_millis_or_defult(
+      const client_property& property);
+
+    /**
      * Client will be sending heartbeat messages to members and this is the
      * timeout. If there is no any message passing between client and member
      * within the given time via this property in milliseconds the connection
