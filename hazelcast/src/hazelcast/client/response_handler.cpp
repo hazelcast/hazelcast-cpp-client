@@ -160,6 +160,7 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
             auto error_holder =
               protocol::codec::ErrorCodec::decode(*entry.message);
             invocation->notify_exception(
+              entry.correlation_id,
               invocation_service_.get_client_context()
                 .get_client_exception_factory()
                 .create_exception(error_holder));

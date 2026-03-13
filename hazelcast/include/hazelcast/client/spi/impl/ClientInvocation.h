@@ -118,7 +118,9 @@ public:
     void notify(const std::shared_ptr<protocol::ClientMessage>& client_message,
                 bool erase = true);
 
-    void notify_exception(std::exception_ptr exception, bool erase = true);
+    void notify_exception(int64_t correlation_id,
+                          std::exception_ptr exception,
+                          bool erase = true);
 
     void notify_backup();
 
@@ -237,6 +239,21 @@ private:
                   bool erase = true);
 
     void complete_with_pending_response(bool erase = true);
+
+    bool get_permission_to_notify(int64_t response_correlation_id);
+
+    void notify_response(const std::shared_ptr<protocol::ClientMessage>& msg,
+                         int8_t expected_backups,
+                         bool erase);
+
+    /**
+     * We make sure that this method can not be called from multiple threads
+     * per invocation at the same time.
+     * Only ones that can set a null on `send_connection` can notify the
+     * invocation.
+     */
+    void notify_exception_with_owned_permission(std::exception_ptr exception,
+                                                bool erase = true);
 };
 } // namespace impl
 } // namespace spi

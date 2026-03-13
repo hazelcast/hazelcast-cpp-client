@@ -23,7 +23,6 @@
 #include <boost/unordered/concurrent_flat_map.hpp>
 
 #include "hazelcast/util/export.h"
-#include "hazelcast/client/protocol/IMessageHandler.h"
 
 namespace hazelcast {
 class logger;
@@ -34,7 +33,6 @@ class ClientContext;
 namespace impl {
 class ClientResponseHandler;
 class HAZELCAST_API ClientInvocationServiceImpl
-  : public protocol::IMessageHandler
 {
 public:
     explicit ClientInvocationServiceImpl(ClientContext& client);
@@ -69,10 +67,6 @@ public:
     std::chrono::milliseconds get_invocation_retry_pause() const;
 
     bool is_redo_operation();
-
-    void handle_client_message(
-      const std::shared_ptr<ClientInvocation>& invocation,
-      const std::shared_ptr<protocol::ClientMessage>& response) override;
 
     const std::chrono::milliseconds& get_backup_timeout() const;
 
