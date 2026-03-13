@@ -1,8 +1,8 @@
 # C++ Client Pipeline Rearchitecture Design
 
-**Date:** 2026-03-05
-**Status:** Approved
-**Base branch:** `fixIoThreadCount` (PR #1410 on hazelcast-cpp-client)
+**Date:** 2026-03-05 \
+**Status:** Approved \
+**Base branch:** `fixIoThreadCount` ([PR](https://github.com/hazelcast/hazelcast-cpp-client/pull/144)) \
 **Goal:** Close the 4.3x throughput gap (103K vs 446K ops/sec PUT 4B) by aligning C++ client networking architecture
 with Java client.
 
