@@ -266,7 +266,7 @@ No new user-facing properties. `response.thread.count` already exists but become
 
 ## Implementation Base
 
-All changes build on top of branch `fixIoThreadCount` (PR #1410, hazelcast-cpp-client), which already implements
+All changes build on top of branch `fixIoThreadCount` [PR](https://github.com/hazelcast/hazelcast-cpp-client/pull/144), which already implements
 configurable IO thread count with round-robin connection assignment.
 
 ## Thread Count Summary
