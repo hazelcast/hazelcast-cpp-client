@@ -247,7 +247,7 @@ invocations on this connection.
 
 | Property                                 | Default | Description                                       | Status                                  |
 |------------------------------------------|---------|---------------------------------------------------|-----------------------------------------|
-| `hazelcast.client.io.thread.count`       | 3       | IO threads running io_context                     | Existing (PR #1410)                     |
+| `hazelcast.client.io.thread.count`       | 3       | IO threads running io_context                     | Existing [PR](https://github.com/hazelcast/hazelcast-cpp-client/pull/144)                     |
 | `hazelcast.client.response.thread.count` | 2       | Response threads for invocation completion        | Existing property, needs implementation |
 | Read/send buffer size                    | 128 KB  | From `socket_options::get_buffer_size_in_bytes()` | Change from 16 KB hardcoded read buffer |
 
