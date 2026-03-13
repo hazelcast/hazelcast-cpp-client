@@ -26,7 +26,6 @@
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
-#include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientResponseHandler.h"
@@ -142,7 +141,6 @@ private:
     std::chrono::system_clock::time_point start_time_;
     std::atomic<std::chrono::milliseconds> closed_time_duration_;
     spi::ClientContext& client_context_;
-    protocol::IMessageHandler& invocation_service_;
     std::unique_ptr<socket> socket_;
     int32_t connection_id_;
     std::string close_reason_;

@@ -1237,7 +1237,6 @@ Connection::Connection(
   , start_time_(std::chrono::system_clock::now())
   , closed_time_duration_()
   , client_context_(client_context)
-  , invocation_service_(client_context.get_invocation_service())
   , connection_id_(connection_id)
   , remote_uuid_(boost::uuids::nil_uuid())
   , logger_(client_context.get_logger())

@@ -796,30 +796,6 @@ ClientInvocationServiceImpl::is_redo_operation()
     return client_.get_client_config().is_redo_operation();
 }
 
-void
-ClientInvocationServiceImpl::handle_client_message(
-  const std::shared_ptr<ClientInvocation>& invocation,
-  const std::shared_ptr<protocol::ClientMessage>& response)
-{
-    try {
-        if (protocol::codec::ErrorCodec::EXCEPTION_MESSAGE_TYPE ==
-            response->get_message_type()) {
-            auto error_holder = protocol::codec::ErrorCodec::decode(*response);
-            invocation->notify_exception(
-              client_.get_client_exception_factory().create_exception(
-                error_holder));
-        } else {
-            invocation->notify(response);
-        }
-    } catch (std::exception& e) {
-        HZ_LOG(
-          logger_,
-          severe,
-          boost::str(boost::format("Failed to process response for %1%. %2%") %
-                     *invocation % e.what()));
-    }
-}
-
 bool
 ClientInvocationServiceImpl::send(
   const std::shared_ptr<impl::ClientInvocation>& invocation,
@@ -909,6 +885,7 @@ ClientInvocationServiceImpl::notify_connection_closed(
     for (auto& p : to_fail) {
         deregister_invocation(p.first);
         p.second->notify_exception(
+          p.first,
           std::make_exception_ptr(boost::enable_current_exception(
             exception::target_disconnected("Connection::close", reason))));
     }
@@ -1672,8 +1649,9 @@ ClientInvocation::invoke_on_selection()
                     message = "Could not invoke. Bound to a connection that is "
                               "deleted already.";
                 }
-                notify_exception(std::make_exception_ptr(exception::io(
-                  "ClientInvocation::invoke_on_selection", message)));
+                notify_exception_with_owned_permission(
+                  std::make_exception_ptr(exception::io(
+                    "ClientInvocation::invoke_on_selection", message)));
             }
             return;
         }
@@ -1696,11 +1674,11 @@ ClientInvocation::invoke_on_selection()
             invoked = invocation_service_.invoke(shared_from_this());
         }
         if (!invoked) {
-            notify_exception(std::make_exception_ptr(
+            notify_exception_with_owned_permission(std::make_exception_ptr(
               exception::io("No connection found to invoke")));
         }
     } catch (exception::iexception&) {
-        notify_exception(std::current_exception());
+        notify_exception_with_owned_permission(std::current_exception());
     } catch (std::exception&) {
         assert(false);
     }
@@ -1771,78 +1749,12 @@ ClientInvocation::set_exception(const std::exception& e,
 }
 
 void
-ClientInvocation::notify_exception(std::exception_ptr exception, bool erase)
+ClientInvocation::notify_exception(int64_t correlation_id,
+                                   std::exception_ptr exception,
+                                   bool erase)
 {
-    if (erase) {
-        erase_invocation();
-    }
-    try {
-        std::rethrow_exception(exception);
-    } catch (exception::iexception& iex) {
-        log_exception(iex);
-
-        if (!lifecycle_service_.is_running()) {
-            try {
-                std::throw_with_nested(boost::enable_current_exception(
-                  exception::hazelcast_client_not_active(
-                    iex.get_source(), "Client is shutting down")));
-            } catch (exception::iexception& e) {
-                set_exception(e, boost::current_exception());
-            }
-            return;
-        }
-
-        if (!should_retry(iex)) {
-            set_exception(iex, boost::current_exception());
-            return;
-        }
-
-        auto timePassed = std::chrono::steady_clock::now() - start_time_;
-        if (timePassed > invocation_service_.get_invocation_timeout()) {
-            HZ_LOG(
-              logger_,
-              finest,
-              boost::str(boost::format("Exception will not be retried because "
-                                       "invocation timed out. %1%") %
-                         iex.what()));
-
-            auto now = std::chrono::steady_clock::now();
-
-            auto timeoutException =
-              (exception::exception_builder<exception::operation_timeout>(
-                 "ClientInvocation::newoperation_timeout_exception")
-               << *this
-               << " timed out because exception occurred after client "
-                  "invocation timeout "
-               << std::chrono::duration_cast<std::chrono::milliseconds>(
-                    invocation_service_.get_invocation_timeout())
-                    .count()
-               << "msecs. Last exception:" << iex << " Current time :"
-               << util::StringUtil::time_to_string(now) << ". "
-               << "Start time: "
-               << util::StringUtil::time_to_string(start_time_)
-               << ". Total elapsed time: "
-               << std::chrono::duration_cast<std::chrono::milliseconds>(
-                    now - start_time_)
-                    .count()
-               << " ms. ")
-                .build();
-            try {
-                BOOST_THROW_EXCEPTION(timeoutException);
-            } catch (...) {
-                set_exception(timeoutException, boost::current_exception());
-            }
-
-            return;
-        }
-
-        try {
-            execute();
-        } catch (std::exception& e) {
-            set_exception(e, boost::current_exception());
-        }
-    } catch (...) {
-        assert(false);
+    if (get_permission_to_notify(correlation_id)) {
+        notify_exception_with_owned_permission(std::move(exception), erase);
     }
 }
 
@@ -2055,45 +1967,10 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg,
           exception::illegal_argument("response can't be null"));
     }
 
-    int8_t expected_backups = msg->get_number_of_backups();
-
-    // if a regular response comes and there are backups, we need to wait for
-    // the backups when the backups complete, the response will be send by the
-    // last backup or backup-timeout-handle mechanism kicks on
-    if (expected_backups > backup_acks_received_.load()) {
-        // so the invocation has backups and since not all backups have
-        // completed, we need to wait (it could be that backups arrive earlier
-        // than the response)
-
-        pending_response_received_time_ = std::chrono::steady_clock::now();
-
-        backup_acks_expected_ = expected_backups;
-
-        // it is very important that the response is set after the
-        // backupsAcksExpected is set, else the system can assume the invocation
-        // is complete because there is a response and no backups need to
-        // respond
-        pending_response_.store(
-          boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(msg));
-
-        // Recheck after storing pending_response_ to close the race window
-        // where notify_backup() runs between our initial check and the store
-        // above, sees no pending_response_, and returns without completing.
-        // Mirrors Java BaseInvocation.notifyResponse double-check pattern.
-        if (backup_acks_received_.load() != expected_backups) {
-            // we are done since not all backups have completed. Therefore we
-            // should not notify the future
-            return;
-        }
+    if (get_permission_to_notify(msg->get_correlation_id())) {
+        int8_t expected_backups = msg->get_number_of_backups();
+        notify_response(msg, expected_backups, erase);
     }
-
-    // we are going to notify the future that a response is available; this can
-    // happen when:
-    // - we had a regular operation (so no backups we need to wait for) that
-    // completed
-    // - we had a backup-aware operation that has completed, but also all its
-    // backups have completed
-    complete(msg, erase);
 }
 
 void
@@ -2253,7 +2130,8 @@ ClientInvocation::detect_and_handle_backup_timeout(
              "ClientInvocation::detect_and_handle_backup_timeout")
            << *this << " failed because backup acks missed.")
             .build());
-        notify_exception(std::make_exception_ptr(exception), false);
+        notify_exception_with_owned_permission(
+          std::make_exception_ptr(exception), false);
         return true;
     }
 
@@ -2267,6 +2145,152 @@ void
 ClientInvocation::complete_with_pending_response(bool erase)
 {
     complete(*pending_response_.load(), erase);
+}
+bool
+ClientInvocation::get_permission_to_notify(int64_t response_correlation_id)
+{
+    auto conn = this->send_connection_.load();
+    if (!conn) {
+        // invocation is being handled by a second thread.
+        // we don't need to take action
+        return false;
+    }
+
+    int64_t request_correlation_id =
+      client_message_.load()->get()->get_correlation_id();
+
+    if (response_correlation_id != request_correlation_id) {
+        // invocation is retried with new correlation id
+        // we should not notify
+        return false;
+    }
+
+    // we have the permission to notify if we can compareAndSet
+    // otherwise another thread is handling it, we don't need to notify anymore
+    return send_connection_.compare_exchange_strong(conn, nullptr);
+}
+
+void
+ClientInvocation::notify_response(
+  const std::shared_ptr<protocol::ClientMessage>& msg,
+  int8_t expected_backups,
+  bool erase)
+{
+    // if a regular response comes and there are backups, we need to wait for
+    // the backups when the backups complete, the response will be send by the
+    // last backup or backup-timeout-handle mechanism kicks on
+    if (expected_backups > backup_acks_received_.load()) {
+        // so the invocation has backups and since not all backups have
+        // completed, we need to wait (it could be that backups arrive earlier
+        // than the response)
+
+        pending_response_received_time_ = std::chrono::steady_clock::now();
+
+        backup_acks_expected_ = expected_backups;
+
+        // it is very important that the response is set after the
+        // backupsAcksExpected is set, else the system can assume the invocation
+        // is complete because there is a response and no backups need to
+        // respond
+        pending_response_.store(
+          boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(msg));
+
+        // Recheck after storing pending_response_ to close the race window
+        // where notify_backup() runs between our initial check and the store
+        // above, sees no pending_response_, and returns without completing.
+        // Mirrors Java BaseInvocation.notifyResponse double-check pattern.
+        if (backup_acks_received_.load() != expected_backups) {
+            // we are done since not all backups have completed. Therefore we
+            // should not notify the future
+            return;
+        }
+    }
+
+    // we are going to notify the future that a response is available; this can
+    // happen when:
+    // - we had a regular operation (so no backups we need to wait for) that
+    // completed
+    // - we had a backup-aware operation that has completed, but also all its
+    // backups have completed
+    complete(msg, erase);
+}
+
+void
+ClientInvocation::notify_exception_with_owned_permission(
+  std::exception_ptr exception,
+  bool erase)
+{
+    if (erase) {
+        erase_invocation();
+    }
+    try {
+        std::rethrow_exception(exception);
+    } catch (exception::iexception& iex) {
+        log_exception(iex);
+
+        if (!lifecycle_service_.is_running()) {
+            try {
+                std::throw_with_nested(boost::enable_current_exception(
+                  exception::hazelcast_client_not_active(
+                    iex.get_source(), "Client is shutting down")));
+            } catch (exception::iexception& e) {
+                set_exception(e, boost::current_exception());
+            }
+            return;
+        }
+
+        if (!should_retry(iex)) {
+            set_exception(iex, boost::current_exception());
+            return;
+        }
+
+        auto timePassed = std::chrono::steady_clock::now() - start_time_;
+        if (timePassed > invocation_service_.get_invocation_timeout()) {
+            HZ_LOG(
+              logger_,
+              finest,
+              boost::str(boost::format("Exception will not be retried because "
+                                       "invocation timed out. %1%") %
+                         iex.what()));
+
+            auto now = std::chrono::steady_clock::now();
+
+            auto timeoutException =
+              (exception::exception_builder<exception::operation_timeout>(
+                 "ClientInvocation::newoperation_timeout_exception")
+               << *this
+               << " timed out because exception occurred after client "
+                  "invocation timeout "
+               << std::chrono::duration_cast<std::chrono::milliseconds>(
+                    invocation_service_.get_invocation_timeout())
+                    .count()
+               << "msecs. Last exception:" << iex << " Current time :"
+               << util::StringUtil::time_to_string(now) << ". "
+               << "Start time: "
+               << util::StringUtil::time_to_string(start_time_)
+               << ". Total elapsed time: "
+               << std::chrono::duration_cast<std::chrono::milliseconds>(
+                    now - start_time_)
+                    .count()
+               << " ms. ")
+                .build();
+            try {
+                BOOST_THROW_EXCEPTION(timeoutException);
+            } catch (...) {
+                set_exception(timeoutException, boost::current_exception());
+            }
+
+            return;
+        }
+
+        try {
+            execute();
+        } catch (std::exception& e) {
+            set_exception(e, boost::current_exception());
+        }
+    } catch (...) {
+        assert(false);
+    }
 }
 
 ClientContext&
