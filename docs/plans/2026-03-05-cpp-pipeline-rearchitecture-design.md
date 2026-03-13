@@ -8,7 +8,7 @@ with Java client.
 
 ## Problem
 
-After the IO thread count fix (PR #1410), C++ client throughput plateaus at ~103K ops/sec for PUT 4B values with 240
+After the IO thread count fix ([PR](https://github.com/hazelcast/hazelcast-cpp-client/pull/144)), C++ client throughput plateaus at ~103K ops/sec for PUT 4B values with 240
 threads. Java client achieves ~446K ops/sec with 485 threads on the same hardware. The gap is caused by architectural
 differences in the networking pipeline.
 
