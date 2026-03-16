@@ -41,7 +41,7 @@ echo "Waiting for the test server to start. Timeout: %timeout% seconds"
 
 :server_failed_to_start
 echo "The test server did not start in %RC_START_TIMEOUT_IN_SECS% seconds. Test FAILED."
-call taskkill /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
+wmic process where "commandline like '%%com.hazelcast.remotecontroller.Main%%'" call terminate >nul 2>&1
 exit /b 1
 
 :server_started
@@ -63,6 +63,6 @@ echo %TEST_EXECUTABLE%
 %TEST_EXECUTABLE% --gtest_output="xml:CPP_Client_Test_Report.xml"
 set result=%errorlevel%
 
-taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
+wmic process where "commandline like '%%com.hazelcast.remotecontroller.Main%%'" call terminate >nul 2>&1
 
 exit /b %result%
