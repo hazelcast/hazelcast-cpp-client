@@ -1688,17 +1688,31 @@ TEST_F(ClientAuthenticationTest, testIncorrectGroupName)
 namespace hazelcast {
 namespace client {
 namespace test {
-class ClientEnpointTest : public ClientTest
-{};
-
-TEST_F(ClientEnpointTest, testConnectedClientEnpoint)
+class ClientEndpointTest : public ClientTest
 {
-    HazelcastServer instance(default_server_factory());
+public:
+    ClientEndpointTest()
+      : instance_(default_server_factory())
+      , client_(new_client().get())
+    {
+    }
 
-    auto client = hazelcast::new_client().get();
-    ASSERT_EQ_EVENTUALLY(1, client.get_cluster().get_members().size());
-    const local_endpoint endpoint = client.get_local_endpoint();
-    spi::ClientContext context(client);
+protected:
+    void TearDown() override
+    {
+        client_.shutdown().get();
+        instance_.shutdown();
+    }
+
+    HazelcastServer instance_;
+    hazelcast_client client_;
+};
+
+TEST_F(ClientEndpointTest, testConnectedClientEnpoint)
+{
+    ASSERT_EQ_EVENTUALLY(1, client_.get_cluster().get_members().size());
+    const local_endpoint endpoint = client_.get_local_endpoint();
+    spi::ClientContext context(client_);
     ASSERT_EQ(context.get_name(), endpoint.get_name());
 
     auto endpointAddress = endpoint.get_socket_address();
@@ -1712,8 +1726,6 @@ TEST_F(ClientEnpointTest, testConnectedClientEnpoint)
     ASSERT_TRUE(localAddress);
     ASSERT_EQ(*localAddress, *endpointAddress);
     ASSERT_EQ(connectionManager.get_client_uuid(), endpoint.get_uuid());
-
-    client.shutdown().get();
 }
 } // namespace test
 } // namespace client
