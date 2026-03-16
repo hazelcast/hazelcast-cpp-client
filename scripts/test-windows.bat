@@ -42,6 +42,7 @@ echo "Waiting for the test server to start. Timeout: %timeout% seconds"
 :server_failed_to_start
 echo "The test server did not start in %RC_START_TIMEOUT_IN_SECS% seconds. Test FAILED."
 call taskkill /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
+if exist rc_stdout.log type rc_stdout.log
 exit /b 1
 
 :server_started
@@ -64,5 +65,9 @@ echo %TEST_EXECUTABLE%
 set result=%errorlevel%
 
 taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
+
+echo "========== Remote Controller Output =========="
+if exist rc_stdout.log type rc_stdout.log
+echo "========== End Remote Controller Output =========="
 
 exit /b %result%
