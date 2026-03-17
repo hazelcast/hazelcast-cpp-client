@@ -57,7 +57,6 @@ public:
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io)
-      , write_queue_(128)
     {
     }
 
