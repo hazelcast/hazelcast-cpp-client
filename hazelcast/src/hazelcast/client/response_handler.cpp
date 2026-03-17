@@ -75,9 +75,9 @@ void
 ClientResponseHandler::accept(std::shared_ptr<protocol::ClientMessage> message)
 {
     auto correlation_id = message->get_correlation_id();
-    auto index = static_cast<size_t>(correlation_id >= 0 ? correlation_id
-                                                         : -correlation_id) %
-                 queues_.size();
+    // AbstractCallIdSequence::next() monotonically increases.
+    // if it goes beyond int64_t MAX, it will wrap to negative number.
+    auto index = std::abs(correlation_id) % queues_.size();
     auto& q = *queues_[index];
     {
         std::lock_guard<std::mutex> lock(q.mutex);
