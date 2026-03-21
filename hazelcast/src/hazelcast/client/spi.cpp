@@ -2895,6 +2895,16 @@ listener_service_impl::remove_event_handler(
 
 void
 listener_service_impl::handle_client_message(
+  const std::shared_ptr<protocol::ClientMessage>& event_message)
+{
+    int64_t correlation_id = event_message->get_correlation_id();
+    auto client_invocation =
+      client_context_.get_invocation_service().get_invocation(correlation_id);
+    handle_client_message(client_invocation, event_message);
+}
+
+void
+listener_service_impl::handle_client_message(
   const std::shared_ptr<ClientInvocation> invocation,
   const std::shared_ptr<protocol::ClientMessage> response)
 {
