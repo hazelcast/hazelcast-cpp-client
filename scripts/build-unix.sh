@@ -35,6 +35,8 @@ if [ "${BUILD_TYPE}" = "Debug" ]; then
   CXXFLAGS="$CXXFLAGS -Werror"
   # enable address sanitizer to provide meaningful stack traces
   CXXFLAGS="$CXXFLAGS -fsanitize=address -fno-omit-frame-pointer"
+  # Disable disable the C++17 aligned-new behavior
+  CXXFLAGS="$CXXFLAGS -fno-aligned-new"
 fi
 
 # remove the given build directory if already exists
