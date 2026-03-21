@@ -1332,7 +1332,16 @@ void
 Connection::handle_client_message(
   const std::shared_ptr<protocol::ClientMessage>& message)
 {
-    response_handler_.accept(message);
+    if (message->is_flag_set(message->get_header_flags(),
+                             protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
+        response_handler_.accept(message);
+    } else if (message->is_flag_set(message->get_header_flags(),
+                                    protocol::ClientMessage::IS_EVENT_FLAG)) {
+        auto& listener_service = client_context_.get_client_listener_service();
+        listener_service.handle_client_message(message);
+    } else {
+        response_handler_.accept(message);
+    }
 }
 
 int32_t
