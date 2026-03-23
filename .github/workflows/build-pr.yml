@@ -58,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false    
       
-    if: ${{ needs.test-membership.outputs.is-hazelcast == 'true' || github.event_name == 'workflow_dispatch' || github.actor == 'dependabot[bot]' }}
+    if: ${{ needs.test-membership.outputs.is-hazelcast == 'true' || github.event_name == 'workflow_dispatch' || github.event.pull_request.user.login == 'dependabot[bot]' }}
     steps:
       - name: Report
         shell: bash
