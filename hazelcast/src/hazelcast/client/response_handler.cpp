@@ -38,6 +38,9 @@ ClientResponseHandler::ClientResponseHandler(
   , logger_(lg)
   , thread_count_(thread_count)
 {
+    util::Preconditions::check_positive(
+      thread_count_,
+      client_properties::RESPONSE_THREAD_COUNT + " must be positive");
 }
 
 void
