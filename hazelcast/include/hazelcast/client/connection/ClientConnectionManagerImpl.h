@@ -199,6 +199,8 @@ private:
     static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
     static constexpr int SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
     static constexpr byte ALL_MEMBERS_ROUTING = 1;
+    static constexpr int DEFAULT_IO_THREAD_COUNT = 3;
+    static constexpr int SMALL_MACHINE_PROCESSOR_COUNT = 8;
 
     struct auth_response
     {
@@ -276,6 +278,8 @@ private:
     std::shared_ptr<Connection> on_authenticated(
       const std::shared_ptr<Connection>& connection,
       auth_response& response);
+
+    int find_thread_count(int configured_thread_count) const;
 
     std::atomic_bool alive_;
     logger& logger_;

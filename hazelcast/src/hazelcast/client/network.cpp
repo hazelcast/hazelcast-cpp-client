@@ -115,7 +115,9 @@ ClientConnectionManagerImpl::start()
     }
 
     auto& props = client_.get_client_properties();
-    int io_thread_count = props.get_integer(props.get_io_thread_count());
+    int configured_io_thread_count =
+      props.get_integer(props.get_io_thread_count());
+    int io_thread_count = find_thread_count(configured_io_thread_count);
 
     socket_factory_.reset(new internal::socket::SocketFactory(client_));
 
@@ -916,6 +918,24 @@ ClientConnectionManagerImpl::on_authenticated(
     }
 
     return connection;
+}
+
+int
+ClientConnectionManagerImpl::find_thread_count(
+  int configured_thread_count) const
+{
+    if (configured_thread_count != -1) {
+        return configured_thread_count;
+    }
+
+    // uni-socket client
+    if (!smart_routing_enabled_) {
+        return 1;
+    }
+
+    return (util::get_available_core_count() > SMALL_MACHINE_PROCESSOR_COUNT)
+             ? DEFAULT_IO_THREAD_COUNT
+             : 1;
 }
 
 void
