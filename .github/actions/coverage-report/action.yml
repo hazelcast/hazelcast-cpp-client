@@ -36,7 +36,7 @@ runs:
     - name: Download hazelcast-enterprise-tests.jar
       shell: bash
       run: |
-        gh api "/repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" -H "Accept: application/vnd.github.raw" > hazelcast-enterprise-${{ env.HZ_VERSION }}-tests.jar
+        gh api "/repos/hazelcast/private-test-artifacts/contents/certs.jar?ref=data" -H "Accept: application/vnd.github.raw" > hazelcast-enterprise-${HZ_VERSION}-tests.jar
       env:
         GH_TOKEN: ${{ inputs.GH_TOKEN }}
 
