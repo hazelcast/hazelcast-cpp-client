@@ -9,30 +9,34 @@ with Java client.
 ## Problem
 
 After the IO thread count fix ([PR](https://github.com/hazelcast/hazelcast-cpp-client/pull/144)), C++ client throughput plateaus at ~103K ops/sec for PUT 4B values with 240
-threads. Java client achieves ~446K ops/sec with 485 threads on the same hardware. The gap is caused by architectural
-differences in the networking pipeline.
+threads. Java client achieves ~446K ops/sec with 485 threads on the same hardware. I suspect that the gap is caused by
+architectural
+differences in the networking pipeline. In the fixe-rate tests, we also observe that the C++ client latencies are better
+than Java client latencies which suggests that the C++ client is not fully scaling with IO threads and is likely
+bottlenecked on the IO thread processing.
 
 ### Root Cause Analysis
 
-| Bottleneck                                  | C++ Current                                           | Java                                                                        | Impact                                         |
-|---------------------------------------------|-------------------------------------------------------|-----------------------------------------------------------------------------|------------------------------------------------|
-| Response processing on IO thread            | `set_value()` blocks IO strand                        | ResponseThread pool offloads from IO                                        | IO thread can't read while completing promises |
-| Per-connection strand serializes everything | Reads, writes, map ops all on 1 strand per connection | Separate input/output selectors + response threads                          | 240 caller threads contend on 3 strands        |
-| Per-connection invocations map              | `std::unordered_map` accessed only from strand        | Global `ConcurrentHashMap` accessed lock-free                               | All map ops serialized through strand          |
-| No write batching                           | Each put = separate `async_write` syscall             | `ConcurrentLinkedQueue` drained into buffer, single `socketChannel.write()` | N syscalls vs 1                                |
-| Read buffer undersized                      | 16 KB hardcoded                                       | 128 KB from socket options                                                  | More read syscalls needed                      |
+| Bottleneck                                  | C++ Current                                           | Java                                                                        | Impact                                                                                                      |
+|---------------------------------------------|-------------------------------------------------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| Response processing on IO thread            | `set_value()` blocks IO strand                        | ResponseThread pool offloads from IO                                        | IO thread can't read while completing promises                                                              |
+| Per-connection strand serializes everything | Reads, writes, map ops all on 1 strand per connection | Separate input/output selectors + response threads                          | 240 caller threads contend on 3 strands                                                                     |
+| Per-connection invocations map              | `std::unordered_map` accessed only from strand        | Global `ConcurrentHashMap` accessed lock-free                               | All ops serialized through the strand. per-connection map can only be modified by the strand executor only. |
+| No write batching                           | Each put = separate `async_write` syscall             | `ConcurrentLinkedQueue` drained into buffer, single `socketChannel.write()` | N syscalls vs 1                                                                                             |
 
 ## Design
 
 ### 1. Global Invocation Registry
 
 Replace per-connection `std::unordered_map<int64_t, shared_ptr<ClientInvocation>>` on `Connection` with a single global
-`boost::concurrent_flat_map<int64_t, shared_ptr<ClientInvocation>>` on `ClientInvocationServiceImpl`.
+`boost::concurrent_flat_map<int64_t, shared_ptr<ClientInvocation>>` on `ClientInvocationServiceImpl`. boost::
+concurrent_flat_map
 
-- `boost::concurrent_flat_map` is available in Boost 1.83+ (project uses 1.89)
-- Uses open-addressing with SIMD probing, visitor-based API
-- Zero new dependencies — just add `boost-unordered` to vcpkg.json
-- Existing `CallIdSequence` implementations and correlation ID generation (connection_id in upper 32 bits) are preserved
+- `boost::concurrent_flat_map` is available in Boost 1.83+
+- Uses visitor-based API
+- Minimum new dependencies since already dependent on Boost — just add `boost-unordered` module to vcpkg.json
+- Existing `CallIdSequence` implementations and correlation ID generation are preserved (AbstractCallIdSequence and its
+  implementations) are
   unchanged
 - Correlation IDs are globally unique so the global map lookup works as-is
 
@@ -54,8 +58,9 @@ flushed as a single syscall.
 
 ```cpp
 struct OutboundEntry {
-    int64_t correlation_id;          // for error path lookup in global map
-    protocol::ClientMessage message; // serialized message to write
+    int64_t correlation_id;
+    std::shared_ptr<protocol::ClientMessage> message;
+    std::shared_ptr<spi::impl::ClientInvocation> invocation;
 };
 ```
 
@@ -107,8 +112,10 @@ efficient blocking when empty.
 
 - IO thread reads and decodes message (must stay on IO thread — owns socket)
 - Extracts correlation ID, classifies message type:
-    - **Response:** enqueue `{correlationId, message}` to `response_queues_[correlationId % N]`, return immediately
-    - **Backup event:** handle inline (cheap — just decrement counter, same as Java)
+  - **Regular Response:** enqueue `{correlationId, message}` to `response_queues_[correlationId % N]`, return
+    immediately
+  - **Backup Acknowledgement Event:** enqueue `{correlationId, message}` to `response_queues_[correlationId % N]`,
+    return immediately
     - **Listener event:** route to listener service (existing behavior)
 
 **Response thread work:**
