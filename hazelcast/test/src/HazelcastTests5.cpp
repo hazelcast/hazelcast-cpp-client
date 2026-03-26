@@ -1172,6 +1172,13 @@ TEST_P(ClientMapTest, testTryPutRemove)
 
 TEST_P(ClientMapTest, testPutTtl)
 {
+    if (client_.get_client_config().get_near_cache_config(imap_->get_name()) !=
+        nullptr) {
+        GTEST_SKIP_(
+          "Server side expiry does not send near cache invalidations. "
+          "See https://github.com/hazelcast/hazelcast/issues/10975");
+    }
+
     validate_expiry_invalidations(imap_, [=]() {
         imap_
           ->put<std::string, std::string>(
@@ -1182,6 +1189,13 @@ TEST_P(ClientMapTest, testPutTtl)
 
 TEST_P(ClientMapTest, testPutConfigTtl)
 {
+    if (client_.get_client_config().get_near_cache_config(
+          ONE_SECOND_MAP_NAME) != nullptr) {
+        GTEST_SKIP_(
+          "Server side expiry does not send near cache invalidations. "
+          "See https://github.com/hazelcast/hazelcast/issues/10975");
+    }
+
     std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME).get();
     validate_expiry_invalidations(map, [=]() {
         map->put<std::string, std::string>("key1", "value1").get();
@@ -1201,9 +1215,16 @@ TEST_P(ClientMapTest, testPutIfAbsent)
 
 TEST_P(ClientMapTest, testPutIfAbsentTtl)
 {
+    if (client_.get_client_config().get_near_cache_config(imap_->get_name()) !=
+        nullptr) {
+        GTEST_SKIP_(
+          "Server side expiry does not send near cache invalidations. "
+          "See https://github.com/hazelcast/hazelcast/issues/10975");
+    }
+
     ASSERT_FALSE((imap_
                     ->put_if_absent<std::string, std::string>(
-                      "key1", "value1", std::chrono::seconds(1))
+                      "key1", "value1", std::chrono::seconds(10))
                     .get()
                     .has_value()));
     ASSERT_EQ("value1",
@@ -1213,11 +1234,15 @@ TEST_P(ClientMapTest, testPutIfAbsentTtl)
                  .get()
                  .value()));
 
-    ASSERT_FALSE_EVENTUALLY((imap_
-                               ->put_if_absent<std::string, std::string>(
-                                 "key1", "value3", std::chrono::seconds(1))
-                               .get()
-                               .has_value()));
+    ASSERT_FALSE_EVENTUALLY(
+      (imap_->get<std::string, std::string>("key1").get().has_value()));
+
+    ASSERT_FALSE((imap_
+                    ->put_if_absent<std::string, std::string>(
+                      "key1", "value3", std::chrono::seconds(10))
+                    .get()
+                    .has_value()));
+
     ASSERT_EQ("value3",
               (imap_
                  ->put_if_absent<std::string, std::string>(
@@ -1239,6 +1264,13 @@ TEST_P(ClientMapTest, testSet)
 
 TEST_P(ClientMapTest, testSetTtl)
 {
+    if (client_.get_client_config().get_near_cache_config(imap_->get_name()) !=
+        nullptr) {
+        GTEST_SKIP_(
+          "Server side expiry does not send near cache invalidations. "
+          "See https://github.com/hazelcast/hazelcast/issues/10975");
+    }
+
     validate_expiry_invalidations(imap_, [=]() {
         imap_->set("key1", "value1", std::chrono::seconds(1)).get();
     });
@@ -1246,6 +1278,13 @@ TEST_P(ClientMapTest, testSetTtl)
 
 TEST_P(ClientMapTest, testSetConfigTtl)
 {
+    if (client_.get_client_config().get_near_cache_config(
+          ONE_SECOND_MAP_NAME) != nullptr) {
+        GTEST_SKIP_(
+          "Server side expiry does not send near cache invalidations. "
+          "See https://github.com/hazelcast/hazelcast/issues/10975");
+    }
+
     std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME).get();
     validate_expiry_invalidations(map,
                                   [=]() { map->set("key1", "value1").get(); });

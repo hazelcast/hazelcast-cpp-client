@@ -105,6 +105,8 @@ main()
         std::cout << "This line should not execute!!!" << std::endl;
     } catch (hazelcast::client::exception::hazelcast_overload&) {
         std::cout << "Received the expected overload exception." << std::endl;
+    } catch (hazelcast::client::exception::iexception& e) {
+        std::cout << "Received an unexpected exception." << e << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

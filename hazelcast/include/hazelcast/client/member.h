@@ -23,11 +23,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <iosfwd>
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace client {
 struct HAZELCAST_API endpoint_qualifier
@@ -185,7 +180,3 @@ struct HAZELCAST_API hash<hazelcast::client::member>
     std::size_t operator()(const hazelcast::client::member& k) const noexcept;
 };
 } // namespace std
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

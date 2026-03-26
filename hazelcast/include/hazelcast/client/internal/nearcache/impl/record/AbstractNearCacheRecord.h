@@ -20,14 +20,8 @@
 #include <atomic>
 
 #include "hazelcast/util/export.h"
-
 #include "hazelcast/client/internal/nearcache/NearCacheRecord.h"
 #include <boost/uuid/uuid.hpp>
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
 
 namespace hazelcast {
 namespace client {
@@ -153,7 +147,3 @@ protected:
 } // namespace internal
 } // namespace client
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

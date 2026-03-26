@@ -25,11 +25,6 @@
 #include <stdint.h>
 #include <boost/endian/conversion.hpp>
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace util {
 class ByteBuffer;
@@ -66,7 +61,7 @@ public:
         size_t length = bytes.size();
         check_available(length);
         memcpy(&(bytes[0]), &(buffer_[pos_]), length);
-        pos_ += length;
+        pos_ += (int)length;
     }
 
     inline void read_fully(std::vector<int8_t>& bytes)
@@ -74,7 +69,7 @@ public:
         size_t length = bytes.size();
         check_available(length);
         memcpy(&(bytes[0]), &(buffer_[pos_]), length);
-        pos_ += length;
+        pos_ += (int32_t)length;
     }
 
     inline int skip_bytes(int i)
@@ -98,7 +93,7 @@ public:
       std::is_same<char, typename std::remove_cv<T>::type>::value,
       T>::type inline read()
     {
-        return read<char16_t>();
+        return (char)read<char16_t>();
     }
 
     template<typename T>
@@ -287,7 +282,7 @@ private:
         check_available(byte_count);
         std::string value(reinterpret_cast<const char*>(&buffer_[pos_]),
                           byte_count);
-        pos_ += byte_count;
+        pos_ += (int)byte_count;
         return value;
     }
 
@@ -367,7 +362,3 @@ protected:
 } // namespace serialization
 } // namespace client
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

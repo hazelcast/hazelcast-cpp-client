@@ -17,7 +17,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(hazelcast-cpp-client
-        VERSION 5.6.0
+        VERSION 5.7.0
         DESCRIPTION "Hazelcast C++ Client"
         LANGUAGES CXX)
 
@@ -158,10 +158,12 @@ message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 # MSVC-specific compiler flags
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+    # suppress warning about DLL-interface dll export, users do import but we export in library.
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4251 /wd4275)
 endif ()
 
 # AppleClang-specific compiler flags, we set for all targets since we want these flags also for tests and examples
-if (CMAKE_CXX_STANDARD EQUAL 11 AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+if (CMAKE_CXX_FLAGS MATCHES "-Werror" AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable")
 endif ()
 

@@ -26,11 +26,6 @@
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/client/spi/InitializingObject.h"
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable : 4251) // for dll export
-#endif
-
 namespace hazelcast {
 namespace client {
 namespace serialization {
@@ -206,7 +201,3 @@ const int NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS = 5;
 } // namespace internal
 } // namespace client
 } // namespace hazelcast
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

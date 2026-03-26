@@ -351,7 +351,7 @@ void
 Filter::add_filter(const std::string& name, const std::string& value)
 {
     std::stringstream out;
-    unsigned long index = filters_.size() + 1;
+    auto index = filters_.size() + 1;
     out << "Filter." << index << ".Name";
     filters_[out.str()] = name;
     out.str("");
