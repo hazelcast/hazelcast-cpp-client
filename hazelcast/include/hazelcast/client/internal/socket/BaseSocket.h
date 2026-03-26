@@ -15,6 +15,8 @@
  */
 #pragma once
 
+#include <cstdlib>
+
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
 #include <boost/lockfree/queue.hpp>
@@ -43,6 +45,33 @@ template<typename T>
 class BaseSocket : public hazelcast::client::socket
 {
 public:
+    // boost::lockfree::queue requires 64-byte alignment (cache-line).
+    // In C++14 without -faligned-new, the default operator new cannot
+    // satisfy over-aligned allocations. Provide class-level overloads.
+    static void* operator new(std::size_t size)
+    {
+        constexpr std::size_t align = alignof(BaseSocket);
+        void* ptr = nullptr;
+#ifdef _WIN32
+        ptr = _aligned_malloc(size, align);
+        if (!ptr)
+            throw std::bad_alloc();
+#else
+        if (posix_memalign(&ptr, align, size) != 0)
+            throw std::bad_alloc();
+#endif
+        return ptr;
+    }
+
+    static void operator delete(void* ptr) noexcept
+    {
+#ifdef _WIN32
+        _aligned_free(ptr);
+#else
+        std::free(ptr);
+#endif
+    }
+
     template<typename = std::enable_if<
                std::is_same<T, boost::asio::ip::tcp::socket>::value>>
     BaseSocket(boost::asio::ip::tcp::resolver& io_resolver,
