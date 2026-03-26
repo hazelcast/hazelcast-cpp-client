@@ -207,7 +207,6 @@ public:
     static const std::string IO_THREAD_COUNT;
     static const std::string IO_THREAD_COUNT_DEFAULT;
 
-
     /**
      * Number of response threads for processing invocation completions.
      * Response threads offload promise completion from IO threads,
