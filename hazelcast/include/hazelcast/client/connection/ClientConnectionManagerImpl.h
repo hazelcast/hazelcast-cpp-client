@@ -199,6 +199,8 @@ private:
     static const endpoint_qualifier PUBLIC_ENDPOINT_QUALIFIER;
     static constexpr int SQL_CONNECTION_RANDOM_ATTEMPTS = 10;
     static constexpr byte ALL_MEMBERS_ROUTING = 1;
+    static constexpr int DEFAULT_IO_THREAD_COUNT = 3;
+    static constexpr int SMALL_MACHINE_PROCESSOR_COUNT = 8;
 
     struct auth_response
     {
@@ -277,11 +279,20 @@ private:
       const std::shared_ptr<Connection>& connection,
       auth_response& response);
 
+    int find_thread_count(int configured_thread_count) const;
+
     std::atomic_bool alive_;
     logger& logger_;
     std::chrono::milliseconds connection_timeout_millis_;
     spi::ClientContext& client_;
-    std::unique_ptr<boost::asio::io_context> io_context_;
+    std::vector<std::unique_ptr<boost::asio::io_context>> io_contexts_;
+    std::vector<std::unique_ptr<boost::asio::ip::tcp::resolver>> io_resolvers_;
+    std::unique_ptr<internal::socket::SocketFactory> socket_factory_;
+    std::vector<std::thread> io_threads_;
+    std::vector<std::unique_ptr<
+      boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>>
+      io_guards_;
+    std::atomic<size_t> next_io_index_{ 0 };
     socket_interceptor socket_interceptor_;
     util::SynchronizedMap<member, bool> connecting_members_;
     // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
@@ -291,13 +302,7 @@ private:
     bool shuffle_member_list_;
     std::unique_ptr<AddressProvider> address_provider_;
     std::atomic<int32_t> connection_id_gen_;
-    std::unique_ptr<boost::asio::ip::tcp::resolver> io_resolver_;
-    std::unique_ptr<internal::socket::SocketFactory> socket_factory_;
     HeartbeatManager heartbeat_;
-    std::thread io_thread_;
-    std::unique_ptr<
-      boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>
-      io_guard_;
     const bool async_start_;
     const config::client_connection_strategy_config::reconnect_mode
       reconnect_mode_;

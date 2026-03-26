@@ -40,20 +40,18 @@ namespace socket {
 class HAZELCAST_API SocketFactory
 {
 public:
-    SocketFactory(spi::ClientContext& client_context,
-                  boost::asio::io_context& io,
-                  boost::asio::ip::tcp::resolver& resolver);
+    SocketFactory(spi::ClientContext& client_context);
 
     bool start();
 
     std::unique_ptr<hazelcast::client::socket> create(
       const address& address,
-      std::chrono::milliseconds& connect_timeout_in_millis);
+      std::chrono::milliseconds& connect_timeout_in_millis,
+      boost::asio::io_context& io,
+      boost::asio::ip::tcp::resolver& resolver);
 
 private:
     spi::ClientContext& client_context_;
-    boost::asio::io_context& io_;
-    boost::asio::ip::tcp::resolver& io_resolver_;
 #ifdef HZ_BUILD_WITH_SSL
     std::shared_ptr<boost::asio::ssl::context> ssl_context_;
 #endif

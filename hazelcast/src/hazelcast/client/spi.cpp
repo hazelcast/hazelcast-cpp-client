@@ -1653,6 +1653,18 @@ ClientInvocation::set_exception(const std::exception& e,
                                 "%1%, %2% Exception to be set: %3%") %
                               se.what() % *this % e.what()));
         }
+    } catch (std::exception& ex) {
+        HZ_LOG(logger_,
+               warning,
+               boost::str(
+                 boost::format("Failed to set the exception for invocation. "
+                               "%1%, %2% Exception to be set: %3%") %
+                 ex.what() % *this % e.what()));
+    } catch (...) {
+        HZ_LOG(
+          logger_,
+          warning,
+          "Unhandled exception. Failed to set the exception for invocation.");
     }
 }
 

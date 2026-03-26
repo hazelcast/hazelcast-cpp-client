@@ -989,6 +989,10 @@ const std::string client_properties::INTERNAL_EXECUTOR_POOL_SIZE =
   "hazelcast.client.internal.executor.pool.size";
 const std::string client_properties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT = "3";
 
+const std::string client_properties::IO_THREAD_COUNT =
+  "hazelcast.client.io.thread.count";
+const std::string client_properties::IO_THREAD_COUNT_DEFAULT = "3";
+
 const std::string client_properties::SHUFFLE_MEMBER_LIST =
   "hazelcast.client.shuffle.member.list";
 const std::string client_properties::SHUFFLE_MEMBER_LIST_DEFAULT = "true";
@@ -1060,6 +1064,7 @@ client_properties::client_properties(
   , event_thread_count_(EVENT_THREAD_COUNT, EVENT_THREAD_COUNT_DEFAULT)
   , internal_executor_pool_size_(INTERNAL_EXECUTOR_POOL_SIZE,
                                  INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT)
+  , io_thread_count_(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT)
   , shuffle_member_list_(SHUFFLE_MEMBER_LIST, SHUFFLE_MEMBER_LIST_DEFAULT)
   , max_concurrent_invocations_(MAX_CONCURRENT_INVOCATIONS,
                                 MAX_CONCURRENT_INVOCATIONS_DEFAULT)
@@ -1120,6 +1125,12 @@ const client_property&
 client_properties::get_internal_executor_pool_size() const
 {
     return internal_executor_pool_size_;
+}
+
+const client_property&
+client_properties::get_io_thread_count() const
+{
+    return io_thread_count_;
 }
 
 const client_property&
