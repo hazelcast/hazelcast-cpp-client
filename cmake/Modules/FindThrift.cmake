@@ -54,6 +54,31 @@ find_package(Thrift QUIET NO_MODULE)
 
 if (Thrift_FOUND)
     find_package_handle_standard_args(Thrift CONFIG_MODE)
+
+    if(TARGET thrift::thrift)
+        # The official ThriftConfig.cmake does not set INTERFACE_INCLUDE_DIRECTORIES.
+        # THRIFT_INCLUDE_DIR points to the inner .../include/thrift directory;
+        # we need its parent so consumers can write #include <thrift/Thrift.h>.
+        get_target_property(_thrift_incs thrift::thrift INTERFACE_INCLUDE_DIRECTORIES)
+        if(NOT _thrift_incs)
+            get_filename_component(_thrift_include_parent "${THRIFT_INCLUDE_DIR}" DIRECTORY)
+            set_target_properties(thrift::thrift PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${_thrift_include_parent}")
+        endif()
+        unset(_thrift_incs)
+        unset(_thrift_include_parent)
+
+        # thrift_export.h defaults to __declspec(dllimport) on MSVC unless
+        # THRIFT_STATIC_DEFINE is set. Without it, the compiler emits __imp_*
+        # references that a static library cannot satisfy (LNK2019).
+        get_target_property(_thrift_type thrift::thrift TYPE)
+        if(_thrift_type STREQUAL "STATIC_LIBRARY")
+            set_property(TARGET thrift::thrift APPEND PROPERTY
+                INTERFACE_COMPILE_DEFINITIONS "THRIFT_STATIC_DEFINE")
+        endif()
+        unset(_thrift_type)
+    endif()
+
     return()
 endif()
 
@@ -94,6 +119,7 @@ if(Thrift_FOUND AND NOT TARGET thrift::thrift)
         thrift::thrift PROPERTIES
         IMPORTED_LOCATION "${Thrift_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${Thrift_INCLUDE_DIR}"
+        INTERFACE_COMPILE_DEFINITIONS "THRIFT_STATIC_DEFINE"
     )
 endif()
 
