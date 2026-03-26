@@ -210,13 +210,18 @@ ClientConnectionManagerImpl::shutdown()
             thread.join();
         }
     }
-    io_contexts_.clear();
-    io_guards_.clear();
-    io_resolvers_.clear();
 
+    // Release internal bookkeeping references to connections and listeners.
+    // io_resolvers_ and io_contexts_ are intentionally NOT cleared here:
+    // user code (e.g. transaction_context) may still hold
+    // shared_ptr<Connection> objects whose socket/backup_timer destructors
+    // reference these io_contexts. Leaving the io_contexts alive until
+    // ~ClientConnectionManagerImpl() ensures they outlive any such lingering
+    // Connection references.
     connection_listeners_.clear();
     active_connections_.clear();
     active_connection_ids_.clear();
+    io_guards_.clear();
 }
 
 std::shared_ptr<Connection>
@@ -1683,6 +1688,14 @@ HeartbeatManager::shutdown()
 {
     if (timer_) {
         timer_->cancel();
+        // Release the timer while the execution service's thread pool is still
+        // alive. The timer holds an executor reference into that pool; if we
+        // defer releasing it to the HeartbeatManager destructor the pool will
+        // already have been destroyed (execution_service_ is a member of
+        // hazelcast_client_instance_impl declared before connection_manager_,
+        // so it is destroyed first), causing a use-after-free in the timer
+        // destructor.
+        timer_.reset();
     }
 }
 
@@ -1745,9 +1758,8 @@ wait_strategy::sleep()
                                   current_backoff_millis_.count() * jitter_ *
                                   (2.0 * random_(random_generator_) - 1.0)));
 
-    actual_sleep_time =
-      (std::min)(actual_sleep_time,
-                 cluster_connect_timeout_millis_ - time_passed);
+    actual_sleep_time = (std::min)(
+      actual_sleep_time, cluster_connect_timeout_millis_ - time_passed);
 
     HZ_LOG(
       logger_,
