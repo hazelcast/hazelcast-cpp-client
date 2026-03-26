@@ -1234,7 +1234,7 @@ client_properties::partition_arg_cache_size() const
     return partition_arg_cache_size_;
 }
 std::chrono::milliseconds
-client_properties::get_positive_millis_or_defult(
+client_properties::get_positive_millis_or_default(
   const client_property& property)
 {
     int64_t value = get_long(property);

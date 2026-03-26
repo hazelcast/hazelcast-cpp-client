@@ -108,7 +108,7 @@ public:
      * @return the value in milliseconds if it is positive, otherwise its
      * default value.
      */
-    std::chrono::milliseconds get_positive_millis_or_defult(
+    std::chrono::milliseconds get_positive_millis_or_default(
       const client_property& property);
 
     /**

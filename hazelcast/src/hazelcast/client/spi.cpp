@@ -746,7 +746,7 @@ ClientInvocationServiceImpl::start()
 
     if (backup_acks_enabled_) {
         std::chrono::milliseconds clean_resources_millis =
-          client_.get_client_properties().get_positive_millis_or_defult(
+          client_.get_client_properties().get_positive_millis_or_default(
             clean_resources_millis_property_);
 
         client_.get_client_execution_service().schedule_with_repetition(
