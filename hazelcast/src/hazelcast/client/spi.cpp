@@ -806,6 +806,10 @@ ClientInvocationServiceImpl::send(
           "ClientInvocationServiceImpl::send", "Client is shut down"));
     }
 
+    if (!connection->is_alive()) {
+        return false;
+    }
+
     if (backup_acks_enabled_) {
         invocation->get_client_message()->add_flag(
           protocol::ClientMessage::BACKUP_AWARE_FLAG);
@@ -822,6 +826,19 @@ ClientInvocationServiceImpl::send(
     // Connection could be closed. From this point on, we need to reacquire the
     // permission to notify if needed.
     invocation->set_send_connection(connection);
+
+    // Double-check connection liveness after registration to close the
+    // race window where notify_connection_closed runs between our
+    // initial alive check and set_send_connection, missing this
+    // invocation entirely.
+    if (!connection->is_alive()) {
+        invocation->notify_exception(
+          correlation_id,
+          std::make_exception_ptr(boost::enable_current_exception(
+            exception::target_disconnected("ClientInvocationServiceImpl::send",
+                                           "Connection is not alive"))));
+        return true;
+    }
 
     write_to_connection(*connection, invocation);
     return true;
