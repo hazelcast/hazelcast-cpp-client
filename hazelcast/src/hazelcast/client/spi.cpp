@@ -2208,7 +2208,7 @@ ClientInvocation::notify_response(
 
     // we are going to notify the future that a response is available; this can
     // happen when:
-    // - we had a regular operation (so no backups we need to wait for) that
+    // - we had a regular operation (so no backups to await for) that
     // completed
     // - we had a backup-aware operation that has completed, but also all its
     // backups have completed
