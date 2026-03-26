@@ -57,7 +57,7 @@ public:
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io)
-      , write_queue_(128)
+      , write_queue_(WRITE_QUEUE_INITIAL_SIZE)
     {
     }
 
@@ -80,7 +80,7 @@ public:
       , connect_timeout_(connect_timeout_in_millis)
       , resolver_(io_resolver)
       , socket_(io, context)
-      , write_queue_(128)
+      , write_queue_(WRITE_QUEUE_INITIAL_SIZE)
     {
     }
 #endif // HZ_BUILD_WITH_SSL
@@ -186,6 +186,8 @@ public:
     }
 
 protected:
+    static constexpr std::size_t WRITE_QUEUE_INITIAL_SIZE = 128;
+
     void set_socket_options(const client::config::socket_options& options)
     {
         auto& lowestLayer = socket_.lowest_layer();
