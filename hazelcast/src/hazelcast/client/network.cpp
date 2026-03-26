@@ -1758,8 +1758,9 @@ wait_strategy::sleep()
                                   current_backoff_millis_.count() * jitter_ *
                                   (2.0 * random_(random_generator_) - 1.0)));
 
-    actual_sleep_time = (std::min)(
-      actual_sleep_time, cluster_connect_timeout_millis_ - time_passed);
+    actual_sleep_time =
+      (std::min)(actual_sleep_time,
+                 cluster_connect_timeout_millis_ - time_passed);
 
     HZ_LOG(
       logger_,
