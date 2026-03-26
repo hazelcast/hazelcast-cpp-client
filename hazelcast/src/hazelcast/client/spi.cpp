@@ -2177,7 +2177,7 @@ ClientInvocation::notify_response(
   bool erase)
 {
     // if a regular response comes and there are backups, we need to wait for
-    // the backups when the backups complete, the response will be send by the
+    // the backups when the backups complete, the response will be sent by the
     // last backup or backup-timeout-handle mechanism kicks on
     if (expected_backups > backup_acks_received_.load()) {
         // so the invocation has backups and since not all backups have
