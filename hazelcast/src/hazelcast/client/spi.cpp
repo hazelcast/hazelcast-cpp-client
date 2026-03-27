@@ -1103,7 +1103,14 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
                 .get_client_exception_factory()
                 .create_exception(error_holder));
         } else {
-            invocation->notify(entry.message);
+            // Listener invocations must stay in the map after the initial
+            // registration response so that subsequent server-pushed events
+            // (IS_EVENT_FLAG) can be routed to them by correlation ID.
+            // They are removed either when explicitly deregistered or when
+            // their connection closes (notify_exception with erase=true).
+            bool has_event_handler =
+              invocation->get_event_handler() != nullptr;
+            invocation->notify(entry.message, !has_event_handler);
         }
     } catch (std::exception& e) {
         HZ_LOG(logger_,
@@ -1705,10 +1712,6 @@ ClientInvocation::invoke()
         auto correlation_id = call_id_sequence_->next();
         client_message_.load()->get()->set_correlation_id(correlation_id);
         invoke_on_selection();
-        if (!lifecycle_service_.is_running()) {
-            return invocation_promise_.get_future().then(
-              [](boost::future<protocol::ClientMessage> f) { return f.get(); });
-        }
         auto id_seq = call_id_sequence_;
         auto self = shared_from_this();
         return invocation_promise_.get_future().then(
@@ -1747,10 +1750,6 @@ ClientInvocation::invoke_urgent()
     auto correlation_id = call_id_sequence_->force_next();
     client_message_.load()->get()->set_correlation_id(correlation_id);
     invoke_on_selection();
-    if (!lifecycle_service_.is_running()) {
-        return invocation_promise_.get_future().then(
-          [](boost::future<protocol::ClientMessage> f) { return f.get(); });
-    }
     auto id_seq = call_id_sequence_;
     return invocation_promise_.get_future().then(
       execution_service_->get_user_executor(),
@@ -3274,6 +3273,11 @@ listener_service_impl::process_event_message(
   const std::shared_ptr<ClientInvocation> invocation,
   const std::shared_ptr<protocol::ClientMessage> response)
 {
+    if (!invocation) {
+        // Invocation was already removed from the map (e.g. listener
+        // deregistered or connection closed) before this event was delivered.
+        return;
+    }
     auto eventHandler = invocation->get_event_handler();
     if (!eventHandler) {
         if (client_context_.get_lifecycle_service().is_running()) {
