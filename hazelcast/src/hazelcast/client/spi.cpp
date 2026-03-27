@@ -1108,8 +1108,7 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
             // (IS_EVENT_FLAG) can be routed to them by correlation ID.
             // They are removed either when explicitly deregistered or when
             // their connection closes (notify_exception with erase=true).
-            bool has_event_handler =
-              invocation->get_event_handler() != nullptr;
+            bool has_event_handler = invocation->get_event_handler() != nullptr;
             invocation->notify(entry.message, !has_event_handler);
         }
     } catch (std::exception& e) {
