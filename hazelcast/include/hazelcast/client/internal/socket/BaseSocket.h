@@ -121,7 +121,6 @@ public:
         }
 
         socket_.lowest_layer().native_non_blocking(true);
-        connection_ = connection;
         do_read(std::move(connection));
     }
 
@@ -243,7 +242,7 @@ protected:
 
                 connection->read_handler.handle();
 
-                do_read(connection);
+                do_read(std::move(connection));
             }));
     }
 
@@ -336,9 +335,6 @@ protected:
     std::chrono::milliseconds connect_timeout_;
     boost::asio::ip::tcp::resolver& resolver_;
     T socket_;
-
-    // Connection reference, set during connect()
-    std::shared_ptr<connection::Connection> connection_;
 
     // Lock-free MPSC write queue: user threads push, IO strand drains
     boost::lockfree::queue<OutboundEntry*> write_queue_;
