@@ -254,6 +254,8 @@ private:
      */
     void notify_exception_with_owned_permission(std::exception_ptr exception,
                                                 bool erase = true);
+
+    boost::future<protocol::ClientMessage> complete_call_id_sequence();
 };
 } // namespace impl
 } // namespace spi

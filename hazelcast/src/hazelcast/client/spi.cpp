@@ -1712,14 +1712,7 @@ ClientInvocation::invoke()
         auto correlation_id = call_id_sequence_->next();
         client_message_.load()->get()->set_correlation_id(correlation_id);
         invoke_on_selection();
-        auto id_seq = call_id_sequence_;
-        auto self = shared_from_this();
-        return invocation_promise_.get_future().then(
-          execution_service_->get_user_executor(),
-          [self, id_seq](boost::future<protocol::ClientMessage> f) {
-              id_seq->complete();
-              return f.get();
-          });
+        return complete_call_id_sequence();
     };
 
     const auto& schemas =
@@ -1750,13 +1743,7 @@ ClientInvocation::invoke_urgent()
     auto correlation_id = call_id_sequence_->force_next();
     client_message_.load()->get()->set_correlation_id(correlation_id);
     invoke_on_selection();
-    auto id_seq = call_id_sequence_;
-    return invocation_promise_.get_future().then(
-      execution_service_->get_user_executor(),
-      [=](boost::future<protocol::ClientMessage> f) {
-          id_seq->complete();
-          return f.get();
-      });
+    return complete_call_id_sequence();
 }
 
 boost::future<void>
@@ -2448,6 +2435,29 @@ ClientInvocation::notify_exception_with_owned_permission(
         }
     } catch (...) {
         assert(false);
+    }
+}
+
+boost::future<protocol::ClientMessage>
+ClientInvocation::complete_call_id_sequence()
+{
+    auto id_seq = call_id_sequence_;
+    auto self = shared_from_this();
+    auto& user_executor = execution_service_->get_user_executor();
+    if (user_executor.closed()) {
+        return invocation_promise_.get_future().then(
+          boost::launch::sync,
+          [self, id_seq](boost::future<protocol::ClientMessage> f) {
+              id_seq->complete();
+              return f.get();
+          });
+    } else {
+        return invocation_promise_.get_future().then(
+          user_executor,
+          [self, id_seq](boost::future<protocol::ClientMessage> f) {
+              id_seq->complete();
+              return f.get();
+          });
     }
 }
 
