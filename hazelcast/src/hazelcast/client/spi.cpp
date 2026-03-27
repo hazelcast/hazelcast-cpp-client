@@ -1093,14 +1093,6 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
             return;
         }
 
-        if (entry.message->is_flag_set(
-              flags, protocol::ClientMessage::IS_EVENT_FLAG)) {
-            invocation_service_.get_client_context()
-              .get_client_listener_service()
-              .handle_client_message(invocation, entry.message);
-            return;
-        }
-
         if (protocol::codec::ErrorCodec::EXCEPTION_MESSAGE_TYPE ==
             entry.message->get_message_type()) {
             auto error_holder =
