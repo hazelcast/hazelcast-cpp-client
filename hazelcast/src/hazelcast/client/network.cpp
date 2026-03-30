@@ -21,6 +21,8 @@
 #include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientResponseHandler.h"
+#include "hazelcast/client/internal/socket/BaseSocket.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
@@ -1069,33 +1071,6 @@ ClientConnectionManagerImpl::connect_to_all_cluster_members()
     }
 }
 
-void
-ClientConnectionManagerImpl::notify_backup(int64_t call_id)
-{
-    struct correlation_id
-    {
-        int32_t connnection_id;
-        int32_t call_id;
-    };
-    union
-    {
-        int64_t id;
-        correlation_id composed_id;
-    } c_id_union;
-    c_id_union.id = call_id;
-    auto connection_id = c_id_union.composed_id.connnection_id;
-    auto connection = active_connection_ids_.get(connection_id);
-    if (!connection) {
-        return;
-    }
-    boost::asio::post(connection->get_socket().get_executor(), [=]() {
-        auto invocation_it = connection->invocations.find(call_id);
-        if (invocation_it != connection->invocations.end()) {
-            invocation_it->second->notify_backup();
-        }
-    });
-}
-
 std::shared_ptr<Connection>
 ClientConnectionManagerImpl::connect(const address& addr)
 {
@@ -1104,14 +1079,16 @@ ClientConnectionManagerImpl::connect(const address& addr)
            boost::str(boost::format("Trying to connect to %1%.") % addr));
 
     auto idx = next_io_index_.fetch_add(1) % io_contexts_.size();
-    auto connection = std::make_shared<Connection>(addr,
-                                                   client_,
-                                                   ++connection_id_gen_,
-                                                   *socket_factory_,
-                                                   *this,
-                                                   connection_timeout_millis_,
-                                                   *io_contexts_[idx],
-                                                   *io_resolvers_[idx]);
+    auto connection = std::make_shared<Connection>(
+      addr,
+      client_,
+      ++connection_id_gen_,
+      *socket_factory_,
+      *this,
+      client_.get_invocation_service().get_response_handler(),
+      connection_timeout_millis_,
+      *io_contexts_[idx],
+      *io_resolvers_[idx]);
     connection->connect();
 
     // call the interceptor from user thread
@@ -1248,19 +1225,24 @@ Connection::Connection(
   int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
   internal::socket::SocketFactory& socket_factory,
   ClientConnectionManagerImpl& client_connection_manager,
+  spi::impl::ClientResponseHandler& response_handler,
   std::chrono::milliseconds& connect_timeout_in_millis,
   boost::asio::io_context& io,
   boost::asio::ip::tcp::resolver& resolver)
-  : read_handler(*this, 16 << 10)
+  : read_handler(*this,
+                 client_context.get_client_config()
+                   .get_network_config()
+                   .get_socket_options()
+                   .get_buffer_size_in_bytes())
   , start_time_(std::chrono::system_clock::now())
   , closed_time_duration_()
   , client_context_(client_context)
-  , invocation_service_(client_context.get_invocation_service())
   , connection_id_(connection_id)
   , remote_uuid_(boost::uuids::nil_uuid())
   , logger_(client_context.get_logger())
   , alive_(true)
   , last_write_time_(std::chrono::steady_clock::now().time_since_epoch())
+  , response_handler_(response_handler)
 {
     (void)client_connection_manager;
     socket_ =
@@ -1273,36 +1255,6 @@ void
 Connection::connect()
 {
     socket_->connect(shared_from_this());
-    backup_timer_.reset(
-      new boost::asio::steady_timer(socket_->get_executor().context()));
-    auto backupTimeout =
-      static_cast<spi::impl::ClientInvocationServiceImpl&>(invocation_service_)
-        .get_backup_timeout();
-    auto this_connection = shared_from_this();
-    schedule_periodic_backup_cleanup(backupTimeout, this_connection);
-}
-
-void
-Connection::schedule_periodic_backup_cleanup(
-  std::chrono::milliseconds backup_timeout,
-  std::shared_ptr<Connection> this_connection)
-{
-    if (!alive_) {
-        return;
-    }
-
-    backup_timer_->expires_after(backup_timeout);
-    backup_timer_->async_wait(
-      socket_->get_executor().wrap([=](boost::system::error_code ec) {
-          if (ec) {
-              return;
-          }
-          for (const auto& it : this_connection->invocations) {
-              it.second->detect_and_handle_backup_timeout(backup_timeout);
-          }
-
-          schedule_periodic_backup_cleanup(backup_timeout, this_connection);
-      }));
 }
 
 void
@@ -1329,10 +1281,6 @@ Connection::close(const std::string& reason, std::exception_ptr cause)
       std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now().time_since_epoch()));
 
-    if (backup_timer_) {
-        backup_timer_->cancel();
-    }
-
     close_cause_ = cause;
     close_reason_ = reason;
 
@@ -1352,20 +1300,20 @@ Connection::close(const std::string& reason, std::exception_ptr cause)
     client_context_.get_connection_manager().on_connection_close(
       thisConnection);
 
-    boost::asio::post(socket_->get_executor(), [=]() {
-        for (auto& invocationEntry : thisConnection->invocations) {
-            invocationEntry.second->notify_exception(std::make_exception_ptr(
-              boost::enable_current_exception(exception::target_disconnected(
-                "Connection::close", thisConnection->get_close_reason()))));
-        }
-    });
+    client_context_.get_invocation_service().notify_connection_closed(
+      thisConnection, close_reason_);
 }
 
 void
 Connection::write(
   const std::shared_ptr<spi::impl::ClientInvocation>& client_invocation)
 {
-    socket_->async_write(shared_from_this(), client_invocation);
+    auto message = client_invocation->get_client_message();
+    auto correlation_id = message->get_correlation_id();
+    auto* entry = new internal::socket::OutboundEntry{ correlation_id,
+                                                       message,
+                                                       client_invocation };
+    socket_->enqueue_write(shared_from_this(), entry);
 }
 
 const boost::optional<address>&
@@ -1384,29 +1332,15 @@ void
 Connection::handle_client_message(
   const std::shared_ptr<protocol::ClientMessage>& message)
 {
-    auto correlationId = message->get_correlation_id();
-    auto invocationIterator = invocations.find(correlationId);
-    if (invocationIterator == invocations.end()) {
-        HZ_LOG(logger_,
-               warning,
-               boost::str(boost::format("No invocation for callId:  %1%. "
-                                        "Dropping this message: %2%") %
-                          correlationId % *message));
-        return;
-    }
-    auto invocation = invocationIterator->second;
-    auto flags = message->get_header_flags();
-    if (message->is_flag_set(flags,
+    if (message->is_flag_set(message->get_header_flags(),
                              protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
-        message->rd_ptr(protocol::ClientMessage::EVENT_HEADER_LEN);
-        correlationId = message->get<int64_t>();
-        client_context_.get_connection_manager().notify_backup(correlationId);
-    } else if (message->is_flag_set(flags,
+        response_handler_.accept(message);
+    } else if (message->is_flag_set(message->get_header_flags(),
                                     protocol::ClientMessage::IS_EVENT_FLAG)) {
-        client_context_.get_client_listener_service().handle_client_message(
-          invocation, message);
+        auto& listener_service = client_context_.get_client_listener_service();
+        listener_service.handle_client_message(message);
     } else {
-        invocation_service_.handle_client_message(invocation, message);
+        response_handler_.accept(message);
     }
 }
 
@@ -1566,12 +1500,6 @@ Connection::get_socket()
     return *socket_;
 }
 
-void
-Connection::deregister_invocation(int64_t call_id)
-{
-    invocations.erase(call_id);
-}
-
 boost::uuids::uuid
 Connection::get_remote_uuid() const
 {
@@ -1594,6 +1522,11 @@ std::chrono::steady_clock::time_point
 Connection::last_write_time() const
 {
     return std::chrono::steady_clock::time_point{ last_write_time_ };
+}
+spi::impl::ClientResponseHandler&
+Connection::get_response_handler() const
+{
+    return response_handler_;
 }
 
 HeartbeatManager::HeartbeatManager(

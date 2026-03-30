@@ -34,6 +34,7 @@
 #include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientResponseHandler.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
@@ -993,6 +994,10 @@ const std::string client_properties::IO_THREAD_COUNT =
   "hazelcast.client.io.thread.count";
 const std::string client_properties::IO_THREAD_COUNT_DEFAULT = "3";
 
+const std::string client_properties::RESPONSE_THREAD_COUNT =
+  "hazelcast.client.response.thread.count";
+const std::string client_properties::RESPONSE_THREAD_COUNT_DEFAULT = "2";
+
 const std::string client_properties::SHUFFLE_MEMBER_LIST =
   "hazelcast.client.shuffle.member.list";
 const std::string client_properties::SHUFFLE_MEMBER_LIST_DEFAULT = "true";
@@ -1065,6 +1070,7 @@ client_properties::client_properties(
   , internal_executor_pool_size_(INTERNAL_EXECUTOR_POOL_SIZE,
                                  INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT)
   , io_thread_count_(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT)
+  , response_thread_count_(RESPONSE_THREAD_COUNT, RESPONSE_THREAD_COUNT_DEFAULT)
   , shuffle_member_list_(SHUFFLE_MEMBER_LIST, SHUFFLE_MEMBER_LIST_DEFAULT)
   , max_concurrent_invocations_(MAX_CONCURRENT_INVOCATIONS,
                                 MAX_CONCURRENT_INVOCATIONS_DEFAULT)
@@ -1131,6 +1137,12 @@ const client_property&
 client_properties::get_io_thread_count() const
 {
     return io_thread_count_;
+}
+
+const client_property&
+client_properties::get_response_thread_count() const
+{
+    return response_thread_count_;
 }
 
 const client_property&
@@ -1220,6 +1232,17 @@ const client_property&
 client_properties::partition_arg_cache_size() const
 {
     return partition_arg_cache_size_;
+}
+std::chrono::milliseconds
+client_properties::get_positive_millis_or_default(
+  const client_property& property)
+{
+    int64_t value = get_long(property);
+    if (value < 0) {
+        return std::chrono::milliseconds(
+          util::IOUtil::to_value<int64_t>(property.get_default_value()));
+    }
+    return std::chrono::milliseconds(value);
 }
 
 namespace exception {

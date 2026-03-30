@@ -115,9 +115,12 @@ public:
 
     virtual const std::string get_name() const;
 
-    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message);
+    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message,
+                bool erase = true);
 
-    void notify_exception(std::exception_ptr exception);
+    void notify_exception(int64_t correlation_id,
+                          std::exception_ptr exception,
+                          bool erase = true);
 
     void notify_backup();
 
@@ -142,7 +145,7 @@ public:
 
     boost::promise<protocol::ClientMessage>& get_promise();
 
-    void detect_and_handle_backup_timeout(
+    bool detect_and_handle_backup_timeout(
       const std::chrono::milliseconds& backup_timeout);
 
 private:
@@ -176,13 +179,13 @@ private:
     bool urgent_;
     bool smart_routing_;
 
-    int32_t backup_acks_received_ = 0;
+    std::atomic<int32_t> backup_acks_received_{ 0 };
 
     /**
      * Number of expected backups. It is set correctly as soon as the pending
      * response is set.
      */
-    int8_t backup_acks_expected_ = -1;
+    std::atomic<int8_t> backup_acks_expected_{ -1 };
 
     /**
      * Contains the pending response from the primary. It is pending because it
@@ -190,12 +193,14 @@ private:
      * safety since these are only read/write from the same io thread for the
      * connection.
      */
-    std::shared_ptr<protocol::ClientMessage> pending_response_;
+    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>>
+      pending_response_;
 
     /**
      * The time when the response of the primary has been received.
      */
-    std::chrono::steady_clock::time_point pending_response_received_time_;
+    std::atomic<std::chrono::steady_clock::time_point>
+      pending_response_received_time_;
 
     std::shared_ptr<boost::asio::steady_timer> retry_timer_;
 
@@ -230,9 +235,27 @@ private:
 
     void erase_invocation() const;
 
-    void complete(const std::shared_ptr<protocol::ClientMessage>& msg);
+    void complete(const std::shared_ptr<protocol::ClientMessage>& msg,
+                  bool erase = true);
 
-    void complete_with_pending_response();
+    void complete_with_pending_response(bool erase = true);
+
+    bool get_permission_to_notify(int64_t response_correlation_id);
+
+    void notify_response(const std::shared_ptr<protocol::ClientMessage>& msg,
+                         int8_t expected_backups,
+                         bool erase);
+
+    /**
+     * We make sure that this method can not be called from multiple threads
+     * per invocation at the same time.
+     * Only ones that can set a null on `send_connection` can notify the
+     * invocation.
+     */
+    void notify_exception_with_owned_permission(std::exception_ptr exception,
+                                                bool erase = true);
+
+    boost::future<protocol::ClientMessage> complete_call_id_sequence();
 };
 } // namespace impl
 } // namespace spi

@@ -155,8 +155,6 @@ public:
 
     void connect_to_all_cluster_members();
 
-    void notify_backup(int64_t call_id);
-
     enum class client_state
     {
         /**

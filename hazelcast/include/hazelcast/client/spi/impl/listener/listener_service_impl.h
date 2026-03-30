@@ -73,6 +73,9 @@ public:
       const std::shared_ptr<ClientInvocation> invocation,
       const std::shared_ptr<protocol::ClientMessage> response);
 
+    void handle_client_message(
+      const std::shared_ptr<protocol::ClientMessage>& event_message);
+
     void connection_added(
       const std::shared_ptr<connection::Connection> connection) override;
 
