@@ -51,7 +51,7 @@ runs:
         sudo ./scripts/install-thrift.sh ${{ inputs.THRIFT_VERSION }}
 
     - name: Setup JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
@@ -72,7 +72,7 @@ runs:
     - name: Configure AWS credentials
       if: ${{ inputs.RUN_TESTS == 'true' }}
       id: aws-credentials
-      uses: aws-actions/configure-aws-credentials@v5
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         role-to-assume: ${{ inputs.AWS_ROLE_TO_ASSUME }}
         aws-region: 'us-east-1'
@@ -105,7 +105,7 @@ runs:
         genhtml coverage.info --output-directory=coverage-html-reports
 
     - name: Upload HTML views as artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: coverage-report
         path: |

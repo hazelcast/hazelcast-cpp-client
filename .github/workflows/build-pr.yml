@@ -46,9 +46,8 @@ jobs:
         id: test-membership
         uses: hazelcast/hazelcast-tpm/membership@main
         with:
-          organization-name: hazelcast
           member-name: ${{ github.actor }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
           
   # ensure PR is trusted
   ensure-membership:
@@ -106,7 +105,7 @@ jobs:
     name: Code Coverage
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -142,7 +141,7 @@ jobs:
     name: ubuntu-x64-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -177,7 +176,7 @@ jobs:
       id-token: write
     name: windows-${{ matrix.options.address_model }}-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -224,7 +223,7 @@ jobs:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -260,7 +259,7 @@ jobs:
           sudo apt-get install -y clang-format clang-format-22
           sudo ln -sf /usr/bin/clang-format-22 /usr/bin/clang-format
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}

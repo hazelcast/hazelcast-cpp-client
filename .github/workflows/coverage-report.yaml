@@ -14,7 +14,7 @@ jobs:
     name: Create and upload coverage
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: ./.github/actions/coverage-report
         with:
