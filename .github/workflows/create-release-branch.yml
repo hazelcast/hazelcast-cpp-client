@@ -15,7 +15,7 @@ jobs:
     name: Create release branch from `${{ inputs.BRANCH_NAME }}`
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.BRANCH_NAME }}
 
@@ -56,7 +56,7 @@ jobs:
     name: Update next version in `${{ inputs.BRANCH_NAME }}` to `${{ inputs.NEXT_VERSION }}`
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.BRANCH_NAME }}
 
