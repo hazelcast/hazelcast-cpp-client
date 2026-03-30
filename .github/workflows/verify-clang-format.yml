@@ -2,6 +2,9 @@ name: Verify clang-format-22 Installation
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - fix/ci-clang-format-version
 
 jobs:
   verify:
