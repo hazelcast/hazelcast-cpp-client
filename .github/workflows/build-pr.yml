@@ -248,10 +248,15 @@ jobs:
     steps:
       - name: Install Necessary Packages
         run: |
+          # Install clang-format-22. The pgp key install is needed from 
+          # https://apt.llvm.org
           sudo mkdir -p /etc/apt/keyrings
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/keyrings/llvm.asc > /dev/null
           echo "deb [signed-by=/etc/apt/keyrings/llvm.asc] http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
+          # lang-format-22 package only provides the clang-format binary.
+          # The git-clang-format wrapper script comes from the base clang-format
+          # package. Install both, then symlink clang-format to v22.
           sudo apt-get install -y clang-format clang-format-22
           sudo ln -sf /usr/bin/clang-format-22 /usr/bin/clang-format
 
