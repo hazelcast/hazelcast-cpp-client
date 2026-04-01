@@ -46,8 +46,9 @@ jobs:
         id: test-membership
         uses: hazelcast/hazelcast-tpm/membership@main
         with:
+          organization-name: hazelcast
           member-name: ${{ github.actor }}
-          token: ${{ github.token }}
+          token: ${{ secrets.GH_TOKEN }}
           
   # ensure PR is trusted
   ensure-membership:
