@@ -46,9 +46,8 @@ jobs:
         id: test-membership
         uses: hazelcast/hazelcast-tpm/membership@main
         with:
-          organization-name: hazelcast
           member-name: ${{ github.actor }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
           
   # ensure PR is trusted
   ensure-membership:
@@ -106,7 +105,7 @@ jobs:
     name: Code Coverage
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -142,7 +141,7 @@ jobs:
     name: ubuntu-x64-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -177,7 +176,7 @@ jobs:
       id-token: write
     name: windows-${{ matrix.options.address_model }}-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -224,7 +223,7 @@ jobs:
       OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}
@@ -248,10 +247,19 @@ jobs:
     steps:
       - name: Install Necessary Packages
         run: |
+          # Install clang-format-22. The pgp key install is needed from 
+          # https://apt.llvm.org
+          sudo mkdir -p /etc/apt/keyrings
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/keyrings/llvm.asc > /dev/null
+          echo "deb [signed-by=/etc/apt/keyrings/llvm.asc] http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
-          sudo apt-get install -y clang-format
+          # lang-format-22 package only provides the clang-format binary.
+          # The git-clang-format wrapper script comes from the base clang-format
+          # package. Install both, then symlink clang-format to v22.
+          sudo apt-get install -y clang-format clang-format-22
+          sudo ln -sf /usr/bin/clang-format-22 /usr/bin/clang-format
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.get-refs.outputs.ref }}
           token: ${{ secrets.GH_TOKEN }}

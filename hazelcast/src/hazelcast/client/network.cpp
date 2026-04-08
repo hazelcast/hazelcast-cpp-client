@@ -114,16 +114,12 @@ ClientConnectionManagerImpl::start()
         return false;
     }
 
-    io_context_.reset(new boost::asio::io_context);
-    io_resolver_.reset(
-      new boost::asio::ip::tcp::resolver(io_context_->get_executor()));
-    socket_factory_.reset(new internal::socket::SocketFactory(
-      client_, *io_context_, *io_resolver_));
-    auto guard = boost::asio::make_work_guard(*io_context_);
-    io_guard_ = std::unique_ptr<
-      boost::asio::executor_work_guard<boost::asio::io_context::executor_type>>(
-      new boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>(std::move(guard)));
+    auto& props = client_.get_client_properties();
+    int configured_io_thread_count =
+      props.get_integer(props.get_io_thread_count());
+    int io_thread_count = find_thread_count(configured_io_thread_count);
+
+    socket_factory_.reset(new internal::socket::SocketFactory(client_));
 
     if (!socket_factory_->start()) {
         return false;
@@ -131,7 +127,20 @@ ClientConnectionManagerImpl::start()
 
     socket_interceptor_ = client_.get_client_config().get_socket_interceptor();
 
-    io_thread_ = std::thread([=]() { io_context_->run(); });
+    for (int i = 0; i < io_thread_count; ++i) {
+        auto ctx =
+          std::unique_ptr<boost::asio::io_context>(new boost::asio::io_context);
+        io_guards_.push_back(std::unique_ptr<boost::asio::executor_work_guard<
+                               boost::asio::io_context::executor_type>>(
+          new boost::asio::executor_work_guard<
+            boost::asio::io_context::executor_type>(
+            boost::asio::make_work_guard(*ctx))));
+        io_resolvers_.push_back(std::unique_ptr<boost::asio::ip::tcp::resolver>(
+          new boost::asio::ip::tcp::resolver(ctx->get_executor())));
+        auto raw_ctx = ctx.get();
+        io_contexts_.push_back(std::move(ctx));
+        io_threads_.emplace_back([raw_ctx]() { raw_ctx->run(); });
+    }
 
     executor_.reset(
       new hazelcast::util::hz_thread_pool(EXECUTOR_CORE_POOL_SIZE));
@@ -192,13 +201,27 @@ ClientConnectionManagerImpl::shutdown()
     spi::impl::ClientExecutionServiceImpl::shutdown_thread_pool(
       executor_.get());
 
-    // release the guard so that the io thread can stop gracefully
-    io_guard_.reset();
-    io_thread_.join();
+    // release the guards so that the io threads can stop gracefully
+    for (auto& guard : io_guards_) {
+        guard.reset();
+    }
+    for (auto& thread : io_threads_) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
 
+    // Release internal bookkeeping references to connections and listeners.
+    // io_resolvers_ and io_contexts_ are intentionally NOT cleared here:
+    // user code (e.g. transaction_context) may still hold
+    // shared_ptr<Connection> objects whose socket/backup_timer destructors
+    // reference these io_contexts. Leaving the io_contexts alive until
+    // ~ClientConnectionManagerImpl() ensures they outlive any such lingering
+    // Connection references.
     connection_listeners_.clear();
     active_connections_.clear();
     active_connection_ids_.clear();
+    io_guards_.clear();
 }
 
 std::shared_ptr<Connection>
@@ -902,6 +925,24 @@ ClientConnectionManagerImpl::on_authenticated(
     return connection;
 }
 
+int
+ClientConnectionManagerImpl::find_thread_count(
+  int configured_thread_count) const
+{
+    if (configured_thread_count != -1) {
+        return configured_thread_count;
+    }
+
+    // uni-socket client
+    if (!smart_routing_enabled_) {
+        return 1;
+    }
+
+    return (util::get_available_core_count() > SMALL_MACHINE_PROCESSOR_COUNT)
+             ? DEFAULT_IO_THREAD_COUNT
+             : 1;
+}
+
 void
 ClientConnectionManagerImpl::fire_life_cycle_event(
   lifecycle_event::lifecycle_state state)
@@ -1062,12 +1103,15 @@ ClientConnectionManagerImpl::connect(const address& addr)
            info,
            boost::str(boost::format("Trying to connect to %1%.") % addr));
 
+    auto idx = next_io_index_.fetch_add(1) % io_contexts_.size();
     auto connection = std::make_shared<Connection>(addr,
                                                    client_,
                                                    ++connection_id_gen_,
                                                    *socket_factory_,
                                                    *this,
-                                                   connection_timeout_millis_);
+                                                   connection_timeout_millis_,
+                                                   *io_contexts_[idx],
+                                                   *io_resolvers_[idx]);
     connection->connect();
 
     // call the interceptor from user thread
@@ -1204,7 +1248,9 @@ Connection::Connection(
   int connection_id, // NOLINT(cppcoreguidelines-pro-type-member-init)
   internal::socket::SocketFactory& socket_factory,
   ClientConnectionManagerImpl& client_connection_manager,
-  std::chrono::milliseconds& connect_timeout_in_millis)
+  std::chrono::milliseconds& connect_timeout_in_millis,
+  boost::asio::io_context& io,
+  boost::asio::ip::tcp::resolver& resolver)
   : read_handler(*this, 16 << 10)
   , start_time_(std::chrono::system_clock::now())
   , closed_time_duration_()
@@ -1217,7 +1263,8 @@ Connection::Connection(
   , last_write_time_(std::chrono::steady_clock::now().time_since_epoch())
 {
     (void)client_connection_manager;
-    socket_ = socket_factory.create(address, connect_timeout_in_millis);
+    socket_ =
+      socket_factory.create(address, connect_timeout_in_millis, io, resolver);
 }
 
 Connection::~Connection() = default;
@@ -1641,6 +1688,14 @@ HeartbeatManager::shutdown()
 {
     if (timer_) {
         timer_->cancel();
+        // Release the timer while the execution service's thread pool is still
+        // alive. The timer holds an executor reference into that pool; if we
+        // defer releasing it to the HeartbeatManager destructor the pool will
+        // already have been destroyed (execution_service_ is a member of
+        // hazelcast_client_instance_impl declared before connection_manager_,
+        // so it is destroyed first), causing a use-after-free in the timer
+        // destructor.
+        timer_.reset();
     }
 }
 
@@ -1729,12 +1784,8 @@ wait_strategy::sleep()
 
 namespace internal {
 namespace socket {
-SocketFactory::SocketFactory(spi::ClientContext& client_context,
-                             boost::asio::io_context& io,
-                             boost::asio::ip::tcp::resolver& resolver)
+SocketFactory::SocketFactory(spi::ClientContext& client_context)
   : client_context_(client_context)
-  , io_(io)
-  , io_resolver_(resolver)
 {
 }
 
@@ -1808,30 +1859,32 @@ SocketFactory::start()
 
 std::unique_ptr<hazelcast::client::socket>
 SocketFactory::create(const address& address,
-                      std::chrono::milliseconds& connect_timeout_in_millis)
+                      std::chrono::milliseconds& connect_timeout_in_millis,
+                      boost::asio::io_context& io,
+                      boost::asio::ip::tcp::resolver& resolver)
 {
 #ifdef HZ_BUILD_WITH_SSL
     if (ssl_context_.get()) {
         return std::unique_ptr<hazelcast::client::socket>(
-          new internal::socket::SSLSocket(io_,
+          new internal::socket::SSLSocket(io,
                                           *ssl_context_,
                                           address,
                                           client_context_.get_client_config()
                                             .get_network_config()
                                             .get_socket_options(),
                                           connect_timeout_in_millis,
-                                          io_resolver_));
+                                          resolver));
     }
 #endif
 
     return std::unique_ptr<hazelcast::client::socket>(
-      new internal::socket::TcpSocket(io_,
+      new internal::socket::TcpSocket(io,
                                       address,
                                       client_context_.get_client_config()
                                         .get_network_config()
                                         .get_socket_options(),
                                       connect_timeout_in_millis,
-                                      io_resolver_));
+                                      resolver));
 }
 
 #ifdef HZ_BUILD_WITH_SSL
