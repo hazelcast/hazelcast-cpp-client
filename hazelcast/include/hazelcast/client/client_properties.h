@@ -80,6 +80,8 @@ public:
 
     const client_property& get_io_thread_count() const;
 
+    const client_property& get_response_thread_count() const;
+
     const client_property& get_shuffle_member_list() const;
 
     const client_property& get_max_concurrent_invocations() const;
@@ -97,6 +99,17 @@ public:
     const client_property& cloud_base_url() const;
 
     const client_property& partition_arg_cache_size() const;
+
+    /**
+     * Returns the configured value of a hazelcast_property converted to
+     * milliseconds if it is positive, otherwise returns its default value.
+     *
+     * @param property the hazelcast_property to get the value from
+     * @return the value in milliseconds if it is positive, otherwise its
+     * default value.
+     */
+    std::chrono::milliseconds get_positive_millis_or_default(
+      const client_property& property);
 
     /**
      * Client will be sending heartbeat messages to members and this is the
@@ -193,6 +206,15 @@ public:
      */
     static const std::string IO_THREAD_COUNT;
     static const std::string IO_THREAD_COUNT_DEFAULT;
+
+    /**
+     * Number of response threads for processing invocation completions.
+     * Response threads offload promise completion from IO threads,
+     * preventing IO thread blocking during future notification.
+     * This mirrors Java client's response thread architecture.
+     */
+    static const std::string RESPONSE_THREAD_COUNT;
+    static const std::string RESPONSE_THREAD_COUNT_DEFAULT;
 
     /**
      * Client shuffles the given member list to prevent all clients to connect
@@ -329,6 +351,7 @@ private:
     client_property event_thread_count_;
     client_property internal_executor_pool_size_;
     client_property io_thread_count_;
+    client_property response_thread_count_;
     client_property shuffle_member_list_;
     client_property max_concurrent_invocations_;
     client_property backpressure_backoff_timeout_millis_;

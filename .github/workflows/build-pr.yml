@@ -47,7 +47,7 @@ jobs:
         uses: hazelcast/hazelcast-tpm/membership@main
         with:
           member-name: ${{ github.actor }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ github.token }}
           
   # ensure PR is trusted
   ensure-membership:

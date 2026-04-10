@@ -19,17 +19,17 @@
 #include <iosfwd>
 #include <stdint.h>
 #include <atomic>
-#include <unordered_map>
 #include <boost/asio.hpp>
+#include <boost/unordered/concurrent_flat_map.hpp>
 
 #include "hazelcast/client/socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
-#include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientResponseHandler.h"
 #include "hazelcast/logger.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -70,6 +70,7 @@ public:
                int32_t connection_id,
                internal::socket::SocketFactory& socket_factory,
                ClientConnectionManagerImpl& client_connection_manager,
+               spi::impl::ClientResponseHandler& response_handler,
                std::chrono::milliseconds& connect_timeout_in_millis,
                boost::asio::io_context& io,
                boost::asio::ip::tcp::resolver& resolver);
@@ -122,18 +123,25 @@ public:
 
     socket& get_socket();
 
-    void deregister_invocation(int64_t call_id);
-
     void last_write_time(std::chrono::steady_clock::time_point tp);
 
     std::chrono::steady_clock::time_point last_write_time() const;
+
+    spi::impl::ClientResponseHandler& get_response_handler() const;
+
+    void add_event_handler(
+      int64_t correlation_id,
+      std::shared_ptr<spi::EventHandler<protocol::ClientMessage>> handler);
+
+    std::shared_ptr<spi::EventHandler<protocol::ClientMessage>>
+    get_event_handler(int64_t correlation_id) const;
+
+    void remove_event_handler(int64_t correlation_id);
 
     friend std::ostream& operator<<(std::ostream& os,
                                     const Connection& connection);
 
     ReadHandler read_handler;
-    std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>>
-      invocations;
 
 private:
     void log_close();
@@ -143,7 +151,6 @@ private:
     std::chrono::system_clock::time_point start_time_;
     std::atomic<std::chrono::milliseconds> closed_time_duration_;
     spi::ClientContext& client_context_;
-    protocol::IMessageHandler& invocation_service_;
     std::unique_ptr<socket> socket_;
     int32_t connection_id_;
     std::string close_reason_;
@@ -154,12 +161,12 @@ private:
     boost::uuids::uuid remote_uuid_;
     logger& logger_;
     std::atomic_bool alive_;
-    std::unique_ptr<boost::asio::steady_timer> backup_timer_;
     std::atomic<std::chrono::steady_clock::duration> last_write_time_;
-
-    void schedule_periodic_backup_cleanup(
-      std::chrono::milliseconds backup_timeout,
-      std::shared_ptr<Connection> this_connection);
+    spi::impl::ClientResponseHandler& response_handler_;
+    boost::concurrent_flat_map<
+      int64_t,
+      std::shared_ptr<spi::EventHandler<protocol::ClientMessage>>>
+      event_handler_map_;
 };
 } // namespace connection
 } // namespace client
