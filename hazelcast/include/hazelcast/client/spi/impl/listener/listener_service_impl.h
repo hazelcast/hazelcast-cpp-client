@@ -70,10 +70,7 @@ public:
     boost::future<bool> deregister_listener(boost::uuids::uuid registration_id);
 
     void handle_client_message(
-      const std::shared_ptr<ClientInvocation> invocation,
-      const std::shared_ptr<protocol::ClientMessage> response);
-
-    void handle_client_message(
+      std::shared_ptr<EventHandler<protocol::ClientMessage>> handler,
       const std::shared_ptr<protocol::ClientMessage>& event_message);
 
     void connection_added(
@@ -102,7 +99,7 @@ private:
     };
 
     void process_event_message(
-      const std::shared_ptr<ClientInvocation> invocation,
+      std::shared_ptr<EventHandler<protocol::ClientMessage>> handler,
       const std::shared_ptr<protocol::ClientMessage> response);
 
     void remove_event_handler(

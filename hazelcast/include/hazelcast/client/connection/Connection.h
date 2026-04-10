@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <atomic>
 #include <boost/asio.hpp>
+#include <boost/unordered/concurrent_flat_map.hpp>
 
 #include "hazelcast/client/socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
@@ -128,6 +129,15 @@ public:
 
     spi::impl::ClientResponseHandler& get_response_handler() const;
 
+    void add_event_handler(
+      int64_t correlation_id,
+      std::shared_ptr<spi::EventHandler<protocol::ClientMessage>> handler);
+
+    std::shared_ptr<spi::EventHandler<protocol::ClientMessage>>
+    get_event_handler(int64_t correlation_id) const;
+
+    void remove_event_handler(int64_t correlation_id);
+
     friend std::ostream& operator<<(std::ostream& os,
                                     const Connection& connection);
 
@@ -153,6 +163,10 @@ private:
     std::atomic_bool alive_;
     std::atomic<std::chrono::steady_clock::duration> last_write_time_;
     spi::impl::ClientResponseHandler& response_handler_;
+    boost::concurrent_flat_map<
+      int64_t,
+      std::shared_ptr<spi::EventHandler<protocol::ClientMessage>>>
+      event_handler_map_;
 };
 } // namespace connection
 } // namespace client

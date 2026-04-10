@@ -1286,6 +1286,7 @@ Connection::close(const std::string& reason, std::exception_ptr cause)
 
     log_close();
 
+    event_handler_map_.clear();
     try {
         inner_close();
     } catch (exception::iexception& e) {
@@ -1337,8 +1338,10 @@ Connection::handle_client_message(
         response_handler_.accept(message);
     } else if (message->is_flag_set(message->get_header_flags(),
                                     protocol::ClientMessage::IS_EVENT_FLAG)) {
+        auto correlation_id = message->get_correlation_id();
+        auto handler = get_event_handler(correlation_id);
         auto& listener_service = client_context_.get_client_listener_service();
-        listener_service.handle_client_message(message);
+        listener_service.handle_client_message(std::move(handler), message);
     } else {
         response_handler_.accept(message);
     }
@@ -1527,6 +1530,29 @@ spi::impl::ClientResponseHandler&
 Connection::get_response_handler() const
 {
     return response_handler_;
+}
+
+void
+Connection::add_event_handler(
+  int64_t correlation_id,
+  std::shared_ptr<spi::EventHandler<protocol::ClientMessage>> handler)
+{
+    event_handler_map_.insert_or_assign(correlation_id, std::move(handler));
+}
+
+std::shared_ptr<spi::EventHandler<protocol::ClientMessage>>
+Connection::get_event_handler(int64_t correlation_id) const
+{
+    std::shared_ptr<spi::EventHandler<protocol::ClientMessage>> result;
+    event_handler_map_.cvisit(
+      correlation_id, [&](const auto& entry) { result = entry.second; });
+    return result;
+}
+
+void
+Connection::remove_event_handler(int64_t correlation_id)
+{
+    event_handler_map_.erase(correlation_id);
 }
 
 HeartbeatManager::HeartbeatManager(

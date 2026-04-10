@@ -822,6 +822,11 @@ ClientInvocationServiceImpl::send(
       invocation->get_client_message()->get_correlation_id();
     register_invocation(correlation_id, invocation);
 
+    auto handler = invocation->get_event_handler();
+    if (handler) {
+        connection->add_event_handler(correlation_id, handler);
+    }
+
     // After this is set, a second thread can notify this invocation
     // Connection could be closed. From this point on, we need to reacquire the
     // permission to notify if needed.
@@ -1103,13 +1108,7 @@ ClientResponseHandler::process_response(const ResponseEntry& entry)
                 .get_client_exception_factory()
                 .create_exception(error_holder));
         } else {
-            // Listener invocations must stay in the map after the initial
-            // registration response so that subsequent server-pushed events
-            // (IS_EVENT_FLAG) can be routed to them by correlation ID.
-            // They are removed either when explicitly deregistered or when
-            // their connection closes (notify_exception with erase=true).
-            bool has_event_handler = invocation->get_event_handler() != nullptr;
-            invocation->notify(entry.message, !has_event_handler);
+            invocation->notify(entry.message);
         }
     } catch (std::exception& e) {
         HZ_LOG(logger_,
@@ -1894,21 +1893,18 @@ ClientInvocation::set_exception(const std::exception& e,
 
 void
 ClientInvocation::notify_exception(int64_t correlation_id,
-                                   std::exception_ptr exception,
-                                   bool erase)
+                                   std::exception_ptr exception)
 {
     if (get_permission_to_notify(correlation_id)) {
-        notify_exception_with_owned_permission(std::move(exception), erase);
+        notify_exception_with_owned_permission(std::move(exception));
     }
 }
 
 void
 ClientInvocation::erase_invocation() const
 {
-    if (!this->event_handler_) {
-        auto call_id = get_client_message()->get_correlation_id();
-        invocation_service_.deregister_invocation(call_id);
-    }
+    auto call_id = get_client_message()->get_correlation_id();
+    invocation_service_.deregister_invocation(call_id);
 }
 
 bool
@@ -2103,8 +2099,7 @@ ClientInvocation::set_send_connection(
 }
 
 void
-ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg,
-                         bool erase)
+ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg)
 {
     if (!msg) {
         BOOST_THROW_EXCEPTION(
@@ -2113,7 +2108,7 @@ ClientInvocation::notify(const std::shared_ptr<protocol::ClientMessage>& msg,
 
     if (get_permission_to_notify(msg->get_correlation_id())) {
         int8_t expected_backups = msg->get_number_of_backups();
-        notify_response(msg, expected_backups, erase);
+        notify_response(msg, expected_backups);
     }
 }
 
@@ -2317,8 +2312,7 @@ ClientInvocation::get_permission_to_notify(int64_t response_correlation_id)
 void
 ClientInvocation::notify_response(
   const std::shared_ptr<protocol::ClientMessage>& msg,
-  int8_t expected_backups,
-  bool erase)
+  int8_t expected_backups)
 {
     // if a regular response comes and there are backups, we need to wait for
     // the backups when the backups complete, the response will be sent by the
@@ -2356,7 +2350,7 @@ ClientInvocation::notify_response(
     // completed
     // - we had a backup-aware operation that has completed, but also all its
     // backups have completed
-    complete(msg, erase);
+    complete(msg);
 }
 
 void
@@ -3057,30 +3051,20 @@ listener_service_impl::remove_event_handler(
   int64_t call_id,
   const std::shared_ptr<connection::Connection>& connection)
 {
-    client_context_.get_invocation_service().deregister_invocation(call_id);
+    connection->remove_event_handler(call_id);
 }
 
 void
 listener_service_impl::handle_client_message(
+  std::shared_ptr<EventHandler<protocol::ClientMessage>> handler,
   const std::shared_ptr<protocol::ClientMessage>& event_message)
 {
-    int64_t correlation_id = event_message->get_correlation_id();
-    auto client_invocation =
-      client_context_.get_invocation_service().get_invocation(correlation_id);
-    handle_client_message(client_invocation, event_message);
-}
-
-void
-listener_service_impl::handle_client_message(
-  const std::shared_ptr<ClientInvocation> invocation,
-  const std::shared_ptr<protocol::ClientMessage> response)
-{
     try {
-        auto partitionId = response->get_partition_id();
+        auto partitionId = event_message->get_partition_id();
         if (partitionId == -1) {
             // execute on random thread on the thread pool
             boost::asio::post(event_executor_->get_executor(), [=]() {
-                process_event_message(invocation, response);
+                process_event_message(handler, event_message);
             });
             return;
         }
@@ -3088,7 +3072,7 @@ listener_service_impl::handle_client_message(
         // process on certain thread which is same for the partition id
         boost::asio::post(
           event_strands_[partitionId % event_strands_.size()],
-          [=]() { process_event_message(invocation, response); });
+          [=]() { process_event_message(handler, event_message); });
 
     } catch (const std::exception& e) {
         if (client_context_.get_lifecycle_service().is_running()) {
@@ -3096,8 +3080,8 @@ listener_service_impl::handle_client_message(
               logger_,
               warning,
               boost::str(boost::format("Delivery of event message to event "
-                                       "handler failed. %1%, %2%, %3%") %
-                         e.what() % *response % *invocation));
+                                       "handler failed. %1%, %2%") %
+                         e.what() % *event_message));
         }
     }
 }
@@ -3279,38 +3263,31 @@ listener_service_impl::invoke(
 
 void
 listener_service_impl::process_event_message(
-  const std::shared_ptr<ClientInvocation> invocation,
+  std::shared_ptr<EventHandler<protocol::ClientMessage>> handler,
   const std::shared_ptr<protocol::ClientMessage> response)
 {
-    if (!invocation) {
-        // Invocation was already removed from the map (e.g. listener
-        // deregistered or connection closed) before this event was delivered.
-        return;
-    }
-    auto eventHandler = invocation->get_event_handler();
-    if (!eventHandler) {
+    if (!handler) {
         if (client_context_.get_lifecycle_service().is_running()) {
             HZ_LOG(logger_,
                    warning,
                    boost::str(
-                     boost::format("No eventHandler for invocation. "
-                                   "Ignoring this invocation response. %1%") %
-                     *invocation));
+                     boost::format("No event handler for correlation id %1%. "
+                                   "Ignoring event message.") %
+                     response->get_correlation_id()));
         }
-
         return;
     }
 
     try {
-        eventHandler->handle(*response);
+        handler->handle(*response);
     } catch (std::exception& e) {
         if (client_context_.get_lifecycle_service().is_running()) {
             HZ_LOG(
               logger_,
               warning,
               boost::str(boost::format("Delivery of event message to event "
-                                       "handler failed. %1%, %2%, %3%") %
-                         e.what() % *response % *invocation));
+                                       "handler failed. %1%, %2%") %
+                         e.what() % *response));
         }
     }
 }

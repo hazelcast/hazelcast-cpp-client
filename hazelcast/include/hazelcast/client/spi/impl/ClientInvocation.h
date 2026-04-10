@@ -115,12 +115,9 @@ public:
 
     virtual const std::string get_name() const;
 
-    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message,
-                bool erase = true);
+    void notify(const std::shared_ptr<protocol::ClientMessage>& client_message);
 
-    void notify_exception(int64_t correlation_id,
-                          std::exception_ptr exception,
-                          bool erase = true);
+    void notify_exception(int64_t correlation_id, std::exception_ptr exception);
 
     void notify_backup();
 
@@ -243,8 +240,7 @@ private:
     bool get_permission_to_notify(int64_t response_correlation_id);
 
     void notify_response(const std::shared_ptr<protocol::ClientMessage>& msg,
-                         int8_t expected_backups,
-                         bool erase);
+                         int8_t expected_backups);
 
     /**
      * We make sure that this method can not be called from multiple threads
