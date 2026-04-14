@@ -27,7 +27,6 @@
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/exception/protocol_exceptions.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
-#include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/cp/cp.h"
