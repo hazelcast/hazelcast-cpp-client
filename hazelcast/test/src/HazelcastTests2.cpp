@@ -142,7 +142,8 @@ TEST_F(DecimalTest, cascading_carry_bit_test)
 
 TEST_F(DecimalTest, twos_complement_single_byte_full_carry)
 {
-    // carry propagates out of the only byte; the signed loop index must exit cleanly
+    // carry propagates out of the only byte; the signed loop index must exit
+    // cleanly
     std::vector<int8_t> v = { 0 };
     pimpl::twos_complement(v);
     ASSERT_EQ((std::vector<int8_t>{ 0 }), v);
@@ -150,7 +151,8 @@ TEST_F(DecimalTest, twos_complement_single_byte_full_carry)
 
 TEST_F(DecimalTest, twos_complement_multi_byte_full_carry)
 {
-    // carry propagates out of every byte; a size_t loop index would wrap to SIZE_MAX
+    // carry propagates out of every byte; a size_t loop index would wrap to
+    // SIZE_MAX
     std::vector<int8_t> v = { 0, 0, 0 };
     pimpl::twos_complement(v);
     ASSERT_EQ((std::vector<int8_t>{ 0, 0, 0 }), v);
