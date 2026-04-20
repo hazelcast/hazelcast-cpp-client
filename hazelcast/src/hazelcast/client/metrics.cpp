@@ -101,8 +101,8 @@ zlib_compress(const std::vector<byte>& input)
 
         // block header
         output.push_back(
-          static_cast<byte>(is_final));         // BFINAL = is_final, BTYPE = 00
-        output.push_back(block_size & 0xff);    // LEN - least significant
+          static_cast<byte>(is_final));      // BFINAL = is_final, BTYPE = 00
+        output.push_back(block_size & 0xff); // LEN - least significant
         output.push_back(
           static_cast<byte>(block_size >> 8));  // LEN - most significant
         output.push_back((~block_size) & 0xff); // NLEN - least significant

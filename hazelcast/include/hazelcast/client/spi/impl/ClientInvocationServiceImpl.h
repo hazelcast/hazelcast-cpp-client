@@ -18,9 +18,11 @@
 
 #include <atomic>
 #include <chrono>
+#include <memory>
+
+#include <boost/unordered/concurrent_flat_map.hpp>
 
 #include "hazelcast/util/export.h"
-#include "hazelcast/client/protocol/IMessageHandler.h"
 
 namespace hazelcast {
 class logger;
@@ -29,13 +31,15 @@ namespace client {
 namespace spi {
 class ClientContext;
 namespace impl {
+class ClientResponseHandler;
 class HAZELCAST_API ClientInvocationServiceImpl
-  : public protocol::IMessageHandler
 {
 public:
     explicit ClientInvocationServiceImpl(ClientContext& client);
 
     void start();
+
+    void start_response_handler();
 
     void shutdown();
 
@@ -64,17 +68,36 @@ public:
 
     bool is_redo_operation();
 
-    void handle_client_message(
-      const std::shared_ptr<ClientInvocation>& invocation,
-      const std::shared_ptr<protocol::ClientMessage>& response) override;
-
     const std::chrono::milliseconds& get_backup_timeout() const;
 
     bool fail_on_indeterminate_state() const;
 
     void add_backup_listener();
 
+    void register_invocation(
+      int64_t correlation_id,
+      const std::shared_ptr<ClientInvocation>& invocation);
+
+    bool deregister_invocation(int64_t correlation_id);
+
+    std::shared_ptr<ClientInvocation> get_invocation(int64_t correlation_id);
+
+    spi::ClientContext& get_client_context();
+
+    ClientResponseHandler& get_response_handler();
+
+    void notify_connection_closed(
+      const std::shared_ptr<connection::Connection>& connection,
+      const std::string& reason);
+
+    void check_backup_timeouts(std::chrono::milliseconds backup_timeout);
+
 private:
+    static constexpr const char* CLEAN_RESOURCES_MILLIS =
+      "hazelcast.client.internal.clean.resources.millis";
+    static constexpr const char* CLEAN_RESOURCES_MILLIS_DEFAULT = "100";
+    static const client_property clean_resources_millis_property_;
+
     class BackupListenerMessageCodec : public ListenerMessageCodec
     {
     public:
@@ -102,6 +125,9 @@ private:
     bool backup_acks_enabled_;
     bool fail_on_indeterminate_operation_state_;
     std::chrono::milliseconds backup_timeout_;
+    boost::concurrent_flat_map<int64_t, std::shared_ptr<ClientInvocation>>
+      invocations_;
+    std::unique_ptr<ClientResponseHandler> response_handler_;
 
     static void write_to_connection(
       connection::Connection& connection,
