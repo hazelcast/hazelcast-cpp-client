@@ -46,7 +46,7 @@ jobs:
         id: test-membership
         uses: hazelcast/hazelcast-tpm/membership@main
         with:
-          member-name: ${{ github.actor }}
+          member-name: ${{ github.triggering_actor }}
           token: ${{ secrets.GH_TOKEN }}
           
   # ensure PR is trusted
@@ -61,7 +61,7 @@ jobs:
     steps:
       - name: Report
         shell: bash
-        run: echo "User ${{ github.actor }} is trusted for test execution"          
+        run: echo "User ${{ github.triggering_actor }} is trusted for test execution"          
 
 
   # get
