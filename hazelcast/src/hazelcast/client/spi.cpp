@@ -1189,7 +1189,7 @@ ClientClusterServiceImpl::get_member(boost::uuids::uuid uuid) const
     if (it == members_view_ptr->members.end()) {
         return boost::none;
     }
-    return { it->second };
+    return boost::optional<member>(it->second);
 }
 
 std::vector<member>
