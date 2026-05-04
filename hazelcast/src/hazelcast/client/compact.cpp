@@ -3438,7 +3438,12 @@ schema::schema(
         }
     }
 
-    std::sort(
+    // Fixed size fields should be in descending order of size in bytes.
+    // For ties, the alphabetical order(ascending) of the field name will
+    // be used. Since, `fields` is sorted at this point, and the `sort`
+    // method is stable, only sorting by the size in bytes is enough for
+    // this invariant to hold.
+    std::stable_sort(
       fixed_size_fields.begin(), fixed_size_fields.end(), kind_size_comparator);
 
     int offset = 0;
