@@ -738,9 +738,15 @@ private:
     int actual_key_;
 };
 
+struct client_config_param
+{
+    std::string name;
+    std::function<client_config()> factory;
+};
+
 class ClientMapTest
   : public ClientTest
-  , public ::testing::WithParamInterface<std::function<client_config()>>
+  , public ::testing::WithParamInterface<client_config_param>
 {
 public:
     static constexpr const char* intMapName = "IntMap";
@@ -787,7 +793,7 @@ public:
     }
 
     ClientMapTest()
-      : client_(new_client(GetParam()()).get())
+      : client_(new_client(GetParam().factory()).get())
       , imap_(client_.get_map(imapName).get())
       , int_map_(client_.get_map(intMapName).get())
       , employees_(client_.get_map(employeesMapName).get())
@@ -951,9 +957,15 @@ INSTANTIATE_TEST_SUITE_P(
   ClientMapTestWithDifferentConfigs,
   ClientMapTest,
   ::testing::Values(
-    ClientMapTest::create_map_client_config,
-    ClientMapTest::create_near_cached_map_client_config,
-    ClientMapTest::create_near_cached_object_map_client_config));
+    client_config_param{ "Default", &ClientMapTest::create_map_client_config },
+    client_config_param{ "NearCachedBinary",
+                         &ClientMapTest::create_near_cached_map_client_config },
+    client_config_param{
+      "NearCachedObject",
+      &ClientMapTest::create_near_cached_object_map_client_config }),
+  [](const ::testing::TestParamInfo<client_config_param>& info) {
+      return info.param.name;
+  });
 
 TEST_P(ClientMapTest, testIssue537)
 {
@@ -1172,13 +1184,6 @@ TEST_P(ClientMapTest, testTryPutRemove)
 
 TEST_P(ClientMapTest, testPutTtl)
 {
-    if (client_.get_client_config().get_near_cache_config(imap_->get_name()) !=
-        nullptr) {
-        GTEST_SKIP_(
-          "Server side expiry does not send near cache invalidations. "
-          "See https://github.com/hazelcast/hazelcast/issues/10975");
-    }
-
     validate_expiry_invalidations(imap_, [=]() {
         imap_
           ->put<std::string, std::string>(
@@ -1189,13 +1194,6 @@ TEST_P(ClientMapTest, testPutTtl)
 
 TEST_P(ClientMapTest, testPutConfigTtl)
 {
-    if (client_.get_client_config().get_near_cache_config(
-          ONE_SECOND_MAP_NAME) != nullptr) {
-        GTEST_SKIP_(
-          "Server side expiry does not send near cache invalidations. "
-          "See https://github.com/hazelcast/hazelcast/issues/10975");
-    }
-
     std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME).get();
     validate_expiry_invalidations(map, [=]() {
         map->put<std::string, std::string>("key1", "value1").get();
@@ -1215,13 +1213,6 @@ TEST_P(ClientMapTest, testPutIfAbsent)
 
 TEST_P(ClientMapTest, testPutIfAbsentTtl)
 {
-    if (client_.get_client_config().get_near_cache_config(imap_->get_name()) !=
-        nullptr) {
-        GTEST_SKIP_(
-          "Server side expiry does not send near cache invalidations. "
-          "See https://github.com/hazelcast/hazelcast/issues/10975");
-    }
-
     ASSERT_FALSE((imap_
                     ->put_if_absent<std::string, std::string>(
                       "key1", "value1", std::chrono::seconds(10))
@@ -1264,13 +1255,6 @@ TEST_P(ClientMapTest, testSet)
 
 TEST_P(ClientMapTest, testSetTtl)
 {
-    if (client_.get_client_config().get_near_cache_config(imap_->get_name()) !=
-        nullptr) {
-        GTEST_SKIP_(
-          "Server side expiry does not send near cache invalidations. "
-          "See https://github.com/hazelcast/hazelcast/issues/10975");
-    }
-
     validate_expiry_invalidations(imap_, [=]() {
         imap_->set("key1", "value1", std::chrono::seconds(1)).get();
     });
@@ -1278,13 +1262,6 @@ TEST_P(ClientMapTest, testSetTtl)
 
 TEST_P(ClientMapTest, testSetConfigTtl)
 {
-    if (client_.get_client_config().get_near_cache_config(
-          ONE_SECOND_MAP_NAME) != nullptr) {
-        GTEST_SKIP_(
-          "Server side expiry does not send near cache invalidations. "
-          "See https://github.com/hazelcast/hazelcast/issues/10975");
-    }
-
     std::shared_ptr<imap> map = client_.get_map(ONE_SECOND_MAP_NAME).get();
     validate_expiry_invalidations(map,
                                   [=]() { map->set("key1", "value1").get(); });
