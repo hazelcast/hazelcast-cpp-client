@@ -3438,11 +3438,11 @@ schema::schema(
         }
     }
 
-    // Use stable_sort so that fields of the same fixed-size kind keep the
-    // alphabetical order seeded by the preceding std::map traversal. This
-    // matches the Java client's stable sort in
-    // com.hazelcast.internal.serialization.impl.compact.Schema and keeps
-    // field offsets identical across clients for the same schema_id.
+    // Fixed size fields should be in descending order of size in bytes.
+    // For ties, the alphabetical order(ascending) of the field name will
+    // be used. Since, `fields` is sorted at this point, and the `sort`
+    // method is stable, only sorting by the size in bytes is enough for
+    // this invariant to hold.
     std::stable_sort(
       fixed_size_fields.begin(), fixed_size_fields.end(), kind_size_comparator);
 
