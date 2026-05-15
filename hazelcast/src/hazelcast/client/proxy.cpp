@@ -1163,8 +1163,7 @@ flake_id_generator_impl::new_id()
     return new_id_batch(batch_size_)
       .then(boost::launch::sync,
             [=](boost::future<flake_id_generator_impl::IdBatch> f) {
-                auto newBlock =
-                  boost::make_shared<Block>(f.get(), validity_);
+                auto newBlock = boost::make_shared<Block>(f.get(), validity_);
                 auto value = newBlock->next();
                 auto b = block_.load();
                 block_.compare_exchange_strong(b, newBlock);

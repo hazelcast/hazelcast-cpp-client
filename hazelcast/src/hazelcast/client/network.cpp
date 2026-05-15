@@ -145,11 +145,12 @@ ClientConnectionManagerImpl::start()
             try {
                 raw_ctx->run();
             } catch (const std::exception& e) {
-                HZ_LOG(logger_,
-                       severe,
-                       boost::str(boost::format(
-                                    "IO thread terminated with exception: %1%") %
-                                  e.what()));
+                HZ_LOG(
+                  logger_,
+                  severe,
+                  boost::str(
+                    boost::format("IO thread terminated with exception: %1%") %
+                    e.what()));
             } catch (...) {
                 HZ_LOG(logger_,
                        severe,
