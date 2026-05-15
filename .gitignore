@@ -48,7 +48,7 @@ java/target/*
 compile_commands.json
 
 # Doxygen generated docs
-docs/
+docs/html
 
 # Log files
 testLog.txt
