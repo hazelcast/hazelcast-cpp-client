@@ -141,7 +141,21 @@ ClientConnectionManagerImpl::start()
           new boost::asio::ip::tcp::resolver(ctx->get_executor())));
         auto raw_ctx = ctx.get();
         io_contexts_.push_back(std::move(ctx));
-        io_threads_.emplace_back([raw_ctx]() { raw_ctx->run(); });
+        io_threads_.emplace_back([raw_ctx, this]() {
+            try {
+                raw_ctx->run();
+            } catch (const std::exception& e) {
+                HZ_LOG(logger_,
+                       severe,
+                       boost::str(boost::format(
+                                    "IO thread terminated with exception: %1%") %
+                                  e.what()));
+            } catch (...) {
+                HZ_LOG(logger_,
+                       severe,
+                       "IO thread terminated with unknown exception");
+            }
+        });
     }
 
     executor_.reset(

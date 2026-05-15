@@ -1150,26 +1150,26 @@ flake_id_generator_impl::new_id_internal()
         }
     }
 
-    throw std::overflow_error("");
+    return INT64_MIN;
 }
 
 boost::future<int64_t>
 flake_id_generator_impl::new_id()
 {
-    try {
-        return boost::make_ready_future(new_id_internal());
-    } catch (std::overflow_error&) {
-        return new_id_batch(batch_size_)
-          .then(boost::launch::sync,
-                [=](boost::future<flake_id_generator_impl::IdBatch> f) {
-                    auto newBlock =
-                      boost::make_shared<Block>(f.get(), validity_);
-                    auto value = newBlock->next();
-                    auto b = block_.load();
-                    block_.compare_exchange_strong(b, newBlock);
-                    return value;
-                });
+    auto res = new_id_internal();
+    if (res != INT64_MIN) {
+        return boost::make_ready_future(res);
     }
+    return new_id_batch(batch_size_)
+      .then(boost::launch::sync,
+            [=](boost::future<flake_id_generator_impl::IdBatch> f) {
+                auto newBlock =
+                  boost::make_shared<Block>(f.get(), validity_);
+                auto value = newBlock->next();
+                auto b = block_.load();
+                block_.compare_exchange_strong(b, newBlock);
+                return value;
+            });
 }
 
 boost::future<flake_id_generator_impl::IdBatch>
