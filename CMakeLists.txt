@@ -21,6 +21,8 @@ project(hazelcast-cpp-client
         DESCRIPTION "Hazelcast C++ Client"
         LANGUAGES CXX)
 
+# Minimum required Boost version is 1.83 and it requires C++14 as minimum (Boost.Math).
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set the default build type for single-config generators if not given
@@ -83,18 +85,6 @@ if (Boost_FOUND)
     message(STATUS "Boost version: ${Boost_VERSION}")
     message(STATUS "Boost include directory: ${Boost_INCLUDE_DIRS}")
     message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
-
-    # Check Boost version and set C++ standard accordingly
-    # Our library can not use a lower C++ standard than the one required by Boost.
-    if (Boost_VERSION VERSION_LESS 1.82.0)
-        set(CMAKE_CXX_STANDARD 11)
-        message(STATUS "Boost version ${Boost_VERSION} < 1.82.0, setting C++ standard to 11.")
-    else()
-        set(CMAKE_CXX_STANDARD 14)
-        message(STATUS "Boost version ${Boost_VERSION} >= 1.82.0, setting C++ standard to 14. "
-                "Boost.Math library requires minimum C++14 compiler.")
-    endif()
-
 else()
     message(FATAL_ERROR "Boost not found!")
 endif()
