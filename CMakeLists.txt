@@ -77,7 +77,7 @@ option(BUILD_EXAMPLES
 find_package(Threads REQUIRED)
 
 # find Boost
-find_package(Boost 1.73 REQUIRED COMPONENTS thread chrono)
+find_package(Boost 1.83 REQUIRED COMPONENTS thread chrono)
 
 if (Boost_FOUND)
     message(STATUS "Boost version: ${Boost_VERSION}")
