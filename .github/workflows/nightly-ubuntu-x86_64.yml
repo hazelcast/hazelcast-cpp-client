@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         boost:
-          - version: 1.73.0
-          - version: 1.89.0
+          - version: 1.83.0
+          - version: 1.91.0
 
         build_type:
           - Debug
