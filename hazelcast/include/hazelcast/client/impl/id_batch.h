@@ -58,7 +58,7 @@ public:
      */
     int32_t get_batch_size() const;
 
-    class id_iterator
+    class HAZELCAST_API id_iterator
     {
     public:
         using iterator_category = std::input_iterator_tag;
