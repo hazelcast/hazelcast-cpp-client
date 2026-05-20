@@ -19,11 +19,9 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
-#include <memory>
 #include <mutex>
 
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/thread/future.hpp>
 
@@ -50,8 +48,9 @@ namespace impl {
  *  - lock-free fast path while the current batch has IDs;
  *  - single-flight batch fetch: concurrent callers that hit an exhausted
  *    batch coalesce onto one outstanding request (no thundering herd);
- *  - the winning fetch and its retry loop run on the user executor, so the
- *    caller thread and IO threads are never blocked;
+ *  - the winning thread that fetches the batch range and its retry loop
+ *    run on the user executor, so the caller thread and IO threads are
+ *    never blocked;
  *  - never resolves to INT64_MIN: a caller that cannot get an ID from the
  *    fresh batch transparently retries (async analogue of Java's for(;;)).
  *
