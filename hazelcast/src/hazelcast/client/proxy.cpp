@@ -1105,9 +1105,9 @@ id_batch::id_iterator::operator++()
 auto_batcher::block::block(id_batch batch, std::chrono::milliseconds validity)
   : id_batch_(batch)
   // Mirror Java AutoBatcher.Block: validity <= 0 means "never expire".
-  , invalid_since_(validity > std::chrono::milliseconds::zero()
-                     ? std::chrono::steady_clock::now() + validity
-                     : (std::chrono::steady_clock::time_point::max)())
+  , invalid_since_(validity <= std::chrono::milliseconds::zero()
+                     ? (std::chrono::steady_clock::time_point::max)()
+                     : std::chrono::steady_clock::now() + validity)
   , num_returned_(0)
 {
 }
