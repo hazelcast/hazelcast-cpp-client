@@ -224,7 +224,8 @@ protected:
         socket_.async_read_some(
           boost::asio::buffer(connection->read_handler.byte_buffer.ix(),
                               connection->read_handler.byte_buffer.remaining()),
-          socket_strand_.wrap(
+          boost::asio::bind_executor(
+            socket_strand_,
             [=](const boost::system::error_code& ec, std::size_t bytes_read) {
                 if (ec) {
                     // prevent any exceptions
@@ -282,7 +283,8 @@ protected:
         boost::asio::async_write(
           socket_,
           batch_buffers_,
-          socket_strand_.wrap(
+          boost::asio::bind_executor(
+            socket_strand_,
             [this, connection](const boost::system::error_code& ec,
                                std::size_t /* bytes_written */) {
                 write_in_progress_ = false;
