@@ -48,11 +48,10 @@ namespace impl {
  *  - lock-free fast path while the current batch has IDs;
  *  - single-flight batch fetch: concurrent callers that hit an exhausted
  *    batch coalesce onto one outstanding request (no thundering herd);
- *  - the winning thread that fetches the batch range and its retry loop
+ *  - the remote caller thread that fetches the batch range and its retry loop
  *    run on the user executor, so the caller thread and IO threads are
  *    never blocked;
- *  - never resolves to INT64_MIN: a caller that cannot get an ID from the
- *    fresh batch transparently retries (async analogue of Java's for(;;)).
+ *  - Always returns a valid id (different from INT64_MIN)
  *
  * The batch supplier is injected, mirroring Java's IdBatchSupplier "separate
  * class due to testability" so the logic is unit-testable without a cluster.

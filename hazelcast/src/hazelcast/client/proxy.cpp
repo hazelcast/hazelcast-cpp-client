@@ -1228,7 +1228,8 @@ auto_batcher::new_id()
                     return boost::make_ready_future(v);
                 }
                 // More concurrent waiters than the batch could serve: retry
-                // (async analogue of Java's outer for(;;) loop).
+                // If a caller that cannot get an ID from the fresh batch
+                // transparently retries (async analogue of Java's for(;;)).
                 return new_id();
             })
       .unwrap();
