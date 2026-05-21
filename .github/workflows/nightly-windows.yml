@@ -28,10 +28,10 @@ jobs:
             boost_include_folder: 'C:\Boost\include\boost-1_83'
           - name: msvc-latest_boost_1910
             image: 'windows-latest'
-            boost_url: 'https://archives.boost.io/release/1.91.0/source/boost_1_91_0.tar.gz'
-            boost_archive_name: 'boost_1_91_0.tar.gz'
-            boost_folder_name: 'boost_1_91_0'
-            boost_include_folder: 'C:\Boost\include\boost-1_91'
+            boost_url: 'https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz'
+            boost_archive_name: 'boost_1_90_0.tar.gz'
+            boost_folder_name: 'boost_1_90_0'
+            boost_include_folder: 'C:\Boost\include\boost-1_90'
         options: ${{ fromJSON(needs.shared-matrix.outputs.windows-options) }}
         build_type: ${{ fromJSON(needs.shared-matrix.outputs.build-type) }}
         shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
