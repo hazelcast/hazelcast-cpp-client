@@ -26,7 +26,7 @@ jobs:
             boost_archive_name: 'boost_1_83_0.tar.gz'
             boost_folder_name: 'boost_1_83_0'
             boost_include_folder: 'C:\Boost\include\boost-1_83'
-          - name: msvc-latest_boost_1910
+          - name: msvc-latest_boost_1900
             image: 'windows-latest'
             boost_url: 'https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz'
             boost_archive_name: 'boost_1_90_0.tar.gz'
