@@ -24,11 +24,11 @@ on:
         description: Enter guest PR verified HEAD commit SHA.
         required: true
 env:
-  BOOST_VERSION: 1.89.0
-  BOOST_ARCHIVE_NAME: 'boost_1_89_0.tar.gz'
-  BOOST_FOLDER_NAME: 'boost_1_89_0'
-  BOOST_INCLUDE_FOLDER: 'C:\Boost\include\boost-1_89'
-  BOOST_URL: 'https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.gz'
+  BOOST_VERSION: 1.90.0
+  BOOST_ARCHIVE_NAME: 'boost_1_90_0.tar.gz'
+  BOOST_FOLDER_NAME: 'boost_1_90_0'
+  BOOST_INCLUDE_FOLDER: 'C:\Boost\include\boost-1_90'
+  BOOST_URL: 'https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz'
   THRIFT_VERSION: 0.13.0
   RUN_TESTS: true
   
@@ -46,7 +46,7 @@ jobs:
         id: test-membership
         uses: hazelcast/hazelcast-tpm/membership@main
         with:
-          member-name: ${{ github.actor }}
+          member-name: ${{ github.triggering_actor }}
           token: ${{ secrets.GH_TOKEN }}
           
   # ensure PR is trusted
@@ -61,7 +61,7 @@ jobs:
     steps:
       - name: Report
         shell: bash
-        run: echo "User ${{ github.actor }} is trusted for test execution"          
+        run: echo "User ${{ github.triggering_actor }} is trusted for test execution"          
 
 
   # get
