@@ -19,7 +19,15 @@
 #include <boost/format.hpp>
 #include <boost/lockfree/queue.hpp>
 #ifdef HZ_BUILD_WITH_SSL
-#include <boost/asio/ssl.hpp>
+// Avoid <boost/asio/ssl.hpp> because in Boost <= 1.83 it transitively
+// includes rfc2818_verification, whose .ipp dereferences private
+// ASN1_STRING fields that became opaque in OpenSSL 3.x and breaks the
+// MSVC build. We use the modern host_name_verification instead, so pull
+// in only the specific subheaders we actually need.
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl/error.hpp>
+#include <boost/asio/ssl/host_name_verification.hpp>
+#include <boost/asio/ssl/stream.hpp>
 #endif
 
 #include "hazelcast/client/socket.h"
