@@ -86,7 +86,7 @@ jobs:
           INSTALL_THRIFT: ${{ steps.cache-thrift.outputs.cache-hit != 'true' }}
           RUN_TESTS: ${{ inputs.RUN_TESTS || github.event_name == 'schedule' }}
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ vars.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
       - name: Verify Installation

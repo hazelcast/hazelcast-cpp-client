@@ -23,7 +23,7 @@ jobs:
           THRIFT_VERSION: 0.13.0
           RUN_TESTS: true
           HAZELCAST_ENTERPRISE_KEY: ${{ secrets.HAZELCAST_ENTERPRISE_KEY }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ vars.AWS_HAZELCAST_OIDC_GITHUB_ACTIONS_ROLE_ARN }}
           HZ_TEST_AWS_INSTANCE_PRIVATE_IP: ${{ secrets.HZ_TEST_AWS_INSTANCE_PRIVATE_IP }}
 
       - name: Publish on Codecov
