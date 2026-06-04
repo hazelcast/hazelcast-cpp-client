@@ -2119,6 +2119,30 @@ ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage>& msg,
     try {
         // TODO: move msg content here?
         this->invocation_promise_.set_value(*msg);
+    } catch (boost::promise_already_satisfied& e) {
+        // The promise is already satisfied. This is an expected, benign race
+        // between notify_response() (primary response) and notify_backup() (the
+        // last backup ack): for a backup-aware operation both paths can reach
+        // complete() with the very same pending_response_. The first one wins
+        // and the duplicate is harmlessly dropped.
+        //
+        // This mirrors Java's AbstractInvocationFuture.warnIfSuspiciousDouble-
+        // Completion, which only warns when the already-set value differs from
+        // the offered one. Here the canonical value is pending_response_, so a
+        // completion with the same message is benign (logged at finest) while a
+        // genuinely different value remains a warning.
+        auto pending = pending_response_.load();
+        auto level = (!pending || *pending != msg)
+                       ? ::hazelcast::logger::level::warning
+                       : ::hazelcast::logger::level::finest;
+        if (logger_.enabled(level)) {
+            logger_.log(
+              level,
+              boost::str(
+                boost::format("Failed to set the response for invocation. "
+                              "Dropping the response. %1%, %2% Response: %3%") %
+                e.what() % *this % *msg));
+        }
     } catch (std::exception& e) {
         HZ_LOG(logger_,
                warning,
