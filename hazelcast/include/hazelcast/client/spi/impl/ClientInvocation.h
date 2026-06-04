@@ -41,7 +41,7 @@ namespace client {
 class address;
 
 namespace test {
-// White-box test fixture; granted access to private completion internals to
+// Exposed for testing only; granted access to private completion internals to
 // deterministically reproduce the response/backup-ack completion race.
 class client_invocation_test;
 } // namespace test
