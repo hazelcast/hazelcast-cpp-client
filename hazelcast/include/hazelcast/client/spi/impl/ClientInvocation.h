@@ -40,6 +40,12 @@ class logger;
 namespace client {
 class address;
 
+namespace test {
+// Exposed for testing only; granted access to private completion internals to
+// deterministically reproduce the response/backup-ack completion race.
+class client_invocation_test;
+} // namespace test
+
 namespace connection {
 class Connection;
 }
@@ -139,6 +145,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os,
                                     const ClientInvocation& invocation);
+
+    friend class ::hazelcast::client::test::client_invocation_test;
 
     boost::promise<protocol::ClientMessage>& get_promise();
 
