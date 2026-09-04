@@ -214,8 +214,6 @@ jobs:
       id-token: write
 
     name: macOS-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
-    env:
-      OPENSSL_ROOT_DIR: /usr/local/opt/openssl/
 
     steps:
       - uses: actions/checkout@v6
