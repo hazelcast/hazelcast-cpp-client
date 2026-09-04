@@ -169,7 +169,9 @@ jobs:
         shared_libs: ${{ fromJSON(needs.shared-matrix.outputs.shared-libs) }}
         with_openssl: ${{ fromJSON(needs.shared-matrix.outputs.openssl) }}
 
-    runs-on: 'windows-latest'
+    # windows-latest ships Visual Studio 2026, which the b2 in Boost 1.90 and
+    # older cannot detect (it falls back to msvc-6.0 and builds nothing).
+    runs-on: 'windows-2022'
     permissions:
       id-token: write
     name: windows-${{ matrix.options.address_model }}-(${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }})
