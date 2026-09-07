@@ -2767,9 +2767,66 @@ TEST_P(ThreadPoolTest, testEqualThreadAndJobs)
     ASSERT_EQ(expected_thread_num, state->thread_ids.size());
 }
 
+// Submits twice as many jobs as the configured pool size, so the assertion is
+// an exact thread count rather than min(jobs, size). Each parameter differs
+// from SCHEMA_REPLICATION_POOL_SIZE_DEFAULT, so every case fails if the
+// property is ignored.
+TEST_P(ThreadPoolTest, testSchemaReplicationPoolSizeIsHonoured)
+{
+    int32_t num_of_thread = GetParam();
+    int32_t num_of_jobs = num_of_thread * 2;
+
+    client_config config;
+    config.set_property(client_properties::SCHEMA_REPLICATION_POOL_SIZE,
+                        std::to_string(num_of_thread));
+
+    auto local_client = new_client(std::move(config)).get();
+
+    spi::ClientContext ctx(local_client);
+    auto state = std::make_shared<ThreadState>(num_of_jobs);
+    std::mutex mutex_for_thread_id;
+    boost::barrier sync_barrier(num_of_thread);
+
+    ASSERT_EQ(0, state->thread_ids.size());
+    for (int i = 0; i < num_of_jobs; i++) {
+        ctx.get_client_execution_service()
+          .get_schema_replication_executor()
+          .submit([state, &mutex_for_thread_id, &sync_barrier]() {
+              sync_barrier.count_down_and_wait();
+              auto curr_thread_id = boost::this_thread::get_id();
+              {
+                  std::lock_guard<std::mutex> lg(mutex_for_thread_id);
+                  state->thread_ids.insert(curr_thread_id);
+              }
+              state->latch1.count_down();
+          });
+    }
+    ASSERT_OPEN_EVENTUALLY(state->latch1);
+    ASSERT_EQ(static_cast<size_t>(num_of_thread), state->thread_ids.size());
+
+    local_client.shutdown().get();
+}
+
 INSTANTIATE_TEST_SUITE_P(ThreadPoolTestSuite,
                          ThreadPoolTest,
                          ::testing::Values(5, 10, 2));
+
+TEST(schema_replication_pool_size_test, resolves_to_default_when_unset)
+{
+    client_properties properties({});
+
+    ASSERT_EQ(
+      3, properties.get_integer(properties.get_schema_replication_pool_size()));
+}
+
+TEST(schema_replication_pool_size_test, configured_value_overrides_default)
+{
+    client_properties properties(
+      { { client_properties::SCHEMA_REPLICATION_POOL_SIZE, "7" } });
+
+    ASSERT_EQ(
+      7, properties.get_integer(properties.get_schema_replication_pool_size()));
+}
 
 } // namespace thread_pool
 } // namespace test
