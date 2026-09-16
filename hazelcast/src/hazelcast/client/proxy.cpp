@@ -17,6 +17,8 @@
 #include <unordered_set>
 #include <atomic>
 
+#include <boost/asio/post.hpp>
+
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/proxy/PNCounterImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -35,6 +37,7 @@
 #include "hazelcast/client/proxy/ReplicatedMapImpl.h"
 #include "hazelcast/client/flake_id_generator.h"
 #include "hazelcast/client/reliable_topic.h"
+
 #include "hazelcast/util/hz_thread_pool.h"
 
 namespace hazelcast {
@@ -1163,6 +1166,24 @@ auto_batcher::new_id()
         }
     }
 
+    auto p = boost::make_shared<boost::promise<int64_t>>();
+    auto f = p->get_future();
+    try_get_id(p);
+    return f;
+}
+
+void
+auto_batcher::try_get_id(const boost::shared_ptr<boost::promise<int64_t>>& p)
+{
+    auto b = block_.load();
+    if (b) {
+        int64_t v = b->next();
+        if (v != INT64_MIN) {
+            p->set_value(v);
+            return;
+        }
+    }
+
     // Slow path: elect a single fetcher; concurrent callers coalesce onto
     // one outstanding batch request (single-flight, no thundering herd).
     boost::shared_future<boost::shared_ptr<block>> fetch;
@@ -1176,7 +1197,8 @@ auto_batcher::new_id()
         if (b2 && b2 != b) {
             int64_t v = b2->next();
             if (v != INT64_MIN) {
-                return boost::make_ready_future(v);
+                p->set_value(v);
+                return;
             }
         }
 
@@ -1209,30 +1231,40 @@ auto_batcher::new_id()
         fetch = fetch_in_progress_;
     }
 
-    return fetch
-      .then(boost::launch::sync,
-            [this, gen](boost::shared_future<boost::shared_ptr<block>> f)
-              -> boost::future<int64_t> {
-                {
-                    std::lock_guard<std::mutex> g(mutex_);
-                    if (fetch_generation_ == gen &&
-                        fetch_in_progress_.valid()) {
-                        fetch_in_progress_ =
-                          boost::shared_future<boost::shared_ptr<block>>();
-                    }
-                }
-                // Rethrows a supplier/server error to every coalesced caller.
-                boost::shared_ptr<block> nb = f.get();
-                int64_t v = nb->next();
-                if (v != INT64_MIN) {
-                    return boost::make_ready_future(v);
-                }
-                // More concurrent waiters than the batch could serve: retry
-                // If a caller that cannot get an ID from the fresh batch
-                // transparently retries (async analogue of Java's for(;;)).
-                return new_id();
-            })
-      .unwrap();
+    // The continuation completes the caller's promise directly. Its own
+    // future is intentionally discarded: nothing waits on it, so a lost
+    // race never leaves a future layer behind (see try_get_id docs).
+    fetch.then(
+      boost::launch::sync,
+      [this, gen, p](boost::shared_future<boost::shared_ptr<block>> f) {
+          {
+              std::lock_guard<std::mutex> g(mutex_);
+              if (fetch_generation_ == gen && fetch_in_progress_.valid()) {
+                  fetch_in_progress_ =
+                    boost::shared_future<boost::shared_ptr<block>>();
+              }
+          }
+          boost::shared_ptr<block> nb;
+          try {
+              // Rethrows a supplier/server error to every coalesced caller.
+              nb = f.get();
+          } catch (...) {
+              p->set_exception(boost::current_exception());
+              return;
+          }
+          int64_t v = nb->next();
+          if (v != INT64_MIN) {
+              p->set_value(v);
+              return;
+          }
+          // More concurrent waiters than the batch could serve: retry from
+          // an empty stack (async analogue of Java's for(;;)). Posting, rather
+          // than calling try_get_id inline, also covers the case where the
+          // next fetch is already complete and a sync continuation would run
+          // immediately on this thread.
+          boost::asio::post(executor_.get_executor(),
+                            [this, p]() { try_get_id(p); });
+      });
 }
 
 } // namespace impl
