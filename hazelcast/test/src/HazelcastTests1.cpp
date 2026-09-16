@@ -2583,6 +2583,37 @@ TEST(AutoBatcherTest, concurrencySmokeTest)
     ASSERT_LE(supplier->calls(), NUM_THREADS * IDS_IN_THREAD / 3 + 1000);
 }
 
+// Regression test for the stack overflow reported in issue #1491. A waiter
+// that loses the race for the freshly fetched batch must retry without
+// nesting futures (unwrap-on-unwrap): otherwise the completion cascade
+// recurses once per lost round and overflows the executor thread's stack
+// (macOS gives secondary threads 512 KiB) after a few hundred lost rounds.
+//
+// A slow supplier makes every thread coalesce onto the in-flight fetch. When
+// it completes, the first three continuations win and their threads wake and
+// re-register on the next fetch while the remaining continuations are still
+// being run, i.e. ahead of them. The last loser therefore loses every round
+// until the other threads have used up their quota.
+TEST(AutoBatcherTest, starvedWaiterDoesNotOverflowTheStack)
+{
+    constexpr int NUM_THREADS = 128;
+    constexpr int IDS_IN_THREAD = 100;
+    util::hz_thread_pool pool(4);
+    auto supplier = std::make_shared<sequential_batch_supplier>();
+    impl::auto_batcher batcher(
+      3, std::chrono::milliseconds(600000), pool, [supplier](int32_t s) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(1));
+          return (*supplier)(s);
+      });
+
+    auto ids = concurrently_generate_ids(
+      [&]() { return batcher.new_id().get(); }, NUM_THREADS, IDS_IN_THREAD);
+
+    for (int64_t i = 0; i < static_cast<int64_t>(ids.size()); ++i) {
+        ASSERT_TRUE(ids.count(i) > 0) << "Missing ID: " << i;
+    }
+}
+
 TEST(FlakeIdBatchTest, getters)
 {
     impl::id_batch b(5, 7, 9);
