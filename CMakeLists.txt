@@ -89,6 +89,14 @@ else()
     message(FATAL_ERROR "Boost not found!")
 endif()
 
+# Boost.Thread before 1.88 has a typo in future.hpp (run_it::operator=) that
+# GCC 15 rejects while parsing the template body. The affected template is never
+# instantiated here, so defer the diagnostic to instantiation.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15
+    AND Boost_VERSION VERSION_LESS 1.88)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-template-body")
+endif ()
+
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)
     if (APPLE)
