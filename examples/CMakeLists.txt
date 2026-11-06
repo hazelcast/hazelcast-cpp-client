@@ -17,7 +17,7 @@
 cmake_minimum_required (VERSION 3.10)
 
 project (hazelcast-cpp-client-examples
-        VERSION 5.7.0
+        VERSION 5.7.1
          DESCRIPTION "Hazelcast C++ Client Code Examples"
          LANGUAGES CXX)
 
@@ -28,6 +28,14 @@ if (NOT TARGET hazelcast-cpp-client)
 
     # Required for 32-bit builds on Linux
     link_libraries(pthread)
+
+    # Boost.Thread before 1.88 has a typo in future.hpp (run_it::operator=)
+    # that GCC 15 rejects while parsing the template body. The in-tree build
+    # inherits this flag from the top-level CMakeLists.txt.
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15
+        AND Boost_VERSION VERSION_LESS 1.88)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-template-body")
+    endif ()
 else()
     link_libraries(hazelcast-cpp-client) # TODO find a better way to do this
 endif()

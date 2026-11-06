@@ -1629,7 +1629,15 @@ ClientExecutionServiceImpl::start()
           new hazelcast::util::hz_thread_pool(user_pool_size_));
     }
 
-    schema_replication_executor_.reset(new hazelcast::util::hz_thread_pool());
+    int schemaReplicationPoolSize = client_properties_.get_integer(
+      client_properties_.get_schema_replication_pool_size());
+    if (schemaReplicationPoolSize <= 0) {
+        schemaReplicationPoolSize = util::IOUtil::to_value<int>(
+          client_properties::SCHEMA_REPLICATION_POOL_SIZE_DEFAULT);
+    }
+
+    schema_replication_executor_.reset(
+      new hazelcast::util::hz_thread_pool(schemaReplicationPoolSize));
 }
 
 void
