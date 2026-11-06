@@ -98,6 +98,19 @@ private:
         std::atomic<int32_t> num_returned_;
     };
 
+    /**
+     * Tries to satisfy one caller: fast path, otherwise joins (or starts) the
+     * single in-flight batch fetch and completes the promise from its
+     * continuation. A caller that loses the race for an ID from the fresh
+     * batch is retried by posting this function to the executor again, so
+     * every retry starts from an empty stack. The retry must never be
+     * expressed as a nested future (then().unwrap() returning new_id()):
+     * each lost round would add one more unwrap layer to the caller's
+     * future and Boost completes such a chain recursively, which overflowed
+     * the executor thread's stack under contention (issue #1491).
+     */
+    void try_get_id(const boost::shared_ptr<boost::promise<int64_t>>& p);
+
     const int32_t batch_size_;
     const std::chrono::milliseconds validity_;
     util::hz_thread_pool& executor_;

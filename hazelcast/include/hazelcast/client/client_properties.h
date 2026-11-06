@@ -82,6 +82,8 @@ public:
 
     const client_property& get_response_thread_count() const;
 
+    const client_property& get_schema_replication_pool_size() const;
+
     const client_property& get_shuffle_member_list() const;
 
     const client_property& get_max_concurrent_invocations() const;
@@ -215,6 +217,20 @@ public:
      */
     static const std::string RESPONSE_THREAD_COUNT;
     static const std::string RESPONSE_THREAD_COUNT_DEFAULT;
+
+    /**
+     * Number of threads which replicate compact schemas to the cluster.
+     * <p/>
+     * Every task on this pool blocks: replicate_schema_in_cluster() waits on
+     * invoke().get(), and on the retry path it sleeps for the invocation retry
+     * pause between attempts. A schema is replicated at most once per client,
+     * so this pool is idle in steady state and only a handful of threads are
+     * needed; sizing it any larger simply reserves threads that never run.
+     * Because the tasks block, a value of 1 makes concurrent writes of
+     * distinct unseen schemas serialize behind one another.
+     */
+    static const std::string SCHEMA_REPLICATION_POOL_SIZE;
+    static const std::string SCHEMA_REPLICATION_POOL_SIZE_DEFAULT;
 
     /**
      * Client shuffles the given member list to prevent all clients to connect
@@ -352,6 +368,7 @@ private:
     client_property internal_executor_pool_size_;
     client_property io_thread_count_;
     client_property response_thread_count_;
+    client_property schema_replication_pool_size_;
     client_property shuffle_member_list_;
     client_property max_concurrent_invocations_;
     client_property backpressure_backoff_timeout_millis_;
