@@ -420,7 +420,7 @@ lifecycle_service::shutdown()
           info,
           boost::str(
             boost::format(
-              "An exception occured during LifecycleService shutdown. %1%") %
+              "An exception occurred during LifecycleService shutdown. %1%") %
             e.what()));
         shutdown_completed_latch_.count_down();
     }
