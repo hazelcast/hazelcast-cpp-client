@@ -98,11 +98,15 @@ runs:
       shell: bash
       run: |
         # collect and list coverage info
+        # lcov 2.x (ubuntu-26.04 ships 2.4) treats gcov data inconsistencies as
+        # errors by default; downgrade them so the report is still produced.
         lcov --capture --directory . --no-external -o coverage.info \
+              --ignore-errors inconsistent,inconsistent \
               --include "`pwd`/hazelcast/*" --exclude "`pwd`/hazelcast/test/*"
-        lcov --list coverage.info
+        lcov --list coverage.info --ignore-errors inconsistent,inconsistent
         # generate HTML views
-        genhtml coverage.info --output-directory=coverage-html-reports
+        genhtml coverage.info --output-directory=coverage-html-reports \
+              --ignore-errors inconsistent,inconsistent
 
     - name: Upload HTML views as artifact
       uses: actions/upload-artifact@v7
