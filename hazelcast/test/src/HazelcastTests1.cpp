@@ -47,9 +47,12 @@
 #include <hazelcast/client/itopic.h>
 #include <hazelcast/client/lifecycle_listener.h>
 #include <hazelcast/client/membership_listener.h>
+#include <hazelcast/client/impl/auto_batcher.h>
+#include <hazelcast/client/impl/id_batch.h>
 #include <hazelcast/client/multi_map.h>
 #include <hazelcast/client/proxy/PNCounterImpl.h>
 #include <hazelcast/client/reliable_topic.h>
+#include <hazelcast/util/hz_thread_pool.h>
 #include <hazelcast/client/serialization/pimpl/data_input.h>
 #include <hazelcast/client/serialization/pimpl/data_output.h>
 #include <hazelcast/client/serialization/serialization.h>
@@ -2450,6 +2453,189 @@ TEST_F(FlakeIdGeneratorApiTest, testAddGetFlakeIdGeneratorIntegrity)
     EXPECT_EQ(readed_flake_config->get_prefetch_count(), 20);
     EXPECT_EQ(readed_flake_config->get_prefetch_validity_duration(),
               std::chrono::seconds(30));
+}
+
+// Server-free unit tests for the flake ID batching logic, ported from the
+// Java client tests in package com.hazelcast.flakeidgen.impl
+// (AutoBatcherTest, FlakeIdGenerator_IdBatchTest, FlakeIdConcurrencyTestUtil).
+// The injectable id_batch supplier makes them deterministic without a cluster.
+
+// Deterministic supplier mirroring AutoBatcherTest's IdBatchSupplier: each
+// call yields a contiguous batch (base, base+1, ...) and advances the base.
+// Also counts invocations to assert single-flight (no thundering herd).
+class sequential_batch_supplier
+{
+public:
+    boost::future<impl::id_batch> operator()(int32_t batch_size)
+    {
+        calls_.fetch_add(1);
+        int64_t base = base_.fetch_add(batch_size);
+        return boost::make_ready_future(impl::id_batch(base, 1, batch_size));
+    }
+
+    int calls() const { return calls_.load(); }
+
+private:
+    std::atomic<int64_t> base_{ 0 };
+    std::atomic<int> calls_{ 0 };
+};
+
+// Ported from FlakeIdConcurrencyTestUtil.concurrentlyGenerateIds.
+static std::unordered_set<int64_t>
+concurrently_generate_ids(const std::function<int64_t()>& generator,
+                          int num_threads = 4,
+                          int ids_in_thread = 100000)
+{
+    boost::latch start_latch(1);
+    std::vector<std::future<std::unordered_set<int64_t>>> futures;
+    for (int i = 0; i < num_threads; ++i) {
+        futures.push_back(std::async(std::launch::async, [&]() {
+            std::unordered_set<int64_t> local_ids;
+            local_ids.reserve(ids_in_thread);
+            start_latch.wait();
+            for (int j = 0; j < ids_in_thread; ++j) {
+                local_ids.insert(generator());
+            }
+            return local_ids;
+        }));
+    }
+
+    start_latch.count_down();
+    std::unordered_set<int64_t> ids;
+    for (auto& f : futures) {
+        auto local = f.get();
+        ids.insert(local.begin(), local.end());
+    }
+
+    // duplicates would shrink the set below the expected count
+    EXPECT_EQ(static_cast<size_t>(num_threads) * ids_in_thread, ids.size());
+    return ids;
+}
+
+TEST(AutoBatcherTest, when_validButUsedAll_then_fetchNew)
+{
+    util::hz_thread_pool pool(2);
+    auto supplier = std::make_shared<sequential_batch_supplier>();
+    impl::auto_batcher batcher(
+      3, std::chrono::milliseconds(10000), pool, [supplier](int32_t s) {
+          return (*supplier)(s);
+      });
+
+    EXPECT_EQ(0, batcher.new_id().get());
+    EXPECT_EQ(1, batcher.new_id().get());
+    EXPECT_EQ(2, batcher.new_id().get());
+    EXPECT_EQ(3, batcher.new_id().get());
+}
+
+TEST(AutoBatcherTest, when_notValid_then_fetchNew)
+{
+    util::hz_thread_pool pool(2);
+    auto supplier = std::make_shared<sequential_batch_supplier>();
+    impl::auto_batcher batcher(
+      3, std::chrono::milliseconds(100), pool, [supplier](int32_t s) {
+          return (*supplier)(s);
+      });
+
+    EXPECT_EQ(0, batcher.new_id().get());
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    EXPECT_EQ(3, batcher.new_id().get());
+}
+
+TEST(AutoBatcherTest, validityZeroNeverExpires)
+{
+    util::hz_thread_pool pool(2);
+    auto supplier = std::make_shared<sequential_batch_supplier>();
+    impl::auto_batcher batcher(
+      3, std::chrono::milliseconds(0), pool, [supplier](int32_t s) {
+          return (*supplier)(s);
+      });
+
+    int64_t prev = -1;
+    for (int i = 0; i < 50; ++i) {
+        int64_t id = batcher.new_id().get();
+        ASSERT_NE(INT64_MIN, id);
+        ASSERT_GT(id, prev);
+        prev = id;
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
+}
+
+TEST(AutoBatcherTest, concurrencySmokeTest)
+{
+    constexpr int NUM_THREADS = 4;
+    constexpr int IDS_IN_THREAD = 100000;
+    util::hz_thread_pool pool(NUM_THREADS);
+    auto supplier = std::make_shared<sequential_batch_supplier>();
+    impl::auto_batcher batcher(
+      3, std::chrono::milliseconds(600000), pool, [supplier](int32_t s) {
+          return (*supplier)(s);
+      });
+
+    auto ids = concurrently_generate_ids(
+      [&]() { return batcher.new_id().get(); }, NUM_THREADS, IDS_IN_THREAD);
+
+    for (int64_t i = 0; i < static_cast<int64_t>(ids.size()); ++i) {
+        ASSERT_TRUE(ids.count(i) > 0) << "Missing ID: " << i;
+    }
+    // Single-flight: with coalescing the supplier is hit roughly
+    // total/batch_size times, never once per generated id (thundering herd).
+    ASSERT_LT(supplier->calls(), NUM_THREADS * IDS_IN_THREAD);
+    ASSERT_LE(supplier->calls(), NUM_THREADS * IDS_IN_THREAD / 3 + 1000);
+}
+
+// Regression test for the stack overflow reported in issue #1491. A waiter
+// that loses the race for the freshly fetched batch must retry without
+// nesting futures (unwrap-on-unwrap): otherwise the completion cascade
+// recurses once per lost round and overflows the executor thread's stack
+// (macOS gives secondary threads 512 KiB) after a few hundred lost rounds.
+//
+// A slow supplier makes every thread coalesce onto the in-flight fetch. When
+// it completes, the first three continuations win and their threads wake and
+// re-register on the next fetch while the remaining continuations are still
+// being run, i.e. ahead of them. The last loser therefore loses every round
+// until the other threads have used up their quota.
+TEST(AutoBatcherTest, starvedWaiterDoesNotOverflowTheStack)
+{
+    constexpr int NUM_THREADS = 128;
+    constexpr int IDS_IN_THREAD = 100;
+    util::hz_thread_pool pool(4);
+    auto supplier = std::make_shared<sequential_batch_supplier>();
+    impl::auto_batcher batcher(
+      3, std::chrono::milliseconds(600000), pool, [supplier](int32_t s) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(1));
+          return (*supplier)(s);
+      });
+
+    auto ids = concurrently_generate_ids(
+      [&]() { return batcher.new_id().get(); }, NUM_THREADS, IDS_IN_THREAD);
+
+    for (int64_t i = 0; i < static_cast<int64_t>(ids.size()); ++i) {
+        ASSERT_TRUE(ids.count(i) > 0) << "Missing ID: " << i;
+    }
+}
+
+TEST(FlakeIdBatchTest, getters)
+{
+    impl::id_batch b(5, 7, 9);
+    EXPECT_EQ(5, b.get_base());
+    EXPECT_EQ(7, b.get_increment());
+    EXPECT_EQ(9, b.get_batch_size());
+}
+
+TEST(FlakeIdBatchTest, testIterator)
+{
+    impl::id_batch b(1, 10, 2);
+    std::vector<int64_t> values;
+    for (auto it = b.iterator(); it != impl::id_batch::end(); ++it) {
+        values.push_back(*it);
+    }
+    EXPECT_EQ((std::vector<int64_t>{ 1, 11 }), values);
+}
+
+TEST(FlakeIdBatchTest, testIterator_emptyIdBatch)
+{
+    impl::id_batch b(1, 10, 0);
+    EXPECT_TRUE(b.iterator() == impl::id_batch::end());
 }
 
 } // namespace test

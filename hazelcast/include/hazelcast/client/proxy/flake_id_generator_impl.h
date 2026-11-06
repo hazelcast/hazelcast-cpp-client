@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2025, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2026, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 #pragma once
 
 #include <memory>
-#include <atomic>
-#include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
+#include "hazelcast/client/impl/auto_batcher.h"
+#include "hazelcast/client/impl/id_batch.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 namespace hazelcast {
 namespace client {
@@ -52,98 +53,10 @@ protected:
                             spi::ClientContext* context);
 
 private:
-    /**
-     * Set of IDs returned from {@link FlakeIdGenerator}.
-     * <p>
-     * IDs can be iterated using a foreach loop:
-     * <pre>{@code
-     *    IdBatch idBatch = myFlakeIdGenerator.newIdBatch(100);
-     *    for (Long id : idBatch) {
-     *        // ... use the id
-     *    }
-     * }</pre>
-     * <p>
-     * Object is immutable.
-     */
-    class IdBatch
-    {
-    public:
-        IdBatch(int64_t base, int64_t increment, int32_t batch_size);
+    boost::future<impl::id_batch> new_id_batch(int32_t size);
 
-        /**
-         * Returns the first ID in the set.
-         */
-        int64_t get_base() const;
-
-        /**
-         * Returns increment from {@link #base()} for the next ID in the set.
-         */
-        int64_t get_increment() const;
-
-        /**
-         * Returns number of IDs in the set.
-         */
-        int32_t get_batch_size() const;
-
-        class IdIterator
-        {
-        public:
-            using iterator_category = std::input_iterator_tag;
-            using value_type = int64_t;
-            using difference_type = std::ptrdiff_t;
-            using pointer = int64_t*;
-            using reference = int64_t&;
-
-            IdIterator();
-            IdIterator(int64_t base2, int64_t increment, int32_t remaining);
-
-            IdIterator& operator++();
-            bool operator==(const IdIterator& rhs) const;
-            bool operator!=(const IdIterator& rhs) const;
-            const int64_t& operator*() const;
-
-        private:
-            int64_t base2_;
-            const int64_t increment_;
-            int32_t remaining_;
-        };
-
-        IdIterator iterator();
-
-        static IdIterator& end();
-
-    private:
-        int64_t base_;
-        int64_t increment_;
-        int32_t batch_size_;
-
-        static IdIterator endOfBatch;
-    };
-
-    class Block
-    {
-    public:
-        Block(IdBatch&& id_batch, std::chrono::milliseconds validity);
-
-        /**
-         * Returns next ID or INT64_MIN, if there is none.
-         */
-        int64_t next();
-
-    private:
-        IdBatch id_batch_;
-        std::chrono::steady_clock::time_point invalid_since_;
-        std::atomic<int32_t> num_returned_;
-    };
-
-    boost::future<flake_id_generator_impl::IdBatch> new_id_batch(int32_t size);
-
-    int64_t new_id_internal();
-
-    int32_t batch_size_;
-    std::chrono::milliseconds validity_;
-    boost::atomic_shared_ptr<Block> block_;
-    std::mutex lock_;
+    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
+    impl::auto_batcher batcher_;
 };
 
 } // namespace proxy

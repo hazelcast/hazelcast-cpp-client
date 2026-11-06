@@ -17,7 +17,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(hazelcast-cpp-client
-        VERSION 5.7.0
+        VERSION 5.7.1
         DESCRIPTION "Hazelcast C++ Client"
         LANGUAGES CXX)
 
@@ -89,6 +89,14 @@ else()
     message(FATAL_ERROR "Boost not found!")
 endif()
 
+# Boost.Thread before 1.88 has a typo in future.hpp (run_it::operator=) that
+# GCC 15 rejects while parsing the template body. The affected template is never
+# instantiated here, so defer the diagnostic to instantiation.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 15
+    AND Boost_VERSION VERSION_LESS 1.88)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-template-body")
+endif ()
+
 # find OpenSSL if building WITH_OPENSSL
 if (WITH_OPENSSL)
     if (APPLE)
@@ -154,7 +162,14 @@ endif ()
 
 # AppleClang-specific compiler flags, we set for all targets since we want these flags also for tests and examples
 if (CMAKE_CXX_FLAGS MATCHES "-Werror" AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-constexpr-conversion -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-deprecated-builtins -Wno-unused-but-set-variable")
+    # Removed in the clang shipped with Xcode 26, where -Werror turns the
+    # unknown option itself into an error.
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag(-Wno-enum-constexpr-conversion HAVE_WNO_ENUM_CONSTEXPR_CONVERSION)
+    if (HAVE_WNO_ENUM_CONSTEXPR_CONVERSION)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-enum-constexpr-conversion")
+    endif ()
 endif ()
 
 # windows-specific compile flags

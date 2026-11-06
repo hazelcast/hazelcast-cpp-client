@@ -19,7 +19,15 @@
 #include <boost/format.hpp>
 #include <boost/lockfree/queue.hpp>
 #ifdef HZ_BUILD_WITH_SSL
-#include <boost/asio/ssl.hpp>
+// Avoid <boost/asio/ssl.hpp> because in Boost <= 1.83 it transitively
+// includes rfc2818_verification, whose .ipp dereferences private
+// ASN1_STRING fields that became opaque in OpenSSL 3.x and breaks the
+// MSVC build. We use the modern host_name_verification instead, so pull
+// in only the specific subheaders we actually need.
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl/error.hpp>
+#include <boost/asio/ssl/host_name_verification.hpp>
+#include <boost/asio/ssl/stream.hpp>
 #endif
 
 #include "hazelcast/client/socket.h"
@@ -224,7 +232,8 @@ protected:
         socket_.async_read_some(
           boost::asio::buffer(connection->read_handler.byte_buffer.ix(),
                               connection->read_handler.byte_buffer.remaining()),
-          socket_strand_.wrap(
+          boost::asio::bind_executor(
+            socket_strand_,
             [=](const boost::system::error_code& ec, std::size_t bytes_read) {
                 if (ec) {
                     // prevent any exceptions
@@ -282,7 +291,8 @@ protected:
         boost::asio::async_write(
           socket_,
           batch_buffers_,
-          socket_strand_.wrap(
+          boost::asio::bind_executor(
+            socket_strand_,
             [this, connection](const boost::system::error_code& ec,
                                std::size_t /* bytes_written */) {
                 write_in_progress_ = false;

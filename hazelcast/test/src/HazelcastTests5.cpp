@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <memory>
+#include <mutex>
 #include <ostream>
 #include <regex>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/asio.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
 
 #include <gtest/gtest.h>
 
@@ -46,7 +50,11 @@
 #include <hazelcast/client/pipelining.h>
 #include <hazelcast/client/proxy/PNCounterImpl.h>
 #include <hazelcast/client/query/predicates.h>
+#include <hazelcast/client/protocol/ClientMessage.h>
+#include <hazelcast/client/protocol/codec/codecs.h>
 #include <hazelcast/client/serialization/serialization.h>
+#include <hazelcast/client/spi/ClientContext.h>
+#include <hazelcast/client/spi/impl/ClientInvocation.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
@@ -4171,6 +4179,171 @@ struct hz_serializer<test::ClientMapTest::MapGetInterceptor>
     }
 };
 } // namespace serialization
+} // namespace client
+} // namespace hazelcast
+
+namespace hazelcast {
+namespace client {
+namespace test {
+
+/**
+ * Regression tests for the completion of a backup-aware invocation.
+ *
+ * For a backup-aware operation both notify_response() (primary response) and
+ * notify_backup() (last backup ack) can race to call ClientInvocation::complete
+ * with the very same pending response. The promise can only be satisfied once,
+ * so the loser of the race hits boost::promise_already_satisfied. This is a
+ * benign duplicate and must not be reported as a WARNING (it used to flood the
+ * logs of healthy clients). A double completion carrying a *different* value is
+ * genuinely suspicious and must still be logged at WARNING.
+ *
+ * The double completion only arises from a concurrent interleaving that cannot
+ * be forced through the public notify()/notify_backup() API, so these tests
+ * drive the private completion path directly via friend access, after staging
+ * pending_response_ exactly as notify_response() would.
+ */
+class client_invocation_test : public ClientTest
+{
+protected:
+    using message_ptr = std::shared_ptr<protocol::ClientMessage>;
+    using invocation_ptr = std::shared_ptr<spi::impl::ClientInvocation>;
+    using captured_log = std::pair<logger::level, std::string>;
+
+    // A single member is enough and is shared by all cases in this suite; the
+    // completion logic under test does not depend on cluster state.
+    static void SetUpTestSuite()
+    {
+        member_ = new HazelcastServer{ default_server_factory() };
+    }
+
+    static void TearDownTestSuite()
+    {
+        delete member_;
+        member_ = nullptr;
+    }
+
+    // Stages the canonical pending response, mirroring notify_response().
+    static void set_pending_response(const invocation_ptr& invocation,
+                                     const message_ptr& msg)
+    {
+        invocation->pending_response_.store(
+          boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(msg));
+    }
+
+    // Invokes the private complete(); erase=false so we do not touch the
+    // invocation registry for this manually created invocation.
+    static void complete(const invocation_ptr& invocation,
+                         const message_ptr& msg)
+    {
+        invocation->complete(msg, false);
+    }
+
+    // Builds a client whose logger forwards every message (finest and above)
+    // into the supplied sink.
+    static hazelcast_client make_capturing_client(
+      std::mutex& mtx,
+      std::vector<captured_log>& sink)
+    {
+        client_config cfg = get_config();
+        cfg.get_logger_config()
+          .level(logger::level::finest)
+          .handler([&mtx, &sink](const std::string&,
+                                 const std::string&,
+                                 logger::level lvl,
+                                 const std::string& msg) {
+              std::lock_guard<std::mutex> g{ mtx };
+              sink.emplace_back(lvl, msg);
+          });
+        return new_client(std::move(cfg)).get();
+    }
+
+    static int count_drop_logs(std::mutex& mtx,
+                               const std::vector<captured_log>& sink,
+                               logger::level lvl)
+    {
+        std::lock_guard<std::mutex> g{ mtx };
+        return static_cast<int>(
+          std::count_if(sink.begin(), sink.end(), [lvl](const captured_log& e) {
+              return e.first == lvl &&
+                     e.second.find("Failed to set the response") !=
+                       std::string::npos;
+          }));
+    }
+
+    static HazelcastServer* member_;
+};
+
+HazelcastServer* client_invocation_test::member_ = nullptr;
+
+TEST_F(client_invocation_test,
+       benign_double_completion_with_same_response_is_logged_at_finest)
+{
+    std::mutex mtx;
+    std::vector<captured_log> logs;
+    auto client = make_capturing_client(mtx, logs);
+
+    spi::ClientContext context{ client };
+    auto request = protocol::codec::client_ping_encode();
+    auto invocation =
+      spi::impl::ClientInvocation::create(context, request, "ping");
+    auto future = invocation->get_promise().get_future();
+
+    auto response = std::make_shared<protocol::ClientMessage>(
+      protocol::codec::client_ping_encode());
+
+    // Reproduce the post-race state: pending_response_ holds the response that
+    // both the primary-response and the last-backup-ack paths would complete
+    // with, then let both paths complete with that very same message.
+    set_pending_response(invocation, response);
+    complete(invocation, response); // first completion wins
+    complete(invocation, response); // benign duplicate, must not warn
+
+    // The promise was satisfied exactly once with the response.
+    ASSERT_EQ(boost::future_status::ready,
+              future.wait_for(boost::chrono::seconds(0)));
+    ASSERT_NO_THROW(future.get());
+
+    ASSERT_EQ(0, count_drop_logs(mtx, logs, logger::level::warning));
+    ASSERT_EQ(1, count_drop_logs(mtx, logs, logger::level::finest));
+
+    client.shutdown().get();
+}
+
+TEST_F(
+  client_invocation_test,
+  suspicious_double_completion_with_different_response_is_logged_at_warning)
+{
+    std::mutex mtx;
+    std::vector<captured_log> logs;
+    auto client = make_capturing_client(mtx, logs);
+
+    spi::ClientContext context{ client };
+    auto request = protocol::codec::client_ping_encode();
+    auto invocation =
+      spi::impl::ClientInvocation::create(context, request, "ping");
+    auto future = invocation->get_promise().get_future();
+
+    auto first_response = std::make_shared<protocol::ClientMessage>(
+      protocol::codec::client_ping_encode());
+    auto different_response = std::make_shared<protocol::ClientMessage>(
+      protocol::codec::client_ping_encode());
+
+    set_pending_response(invocation, first_response);
+    complete(invocation, first_response); // first completion wins
+    complete(invocation,
+             different_response); // genuinely conflicting, must warn
+
+    ASSERT_EQ(boost::future_status::ready,
+              future.wait_for(boost::chrono::seconds(0)));
+    ASSERT_NO_THROW(future.get());
+
+    ASSERT_EQ(1, count_drop_logs(mtx, logs, logger::level::warning));
+    ASSERT_EQ(0, count_drop_logs(mtx, logs, logger::level::finest));
+
+    client.shutdown().get();
+}
+
+} // namespace test
 } // namespace client
 } // namespace hazelcast
 

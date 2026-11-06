@@ -1870,8 +1870,34 @@ TEST_F(SqlTest, select)
 
     std::unordered_set<int64_t> unique_keys;
 
-    for (auto itr = res->iterator(); itr.has_next();) {
-        auto page = itr.next().get();
+    // Fetch the first page up front so we can verify the bounds-checking API
+    // on a single representative row before the main loop.
+    // Background: on Windows, C++ exceptions are built on SEH. When ProcDump
+    // is attached as a debugger (CI step: procdump -e -ma -w client_test.exe),
+    // every throw raises SEH code 0xE06D7363, which the OS delivers as a
+    // first-chance debug event to ProcDump before the C++ catch handler runs.
+    // ProcDump logs the line "[HH:MM:SS]Exception: E06D7363.?AV..." and then
+    // calls ContinueDebugEvent so execution can proceed. This is a mandatory
+    // two-kernel-mode-transition round-trip for every single throw.
+    // With the EXPECT_THROW calls inside the 4096-row loop that is ~12 000
+    // round-trips, stalling the loop long enough to trigger connection
+    // timeouts on the server side (Windows-only flaky failure).
+    auto itr = res->iterator();
+    ASSERT_TRUE(itr.has_next());
+    auto page = itr.next().get();
+    ASSERT_FALSE(page->rows().empty());
+    {
+        const auto& first_row = page->rows().front();
+        EXPECT_THROW(first_row.get_object<int>(-1),
+                     exception::index_out_of_bounds);
+        EXPECT_THROW(
+          first_row.get_object<int>(first_row.row_metadata().column_count()),
+          exception::index_out_of_bounds);
+        EXPECT_THROW(first_row.get_object<int>("unknown_field"),
+                     exception::illegal_argument);
+    }
+
+    for (;;) {
         for (const auto& row : page->rows()) {
             ASSERT_EQ(row_metadata, res->row_metadata());
 
@@ -1903,14 +1929,10 @@ TEST_F(SqlTest, select)
               sql_column_type::varchar, val.varchar_val, row, "varcharVal");
 
             unique_keys.emplace(*key0);
-
-            EXPECT_THROW(row.get_object<int>(-1),
-                         exception::index_out_of_bounds);
-            EXPECT_THROW(row.get_object<int>(row.row_metadata().column_count()),
-                         exception::index_out_of_bounds);
-            EXPECT_THROW(row.get_object<int>("unknown_field"),
-                         exception::illegal_argument);
         }
+        if (!itr.has_next())
+            break;
+        page = itr.next().get();
     }
 
     EXPECT_THROW(res->iterator(), exception::illegal_state);

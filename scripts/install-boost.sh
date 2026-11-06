@@ -12,7 +12,7 @@ fi
 
 TARBALL_NAME=boost_$(echo "$1" | tr . _)
 
-curl --fail --silent --show-error --location "https://archives.boost.io/release/${1}/source/${TARBALL_NAME}.tar.gz" | tar xzf -
+curl --fail --retry 5 --retry-all-errors --show-error --silent --show-error --location "https://archives.boost.io/release/${1}/source/${TARBALL_NAME}.tar.gz" | tar xzf -
 pushd "${TARBALL_NAME}"
 ./bootstrap.sh
 # Build the libs for:

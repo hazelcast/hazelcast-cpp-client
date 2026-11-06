@@ -17,6 +17,8 @@
 #include <unordered_set>
 #include <atomic>
 
+#include <boost/asio/post.hpp>
+
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/proxy/PNCounterImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -35,6 +37,8 @@
 #include "hazelcast/client/proxy/ReplicatedMapImpl.h"
 #include "hazelcast/client/flake_id_generator.h"
 #include "hazelcast/client/reliable_topic.h"
+
+#include "hazelcast/util/hz_thread_pool.h"
 
 namespace hazelcast {
 namespace client {
@@ -1007,16 +1011,112 @@ IListImpl::ListListenerMessageCodec::encode_remove_request(
                                                        real_registration_id);
 }
 
-flake_id_generator_impl::Block::Block(IdBatch&& id_batch,
-                                      std::chrono::milliseconds validity)
-  : id_batch_(id_batch)
-  , invalid_since_(std::chrono::steady_clock::now() + validity)
+} // namespace proxy
+
+namespace impl {
+
+id_batch::id_iterator id_batch::end_of_batch_;
+
+id_batch::id_batch(int64_t base, int64_t increment, int32_t batch_size)
+  : base_(base)
+  , increment_(increment)
+  , batch_size_(batch_size)
+{
+}
+
+int64_t
+id_batch::get_base() const
+{
+    return base_;
+}
+
+int64_t
+id_batch::get_increment() const
+{
+    return increment_;
+}
+
+int32_t
+id_batch::get_batch_size() const
+{
+    return batch_size_;
+}
+
+id_batch::id_iterator&
+id_batch::end()
+{
+    return end_of_batch_;
+}
+
+id_batch::id_iterator
+id_batch::iterator()
+{
+    if (batch_size_ <= 0) {
+        return end_of_batch_;
+    }
+    return id_batch::id_iterator(base_, increment_, batch_size_);
+}
+
+id_batch::id_iterator::id_iterator()
+  : base2_(-1)
+  , increment_(-1)
+  , remaining_(-1)
+{
+}
+
+id_batch::id_iterator::id_iterator(int64_t base2,
+                                   int64_t increment,
+                                   int32_t remaining)
+  : base2_(base2)
+  , increment_(increment)
+  , remaining_(remaining)
+{
+}
+
+bool
+id_batch::id_iterator::operator==(const id_batch::id_iterator& rhs) const
+{
+    return base2_ == rhs.base2_ && increment_ == rhs.increment_ &&
+           remaining_ == rhs.remaining_;
+}
+
+bool
+id_batch::id_iterator::operator!=(const id_batch::id_iterator& rhs) const
+{
+    return !(rhs == *this);
+}
+
+const int64_t&
+id_batch::id_iterator::operator*() const
+{
+    return base2_;
+}
+
+id_batch::id_iterator&
+id_batch::id_iterator::operator++()
+{
+    // Yields exactly batch_size elements, then compares equal to end().
+    --remaining_;
+    if (remaining_ <= 0) {
+        *this = id_batch::end();
+    } else {
+        base2_ += increment_;
+    }
+    return *this;
+}
+
+auto_batcher::block::block(id_batch batch, std::chrono::milliseconds validity)
+  : id_batch_(batch)
+  // Mirror Java AutoBatcher.Block: validity <= 0 means "never expire".
+  , invalid_since_(validity <= std::chrono::milliseconds::zero()
+                     ? (std::chrono::steady_clock::time_point::max)()
+                     : std::chrono::steady_clock::now() + validity)
   , num_returned_(0)
 {
 }
 
 int64_t
-flake_id_generator_impl::Block::next()
+auto_batcher::block::next()
 {
     if (invalid_since_ <= std::chrono::steady_clock::now()) {
         return INT64_MIN;
@@ -1032,146 +1132,170 @@ flake_id_generator_impl::Block::next()
     return id_batch_.get_base() + index * id_batch_.get_increment();
 }
 
-flake_id_generator_impl::IdBatch::IdIterator
-  flake_id_generator_impl::IdBatch::endOfBatch;
-
-int64_t
-flake_id_generator_impl::IdBatch::get_base() const
-{
-    return base_;
-}
-
-int64_t
-flake_id_generator_impl::IdBatch::get_increment() const
-{
-    return increment_;
-}
-
-int32_t
-flake_id_generator_impl::IdBatch::get_batch_size() const
-{
-    return batch_size_;
-}
-
-flake_id_generator_impl::IdBatch::IdBatch(int64_t base,
-                                          int64_t increment,
-                                          int32_t batch_size)
-  : base_(base)
-  , increment_(increment)
-  , batch_size_(batch_size)
-{
-}
-
-flake_id_generator_impl::IdBatch::IdIterator&
-flake_id_generator_impl::IdBatch::end()
-{
-    return endOfBatch;
-}
-
-flake_id_generator_impl::IdBatch::IdIterator
-flake_id_generator_impl::IdBatch::iterator()
-{
-    return flake_id_generator_impl::IdBatch::IdIterator(
-      base_, increment_, batch_size_);
-}
-
-flake_id_generator_impl::IdBatch::IdIterator::IdIterator(
-  int64_t base2,
-  const int64_t increment,
-  int32_t remaining)
-  : base2_(base2)
-  , increment_(increment)
-  , remaining_(remaining)
-{
-}
-
 bool
-flake_id_generator_impl::IdBatch::IdIterator::operator==(
-  const flake_id_generator_impl::IdBatch::IdIterator& rhs) const
+auto_batcher::block::usable() const
 {
-    return base2_ == rhs.base2_ && increment_ == rhs.increment_ &&
-           remaining_ == rhs.remaining_;
+    if (invalid_since_ <= std::chrono::steady_clock::now()) {
+        return false;
+    }
+    return num_returned_.load() < id_batch_.get_batch_size();
 }
 
-bool
-flake_id_generator_impl::IdBatch::IdIterator::operator!=(
-  const flake_id_generator_impl::IdBatch::IdIterator& rhs) const
-{
-    return !(rhs == *this);
-}
-const int64_t&
-flake_id_generator_impl::IdBatch::IdIterator::operator*() const
-{
-    return base2_;
-}
-
-flake_id_generator_impl::IdBatch::IdIterator::IdIterator()
-  : base2_(-1)
-  , increment_(-1)
-  , remaining_(-1)
+auto_batcher::auto_batcher(int32_t batch_size,
+                           std::chrono::milliseconds validity,
+                           util::hz_thread_pool& executor,
+                           id_batch_supplier supplier)
+  : batch_size_(batch_size)
+  , validity_(validity)
+  , executor_(executor)
+  , supplier_(std::move(supplier))
+  , block_(nullptr)
+  , fetch_generation_(0)
 {
 }
 
-flake_id_generator_impl::IdBatch::IdIterator&
-flake_id_generator_impl::IdBatch::IdIterator::operator++()
+boost::future<int64_t>
+auto_batcher::new_id()
 {
-    if (remaining_ == 0) {
-        return flake_id_generator_impl::IdBatch::end();
+    // Fast path: lock-free while the current batch still has IDs.
+    auto b = block_.load();
+    if (b) {
+        int64_t v = b->next();
+        if (v != INT64_MIN) {
+            return boost::make_ready_future(v);
+        }
     }
 
-    --remaining_;
-
-    base2_ += increment_;
-
-    return *this;
+    auto p = boost::make_shared<boost::promise<int64_t>>();
+    auto f = p->get_future();
+    try_get_id(p);
+    return f;
 }
+
+void
+auto_batcher::try_get_id(const boost::shared_ptr<boost::promise<int64_t>>& p)
+{
+    auto b = block_.load();
+    if (b) {
+        int64_t v = b->next();
+        if (v != INT64_MIN) {
+            p->set_value(v);
+            return;
+        }
+    }
+
+    // Slow path: elect a single fetcher; concurrent callers coalesce onto
+    // one outstanding batch request (single-flight, no thundering herd).
+    boost::shared_future<boost::shared_ptr<block>> fetch;
+    uint64_t gen;
+    {
+        std::lock_guard<std::mutex> g(mutex_);
+
+        // Double-check: another thread may have installed a fresh block
+        // while we were contending (Java's `if (block != this.block)`).
+        auto b2 = block_.load();
+        if (b2 && b2 != b) {
+            int64_t v = b2->next();
+            if (v != INT64_MIN) {
+                p->set_value(v);
+                return;
+            }
+        }
+
+        if (fetch_in_progress_.valid()) {
+            gen = fetch_generation_;
+        } else {
+            gen = ++fetch_generation_;
+            int32_t size = batch_size_;
+            std::chrono::milliseconds validity = validity_;
+            id_batch_supplier supplier = supplier_;
+            // The winner fetches (and retries) on the user executor, so the
+            // caller thread and IO threads are never blocked. The blocking
+            // for(;;) mirrors Java's AutoBatcher loop.
+            fetch_in_progress_ =
+              boost::async(
+                executor_,
+                [this, size, validity, supplier]() -> boost::shared_ptr<block> {
+                    for (;;) {
+                        id_batch batch = supplier(size).get();
+                        auto nb =
+                          boost::make_shared<block>(std::move(batch), validity);
+                        if (nb->usable()) {
+                            block_.store(nb);
+                            return nb;
+                        }
+                    }
+                })
+                .share();
+        }
+        fetch = fetch_in_progress_;
+    }
+
+    // The continuation completes the caller's promise directly. Its own
+    // future is intentionally discarded: nothing waits on it, so a lost
+    // race never leaves a future layer behind (see try_get_id docs).
+    fetch.then(
+      boost::launch::sync,
+      [this, gen, p](boost::shared_future<boost::shared_ptr<block>> f) {
+          {
+              std::lock_guard<std::mutex> g(mutex_);
+              if (fetch_generation_ == gen && fetch_in_progress_.valid()) {
+                  fetch_in_progress_ =
+                    boost::shared_future<boost::shared_ptr<block>>();
+              }
+          }
+          boost::shared_ptr<block> nb;
+          try {
+              // Rethrows a supplier/server error to every coalesced caller.
+              nb = f.get();
+          } catch (...) {
+              p->set_exception(boost::current_exception());
+              return;
+          }
+          int64_t v = nb->next();
+          if (v != INT64_MIN) {
+              p->set_value(v);
+              return;
+          }
+          // More concurrent waiters than the batch could serve: retry from
+          // an empty stack (async analogue of Java's for(;;)). Posting, rather
+          // than calling try_get_id inline, also covers the case where the
+          // next fetch is already complete and a sync continuation would run
+          // immediately on this thread.
+          boost::asio::post(executor_.get_executor(),
+                            [this, p]() { try_get_id(p); });
+      });
+}
+
+} // namespace impl
+
+namespace proxy {
 
 flake_id_generator_impl::flake_id_generator_impl(
   const std::string& service_name,
   const std::string& object_name,
   spi::ClientContext* context)
   : ProxyImpl(service_name, object_name, context)
-  , block_(nullptr)
+  , execution_service_(
+      context->get_client_execution_service().shared_from_this())
+  , batcher_(context->get_client_config()
+               .find_flake_id_generator_config(object_name)
+               ->get_prefetch_count(),
+             context->get_client_config()
+               .find_flake_id_generator_config(object_name)
+               ->get_prefetch_validity_duration(),
+             execution_service_->get_user_executor(),
+             [this](int32_t size) { return new_id_batch(size); })
 {
-    auto config =
-      context->get_client_config().find_flake_id_generator_config(object_name);
-    batch_size_ = config->get_prefetch_count();
-    validity_ = config->get_prefetch_validity_duration();
-}
-
-int64_t
-flake_id_generator_impl::new_id_internal()
-{
-    auto b = block_.load();
-    if (b) {
-        int64_t res = b->next();
-        if (res != INT64_MIN) {
-            return res;
-        }
-    }
-
-    return INT64_MIN;
 }
 
 boost::future<int64_t>
 flake_id_generator_impl::new_id()
 {
-    auto res = new_id_internal();
-    if (res != INT64_MIN) {
-        return boost::make_ready_future(res);
-    }
-    return new_id_batch(batch_size_)
-      .then(boost::launch::sync,
-            [=](boost::future<flake_id_generator_impl::IdBatch> f) {
-                auto newBlock = boost::make_shared<Block>(f.get(), validity_);
-                auto value = newBlock->next();
-                auto b = block_.load();
-                block_.compare_exchange_strong(b, newBlock);
-                return value;
-            });
+    return batcher_.new_id();
 }
 
-boost::future<flake_id_generator_impl::IdBatch>
+boost::future<impl::id_batch>
 flake_id_generator_impl::new_id_batch(int32_t size)
 {
     auto request =
@@ -1184,7 +1308,7 @@ flake_id_generator_impl::new_id_batch(int32_t size)
           auto base = msg.get<int64_t>();
           auto increment = msg.get<int64_t>();
           auto batch_size = msg.get<int32_t>();
-          return flake_id_generator_impl::IdBatch(base, increment, batch_size);
+          return impl::id_batch(base, increment, batch_size);
       });
 }
 

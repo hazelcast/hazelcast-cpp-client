@@ -22,7 +22,13 @@
 #ifdef HZ_BUILD_WITH_SSL
 
 #include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
+// See BaseSocket.h: <boost/asio/ssl.hpp> in Boost <= 1.83 transitively
+// pulls in rfc2818_verification, which fails to compile against
+// OpenSSL 3.x (opaque ASN1_STRING). Use specific subheaders instead.
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl/error.hpp>
+#include <boost/asio/ssl/host_name_verification.hpp>
+#include <boost/asio/ssl/stream.hpp>
 
 #endif // HZ_BUILD_WITH_SSL
 
