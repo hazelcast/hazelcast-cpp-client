@@ -35,7 +35,7 @@ jobs:
       (${{ matrix.build_type }}, ${{ matrix.shared_libs.name }}, ${{ matrix.with_openssl.name }}, ${{matrix.boost.version}})
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/build-test/macos-x86_64
         with:
